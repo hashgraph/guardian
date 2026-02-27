@@ -115,15 +115,17 @@ export class TimerBlock {
      * @private
      */
     private startCron(ref: AnyBlockType) {
+        const options = ref.getOptions();
+        
         try {
-            let sd = moment(ref.options.startDate).utc();
+            let sd = moment(options.startDate).utc();
             if (sd.isValid()) {
                 sd = moment().utc();
             }
 
             this.endTime = Infinity;
-            if (ref.options.endDate) {
-                const ed = moment(ref.options.endDate).utc();
+            if (options.endDate) {
+                const ed = moment(options.endDate).utc();
                 if (ed.isValid()) {
                     this.endTime = ed.toDate().getTime();
                 }
@@ -136,7 +138,7 @@ export class TimerBlock {
 
             let mask: string = '';
             this.interval = 0;
-            switch (ref.options.period) {
+            switch (options.period) {
                 case 'yearly': {
                     mask = `${sd.minute()} ${sd.hour()} ${sd.date()} ${sd.month() + 1} *`;
                     break;
@@ -158,14 +160,14 @@ export class TimerBlock {
                     break;
                 }
                 case 'custom': {
-                    mask = ref.options.periodMask;
-                    this.interval = ref.options.periodInterval;
+                    mask = options.periodMask;
+                    this.interval = options.periodInterval;
                     break;
                 }
                 default:
                     throw new Error('Bad period')
             }
-            ref.log(`start scheduler: ${mask}, ${ref.options.startDate}, ${ref.options.endDate}, ${ref.options.periodInterval}`);
+            ref.log(`start scheduler: ${mask}, ${options.startDate}, ${options.endDate}, ${options.periodInterval}`);
             if (this.interval > 1) {
                 this.tickCount = 0;
                 this.job = new CronJob(mask, () => {

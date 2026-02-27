@@ -126,7 +126,7 @@ export class PolicyParametersConfigDialog implements OnInit {
         this.policyTemplate.allBlocks.forEach(block => {
             if (block.tag === selected) {
                 const props = this.registeredService.getCustomProperties(block.blockType);
-                const propsWithPath = this.setPath(props, []);
+                const propsWithPath = this.setPath(props.filter((prop: any) => prop.editable), []);
                 if(propsWithPath && propsWithPath.length > 0) {
                     this.policyEditableFields[index].properties = propsWithPath;
                 }

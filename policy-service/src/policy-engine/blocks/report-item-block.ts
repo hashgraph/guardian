@@ -58,20 +58,22 @@ export class ReportItemBlock {
      */
     public async run(
         resultFields: IReportItem[],
-        variables: any
+        variables: any,
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportItemBlock>(this);
-        const icon = ref.options.icon;
-        const title = ref.options.title;
-        const description = ref.options.description;
-        const visible = ref.options.visible;
-        const iconType = ref.options.iconType;
-        const multiple = ref.options.multiple;
-        const dynamicFilters = ref.options.dynamicFilters;
+        const options = ref.getOptions();
+
+        const icon = options.icon;
+        const title = options.title;
+        const description = options.description;
+        const visible = options.visible;
+        const iconType = options.iconType;
+        const multiple = options.multiple;
+        const dynamicFilters = options.dynamicFilters;
 
         const filtersToVc: any = {};
-        if (ref.options.filters) {
-            for (const filter of ref.options.filters) {
+        if (options.filters) {
+            for (const filter of options.filters) {
                 let expr: any;
                 if (filter.typeValue === 'value') {
                     expr = filter.value;
@@ -149,8 +151,8 @@ export class ReportItemBlock {
                 item.document = vcDocument;
             }
 
-            if (ref.options.variables) {
-                for (const variable of ref.options.variables) {
+            if (options.variables) {
+                for (const variable of options.variables) {
                     const findOptionsResult = findOptions(vcDocument, variable.value);
                     if (multiple) {
                         variables[variable.name] = variables[variable.name] || []

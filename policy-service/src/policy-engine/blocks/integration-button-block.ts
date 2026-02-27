@@ -9,7 +9,6 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { generateConfigForIntegrationBlock, VcHelper, IntegrationServiceFactory, HederaDidDocument, VcDocumentDefinition, VcDocument } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { FilterQuery } from '@mikro-orm/core';
-
 /**
  * Document action clock with UI
  */
@@ -27,6 +26,8 @@ export class IntegrationButtonBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = ref.getOptions(user);
+        
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -35,10 +36,10 @@ export class IntegrationButtonBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            integrationType: ref.options.integrationType || '',
-            requestName: ref.options.requestName || '',
-            buttonName: ref.options.buttonName,
-            hideWhenDiscontinued: !!ref.options.hideWhenDiscontinued,
+            integrationType: options.integrationType || '',
+            requestName: options.requestName || '',
+            buttonName: options.buttonName,
+            hideWhenDiscontinued: !!options.hideWhenDiscontinued,
         }
         return data;
     }
@@ -59,11 +60,12 @@ export class IntegrationButtonBlock {
         tag: any
     }, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
-        const requestNameSplited = ref.options.requestName.split('_');
+        const options = ref.getOptions(user);
+        const requestNameSplited = options.requestName.split('_');
 
         const params = {};
 
-        Object.entries(ref.options.requestParams).forEach(([key, value]: [string, string]) => {
+        Object.entries(options.requestParams).forEach(([key, value]: [string, string]) => {
             if (key.startsWith('path_')) {
                 const keyName = key.split('path_')[1];
 
@@ -82,14 +84,14 @@ export class IntegrationButtonBlock {
         const methodName = requestNameSplited[requestNameSplited.length - 1];
 
         const dataForRequest = IntegrationServiceFactory.getDataForRequest(
-            ref.options.integrationType,
-            IntegrationServiceFactory.getAvailableMethods(ref.options.integrationType)[methodName],
+            options.integrationType,
+            IntegrationServiceFactory.getAvailableMethods(options.integrationType)[methodName],
             params
         );
 
         const dataForRequestStr = JSON.stringify(dataForRequest);
 
-        if (ref.options.getFromCache) {
+        if (options.getFromCache) {
             const cachedData = await ref.databaseServer.getVcDocument({
                 'option.requestParams': dataForRequestStr,
                 policyId: ref.policyId,
@@ -111,7 +113,7 @@ export class IntegrationButtonBlock {
             }
         }
 
-        const integrationService = IntegrationServiceFactory.create(ref.options.integrationType);
+        const integrationService = IntegrationServiceFactory.create(options.integrationType);
 
         const {
             data: responseFromRequest,

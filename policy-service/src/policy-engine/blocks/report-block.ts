@@ -37,11 +37,13 @@ import { FilterObject } from '@mikro-orm/core';
                 label: 'UI',
                 title: 'UI Properties',
                 type: PropertyType.Group,
+                editable: true,
                 properties: [{
                     name: 'vpSectionHeader',
                     label: 'VP section header',
                     title: 'VP section header',
-                    type: PropertyType.Input
+                    type: PropertyType.Input,
+                    editable: true
                 }
                 ]
             }]
@@ -434,6 +436,8 @@ export class ReportBlock {
      */
     async getData(user: PolicyUser, uuid: string): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
+        const options = ref.getOptions(user);
+
         try {
             const blockState = this.state[user.id] || {};
             if (!blockState.lastValue) {
@@ -446,7 +450,7 @@ export class ReportBlock {
                         user.location === LocationType.REMOTE
                     ),
                     hash: null,
-                    uiMetaData: ref.options.uiMetaData,
+                    uiMetaData: options.uiMetaData,
                     data: null
                 };
             }
@@ -505,7 +509,7 @@ export class ReportBlock {
             for (const reportItem of reportItems) {
                 const [documentsNotFound] = await reportItem.run(
                     documents,
-                    variables
+                    variables,
                 );
                 if (documentsNotFound) {
                     break;
@@ -528,7 +532,7 @@ export class ReportBlock {
                     user.location === LocationType.REMOTE
                 ),
                 hash,
-                uiMetaData: ref.options.uiMetaData,
+                uiMetaData: options.uiMetaData,
                 data: report
             };
         } catch (error) {

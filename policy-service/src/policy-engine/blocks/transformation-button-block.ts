@@ -30,25 +30,28 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
         defaultEvent: false,
         properties: [
             {
-                'name': 'buttonName',
-                'label': 'Button name',
-                'title': 'Button name',
-                'type': PropertyType.Input,
-                'default': ''
+                name: 'buttonName',
+                label: 'Button name',
+                title: 'Button name',
+                type: PropertyType.Input,
+                default: '',
+                editable: true
             },
             {
-                'name': 'url',
-                'label': 'Url',
-                'title': 'Url',
-                'type': PropertyType.Input,
-                'default': ''
+                name: 'url',
+                label: 'Url',
+                title: 'Url',
+                type: PropertyType.Input,
+                default: '',
+                editable: true
             },
             {
-                'name': 'hideWhenDiscontinued',
-                'label': 'Hide when discontinued',
-                'title': 'Hide when discontinued',
-                'type': PropertyType.Checkbox,
-                'default': false
+                name: 'hideWhenDiscontinued',
+                label: 'Hide when discontinued',
+                title: 'Hide when discontinued',
+                type: PropertyType.Checkbox,
+                default: false,
+                editable: true
             },
         ]
     },
@@ -63,6 +66,7 @@ export class TransformationButtonBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = ref.getOptions(user);
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -71,11 +75,11 @@ export class TransformationButtonBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            type: ref.options.type,
-            uiMetaData: ref.options.uiMetaData,
-            user: ref.options.user,
-            buttonName: ref.options.buttonName,
-            hideWhenDiscontinued: !!ref.options.hideWhenDiscontinued,
+            type: options.type,
+            uiMetaData: options.uiMetaData,
+            user: options.user,
+            buttonName: options.buttonName,
+            hideWhenDiscontinued: !!options.hideWhenDiscontinued,
         }
         return data;
     }
@@ -96,6 +100,7 @@ export class TransformationButtonBlock {
         tag: any
     }, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
+        const options = ref.getOptions(user);
         const data: IPolicyDocument = blockData.document;
         const state: IPolicyEventState = { data };
         const eventData = await ref.triggerEventSync(PolicyInputEventType.GetDataEvent, user, state, actionStatus);
@@ -107,7 +112,7 @@ export class TransformationButtonBlock {
 
         return {
             data: eventData,
-            url: ref.options?.url ?? ''
+            url: options?.url ?? ''
         };
     }
 }

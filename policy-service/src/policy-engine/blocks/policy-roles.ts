@@ -371,8 +371,10 @@ export class PolicyRolesBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const roles: string[] = Array.isArray(ref.options.roles) ? ref.options.roles : [];
-        const groups: string[] = Array.isArray(ref.options.groups) ? ref.options.groups : [];
+        const options = ref.getOptions(user);
+        
+        const roles: string[] = Array.isArray(options.roles) ? options.roles : [];
+        const groups: string[] = Array.isArray(options.groups) ? options.groups : [];
         const policyGroups = PolicyUtils.getGroupTemplates<IGroupConfig>(ref);
         const groupMap = {};
         for (const item of policyGroups) {
@@ -395,7 +397,7 @@ export class PolicyRolesBlock {
             groups,
             groupMap,
             isMultipleGroups: policyGroups.length > 0,
-            uiMetaData: ref.options.uiMetaData
+            uiMetaData: options.uiMetaData
         }
     }
 

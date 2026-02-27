@@ -90,6 +90,7 @@ export class TokenActionBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const options = ref.getOptions(user);
         return {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -98,7 +99,7 @@ export class TokenActionBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            uiMetaData: ref.options?.uiMetaData
+            uiMetaData: options?.uiMetaData
         };
     }
 
@@ -118,17 +119,18 @@ export class TokenActionBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const userId = event?.user?.userId;
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
+        const options = ref.getOptions(event.user);
         ref.log(`runAction`);
-        const field = ref.options.accountId;
+        const field = options.accountId;
         const documents = event?.data?.data;
         const doc = Array.isArray(documents) ? documents[0] : documents;
 
         let token: Token | null;
-        if (!ref.options.useTemplate) {
-            token = await ref.databaseServer.getToken(ref.options.tokenId);
+        if (!options.useTemplate) {
+            token = await ref.databaseServer.getToken(options.tokenId);
         }
-        if (ref.options.useTemplate && doc && doc.tokens) {
-            token = await ref.databaseServer.getToken(doc.tokens[ref.options.template], ref.dryRun);
+        if (options.useTemplate && doc && doc.tokens) {
+            token = await ref.databaseServer.getToken(doc.tokens[options.template], ref.dryRun);
         }
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
@@ -146,7 +148,7 @@ export class TokenActionBlock {
             throw new BlockActionError('Hedera Account not found.', ref.blockType, ref.uuid);
         }
 
-        switch (ref.options.action) {
+        switch (options.action) {
             case 'associate': {
                 await PolicyActionsUtils.associateToken({
                     ref,
@@ -207,7 +209,7 @@ export class TokenActionBlock {
         await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
-            action: ref.options.action
+            action: options.action
         }));
 
         ref.backup();

@@ -118,7 +118,8 @@ interface SchemaItem {
             name: 'schema',
             label: 'Schema',
             title: 'Schema',
-            type: PropertyType.Schemas
+            type: PropertyType.Schemas,
+            editable: false
         }]
     },
     variables: [
@@ -715,6 +716,7 @@ export class ExternalTopicBlock {
         actionStatus: RecordActionStep
     ): Promise<void> {
         const documentRef = await this.getRelationships(ref, user);
+        const options = ref.getOptions(user);
 
         if (message.type !== MessageType.VCDocument) {
             return;
@@ -734,7 +736,7 @@ export class ExternalTopicBlock {
 
         const relayerAccount = await PolicyUtils.getRefRelayerAccount(ref, user.did, null, documentRef, user.userId);
         const result: IPolicyDocument = PolicyUtils.createPolicyDocument(ref, user, document);
-        result.schema = ref.options.schema;
+        result.schema = options.schema;
         result.relayerAccount = relayerAccount;
         if (documentRef) {
             PolicyUtils.setDocumentRef(result, documentRef);

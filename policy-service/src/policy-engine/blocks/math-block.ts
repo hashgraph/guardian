@@ -54,17 +54,20 @@ interface IMetadata {
             name: 'inputSchema',
             label: 'Input Schema',
             title: 'Input Schema',
-            type: PropertyType.Schemas
+            type: PropertyType.Schemas,
+            editable: false
         }, {
             name: 'outputSchema',
             label: 'Output Schema',
             title: 'Output Schema',
-            type: PropertyType.Schemas
+            type: PropertyType.Schemas,
+            editable: false
         }, {
             name: 'unsigned',
             label: 'Unsigned VC',
             title: 'Unsigned document',
-            type: PropertyType.Checkbox
+            type: PropertyType.Checkbox,
+            editable: true
         }]
     },
     variables: [
@@ -110,11 +113,12 @@ export class MathBlock {
         documents: DocumentMap,
         user: PolicyUser
     ): Promise<any> {
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
+        const options = ref.getOptions(user);
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
         const schema = new Schema(outputSchema);
 
         // Artifacts
-        const files = Array.isArray(ref.options.artifacts) ? ref.options.artifacts : [];
+        const files = Array.isArray(options.artifacts) ? options.artifacts : [];
         const artifacts = [];
         const jsonArtifacts = files.filter((file: any) => file.type === ArtifactType.JSON);
         for (const jsonArtifact of jsonArtifacts) {
@@ -124,12 +128,12 @@ export class MathBlock {
 
         // Run
         const result = await this.createWorker({
-            expression: ref.options.expression,
+            expression: options.expression,
             documents: documents.toJson(),
             artifacts,
             user,
             schema,
-            copy: !ref.options.outputSchema || ref.options.outputSchema === ref.options.inputSchema
+            copy: !options.outputSchema || options.outputSchema === options.inputSchema
         })
 
         return result;
@@ -154,11 +158,14 @@ export class MathBlock {
     private async process(
         documents: IPolicyDocument,
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         if (!documents) {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
         }
+
+        let options = ref.getOptions(user);
 
         const sources: IPolicyDocument[] = await PolicyUtils.findRelationships(ref, documents);
 
@@ -173,11 +180,11 @@ export class MathBlock {
         map.addRelationships(contextRelationships.map((d) => this.getCredentialSubject(d)));
 
         const newJson = await this.calculate(ref, map, docOwner);
-        if (ref.options.unsigned) {
+        if (options.unsigned) {
             return await this.createUnsignedDocument(newJson, ref);
         } else {
             const metadata = await this.aggregateMetadata(contextDocument, ref, userId);
-            return await this.createDocument(newJson, metadata, ref, userId);
+            return await this.createDocument(newJson, metadata, ref, userId, user);
         }
     }
 
@@ -199,6 +206,7 @@ export class MathBlock {
         let tokens: any = {};
         let id: string;
         let reference: string;
+
         if (isArray) {
             const credentialSubject = documents[0].document?.credentialSubject;
             if (credentialSubject) {
@@ -249,7 +257,8 @@ export class MathBlock {
         json: any,
         metadata: IMetadata,
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -263,7 +272,9 @@ export class MathBlock {
         // <-- new vc
         const VCHelper = new VcHelper();
 
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
+        let options = ref.getOptions(user);
+
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
 
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
@@ -339,12 +350,12 @@ export class MathBlock {
         if (Array.isArray(event.data.data)) {
             const result: IPolicyDocument[] = [];
             for (const doc of event.data.data) {
-                const newVC = await this.process(doc, ref, event?.user?.userId);
+                const newVC = await this.process(doc, ref, event?.user?.userId, event.user);
                 result.push(newVC)
             }
             event.data.data = result;
         } else {
-            event.data.data = await this.process(event.data.data, ref, event?.user?.userId);
+            event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.user);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);

@@ -968,6 +968,17 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Set flag updated true
+     * @param parameters
+     * @param policyId
+     */
+    public static async setPolicyParametersUpdated(
+        parameters: PolicyParameters[],
+    ): Promise<PolicyParameters[]> {
+        return await new DataBaseHelper(PolicyParameters).updateMany(parameters);
+    }
+
+    /**
      * Update Policy Parameters
      * @param label
      */

@@ -50,7 +50,8 @@ enum DocumentStatus {
             label: 'Threshold (%)',
             title: 'Number of signatures required to move to the next step, as a percentage of the total number of users in the group.',
             type: PropertyType.Input,
-            default: '50'
+            default: '50',
+            editable: true
         }]
     },
     variables: []
@@ -108,6 +109,8 @@ export class MultiSignBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const options = ref.getOptions(user);
+
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -116,9 +119,9 @@ export class MultiSignBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            type: ref.options.type,
-            uiMetaData: ref.options.uiMetaData,
-            user: ref.options.user
+            type: options.type,
+            uiMetaData: options.uiMetaData,
+            user: options.user
         }
         return data;
     }
@@ -130,6 +133,8 @@ export class MultiSignBlock {
      */
     async setData(user: PolicyUser, blockData: any, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const options = ref.getOptions(user);
+
         const { status, document } = blockData;
         const documentId = document.id;
         const sourceDoc = await ref.databaseServer.getVcDocument(documentId);
@@ -183,7 +188,7 @@ export class MultiSignBlock {
         );
 
         const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
-        await this.updateThreshold(users, sourceDoc, documentId, user, user.userId, actionStatus);
+        await this.updateThreshold(users, sourceDoc, documentId, user, user.userId, actionStatus, user);
 
         await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null, actionStatus);
 
@@ -207,9 +212,12 @@ export class MultiSignBlock {
         documentId: string,
         currentUser: PolicyUser,
         userId: string | null,
-        actionStatus: RecordActionStep
+        actionStatus: RecordActionStep,
+        user?: PolicyUser
     ) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const options = ref.getOptions(user);
+
         const data = await ref.databaseServer.getMultiSignDocuments(ref.uuid, documentId, currentUser.group);
 
         let signed = 0;
@@ -222,7 +230,7 @@ export class MultiSignBlock {
             }
         }
 
-        const signedThreshold = Math.ceil(users.length * ref.options.threshold / 100);
+        const signedThreshold = Math.ceil(users.length * options.threshold / 100);
         const declinedThreshold = Math.round(users.length - signedThreshold + 1);
 
         if (signed >= signedThreshold) {
@@ -314,6 +322,8 @@ export class MultiSignBlock {
      */
     private async getDocumentStatus(document: IPolicyDocument, user: PolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const options = ref.getOptions(user);
+
         const confirmationDocument = await ref.databaseServer.getMultiSignStatus(ref.uuid, document.id);
         const data: any[] = await ref.databaseServer.getMultiSignDocuments(ref.uuid, document.id, user.group);
         const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
@@ -338,7 +348,7 @@ export class MultiSignBlock {
             confirmationStatus = confirmationDocument.status;
         }
 
-        const threshold = ref.options.threshold;
+        const threshold = options.threshold;
         const total = users.length;
         const signedThreshold = Math.ceil(users.length * threshold / 100);
         const declinedThreshold = Math.round(users.length - signedThreshold + 1);
@@ -371,7 +381,7 @@ export class MultiSignBlock {
             for (const document of documents) {
                 const documentId = document.documentId;
                 const vc = await ref.databaseServer.getVcDocument(documentId);
-                await this.updateThreshold(users, vc, documentId, event.target, event?.user?.userId, event.actionStatus);
+                await this.updateThreshold(users, vc, documentId, event.target, event?.user?.userId, event.actionStatus, event.user);
             }
             await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, null, event.actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, event.target, null));

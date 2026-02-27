@@ -943,7 +943,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 properties[last] = value;
             }
 
-            public async getOption(user:any) {
+            public async getOptions(user?: any) {
+                if(!user) {
+                    return this.options;
+                }
                 const row = await DatabaseServer.getPolicyParameters(user.did, this.policyId);
                 let properties;
                 if(!row || row.updated || !row.properties || Object.keys(row.properties).length === 0) {
@@ -977,13 +980,17 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                             config: null,
                             updated: false,
                             properties
-                        })
+                        });
                     }
                 } else {
                     properties = row.properties;
                 }
-
-                return Object.assign({}, this.options, properties[this.tag]);
+                
+                if(properties && properties[this.tag]) {
+                    return Object.assign({}, this.options, properties[this.tag]);
+                } else {
+                    return this.options;
+                }
             }
         };
     };

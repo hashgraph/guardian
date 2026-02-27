@@ -29,32 +29,38 @@ import { LocationType } from '@guardian/interfaces';
             name: 'sourceSchema',
             label: 'Source schema',
             title: 'Source schema',
-            type: PropertyType.Schemas
+            type: PropertyType.Schemas,
+            editable: false
         }, {
             name: 'onlyOwnDocuments',
             label: 'Owned by User',
             title: 'Owned by User',
-            type: PropertyType.Checkbox
+            type: PropertyType.Checkbox,
+            editable: true
         }, {
             name: 'onlyOwnByGroupDocuments',
             label: 'Owned by Group',
             title: 'Owned by Group',
-            type: PropertyType.Checkbox
+            type: PropertyType.Checkbox,
+            editable: true
         }, {
             name: 'onlyAssignDocuments',
             label: 'Assigned to User',
             title: 'Assigned to User',
-            type: PropertyType.Checkbox
+            type: PropertyType.Checkbox,
+            editable: true
         }, {
             name: 'onlyAssignByGroupDocuments',
             label: 'Assigned to Group',
             title: 'Assigned to Group',
-            type: PropertyType.Checkbox
+            type: PropertyType.Checkbox,
+            editable: true
         }, {
             name: 'selectors',
             label: 'Selectors',
             title: 'Selectors',
             type: PropertyType.Array,
+            editable: true,
             items: {
                 label: 'Selector',
                 value: '@sourceField @selectorType @comparisonValue',
@@ -62,12 +68,14 @@ import { LocationType } from '@guardian/interfaces';
                     name: 'sourceField',
                     label: 'Source field',
                     title: 'Source field',
-                    type: PropertyType.Path
+                    type: PropertyType.Path,
+                    editable: true
                 }, {
                     name: 'selectorType',
                     label: 'Selector type',
                     title: 'Selector type',
                     type: PropertyType.Select,
+                    editable: true,
                     items: [{
                         label: 'Equal',
                         value: 'equal'
@@ -86,12 +94,14 @@ import { LocationType } from '@guardian/interfaces';
                     name: 'comparisonValue',
                     label: 'Comparison value',
                     title: 'Comparison value',
-                    type: PropertyType.Input
+                    type: PropertyType.Input,
+                    editable: true
                 }, {
                     name: 'comparisonValueType',
                     label: 'Comparison value type',
                     title: 'Comparison value type',
                     type: PropertyType.Select,
+                    editable: true,
                     items: [{
                         label: 'Constanta',
                         value: 'const'
@@ -107,6 +117,7 @@ import { LocationType } from '@guardian/interfaces';
             label: 'Variables',
             title: 'Variables',
             type: PropertyType.Array,
+            editable: true,
             items: {
                 label: 'Variable',
                 value: 'var @variableName = @variablePath',
@@ -114,12 +125,14 @@ import { LocationType } from '@guardian/interfaces';
                     name: 'variableName',
                     label: 'Variable name',
                     title: 'Variable name',
-                    type: PropertyType.Input
+                    type: PropertyType.Input,
+                    editable: true
                 }, {
                     name: 'variablePath',
                     label: 'Variable Path',
                     title: 'Variable Path',
-                    type: PropertyType.Path
+                    type: PropertyType.Path,
+                    editable: true
                 }]
             }
         }]
@@ -145,25 +158,26 @@ export class CalculateMathVariables {
      */
     public async run(scope: any, user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
-
+        const options = ref.getOptions(user);
+        
         const filters: any = {};
-        if (ref.options.onlyOwnDocuments) {
+        if (options.onlyOwnDocuments) {
             filters.owner = user.did;
         }
-        if (ref.options.onlyOwnByGroupDocuments) {
+        if (options.onlyOwnByGroupDocuments) {
             filters.group = user.group;
         }
-        if (ref.options.onlyAssignDocuments) {
+        if (options.onlyAssignDocuments) {
             filters.assignedTo = user.did;
         }
-        if (ref.options.onlyAssignByGroupDocuments) {
+        if (options.onlyAssignByGroupDocuments) {
             filters.assignedToGroup = user.group;
         }
-        if (ref.options.sourceSchema) {
-            filters.schema = ref.options.sourceSchema;
+        if (options.sourceSchema) {
+            filters.schema = options.sourceSchema;
         }
-        if (Array.isArray(ref.options.selectors)) {
-            for (const selector of ref.options.selectors) {
+        if (Array.isArray(options.selectors)) {
+            for (const selector of options.selectors) {
                 const expr = filters[selector.sourceField] || {};
                 switch (selector.selectorType) {
                     case 'equal':
@@ -205,7 +219,7 @@ export class CalculateMathVariables {
         const data = await ref.databaseServer.getVcDocument(filters);
 
         if (data) {
-            for (const variable of ref.options.variables) {
+            for (const variable of options.variables) {
                 scope[variable.variableName] = PolicyUtils.getObjectValue(data, variable.variablePath);
             }
         }
@@ -221,10 +235,12 @@ export class CalculateMathVariables {
      * Get variables
      * @param variables
      */
-    public getVariables(variables: any): any {
+    public options(variables: any): any {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
-        if (ref.options.variables) {
-            for (const variable of ref.options.variables) {
+        const options = ref.getOptions();
+
+        if (options.variables) {
+            for (const variable of options.variables) {
                 variables[variable.variableName] = variable.variablePath;
             }
         }

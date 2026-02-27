@@ -71,7 +71,9 @@ export class DocumentValidatorBlock {
 
         const documentRef = PolicyUtils.getDocumentRef(document);
 
-        if (ref.options.documentType === 'related-vc-document') {
+        const options = ref.getOptions(event.user);
+
+        if (options.documentType === 'related-vc-document') {
             if (documentRef) {
                 document = await ref.databaseServer.getVcDocument({
                     'policyId': { $eq: ref.policyId },
@@ -82,7 +84,7 @@ export class DocumentValidatorBlock {
             }
         }
 
-        if (ref.options.documentType === 'related-vp-document') {
+        if (options.documentType === 'related-vp-document') {
             if (documentRef) {
                 document = await ref.databaseServer.getVpDocument({
                     'policyId': ref.policyId,
@@ -99,19 +101,19 @@ export class DocumentValidatorBlock {
 
         const documentType = PolicyUtils.getDocumentType(document);
 
-        if (ref.options.documentType === 'vc-document') {
+        if (options.documentType === 'vc-document') {
             if (documentType !== 'VerifiableCredential') {
                 return `Invalid document type`;
             }
-        } else if (ref.options.documentType === 'vp-document') {
+        } else if (options.documentType === 'vp-document') {
             if (documentType !== 'VerifiablePresentation') {
                 return `Invalid document type`;
             }
-        } else if (ref.options.documentType === 'related-vc-document') {
+        } else if (options.documentType === 'related-vc-document') {
             if (documentType !== 'VerifiableCredential') {
                 return `Invalid document type`;
             }
-        } else if (ref.options.documentType === 'related-vp-document') {
+        } else if (options.documentType === 'related-vp-document') {
             if (documentType !== 'VerifiablePresentation') {
                 return `Invalid document type`;
             }
@@ -120,36 +122,36 @@ export class DocumentValidatorBlock {
         const userDID = event?.user?.did;
         const userGroup = event?.user?.group;
 
-        if (ref.options.checkOwnerDocument) {
+        if (options.checkOwnerDocument) {
             if (document.owner !== userDID) {
                 return `Invalid owner`;
             }
         }
-        if (ref.options.checkOwnerByGroupDocument) {
+        if (options.checkOwnerByGroupDocument) {
             if (document.group !== userGroup) {
                 return `Invalid group`;
             }
         }
-        if (ref.options.checkAssignDocument) {
+        if (options.checkAssignDocument) {
             if (document.assignedTo !== userDID) {
                 return `Invalid assigned user`;
             }
         }
-        if (ref.options.checkAssignByGroupDocument) {
+        if (options.checkAssignByGroupDocument) {
             if (document.assignedToGroup !== userGroup) {
                 return `Invalid assigned group`;
             }
         }
 
-        if (ref.options.schema) {
-            const schema = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
+        if (options.schema) {
+            const schema = await PolicyUtils.loadSchemaByID(ref, options.schema);
             if (!PolicyUtils.checkDocumentSchema(ref, document, schema)) {
                 return `Invalid document schema`;
             }
         }
 
-        if (ref.options.conditions) {
-            for (const filter of ref.options.conditions) {
+        if (options.conditions) {
+            for (const filter of options.conditions) {
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
                     return `Invalid document`;
                 }

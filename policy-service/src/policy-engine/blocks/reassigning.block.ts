@@ -64,16 +64,17 @@ export class ReassigningBlock {
         actor: PolicyUser
     }> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const options = ref.getOptions(user);
         const owner: PolicyUser = await PolicyUtils.getDocumentOwner(ref, document, userId);
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, document, user.userId);
 
         let groupContext: any;
         let issuer: string;
-        if (ref.options.issuer === 'owner') {
+        if (options.issuer === 'owner') {
             const cred = await PolicyUtils.getUserCredentials(ref, document.owner, userId);
             issuer = cred.did;
             groupContext = await PolicyUtils.getGroupContext(ref, owner);
-        } else if (ref.options.issuer === 'policyOwner') {
+        } else if (options.issuer === 'policyOwner') {
             const cred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
             issuer = cred.did;
             groupContext = null;
@@ -84,9 +85,9 @@ export class ReassigningBlock {
         }
 
         let actor: PolicyUser;
-        if (ref.options.actor === 'owner') {
+        if (options.actor === 'owner') {
             actor = await PolicyUtils.getDocumentOwner(ref, document, userId);
-        } else if (ref.options.actor === 'issuer') {
+        } else if (options.actor === 'issuer') {
             actor = await PolicyUtils.getPolicyUser(ref, issuer, document.group, userId);
         } else {
             actor = user;

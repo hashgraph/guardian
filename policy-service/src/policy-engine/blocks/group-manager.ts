@@ -49,6 +49,8 @@ export class GroupManagerBlock {
         role: string
     ): Promise<string> {
         const group = await ref.databaseServer.getUserInGroup(ref.policyId, user.did, groupId);
+        const options = ref.getOptions(user);
+
         if (!group) {
             throw new Error(`Group not found`);
         }
@@ -56,7 +58,7 @@ export class GroupManagerBlock {
             group.groupRelationshipType === GroupRelationshipType.Multiple &&
             group.groupAccessType === GroupAccessType.Private
         ) {
-            if (ref.options.canInvite === 'all' || group.owner === user.did) {
+            if (options.canInvite === 'all' || group.owner === user.did) {
                 const inviteId = await ref.databaseServer.createInviteToken(ref.policyId, group.uuid, user.did, role);
                 return Buffer.from(JSON.stringify({
                     invitation: inviteId,
@@ -92,6 +94,8 @@ export class GroupManagerBlock {
         if (user.did === did) {
             throw new Error(`Permission denied`);
         }
+        const options = ref.getOptions(user);
+
         const member = await ref.databaseServer.getUserInGroup(ref.policyId, did, groupId);
         if (!member) {
             throw new Error(`Group not found`);
@@ -100,13 +104,13 @@ export class GroupManagerBlock {
             member.groupRelationshipType === GroupRelationshipType.Multiple &&
             member.groupAccessType === GroupAccessType.Private
         ) {
-            if (ref.options.canDelete === 'all' || member.owner === user.did) {
+            if (options.canDelete === 'all' || member.owner === user.did) {
                 await ref.databaseServer.deleteGroup(member);
             } else {
                 throw new Error(`Permission denied`);
             }
         } else if (member.groupAccessType === GroupAccessType.Global) {
-            if (ref.options.canDelete === 'all' || member.owner === user.did) {
+            if (options.canDelete === 'all' || member.owner === user.did) {
                 await ref.databaseServer.deleteGroup(member);
             } else {
                 throw new Error(`Permission denied`);
@@ -152,6 +156,7 @@ export class GroupManagerBlock {
      */
     private async groupMapping(ref: IPolicyInterfaceBlock, user: PolicyUser, group: PolicyRoles): Promise<any> {
         const config = PolicyUtils.getGroupTemplate<any>(ref, group.groupName);
+        const options = ref.getOptions(user);
         const members = (await ref.databaseServer.getAllMembersByGroup(group)).map(member => {
             return {
                 did: member.did,
@@ -161,8 +166,8 @@ export class GroupManagerBlock {
                 current: member.did === user.did
             }
         });
-        const canInvite = ref.options.canInvite === 'all' ? true : group.owner === user.did;
-        const canDelete = ref.options.canDelete === 'all' ? true : group.owner === user.did;
+        const canInvite = options.canInvite === 'all' ? true : group.owner === user.did;
+        const canDelete = options.canDelete === 'all' ? true : group.owner === user.did;
         return {
             id: group.uuid,
             role: group.role,

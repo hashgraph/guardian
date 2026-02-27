@@ -77,6 +77,8 @@ export interface BlockProperties {
      * Visible expression
      */
     visible?: string;
+
+    editable?: boolean;
 }
 
 /**

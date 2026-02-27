@@ -32,19 +32,22 @@ import { LocationType } from '@guardian/interfaces';
             label: 'Include Accounts',
             title: 'Include Related Documents Accounts',
             type: PropertyType.Checkbox,
-            default: false
+            default: false,
+            editable: true
         }, {
             name: 'includeTokens',
             label: 'Include Tokens',
             title: 'Include Related Documents Tokens',
             type: PropertyType.Checkbox,
-            default: false
+            default: false,
+            editable: true
         }, {
             name: 'changeOwner',
             label: 'Change Owner',
             title: 'Change Document Owner',
             type: PropertyType.Checkbox,
-            default: false
+            default: false,
+            editable: true
         }]
     },
     variables: []
@@ -59,6 +62,7 @@ export class SetRelationshipsBlock {
     })
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+        const options = ref.getOptions(event.user);
         const data: IPolicyDocument[] = await ref.getSources(event.user);
         const owner = data[0] && data[0].owner || null;
         const group = data[0] && data[0].group || null;
@@ -81,20 +85,20 @@ export class SetRelationshipsBlock {
                     doc.relationships = doc.relationships
                         ? doc.relationships.concat(relationships)
                         : relationships;
-                    if (ref.options.includeAccounts) {
+                    if (options.includeAccounts) {
                         doc.accounts = doc.accounts
                             ? Object.assign(doc.accounts, accounts)
                             : accounts;
                     }
-                    if (ref.options.includeTokens) {
+                    if (options.includeTokens) {
                         doc.tokens = doc.tokens
                             ? Object.assign(doc.tokens, tokens)
                             : tokens;
                     }
-                    if (owner && ref.options.changeOwner) {
+                    if (owner && options.changeOwner) {
                         doc.owner = owner;
                     }
-                    if (group && ref.options.changeOwner) {
+                    if (group && options.changeOwner) {
                         doc.group = group;
                     }
                 }
@@ -102,24 +106,24 @@ export class SetRelationshipsBlock {
                 documents.relationships = documents.relationships
                     ? documents.relationships.concat(relationships)
                     : relationships;
-                if (ref.options.includeAccounts) {
+                if (options.includeAccounts) {
                     documents.accounts = Object.assign(
                         {},
                         documents.accounts,
                         accounts
                     );
                 }
-                if (ref.options.includeTokens) {
+                if (options.includeTokens) {
                     documents.tokens = Object.assign(
                         {},
                         documents.tokens,
                         tokens
                     );
                 }
-                if (owner && ref.options.changeOwner) {
+                if (owner && options.changeOwner) {
                     documents.owner = owner;
                 }
-                if (group && ref.options.changeOwner) {
+                if (group && options.changeOwner) {
                     documents.group = group;
                 }
             }

@@ -4561,7 +4561,9 @@ export class PolicyEngineService {
                         result = await DatabaseServer.createPolicyParameters(parameters);
                     }
 
-                    //flag update
+                    const allPolicyParameters = await DatabaseServer.getPolicyParametersByPolicyId(policyId);
+                    allPolicyParameters.forEach(parameter => parameter.updated = true);
+                    await DatabaseServer.setPolicyParametersUpdated(allPolicyParameters);
 
                     return new MessageResponse(result);
                 } catch (error) {

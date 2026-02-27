@@ -121,6 +121,7 @@ export class RetirementBlock {
         actionStatus: RecordActionStep
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const options = ref.getOptions(user);
 
         const tags = await PolicyUtils.getBlockTags(ref);
 
@@ -134,7 +135,7 @@ export class RetirementBlock {
         let tokenValue: number = 0;
         let tokenAmount: string = '0';
         if (token.tokenType === TokenType.NON_FUNGIBLE) {
-            const exprOpt = ref.options.serialNumbersExpression;
+            const exprOpt = options.serialNumbersExpression;
             if (!exprOpt || !String(exprOpt).trim()) {
                 throw new Error('For NON_FUNGIBLE tokens, Serial numbers is required');
             }
@@ -186,14 +187,14 @@ export class RetirementBlock {
             }
         }
         else if (token.tokenType === TokenType.FUNGIBLE) {
-            const ruleOpt = ref.options.rule
+            const ruleOpt = options.rule
             const hasRule =
                 ruleOpt !== null && ruleOpt !== undefined &&
                 (typeof ruleOpt !== 'string' || ruleOpt.trim() !== '');
             if (!hasRule) {
                 throw new Error('For FUNGIBLE tokens, Rule is required');
             }
-            const amount = PolicyUtils.aggregate(ref.options.rule, documents);
+            const amount = PolicyUtils.aggregate(options.rule, documents);
             [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         }
 
@@ -290,15 +291,17 @@ export class RetirementBlock {
      * @param docs
      * @private
      */
-    private async getToken(ref: AnyBlockType, docs: IPolicyDocument[]): Promise<TokenCollection> {
+    private async getToken(ref: AnyBlockType, docs: IPolicyDocument[], user?: PolicyUser): Promise<TokenCollection> {
         let token: TokenCollection;
-        if (ref.options.useTemplate) {
+        const options = ref.getOptions(user);
+        
+        if (options.useTemplate) {
             if (docs[0].tokens) {
-                const tokenId = docs[0].tokens[ref.options.template];
+                const tokenId = docs[0].tokens[options.template];
                 token = await ref.databaseServer.getToken(tokenId, ref.dryRun);
             }
         } else {
-            token = await ref.databaseServer.getToken(ref.options.tokenId);
+            token = await ref.databaseServer.getToken(options.tokenId);
         }
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
@@ -322,12 +325,14 @@ export class RetirementBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
+        let options = ref.getOptions(event.user);
+
         const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const token = await this.getToken(ref, docs);
+        const token = await this.getToken(ref, docs, event.user);
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
@@ -340,7 +345,7 @@ export class RetirementBlock {
         const vcs: VcDocument[] = [];
         const vsMessages: string[] = [];
         const topicIds: string[] = [];
-        const field = ref.options.accountId || 'default';
+        const field = options.accountId || 'default';
         const accounts: string[] = [];
         for (const doc of docs) {
             if (doc.signature === DocumentSignature.INVALID) {
@@ -368,7 +373,7 @@ export class RetirementBlock {
 
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, docs[0], event?.user?.userId);
         let targetAccount: string;
-        if (ref.options.accountId) {
+        if (options.accountId) {
             targetAccount = firstAccounts;
         } else {
             targetAccount = relayerAccount;

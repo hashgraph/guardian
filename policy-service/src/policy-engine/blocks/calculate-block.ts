@@ -51,7 +51,8 @@ interface IMetadata {
             name: 'unsigned',
             label: 'Unsigned VC',
             title: 'Unsigned document',
-            type: PropertyType.Checkbox
+            type: PropertyType.Checkbox,
+            editable: true
         }]
     },
     variables: [
@@ -71,9 +72,12 @@ export class CalculateContainerBlock {
         documents: IVC | IVC[],
         ref: IPolicyCalculateBlock,
         parents: IPolicyDocument | IPolicyDocument[],
-        userId: string | null
+        userId: string | null,
+        user?: PolicyUser
     ): Promise<VcDocumentCollection> {
-        const fields = ref.options.inputFields;
+        let options = ref.getOptions(user);
+
+        const fields = options.inputFields;
         let scope = {};
         let docOwner: PolicyUser;
         if (Array.isArray(parents)) {
@@ -101,8 +105,8 @@ export class CalculateContainerBlock {
             scope = await addon.run(scope, docOwner);
         }
         const newJson: any = {};
-        if (ref.options.outputFields) {
-            for (const field of ref.options.outputFields) {
+        if (options.outputFields) {
+            for (const field of options.outputFields) {
                 if (scope[field.value]) {
                     newJson[field.name] = scope[field.value];
                 }
@@ -122,10 +126,13 @@ export class CalculateContainerBlock {
         documents: IPolicyDocument | IPolicyDocument[],
         ref: IPolicyCalculateBlock,
         userId: string | null,
-        actionStatus: RecordActionStep
+        actionStatus: RecordActionStep,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         const context = await ref.debugContext({ documents });
         const contextDocuments = context.documents as IPolicyDocument | IPolicyDocument[];
+
+        let options = ref.getOptions(user);
 
         const isArray = Array.isArray(contextDocuments);
         if (!contextDocuments || (isArray && !contextDocuments.length)) {
@@ -147,12 +154,12 @@ export class CalculateContainerBlock {
         }
         // -->
 
-        const newJson = await this.calculate(json, ref, contextDocuments, userId);
-        if (ref.options.unsigned) {
+        const newJson = await this.calculate(json, ref, contextDocuments, userId, user);
+        if (options.unsigned) {
             return await this.createUnsignedDocument(newJson, ref, actionStatus?.id);
         } else {
-            const metadata = await this.aggregateMetadata(contextDocuments, ref, userId);
-            return await this.createDocument(newJson, metadata, ref, userId, actionStatus?.id);
+            const metadata = await this.aggregateMetadata(contextDocuments, ref, userId, user);
+            return await this.createDocument(newJson, metadata, ref, userId, actionStatus?.id, user);
         }
     }
 
@@ -165,11 +172,14 @@ export class CalculateContainerBlock {
     private async aggregateMetadata(
         documents: IPolicyDocument | IPolicyDocument[],
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        user?: PolicyUser
     ): Promise<IMetadata> {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
         const relationships = [];
+        let options = ref.getOptions(user);
+
         let accounts: any = {};
         let tokens: any = {};
         let id: string;
@@ -226,6 +236,7 @@ export class CalculateContainerBlock {
         ref: IPolicyCalculateBlock,
         userId: string | null,
         actionStatusId: string,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -238,8 +249,9 @@ export class CalculateContainerBlock {
         } = metadata;
         // <-- new vc
         const VCHelper = new VcHelper();
+        let options = ref.getOptions(user);
 
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
             ...json
@@ -311,20 +323,21 @@ export class CalculateContainerBlock {
     @CatchErrors()
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+        let options = ref.getOptions(event.user);
 
-        if (ref.options.inputDocuments === 'separate') {
+        if (options.inputDocuments === 'separate') {
             if (Array.isArray(event.data.data)) {
                 const result: IPolicyDocument[] = [];
                 for (const doc of event.data.data) {
-                    const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus);
+                    const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus, event.user);
                     result.push(newVC)
                 }
                 event.data.data = result;
             } else {
-                event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus);
+                event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus, event.user);
             }
         } else {
-            event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus);
+            event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus, event.user);
         }
 
         // event.actionStatus.saveResult(event.data);

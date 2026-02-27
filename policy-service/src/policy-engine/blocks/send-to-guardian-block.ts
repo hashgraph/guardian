@@ -12,6 +12,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { DocumentType } from '../interfaces/document.type.js';
 import { FilterQuery } from '@mikro-orm/core';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { PolicyUser } from '@policy-engine/policy-user.js';
 
 /**
  * Document Operations
@@ -172,8 +173,11 @@ export class SendToGuardianBlock {
         document: IPolicyDocument,
         operation: Operation,
         ref: AnyBlockType,
-        userId: string | null
+        userId: string | null,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
+        const options = ref.getOptions(user);
+
         let old = await this.getVCRecord(document, operation, ref);
         if (old) {
             if (!document.draft) {
@@ -190,7 +194,7 @@ export class SendToGuardianBlock {
             delete document._id;
             old = await PolicyUtils.saveVC(ref, document, userId);
         }
-        if (!ref.options.skipSaveState) {
+        if (!options.skipSaveState) {
             await PolicyUtils.saveDocumentState(ref, old);
         }
         return old;
@@ -363,14 +367,17 @@ export class SendToGuardianBlock {
     private async sendByType(
         document: IPolicyDocument,
         ref: AnyBlockType,
-        userId: string | null
+        userId: string | null,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
+        const options = ref.getOptions(user);
+
         document.documentFields = Array.from(
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
         );
-        switch (ref.options.dataType) {
+        switch (options.dataType) {
             case 'vc-documents': {
-                return await this.updateVCRecord(document, Operation.auto, ref, userId);
+                return await this.updateVCRecord(document, Operation.auto, ref, userId, user);
             }
             case 'did-documents': {
                 return await this.updateDIDRecord(document, Operation.auto, ref);
@@ -379,7 +386,7 @@ export class SendToGuardianBlock {
                 return await this.updateApprovalRecord(document, Operation.auto, ref);
             }
             default:
-                throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
+                throw new BlockActionError(`dataType "${options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
     }
 
@@ -393,7 +400,8 @@ export class SendToGuardianBlock {
         document: IPolicyDocument,
         type: DocumentType,
         ref: AnyBlockType,
-        userId: string | null
+        userId: string | null,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         const operation: Operation = Operation.auto;
         document.documentFields = Array.from(
@@ -404,7 +412,7 @@ export class SendToGuardianBlock {
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
         } else if (type === DocumentType.VerifiableCredential) {
-            return await this.updateVCRecord(document, operation, ref, userId);
+            return await this.updateVCRecord(document, operation, ref, userId, user);
         } else if (type === DocumentType.VerifiablePresentation) {
             return await this.updateVPRecord(document, operation, ref);
         }
@@ -446,17 +454,20 @@ export class SendToGuardianBlock {
         document: IPolicyDocument,
         message: Message,
         ref: AnyBlockType,
-        userId: string | null
+        userId: string | null,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         try {
-            const memo = MessageMemo.parseMemo(true, ref.options.memo, document);
+            const options = ref.getOptions(user);
+
+            const memo = MessageMemo.parseMemo(true, options.memo, document);
             message.setMemo(memo);
 
-            const topicOwner = this.getTopicOwner(ref, document, ref.options.topicOwner);
+            const topicOwner = this.getTopicOwner(ref, document, options.topicOwner);
             const relayerAccount = document.owner === topicOwner ? document.relayerAccount : null;
             const topic = await PolicyActionsUtils.getOrCreateTopic({
                 ref,
-                name: ref.options.topic,
+                name: options.topic,
                 owner: topicOwner,
                 relayerAccount,
                 memoObj: document,
@@ -491,8 +502,10 @@ export class SendToGuardianBlock {
     private async documentSender(
         document: IPolicyDocument,
         userId: string | null,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const options = ref.getOptions(user);
         const type = PolicyUtils.getDocumentType(document);
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, document, userId);
         const owner = await PolicyUtils.getUserByIssuer(ref, document, userId);
@@ -545,13 +558,13 @@ export class SendToGuardianBlock {
         document.tag = ref.tag;
         document.relayerAccount = relayerAccount;
         document.option = Object.assign({}, document.option);
-        if (ref.options.options) {
-            for (const option of ref.options.options) {
+        if (options.options) {
+            for (const option of options.options) {
                 document.option[option.name] = option.value;
             }
         }
-        if (ref.options.entityType) {
-            document.type = ref.options.entityType;
+        if (options.entityType) {
+            document.type = options.entityType;
         }
 
         //
@@ -559,31 +572,31 @@ export class SendToGuardianBlock {
         //
         const hash = docObject.toCredentialHash();
         const messageHash = message.toHash();
-        if (ref.options.dataType) {
-            if (ref.options.dataType === 'hedera') {
-                document = await this.sendToHedera(document, message, ref, userId);
+        if (options.dataType) {
+            if (options.dataType === 'hedera') {
+                document = await this.sendToHedera(document, message, ref, userId, user);
                 document.messageHash = messageHash;
                 document = await this.updateMessage(document, type, ref, userId);
             } else {
                 document.hash = hash;
-                document = await this.sendByType(document, ref, userId);
+                document = await this.sendByType(document, ref, userId, user);
             }
-        } else if (ref.options.dataSource === 'auto' || !ref.options.dataSource) {
+        } else if (options.dataSource === 'auto' || !options.dataSource) {
             if (document.messageHash !== messageHash) {
-                document = await this.sendToHedera(document, message, ref, userId);
+                document = await this.sendToHedera(document, message, ref, userId, user);
                 document.messageHash = messageHash;
             }
             document.hash = hash;
-            document = await this.sendToDatabase(document, type, ref, userId);
-        } else if (ref.options.dataSource === 'database') {
+            document = await this.sendToDatabase(document, type, ref, userId, user);
+        } else if (options.dataSource === 'database') {
             document.hash = hash;
-            document = await this.sendToDatabase(document, type, ref, userId);
-        } else if (ref.options.dataSource === 'hedera') {
-            document = await this.sendToHedera(document, message, ref, userId);
+            document = await this.sendToDatabase(document, type, ref, userId, user);
+        } else if (options.dataSource === 'hedera') {
+            document = await this.sendToHedera(document, message, ref, userId, user);
             document.messageHash = messageHash;
             document = await this.updateMessage(document, type, ref, userId);
         } else {
-            throw new BlockActionError(`dataSource "${ref.options.dataSource}" is unknown`, ref.blockType, ref.uuid);
+            throw new BlockActionError(`dataSource "${options.dataSource}" is unknown`, ref.blockType, ref.uuid);
         }
         return document;
     }
@@ -621,6 +634,7 @@ export class SendToGuardianBlock {
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
+        const options = ref.getOptions(event.user);
         ref.log(`runAction`);
 
         const tags = await PolicyUtils.getBlockTags(ref);
@@ -630,13 +644,13 @@ export class SendToGuardianBlock {
             const newDocs = [];
             for (const doc of docs) {
                 PolicyUtils.setDocumentTags(doc, tags);
-                const newDoc = await this.documentSender(doc, event?.user?.userId);
+                const newDoc = await this.documentSender(doc, event?.user?.userId, event.user);
                 newDocs.push(newDoc);
             }
             event.data.data = newDocs;
         } else {
             PolicyUtils.setDocumentTags(docs, tags);
-            event.data.data = await this.documentSender(docs, event?.user?.userId);
+            event.data.data = await this.documentSender(docs, event?.user?.userId, event.user);
         }
 
         const olds: IPolicyDocument | IPolicyDocument[] = event.data.old;
@@ -653,7 +667,7 @@ export class SendToGuardianBlock {
         await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
         await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
-            type: (ref.options.dataSource || ref.options.dataType),
+            type: (options.dataSource || options.dataType),
             documents: ExternalDocuments(event.data?.data),
         }));
 

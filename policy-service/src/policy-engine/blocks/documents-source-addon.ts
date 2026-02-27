@@ -87,35 +87,36 @@ export class DocumentsSourceAddon {
         otherOptions?: any
     ) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = ref.getOptions(user);
 
         const filters: any = {};
-        if (!Array.isArray(ref.options.filters)) {
+        if (!Array.isArray(options.filters)) {
             throw new BlockActionError('filters option must be an array', ref.blockType, ref.uuid);
         }
 
-        if (ref.options.onlyOwnDocuments) {
+        if (options.onlyOwnDocuments) {
             filters.owner = user.did;
         }
-        if (ref.options.onlyOwnByGroupDocuments) {
+        if (options.onlyOwnByGroupDocuments) {
             filters.group = user.group;
         }
-        if (ref.options.onlyAssignDocuments) {
+        if (options.onlyAssignDocuments) {
             filters.assignedTo = user.did;
         }
-        if (ref.options.onlyAssignByGroupDocuments) {
+        if (options.onlyAssignByGroupDocuments) {
             filters.assignedToGroup = user.group;
         }
-        if (ref.options.hidePreviousVersions) {
+        if (options.hidePreviousVersions) {
             filters.edited = { $ne: true };
         }
 
-        if (ref.options.schema) {
-            filters.schema = ref.options.schema;
+        if (options.schema) {
+            filters.schema = options.schema;
         }
 
         filters.initId = { $exists: false }
 
-        for (const filter of ref.options.filters) {
+        for (const filter of options.filters) {
             const expr = filters[filter.field] || {};
 
             const query = PolicyUtils.parseQuery(filter.type, filter.value);
@@ -150,17 +151,17 @@ export class DocumentsSourceAddon {
             } else {
                 otherOptions.orderBy.createDate = stateData.orderDirection;
             }
-        } else if (ref.options.orderDirection) {
+        } else if (options.orderDirection) {
             otherOptions.orderBy = {};
-            if (ref.options.orderField) {
-                otherOptions.orderBy[ref.options.orderField] = ref.options.orderDirection;
+            if (options.orderField) {
+                otherOptions.orderBy[options.orderField] = options.orderDirection;
             } else {
-                otherOptions.orderBy.createDate = ref.options.orderDirection;
+                otherOptions.orderBy.createDate = options.orderDirection;
             }
         }
 
         let data: IPolicyDocument[] | number;
-        switch (ref.options.dataType) {
+        switch (options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
                 data = await ref.databaseServer.getVcDocuments(filters, otherOptions, countResult) as number | IPolicyDocument[];
@@ -203,7 +204,7 @@ export class DocumentsSourceAddon {
                 data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult, user.userId);
                 break;
             default:
-                throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
+                throw new BlockActionError(`dataType "${options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
 
         if (!countResult) {
@@ -236,33 +237,33 @@ export class DocumentsSourceAddon {
      */
     async getFromSourceFilters(user: PolicyUser, globalFilters: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-
+        const options = ref.getOptions(user);
         const filters: any = [];
-        if (!Array.isArray(ref.options.filters)) {
+        if (!Array.isArray(options.filters)) {
             throw new BlockActionError('filters option must be an array', ref.blockType, ref.uuid);
         }
 
-        if (ref.options.onlyOwnDocuments) {
+        if (options.onlyOwnDocuments) {
             filters.push({ $eq: [user.did, '$owner'] });
         }
-        if (ref.options.onlyOwnByGroupDocuments) {
+        if (options.onlyOwnByGroupDocuments) {
             filters.push({ $eq: [user.group, '$group'] });
         }
-        if (ref.options.onlyAssignDocuments) {
+        if (options.onlyAssignDocuments) {
             filters.push({ $eq: [user.did, '$assignedTo'] });
         }
-        if (ref.options.onlyAssignByGroupDocuments) {
+        if (options.onlyAssignByGroupDocuments) {
             filters.push({ $eq: [user.group, '$assignedToGroup'] });
         }
-        if (ref.options.hidePreviousVersions) {
+        if (options.hidePreviousVersions) {
             filters.push({ $ne: [true, '$assignedToGroup'] });
         }
 
-        if (ref.options.schema) {
-            filters.push({ $eq: [ref.options.schema, '$schema'] });
+        if (options.schema) {
+            filters.push({ $eq: [options.schema, '$schema'] });
         }
 
-        for (const filter of ref.options.filters) {
+        for (const filter of options.filters) {
             const queryType = filter.type as QueryType;
             const queryValue = PolicyUtils.getQueryValue(queryType, filter.value);
             const queryExpression = PolicyUtils.getQueryExpression(queryType, queryValue);

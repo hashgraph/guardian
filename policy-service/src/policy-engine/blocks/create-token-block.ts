@@ -117,7 +117,9 @@ export class CreateTokenBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-        if (ref.options.autorun) {
+        const options = ref.getOptions(user);
+
+        if (options.autorun) {
             throw new BlockActionError(
                 `Block is autorunable and doesn't return any data`,
                 ref.blockType,
@@ -126,7 +128,7 @@ export class CreateTokenBlock {
         }
         const tokenTemplate = this._prepareTokenTemplate(
             ref,
-            PolicyUtils.getTokenTemplate(ref, ref.options.template),
+            PolicyUtils.getTokenTemplate(ref, options.template),
             Object.assign({}, this.state?.[user.id]?.data?.data, {
                 index: this.state.tokenNumber,
             })
@@ -141,7 +143,7 @@ export class CreateTokenBlock {
             ),
             active: ref.isBlockActive(user),
             data: tokenTemplate,
-            ...ref.options,
+            ...options,
         };
     }
 
@@ -161,6 +163,8 @@ export class CreateTokenBlock {
                 ref.uuid
             );
         }
+
+        const options = ref.getOptions(user);
 
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
 
@@ -209,13 +213,13 @@ export class CreateTokenBlock {
                 if (!doc.tokens) {
                     doc.tokens = {};
                 }
-                doc.tokens[ref.options.template] = createdToken.tokenId;
+                doc.tokens[options.template] = createdToken.tokenId;
             }
         } else {
             if (!docs.tokens) {
                 docs.tokens = {};
             }
-            docs.tokens[ref.options.template] = createdToken.tokenId;
+            docs.tokens[options.template] = createdToken.tokenId;
         }
 
         delete this.state[user.id];
@@ -261,7 +265,9 @@ export class CreateTokenBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         ref.log(`setData`);
 
-        if (ref.options.autorun) {
+        const options = ref.getOptions(user);
+
+        if (options.autorun) {
             throw new BlockActionError(
                 `Block is autorunable and doesn't produce anything`,
                 ref.blockType,
@@ -285,7 +291,7 @@ export class CreateTokenBlock {
                     template,
                     this._prepareTokenTemplate(
                         ref,
-                        PolicyUtils.getTokenTemplate(ref, ref.options.template),
+                        PolicyUtils.getTokenTemplate(ref, options.template),
                         Object.assign({}, this.state?.[user.id]?.data?.data, {
                             index: this.state.tokenNumber,
                         })
@@ -322,6 +328,8 @@ export class CreateTokenBlock {
         const user = event.user;
         const eventData = event.data;
 
+        let options = ref.getOptions(user);
+
         if (!this.state.tokenNumber) {
             this.state.tokenNumber = 0;
         }
@@ -329,13 +337,13 @@ export class CreateTokenBlock {
         this.state.tokenNumber++;
         await ref.saveState();
 
-        if (ref.options.autorun) {
+        if (options.autorun) {
             await this._createToken(
                 user,
                 ref,
                 this._prepareTokenTemplate(
                     ref,
-                    PolicyUtils.getTokenTemplate(ref, ref.options.template),
+                    PolicyUtils.getTokenTemplate(ref, options.template),
                     Object.assign({}, eventData.data, {
                         index: this.state.tokenNumber,
                     })
