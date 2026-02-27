@@ -8,7 +8,6 @@ module.exports = defineConfig({
     defaultCommandTimeout: 10000,
     e2e: {
         experimentalRunAllSpecs: true,
-        //described to fix spec order via CI
         specPattern: [
             "cypress/e2e/api-tests/000_accounts_creating/*.cy.js",
             "cypress/e2e/api-tests/000_accounts_tests/*.cy.js",
@@ -57,6 +56,17 @@ module.exports = defineConfig({
             configFile: 'reporter-config.js',
         },
         setupNodeEvents(on, config) {
+            // Normalize `grepTags` / `grepFilterSpecs` from CLI / Docker env.
+            if (typeof config.env.grepTags === 'string') {
+                config.env.grepTags = config.env.grepTags
+                    .replace(/,/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            }
+            if (typeof config.env.grepFilterSpecs === 'string') {
+                config.env.grepFilterSpecs = config.env.grepFilterSpecs.toLowerCase() === 'true';
+            }
+
             require('@cypress/grep/src/plugin')(config);
             require('cypress-mochawesome-reporter/plugin')(on);
             on('task', verifyDownloadTasks);

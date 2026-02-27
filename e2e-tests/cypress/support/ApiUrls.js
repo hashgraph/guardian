@@ -1,8 +1,21 @@
 const BASE = `http://localhost:${Cypress.env("portApi")}/`;
 
 const API = {
-    ApiServer: `http://localhost:${Cypress.env("portApi")}/`,
-    ApiIndexer: `http://localhost:${Cypress.env("portIndexer")}/`,
+    // Allow overriding full API origins (e.g. Docker Desktop).
+    ApiServer: (() => {
+        const apiServer = Cypress.env("apiServer");
+        if (apiServer) {
+            return apiServer.endsWith("/") ? apiServer : `${apiServer}/`;
+        }
+        return `http://localhost:${Cypress.env("portApi")}/`;
+    })(),
+    ApiIndexer: (() => {
+        const apiIndexer = Cypress.env("apiIndexer");
+        if (apiIndexer) {
+            return apiIndexer.endsWith("/") ? apiIndexer : `${apiIndexer}/`;
+        }
+        return `http://localhost:${Cypress.env("portIndexer")}/`;
+    })(),
     ApiMGS: `https://dev.guardianservice.app/api/v1/`,
 
 

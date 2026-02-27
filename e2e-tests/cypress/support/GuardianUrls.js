@@ -1,8 +1,14 @@
+const BASE_URL = Cypress.config("baseUrl");
 const PORT = Cypress.env("portWeb") || 4200;
+
+function withoutTrailingSlash(url) {
+	if (!url) return url;
+	return url.endsWith("/") ? url.slice(0, -1) : url;
+}
 
 const URL = {
 	// Web
-	Root: "http://localhost:" + PORT + "",
+	Root: BASE_URL ? withoutTrailingSlash(BASE_URL) : "http://localhost:" + PORT + "",
 
 	//Tabs
 	Policies: "/policy-viewer",
