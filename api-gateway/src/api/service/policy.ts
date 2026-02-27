@@ -665,8 +665,8 @@ export class PolicyApi {
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: 'Retrieves disconnected policy configuration.',
-        description: 'Retrieves disconnected policy configuration for the specified policy ID.' + ONLY_SR,
+        summary: 'Checks whether the user is disconnected from the policy or not.',
+        description: 'Checks whether the user is disconnected from the policy or not.',
     })
     @ApiParam({
         name: 'policyId',
@@ -1083,8 +1083,8 @@ export class PolicyApi {
     @Put('/:policyId/disconnect')
     @Auth(Permissions.POLICIES_POLICY_READ)
     @ApiOperation({
-        summary: '',
-        description: '',
+        summary: 'Disconnects the user from the selected policy.',
+        description: 'Disconnects the user from the selected policy.',
     })
     @ApiParam({
         name: 'policyId',
@@ -1122,8 +1122,8 @@ export class PolicyApi {
     @Put('/:policyId/reconnect')
     @Auth(Permissions.POLICIES_POLICY_READ)
     @ApiOperation({
-        summary: '',
-        description: '',
+        summary: 'Restores the user’s participation in the policy after disconnection.',
+        description: 'Restores the user’s participation in the policy after disconnection.',
     })
     @ApiParam({
         name: 'policyId',

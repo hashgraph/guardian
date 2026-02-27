@@ -360,8 +360,8 @@ export class ExternalPoliciesApi {
     @Put('/:messageId/disconnect')
     @Auth(Permissions.POLICIES_POLICY_READ)
     @ApiOperation({
-        summary: '',
-        description: '',
+        summary: 'Disconnects the user from the selected remote policy on the current Guardian instance only.',
+        description: 'Disconnects the user from the selected remote policy on the current Guardian instance only.',
     })
     @ApiParam({
         name: 'messageId',
@@ -373,7 +373,7 @@ export class ExternalPoliciesApi {
     @ApiQuery({
         name: 'full',
         type: Boolean,
-        description: '',
+        description: 'Disconnects the user from the selected remote policy on the current Guardian instance and from the same policy on the Main Guardian instance where it is deployed.',
         required: false,
         example: 0
     })
@@ -408,8 +408,8 @@ export class ExternalPoliciesApi {
     @Delete('/:messageId')
     @Auth(Permissions.POLICIES_EXTERNAL_POLICY_UPDATE)
     @ApiOperation({
-        summary: '',
-        description: '',
+        summary: 'Removes the remote policy from the current Guardian instance.',
+        description: 'Removes the remote policy from the current Guardian instance.',
     })
     @ApiParam({
         name: 'messageId',
