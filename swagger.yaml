@@ -5596,10 +5596,7 @@ paths:
         - policies
   /policies/{policyId}/disconnected:
     get:
-      description: >-
-        Retrieves disconnected policy configuration for the specified policy ID.
-        Only users with the Standard Registry role are allowed to make the
-        request.
+      description: Checks whether the user is disconnected from the policy or not.
       operationId: PolicyApi_getDisconnectedPolicy
       parameters:
         - name: policyId
@@ -5628,7 +5625,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Retrieves disconnected policy configuration.
+      summary: Checks whether the user is disconnected from the policy or not.
       tags:
         - policies
   /policies/{policyId}/publish:
@@ -5882,7 +5879,7 @@ paths:
         - policies
   /policies/{policyId}/disconnect:
     put:
-      description: ''
+      description: Disconnects the user from the selected policy.
       operationId: PolicyApi_disconnectPolicy
       parameters:
         - name: policyId
@@ -5913,12 +5910,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Disconnects the user from the selected policy.
       tags:
         - policies
   /policies/{policyId}/reconnect:
     put:
-      description: ''
+      description: Restores the user’s participation in the policy after disconnection.
       operationId: PolicyApi_reconnectPolicy
       parameters:
         - name: policyId
@@ -5949,7 +5946,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Restores the user’s participation in the policy after disconnection.
       tags:
         - policies
   /policies/{policyId}/navigation:
@@ -16198,7 +16195,9 @@ paths:
         - external-policies
   /external-policies/{messageId}/disconnect:
     put:
-      description: ''
+      description: >-
+        Disconnects the user from the selected remote policy on the current
+        Guardian instance only.
       operationId: ExternalPoliciesApi_disconnectPolicy
       parameters:
         - name: messageId
@@ -16211,7 +16210,10 @@ paths:
         - name: full
           required: false
           in: query
-          description: ''
+          description: >-
+            Disconnects the user from the selected remote policy on the current
+            Guardian instance and from the same policy on the Main Guardian
+            instance where it is deployed.
           schema:
             example: 0
             type: boolean
@@ -16236,12 +16238,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: >-
+        Disconnects the user from the selected remote policy on the current
+        Guardian instance only.
       tags:
         - external-policies
   /external-policies/{messageId}:
     delete:
-      description: ''
+      description: Removes the remote policy from the current Guardian instance.
       operationId: ExternalPoliciesApi_deletePolicy
       parameters:
         - name: messageId
@@ -16272,7 +16276,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: ''
+      summary: Removes the remote policy from the current Guardian instance.
       tags:
         - external-policies
   /external-policies/requests:
