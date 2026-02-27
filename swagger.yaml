@@ -5333,9 +5333,9 @@ paths:
   /policies/push/migrate-data:
     post:
       description: >-
-        Migrate policy data asynchronous V2. Only users with the Standard
-        Registry role are allowed to make the request.
-      operationId: PolicyApi_migrateDataAsyncV2
+        Migrate policy data asynchronous. Only users with the Standard Registry
+        role are allowed to make the request.
+      operationId: PolicyApi_migrateDataAsync
       parameters: []
       requestBody:
         required: true
@@ -5363,7 +5363,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Migrate policy data asynchronous V2.
+      summary: Migrate policy data asynchronous.
       tags:
         - policies
   /policies/push/migrate-data/resume:
