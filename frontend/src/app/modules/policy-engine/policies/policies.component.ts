@@ -35,7 +35,7 @@ import { SuggestionsConfigurationComponent } from '../../../views/suggestions-co
 import { DeleteDialogComponent } from '../dialogs/delete-dialog/delete-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
-import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
+import { MigrateData, MigrationActionResult } from '../dialogs/migrate-data/migrate-data.component';
 import { ContractService } from 'src/app/services/contract.service';
 import { PolicyTestDialog } from '../dialogs/policy-test-dialog/policy-test-dialog.component';
 import { NewImportFileDialog } from '../dialogs/new-import-file-dialog/new-import-file-dialog.component';
@@ -1551,42 +1551,88 @@ export class PoliciesComponent implements OnInit {
     }
 
     public migrateData(policy?: any) {
-        const item = this.policies?.find((e) => e.id === policy?.id);
         this.loading = true;
-        this.contractSerivce.getContracts({ type: ContractType.RETIRE }).pipe(takeUntil(this._destroy$)).subscribe({
-            next: (res) => {
+        forkJoin([
+            this.contractSerivce.getContracts({ type: ContractType.RETIRE }),
+            this.policyEngineService.all()
+        ]).pipe(takeUntil(this._destroy$)).subscribe({
+            next: ([contractsResponse, allPolicies]) => {
+                const runnablePolicies = (allPolicies || []).filter((policyItem) => PolicyHelper.isRun(policyItem));
+                const item = runnablePolicies.find((policyItem) => policyItem.id === policy?.id)
+                    || this.policies?.find((policyItem) => policyItem.id === policy?.id);
+
                 const dialogRef = this.dialogService.open(MigrateData, {
-                    showHeader: false,
-                    width: '90%',
-                    styleClass: 'guardian-dialog',
+                    header: 'Migrate Data',
+                    width: '1000px',
+                    styleClass: 'custom-dialog migrate-data-dialog',
                     data: {
                         policy: item,
-                        policies: this.policies?.filter(item => PolicyHelper.isRun(item)),
-                        contracts: res.body
+                        policies: runnablePolicies,
+                        contracts: contractsResponse.body
                     },
                 });
-                dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
-                    if (!result) {
+
+                dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result?: MigrationActionResult) => {
+                    if (!result?.action) {
                         return;
                     }
-                    this.policyEngineService.migrateDataAsync(result).pipe(takeUntil(this._destroy$)).subscribe(
-                        (result) => {
-                            const { taskId } = result;
-                            this.router.navigate(['task', taskId], {
-                                queryParams: {
-                                    last: btoa(location.href),
-                                },
-                            });
-                        },
-                        (e) => {
-                            this.loading = false;
-                        }
-                    );
+
+                    this.loading = true;
+
+                    if (result.action === 'start' && result.migrationConfig) {
+                        this.policyEngineService.migrateDataAsync(result.migrationConfig)
+                            .pipe(takeUntil(this._destroy$))
+                            .subscribe(
+                                (response) => this.navigateToTask(response.taskId),
+                                () => {
+                                    this.loading = false;
+                                }
+                            );
+                        return;
+                    }
+
+                    if (result.action === 'resume' && result.runId) {
+                        this.policyEngineService.resumeMigrateDataAsync(result.runId)
+                            .pipe(takeUntil(this._destroy$))
+                            .subscribe(
+                                (response) => this.navigateToTask(response.taskId),
+                                () => {
+                                    this.loading = false;
+                                }
+                            );
+                        return;
+                    }
+
+                    if (result.action === 'retryFailed' && result.runId) {
+                        this.policyEngineService.retryFailedMigrateDataAsync(result.runId)
+                            .pipe(takeUntil(this._destroy$))
+                            .subscribe(
+                                (response) => this.navigateToTask(response.taskId),
+                                () => {
+                                    this.loading = false;
+                                }
+                            );
+                        return;
+                    }
+
+                    this.loading = false;
                 });
             },
-            complete: () => this.loading = false
-        })
+            error: () => {
+                this.loading = false;
+            },
+            complete: () => {
+                this.loading = false;
+            }
+        });
+    }
 
+    private navigateToTask(taskId: string) {
+        this.router.navigate(['task', taskId], {
+            queryParams: {
+                last: btoa(location.href),
+            },
+        });
     }
 
     public createNewPolicy() {

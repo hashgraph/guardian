@@ -5366,6 +5366,177 @@ paths:
       summary: Migrate policy data asynchronous.
       tags:
         - policies
+  /policies/push/migrate-data/resume:
+    post:
+      description: >-
+        Resume migration asynchronous. Only users with the Standard Registry
+        role are allowed to make the request.
+      operationId: PolicyApi_resumeMigrateDataAsync
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - runId
+              properties:
+                runId:
+                  type: string
+                  example: '000000000000000000000001'
+      responses:
+        '202':
+          description: Created task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Resume migration asynchronous.
+      tags:
+        - policies
+  /policies/push/migrate-data/retry-failed:
+    post:
+      description: >-
+        Retry failed migration items asynchronous. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: PolicyApi_retryFailedMigrateDataAsync
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - runId
+              properties:
+                runId:
+                  type: string
+                  example: '000000000000000000000001'
+      responses:
+        '202':
+          description: Created task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Retry failed migration items asynchronous.
+      tags:
+        - policies
+  /policies/migrate-data/status:
+    get:
+      description: >-
+        Returns latest migration run status for source/destination pair. Only
+        users with the Standard Registry role are allowed to make the request.
+      operationId: PolicyApi_getMigrationStatus
+      parameters:
+        - name: srcPolicyId
+          required: true
+          in: query
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: dstPolicyId
+          required: true
+          in: query
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Migration run status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationStatusResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get migration status by policy pair.
+      tags:
+        - policies
+  /policies/migrate-data/runs:
+    get:
+      description: Returns migration runs.
+      operationId: PolicyApi_getMigrationRuns
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          schema:
+            example: 10
+            type: number
+        - name: status
+          required: false
+          in: query
+          schema:
+            example:
+              - running
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Migration runs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationRunsResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get migration runs list.
+      tags:
+        - policies
   /policies/push:
     post:
       description: >-
@@ -20724,6 +20895,10 @@ components:
           type: object
           additionalProperties:
             type: string
+        tokensMap:
+          type: object
+          additionalProperties:
+            type: string
         migrateState:
           type: boolean
         migrateRetirePools:
@@ -20734,6 +20909,15 @@ components:
             type: string
         retireContractId:
           type: string
+        mode:
+          type: string
+          enum:
+            - start_new
+            - resume
+            - retry_failed
+          default: start_new
+        runId:
+          type: string
       required:
         - policies
         - vcs
@@ -20743,10 +20927,117 @@ components:
         - roles
         - blocks
         - tokens
+        - tokensMap
         - migrateState
         - migrateRetirePools
         - editedVCs
         - retireContractId
+    MigrationFailedItemDTO:
+      type: object
+      properties:
+        srcPolicyId:
+          type: string
+        dstPolicyId:
+          type: string
+        entityType:
+          type: string
+        srcEntityId:
+          type: string
+        runId:
+          type: string
+        attemptCount:
+          type: number
+        errorCode:
+          type: string
+          nullable: true
+        errorMessage:
+          type: string
+          nullable: true
+        firstFailedAt:
+          type: string
+          format: date-time
+        lastFailedAt:
+          type: string
+          format: date-time
+      required:
+        - srcPolicyId
+        - dstPolicyId
+        - entityType
+        - srcEntityId
+        - runId
+        - attemptCount
+        - errorCode
+        - errorMessage
+        - firstFailedAt
+        - lastFailedAt
+    MigrationRunStatusDTO:
+      type: object
+      properties:
+        runId:
+          type: string
+        srcPolicyId:
+          type: string
+        dstPolicyId:
+          type: string
+        status:
+          type: string
+          enum:
+            - running
+            - completed
+            - failed
+            - stopped
+        isDryRun:
+          type: boolean
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        finishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        summary:
+          type: object
+          additionalProperties: true
+        failedItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigrationFailedItemDTO'
+      required:
+        - runId
+        - srcPolicyId
+        - dstPolicyId
+        - status
+        - startedAt
+        - finishedAt
+        - summary
+    MigrationStatusResponseDTO:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigrationRunStatusDTO'
+      required:
+        - items
+    MigrationRunsResponseDTO:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigrationRunStatusDTO'
+        count:
+          type: number
+        pageIndex:
+          type: number
+        pageSize:
+          type: number
+      required:
+        - items
+        - count
+        - pageIndex
+        - pageSize
     PoliciesValidationDTO:
       type: object
       properties:

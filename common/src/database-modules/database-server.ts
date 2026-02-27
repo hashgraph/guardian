@@ -58,6 +58,8 @@ import {
     PolicyDiscussion,
     GlobalEventsReaderStream,
     GlobalEventsWriterStream,
+    MigrationMessageMap,
+    MigrationFailedItem,
     DeleteCache,
     DocumentDraft,
     PolicyDiff
@@ -71,6 +73,7 @@ import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { BaseEntity } from '../models/index.js';
 import { DryRunSavepointSnapshot } from '../entity/dry-run-savepoint-snapshot.js';
+import { MigrationRun } from '../entity/migration-run.js';
 import { DisconnectedPolicy } from '../entity/disconnected-policy.js';
 
 /**
@@ -1462,6 +1465,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
         this.classMap.set(PolicyProperty, 'PolicyProperties');
         this.classMap.set(MintRequest, 'MintRequest');
         this.classMap.set(MintTransaction, 'MintTransaction');
+        this.classMap.set(MigrationRun, 'MigrationRun');
+        this.classMap.set(MigrationMessageMap, 'MigrationMessageMap');
+        this.classMap.set(MigrationFailedItem, 'MigrationFailedItem');
     }
 
     /**

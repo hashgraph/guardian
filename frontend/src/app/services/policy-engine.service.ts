@@ -1,6 +1,12 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { MigrationConfig, PolicyAvailability, PolicyToolMetadata } from '@guardian/interfaces';
+import {
+    MigrationConfig,
+    MigrationRunsResponse,
+    MigrationStatusResponse,
+    PolicyAvailability,
+    PolicyToolMetadata
+} from '@guardian/interfaces';
 import { Observable, firstValueFrom, map } from 'rxjs';
 import { headersV2 } from '../constants';
 import { API_BASE_URL } from './api';
@@ -439,7 +445,53 @@ export class PolicyEngineService {
     }
 
     public migrateDataAsync(migrationConfig: MigrationConfig) {
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/migrate-data`, migrationConfig);
+        return this.http.post<{ taskId: string, expectation: number }>(
+            `${this.url}/push/migrate-data`,
+            migrationConfig,
+        );
+    }
+
+    public resumeMigrateDataAsync(runId: string): Observable<{ taskId: string; expectation: number }> {
+        return this.http.post<{ taskId: string; expectation: number }>(
+            `${this.url}/push/migrate-data/resume`,
+            { runId }
+        );
+    }
+
+    public retryFailedMigrateDataAsync(runId: string): Observable<{ taskId: string; expectation: number }> {
+        return this.http.post<{ taskId: string; expectation: number }>(
+            `${this.url}/push/migrate-data/retry-failed`,
+            { runId }
+        );
+    }
+
+    public getMigrationStatus(
+        srcPolicyId: string,
+        dstPolicyId: string
+    ): Observable<MigrationStatusResponse> {
+        const params = new HttpParams()
+            .set('srcPolicyId', srcPolicyId)
+            .set('dstPolicyId', dstPolicyId);
+
+        return this.http.get<MigrationStatusResponse>(`${this.url}/migrate-data/status`, { params });
+    }
+
+    public getMigrationRuns(
+        pageIndex: number = 0,
+        pageSize: number = 10,
+        status?: string[]
+    ): Observable<MigrationRunsResponse> {
+        let params = new HttpParams()
+            .set('pageIndex', String(pageIndex))
+            .set('pageSize', String(pageSize));
+
+        if (status?.length) {
+            status.forEach((value) => {
+                params = params.append('status', value);
+            });
+        }
+
+        return this.http.get<MigrationRunsResponse>(`${this.url}/migrate-data/runs`, { params });
     }
 
     public getGroups(policyId: string, savepointIds: string[] | null): Observable<any[]> {

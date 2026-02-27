@@ -4,6 +4,7 @@ import {
     DataBaseHelper,
     DatabaseServer,
     DiscussionMessage,
+    DryRun,
     DryRunFiles,
     EncryptUtils,
     findAllEntities,
@@ -18,6 +19,8 @@ import {
     MessageResponse,
     MessageServer,
     MessageType,
+    MigrationFailedItem,
+    MigrationRun,
     NatsService,
     NewNotifier,
     NotificationStep,
@@ -55,7 +58,8 @@ import {
     PolicyActionType,
     PolicyActionStatus,
     IgnoreRule,
-    SchemaStatus
+    SchemaStatus,
+    MigrationConfig, MigrationRunStatus
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
@@ -1353,6 +1357,7 @@ export class PolicyEngineService {
                         await DatabaseServer.nullifyInitialDryRunSavepointIds();
                     } else {
                         await DatabaseServer.removeDryRunWithEmptySavepoint(policyId);
+                        PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
                     }
 
                     return new MessageResponse({
@@ -1457,6 +1462,8 @@ export class PolicyEngineService {
                     retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger, owner?.id);
 
                     await this.policyEngine.destroyModel(model.id.toString(), owner?.id);
+
+                    PolicyDataMigrator.clearRunCacheByPolicyId(model.id.toString());
 
                     const savepointsCount = await DatabaseServer.getSavepointsCount(model.id.toString());
                     if (savepointsCount === 0) {
@@ -2206,6 +2213,7 @@ export class PolicyEngineService {
                     }
 
                     await DatabaseServer.clearDryRun(policyId, false);
+                    PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
 
                     await DatabaseServer.clearAllSavepointData(policyId);
 
@@ -2368,6 +2376,7 @@ export class PolicyEngineService {
                     await DatabaseServer.restoreSavepointOptions(policyId, savepointId);
                     await DatabaseServer.removeDryRunWithEmptySavepoint(policyId)
                     await DatabaseServer.setCurrentSavepoint(policyId, savepointId);
+                    PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
 
                     await new GuardiansService().sendPolicyMessage(
                         PolicyEvents.APPLY_SAVEPOINT,
@@ -2567,6 +2576,53 @@ export class PolicyEngineService {
                     const notifier = await NewNotifier.create(task);
                     RunFunctionAsync(
                         async () => {
+                            await PolicyDataMigrator.assertNoActiveMigrationForUser(owner);
+
+                            const { src, dst } = migrationConfig.policies;
+
+                            const srcPolicy = await DatabaseServer.getPolicyById(src);
+                            const dstPolicy = await DatabaseServer.getPolicyById(dst);
+
+                            if (!srcPolicy) {
+                                throw new Error('Source policy not found');
+                            }
+                            if (!dstPolicy) {
+                                throw new Error('Destination policy not found');
+                            }
+
+                            const srcIsDryRun = PolicyHelper.isDryRunMode(srcPolicy);
+                            const dstIsDryRun = PolicyHelper.isDryRunMode(dstPolicy);
+
+                            if (srcIsDryRun !== dstIsDryRun) {
+                                throw new Error('Source and destination policies must be in the same mode');
+                            }
+
+                            const isDstDryRun = PolicyHelper.isDryRunMode(dstPolicy);
+                            const db = new DatabaseServer(isDstDryRun ? dst : null);
+
+                            const existingRunFilters: Partial<MigrationRun> = isDstDryRun
+                                ? {
+                                    srcPolicyId: src,
+                                    dstPolicyId: dst
+                                }
+                                : {
+                                    srcPolicyId: src,
+                                    dstPolicyId: dst,
+                                    startedBy: owner?.id
+                                };
+
+                            const existingRun = await db.findOne(MigrationRun, existingRunFilters);
+
+                            if (existingRun) {
+                                const normalizedRun = PolicyDataMigrator.mapRunToResponse(existingRun);
+
+                                if (normalizedRun.status === MigrationRunStatus.RUNNING) {
+                                    throw new Error('Migration for this policy pair is already running');
+                                }
+
+                                await db.remove(MigrationRun, existingRun);
+                            }
+
                             const migrationErrors =
                                 await PolicyDataMigrator.migrate(
                                     owner.owner,
@@ -2597,6 +2653,342 @@ export class PolicyEngineService {
                     );
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RESUME_MIGRATE_DATA_ASYNC,
+            async (msg: { runId: string, owner: IOwner, task: any }) => {
+                try {
+                    const { runId, owner, task } = msg;
+                    const notifier = await NewNotifier.create(task);
+
+                    RunFunctionAsync(
+                        async () => {
+                            await PolicyDataMigrator.assertNoActiveMigrationForUser(owner);
+
+                            const db = new DatabaseServer();
+                            let run = await db.findOne(MigrationRun, {
+                                id: runId,
+                                startedBy: owner?.id
+                            } as Partial<MigrationRun>);
+
+                            if (!run) {
+                                const dryRunRaw = await new DataBaseHelper(DryRun).findOne({
+                                    dryRunClass: 'MigrationRun',
+                                    id: runId,
+                                    startedBy: owner?.id
+                                } as any);
+
+                                if (!dryRunRaw?.dryRunId) {
+                                    throw new Error('Migration run not found');
+                                }
+
+                                const dryRunDb = new DatabaseServer(dryRunRaw.dryRunId);
+                                run = await dryRunDb.findOne(MigrationRun, {
+                                    id: runId
+                                } as Partial<MigrationRun>);
+                            }
+
+                            if (!run) {
+                                throw new Error('Migration run not found');
+                            }
+
+                            const normalizedRun = PolicyDataMigrator.mapRunToResponse(run as MigrationRun);
+                            if (normalizedRun.status === MigrationRunStatus.RUNNING) {
+                                throw new Error('Migration run is already running');
+                            }
+
+                            const runConfig = run.config as MigrationConfig;
+                            if (!runConfig?.policies?.dst) {
+                                throw new Error('Migration run config is invalid');
+                            }
+
+                            const srcPolicy = await DatabaseServer.getPolicyById(runConfig.policies.src);
+                            const dstPolicy = await DatabaseServer.getPolicyById(runConfig.policies.dst);
+
+                            if (!srcPolicy) {
+                                throw new Error('Source policy not found');
+                            }
+                            if (!dstPolicy) {
+                                throw new Error('Destination policy not found');
+                            }
+
+                            const srcIsDryRun = PolicyHelper.isDryRunMode(srcPolicy);
+                            const dstIsDryRun = PolicyHelper.isDryRunMode(dstPolicy);
+
+                            if (srcIsDryRun !== dstIsDryRun) {
+                                throw new Error('Source and destination policies must be in the same mode');
+                            }
+
+                            const migrationErrors = await PolicyDataMigrator.migrate(
+                                owner.owner,
+                                runConfig,
+                                owner?.id,
+                                notifier,
+                                run as MigrationRun
+                            );
+
+                            await this.policyEngine.regenerateModel(
+                                runConfig.policies.dst,
+                                owner?.id
+                            );
+
+                            if (migrationErrors.length > 0) {
+                                await logger.warn(
+                                    migrationErrors
+                                        .map((error) => `${error.id}: ${error.message}`)
+                                        .join('\r\n'),
+                                    ['GUARDIAN_SERVICE'],
+                                    owner?.id
+                                );
+                            }
+
+                            notifier.result(migrationErrors);
+                        },
+                        async (error) => {
+                            notifier.fail(error);
+                        }
+                    );
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RETRY_FAILED_MIGRATE_DATA_ASYNC,
+            async (msg: { runId: string, owner: IOwner, task: any }) => {
+                try {
+                    const { runId, owner, task } = msg;
+                    const notifier = await NewNotifier.create(task);
+
+                    RunFunctionAsync(
+                        async () => {
+                            await PolicyDataMigrator.assertNoActiveMigrationForUser(owner);
+
+                            const db = new DatabaseServer();
+                            let run = await db.findOne(MigrationRun, {
+                                id: runId,
+                                startedBy: owner?.id
+                            } as Partial<MigrationRun>);
+
+                            if (!run) {
+                                const dryRunRaw = await new DataBaseHelper(DryRun).findOne({
+                                    dryRunClass: 'MigrationRun',
+                                    id: runId,
+                                    startedBy: owner?.id
+                                } as any);
+
+                                if (!dryRunRaw?.dryRunId) {
+                                    throw new Error('Migration run not found');
+                                }
+
+                                const dryRunDb = new DatabaseServer(dryRunRaw.dryRunId);
+                                run = await dryRunDb.findOne(MigrationRun, {
+                                    id: runId
+                                } as Partial<MigrationRun>);
+                            }
+
+                            if (!run) {
+                                throw new Error('Migration run not found');
+                            }
+
+                            const normalizedRun = PolicyDataMigrator.mapRunToResponse(run as MigrationRun);
+                            if (normalizedRun.status === MigrationRunStatus.RUNNING) {
+                                throw new Error('Migration run is already running');
+                            }
+
+                            const runConfig = run.config as MigrationConfig;
+                            if (!runConfig?.policies?.dst) {
+                                throw new Error('Migration run config is invalid');
+                            }
+
+                            const srcPolicy = await DatabaseServer.getPolicyById(runConfig.policies.src);
+                            const dstPolicy = await DatabaseServer.getPolicyById(runConfig.policies.dst);
+
+                            if (!srcPolicy) {
+                                throw new Error('Source policy not found');
+                            }
+                            if (!dstPolicy) {
+                                throw new Error('Destination policy not found');
+                            }
+
+                            const srcIsDryRun = PolicyHelper.isDryRunMode(srcPolicy);
+                            const dstIsDryRun = PolicyHelper.isDryRunMode(dstPolicy);
+
+                            if (srcIsDryRun !== dstIsDryRun) {
+                                throw new Error('Source and destination policies must be in the same mode');
+                            }
+
+                            const migrationErrors = await PolicyDataMigrator.retryFailedItems(
+                                owner.owner,
+                                run as MigrationRun,
+                                owner?.id,
+                                notifier
+                            );
+
+                            await this.policyEngine.regenerateModel(
+                                runConfig.policies.dst,
+                                owner?.id
+                            );
+
+                            if (migrationErrors.length > 0) {
+                                await logger.warn(
+                                    migrationErrors
+                                        .map((error) => `${error.id}: ${error.message}`)
+                                        .join('\r\n'),
+                                    ['GUARDIAN_SERVICE'],
+                                    owner?.id
+                                );
+                            }
+
+                            notifier.result(migrationErrors);
+                        },
+                        async (error) => {
+                            notifier.fail(error);
+                        }
+                    );
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MIGRATION_STATUS,
+            async (msg: { owner: IOwner, srcPolicyId: string, dstPolicyId: string }) => {
+                try {
+                    const { owner, srcPolicyId, dstPolicyId } = msg;
+
+                    const [srcPolicy, dstPolicy] = await Promise.all([
+                        DatabaseServer.getPolicyById(srcPolicyId),
+                        DatabaseServer.getPolicyById(dstPolicyId)
+                    ]);
+
+                    if (!srcPolicy || !dstPolicy) {
+                        throw new Error('Source or destination policy not found');
+                    }
+
+                    const isDryRun = PolicyHelper.isDryRunMode(dstPolicy);;
+                    const db = new DatabaseServer(isDryRun ? dstPolicyId : null);
+
+                    const filters: Partial<MigrationRun> = isDryRun
+                        ? {
+                            srcPolicyId,
+                            dstPolicyId
+                        }
+                        : {
+                            srcPolicyId,
+                            dstPolicyId,
+                            startedBy: owner?.id
+                        };
+
+                    const options = {
+                        orderBy: { createDate: 'DESC' as const },
+                        limit: 1
+                    };
+
+                    const runs = await db.find(MigrationRun, filters, options);
+                    const run: MigrationRun | null = runs.length ? runs[0] : null;
+
+                    if (!run) {
+                        return new MessageResponse({ items: [] });
+                    }
+
+                    const failedItems = await db.find(
+                        MigrationFailedItem,
+                        { runId: run.id } as Partial<MigrationFailedItem>,
+                        { orderBy: { lastFailedAt: 'DESC' as const } }
+                    );
+
+                    const mappedRun = PolicyDataMigrator.mapRunToResponse(run);
+
+                    return new MessageResponse({
+                        items: [{
+                            ...mappedRun,
+                            isDryRun,
+                            failedItems
+                        }]
+                    });
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MIGRATION_RUNS,
+            async (msg: { owner: IOwner, pageIndex?: number, pageSize?: number, status?: string[] }) => {
+                try {
+                    const { owner } = msg;
+                    const pageIndex = Number(msg?.pageIndex || 0);
+                    const pageSize = Number(msg?.pageSize || 10);
+                    const status = msg?.status;
+
+                    const filters: any = {
+                        startedBy: owner?.id
+                    };
+
+                    if (status?.length) {
+                        filters.status = { $in: status };
+                    }
+
+                    const sortOptions = {
+                        orderBy: { createDate: 'DESC' as const }
+                    };
+
+                    const regularDb = new DatabaseServer();
+                    const regularRuns = (await regularDb.find(MigrationRun, filters, sortOptions)) as MigrationRun[];
+
+                    const dryRunPolicies = await DatabaseServer.getPolicies({
+                        owner: owner?.owner,
+                        status: { $in: [PolicyStatus.DRY_RUN, PolicyStatus.DEMO] }
+                    });
+
+                    const dryRunPolicyIds = (dryRunPolicies || []).map((policy) => policy.id);
+
+                    let dryRuns: MigrationRun[] = [];
+                    if (dryRunPolicyIds.length > 0) {
+                        const dryRunFilters: any = {
+                            dryRunId: { $in: dryRunPolicyIds },
+                            dryRunClass: 'MigrationRun'
+                        };
+
+                        if (status?.length) {
+                            dryRunFilters.status = { $in: status };
+                        }
+
+                        dryRuns = (await new DataBaseHelper(DryRun).find(
+                            dryRunFilters,
+                            sortOptions
+                        )) as unknown as MigrationRun[];
+                    }
+
+                    const merged = [
+                        ...regularRuns.map((run) => ({ ...PolicyDataMigrator.mapRunToResponse(run), isDryRun: false })),
+                        ...dryRuns.map((run) => ({ ...PolicyDataMigrator.mapRunToResponse(run), isDryRun: true }))
+                    ];
+
+                    const uniq = new Map<string, any>();
+                    for (const item of merged) {
+                        const key = `${item.runId}:${item.srcPolicyId}:${item.dstPolicyId}`;
+                        if (!uniq.has(key)) {
+                            uniq.set(key, item);
+                        }
+                    }
+
+                    const itemsAll = Array.from(uniq.values()).sort((a: any, b: any) =>
+                        new Date(b.createDate).getTime() - new Date(a.createDate).getTime()
+                    );
+
+                    const count = itemsAll.length;
+                    const start = pageIndex * pageSize;
+                    const end = start + pageSize;
+
+                    return new MessageResponse({
+                        items: itemsAll.slice(start, end),
+                        count,
+                        pageIndex,
+                        pageSize
+                    });
+                } catch (error) {
                     return new MessageError(error);
                 }
             });
@@ -3224,6 +3616,7 @@ export class PolicyEngineService {
                     }
 
                     await DatabaseServer.clearDryRun(policyId, false);
+                    PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
                     const users = await DatabaseServer.getVirtualUsers(policyId);
                     await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
 

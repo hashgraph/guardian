@@ -1,3 +1,19 @@
+import { MigrationMode } from './migration-run.interface.js';
+
+/**
+ * Migration config policies.
+ */
+export interface MigrationConfigPolicies {
+    /**
+     * Source policy
+     */
+    src: string;
+    /**
+     * Destination policy
+     */
+    dst: string;
+}
+
 /**
  * Migration config
  */
@@ -5,16 +21,7 @@ export interface MigrationConfig {
     /**
      * Policies
      */
-    policies: {
-        /**
-         * Source policy
-         */
-        src: string;
-        /**
-         * Destination policy
-         */
-        dst: string;
-    };
+    policies: MigrationConfigPolicies;
     /**
      * VC documents
      */
@@ -70,4 +77,15 @@ export interface MigrationConfig {
      * Retire contract identifier
      */
     retireContractId: string;
+
+    /**
+     * Migration launch mode.
+     * Optional for backward compatibility.
+     */
+    mode?: MigrationMode;
+
+    /**
+     * Existing run identifier for resume/retry modes.
+     */
+    runId?: string;
 }
