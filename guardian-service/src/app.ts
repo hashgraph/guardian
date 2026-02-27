@@ -226,7 +226,7 @@ Promise.all([
                 console.warn(error);
             }
         }
-    
+
         if (process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API) {
             Environment.setMirrorNodesBaseApi(process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API);
         }

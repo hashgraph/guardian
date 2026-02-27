@@ -158,6 +158,15 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
     _documentFileId?: ObjectId;
 
     /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
+    /**
      * Document defaults
      */
     @BeforeCreate()
