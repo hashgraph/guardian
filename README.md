@@ -726,6 +726,68 @@ VAULT_PROVIDER = "hashicorp"
 
 3. Access local development using <http://localhost:3000> or <http://localhost:4200>
 
+### Running with HTTPS (required for GitBook widget)
+
+The GitBook assistant widget requires HTTPS to function properly. There are two ways to run the project with HTTPS:
+
+#### Option A: Docker with HTTPS
+
+1. Install [mkcert](https://github.com/FiloSottile/mkcert):
+
+   ```shell
+   # Ubuntu / Debian
+   sudo apt install libnss3-tools
+   sudo apt install mkcert
+
+   # macOS
+   brew install mkcert
+
+   # Windows (using Chocolatey)
+   choco install mkcert
+
+   # Windows (using Scoop)
+   scoop bucket add extras
+   scoop install mkcert
+   ```
+
+2. Generate trusted local certificates:
+
+   ```shell
+   mkcert -install
+   cd certs
+   mkcert localhost 127.0.0.1 ::1
+   ```
+
+3. Start with the SSL overlay by adding `-f docker-compose.ssl.yml` to any of the Docker Compose configurations:
+
+   ```shell
+   # Demo mode with pre-built images
+   docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d --build --pull always
+
+   # Build from source (demo mode)
+   docker compose -f docker-compose-build.yml -f docker-compose.ssl.yml up -d --build
+
+   # Production with pre-built images
+   docker compose -f docker-compose-production.yml -f docker-compose.ssl.yml up -d --build --pull always
+
+   # Quickstart
+   docker compose -f docker-compose-quickstart.yml -f docker-compose.ssl.yml up -d --pull always
+   ```
+
+4. Access the application at <https://localhost:3000>
+
+#### Option B: Local frontend with HTTPS (without Docker)
+
+1. Start all backend services as usual.
+2. Start the frontend with SSL enabled:
+
+   ```shell
+   cd frontend
+   npm run start:ssl
+   ```
+
+3. Access the application at <https://localhost:4200>
+
 ## Troubleshoot
 
 ### Delete all the containers

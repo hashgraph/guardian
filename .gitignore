@@ -42,3 +42,6 @@ logs/
 
 # Contracts
 /contractAddresses.json
+
+# SSL certificates
+certs/
