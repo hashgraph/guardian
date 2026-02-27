@@ -143,7 +143,7 @@ All components run locally via Docker and can be deployed in multiple configurat
 
 {% stepper %}
 {% step %}
-### [Repository & Architecture Walkthrough](repository-and-architecture-wlakthrough.md)
+### [Repository & Architecture Walkthrough](repository-and-architecture-walkthrough.md)
 {% endstep %}
 
 {% step %}

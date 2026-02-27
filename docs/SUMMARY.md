@@ -1060,7 +1060,7 @@
 ## AI-ToolKit
 
 * [Hedera Guardian AI Toolkit](ai-toolkit/hedera-guardian-ai-toolkit.md)
-* [Repository and Architecture Wlakthrough](ai-toolkit/repository-and-architecture-wlakthrough.md)
+* [Repository and Architecture Walkthrough](ai-toolkit/repository-and-architecture-walkthrough.md)
 * [Installation and Setup from Zero](ai-toolkit/installation-and-setup-from-zero.md)
 * [First Ingestion and Semantic Search](ai-toolkit/first-ingestion-and-semantic-search.md)
 * [Schema and Formula Generation](ai-toolkit/schema-and-formula-generation.md)
