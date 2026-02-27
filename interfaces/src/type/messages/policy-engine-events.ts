@@ -66,7 +66,6 @@ export enum PolicyEngineEvents {
     GET_POLICY_TOKENS = 'policy-engine-event-get-policy-tokens',
     MIGRATE_DATA = 'policy-engine-event-migrate-data',
     MIGRATE_DATA_ASYNC = 'policy-engine-event-migrate-data-async',
-    MIGRATE_DATA_ASYNC_V2 = 'policy-engine-event-migrate-data-async-v2',
     RESUME_MIGRATE_DATA_ASYNC = 'policy-engine-event-resume-migrate-data-async',
     RETRY_FAILED_MIGRATE_DATA_ASYNC = 'policy-engine-event-retry-failed-migrate-data-async',
     GET_MIGRATION_STATUS = 'policy-engine-event-get-migration-status',

@@ -1059,23 +1059,6 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
-     * Migrate data async V2 (start new)
-     * @param owner Owner
-     * @param migrationConfig Migration config
-     * @param task Task
-     */
-    public async migrateDataAsyncV2(
-        owner: IOwner,
-        migrationConfig: MigrationConfig,
-        task: NewTask
-    ): Promise<NewTask> {
-        return await this.sendMessage(
-            PolicyEngineEvents.MIGRATE_DATA_ASYNC_V2,
-            { owner, migrationConfig, task }
-        );
-    }
-
-    /**
      * Resume migration async by run id
      * @param owner Owner
      * @param runId Migration run id

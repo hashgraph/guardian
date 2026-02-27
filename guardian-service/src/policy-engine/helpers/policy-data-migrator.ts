@@ -72,7 +72,7 @@ import {
     RetirePoolLoader
 } from './policy-data/loaders/index.js';
 import { createHederaToken } from '../../api/token.service.js';
-import {createContract, createContractV2} from '../../api/helpers/contract-api.js';
+import { createContractV2 } from '../../api/helpers/contract-api.js';
 import { getContractVersion, setPoolContract } from '../../api/contract.service.js';
 
 /**
@@ -91,11 +91,6 @@ export class PolicyDataMigrator {
      * Vc message identifiers mapping
      */
     private readonly vcMessageIds: Map<string, VcDocument> = new Map();
-
-    /**
-     * VP identifiers mapping
-     */
-    private readonly vpIds = new Map<string, string>();
 
     /**
      * VC identifiers mapping
@@ -130,7 +125,9 @@ export class PolicyDataMigrator {
     /**
      * Migration Run Heartbeat Stale Timeout
      */
-    private static readonly migrationHeartbeatRunStaleTimeout = 10 * 60 * 1000;
+    private static readonly migrationHeartbeatRunStaleTimeout = Number(
+        process.env.MIGRATION_HEARDBEAT_RUN_STALE_TIMEOUT || 10 * 60 * 1000
+    );
 
     /**
      * Migration write batch size
@@ -183,347 +180,6 @@ export class PolicyDataMigrator {
             this._tokensMap
         )) {
             this._createdTokens.set(oldTokenId, newTokenId);
-        }
-    }
-
-    /**
-     * Migrate policy data
-     * @param owner Owner
-     * @param migrationConfig Migration config
-     * @param userId
-     * @param notifier Notifier
-     * @returns Migration errors
-     */
-    static async migrate(
-        owner: string,
-        migrationConfig: MigrationConfig,
-        userId: string | null,
-        notifier: INotificationStep
-    ) {
-        try {
-            const {
-                policies,
-                vcs,
-                vps,
-                schemas,
-                groups,
-                roles,
-                tokens,
-                tokensMap,
-                blocks,
-                editedVCs,
-                migrateState,
-                migrateRetirePools,
-                retireContractId,
-            } = migrationConfig;
-            const { src, dst } = policies;
-            const users = new Users();
-            const userTopic = await DatabaseServer.getTopicByType(
-                owner,
-                TopicType.UserTopic
-            );
-            let policyUsers;
-            let policyRoles;
-            let policyStates;
-            let oldUserTopic;
-            let srcModel;
-            let srcSystemSchemas;
-            let srcVCs;
-            let srcRoleVcs;
-            let srcVPs;
-            let srcDids;
-            let srcMintRequests;
-            let srcMintTransactions;
-            let srcMultiDocuments;
-            let srcAggregateVCs;
-            let srcSplitDocuments;
-            let srcDocumentStates;
-            let srcTokens;
-            let srcRetirePools;
-
-            const userPolicy = await DatabaseServer.getPolicyCache({
-                id: src,
-                userId: owner,
-            });
-            if (userPolicy) {
-                srcModel = userPolicy.policy;
-                oldUserTopic = userPolicy.userTopic.topicId;
-                policyUsers = userPolicy.users;
-                policyRoles = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'roles',
-                    cachePolicyId: userPolicy.id,
-                } as Partial<PolicyCache>);
-                policyStates = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'states',
-                    cachePolicyId: userPolicy.id,
-                } as Partial<PolicyCache>);
-                srcSystemSchemas = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'schemas',
-                    cachePolicyId: userPolicy.id,
-                    category: SchemaCategory.SYSTEM,
-                } as Partial<PolicyCache>);
-                srcVCs = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'vcs',
-                    cachePolicyId: userPolicy.id,
-                    oldId: { $in: vcs },
-                } as Partial<PolicyCache>);
-                srcRoleVcs = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'vcs',
-                    cachePolicyId: userPolicy.id,
-                    schema: '#UserRole',
-                } as Partial<PolicyCache>);
-                srcVPs = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'vps',
-                    cachePolicyId: userPolicy.id,
-                    oldId: { $in: vps },
-                } as Partial<PolicyCache>);
-                srcDids = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'dids',
-                    cachePolicyId: userPolicy.id,
-                } as Partial<PolicyCache>);
-                srcMintRequests = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'mintRequests',
-                    cachePolicyId: userPolicy.id,
-                    vpMessageId: { $in: srcVPs.map((item) => item.messageId) },
-                } as Partial<PolicyCache>);
-                srcMintTransactions = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'mintTransactions',
-                    cachePolicyId: userPolicy.id,
-                    mintRequestId: {
-                        $in: srcMintRequests.map((item) => item.id),
-                    },
-                } as Partial<PolicyCache>);
-                srcMultiDocuments = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'multiDocuments',
-                    cachePolicyId: userPolicy.id,
-                    documentId: { $in: vcs },
-                } as Partial<PolicyCache>);
-                srcAggregateVCs = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'aggregateVCs',
-                    cachePolicyId: userPolicy.id,
-                } as Partial<PolicyCache>);
-                srcSplitDocuments = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'splitDocuments',
-                    cachePolicyId: userPolicy.id,
-                } as Partial<PolicyCache>);
-                srcDocumentStates = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'documentStates',
-                    cachePolicyId: userPolicy.id,
-                    documentId: { $in: vcs },
-                } as Partial<PolicyCache>);
-                srcTokens = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'tokens',
-                    cachePolicyId: userPolicy.id,
-                } as Partial<PolicyCache>);
-                srcRetirePools = await DatabaseServer.getPolicyCacheData({
-                    cacheCollection: 'retirePools',
-                    cachePolicyId: userPolicy.id,
-                } as Partial<PolicyCache>);
-            } else {
-                srcModel = await DatabaseServer.getPolicy({
-                    id: src,
-                    owner,
-                });
-                if (!srcModel) {
-                    throw new Error(`Can't find source policy`);
-                }
-                const srcModelDryRun = PolicyHelper.isDryRunMode(srcModel);
-
-                if (srcModelDryRun) {
-                    policyUsers = await DatabaseServer.getVirtualUsers(srcModel.id)
-                } else {
-                    policyUsers = await users.getUsersBySrId(owner, userId);
-                }
-
-                policyRoles = await new RolesLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get();
-
-                policyStates = await new BlockStateLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get();
-                srcSystemSchemas = await DatabaseServer.getSchemas({
-                    category: SchemaCategory.SYSTEM,
-                    topicId: srcModel.topicId,
-                });
-                srcVCs = await new VcDocumentLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get({
-                    id: { $in: vcs },
-                });
-                srcRoleVcs = await new VcDocumentLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get({
-                    schema: '#UserRole',
-                });
-                srcVPs = await await new VpDocumentLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get({
-                    id: { $in: vps },
-                });
-                srcDids = await new DidLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get();
-                srcMintRequests = await new MintRequestLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get(srcVPs.map((item) => item.messageId));
-                srcMintTransactions = await new MintTransactionLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get(srcMintRequests.map((item) => item.id));
-                srcMultiDocuments = await new MultiSignDocumentLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get(vcs);
-                srcAggregateVCs = await new AggregateVCLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get();
-                srcSplitDocuments = await new SplitDocumentLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get();
-                srcDocumentStates = await new DocumentStateLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get(vcs);
-                srcTokens = await new TokensLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get();
-                const policyTokens = findAllEntities(srcModel.config, [
-                    'tokenId',
-                ]);
-                srcRetirePools = await new RetirePoolLoader(
-                    srcModel.id,
-                    srcModel.topicId,
-                    srcModel.instanceTopicId,
-                    srcModelDryRun
-                ).get(
-                    srcTokens.map((token) => token.tokenId).concat(policyTokens)
-                );
-            }
-
-            const dstModel = await DatabaseServer.getPolicy({
-                id: dst,
-                owner,
-            });
-            if (!dstModel) {
-                throw new Error(`Can't find destination policy`);
-            }
-            const dstModelDryRun = PolicyHelper.isDryRunMode(dstModel);
-            const dstSystemSchemas = await DatabaseServer.getSchemas({
-                category: SchemaCategory.SYSTEM,
-                topicId: dstModel.topicId,
-            });
-            for (const schema of srcSystemSchemas) {
-                const dstSchema = dstSystemSchemas.find(
-                    (item) => item.entity === schema.entity
-                );
-                if (dstSchema) {
-                    schemas[schema.iri] = dstSchema.iri;
-                }
-            }
-
-            const wallet = new Wallet();
-            const root = await users.getUserById(owner, userId);
-            const rootKey = await wallet.getKey(
-                root.walletToken,
-                KeyType.KEY,
-                owner
-            );
-            const signOptions = await wallet.getUserSignOptions(root);
-
-            const instanceTopicConfig = await TopicConfig.fromObject(
-                await new DatabaseServer(dstModelDryRun ? dstModel.id : undefined)
-                    .getTopic({
-                        topicId: dstModel.instanceTopicId,
-                    }), false, userId
-            );
-
-            const policyDataMigrator = new PolicyDataMigrator(
-                root,
-                rootKey,
-                signOptions,
-                users,
-                owner,
-                dst,
-                dstModel.topicId,
-                instanceTopicConfig,
-                srcModel.owner,
-                srcModel.topicId,
-                oldUserTopic || userTopic.topicId,
-                userTopic,
-                roles,
-                groups,
-                schemas,
-                blocks || {},
-                tokens || {},
-                tokensMap || {},
-                editedVCs || {},
-                srcDids,
-                dstModelDryRun ? dstModel.id : null,
-                notifier
-            );
-            const migrationErrors = await policyDataMigrator._migrateData(
-                srcVCs,
-                srcVPs,
-                policyUsers,
-                srcRoleVcs,
-                policyRoles,
-                policyStates,
-                srcMintRequests,
-                srcMintTransactions,
-                srcMultiDocuments,
-                srcAggregateVCs,
-                srcSplitDocuments,
-                srcDocumentStates,
-                srcTokens,
-                srcRetirePools,
-                migrateState,
-                migrateRetirePools,
-                userId,
-                srcModel.id,
-                retireContractId
-            );
-
-            return migrationErrors;
-        } catch (error) {
-            await new PinoLogger().error(error.message, ['GUARDIAN_SERVICE'], userId);
-            throw error;
         }
     }
 
@@ -589,7 +245,7 @@ export class PolicyDataMigrator {
     }
 
     /**
-     * Migrate policy data V2
+     * Migrate policy data
      * @param owner Owner
      * @param migrationConfig Migration config
      * @param userId
@@ -597,7 +253,7 @@ export class PolicyDataMigrator {
      * @param runData
      * @returns Migration errors
      */
-    static async migrate_V2(
+    static async migrate(
         owner: string,
         migrationConfig: MigrationConfig,
         userId: string | null,
@@ -902,7 +558,7 @@ export class PolicyDataMigrator {
                 dstModelDryRun ? dstModel.id : null,
                 notifier,
             );
-            return await policyDataMigrator._migrateDataV2(
+            return await policyDataMigrator._migrateData(
                 srcVCs,
                 srcVPs,
                 policyUsers,
@@ -952,217 +608,11 @@ export class PolicyDataMigrator {
      * @param srcPolicyId
      * @param retireContractId
      * @param userId
-     * @returns Migration errors
-     */
-    private async _migrateData(
-        vcs: VcDocument[],
-        vps: VpDocument[],
-        users: {
-            username: string;
-            did: string;
-            hederaAccountId: string;
-            hederaAccountKey?: string;
-        }[],
-        roleVcs: VcDocument[],
-        roles: PolicyRoles[],
-        states: BlockState[],
-        mintRequests: MintRequest[],
-        mintTransactions: MintTransaction[],
-        multiSignDocuments: MultiDocuments[],
-        aggregateVCs: AggregateVC[],
-        splitDocuments: SplitDocuments[],
-        documentStates: DocumentState[],
-        dynamicTokens: Token[],
-        retirePools: RetirePool[],
-        migrateState = false,
-        migrateRetirePools = false,
-        userId: string | null,
-        srcPolicyId: string,
-        retireContractId?: string
-    ) {
-        // <-- Steps
-        const STEP_MIGRATE_POLICY = 'Migrate policy state';
-        const STEP_MIGRATE_VC = 'Migrate VC documents';
-        const STEP_MIGRATE_VP = 'Migrate VP documents';
-        const STEP_MIGRATE_TOKENS = 'Migrate Tokens';
-        // Steps -->
-
-        this._notifier.addStep(STEP_MIGRATE_POLICY);
-        this._notifier.addStep(STEP_MIGRATE_VC);
-        this._notifier.addStep(STEP_MIGRATE_VP);
-        this._notifier.addStep(STEP_MIGRATE_TOKENS);
-        this._notifier.start();
-
-        const errors = new Array<DocumentError>();
-        this._notifier.startStep(STEP_MIGRATE_POLICY);
-        if (migrateState) {
-            if (this._dryRunId) {
-                await this._createVirtualUsers(users);
-            }
-            await this._migratePolicyRoles(roles, userId);
-            await this._migrateDocument(
-                roleVcs,
-                this._migrateRoleVc.bind(this),
-                this._db.saveVC.bind(this._db),
-                errors,
-                userId
-            );
-
-            if (states?.length > 0) {
-                const [{ config: srcBlockTree }, { config: blockTree }] = await Promise.all([
-                    DatabaseServer.getPolicyById(srcPolicyId),
-                    DatabaseServer.getPolicyById(this._policyId)
-                ]);
-
-                const srcStepStateMap = new Map<number, string>();
-                const stepStateMap = new Map<string, number>();
-                const stepBlockStates: BlockState[] = [];
-
-                states.forEach(state => {
-                    const srcBlock = this.findBlockById(srcBlockTree, state.blockId);
-                    if (srcBlock && srcBlock.blockType === BlockType.Step && srcBlock.children?.length > 0) {
-                        srcBlock.children.forEach((child, index) => {
-                            srcStepStateMap.set(index, child.tag)
-                        });
-                        stepBlockStates.push(state);
-                    }
-                    const block = this.findBlockByTag(blockTree, srcBlock.tag);
-                    if (block && block.blockType === BlockType.Step && block.children?.length > 0) {
-                        block.children.forEach((child, index) => {
-                            stepStateMap.set(child.tag, index)
-                        });
-                    }
-                });
-                stepBlockStates.forEach(stepState => {
-                    const blockState = JSON.parse(stepState.blockState);
-                    if (blockState && blockState.state) {
-                        const currentState = blockState.state;
-                        for (const key in currentState) {
-                            if (currentState.hasOwnProperty(key)) {
-                                if (currentState[key]?.index && srcStepStateMap.get(currentState[key].index)) {
-                                    const tag = srcStepStateMap.get(currentState[key].index);
-                                    currentState[key].index = stepStateMap.get(tag) || currentState[key];
-                                }
-                            }
-                        }
-                    }
-                    stepState.blockState = JSON.stringify(blockState);
-                });
-            }
-
-            await this._migratePolicyStates(states);
-            this._notifier.completeStep(STEP_MIGRATE_POLICY);
-        } else {
-            this._notifier.skipStep(STEP_MIGRATE_POLICY);
-        }
-
-        this._notifier.startStep(STEP_MIGRATE_VC);
-        await this._migrateDocument(
-            vcs,
-            (vc: VcDocument) =>
-                this._migrateVcDocument(vc, vcs, roles, dynamicTokens, errors, userId),
-            this._db.saveVC.bind(this._db),
-            errors,
-            userId
-        );
-        if (migrateState) {
-            await this._migrateDocument(
-                multiSignDocuments,
-                this._migrateMultiSignDocument.bind(this),
-                async (doc) => {
-                    await this._db.setMultiSigDocument(
-                        doc.uuid,
-                        this._policyId,
-                        doc.documentId,
-                        {
-                            id: doc.userId,
-                            did: doc.did,
-                            group: doc.group,
-                            username: doc.username,
-                        },
-                        doc.status || '',
-                        doc.document
-                    );
-                },
-                errors,
-                userId
-            );
-            await this._migrateDocument(
-                documentStates,
-                this._migrateDocumentState.bind(this),
-                this._db.saveDocumentState.bind(this._db),
-                errors,
-                userId
-            );
-            await this._migrateDocument(
-                aggregateVCs,
-                this._migrateAggregateVC.bind(this),
-                async (doc) => {
-                    await this._db.createAggregateDocuments(
-                        doc as any,
-                        doc.blockId
-                    );
-                },
-                errors,
-                userId
-            );
-            await this._migrateDocument(
-                splitDocuments,
-                this._migrateSplitDocument.bind(this),
-                async (doc) => {
-                    await this._db.setResidue(doc as any);
-                },
-                errors,
-                userId
-            );
-        }
-        this._notifier.completeStep(STEP_MIGRATE_VC);
-
-        this._notifier.startStep(STEP_MIGRATE_VP);
-        await this._migrateDocument(
-            vps,
-            this._migrateVpDocument.bind(this),
-            this._db.saveVP.bind(this._db),
-            errors,
-            userId
-        );
-        await this._migrateMintRequests(mintRequests, mintTransactions);
-        this._notifier.completeStep(STEP_MIGRATE_VP);
-
-        this._notifier.startStep(STEP_MIGRATE_TOKENS);
-        if (migrateRetirePools && migrateState) {
-            await this.migrateTokenPools(retireContractId, retirePools, errors, userId);
-        }
-        this._notifier.completeStep(STEP_MIGRATE_TOKENS);
-        return errors;
-    }
-
-    /**
-     * Migrate policy data V2
-     * @param vcs VCs
-     * @param vps VPs
-     * @param users Users
-     * @param roleVcs Role VCs
-     * @param roles Roles
-     * @param states States
-     * @param mintRequests Mint requests
-     * @param mintTransactions Mint transactions
-     * @param multiSignDocuments Multi sign documents
-     * @param aggregateVCs Aggregate VCs
-     * @param splitDocuments Split documents
-     * @param documentStates Document states
-     * @param dynamicTokens
-     * @param retirePools
-     * @param migrateState Migrate state
-     * @param migrateRetirePools
-     * @param srcPolicyId
-     * @param retireContractId
-     * @param userId
      * @param migrationConfig
      * @param existingRunData
      * @returns Migration errors
      */
-    private async _migrateDataV2(
+    private async _migrateData(
         vcs: VcDocument[],
         vps: VpDocument[],
         users: {
@@ -1258,7 +708,7 @@ export class PolicyDataMigrator {
                     await this._createVirtualUsers(users);
                 }
 
-                await this._migratePolicyRolesV2(
+                await this._migratePolicyRoles(
                     roles,
                     userId,
                     run as MigrationRun,
@@ -1267,11 +717,11 @@ export class PolicyDataMigrator {
                     isResumeRun
                 );
 
-                await this._migrateDocumentV2<VcDocument>(
+                await this._migrateDocument<VcDocument>(
                     'roleVcDocument',
                     roleVcs,
                     (vc: VcDocument, uid: string | null) =>
-                        this._migrateRoleVcV2(vc, uid, run as MigrationRun, roles),
+                        this._migrateRoleVc(vc, uid, run as MigrationRun, roles),
                     this._db.saveVC.bind(this._db),
                     userId,
                     run as MigrationRun,
@@ -1329,7 +779,7 @@ export class PolicyDataMigrator {
                     });
                 }
 
-                await this._migratePolicyStatesV2(
+                await this._migratePolicyStates(
                     states,
                     run as MigrationRun,
                     errors,
@@ -1403,11 +853,11 @@ export class PolicyDataMigrator {
             }
 
             this._notifier.startStep(STEP_MIGRATE_DOCUMENTS_TOKEN);
-            await this._migrateDocumentV2<VcDocument>(
+            await this._migrateDocument<VcDocument>(
                 'vcDocument',
                 vcs,
                 (vc: VcDocument, uid: string | null) =>
-                    this._migrateVcDocumentV2(vc, vcs, roles, dynamicTokens, uid, run as MigrationRun),
+                    this._migrateVcDocument(vc, vcs, roles, dynamicTokens, uid, run as MigrationRun),
                 this._db.saveVC.bind(this._db),
                 userId,
                 run as MigrationRun,
@@ -1423,7 +873,7 @@ export class PolicyDataMigrator {
             }
 
             if (migrateState) {
-                await this._migrateDocumentV2<MultiDocuments>(
+                await this._migrateDocument<MultiDocuments>(
                     'multiDocument',
                     multiSignDocuments,
                     this._migrateMultiSignDocument.bind(this),
@@ -1451,7 +901,7 @@ export class PolicyDataMigrator {
                     isResumeRun
                 );
 
-                await this._migrateDocumentV2<DocumentState>(
+                await this._migrateDocument<DocumentState>(
                     'documentState',
                     documentStates,
                     this._migrateDocumentState.bind(this),
@@ -1465,7 +915,7 @@ export class PolicyDataMigrator {
                     isResumeRun
                 );
 
-                await this._migrateDocumentV2<AggregateVC>(
+                await this._migrateDocument<AggregateVC>(
                     'aggregateVc',
                     aggregateVCs,
                     this._migrateAggregateVC.bind(this),
@@ -1484,7 +934,7 @@ export class PolicyDataMigrator {
                     isResumeRun
                 );
 
-                await this._migrateDocumentV2<SplitDocuments>(
+                await this._migrateDocument<SplitDocuments>(
                     'splitDocument',
                     splitDocuments,
                     this._migrateSplitDocument.bind(this),
@@ -1501,11 +951,11 @@ export class PolicyDataMigrator {
                 );
             }
 
-            await this._migrateDocumentV2<VpDocument>(
+            await this._migrateDocument<VpDocument>(
                 'vpDocument',
                 vps,
                 (vp: VpDocument, uid: string | null) =>
-                    this._migrateVpDocumentV2(vp as VpDocument & { group: string }, uid, run as MigrationRun),
+                    this._migrateVpDocument(vp as VpDocument & { group: string }, uid, run as MigrationRun),
                 this._db.saveVP.bind(this._db),
                 userId,
                 run as MigrationRun,
@@ -1521,7 +971,7 @@ export class PolicyDataMigrator {
             }
 
             if (migrateState) {
-                await this._migrateMintRequestsV2(
+                await this._migrateMintRequests(
                     mintRequests,
                     mintTransactions,
                     run as MigrationRun,
@@ -1541,7 +991,7 @@ export class PolicyDataMigrator {
             }
 
             if (migrateRetirePools && migrateState) {
-                await this.migrateTokenPoolsV2(
+                await this.migrateTokenPools(
                     retireContractId,
                     retirePools,
                     run as MigrationRun,
@@ -1614,42 +1064,6 @@ export class PolicyDataMigrator {
     /**
      * Migrate token pools
      * @param contractId Contract identifier
-     * @param pools Pools
-     * @param errors Errors
-     * @param userId
-     */
-    async migrateTokenPools(
-        contractId: string,
-        pools: RetirePool[],
-        errors: DocumentError[],
-        userId: string | null
-    ) {
-        if (!contractId) {
-            return;
-        }
-        for (const pool of pools) {
-            try {
-                await setPoolContract(
-                    new Workers(),
-                    contractId,
-                    this._root.hederaAccountId,
-                    this._rootKey,
-                    this.replacePoolTokens(pool.tokens),
-                    pool.immediately,
-                    userId
-                );
-            } catch (error) {
-                errors.push({
-                    id: pool.id,
-                    message: error?.toString(),
-                });
-            }
-        }
-    }
-
-    /**
-     * Migrate token pools V2
-     * @param contractId Contract identifier
      * @param pools
      * @param run
      * @param userId
@@ -1659,7 +1073,7 @@ export class PolicyDataMigrator {
      * @param writeBatchSize
      * @param isResumeRun
      */
-    async migrateTokenPoolsV2(
+    async migrateTokenPools(
         contractId: string,
         pools: RetirePool[],
         run: MigrationRun,
@@ -1878,7 +1292,7 @@ export class PolicyDataMigrator {
 
     /**
      * Find block in policy config by tag
-     * @param policyConfig policy config
+     * @param tree
      * @param blockTag block tag
      * @returns Policy block or null
      */
@@ -2164,43 +1578,6 @@ export class PolicyDataMigrator {
 
     /**
      * Migrate document wrapper
-     * @param documents Documents
-     * @param migrateFn Migrate function
-     * @param saveFn Save function
-     * @param errors Errors
-     * @param userId
-     */
-    private async _migrateDocument<T extends BaseEntity>(
-        documents: T[],
-        migrateFn: (document: T, userId: string | null) => Promise<T>,
-        saveFn: (document: Partial<T>) => Promise<T | void>,
-        errors: DocumentError[],
-        userId: string | null
-    ) {
-        const notEmptyDocuments = (documents as any[]).filter((item) => !!item);
-        for (const document of notEmptyDocuments) {
-            try {
-                const newDocument = await migrateFn(document, userId);
-                if (!newDocument) {
-                    continue;
-                }
-                delete newDocument.id;
-                delete newDocument._id;
-                delete newDocument.createDate;
-                delete newDocument.updateDate;
-                await saveFn(newDocument);
-            } catch (error) {
-                await new PinoLogger().error(error.message, ['GUARDIAN_SERVICE'], userId);
-                errors.push({
-                    id: document?.id,
-                    message: error?.toString(),
-                });
-            }
-        }
-    }
-
-    /**
-     * Migrate document wrapper V2
      * @param entityType
      * @param documents Documents
      * @param migrateFn Migrate function
@@ -2213,7 +1590,7 @@ export class PolicyDataMigrator {
      * @param writeBatchSize
      * @param isResumeRun
      */
-    private async _migrateDocumentV2<T extends BaseEntity>(
+    private async _migrateDocument<T extends BaseEntity>(
         entityType: string,
         documents: T[],
         migrateFn: (document: T, userId: string | null) => Promise<T>,
@@ -2424,110 +1801,11 @@ export class PolicyDataMigrator {
      * Migrate role vc
      * @param doc VC
      * @param userId
-     * @returns VC
-     */
-    private async _migrateRoleVc(doc: VcDocument, userId: string | null) {
-        if (!doc) {
-            return doc;
-        }
-
-        doc.owner = await this._replaceDidTopicId(doc.owner);
-
-        let role;
-        if (doc.group) {
-            const groups = await this._db.getGroupsByUser(
-                this._policyId,
-                doc.owner
-            );
-            role = groups.find((group) => group.uuid === doc.group);
-            doc.group = role?.uuid;
-        }
-        let vc: VcDocumentDefinition;
-        const schema = await DatabaseServer.getSchema({
-            topicId: this._policyTopicId,
-            iri: this._schemas[doc.schema],
-        });
-        if (
-            doc.schema !== schema.iri ||
-            this._policyTopicId !== this._oldPolicyTopicId
-        ) {
-            // this._notifier?.info(`Resigning VC ${doc.id}`);
-            const _vcHelper = new VcHelper();
-            const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
-            const credentialSubject = SchemaHelper.updateObjectContext(
-                new Schema(schema),
-                doc.document.credentialSubject[0]
-            );
-            const res = await _vcHelper.verifySubject(credentialSubject);
-            if (!res.ok) {
-                throw new Error(res.error.type);
-            }
-            vc = await _vcHelper.createVerifiableCredential(
-                credentialSubject,
-                didDocument,
-                null,
-                { uuid: role?.uuid }
-            );
-            doc.hash = vc.toCredentialHash();
-            doc.document = vc.toJsonTree();
-            doc.schema = schema.iri;
-        } else {
-            vc = VcDocumentDefinition.fromJsonTree(doc.document);
-        }
-        doc.policyId = this._policyId;
-
-        if (doc.messageId) {
-            // this._notifier?.info(`Publishing VC ${doc.id}`);
-
-            const vcMessage = new RoleMessage(MessageAction.MigrateVC);
-            vcMessage.setDocument(vc);
-            if (role) {
-                vcMessage.setRole(role);
-            }
-            const relationships = [doc.messageId];
-            if (doc.relationships) {
-                relationships.push(...doc.relationships);
-            }
-            vcMessage.setRelationships(relationships);
-            vcMessage.setTag(doc);
-            vcMessage.setEntityType(doc);
-            vcMessage.setOption(doc);
-            if (role) {
-                vcMessage.setUser(role.messageId);
-            }
-
-            const vcMessageResult = await this._ms
-                .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(vcMessage, {
-                    sendToIPFS: true,
-                    memo: null,
-                    userId,
-                    interception: null
-                });
-            doc.messageId = vcMessageResult.getId();
-            doc.topicId = vcMessageResult.getTopicId();
-            doc.messageHash = vcMessageResult.toHash();
-            this.vcMessageIds.set(doc.messageId, doc);
-            if (role) {
-                role.messageId = this.vcMessageIds.get(
-                    role.messageId
-                ).messageId;
-                await this._db.setUserInGroup(role);
-            }
-        }
-
-        return doc;
-    }
-
-    /**
-     * Migrate role vc V2
-     * @param doc VC
-     * @param userId
      * @param run
      * @param sourceRoles
      * @returns VC
      */
-    private async _migrateRoleVcV2(
+    private async _migrateRoleVc(
         doc: VcDocument,
         userId: string | null,
         run: MigrationRun,
@@ -2710,39 +1988,12 @@ export class PolicyDataMigrator {
     /**
      * Migrate policy states
      * @param states States
-     */
-    private async _migratePolicyStates(states: BlockState[]) {
-        for (const state of states) {
-            const data = JSON.parse(state.blockState);
-            if (data.state) {
-                const dataKeys = Object.keys(data);
-                for (const key of dataKeys) {
-                    const newKey = await this._replaceDidTopicId(key);
-                    data[newKey] = data[key];
-                    if (data[newKey] !== data[key]) {
-                        delete data[key];
-                    }
-                }
-            }
-
-            await this._db.saveBlockState(
-                this._policyId,
-                this._blocks[state.blockId],
-                null,
-                data
-            );
-        }
-    }
-
-    /**
-     * Migrate policy states V2
-     * @param states States
      * @param run
      * @param errors
      * @param writeBatchSize
      * @param isResumeRun
      */
-    private async _migratePolicyStatesV2(
+    private async _migratePolicyStates(
         states: BlockState[],
         run: MigrationRun,
         errors: DocumentError[],
@@ -2908,44 +2159,12 @@ export class PolicyDataMigrator {
      * Migrate policy roles
      * @param roles Roles
      * @param userId
-     */
-    private async _migratePolicyRoles(roles: PolicyRoles[], userId: string | null) {
-        for (const role of roles) {
-            role.owner = await this._replaceDidTopicId(role.owner);
-            role.did = await this._replaceDidTopicId(role.did);
-            if (role.role) {
-                role.role = this._roles[role.role];
-            }
-            if (role.groupName) {
-                role.groupName = this._groups[role.groupName];
-            }
-            if (role.username && !this._dryRunId) {
-                const newUser = await this._users.getUserById(role.did, userId);
-                if (newUser) {
-                    role.username = newUser.username;
-                }
-            }
-            if (role.policyId) {
-                role.policyId = this._policyId;
-            }
-
-            delete role.id;
-            delete role._id;
-
-            await this._db.setUserInGroup(role);
-        }
-    }
-
-    /**
-     * Migrate policy roles V2
-     * @param roles Roles
-     * @param userId
      * @param run
      * @param errors
      * @param writeBatchSize
      * @param isResumeRun
      */
-    private async _migratePolicyRolesV2(
+    private async _migratePolicyRoles(
         roles: PolicyRoles[],
         userId: string | null,
         run: MigrationRun,
@@ -3149,107 +2368,10 @@ export class PolicyDataMigrator {
      * Migrate VP document
      * @param doc VP
      * @param userId
-     * @returns VP
-     */
-    private async _migrateVpDocument(doc: VpDocument & { group: string }, userId: string | null) {
-        doc.owner = await this._replaceDidTopicId(doc.owner);
-        if (doc.group) {
-            const srcGroup = await this._db.getGroupByID(
-                this._policyId,
-                doc.group
-            );
-            const dstUserGroup = await this._db.getGroupsByUser(
-                this._policyId,
-                doc.owner
-            );
-            const userRole = dstUserGroup.find(
-                (item) =>
-                    item?.groupName === this._groups[srcGroup?.groupName] ||
-                    item.role === this._roles[srcGroup?.role]
-            );
-            doc.group = userRole ? userRole.uuid : null;
-        }
-
-        // tslint:disable-next-line:no-shadowed-variable
-        const vcs = doc.document.verifiableCredential.map((item) =>
-            VcDocumentDefinition.fromJsonTree(item)
-        );
-        let vpChanged = false;
-        // tslint:disable-next-line:prefer-for-of
-        for (let i = 0; i < doc.relationships.length; i++) {
-            const relationship = doc.relationships[i];
-            // tslint:disable-next-line:no-shadowed-variable
-            const vc = this.vcMessageIds.get(relationship);
-            if (vc) {
-                for (let j = 0; j < vcs.length; j++) {
-                    const element = vcs[j];
-                    const vcDef = VcDocumentDefinition.fromJsonTree(
-                        vc.document
-                    );
-                    if (
-                        element.getId() === vcDef.getId() &&
-                        element.toCredentialHash() !== vcDef.toCredentialHash()
-                    ) {
-                        vpChanged = true;
-                        vcs[j] = vcDef;
-                    }
-                }
-            }
-        }
-
-        let vp;
-        if (vpChanged || this._oldPolicyOwner !== this._owner) {
-            // this._notifier?.info(`Resigning VP ${doc.id}`);
-            const _vcHelper = new VcHelper();
-            const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
-            vp = await _vcHelper.createVerifiablePresentation(
-                vcs,
-                didDocument,
-                null,
-                { uuid: doc.document.id }
-            );
-            doc.hash = vp.toCredentialHash();
-            doc.document = vp.toJsonTree() as any;
-        } else {
-            vp = VpDocumentDefinition.fromJsonTree(doc.document);
-        }
-
-        doc.policyId = this._policyId;
-        if (doc.messageId) {
-            // this._notifier?.info(`Publishing VP ${doc.id}`);
-            const vpMessage = new VPMessage(MessageAction.MigrateVP);
-            vpMessage.setDocument(vp);
-            vpMessage.setUser(null);
-            vpMessage.setRelationships([...doc.relationships, doc.messageId]);
-            vpMessage.setTag(doc);
-            vpMessage.setEntityType(doc);
-            vpMessage.setOption(doc);
-            const vpMessageResult = await this._ms
-                .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(vpMessage, {
-                    sendToIPFS: true,
-                    memo: null,
-                    userId,
-                    interception: null
-                });
-            const vpMessageId = vpMessageResult.getId();
-            this.vpIds.set(doc.messageId, vpMessageId);
-            doc.messageId = vpMessageId;
-            doc.topicId = vpMessageResult.getTopicId();
-            doc.messageHash = vpMessageResult.toHash();
-        }
-
-        return doc;
-    }
-
-    /**
-     * Migrate VP document V2
-     * @param doc VP
-     * @param userId
      * @param run
      * @returns VP
      */
-    private async _migrateVpDocumentV2(
+    private async _migrateVpDocument(
         doc: VpDocument & { group: string },
         userId: string | null,
         run: MigrationRun
@@ -3381,42 +2503,6 @@ export class PolicyDataMigrator {
      * Migrate mint requests
      * @param mintRequests Mint requests
      * @param mintTransactions Mint transactions
-     */
-    private async _migrateMintRequests(
-        mintRequests: MintRequest[],
-        mintTransactions: MintTransaction[]
-    ) {
-        const mintRequestsMapping = new Map<string, string>();
-        for (const mintRequest of mintRequests) {
-            const newVpMessageId = this.vpIds.get(mintRequest.vpMessageId);
-            if (!newVpMessageId) {
-                continue;
-            }
-            mintRequest.vpMessageId = newVpMessageId;
-            const oldMintRequestId = mintRequest.id;
-            delete mintRequest.id;
-            delete mintRequest._id;
-            const newMintRequest = await this._db.saveMintRequest(mintRequest);
-            mintRequestsMapping.set(oldMintRequestId, newMintRequest.id);
-        }
-        for (const mintTransaction of mintTransactions) {
-            const newMintRequestId = mintRequestsMapping.get(
-                mintTransaction.mintRequestId
-            );
-            if (!newMintRequestId) {
-                continue;
-            }
-            mintTransaction.mintRequestId = newMintRequestId;
-            delete mintTransaction.id;
-            delete mintTransaction._id;
-            await this._db.saveMintTransaction(mintTransaction);
-        }
-    }
-
-    /**
-     * Migrate mint requests V2
-     * @param mintRequests Mint requests
-     * @param mintTransactions Mint transactions
      * @param run
      * @param errors
      * @param requestProgressStep
@@ -3424,7 +2510,7 @@ export class PolicyDataMigrator {
      * @param writeBatchSize
      * @param isResumeRun
      */
-    private async _migrateMintRequestsV2(
+    private async _migrateMintRequests(
         mintRequests: MintRequest[],
         mintTransactions: MintTransaction[],
         run: MigrationRun,
@@ -3738,178 +2824,8 @@ export class PolicyDataMigrator {
         }
     }
 
-
     /**
      * Migrate VC document
-     * @param doc VC
-     * @param vcs VCs
-     * @param roles Roles
-     * @param tokens
-     * @param errors Errors
-     * @param userId
-     * @returns VC
-     */
-    private async _migrateVcDocument(
-        doc: VcDocument,
-        vcs: VcDocument[],
-        roles: PolicyRoles[],
-        tokens: Token[],
-        errors: DocumentError[],
-        userId: string | null
-    ) {
-        if (!doc) {
-            return doc;
-        }
-
-        doc.relationships = doc.relationships || [];
-        for (let i = 0; i < doc.relationships.length; i++) {
-            const relationship = doc.relationships[i];
-            let republishedDocument = this.vcMessageIds.get(relationship);
-            if (republishedDocument) {
-                doc.relationships[i] = republishedDocument.messageId;
-            } else {
-                const rs = vcs.find((item) => item.messageId === relationship);
-                try {
-                    republishedDocument = await this._migrateVcDocument(
-                        rs,
-                        vcs,
-                        roles,
-                        tokens,
-                        errors,
-                        userId
-                    );
-                    doc.relationships[i] = republishedDocument.messageId;
-                } catch (error) {
-                    doc.relationships.splice(i, 1);
-                    i--;
-                }
-            }
-        }
-
-        if (this.vcMessageIds.has(doc.messageId)) {
-            return doc;
-        }
-
-        if (doc.messageId) {
-            this.vcMessageIds.set(doc.messageId, doc);
-        }
-
-        const oldDocOwner = doc.owner;
-        doc.owner = await this._replaceDidTopicId(doc.owner);
-        doc.assignedTo = await this._replaceDidTopicId(doc.assignedTo);
-
-        let role;
-        if (doc.group) {
-            const srcGroup = roles.find(
-                (item) => item.uuid === doc.group && item.did === oldDocOwner
-            );
-            const groups = await this._db.getGroupsByUser(
-                this._policyId,
-                doc.owner
-            );
-            role = groups.find(
-                (item) =>
-                    item?.groupName === this._groups[srcGroup?.groupName] ||
-                    item.role === this._roles[srcGroup?.role]
-            );
-            doc.group = role?.uuid;
-        }
-
-        if (doc.assignedToGroup) {
-            const srcGroup = roles.find(
-                (item) =>
-                    item.uuid === doc.assignedToGroup &&
-                    item.did === oldDocOwner
-            );
-            const groups = await this._db.getGroupsByUser(
-                this._policyId,
-                doc.owner
-            );
-            role = groups.find(
-                (item) => item?.groupName === this._groups[srcGroup?.groupName]
-            );
-            doc.assignedToGroup = role?.uuid;
-        }
-
-        let vc: VcDocumentDefinition;
-        const schema = await DatabaseServer.getSchema({
-            topicId: this._policyTopicId,
-            iri: this._schemas[doc.schema],
-        });
-        if (
-            this._editedVCs[doc.id] ||
-            doc.schema !== schema.iri ||
-            this._policyTopicId !== this._oldPolicyTopicId
-        ) {
-            // this._notifier?.info(`Resigning VC ${doc.id}`);
-
-            const _vcHelper = new VcHelper();
-            const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
-            const credentialSubject = SchemaHelper.updateObjectContext(
-                new Schema(schema),
-                this._editedVCs[doc.id] || doc.document.credentialSubject[0]
-            );
-            const res = await _vcHelper.verifySubject(credentialSubject);
-            if (!res.ok) {
-                throw new Error(res.error.type);
-            }
-            vc = await _vcHelper.createVerifiableCredential(
-                credentialSubject,
-                didDocument,
-                null,
-                {
-                    uuid: await this._replaceDidTopicId(doc.document.id),
-                }
-            );
-            doc.hash = vc.toCredentialHash();
-            doc.document = vc.toJsonTree();
-            doc.schema = schema.iri;
-        } else {
-            vc = VcDocumentDefinition.fromJsonTree(doc.document);
-        }
-        doc.policyId = this._policyId;
-
-        if (doc.messageId) {
-            // this._notifier?.info(`Publishing VC ${doc.id}`);
-
-            const vcMessage = new VCMessage(MessageAction.MigrateVC);
-            vcMessage.setDocument(vc);
-            vcMessage.setDocumentStatus(
-                doc.option?.status || DocumentStatus.NEW
-            );
-            vcMessage.setRelationships([...doc.relationships, doc.messageId]);
-            vcMessage.setTag(doc);
-            vcMessage.setEntityType(doc);
-            vcMessage.setOption(doc);
-            if (role && schema.category === SchemaCategory.POLICY) {
-                vcMessage.setUser(role.messageId);
-            }
-            const message = vcMessage;
-            const vcMessageResult = await this._ms
-                .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(message, {
-                    sendToIPFS: true,
-                    memo: null,
-                    userId,
-                    interception: null
-                });
-            doc.messageId = vcMessageResult.getId();
-            doc.topicId = vcMessageResult.getTopicId();
-            doc.messageHash = vcMessageResult.toHash();
-            this.vcMessageIds.set(doc.messageId, doc);
-        }
-
-        this.vcIds.set(doc.id, doc);
-
-        if (doc.tokens) {
-            doc.tokens = await this.migrateTokenTemplates(tokens, doc.tokens, userId);
-        }
-
-        return doc;
-    }
-
-    /**
-     * Migrate VC document V2
      * @param doc VC
      * @param vcs VCs
      * @param roles Roles
@@ -3919,7 +2835,7 @@ export class PolicyDataMigrator {
      * @param recursionState
      * @returns VC
      */
-    private async _migrateVcDocumentV2(
+    private async _migrateVcDocument(
         doc: VcDocument,
         vcs: VcDocument[],
         roles: PolicyRoles[],
@@ -4081,7 +2997,7 @@ export class PolicyDataMigrator {
                 }
 
                 try {
-                    const republishedDocument = await this._migrateVcDocumentV2(
+                    const republishedDocument = await this._migrateVcDocument(
                         sourceRelated,
                         vcs,
                         roles,
@@ -5044,7 +3960,7 @@ export class PolicyDataMigrator {
                                 return;
                             }
 
-                            const migrated = await this._migrateVcDocumentV2(
+                            const migrated = await this._migrateVcDocument(
                                 src,
                                 vcs,
                                 roles,
@@ -5090,7 +4006,7 @@ export class PolicyDataMigrator {
                                 return;
                             }
 
-                            const migrated = await this._migrateRoleVcV2(src, userId, run, roles);
+                            const migrated = await this._migrateRoleVc(src, userId, run, roles);
 
                             PolicyDataMigrator.clearEntityMeta(migrated);
 
@@ -5129,7 +4045,7 @@ export class PolicyDataMigrator {
                                 return;
                             }
 
-                            const migrated = await this._migrateVpDocumentV2(src, userId, run);
+                            const migrated = await this._migrateVpDocument(src, userId, run);
 
                             PolicyDataMigrator.clearEntityMeta(migrated);
 

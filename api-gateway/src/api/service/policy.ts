@@ -425,54 +425,6 @@ export class PolicyApi {
     }
 
     /**
-     * Migrate policy data asynchronous V2
-     */
-    @Post('/push/migrate-data')
-    @Auth(
-        Permissions.POLICIES_MIGRATION_CREATE,
-    )
-    @ApiOperation({
-        summary: 'Migrate policy data asynchronous V2.',
-        description: 'Migrate policy data asynchronous V2.' + ONLY_SR,
-    })
-    @ApiBody({
-        description: 'Migration configuration.',
-        type: MigrationConfigDTO
-    })
-    @ApiAcceptedResponse({
-        description: 'Created task.',
-        type: TaskDTO
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
-    })
-    @ApiExtraModels(TaskDTO, MigrationConfigDTO, InternalServerErrorDTO)
-    @HttpCode(HttpStatus.ACCEPTED)
-    @Version('2')
-    async migrateDataAsyncV2(
-        @AuthUser() user: IAuthUser,
-        @Body() body: MigrationConfigDTO
-    ): Promise<TaskDTO> {
-        const taskManager = new TaskManager();
-        const task = taskManager.start(TaskAction.MIGRATE_DATA, user.id);
-
-        RunFunctionAsync<ServiceError>(async () => {
-            const engineService = new PolicyEngine();
-            await engineService.migrateDataAsyncV2(
-                new EntityOwner(user),
-                body as any,
-                task
-            );
-        }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY'], user.id);
-            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
-        });
-
-        return task;
-    }
-
-    /**
      * Resume migration asynchronous
      */
     @Post('/push/migrate-data/resume')

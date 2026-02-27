@@ -2515,47 +2515,6 @@ export class PolicyEngineService {
                     const notifier = await NewNotifier.create(task);
                     RunFunctionAsync(
                         async () => {
-                            const migrationErrors =
-                                await PolicyDataMigrator.migrate(
-                                    owner.owner,
-                                    migrationConfig,
-                                    owner?.id,
-                                    notifier
-                                );
-                            await this.policyEngine.regenerateModel(
-                                migrationConfig.policies.dst, owner?.id
-                            );
-                            if (migrationErrors.length > 0) {
-                                await logger.warn(
-                                    migrationErrors
-                                        .map(
-                                            (error) =>
-                                                `${error.id}: ${error.message}`
-                                        )
-                                        .join('\r\n'),
-                                    ['GUARDIAN_SERVICE'],
-                                    owner?.id
-                                );
-                            }
-                            notifier.result(migrationErrors);
-                        },
-                        async (error) => {
-                            notifier.fail(error);
-                        }
-                    );
-                } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.MIGRATE_DATA_ASYNC_V2,
-            async (msg: { migrationConfig: any, owner: IOwner, task: any }) => {
-                try {
-                    const { migrationConfig, owner, task } = msg;
-                    const notifier = await NewNotifier.create(task);
-                    RunFunctionAsync(
-                        async () => {
                             await PolicyDataMigrator.assertNoActiveMigrationForUser(owner);
 
                             const { src, dst } = migrationConfig.policies;
@@ -2604,7 +2563,7 @@ export class PolicyEngineService {
                             }
 
                             const migrationErrors =
-                                await PolicyDataMigrator.migrate_V2(
+                                await PolicyDataMigrator.migrate(
                                     owner.owner,
                                     migrationConfig,
                                     owner?.id,
@@ -2701,7 +2660,7 @@ export class PolicyEngineService {
                                 throw new Error('Source and destination policies must be in the same mode');
                             }
 
-                            const migrationErrors = await PolicyDataMigrator.migrate_V2(
+                            const migrationErrors = await PolicyDataMigrator.migrate(
                                 owner.owner,
                                 runConfig,
                                 owner?.id,
