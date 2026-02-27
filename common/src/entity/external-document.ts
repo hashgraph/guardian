@@ -108,6 +108,15 @@ export class ExternalDocument extends RestoreEntity {
     status?: string;
 
     /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
+    /**
      * Create document
      */
     @BeforeCreate()

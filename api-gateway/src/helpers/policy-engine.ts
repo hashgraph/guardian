@@ -29,6 +29,15 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Get disconnected policy
+     * @param policyId
+     * @param user
+     */
+    public async getDisconnectedPolicy(policyId: any, owner: IOwner): Promise<PolicyDTO | null> {
+        return await this.sendMessage(PolicyEngineEvents.GET_DISCONNECTED_POLICY, { policyId, owner });
+    }
+
+    /**
      * Get policy
      * @param policyId
      */
@@ -232,6 +241,30 @@ export class PolicyEngine extends NatsService {
         owner: IOwner
     ): Promise<boolean> {
         return await this.sendMessage(PolicyEngineEvents.DRAFT_POLICIES, { policyId, owner });
+    }
+
+    /**
+     * Disconnect policy
+     * @param policyId
+     * @param user
+     */
+    public async disconnectPolicy(
+        policyId: string,
+        user: IAuthUser,
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.DISCONNECT_POLICY, { policyId, user });
+    }
+
+    /**
+     * Reconnect policy
+     * @param policyId
+     * @param user
+     */
+    public async reconnectPolicy(
+        policyId: string,
+        user: IAuthUser,
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.RECONNECT_POLICY, { policyId, user });
     }
 
     /**
