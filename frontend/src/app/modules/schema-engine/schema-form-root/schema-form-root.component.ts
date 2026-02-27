@@ -1,7 +1,9 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { SchemaFormComponent } from '../schema-form/schema-form.component';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaField, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { FieldForm, IFieldControl } from '../schema-form-model/field-form';
+import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-form-navigation.component';
 
 /**
  * Form built by schema
@@ -15,6 +17,10 @@ export class SchemaFormRootComponent implements OnInit {
     public group: UntypedFormGroup;
     public model: FieldForm | null;
     public loading: boolean = true;
+    public hasNavigation = true;
+
+    @ViewChild('childForm') private childForm?: SchemaFormComponent;
+    @ViewChild('schemaNav') private schemaNav?: SchemaFormNavigationComponent;
 
     @Input('schema') schema: Schema;
     @Input('fields') fields: SchemaField[];
@@ -53,7 +59,7 @@ export class SchemaFormRootComponent implements OnInit {
     @Output() submitBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() saveBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() updatableBtnEvent = new EventEmitter();
-
+    
     constructor(
         private fb: UntypedFormBuilder,
         protected changeDetectorRef: ChangeDetectorRef
@@ -140,5 +146,22 @@ export class SchemaFormRootComponent implements OnInit {
         this.presetDocument = data;
         this.buildFields();
         this.changeDetectorRef.detectChanges();
+    }
+
+    public onNavSelectEvent(link: string) {
+        if (this.childForm && typeof this.childForm.openField === 'function') {
+            this.childForm.openField(link);
+        }
+    }
+
+    public onNavHasItemsEvent(hasItems: boolean): void {
+        this.hasNavigation = hasItems;
+        this.changeDetectorRef.detectChanges();
+    }
+
+    public onAccordionSelect(accordionInfo: {path: string, isOpen: boolean}) {
+        if (this.schemaNav && typeof this.schemaNav.expandedByAccordionId === 'function') {
+            this.schemaNav.expandedByAccordionId(accordionInfo);
+        }
     }
 }

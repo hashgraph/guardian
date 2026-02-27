@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, } from '@angular/core';
 import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -6,6 +6,8 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { FormulasTree } from '../../formulas/models/formula-tree';
+import { SchemaFormViewComponent } from '../schema-form-view/schema-form-view.component';
+import { SchemaFormViewNavigationComponent } from '../schema-form-view-navigation/schema-form-view-navigation.component';
 
 /**
  * View document
@@ -17,6 +19,7 @@ import { FormulasTree } from '../../formulas/models/formula-tree';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DocumentViewComponent implements OnInit {
+    @Input() dialogContext?: 'fullscreen' | 'viewer';
     @Input('getByUser') getByUser: boolean = false;
     @Input('document') document: any;
     @Input('formulas') formulas: FormulasTree | null;
@@ -37,6 +40,9 @@ export class DocumentViewComponent implements OnInit {
     
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
 
+    @ViewChild(SchemaFormViewComponent) private schemaView?: SchemaFormViewComponent;
+    @ViewChild(SchemaFormViewNavigationComponent) public schemaNav?: SchemaFormViewNavigationComponent;
+
     public loading: boolean = false;
     public isIssuerObject: boolean = false;
     public issuerOptions: any[] = [];
@@ -50,6 +56,7 @@ export class DocumentViewComponent implements OnInit {
     public rulesResults: SchemaRuleValidateResult;
     public formulasResults: any | null;
     public link: string | undefined;
+    public accordionLink: string | undefined;
 
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -246,11 +253,20 @@ export class DocumentViewComponent implements OnInit {
     public onDiscussionAction($event: any) {
         this.discussionActionEvent.emit($event);
     }
-
+    
     public openField(id?: string): void {
         const path = id?.split('/');
         this.link = path && path.length > 1 ? path[path.length - 1] : undefined;
         this.ref.detectChanges();
+    }
+
+    public navigateToField(id?: string): void {
+        if (!id) {
+            return;
+        }
+        if (this.schemaView) {
+            this.schemaView.navigateToField(id);
+        }
     }
 
     public getTagJson(tag: any): string {
