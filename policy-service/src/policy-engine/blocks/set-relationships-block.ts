@@ -62,7 +62,7 @@ export class SetRelationshipsBlock {
     })
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-        const options = ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
         const data: IPolicyDocument[] = await ref.getSources(event.user);
         const owner = data[0] && data[0].owner || null;
         const group = data[0] && data[0].group || null;

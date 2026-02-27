@@ -53,9 +53,9 @@ export class FiltersAddonBlock {
         }
     }
 
-    private addQuery(filter: any, value: any, user?: PolicyUser) {
+    private async addQuery(filter: any, value: any, user?: PolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const query = PolicyUtils.parseQuery(options.queryType || QueryType.eq, value);
         if (query && query.expression) {
             filter[options.field] = query.expression;
@@ -64,10 +64,10 @@ export class FiltersAddonBlock {
         }
     }
 
-    private checkValues(blockState: any, value: any, user: PolicyUser): boolean {
+    private async checkValues(blockState: any, value: any, user: PolicyUser): Promise<boolean> {
         if (Array.isArray(blockState.lastData)) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-            const options = ref.getOptions(user);
+            const options = await ref.getOptions(user);
             const query = PolicyUtils.parseQuery(options.queryType || QueryType.eq, value);
             const itemValues = query.value;
             if (Array.isArray(itemValues)) {
@@ -100,7 +100,7 @@ export class FiltersAddonBlock {
     public async getFilters(user: PolicyUser): Promise<{ [key: string]: string }> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filters = ref.filters[user.id] || {};
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         if (!filters[options.field] && !options.canBeEmpty) {
 
@@ -129,7 +129,7 @@ export class FiltersAddonBlock {
                 filterValue = 'eq:' + filterValue;
             }
 
-            this.addQuery(filters, filterValue, user);
+            await this.addQuery(filters, filterValue, user);
         }
         return filters;
     }
@@ -140,7 +140,7 @@ export class FiltersAddonBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const block: IPolicyGetData = {
             id: ref.uuid,
@@ -198,7 +198,7 @@ export class FiltersAddonBlock {
 
     async setFiltersStrict(user: PolicyUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         this.previousState[user.id] = { ...this.state[user.id] };
         const filter: any = {};
@@ -240,7 +240,7 @@ export class FiltersAddonBlock {
 
     async setFilterState(user: PolicyUser, data: any): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         this.previousState[user.id] = { ...this.state[user.id] };
         const filter: any = {};
@@ -254,7 +254,7 @@ export class FiltersAddonBlock {
             if (!blockState.lastData) {
                 await this.getData(user);
             }
-            if (this.checkValues(blockState, value, user)) {
+            if (await this.checkValues(blockState, value, user)) {
                 this.addQuery(filter, value);
             } else if (!options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)

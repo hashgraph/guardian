@@ -36,8 +36,8 @@ export class InformationBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const options = ref.getOptions(user);
-        
+        const options = await ref.getOptions(user);
+
         return {
             id: ref.uuid,
             blockType: ref.blockType,

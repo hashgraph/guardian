@@ -82,7 +82,7 @@ export class TokenConfirmationBlock {
     async getToken(user?: PolicyUser): Promise<TokenCollection> {
         if (!this.token) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-            const options = ref.getOptions(user);
+            const options = await ref.getOptions(user);
             this.token = await ref.databaseServer.getToken(options.tokenId);
         }
         return this.token;
@@ -94,7 +94,7 @@ export class TokenConfirmationBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const blockState: any = this.state[user?.id] || {};
         const token = await this.getToken(user);
         const block: IPolicyGetData = {
@@ -147,7 +147,7 @@ export class TokenConfirmationBlock {
         action: 'confirm' | 'skip'
     }, actionStatus: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         ref.log(`setData`);
 
         if (!data) {
@@ -216,7 +216,7 @@ export class TokenConfirmationBlock {
             hederaAccountKey: data.hederaAccountKey
         }
 
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         if (!account.hederaAccountKey) {
             throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
@@ -266,7 +266,7 @@ export class TokenConfirmationBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
 
-        const options = ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
 
         const field = options.accountId;
         if (event) {

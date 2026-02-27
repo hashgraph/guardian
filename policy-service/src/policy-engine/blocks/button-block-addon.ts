@@ -107,7 +107,7 @@ export class ButtonBlockAddon {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -136,7 +136,7 @@ export class ButtonBlockAddon {
         actionStatus
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const parent = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(
             ref.parent
         );

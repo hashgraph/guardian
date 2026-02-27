@@ -193,7 +193,7 @@ export class RequestVcDocumentBlock {
 
     private async setBlockData(user: PolicyUser, data: IPolicyDocument, actionStatus: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         try {
             //Prepare data
             const document = await this.prepareDocument(data);
@@ -329,7 +329,7 @@ export class RequestVcDocumentBlock {
         documentRef: VcDocumentCollection,
         user?: PolicyUser
     ): Promise<CheckResult> {
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         if (
             options.presetFields &&
@@ -402,7 +402,7 @@ export class RequestVcDocumentBlock {
         actionStatusId: string,
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         SchemaHelper.updateObjectContext(this._schema, document);
 
         const _vcHelper = new VcHelper();

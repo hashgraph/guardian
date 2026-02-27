@@ -69,7 +69,7 @@ export class DropdownBlockAddon {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const documents: any[] = await ref.getSources(user, null);
 
         const data: IPolicyGetData = {
@@ -107,7 +107,7 @@ export class DropdownBlockAddon {
         actionStatus
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const documents: any[] = await ref.getSources(user, null);
         const dropdownDocument = documents.find(
             // tslint:disable-next-line:no-shadowed-variable

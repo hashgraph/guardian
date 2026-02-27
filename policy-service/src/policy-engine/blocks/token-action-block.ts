@@ -90,7 +90,7 @@ export class TokenActionBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         return {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -119,7 +119,7 @@ export class TokenActionBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const userId = event?.user?.userId;
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        const options = ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
         ref.log(`runAction`);
         const field = options.accountId;
         const documents = event?.data?.data;

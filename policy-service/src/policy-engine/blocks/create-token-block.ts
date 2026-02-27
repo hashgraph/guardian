@@ -117,7 +117,7 @@ export class CreateTokenBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         if (options.autorun) {
             throw new BlockActionError(
@@ -164,7 +164,7 @@ export class CreateTokenBlock {
             );
         }
 
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
 
@@ -265,7 +265,7 @@ export class CreateTokenBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         ref.log(`setData`);
 
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         if (options.autorun) {
             throw new BlockActionError(
@@ -328,7 +328,7 @@ export class CreateTokenBlock {
         const user = event.user;
         const eventData = event.data;
 
-        let options = ref.getOptions(user);
+        let options = await ref.getOptions(user);
 
         if (!this.state.tokenNumber) {
             this.state.tokenNumber = 0;

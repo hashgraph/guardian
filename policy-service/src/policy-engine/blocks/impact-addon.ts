@@ -104,7 +104,7 @@ export class TokenOperationAddon {
         userId: string | null
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const policySchema = await this.getSchema();
         const amount = PolicyUtils.aggregate(options.amount, documents);
         const vcHelper = new VcHelper();

@@ -139,7 +139,7 @@ export class InterfaceStepBlock {
     })
     async releaseChild(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const options = ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
         const index = ref.children.findIndex(c => c.uuid === event.sourceId);
         if ((options.cyclic && index !== -1) && (this.endIndexes[index])) {
             const user = event.user;
@@ -166,7 +166,7 @@ export class InterfaceStepBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.id)) {
             blockState = {};

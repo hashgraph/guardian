@@ -71,7 +71,7 @@ export class DocumentValidatorBlock {
 
         const documentRef = PolicyUtils.getDocumentRef(document);
 
-        const options = ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
 
         if (options.documentType === 'related-vc-document') {
             if (documentRef) {

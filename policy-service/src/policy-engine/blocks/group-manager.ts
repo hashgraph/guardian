@@ -49,7 +49,7 @@ export class GroupManagerBlock {
         role: string
     ): Promise<string> {
         const group = await ref.databaseServer.getUserInGroup(ref.policyId, user.did, groupId);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         if (!group) {
             throw new Error(`Group not found`);
@@ -94,7 +94,7 @@ export class GroupManagerBlock {
         if (user.did === did) {
             throw new Error(`Permission denied`);
         }
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const member = await ref.databaseServer.getUserInGroup(ref.policyId, did, groupId);
         if (!member) {
@@ -156,7 +156,7 @@ export class GroupManagerBlock {
      */
     private async groupMapping(ref: IPolicyInterfaceBlock, user: PolicyUser, group: PolicyRoles): Promise<any> {
         const config = PolicyUtils.getGroupTemplate<any>(ref, group.groupName);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const members = (await ref.databaseServer.getAllMembersByGroup(group)).map(member => {
             return {
                 did: member.did,

@@ -12,6 +12,7 @@ import { PolicyUser } from '../../policy-user.js';
 import { ComponentsService } from '../components-service.js';
 import { IDebugContext } from '../../block-engine/block-result.js';
 import { RecordActionStep } from '../../record-action-step.js';
+import { PolicyUtils } from '../utils.js';
 
 /**
  * Basic block decorator
@@ -952,7 +953,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if(!row || row.updated || !row.properties || Object.keys(row.properties).length === 0) {
                     properties = {};
                     const policyRows = await this.databaseServer.find(PolicyParameters, { policyId: this.policyId });
-
                     for (const item of policyRows) {
                         for (const config of item.config ?? []) {
                             if(
@@ -987,7 +987,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
 
                 if(properties && properties[this.tag]) {
-                    return Object.assign({}, this.options, properties[this.tag]);
+                    return PolicyUtils.deepAssign({}, this.options, properties[this.tag]);
                 } else {
                     return this.options;
                 }

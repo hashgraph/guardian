@@ -87,7 +87,7 @@ export class DocumentsSourceAddon {
         otherOptions?: any
     ) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const filters: any = {};
         if (!Array.isArray(options.filters)) {
@@ -237,7 +237,7 @@ export class DocumentsSourceAddon {
      */
     async getFromSourceFilters(user: PolicyUser, globalFilters: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const filters: any = [];
         if (!Array.isArray(options.filters)) {
             throw new BlockActionError('filters option must be an array', ref.blockType, ref.uuid);

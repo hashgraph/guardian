@@ -33,7 +33,7 @@ export class CalculateMathAddon {
      */
     public async run(scope: any, user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         if (options.equations) {
             for (const equation of options.equations) {
@@ -52,10 +52,9 @@ export class CalculateMathAddon {
      */
     public getVariables(variables: any): any {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
-        const options = ref.getOptions();
-        
-        if (options.equations) {
-            for (const equation of options.equations) {
+
+        if (ref.options.equations) {
+            for (const equation of ref.options.equations) {
                 variables[equation.variable] = equation.formula;
             }
         }

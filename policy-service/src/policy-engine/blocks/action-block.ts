@@ -46,7 +46,7 @@ export class InterfaceDocumentActionBlock {
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const data: IPolicyGetData = {
             id: ref.uuid,
@@ -105,7 +105,7 @@ export class InterfaceDocumentActionBlock {
     async setData(user: PolicyUser, document: IPolicyDocument, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const state: IPolicyEventState = { data: document };
 

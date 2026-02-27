@@ -123,7 +123,7 @@ export class AggregateBlock {
     public async tickCron(event: IPolicyEvent<string[]>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        const options = ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
 
         const { aggregateType, groupByFields, disableUserGrouping } = options;
         if (aggregateType !== 'period') {
@@ -187,7 +187,7 @@ export class AggregateBlock {
     private async sendCronDocuments(ref: AnyBlockType, userId: string, documents: AggregateVC[], actionStatus: RecordActionStep) {
         documents = await this.removeDocuments(ref, documents);
         const user = await PolicyUtils.getPolicyUserById(ref, userId);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         if (documents.length || options.emptyData) {
             const state: IPolicyEventState = { data: documents };
             await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
@@ -256,7 +256,7 @@ export class AggregateBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     private async tickAggregate(ref: AnyBlockType, document: any, userId: string | null, actionStatus: RecordActionStep, user?: PolicyUser) {
-        let options = ref.getOptions(user);
+        let options = await ref.getOptions(user);
 
         const { expressions, condition, disableUserGrouping, groupByFields } = options;
         const groupByUser = !disableUserGrouping;
@@ -350,7 +350,7 @@ export class AggregateBlock {
      */
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const options = ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
         const { aggregateType } = options;
 
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;

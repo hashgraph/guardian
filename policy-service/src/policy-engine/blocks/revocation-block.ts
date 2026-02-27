@@ -135,7 +135,7 @@ export class RevocationBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<any> {
         const userId = event?.user?.userId;
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
-        const options = ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
 
         const data = event.data.data;
         const doc = Array.isArray(data) ? data[0] : data;

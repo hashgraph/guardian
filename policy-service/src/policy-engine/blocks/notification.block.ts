@@ -161,12 +161,12 @@ export class NotificationBlock {
      * @param ref Block ref
      * @returns Function
      */
-    private getNotificationFunction(
+    private async getNotificationFunction(
         ref: any,
         user: PolicyUser
-    ): (title: string, message: string, userId: string) => void {
+    ): Promise<(title: string, message: string, userId: string) => void> {
         let fn;
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         
         switch (options.type) {
             case NotificationType.INFO:
@@ -210,9 +210,9 @@ export class NotificationBlock {
         const ref =
             PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
-        const options = ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
             
-        const notify = this.getNotificationFunction(ref, event.user);
+        const notify = await this.getNotificationFunction(ref, event.user);
 
         switch (options.user) {
             case UserOption.ALL: {

@@ -66,7 +66,7 @@ export class TransformationButtonBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -100,7 +100,7 @@ export class TransformationButtonBlock {
         tag: any
     }, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const data: IPolicyDocument = blockData.document;
         const state: IPolicyEventState = { data };
         const eventData = await ref.triggerEventSync(PolicyInputEventType.GetDataEvent, user, state, actionStatus);
@@ -112,7 +112,7 @@ export class TransformationButtonBlock {
 
         return {
             data: eventData,
-            url: options?.url ?? ''
+            url: options && options.url ? options.url : ''
         };
     }
 }

@@ -178,7 +178,7 @@ export class CustomLogicBlock {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
-                const options = ref.getOptions(user);
+                const options = await ref.getOptions(user);
                 
                 let documents: IPolicyDocument[];
                 if (Array.isArray(state.data)) {
@@ -365,7 +365,7 @@ export class CustomLogicBlock {
         const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, firstDocument, userId);
         const relationships = [];
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         let accounts: any = {};
         let tokens: any = {};
         let id: string;
@@ -450,7 +450,7 @@ export class CustomLogicBlock {
         // <-- new vc
         const VCHelper = new VcHelper();
 
-        let options = ref.getOptions(user);
+        let options = await ref.getOptions(user);
 
         const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
         const vcSubject: any = {

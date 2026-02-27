@@ -97,7 +97,7 @@ export class SwitchBlock {
     })
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const options = ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
         ref.log(`switch: ${event.user?.id}`);
 
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;

@@ -64,7 +64,7 @@ export class InterfaceDocumentsSource {
 
     async onAddonEvent(user: PolicyUser, tag: string, documentId: string, handler: (document: any) => Promise<IPolicyEventState>, actionStatus) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const fields = options?.uiMetaData?.fields?.filter((field) =>
             field?.bindBlocks?.includes(tag)
         );
@@ -148,7 +148,7 @@ export class InterfaceDocumentsSource {
      */
     async getData(user: PolicyUser, uuid: string, queryParams: any): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         let ret: IPolicyGetData = {
             id: ref.uuid,

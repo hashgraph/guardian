@@ -64,7 +64,7 @@ export class ReassigningBlock {
         actor: PolicyUser
     }> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const owner: PolicyUser = await PolicyUtils.getDocumentOwner(ref, document, userId);
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, document, user.userId);
 

@@ -371,8 +371,8 @@ export class PolicyRolesBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const options = ref.getOptions(user);
-        
+        const options = await ref.getOptions(user);
+
         const roles: string[] = Array.isArray(options.roles) ? options.roles : [];
         const groups: string[] = Array.isArray(options.groups) ? options.groups : [];
         const policyGroups = PolicyUtils.getGroupTemplates<IGroupConfig>(ref);

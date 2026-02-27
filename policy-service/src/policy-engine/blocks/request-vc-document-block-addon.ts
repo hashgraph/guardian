@@ -140,7 +140,7 @@ export class RequestVcDocumentBlockAddon {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const data: IPolicyGetData = {
             id: ref.uuid,
@@ -187,7 +187,7 @@ export class RequestVcDocumentBlockAddon {
                     );
                 }
                 const document = _data.document;
-                const options = ref.getOptions(user);
+                const options = await ref.getOptions(user);
 
                 const disposeTables = await hydrateTablesInObject(
                     document,
@@ -310,7 +310,7 @@ export class RequestVcDocumentBlockAddon {
         documentRef: VcDocumentCollection,
         user?: PolicyUser
     ): Promise<CheckResult> {
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         if (
             options.presetFields &&

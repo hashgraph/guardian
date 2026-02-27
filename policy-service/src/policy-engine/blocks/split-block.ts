@@ -92,7 +92,7 @@ export class SplitBlock {
      */
     private async calcDocValue(ref: IPolicyBlock, doc: IPolicyDocument, user?: PolicyUser): Promise<number> {
         try {
-            const options = ref.getOptions(user);
+            const options = await ref.getOptions(user);
             const value = PolicyUtils.getObjectValue<any>(doc, options.sourceField);
             return parseFloat(value);
         } catch (error) {
@@ -126,7 +126,7 @@ export class SplitBlock {
         user?: PolicyUser
     ): Promise<IPolicyDocument> {
         let clone = PolicyUtils.cloneVC(ref, document);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         PolicyUtils.setObjectValue(clone, options.sourceField, newValue);
         let vc = VcDocument.fromJsonTree(clone.document);
         if (document.messageId) {
@@ -179,7 +179,7 @@ export class SplitBlock {
         userId: string | null,
         actionStatusId: string
     ) {
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const threshold = parseFloat(options.threshold);
         const value = await this.calcDocValue(ref, document, user);
 

@@ -61,7 +61,7 @@ export class ReportItemBlock {
         variables: any,
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportItemBlock>(this);
-        const options = ref.getOptions();
+        const options = await ref.getOptions();
 
         const icon = options.icon;
         const title = options.title;

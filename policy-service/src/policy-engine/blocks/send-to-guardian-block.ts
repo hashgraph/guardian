@@ -176,7 +176,7 @@ export class SendToGuardianBlock {
         userId: string | null,
         user?: PolicyUser
     ): Promise<IPolicyDocument> {
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         let old = await this.getVCRecord(document, operation, ref);
         if (old) {
@@ -370,7 +370,7 @@ export class SendToGuardianBlock {
         userId: string | null,
         user?: PolicyUser
     ): Promise<IPolicyDocument> {
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         document.documentFields = Array.from(
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
@@ -458,7 +458,7 @@ export class SendToGuardianBlock {
         user?: PolicyUser
     ): Promise<IPolicyDocument> {
         try {
-            const options = ref.getOptions(user);
+            const options = await ref.getOptions(user);
 
             const memo = MessageMemo.parseMemo(true, options.memo, document);
             message.setMemo(memo);
@@ -505,7 +505,7 @@ export class SendToGuardianBlock {
         user?: PolicyUser
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const type = PolicyUtils.getDocumentType(document);
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, document, userId);
         const owner = await PolicyUtils.getUserByIssuer(ref, document, userId);
@@ -634,7 +634,7 @@ export class SendToGuardianBlock {
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        const options = ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
         ref.log(`runAction`);
 
         const tags = await PolicyUtils.getBlockTags(ref);

@@ -121,7 +121,7 @@ export class RetirementBlock {
         actionStatus: RecordActionStep
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const tags = await PolicyUtils.getBlockTags(ref);
 
@@ -293,8 +293,8 @@ export class RetirementBlock {
      */
     private async getToken(ref: AnyBlockType, docs: IPolicyDocument[], user?: PolicyUser): Promise<TokenCollection> {
         let token: TokenCollection;
-        const options = ref.getOptions(user);
-        
+        const options = await ref.getOptions(user);
+
         if (options.useTemplate) {
             if (docs[0].tokens) {
                 const tokenId = docs[0].tokens[options.template];
@@ -325,7 +325,7 @@ export class RetirementBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        let options = ref.getOptions(event.user);
+        let options = await ref.getOptions(event.user);
 
         const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
         if (!docs.length && docs[0]) {

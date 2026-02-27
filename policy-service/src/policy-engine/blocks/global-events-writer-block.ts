@@ -103,7 +103,7 @@ export class GlobalEventsWriterBlock {
             user.userId,
         );
 
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const existingTopicIds = new Set<string>();
         for (const stream of existingStreams) {
@@ -485,7 +485,7 @@ export class GlobalEventsWriterBlock {
      */
     public async getData(user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const config = options || {}
 
@@ -544,7 +544,7 @@ export class GlobalEventsWriterBlock {
      */
     public async setData(user: PolicyUser, data: SetDataPayload, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const operation = data.operation;
         const streams = data.streams ?? [];

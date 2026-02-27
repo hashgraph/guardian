@@ -1714,7 +1714,7 @@ export class PolicyConfigurationComponent implements OnInit {
         const dialogRef = this.dialogService.open(PolicyParametersConfigDialog, {
             width: '1024px',
             styleClass: 'custom-dialog',
-            header: 'Editible Fields',
+            header: 'Policy Parameters',
             closable: true,
             data: {
                 policy: this.policyTemplate,

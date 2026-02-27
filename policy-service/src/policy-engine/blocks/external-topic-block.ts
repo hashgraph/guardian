@@ -716,7 +716,7 @@ export class ExternalTopicBlock {
         actionStatus: RecordActionStep
     ): Promise<void> {
         const documentRef = await this.getRelationships(ref, user);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         if (message.type !== MessageType.VCDocument) {
             return;

@@ -4546,7 +4546,6 @@ export class PolicyEngineService {
                     const { userDID, policyId, config } = msg;
 
                     const found = await DatabaseServer.getPolicyParameters(userDID, policyId);
-
                     if(found) {
                         found.config = config;
                         result = await DatabaseServer.updatePolicyParameters(found);
@@ -4577,7 +4576,15 @@ export class PolicyEngineService {
                 try {
                     const { userDID, policyId } = msg;
                     
-                    const result = await DatabaseServer.getPolicyParameters(userDID, policyId);
+                    let result;
+                    const parameters = await DatabaseServer.getPolicyParameters(userDID, policyId);
+                    if(parameters && parameters.config?.length) {
+                        result = parameters.config;
+                    }
+                    else {
+                        const foundPolicy = await DatabaseServer.getPolicyById(policyId);
+                        result = foundPolicy?.editableParametersSettings;
+                    }
 
                     return new MessageResponse(result);
                 } catch (error) {

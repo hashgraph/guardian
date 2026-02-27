@@ -117,7 +117,7 @@ import { LocationType } from '@guardian/interfaces';
             label: 'Variables',
             title: 'Variables',
             type: PropertyType.Array,
-            editable: true,
+            editable: false,
             items: {
                 label: 'Variable',
                 value: 'var @variableName = @variablePath',
@@ -158,7 +158,7 @@ export class CalculateMathVariables {
      */
     public async run(scope: any, user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         
         const filters: any = {};
         if (options.onlyOwnDocuments) {
@@ -237,10 +237,9 @@ export class CalculateMathVariables {
      */
     public options(variables: any): any {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
-        const options = ref.getOptions();
 
-        if (options.variables) {
-            for (const variable of options.variables) {
+        if (ref.options.variables) {
+            for (const variable of ref.options.variables) {
                 variables[variable.variableName] = variable.variablePath;
             }
         }

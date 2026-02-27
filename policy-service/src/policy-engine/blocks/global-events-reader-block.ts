@@ -189,7 +189,7 @@ class GlobalEventsReaderBlock {
             user.userId
         );
 
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const existingTopicIds = new Set<string>();
 
@@ -912,7 +912,7 @@ class GlobalEventsReaderBlock {
         user: PolicyUser,
         stream: GlobalEventsReaderStream
     ): Promise<void> {
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const config = (options || {}) as GlobalEventReaderConfig;
         const branches = config.branches ?? [];
@@ -1092,7 +1092,7 @@ class GlobalEventsReaderBlock {
 
     public async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const config = options;
 
         if (ref.dryRun) {
@@ -1254,7 +1254,7 @@ class GlobalEventsReaderBlock {
         actionStatus
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         if (ref.dryRun) {
             throw new BlockActionError('Block is disabled in dry run mode', ref.blockType, ref.uuid);

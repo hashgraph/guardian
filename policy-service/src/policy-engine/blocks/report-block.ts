@@ -436,7 +436,7 @@ export class ReportBlock {
      */
     async getData(user: PolicyUser, uuid: string): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         try {
             const blockState = this.state[user.id] || {};

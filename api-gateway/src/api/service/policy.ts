@@ -4865,22 +4865,8 @@ export class PolicyApi {
         @Param('policyId') policyId: string,
     ): Promise<any> {
         try {
-            let config;
             const engineService = new PolicyEngine();
-            const parameters: PolicyParametersDTO = await engineService.getPolicyParametersConfig(new EntityOwner(user), user.did, policyId );
-
-            if(parameters) {
-                config = parameters.config;
-            } else {
-                const policy = await engineService.getPolicy({
-                    filters: policyId,
-                    userDid: user.did,
-                }, new EntityOwner(user));
-
-                config = policy.editableParametersSettings;
-            }
-            
-            return config;
+            return await engineService.getPolicyParametersConfig(new EntityOwner(user), user.did, policyId );
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

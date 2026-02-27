@@ -54,7 +54,7 @@ export class MintBlock {
      */
     private async getToken(ref: AnyBlockType, docs: IPolicyDocument[], user?: PolicyUser): Promise<TokenCollection> {
         let token: TokenCollection;
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         if (options.useTemplate) {
             if (docs[0].tokens) {
                 const tokenId = docs[0].tokens[options.template];
@@ -75,11 +75,11 @@ export class MintBlock {
      * @param docs
      * @private
      */
-    private getObjects(ref: AnyBlockType, docs: IPolicyDocument[], user?: PolicyUser): any {
+    private async getObjects(ref: AnyBlockType, docs: IPolicyDocument[], user?: PolicyUser): Promise<any> {
         const vcs: VcDocument[] = [];
         const messages: string[] = [];
         const topics: string[] = [];
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const field = options.accountId || 'default';
         const accounts: string[] = [];
         for (const doc of docs) {
@@ -127,16 +127,16 @@ export class MintBlock {
      * @param userId
      * @private
      */
-    private getAccount(
+    private async getAccount(
         ref: AnyBlockType,
         docs: IPolicyDocument[],
         accounts: string[],
         relayerAccount: string,
         userId: string | null,
         user?: PolicyUser
-    ): string {
+    ): Promise<string> {
         let targetAccount: string;
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         if (options.accountType !== 'custom-value') {
             const firstAccounts = accounts[0];
             if (accounts.find(a => a !== firstAccounts)) {
@@ -292,7 +292,7 @@ export class MintBlock {
         actionStatus: RecordActionStep
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
-        const options = ref.getOptions(user);
+        const options = await ref.getOptions(user);
         const tags = await PolicyUtils.getBlockTags(ref);
 
         const uuid: string = await ref.components.generateUUID();
@@ -512,12 +512,12 @@ export class MintBlock {
         userId: string | null
     ) {
         const token = await this.getToken(ref, docs, user);
-        const { vcs, messages, topics, accounts } = this.getObjects(ref, docs, event.user);
+        const { vcs, messages, topics, accounts } = await this.getObjects(ref, docs, event.user);
         const additionalMessages = this.getAdditionalMessages(additionalDocs);
         const topicId = topics[0];
 
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, docs[0], userId);
-        const targetAccount = this.getAccount(ref, docs, accounts, relayerAccount, userId, event.user);
+        const targetAccount = await this.getAccount(ref, docs, accounts, relayerAccount, userId, event.user);
 
         const [vp, amount] = await this.mintProcessing(
             token,
