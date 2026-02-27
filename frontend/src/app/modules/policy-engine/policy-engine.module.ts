@@ -146,7 +146,6 @@ import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector'
 // Dialogs
 import { DiscontinuePolicy } from './dialogs/discontinue-policy/discontinue-policy.component';
 import { MigrateData } from './dialogs/migrate-data/migrate-data.component';
-import { MigrateDataV2 } from './dialogs/migrate-data-v2/migrate-data-v2.component';
 import { JsonEditorDialogComponent } from './dialogs/json-editor-dialog/json-editor-dialog.component';
 import { PolicyTestDialog } from './dialogs/policy-test-dialog/policy-test-dialog.component';
 import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import-file-dialog.component';
@@ -282,7 +281,6 @@ import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-di
         ResizingDirective,
         DiscontinuePolicy,
         MigrateData,
-        MigrateDataV2,
         JsonEditorDialogComponent,
         PolicyTestDialog,
         NewImportFileDialog,

@@ -451,14 +451,6 @@ export class PolicyEngineService {
         );
     }
 
-    public migrateDataAsyncV2(migrationConfig: MigrationConfig): Observable<{ taskId: string; expectation: number }> {
-        return this.http.post<{ taskId: string; expectation: number }>(
-            `${this.url}/push/migrate-data`,
-            migrationConfig,
-            { headers: headersV2 }
-        );
-    }
-
     public resumeMigrateDataAsync(runId: string): Observable<{ taskId: string; expectation: number }> {
         return this.http.post<{ taskId: string; expectation: number }>(
             `${this.url}/push/migrate-data/resume`,

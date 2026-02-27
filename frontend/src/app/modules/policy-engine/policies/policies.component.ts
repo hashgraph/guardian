@@ -37,8 +37,7 @@ import { SuggestionsConfigurationComponent } from '../../../views/suggestions-co
 import { DeleteDialogComponent } from '../dialogs/delete-dialog/delete-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
-import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
-import { MigrateDataV2, MigrationActionResult } from '../dialogs/migrate-data-v2/migrate-data-v2.component';
+import { MigrateData, MigrationActionResult } from '../dialogs/migrate-data/migrate-data.component';
 import { ContractService } from 'src/app/services/contract.service';
 import { PolicyTestDialog } from '../dialogs/policy-test-dialog/policy-test-dialog.component';
 import { NewImportFileDialog } from '../dialogs/new-import-file-dialog/new-import-file-dialog.component';
@@ -587,14 +586,6 @@ export class PoliciesComponent implements OnInit {
                         icon: 'import-data',
                         color: 'primary-color',
                         click: () => this.migrateData(policy)
-                    }),
-                    new MenuButton({
-                        visible: this.user.POLICIES_MIGRATION_CREATE,
-                        disabled: !this.checkMigrationStatus(policy.status),
-                        tooltip: 'Migrate data v2',
-                        icon: 'import-data',
-                        color: 'primary-color',
-                        click: () => this.migrateDataV2(policy)
                     }),
                     new MenuButton({
                         visible: PolicyHelper.isDryRunMode(policy) && this.user.POLICIES_MIGRATION_CREATE,
@@ -1539,45 +1530,6 @@ export class PoliciesComponent implements OnInit {
     }
 
     public migrateData(policy?: any) {
-        const item = this.policies?.find((e) => e.id === policy?.id);
-        this.loading = true;
-        this.contractSerivce.getContracts({ type: ContractType.RETIRE }).pipe(takeUntil(this._destroy$)).subscribe({
-            next: (res) => {
-                const dialogRef = this.dialogService.open(MigrateData, {
-                    header: 'Migrate Data',
-                    width: '750px',
-                    styleClass: 'custom-dialog',
-                    data: {
-                        policy: item,
-                        policies: this.policies?.filter(item => PolicyHelper.isRun(item)),
-                        contracts: res.body
-                    },
-                });
-                dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
-                    if (!result) {
-                        return;
-                    }
-                    this.policyEngineService.migrateDataAsync(result).pipe(takeUntil(this._destroy$)).subscribe(
-                        (result) => {
-                            const { taskId } = result;
-                            this.router.navigate(['task', taskId], {
-                                queryParams: {
-                                    last: btoa(location.href),
-                                },
-                            });
-                        },
-                        (e) => {
-                            this.loading = false;
-                        }
-                    );
-                });
-            },
-            complete: () => this.loading = false
-        })
-
-    }
-
-    public migrateDataV2(policy?: any) {
         this.loading = true;
         forkJoin([
             this.contractSerivce.getContracts({ type: ContractType.RETIRE }),
@@ -1588,7 +1540,7 @@ export class PoliciesComponent implements OnInit {
                 const item = runnablePolicies.find((policyItem) => policyItem.id === policy?.id)
                     || this.policies?.find((policyItem) => policyItem.id === policy?.id);
 
-                const dialogRef = this.dialogService.open(MigrateDataV2, {
+                const dialogRef = this.dialogService.open(MigrateData, {
                     header: 'Migrate Data',
                     width: '1000px',
                     styleClass: 'custom-dialog migrate-data-dialog',
@@ -1607,7 +1559,7 @@ export class PoliciesComponent implements OnInit {
                     this.loading = true;
 
                     if (result.action === 'start' && result.migrationConfig) {
-                        this.policyEngineService.migrateDataAsyncV2(result.migrationConfig)
+                        this.policyEngineService.migrateDataAsync(result.migrationConfig)
                             .pipe(takeUntil(this._destroy$))
                             .subscribe(
                                 (response) => this.navigateToTask(response.taskId),
