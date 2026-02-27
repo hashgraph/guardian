@@ -24,7 +24,6 @@ interface PolicyParameterItem {
 export class PolicyParametersDialog {
     public blockInfo: any;
     public loading = false;
-    public policy: any;
     public policyId: string;
     public editableParameters: PolicyEditableFieldDTO[] = [];
 
@@ -42,8 +41,7 @@ export class PolicyParametersDialog {
         private registeredService: RegisteredService,
         private policyEngineService: PolicyEngineService
     ) {
-        this.policy = this.config.data?.policy || {};
-        this.policyId = this.policy.id;
+        this.policyId = this.config.data?.policyId;
     }
 
     ngOnInit() {
@@ -58,7 +56,7 @@ export class PolicyParametersDialog {
     }
 
     loadConfig() {
-        this.policyEngineService.getParametersConfig(this.policy.id).subscribe((response: any) => {
+        this.policyEngineService.getParametersConfig(this.policyId).subscribe((response: any) => {
             this.editableParameters = response || [];
             this.loadItems();
         });
@@ -69,7 +67,8 @@ export class PolicyParametersDialog {
             const field = this.editableParameters[i];
             const block = structuredClone(this.blockInfo[field.blockType]);
 
-            const property = block.properties?.find((p: any) => p.name === field.propertyPath);
+            const property = this.findByPath(block.properties, field.propertyPath);
+
             this.items.push({
                 block,
                 property,
@@ -78,12 +77,27 @@ export class PolicyParametersDialog {
         }
     }
 
+    findByPath(items: any[], path: string): any | undefined {
+        const parts = path.split('.');
+        let currentLevel = items;
+        let found;
+
+        for (const part of parts) {
+            found = currentLevel.find(p => p.name === part);
+            if (!found) return undefined;
+
+            currentLevel = found.properties || [];
+        }
+
+        return found;
+    }
+
     async onSubmit() {
         this.policyEngineService.saveParameters(
             this.policyId,
             this.editableParameters
         ).subscribe(
-            (response) => {
+            (_) => {
                 this.onClose();
             }
         );

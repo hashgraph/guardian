@@ -5,49 +5,53 @@
                 <div *ngFor="let fg of fieldGroups; let i = index; trackBy: trackByIndex" [formGroupName]="i">
                     <div class="fields-grid group-container">
                         <div class="field">
-                            <label for="visible">Blocks</label>
-                            <select-block
-                                [blocks]="this.policyTemplate.allBlocks"
-                                [value]="fg.controls.blockTag.value"
-                                (valueChange)="onBlockChange($event, i)"
-                            ></select-block>
+                            <label>Blocks
+                                <select-block
+                                    [blocks]="this.policyTemplate.allBlocks"
+                                    [value]="fg.controls.blockTag.value"
+                                    (valueChange)="onBlockChange($event, i)"
+                                ></select-block>
+                            </label>
                         </div>
                         <div class="field">
-                            <label for="visible">Property</label>
-                            <p-dropdown
-                                formControlName="property"
-                                [options]="propertiesOptions(i)"
-                                optionLabel="label"
-                                optionValue="path"
-                                [showClear]="false"
-                                aria-required="true"
-                                >
-                            </p-dropdown>
+                            <label>Property
+                                <p-dropdown
+                                    formControlName="property"
+                                    [options]="propertiesOptions(i)"
+                                    optionLabel="label"
+                                    optionValue="path"
+                                    [showClear]="false"
+                                    aria-required="true"
+                                    >
+                                </p-dropdown>
+                            </label>
                         </div>
                         <div class="field">
-                            <label for="visible">Visible</label>
-                            <p-multiSelect
-                                formControlName="visible"
-                                [options]="this.policyTemplate.policyRoles"
-                                class="guardian-multiselect full-size"
-                                appendTo="body"
-                                optionLabel="_name" 
-                                optionValue="_name"
-                                filterBy="_name">
-                            </p-multiSelect>
+                            <label>Visible
+                                <p-multiSelect
+                                    formControlName="visible"
+                                    [options]="this.policyTemplate.policyRoles"
+                                    class="guardian-multiselect full-size"
+                                    appendTo="body"
+                                    optionLabel="_name" 
+                                    optionValue="_name"
+                                    filterBy="_name">
+                                </p-multiSelect>
+                            </label>
                         </div>
                         <div class="field">
-                            <label for="applyTo">Apply For</label>
-                            <p-multiSelect
-                                formControlName="applyTo"
-                                [options]="applyToOptions"
-                                class="guardian-multiselect full-size"
-                                appendTo="body"
-                                optionLabel="_name" 
-                                optionValue="_name"
-                                filterBy="_name"
-                                >
-                            </p-multiSelect>
+                            <label>Apply For
+                                <p-multiSelect
+                                    formControlName="applyTo"
+                                    [options]="applyToOptions"
+                                    class="guardian-multiselect full-size"
+                                    appendTo="body"
+                                    optionLabel="_name" 
+                                    optionValue="_name"
+                                    filterBy="_name"
+                                    >
+                                </p-multiSelect>
+                            </label>
                         </div>
                         <div class="delete-field">
                             <button

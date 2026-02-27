@@ -22,6 +22,7 @@ import {OnLoadSavepointDialog} from "../dialogs/on-load-savepoint-dialog/on-load
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
+import { PolicyParametersDialog } from '../../dialogs/policy-parameters-dialog/policy-parameters-dialog.component';
 
 /**
  * Component for choosing a policy and
@@ -457,6 +458,19 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 type: 'JSON',
             }
         });
+        dialogRef.onClose.subscribe(async (result) => { });
+    }
+
+    public openParametersSettings() {
+        const dialogRef = this.dialogService.open(PolicyParametersDialog, {
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
+            data: {
+                policyId: this.policyId
+            },
+        });
+
         dialogRef.onClose.subscribe(async (result) => { });
     }
 

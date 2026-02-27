@@ -1,87 +1,72 @@
-<ng-container *ngIf="property.type === 'Input' && visible(property.visible)">
+<ng-container *ngIf="property.type === 'Input'">
     <div class="element-container">
-        <label class="form-label property-label" htmlFor="atValidation">{{ config.label }}</label>
-        <span class="property-description">{{ config.shortDescription }}</span>
-        
-        <input 
-            pInputText 
-            class="prop-input" 
-            [(ngModel)]="value" 
-            [readonly]="readonly" 
-            (blur)="onSave()" 
-            type="text"/>
+        <label class="form-label property-label">{{ isArrayElement ? property.label : config.label }}
+            <span *ngIf="!isArrayElement" class="property-description">{{ config.shortDescription }}</span>
+            
+            <input
+                pInputText
+                class="prop-input" 
+                [(ngModel)]="value" 
+                [readonly]="readonly" 
+                (blur)="onSave()" 
+                type="text"/>
+        </label>
     </div>
 </ng-container>
 
-<ng-container *ngIf="property.type === 'Code' && visible(property.visible)">
-    <!-- <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName" [title]="property.title">
-            <span *ngIf="property.required" class="required-fields">*</span> {{ property.label }}
-        </td>
-        <td class="propRowCell">
+<ng-container *ngIf="property.type === 'Code'">
+    <div class="guardian-input-container">
+        <label class="form-label">{{ property.label }}
+            <span class="property-description">{{ config.shortDescription }}</span>
+
             <input 
+                pInputText 
                 class="prop-input" 
                 [(ngModel)]="value" 
                 [readonly]="true"
                 (click)="editCode($event)"
-                (blur)="onSave()"
+                (blur)="onSave()"/>
+        </label>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Checkbox'">
+    <div class="element-container">
+        <label class="form-label property-label">{{ config.label }}
+            <span class="property-description">{{ config.shortDescription }}</span>
+            <p-checkbox class="prop-input prop-checkbox" 
+                        type="checkbox" 
+                        [(ngModel)]="value" 
+                        [readonly]="readonly"
+                        [binary]="true"
+                        (change)="onSave()">
+            </p-checkbox>
+        </label>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Select'">
+    <div class="element-container">
+        <label class="form-label property-label">{{ isArrayElement ? property.label : config.label }}
+            <span *ngIf="!isArrayElement" class="property-description">{{ config.shortDescription }}</span>
+            <p-dropdown
+                [(ngModel)]="value"
+                [options]="property.items"
+                optionLabel="label"
+                optionValue="value"
+                [disabled]="readonly"
+                placeholder="Select an option"
+                (onChange)="onSave()"
+                [appendTo]="'body'"
             >
-        </td>
-    </tr> -->
-    <div class="guardian-input-container">
-        <label class="form-label" htmlFor="atValidation">{{ property.label }}</label>
-        <span class="property-description">{{ config.shortDescription }}</span>
-
-        <input 
-            pInputText 
-            class="prop-input" 
-            [(ngModel)]="value" 
-            [readonly]="true"
-            (click)="editCode($event)"
-            (blur)="onSave()"/>
+            </p-dropdown>
+        </label>
     </div>
 </ng-container>
 
-<ng-container *ngIf="property.type === 'Checkbox' && visible(property.visible)">
+<ng-container *ngIf="property.type === 'Path'">
     <div class="element-container">
-    <label class="form-label property-label" htmlFor="atValidation">{{ config.label }}</label>
-    <span class="property-description">{{ config.shortDescription }}</span>
-    <div class="">
-        <p-checkbox class="prop-input prop-checkbox" 
-                    type="checkbox" 
-                    [(ngModel)]="value" 
-                    [readonly]="readonly"
-                    [binary]="true"
-                    (change)="onSave()">
-        </p-checkbox>
-    </div>
-    </div>
-
-</ng-container>
-
-<ng-container *ngIf="property.type === 'Select' && visible(property.visible)">
-    <div class="element-container">
-        <label class="form-label property-label" htmlFor="sectoralScope">{{ property.label }}</label>
-        <span class="property-description">{{ config.shortDescription }}</span>
-
-        <p-dropdown
-            [(ngModel)]="value"
-            [options]="property.items"
-            optionLabel="label"
-            optionValue="value"
-            [disabled]="readonly"
-            placeholder="Select an option"
-            (onChange)="onSave()"
-            [appendTo]="'body'"
-        >
-        </p-dropdown>
-    </div>
-</ng-container>
-
-<ng-container *ngIf="property.type === 'Path' && visible(property.visible)">
-    <div class="element-container">
-        <label class="form-label property-label" htmlFor="sectoralScope">{{ property.label }}</label>
+        <label class="form-label property-label">{{ property.label }}</label>
         <span class="property-description">{{ config.shortDescription }}</span>
 
         <div class="element-path">
@@ -104,6 +89,51 @@
                 (change)="onPathPropertyChanged()"
                 type="text"
             />
+        </div>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Array'">
+    <div class="element-container">
+        <label class="form-label property-label">{{ property.label }}</label>
+        <span class="property-description">{{ config.shortDescription }}</span>
+
+        <div class="element-array">
+            <ng-container *ngFor="let item of value; let i=index">
+                <div class="element-array-group">
+                    <div *ngFor="let p of property.items.properties" 
+                        policy-parameter-property 
+                        [config]="item"
+                        [property]="p"
+                        [readonly]="readonly"
+                        [block]="currentBlock"
+                        (update)="onSave()"
+                        [isArrayElement]="true">
+                    </div>
+                    <button
+                        class="element-array-delete guardian-icon-button big"
+                        (click)="$event.preventDefault(); removeItems(i)"
+                        >
+                        <svg-icon
+                            class="icon-btn svg-icon"
+                            src="/assets/images/icons/delete.svg"
+                            svgClass='ghost-color'>
+                        </svg-icon>
+                    </button>
+                </div>
+            </ng-container>
+            <ng-container>
+                <div>
+                    <button (click)="addItems()" class="add-button dialog-button guardian-button guardian-button-secondary add-doc-btn">
+                        <div class="guardian-button-icon">
+                            <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/add.svg"
+                                svgClass="icon-color-primary">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Add</div>
+                    </button>
+                </div>
+            </ng-container>
         </div>
     </div>
 </ng-container>

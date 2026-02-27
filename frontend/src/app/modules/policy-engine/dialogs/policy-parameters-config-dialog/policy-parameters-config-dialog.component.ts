@@ -18,21 +18,20 @@ type PolicyEditableFieldForm = {
   shortDescription: FormControl<string>;
 };
 
-
 type PolicyForm = {
   fields: FormArray<FormGroup<PolicyEditableFieldForm>>;
 };
 
 @Component({
-    selector: 'app-editible-fields-dialog',
-    templateUrl: './editible-fields-dialog.component.html',
-    styleUrls: ['./editible-fields-dialog.component.scss'],
+    selector: 'app-parameters-config-dialog',
+    templateUrl: './policy-parameters-config-dialog.component.html',
+    styleUrls: ['./policy-parameters-config-dialog.component.scss'],
 })
-export class EditibleFieldsDialog implements OnInit {
+export class PolicyParametersConfigDialog implements OnInit {
     loading = true;
     form: FormGroup<PolicyForm>;
     policyTemplate: PolicyTemplate;
-    policyEditibleFields: PolicyEditableField[] = [];
+    policyEditableFields: PolicyEditableField[] = [];
     additionalOptionsApplyTo = [
         { _name: 'All' },
         { _name: 'Self' }
@@ -50,7 +49,7 @@ export class EditibleFieldsDialog implements OnInit {
         this.policyTemplate = this.config.data.policy;
 
         this.form = this.fb.group<PolicyForm>({
-            fields: this.fb.array(this.policyEditibleFields.map(m => this.createFieldGroup(m))),
+            fields: this.fb.array(this.policyEditableFields.map(m => this.createFieldGroup(m))),
         });
     }
 
@@ -58,7 +57,7 @@ export class EditibleFieldsDialog implements OnInit {
         this.loading = false;
 
         if(this.policyTemplate.editableParametersSettings) {
-            this.policyEditibleFields = this.policyTemplate.editableParametersSettings?.map(ep => PolicyEditableFieldDTO.fromDTO(ep));
+            this.policyEditableFields = this.policyTemplate.editableParametersSettings?.map(ep => PolicyEditableFieldDTO.fromDTO(ep));
         }
 
         this.policyEngineService.getBlockInformation()
@@ -102,7 +101,7 @@ export class EditibleFieldsDialog implements OnInit {
     }
 
     public propertiesOptions(index: number): any[] {
-        return this.policyEditibleFields[index]?.properties ?? [];
+        return this.policyEditableFields[index]?.properties ?? [];
     }
 
     private setPath(properties:any[], result:any[], parent?:string) {
@@ -129,7 +128,7 @@ export class EditibleFieldsDialog implements OnInit {
                 const props = this.registeredService.getCustomProperties(block.blockType);
                 const propsWithPath = this.setPath(props, []);
                 if(propsWithPath && propsWithPath.length > 0) {
-                    this.policyEditibleFields[index].properties = propsWithPath;
+                    this.policyEditableFields[index].properties = propsWithPath;
                 }
             }
         });
@@ -151,12 +150,12 @@ export class EditibleFieldsDialog implements OnInit {
     addField(): void {
         const g = this.createFieldGroup();
         this.fields.push(g);
-        this.policyEditibleFields.push(new PolicyEditableField());
+        this.policyEditableFields.push(new PolicyEditableField());
     }
 
     removeField(index: number): void {
         this.fields.removeAt(index);
-        this.policyEditibleFields.splice(index, 1);
+        this.policyEditableFields.splice(index, 1);
     }
 
     onClose(): void {

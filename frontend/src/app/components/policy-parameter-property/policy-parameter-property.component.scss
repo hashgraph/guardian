@@ -34,3 +34,48 @@
     font-size: 12px;
     margin-bottom: 5px;
 }
+
+.element-array {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 16px;
+    
+    .add-button {
+        height: 28px;
+        padding: 6px 16px;
+    }
+}
+
+.element-array-group {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+
+    > :not(:last-child) {
+        flex: 1;
+    }
+
+    .element-container {
+        padding: 0;
+        border: none;
+        padding-left: 0;
+        padding-right: 0;
+        margin-bottom: 0;
+    }
+
+    .element-array-delete {
+        position: relative;
+        top: 10px;
+    }
+
+    .property-label {
+        font-weight: 500;
+        font-size: 12px;
+    }
+}
+
+.ghost-color {
+    fill: #AAB7C4;
+    color: #AAB7C4;
+}

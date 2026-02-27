@@ -624,14 +624,14 @@ export class PoliciesComponent implements OnInit {
             {
                 tooltip: 'Parameters',
                 group: false,
-                visible: true,
+                visible: PolicyHelper.isPublishMode(policy) && this.user.POLICIES_POLICY_MANAGE,
                 color: 'primary-color',
                 buttons: [
                     new MenuButton({
-                        visible: PolicyHelper.isPublishMode(policy) && this.user.POLICIES_POLICY_MANAGE,
+                        visible: true,
                         disabled: false,
                         tooltip: 'Policy parameters',
-                        icon: 'group',
+                        icon: 'settings',
                         color: 'primary-color',
                         click: () => this.policyParameters(policy)
                     })
@@ -1901,7 +1901,7 @@ export class PoliciesComponent implements OnInit {
             width: '90%',
             styleClass: 'guardian-dialog',
             data: {
-                policy
+                policyId: policy?.id
             },
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => { });

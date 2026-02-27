@@ -177,9 +177,9 @@ import { FieldLinkDialog } from './dialogs/field-link-dialog/field-link-dialog.c
 import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
 import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
 import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-dialog.component';
-import { EditibleFieldsDialog } from './dialogs/editible-fields-dialog/editible-fields-dialog.component';
 import { PolicyParametersDialog } from './dialogs/policy-parameters-dialog/policy-parameters-dialog.component';
 import { PolicyParameterPropertyComponent } from 'src/app/components/policy-parameter-property/policy-parameter-property.component';
+import { PolicyParametersConfigDialog } from './dialogs/policy-parameters-config-dialog/policy-parameters-config-dialog.component';
 
 @NgModule({
     declarations: [
@@ -314,9 +314,9 @@ import { PolicyParameterPropertyComponent } from 'src/app/components/policy-para
         AddDocumentDialog,
         ChangeBlockSettingsDialog,
         ApproveUpdateVcDocumentDialogComponent,
-        EditibleFieldsDialog,
+        PolicyParametersConfigDialog,
         PolicyParametersDialog,
-        PolicyParameterPropertyComponent
+        PolicyParameterPropertyComponent,
     ],
     imports: [
         CommonModule,
