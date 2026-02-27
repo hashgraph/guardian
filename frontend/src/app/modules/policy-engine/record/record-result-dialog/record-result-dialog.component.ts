@@ -1,4 +1,4 @@
-import {Component, Inject} from '@angular/core';
+import {Component, ElementRef, Inject, ViewChild} from '@angular/core';
 import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import {RecordService} from 'src/app/services/record.service';
 import {DialogService, DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
@@ -21,6 +21,8 @@ export class RecordResultDialog {
     public recordId: any;
     public total: any;
     public info: any;
+    public isLargeSize: boolean = true;
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     constructor(
         private recordService: RecordService,
@@ -72,7 +74,7 @@ export class RecordResultDialog {
         const title = `${item.type.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
@@ -91,5 +93,26 @@ export class RecordResultDialog {
 
     onFinish(): void {
         this.dialogRef.close('Finish');
+    }
+
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
     }
 }

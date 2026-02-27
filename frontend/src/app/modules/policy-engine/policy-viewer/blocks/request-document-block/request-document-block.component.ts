@@ -497,7 +497,7 @@ export class RequestDocumentBlockComponent
     private showDocumentDialog() {
         this.dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '90%',
             styleClass: 'guardian-dialog without-padding',
             data: this
         });

@@ -1,20 +1,20 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
-import { MenuItem } from 'primeng/api';
+import {ChangeDetectorRef, Component, ElementRef, ViewChild} from '@angular/core';
+import {MenuItem} from 'primeng/api';
 import {
     DialogService,
     DynamicDialogConfig,
     DynamicDialogRef,
 } from 'primeng/dynamicdialog';
-import { firstValueFrom, forkJoin } from 'rxjs';
+import {firstValueFrom, forkJoin} from 'rxjs';
 import {
     MigrationRunStatusItem,
     MigrationRunSummary,
     MigrationSummaryItem,
     PolicyStatus
 } from '@guardian/interfaces';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { SchemaService } from 'src/app/services/schema.service';
-import { JsonEditorDialogComponent } from '../json-editor-dialog/json-editor-dialog.component';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {SchemaService} from 'src/app/services/schema.service';
+import {JsonEditorDialogComponent} from '../json-editor-dialog/json-editor-dialog.component';
 
 export interface MigrationActionResult {
     action: 'start' | 'resume' | 'retryFailed';
@@ -111,7 +111,8 @@ class MigrationConfig {
     constructor(
         private _src?: string,
         private _dst?: string
-    ) { }
+    ) {
+    }
 
     updatePolicyValidity() {
         this._policiesValidity = !!this._src && !!this._dst;
@@ -439,6 +440,7 @@ export class MigrateData {
     dstTokenMap: string[] = [];
 
     showMigrateRetirePools = false;
+
     activeTabIndex = 0;
     historyLoading = false;
     historyItems: MigrationRunStatusItem[] = [];
@@ -847,7 +849,7 @@ export class MigrateData {
         this._dialogService.open(JsonEditorDialogComponent, {
             closable: true,
             modal: true,
-            width: '70vw',
+            width: '90%',
             styleClass: 'custom-json-dialog',
             header: 'View document',
             data: {
@@ -1303,7 +1305,7 @@ export class MigrateData {
             .open(JsonEditorDialogComponent, {
                 closable: true,
                 modal: true,
-                width: '70vw',
+                width: '90%',
                 styleClass: 'custom-json-dialog',
                 header: 'Edit document',
                 data: {
@@ -1315,24 +1317,26 @@ export class MigrateData {
                 },
             })
             .onClose.subscribe((result: any) => {
-                if (!result) {
-                    return;
+            if (!result) {
+                return;
+            }
+            try {
+                const editedVC = JSON.parse(result);
+                if (
+                    JSON.stringify(editedVC) ===
+                    JSON.stringify(doc.document.credentialSubject[0])
+                ) {
+                    delete this.migrationConfig.editedVCs[doc.id];
+                } else {
+                    this.migrationConfig.editedVCs[doc.id] = editedVC;
                 }
-                try {
-                    const editedVC = JSON.parse(result);
-                    if (
-                        JSON.stringify(editedVC) ===
-                        JSON.stringify(doc.document.credentialSubject[0])
-                    ) {
-                        delete this.migrationConfig.editedVCs[doc.id];
-                    } else {
-                        this.migrationConfig.editedVCs[doc.id] = editedVC;
-                    }
-                } catch { }
-            });
+            } catch {
+            }
+        });
     }
 
     private _input?: any;
+
     onUploadData() {
         const handler = () => {
             input.removeEventListener('change', handler);

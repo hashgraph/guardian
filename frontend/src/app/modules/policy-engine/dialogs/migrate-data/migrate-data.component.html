@@ -1,179 +1,189 @@
 <div class="migrate-data-root">
-<div class="dialog-body">
-    <p-tabView class="guardian-header-tabs migrate-tabs" [activeIndex]="activeTabIndex" (onChange)="onTabChange($event)">
-        <p-tabPanel>
-            <ng-template pTemplate="header">
-                <div class="tabview-label">Create New</div>
-            </ng-template>
-        </p-tabPanel>
-        <p-tabPanel>
-            <ng-template pTemplate="header">
-                <div class="tabview-label">History</div>
-            </ng-template>
-        </p-tabPanel>
-    </p-tabView>
+    <div class="dialog-body">
+        <p-tabView class="guardian-header-tabs migrate-tabs" [activeIndex]="activeTabIndex"
+                   (onChange)="onTabChange($event)">
+            <p-tabPanel>
+                <ng-template pTemplate="header">
+                    <div class="tabview-label">Create New</div>
+                </ng-template>
+            </p-tabPanel>
+            <p-tabPanel>
+                <ng-template pTemplate="header">
+                    <div class="tabview-label">History</div>
+                </ng-template>
+            </p-tabPanel>
+        </p-tabView>
 
-    <div *ngIf="activeTabIndex === 0" class="content create-tab">
-        <div class="create-layout">
-            <div class="steps-sidebar">
-                <div
-                    *ngFor="let item of items; let i = index"
-                    class="step-line"
-                    [class.step-line-active]="i === activeIndex"
-                >
-                    <div class="step-number" [class.step-number-active]="i === activeIndex">
-                        {{ i + 1 }}
-                    </div>
-                    <div class="step-label" [class.step-label-active]="i === activeIndex">
-                        {{ item.id === 'policies' ? 'Variables' : item.label }}
+        <div *ngIf="activeTabIndex === 0" class="content create-tab">
+            <div class="create-layout">
+                <div class="steps-sidebar">
+                    <div
+                        *ngFor="let item of items; let i = index"
+                        class="step-line"
+                        [class.step-line-active]="i === activeIndex"
+                    >
+                        <div class="step-number" [class.step-number-active]="i === activeIndex">
+                            {{ i + 1 }}
+                        </div>
+                        <div class="step-label" [class.step-label-active]="i === activeIndex">
+                            {{ item.id === 'policies' ? 'Variables' : item.label }}
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="step-workspace">
-                <div class="step-title">{{ items[activeIndex].id === 'policies' ? 'Variables' : items[activeIndex].label }}</div>
-                <ng-template [ngTemplateOutlet]="spinner" [ngTemplateOutletContext]="{ loading }"></ng-template>
-                <div
-                    *ngIf="!loading"
-                    [ngSwitch]="items[activeIndex].id"
-                    class="step-content-card"
-                    [class.docs-content-card]="isStepWithBottomLayout(items[activeIndex].id || '')"
-                    [class.policy-step-content-card]="items[activeIndex].id === 'policies'"
-                >
-            <div *ngSwitchCase="'policies'" class="step-container">
-                <div class="context">
-                    <div class="policy-dropdown-container">
-                        <label class="form-label" htmlFor="firstPolicy">Source Policy</label>
-                        <div class="source-policy-selector">
-                            <p-dropdown
-                                (onChange)="onChange()"
-                                [(ngModel)]="migrationConfig.src"
-                                [options]="pList1"
-                                [showClear]="true"
-                                [disabled]="!!runningMigrationWarning"
-                                appendTo="body"
-                                id="firstPolicy"
-                                optionLabel="name"
-                                optionValue="id"
-                                [styleClass]="hasPolicySelectionError ? 'migration-policy-dropdown migration-policy-dropdown-error' : 'migration-policy-dropdown'"
-                                placeholder="Select Policy" class="source-policy-selector__dropdown"></p-dropdown>
-                            <button pButton pRipple (click)="onUploadData()" icon="pi pi-download"
-                                [disabled]="!!runningMigrationWarning"
-                                class="p-button-rounded source-policy-selector__upload-button"></button>
-                        </div>
-                        <div class="policy-meta">
-                            <span>Version: {{ getPolicyVersion(migrationConfig.src) }}</span>
-                            <span>Status: {{ getPolicyStatus(migrationConfig.src) }}</span>
-                            <span>Topic: {{ getPolicyTopic(migrationConfig.src) }}</span>
-                        </div>
+                <div class="step-workspace">
+                    <div
+                        class="step-title">{{ items[activeIndex].id === 'policies' ? 'Variables' : items[activeIndex].label }}
                     </div>
-
-                    <div class="policy-dropdown-container">
-                        <label class="form-label" htmlFor="firstPolicy">Destination Policy</label>
-                        <p-dropdown
-                            (onChange)="onChange()"
-                            [(ngModel)]="migrationConfig.dst"
-                            [options]="pList2"
-                            [showClear]="true"
-                            [disabled]="!!runningMigrationWarning"
-                            appendTo="body"
-                            id="firstPolicy"
-                            optionLabel="name"
-                            optionValue="id"
-                            [styleClass]="hasPolicySelectionError ? 'migration-policy-dropdown migration-policy-dropdown-error' : 'migration-policy-dropdown'"
-                            placeholder="Select Policy"></p-dropdown>
-                        <div class="policy-meta">
-                            <span>Version: {{ getPolicyVersion(migrationConfig.dst) }}</span>
-                            <span>Status: {{ getPolicyStatus(migrationConfig.dst) }}</span>
-                            <span>Topic: {{ getPolicyTopic(migrationConfig.dst) }}</span>
-                        </div>
-                        <div *ngIf="pairProgressWarning" class="policy-warning">
-                            {{ pairProgressWarning }}
-                        </div>
-                        <div *ngIf="!pairProgressWarning && runningMigrationWarning" class="policy-warning">
-                            {{ runningMigrationWarning }}
-                        </div>
-                        <div *ngIf="!pairProgressWarning && !runningMigrationWarning && pairHistoryWarning" class="policy-warning">
-                            {{ pairHistoryWarning }}
-                        </div>
-                    </div>
-                    <div class="policy-migration-options">
-                        <div class="p-field-checkbox">
-                            <p-checkbox [(ngModel)]="migrationConfig.migrateState" (onChange)="onMigrateState()"
-                                [binary]="true" inputId="state"></p-checkbox>
-                            <label for="state">Migrate policy state</label>
-                        </div>
-                        <div class="p-field-checkbox" *ngIf="migrationConfig.migrateState && showMigrateRetirePools">
-                            <p-checkbox [binary]="true" [(ngModel)]="migrationConfig.migrateRetirePools"
-                                inputId="pools"></p-checkbox>
-                            <label for="pools">Migrate retire pools</label>
-                        </div>
-                    </div>
-                    <div style="margin-top: 10px;" *ngIf="showMigrateRetirePools">
-                        <p-dropdown appendTo="body"
-                            *ngIf="migrationConfig.migrateRetirePools && migrationConfig.migrateState"
-                            [(ngModel)]="migrationConfig.retireContractId" [options]="contracts" [showClear]="true"
-                            optionLabel="description" optionValue="contractId" [appendTo]="'body'"
-                            placeholder="Select contract"></p-dropdown>
-                        <div class="mapping-content"
-                            *ngIf="getObjectKeys(this.migrationConfig.tokensMap).length > 0 && migrationConfig.migrateRetirePools && migrationConfig.migrateState">
-                            <div *ngFor="let token of getObjectKeys(this.migrationConfig.tokensMap)" class="mapping">
-                                <div class="map-left">
-                                    <span [title]="token">{{token}}</span>
+                    <ng-template [ngTemplateOutlet]="spinner" [ngTemplateOutletContext]="{ loading }"></ng-template>
+                    <div
+                        *ngIf="!loading"
+                        [ngSwitch]="items[activeIndex].id"
+                        class="step-content-card"
+                        [class.docs-content-card]="isStepWithBottomLayout(items[activeIndex].id || '')"
+                        [class.policy-step-content-card]="items[activeIndex].id === 'policies'"
+                    >
+                        <div *ngSwitchCase="'policies'" class="step-container">
+                            <div class="context">
+                                <div class="policy-dropdown-container">
+                                    <label class="form-label" htmlFor="firstPolicy">Source Policy</label>
+                                    <div class="source-policy-selector">
+                                        <p-dropdown
+                                            (onChange)="onChange()"
+                                            [(ngModel)]="migrationConfig.src"
+                                            [options]="pList1"
+                                            [showClear]="true"
+                                            [disabled]="!!runningMigrationWarning"
+                                            appendTo="body"
+                                            id="firstPolicy"
+                                            optionLabel="name"
+                                            optionValue="id"
+                                            [styleClass]="hasPolicySelectionError ? 'migration-policy-dropdown migration-policy-dropdown-error' : 'migration-policy-dropdown'"
+                                            placeholder="Select Policy"
+                                            class="source-policy-selector__dropdown"></p-dropdown>
+                                        <button pButton pRipple (click)="onUploadData()" icon="pi pi-download"
+                                                [disabled]="!!runningMigrationWarning"
+                                                class="p-button-rounded source-policy-selector__upload-button"></button>
+                                    </div>
+                                    <div class="policy-meta">
+                                        <span>Version: {{ getPolicyVersion(migrationConfig.src) }}</span>
+                                        <span>Status: {{ getPolicyStatus(migrationConfig.src) }}</span>
+                                        <span>Topic: {{ getPolicyTopic(migrationConfig.src) }}</span>
+                                    </div>
                                 </div>
-                                <span>:</span>
-                                <div class="map-right">
-                                    <div>
-                                        <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.tokensMap[token]"
-                                            [options]="dstTokenMap" [showClear]="true"
-                                            placeholder="Select token"></p-dropdown>
+
+                                <div class="policy-dropdown-container">
+                                    <label class="form-label" htmlFor="firstPolicy">Destination Policy</label>
+                                    <p-dropdown
+                                        (onChange)="onChange()"
+                                        [(ngModel)]="migrationConfig.dst"
+                                        [options]="pList2"
+                                        [showClear]="true"
+                                        [disabled]="!!runningMigrationWarning"
+                                        appendTo="body"
+                                        id="firstPolicy"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                        [styleClass]="hasPolicySelectionError ? 'migration-policy-dropdown migration-policy-dropdown-error' : 'migration-policy-dropdown'"
+                                        placeholder="Select Policy"></p-dropdown>
+                                    <div class="policy-meta">
+                                        <span>Version: {{ getPolicyVersion(migrationConfig.dst) }}</span>
+                                        <span>Status: {{ getPolicyStatus(migrationConfig.dst) }}</span>
+                                        <span>Topic: {{ getPolicyTopic(migrationConfig.dst) }}</span>
+                                    </div>
+                                    <div *ngIf="pairProgressWarning" class="policy-warning">
+                                        {{ pairProgressWarning }}
+                                    </div>
+                                    <div *ngIf="!pairProgressWarning && runningMigrationWarning" class="policy-warning">
+                                        {{ runningMigrationWarning }}
+                                    </div>
+                                    <div *ngIf="!pairProgressWarning && !runningMigrationWarning && pairHistoryWarning"
+                                         class="policy-warning">
+                                        {{ pairHistoryWarning }}
+                                    </div>
+                                </div>
+                                <div class="policy-migration-options">
+                                    <div class="p-field-checkbox">
+                                        <p-checkbox [(ngModel)]="migrationConfig.migrateState"
+                                                    (onChange)="onMigrateState()"
+                                                    [binary]="true" inputId="state"></p-checkbox>
+                                        <label for="state">Migrate policy state</label>
+                                    </div>
+                                    <div class="p-field-checkbox"
+                                         *ngIf="migrationConfig.migrateState && showMigrateRetirePools">
+                                        <p-checkbox [binary]="true" [(ngModel)]="migrationConfig.migrateRetirePools"
+                                                    inputId="pools"></p-checkbox>
+                                        <label for="pools">Migrate retire pools</label>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 10px;" *ngIf="showMigrateRetirePools">
+                                    <p-dropdown appendTo="body"
+                                                *ngIf="migrationConfig.migrateRetirePools && migrationConfig.migrateState"
+                                                [(ngModel)]="migrationConfig.retireContractId" [options]="contracts"
+                                                [showClear]="true"
+                                                optionLabel="description" optionValue="contractId" [appendTo]="'body'"
+                                                placeholder="Select contract"></p-dropdown>
+                                    <div class="mapping-content"
+                                         *ngIf="getObjectKeys(this.migrationConfig.tokensMap).length > 0 && migrationConfig.migrateRetirePools && migrationConfig.migrateState">
+                                        <div *ngFor="let token of getObjectKeys(this.migrationConfig.tokensMap)"
+                                             class="mapping">
+                                            <div class="map-left">
+                                                <span [title]="token">{{ token }}</span>
+                                            </div>
+                                            <span>:</span>
+                                            <div class="map-right">
+                                                <div>
+                                                    <p-dropdown appendTo="body"
+                                                                [(ngModel)]="migrationConfig.tokensMap[token]"
+                                                                [options]="dstTokenMap" [showClear]="true"
+                                                                placeholder="Select token"></p-dropdown>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div *ngSwitchCase="'vps'" class="step-container docs-step-container">
-                <ng-template [ngTemplateOutlet]="spinner"
-                    [ngTemplateOutletContext]="{ loading: loadings.vps }"></ng-template>
-                <ng-container *ngIf="!loadings.vps && totalVPs === 0; else vpsTableContent">
-                    <div class="empty-step-panel">
-                        <i class="pi pi-clock empty-step-icon"></i>
-                        <span class="empty-step-text">There are no VP documents to map</span>
-                    </div>
-                </ng-container>
-                <ng-template #vpsTableContent>
-                    <div class="documents-table-container">
-                        <p-table
-                            [value]="vps"
-                            styleClass="p-datatable-sm migration-documents-table"
-                            [tableStyle]="{ width: '100%' }"
-                        >
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th class="col-check">
-                                        <p-checkbox
-                                            [(ngModel)]="allVPsSelected"
-                                            [binary]="true"
-                                            (onChange)="selectAllVPs()"
-                                        ></p-checkbox>
-                                    </th>
-                                    <th>ID</th>
-                                    <th>Owner</th>
-                                    <th>Schemas</th>
-                                    <th>Operation</th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-document>
-                                <tr>
-                                    <td class="col-check">
-                                        <p-checkbox
-                                            [binary]="true"
-                                            [(ngModel)]="document.selected"
-                                            (onChange)="selectVP(document)"
-                                        ></p-checkbox>
-                                    </td>
-                                    <td>
+                        <div *ngSwitchCase="'vps'" class="step-container docs-step-container">
+                            <ng-template [ngTemplateOutlet]="spinner"
+                                         [ngTemplateOutletContext]="{ loading: loadings.vps }"></ng-template>
+                            <ng-container *ngIf="!loadings.vps && totalVPs === 0; else vpsTableContent">
+                                <div class="empty-step-panel">
+                                    <i class="pi pi-clock empty-step-icon"></i>
+                                    <span class="empty-step-text">There are no VP documents to map</span>
+                                </div>
+                            </ng-container>
+                            <ng-template #vpsTableContent>
+                                <div class="documents-table-container">
+                                    <p-table
+                                        [value]="vps"
+                                        styleClass="p-datatable-sm migration-documents-table"
+                                        [tableStyle]="{ width: '100%' }"
+                                    >
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th class="col-check">
+                                                    <p-checkbox
+                                                        [(ngModel)]="allVPsSelected"
+                                                        [binary]="true"
+                                                        (onChange)="selectAllVPs()"
+                                                    ></p-checkbox>
+                                                </th>
+                                                <th>ID</th>
+                                                <th>Owner</th>
+                                                <th>Schemas</th>
+                                                <th>Operation</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-document>
+                                            <tr>
+                                                <td class="col-check">
+                                                    <p-checkbox
+                                                        [binary]="true"
+                                                        [(ngModel)]="document.selected"
+                                                        (onChange)="selectVP(document)"
+                                                    ></p-checkbox>
+                                                </td>
+                                                <td>
                                         <span
                                             class="docs-link-cell"
                                             [pTooltip]="document.id"
@@ -182,8 +192,8 @@
                                         >
                                             {{ document.id }}
                                         </span>
-                                    </td>
-                                    <td>
+                                                </td>
+                                                <td>
                                         <span
                                             class="docs-link-cell"
                                             [pTooltip]="document.owner"
@@ -192,85 +202,87 @@
                                         >
                                             {{ document.owner }}
                                         </span>
-                                    </td>
-                                    <td>
-                                        <span class="docs-schema-cell" [pTooltip]="getDocumentSchemaName(document)" tooltipPosition="top">
+                                                </td>
+                                                <td>
+                                        <span class="docs-schema-cell" [pTooltip]="getDocumentSchemaName(document)"
+                                              tooltipPosition="top">
                                             {{ getDocumentSchemaName(document) }}
                                         </span>
-                                    </td>
-                                    <td>
-                                        <div class="docs-operation-cell docs-operation-cell-single">
-                                            <button class="docs-icon-btn" (click)="viewDocument(document)">
-                                                <svg-icon
-                                                    src="/assets/images/icons/document.svg"
-                                                    svgClass="icon-color-primary docs-op-icon"
-                                                ></svg-icon>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                                </td>
+                                                <td>
+                                                    <div class="docs-operation-cell docs-operation-cell-single">
+                                                        <button class="docs-icon-btn" (click)="viewDocument(document)">
+                                                            <svg-icon
+                                                                src="/assets/images/icons/document.svg"
+                                                                svgClass="icon-color-primary docs-op-icon"
+                                                            ></svg-icon>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                                <div class="docs-bottom">
+                                    <span class="docs-selected-text">You selected {{ this.migrationConfig.vps.length }}
+                                        documents.</span>
+                                    <p-paginator
+                                        styleClass="history-paginator docs-paginator"
+                                        (onPageChange)="onPageVP($event)"
+                                        [first]="pageIndexVP * pageSizeVP"
+                                        [rows]="pageSizeVP"
+                                        [totalRecords]="totalVPs"
+                                        dropdownAppendTo="body"
+                                        [rowsPerPageOptions]="rowsPerPageOptions"
+                                        [showCurrentPageReport]="true"
+                                        currentPageReportTemplate="{first} - {last} of {totalRecords}"
+                                        [showPageLinks]="false"
+                                        [showFirstLastIcon]="false"
+                                    ></p-paginator>
+                                </div>
                             </ng-template>
-                        </p-table>
-                    </div>
-                    <div class="docs-bottom">
-                        <span class="docs-selected-text">You selected {{ this.migrationConfig.vps.length }} documents.</span>
-                        <p-paginator
-                            styleClass="history-paginator docs-paginator"
-                            (onPageChange)="onPageVP($event)"
-                            [first]="pageIndexVP * pageSizeVP"
-                            [rows]="pageSizeVP"
-                            [totalRecords]="totalVPs"
-                            dropdownAppendTo="body"
-                            [rowsPerPageOptions]="rowsPerPageOptions"
-                            [showCurrentPageReport]="true"
-                            currentPageReportTemplate="{first} - {last} of {totalRecords}"
-                            [showPageLinks]="false"
-                            [showFirstLastIcon]="false"
-                        ></p-paginator>
-                    </div>
-                </ng-template>
-            </div>
-            <div *ngSwitchCase="'vcs'" class="step-container docs-step-container">
-                <ng-template [ngTemplateOutlet]="spinner"
-                    [ngTemplateOutletContext]="{ loading: loadings.vcs }"></ng-template>
-                <ng-container *ngIf="!loadings.vcs && totalVCs === 0; else vcsTableContent">
-                    <div class="empty-step-panel">
-                        <i class="pi pi-clock empty-step-icon"></i>
-                        <span class="empty-step-text">There are no VC documents to map</span>
-                    </div>
-                </ng-container>
-                <ng-template #vcsTableContent>
-                    <div class="documents-table-container">
-                        <p-table
-                            [value]="vcs"
-                            styleClass="p-datatable-sm migration-documents-table"
-                            [tableStyle]="{ width: '100%' }"
-                        >
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th class="col-check">
-                                        <p-checkbox
-                                            [(ngModel)]="allVCsSelected"
-                                            [binary]="true"
-                                            (onChange)="selectAllVCs()"
-                                        ></p-checkbox>
-                                    </th>
-                                    <th>ID</th>
-                                    <th>Owner</th>
-                                    <th>Schemas</th>
-                                    <th>Operation</th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-document>
-                                <tr>
-                                    <td class="col-check">
-                                        <p-checkbox
-                                            [binary]="true"
-                                            [(ngModel)]="document.selected"
-                                            (onChange)="selectVC(document)"
-                                        ></p-checkbox>
-                                    </td>
-                                    <td>
+                        </div>
+                        <div *ngSwitchCase="'vcs'" class="step-container docs-step-container">
+                            <ng-template [ngTemplateOutlet]="spinner"
+                                         [ngTemplateOutletContext]="{ loading: loadings.vcs }"></ng-template>
+                            <ng-container *ngIf="!loadings.vcs && totalVCs === 0; else vcsTableContent">
+                                <div class="empty-step-panel">
+                                    <i class="pi pi-clock empty-step-icon"></i>
+                                    <span class="empty-step-text">There are no VC documents to map</span>
+                                </div>
+                            </ng-container>
+                            <ng-template #vcsTableContent>
+                                <div class="documents-table-container">
+                                    <p-table
+                                        [value]="vcs"
+                                        styleClass="p-datatable-sm migration-documents-table"
+                                        [tableStyle]="{ width: '100%' }"
+                                    >
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th class="col-check">
+                                                    <p-checkbox
+                                                        [(ngModel)]="allVCsSelected"
+                                                        [binary]="true"
+                                                        (onChange)="selectAllVCs()"
+                                                    ></p-checkbox>
+                                                </th>
+                                                <th>ID</th>
+                                                <th>Owner</th>
+                                                <th>Schemas</th>
+                                                <th>Operation</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-document>
+                                            <tr>
+                                                <td class="col-check">
+                                                    <p-checkbox
+                                                        [binary]="true"
+                                                        [(ngModel)]="document.selected"
+                                                        (onChange)="selectVC(document)"
+                                                    ></p-checkbox>
+                                                </td>
+                                                <td>
                                         <span
                                             class="docs-link-cell"
                                             [pTooltip]="document.id"
@@ -279,8 +291,8 @@
                                         >
                                             {{ document.id }}
                                         </span>
-                                    </td>
-                                    <td>
+                                                </td>
+                                                <td>
                                         <span
                                             class="docs-link-cell"
                                             [pTooltip]="document.owner"
@@ -289,58 +301,60 @@
                                         >
                                             {{ document.owner }}
                                         </span>
-                                    </td>
-                                    <td>
-                                        <span class="docs-schema-cell" [pTooltip]="getDocumentSchemaName(document)" tooltipPosition="top">
+                                                </td>
+                                                <td>
+                                        <span class="docs-schema-cell" [pTooltip]="getDocumentSchemaName(document)"
+                                              tooltipPosition="top">
                                             {{ getDocumentSchemaName(document) }}
                                         </span>
-                                    </td>
-                                    <td>
-                                        <div class="docs-operation-cell">
-                                            <button class="docs-icon-btn" (click)="viewDocument(document)">
-                                                <svg-icon
-                                                    src="/assets/images/icons/document.svg"
-                                                    svgClass="icon-color-primary docs-op-icon"
-                                                ></svg-icon>
-                                            </button>
-                                            <button class="docs-icon-btn" (click)="editDocument(document)">
-                                                <svg-icon
-                                                    src="/assets/images/icons/edit.svg"
-                                                    svgClass="icon-color-primary docs-op-icon"
-                                                ></svg-icon>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                                </td>
+                                                <td>
+                                                    <div class="docs-operation-cell">
+                                                        <button class="docs-icon-btn" (click)="viewDocument(document)">
+                                                            <svg-icon
+                                                                src="/assets/images/icons/document.svg"
+                                                                svgClass="icon-color-primary docs-op-icon"
+                                                            ></svg-icon>
+                                                        </button>
+                                                        <button class="docs-icon-btn" (click)="editDocument(document)">
+                                                            <svg-icon
+                                                                src="/assets/images/icons/edit.svg"
+                                                                svgClass="icon-color-primary docs-op-icon"
+                                                            ></svg-icon>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                                <div class="docs-bottom">
+                                    <span class="docs-selected-text">You selected {{ this.migrationConfig.vcs.length }}
+                                        documents.</span>
+                                    <p-paginator
+                                        styleClass="history-paginator docs-paginator"
+                                        (onPageChange)="onPageVC($event)"
+                                        [first]="pageIndexVC * pageSizeVC"
+                                        [rows]="pageSizeVC"
+                                        [totalRecords]="totalVCs"
+                                        dropdownAppendTo="body"
+                                        [rowsPerPageOptions]="rowsPerPageOptions"
+                                        [showCurrentPageReport]="true"
+                                        currentPageReportTemplate="{first} - {last} of {totalRecords}"
+                                        [showPageLinks]="false"
+                                        [showFirstLastIcon]="false"
+                                    ></p-paginator>
+                                </div>
                             </ng-template>
-                        </p-table>
-                    </div>
-                    <div class="docs-bottom">
-                        <span class="docs-selected-text">You selected {{ this.migrationConfig.vcs.length }} documents.</span>
-                        <p-paginator
-                            styleClass="history-paginator docs-paginator"
-                            (onPageChange)="onPageVC($event)"
-                            [first]="pageIndexVC * pageSizeVC"
-                            [rows]="pageSizeVC"
-                            [totalRecords]="totalVCs"
-                            dropdownAppendTo="body"
-                            [rowsPerPageOptions]="rowsPerPageOptions"
-                            [showCurrentPageReport]="true"
-                            currentPageReportTemplate="{first} - {last} of {totalRecords}"
-                            [showPageLinks]="false"
-                            [showFirstLastIcon]="false"
-                        ></p-paginator>
-                    </div>
-                </ng-template>
-            </div>
-            <div *ngSwitchCase="'schemas'" class="step-container docs-step-container">
-                <ng-template [ngTemplateOutlet]="spinner"
-                    [ngTemplateOutletContext]="{ loading: loadings.schemas }"></ng-template>
-                <ng-container *ngIf="totalSchemas > 0; else noSchemas">
-                    <div class="documents-table-container">
-                        <div class="schemas-mapping-panel">
-                            <div *ngFor="let schema of pagedSchemaIds" class="schemas-mapping-row">
-                                <div class="schemas-source-cell">
+                        </div>
+                        <div *ngSwitchCase="'schemas'" class="step-container docs-step-container">
+                            <ng-template [ngTemplateOutlet]="spinner"
+                                         [ngTemplateOutletContext]="{ loading: loadings.schemas }"></ng-template>
+                            <ng-container *ngIf="totalSchemas > 0; else noSchemas">
+                                <div class="documents-table-container">
+                                    <div class="schemas-mapping-panel">
+                                        <div *ngFor="let schema of pagedSchemaIds" class="schemas-mapping-row">
+                                            <div class="schemas-source-cell">
                                     <span
                                         #schemaSourceText
                                         class="schemas-source-text"
@@ -350,66 +364,66 @@
                                     >
                                         {{ getSchemaName(srcSchemas, schema) }}
                                     </span>
-                                </div>
-                                <div class="schemas-arrow-cell">
-                                    <i class="pi pi-arrow-right"></i>
-                                </div>
-                                <div class="schemas-target-cell">
-                                    <div
-                                        #schemaTargetDropdown
-                                        class="schemas-target-dropdown"
-                                        [pTooltip]="getDestinationSchemaName(schema)"
-                                        [tooltipDisabled]="!isDropdownLabelOverflow(schemaTargetDropdown)"
-                                        tooltipPosition="top"
-                                    >
-                                        <p-dropdown
-                                            appendTo="body"
-                                            [(ngModel)]="migrationConfig.schemas[schema]"
-                                            (onChange)="migrationConfig.updateSchemasValidity()"
-                                            [options]="dstSchemas"
-                                            [showClear]="true"
-                                            optionLabel="name"
-                                            optionValue="iri"
-                                            placeholder="Select schema"
-                                        ></p-dropdown>
+                                            </div>
+                                            <div class="schemas-arrow-cell">
+                                                <i class="pi pi-arrow-right"></i>
+                                            </div>
+                                            <div class="schemas-target-cell">
+                                                <div
+                                                    #schemaTargetDropdown
+                                                    class="schemas-target-dropdown"
+                                                    [pTooltip]="getDestinationSchemaName(schema)"
+                                                    [tooltipDisabled]="!isDropdownLabelOverflow(schemaTargetDropdown)"
+                                                    tooltipPosition="top"
+                                                >
+                                                    <p-dropdown
+                                                        appendTo="body"
+                                                        [(ngModel)]="migrationConfig.schemas[schema]"
+                                                        (onChange)="migrationConfig.updateSchemasValidity()"
+                                                        [options]="dstSchemas"
+                                                        [showClear]="true"
+                                                        optionLabel="name"
+                                                        optionValue="iri"
+                                                        placeholder="Select schema"
+                                                    ></p-dropdown>
+                                                </div>
+                                                <div class="schemas-meta-row">
+                                                    <span>Version: {{ getDestinationSchemaVersion(schema) }}</span>
+                                                    <span>Status: {{ getDestinationSchemaStatus(schema) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="schemas-meta-row">
-                                        <span>Version: {{ getDestinationSchemaVersion(schema) }}</span>
-                                        <span>Status: {{ getDestinationSchemaStatus(schema) }}</span>
-                                    </div>
                                 </div>
+                            </ng-container>
+                            <div class="schemas-bottom" *ngIf="totalSchemas > 0">
+                                <p-paginator
+                                    styleClass="history-paginator docs-paginator schemas-paginator"
+                                    (onPageChange)="onPageSchemas($event)"
+                                    [first]="pageIndexSchemas * pageSizeSchemas"
+                                    [rows]="pageSizeSchemas"
+                                    [totalRecords]="totalSchemas"
+                                    dropdownAppendTo="body"
+                                    [rowsPerPageOptions]="rowsPerPageOptions"
+                                    [showCurrentPageReport]="true"
+                                    currentPageReportTemplate="{first} - {last} of {totalRecords}"
+                                    [showPageLinks]="false"
+                                    [showFirstLastIcon]="false"
+                                ></p-paginator>
                             </div>
+                            <ng-template #noSchemas>
+                                <div class="empty-step-panel">
+                                    <i class="pi pi-clock empty-step-icon"></i>
+                                    <span class="empty-step-text">There are no schemas to map</span>
+                                </div>
+                            </ng-template>
                         </div>
-                    </div>
-                </ng-container>
-                <div class="schemas-bottom" *ngIf="totalSchemas > 0">
-                    <p-paginator
-                        styleClass="history-paginator docs-paginator schemas-paginator"
-                        (onPageChange)="onPageSchemas($event)"
-                        [first]="pageIndexSchemas * pageSizeSchemas"
-                        [rows]="pageSizeSchemas"
-                        [totalRecords]="totalSchemas"
-                        dropdownAppendTo="body"
-                        [rowsPerPageOptions]="rowsPerPageOptions"
-                        [showCurrentPageReport]="true"
-                        currentPageReportTemplate="{first} - {last} of {totalRecords}"
-                        [showPageLinks]="false"
-                        [showFirstLastIcon]="false"
-                    ></p-paginator>
-                </div>
-                <ng-template #noSchemas>
-                    <div class="empty-step-panel">
-                        <i class="pi pi-clock empty-step-icon"></i>
-                        <span class="empty-step-text">There are no schemas to map</span>
-                    </div>
-                </ng-template>
-            </div>
-            <div *ngSwitchCase="'roles'" class="step-container docs-step-container">
-                <ng-container *ngIf="totalRoles > 0; else noRoles">
-                    <div class="documents-table-container">
-                        <div class="roles-mapping-panel">
-                            <div *ngFor="let role of pagedRoleKeys" class="roles-mapping-row">
-                                <div class="roles-source-cell">
+                        <div *ngSwitchCase="'roles'" class="step-container docs-step-container">
+                            <ng-container *ngIf="totalRoles > 0; else noRoles">
+                                <div class="documents-table-container">
+                                    <div class="roles-mapping-panel">
+                                        <div *ngFor="let role of pagedRoleKeys" class="roles-mapping-row">
+                                            <div class="roles-source-cell">
                                     <span
                                         #roleSourceText
                                         class="roles-source-text"
@@ -417,54 +431,54 @@
                                         [tooltipDisabled]="!isTextOverflow(roleSourceText)"
                                         tooltipPosition="top"
                                     >{{ role }}</span>
-                                </div>
-                                <div class="roles-arrow-cell">
-                                    <i class="pi pi-arrow-right"></i>
-                                </div>
-                                <div class="roles-target-cell">
-                                    <div class="roles-target-dropdown">
-                                        <p-dropdown
-                                            appendTo="body"
-                                            [(ngModel)]="migrationConfig.roles[role]"
-                                            [options]="dstRoles"
-                                            [showClear]="true"
-                                            placeholder="Select role"
-                                            [appendTo]="'body'"
-                                        ></p-dropdown>
+                                            </div>
+                                            <div class="roles-arrow-cell">
+                                                <i class="pi pi-arrow-right"></i>
+                                            </div>
+                                            <div class="roles-target-cell">
+                                                <div class="roles-target-dropdown">
+                                                    <p-dropdown
+                                                        appendTo="body"
+                                                        [(ngModel)]="migrationConfig.roles[role]"
+                                                        [options]="dstRoles"
+                                                        [showClear]="true"
+                                                        placeholder="Select role"
+                                                        [appendTo]="'body'"
+                                                    ></p-dropdown>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            </ng-container>
+                            <div class="roles-bottom" *ngIf="totalRoles > 0">
+                                <p-paginator
+                                    styleClass="history-paginator docs-paginator roles-paginator"
+                                    (onPageChange)="onPageRoles($event)"
+                                    [first]="pageIndexRoles * pageSizeRoles"
+                                    [rows]="pageSizeRoles"
+                                    [totalRecords]="totalRoles"
+                                    dropdownAppendTo="body"
+                                    [rowsPerPageOptions]="rowsPerPageOptions"
+                                    [showCurrentPageReport]="true"
+                                    currentPageReportTemplate="{first} - {last} of {totalRecords}"
+                                    [showPageLinks]="false"
+                                    [showFirstLastIcon]="false"
+                                ></p-paginator>
                             </div>
+                            <ng-template #noRoles>
+                                <div class="empty-step-panel">
+                                    <i class="pi pi-clock empty-step-icon"></i>
+                                    <span class="empty-step-text">There are no roles to map</span>
+                                </div>
+                            </ng-template>
                         </div>
-                    </div>
-                </ng-container>
-                <div class="roles-bottom" *ngIf="totalRoles > 0">
-                    <p-paginator
-                        styleClass="history-paginator docs-paginator roles-paginator"
-                        (onPageChange)="onPageRoles($event)"
-                        [first]="pageIndexRoles * pageSizeRoles"
-                        [rows]="pageSizeRoles"
-                        [totalRecords]="totalRoles"
-                        dropdownAppendTo="body"
-                        [rowsPerPageOptions]="rowsPerPageOptions"
-                        [showCurrentPageReport]="true"
-                        currentPageReportTemplate="{first} - {last} of {totalRecords}"
-                        [showPageLinks]="false"
-                        [showFirstLastIcon]="false"
-                    ></p-paginator>
-                </div>
-                <ng-template #noRoles>
-                    <div class="empty-step-panel">
-                        <i class="pi pi-clock empty-step-icon"></i>
-                        <span class="empty-step-text">There are no roles to map</span>
-                    </div>
-                </ng-template>
-            </div>
-            <div *ngSwitchCase="'groups'" class="step-container docs-step-container">
-                <ng-container *ngIf="totalGroups > 0; else noGroups">
-                    <div class="documents-table-container">
-                        <div class="groups-mapping-panel">
-                            <div *ngFor="let group of pagedGroupKeys" class="groups-mapping-row">
-                                <div class="groups-source-cell">
+                        <div *ngSwitchCase="'groups'" class="step-container docs-step-container">
+                            <ng-container *ngIf="totalGroups > 0; else noGroups">
+                                <div class="documents-table-container">
+                                    <div class="groups-mapping-panel">
+                                        <div *ngFor="let group of pagedGroupKeys" class="groups-mapping-row">
+                                            <div class="groups-source-cell">
                                     <span
                                         #groupSourceText
                                         class="groups-source-text"
@@ -474,56 +488,57 @@
                                     >
                                         {{ group }}
                                     </span>
-                                </div>
-                                <div class="groups-link-cell">
-                                    <i class="pi pi-link groups-link-icon"></i>
-                                </div>
-                                <div class="groups-target-cell">
-                                    <div
-                                        #groupTargetDropdown
-                                        class="groups-target-dropdown"
-                                        [pTooltip]="migrationConfig.groups[group]"
-                                        [tooltipDisabled]="!isDropdownLabelOverflow(groupTargetDropdown)"
-                                        tooltipPosition="top"
-                                    >
-                                        <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.groups[group]"
-                                            [options]="dstGroups"
-                                            [showClear]="true"
-                                            placeholder="Select group"></p-dropdown>
+                                            </div>
+                                            <div class="groups-link-cell">
+                                                <i class="pi pi-link groups-link-icon"></i>
+                                            </div>
+                                            <div class="groups-target-cell">
+                                                <div
+                                                    #groupTargetDropdown
+                                                    class="groups-target-dropdown"
+                                                    [pTooltip]="migrationConfig.groups[group]"
+                                                    [tooltipDisabled]="!isDropdownLabelOverflow(groupTargetDropdown)"
+                                                    tooltipPosition="top"
+                                                >
+                                                    <p-dropdown appendTo="body"
+                                                                [(ngModel)]="migrationConfig.groups[group]"
+                                                                [options]="dstGroups"
+                                                                [showClear]="true"
+                                                                placeholder="Select group"></p-dropdown>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            </ng-container>
+                            <div class="groups-bottom" *ngIf="totalGroups > 0">
+                                <p-paginator
+                                    styleClass="history-paginator docs-paginator groups-paginator"
+                                    (onPageChange)="onPageGroups($event)"
+                                    [first]="pageIndexGroups * pageSizeGroups"
+                                    [rows]="pageSizeGroups"
+                                    [totalRecords]="totalGroups"
+                                    dropdownAppendTo="body"
+                                    [rowsPerPageOptions]="rowsPerPageOptions"
+                                    [showCurrentPageReport]="true"
+                                    currentPageReportTemplate="{first} - {last} of {totalRecords}"
+                                    [showPageLinks]="false"
+                                    [showFirstLastIcon]="false"
+                                ></p-paginator>
                             </div>
+                            <ng-template #noGroups>
+                                <div class="empty-step-panel">
+                                    <i class="pi pi-clock empty-step-icon"></i>
+                                    <span class="empty-step-text">There are no groups to map</span>
+                                </div>
+                            </ng-template>
                         </div>
-                    </div>
-                </ng-container>
-                <div class="groups-bottom" *ngIf="totalGroups > 0">
-                    <p-paginator
-                        styleClass="history-paginator docs-paginator groups-paginator"
-                        (onPageChange)="onPageGroups($event)"
-                        [first]="pageIndexGroups * pageSizeGroups"
-                        [rows]="pageSizeGroups"
-                        [totalRecords]="totalGroups"
-                        dropdownAppendTo="body"
-                        [rowsPerPageOptions]="rowsPerPageOptions"
-                        [showCurrentPageReport]="true"
-                        currentPageReportTemplate="{first} - {last} of {totalRecords}"
-                        [showPageLinks]="false"
-                        [showFirstLastIcon]="false"
-                    ></p-paginator>
-                </div>
-                <ng-template #noGroups>
-                    <div class="empty-step-panel">
-                        <i class="pi pi-clock empty-step-icon"></i>
-                        <span class="empty-step-text">There are no groups to map</span>
-                    </div>
-                </ng-template>
-            </div>
-            <div *ngSwitchCase="'tokens'" class="step-container docs-step-container">
-                <ng-container *ngIf="getObjectKeys(this.migrationConfig.tokens).length > 0; else noTokens">
-                    <div class="documents-table-container">
-                        <div class="tokens-mapping-panel">
-                            <div *ngFor="let token of pagedTokenKeys" class="tokens-mapping-row">
-                                <div class="tokens-source-cell">
+                        <div *ngSwitchCase="'tokens'" class="step-container docs-step-container">
+                            <ng-container *ngIf="getObjectKeys(this.migrationConfig.tokens).length > 0; else noTokens">
+                                <div class="documents-table-container">
+                                    <div class="tokens-mapping-panel">
+                                        <div *ngFor="let token of pagedTokenKeys" class="tokens-mapping-row">
+                                            <div class="tokens-source-cell">
                                     <span
                                         #tokenSourceText
                                         class="tokens-source-text"
@@ -533,58 +548,59 @@
                                     >
                                         {{ token }}
                                     </span>
-                                </div>
-                                <div class="tokens-link-cell">
-                                    <i class="pi pi-link tokens-link-icon"></i>
-                                </div>
-                                <div class="tokens-target-cell">
-                                    <div
-                                        #tokenTargetDropdown
-                                        class="tokens-target-dropdown"
-                                        [pTooltip]="migrationConfig.tokens[token]"
-                                        [tooltipDisabled]="!isDropdownLabelOverflow(tokenTargetDropdown)"
-                                        tooltipPosition="top"
-                                    >
-                                        <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.tokens[token]"
-                                            [options]="dstTokens"
-                                            [showClear]="true"
-                                            placeholder="Select token"></p-dropdown>
+                                            </div>
+                                            <div class="tokens-link-cell">
+                                                <i class="pi pi-link tokens-link-icon"></i>
+                                            </div>
+                                            <div class="tokens-target-cell">
+                                                <div
+                                                    #tokenTargetDropdown
+                                                    class="tokens-target-dropdown"
+                                                    [pTooltip]="migrationConfig.tokens[token]"
+                                                    [tooltipDisabled]="!isDropdownLabelOverflow(tokenTargetDropdown)"
+                                                    tooltipPosition="top"
+                                                >
+                                                    <p-dropdown appendTo="body"
+                                                                [(ngModel)]="migrationConfig.tokens[token]"
+                                                                [options]="dstTokens"
+                                                                [showClear]="true"
+                                                                placeholder="Select token"></p-dropdown>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            </ng-container>
+                            <div class="tokens-bottom" *ngIf="totalTokens > 0">
+                                <p-paginator
+                                    styleClass="history-paginator docs-paginator tokens-paginator"
+                                    (onPageChange)="onPageTokens($event)"
+                                    [first]="pageIndexTokens * pageSizeTokens"
+                                    [rows]="pageSizeTokens"
+                                    [totalRecords]="totalTokens"
+                                    dropdownAppendTo="body"
+                                    [rowsPerPageOptions]="rowsPerPageOptions"
+                                    [showCurrentPageReport]="true"
+                                    currentPageReportTemplate="{first} - {last} of {totalRecords}"
+                                    [showPageLinks]="false"
+                                    [showFirstLastIcon]="false"
+                                ></p-paginator>
                             </div>
+                            <ng-template #noTokens>
+                                <div class="empty-step-panel">
+                                    <i class="pi pi-clock empty-step-icon"></i>
+                                    <span class="empty-step-text">There are no tokens to map</span>
+                                </div>
+                            </ng-template>
                         </div>
-                    </div>
-                </ng-container>
-                <div class="tokens-bottom" *ngIf="totalTokens > 0">
-                    <p-paginator
-                        styleClass="history-paginator docs-paginator tokens-paginator"
-                        (onPageChange)="onPageTokens($event)"
-                        [first]="pageIndexTokens * pageSizeTokens"
-                        [rows]="pageSizeTokens"
-                        [totalRecords]="totalTokens"
-                        dropdownAppendTo="body"
-                        [rowsPerPageOptions]="rowsPerPageOptions"
-                        [showCurrentPageReport]="true"
-                        currentPageReportTemplate="{first} - {last} of {totalRecords}"
-                        [showPageLinks]="false"
-                        [showFirstLastIcon]="false"
-                    ></p-paginator>
-                </div>
-                <ng-template #noTokens>
-                    <div class="empty-step-panel">
-                        <i class="pi pi-clock empty-step-icon"></i>
-                        <span class="empty-step-text">There are no tokens to map</span>
-                    </div>
-                </ng-template>
-            </div>
-            <div *ngSwitchCase="'blocks'" class="step-container docs-step-container">
-                <ng-template [ngTemplateOutlet]="spinner"
-                    [ngTemplateOutletContext]="{ loading: loadings.blocks }"></ng-template>
-                <ng-container *ngIf="totalBlocks > 0; else noBlocks">
-                    <div class="documents-table-container">
-                        <div class="blocks-mapping-panel">
-                            <div *ngFor="let block of pagedBlockIds" class="blocks-mapping-row">
-                                <div class="blocks-source-cell">
+                        <div *ngSwitchCase="'blocks'" class="step-container docs-step-container">
+                            <ng-template [ngTemplateOutlet]="spinner"
+                                         [ngTemplateOutletContext]="{ loading: loadings.blocks }"></ng-template>
+                            <ng-container *ngIf="totalBlocks > 0; else noBlocks">
+                                <div class="documents-table-container">
+                                    <div class="blocks-mapping-panel">
+                                        <div *ngFor="let block of pagedBlockIds" class="blocks-mapping-row">
+                                            <div class="blocks-source-cell">
                                     <span
                                         #blockSourceText
                                         class="blocks-source-text"
@@ -594,78 +610,80 @@
                                     >
                                         {{ getSourceBlockName(block) }}
                                     </span>
-                                </div>
-                                <div class="blocks-link-cell">
-                                    <i class="pi pi-link blocks-link-icon"></i>
-                                </div>
-                                <div class="blocks-target-cell">
-                                    <div
-                                        #blockTargetDropdown
-                                        class="blocks-target-dropdown"
-                                        [pTooltip]="getDestinationBlockName(block)"
-                                        [tooltipDisabled]="!isDropdownLabelOverflow(blockTargetDropdown)"
-                                        tooltipPosition="top"
-                                    >
-                                        <p-dropdown
-                                            appendTo="body"
-                                            [(ngModel)]="migrationConfig.blocks[block]"
-                                            (onChange)="migrationConfig.updateSchemasValidity()"
-                                            [options]="dstBlocks"
-                                            [showClear]="true"
-                                            optionLabel="tag"
-                                            optionValue="id"
-                                            placeholder="Select block"
-                                        ></p-dropdown>
+                                            </div>
+                                            <div class="blocks-link-cell">
+                                                <i class="pi pi-link blocks-link-icon"></i>
+                                            </div>
+                                            <div class="blocks-target-cell">
+                                                <div
+                                                    #blockTargetDropdown
+                                                    class="blocks-target-dropdown"
+                                                    [pTooltip]="getDestinationBlockName(block)"
+                                                    [tooltipDisabled]="!isDropdownLabelOverflow(blockTargetDropdown)"
+                                                    tooltipPosition="top"
+                                                >
+                                                    <p-dropdown
+                                                        appendTo="body"
+                                                        [(ngModel)]="migrationConfig.blocks[block]"
+                                                        (onChange)="migrationConfig.updateSchemasValidity()"
+                                                        [options]="dstBlocks"
+                                                        [showClear]="true"
+                                                        optionLabel="tag"
+                                                        optionValue="id"
+                                                        placeholder="Select block"
+                                                    ></p-dropdown>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            </ng-container>
+                            <div class="blocks-bottom" *ngIf="totalBlocks > 0">
+                                <p-paginator
+                                    styleClass="history-paginator docs-paginator blocks-paginator"
+                                    (onPageChange)="onPageBlocks($event)"
+                                    [first]="pageIndexBlocks * pageSizeBlocks"
+                                    [rows]="pageSizeBlocks"
+                                    [totalRecords]="totalBlocks"
+                                    dropdownAppendTo="body"
+                                    [rowsPerPageOptions]="rowsPerPageOptions"
+                                    [showCurrentPageReport]="true"
+                                    currentPageReportTemplate="{first} - {last} of {totalRecords}"
+                                    [showPageLinks]="false"
+                                    [showFirstLastIcon]="false"
+                                ></p-paginator>
                             </div>
+                            <ng-template #noBlocks>
+                                <div class="empty-step-panel">
+                                    <i class="pi pi-clock empty-step-icon"></i>
+                                    <span class="empty-step-text">There are no blocks to map</span>
+                                </div>
+                            </ng-template>
                         </div>
                     </div>
-                </ng-container>
-                <div class="blocks-bottom" *ngIf="totalBlocks > 0">
-                    <p-paginator
-                        styleClass="history-paginator docs-paginator blocks-paginator"
-                        (onPageChange)="onPageBlocks($event)"
-                        [first]="pageIndexBlocks * pageSizeBlocks"
-                        [rows]="pageSizeBlocks"
-                        [totalRecords]="totalBlocks"
-                        dropdownAppendTo="body"
-                        [rowsPerPageOptions]="rowsPerPageOptions"
-                        [showCurrentPageReport]="true"
-                        currentPageReportTemplate="{first} - {last} of {totalRecords}"
-                        [showPageLinks]="false"
-                        [showFirstLastIcon]="false"
-                    ></p-paginator>
-                </div>
-                <ng-template #noBlocks>
-                    <div class="empty-step-panel">
-                        <i class="pi pi-clock empty-step-icon"></i>
-                        <span class="empty-step-text">There are no blocks to map</span>
-                    </div>
-                </ng-template>
-            </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div *ngIf="activeTabIndex === 1" class="history-content">
-        <ng-template [ngTemplateOutlet]="spinner" [ngTemplateOutletContext]="{ loading: historyLoading }"></ng-template>
-        <div class="history-grid-wrapper">
-            <p-table [value]="historyItems" styleClass="p-datatable-sm migration-history-table" [tableStyle]="{ width: '100%' }">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>SOURCE POLICY</th>
-                        <th>DESTINATION POLICY</th>
-                        <th>TOTAL</th>
-                        <th>FAILED</th>
-                        <th>SUCCEEDED</th>
-                        <th>OPERATION</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-run>
-                    <tr>
-                        <td>
+        <div *ngIf="activeTabIndex === 1" class="history-content">
+            <ng-template [ngTemplateOutlet]="spinner"
+                         [ngTemplateOutletContext]="{ loading: historyLoading }"></ng-template>
+            <div class="history-grid-wrapper">
+                <p-table [value]="historyItems" styleClass="p-datatable-sm migration-history-table"
+                         [tableStyle]="{ width: '100%' }">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>SOURCE POLICY</th>
+                            <th>DESTINATION POLICY</th>
+                            <th>TOTAL</th>
+                            <th>FAILED</th>
+                            <th>SUCCEEDED</th>
+                            <th>OPERATION</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-run>
+                        <tr>
+                            <td>
                             <span
                                 class="history-policy-name"
                                 [pTooltip]="getPolicyName(run.srcPolicyId)"
@@ -673,8 +691,8 @@
                             >
                                 {{ getPolicyName(run.srcPolicyId) }}
                             </span>
-                        </td>
-                        <td>
+                            </td>
+                            <td>
                             <span
                                 class="history-policy-name"
                                 [pTooltip]="getPolicyName(run.dstPolicyId)"
@@ -682,12 +700,12 @@
                             >
                                 {{ getPolicyName(run.dstPolicyId) }}
                             </span>
-                        </td>
-                        <td>{{ getRunTotal(run) }}</td>
-                        <td>{{ getFailedCount(run) }} ({{ getFailedPercent(run) }})</td>
-                        <td>{{ getSucceededPercent(run) }}</td>
-                        <td>
-                            <div class="history-actions">
+                            </td>
+                            <td>{{ getRunTotal(run) }}</td>
+                            <td>{{ getFailedCount(run) }} ({{ getFailedPercent(run) }})</td>
+                            <td>{{ getSucceededPercent(run) }}</td>
+                            <td>
+                                <div class="history-actions">
                                 <span
                                     [pTooltip]="getResumeDisabledTooltip(run)"
                                     tooltipPosition="top"
@@ -700,10 +718,10 @@
                                         (onClick)="onResume(run)"
                                     ></p-button>
                                 </span>
-                                <span
-                                    [pTooltip]="getRetryFailedDisabledTooltip(run)"
-                                    tooltipPosition="top"
-                                >
+                                    <span
+                                        [pTooltip]="getRetryFailedDisabledTooltip(run)"
+                                        tooltipPosition="top"
+                                    >
                                     <p-button
                                         label="Retry Failed Data"
                                         [outlined]="true"
@@ -712,137 +730,155 @@
                                         (onClick)="onRetryFailed(run)"
                                     ></p-button>
                                 </span>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
-        <p-paginator
-            styleClass="history-paginator"
-            (onPageChange)="onHistoryPage($event)"
-            [first]="historyPageIndex * historyPageSize"
-            [rows]="historyPageSize"
-            [totalRecords]="historyTotal || historyItems.length"
-            dropdownAppendTo="body"
-            [rowsPerPageOptions]="rowsPerPageOptions"
-            [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first} - {last} of {totalRecords}"
-            [showPageLinks]="false"
-            [showFirstLastIcon]="false"
-        ></p-paginator>
-    </div>
-</div>
-<div class="dialog-footer">
-    <div *ngIf="activeTabIndex === 0" [ngSwitch]="items[activeIndex].id">
-        <div *ngSwitchCase="'policies'" class="action-buttons">
-            <div>
-                <p-button label="Close" [outlined]="true" styleClass="footer-close-btn" (onClick)="onClose()"></p-button>
-                <p-button label="Prev" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn action-button-gap"
-                    (onClick)="prevStep()"></p-button>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
             </div>
-            <div>
-                <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex"
-                    [disabled]="!migrationConfig.policiesValidity || hasPolicySelectionError" (onClick)="nextStep()"></p-button>
-            </div>
-        </div>
-        <div *ngSwitchCase="'vps'" class="action-buttons">
-            <div>
-                <p-button label="Close" [outlined]="true" styleClass="footer-close-btn" (onClick)="onClose()"></p-button>
-            </div>
-            <div>
-                <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
-                    (onClick)="prevStep()"></p-button>
-                <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
-            </div>
-        </div>
-        <div *ngSwitchCase="'vcs'" class="action-buttons">
-            <div>
-                <p-button label="Close" [outlined]="true" styleClass="footer-close-btn" (onClick)="onClose()"></p-button>
-            </div>
-            <div>
-                <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
-                    (onClick)="prevStep()"></p-button>
-                <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex" [disabled]="!migrationConfig.vcsValidity"
-                    (onClick)="nextStep()"></p-button>
-                <p-button label="Finish" *ngIf="items.length - 1 === activeIndex" [disabled]="!migrationConfig.vcsValidity"
-                    (onClick)="onSubmit()" styleClass="footer-ok-btn"></p-button>
-            </div>
-        </div>
-        <div *ngSwitchCase="'schemas'" class="action-buttons">
-            <div>
-                <p-button label="Close" [outlined]="true" styleClass="footer-close-btn" (onClick)="onClose()"></p-button>
-            </div>
-            <div>
-                <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
-                    (onClick)="prevStep()"></p-button>
-                <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex"
-                    [disabled]="!migrationConfig.schemasValidity" (onClick)="nextStep()"></p-button>
-                <p-button label="Finish" *ngIf="items.length - 1 === activeIndex"
-                    [disabled]="!migrationConfig.schemasValidity" (onClick)="onSubmit()"
-                    styleClass="footer-ok-btn"></p-button>
-            </div>
-        </div>
-        <div *ngSwitchCase="'roles'" class="action-buttons">
-            <div>
-                <p-button label="Close" [outlined]="true" styleClass="footer-close-btn" (onClick)="onClose()"></p-button>
-            </div>
-            <div>
-                <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
-                    (onClick)="prevStep()"></p-button>
-                <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
-                <p-button label="Finish" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
-                    styleClass="footer-ok-btn"></p-button>
-            </div>
-        </div>
-        <div *ngSwitchCase="'groups'" class="action-buttons">
-            <div>
-                <p-button label="Close" [outlined]="true" styleClass="footer-close-btn" (onClick)="onClose()"></p-button>
-            </div>
-            <div>
-                <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
-                    (onClick)="prevStep()"></p-button>
-                <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
-                <p-button label="Finish" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
-                    styleClass="footer-ok-btn"></p-button>
-            </div>
-        </div>
-        <div *ngSwitchCase="'blocks'" class="action-buttons">
-            <div>
-                <p-button label="Close" [outlined]="true" styleClass="footer-close-btn" (onClick)="onClose()"></p-button>
-            </div>
-            <div>
-                <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
-                    (onClick)="prevStep()"></p-button>
-                <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
-                <p-button label="Finish" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
-                    styleClass="footer-ok-btn"></p-button>
-            </div>
-        </div>
-        <div *ngSwitchCase="'tokens'" class="action-buttons">
-            <div>
-                <p-button label="Close" [outlined]="true" styleClass="footer-close-btn" (onClick)="onClose()"></p-button>
-            </div>
-            <div>
-                <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
-                    (onClick)="prevStep()"></p-button>
-                <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
-                <p-button label="Finish" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
-                    styleClass="footer-ok-btn"></p-button>
-            </div>
+            <p-paginator
+                styleClass="history-paginator"
+                (onPageChange)="onHistoryPage($event)"
+                [first]="historyPageIndex * historyPageSize"
+                [rows]="historyPageSize"
+                [totalRecords]="historyTotal || historyItems.length"
+                dropdownAppendTo="body"
+                [rowsPerPageOptions]="rowsPerPageOptions"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="{first} - {last} of {totalRecords}"
+                [showPageLinks]="false"
+                [showFirstLastIcon]="false"
+            ></p-paginator>
         </div>
     </div>
-    <div *ngIf="activeTabIndex === 1" class="action-buttons">
-        <div>
-            <p-button label="Close" [outlined]="true" styleClass="footer-close-btn" (onClick)="onClose()"></p-button>
+    <div class="dialog-footer">
+        <div *ngIf="activeTabIndex === 0" [ngSwitch]="items[activeIndex].id">
+            <div *ngSwitchCase="'policies'" class="action-buttons">
+                <div>
+                    <p-button label="Close" [outlined]="true" styleClass="footer-close-btn"
+                              (onClick)="onClose()"></p-button>
+                    <p-button label="Prev" *ngIf="activeIndex !== 0" [outlined]="true"
+                              styleClass="footer-prev-btn action-button-gap"
+                              (onClick)="prevStep()"></p-button>
+                </div>
+                <div>
+                    <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex"
+                              [disabled]="!migrationConfig.policiesValidity || hasPolicySelectionError"
+                              (onClick)="nextStep()"></p-button>
+                </div>
+            </div>
+            <div *ngSwitchCase="'vps'" class="action-buttons">
+                <div>
+                    <p-button label="Close" [outlined]="true" styleClass="footer-close-btn"
+                              (onClick)="onClose()"></p-button>
+                </div>
+                <div>
+                    <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
+                              (onClick)="prevStep()"></p-button>
+                    <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex"
+                              (onClick)="nextStep()"></p-button>
+                </div>
+            </div>
+            <div *ngSwitchCase="'vcs'" class="action-buttons">
+                <div>
+                    <p-button label="Close" [outlined]="true" styleClass="footer-close-btn"
+                              (onClick)="onClose()"></p-button>
+                </div>
+                <div>
+                    <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
+                              (onClick)="prevStep()"></p-button>
+                    <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex"
+                              [disabled]="!migrationConfig.vcsValidity"
+                              (onClick)="nextStep()"></p-button>
+                    <p-button label="Finish" *ngIf="items.length - 1 === activeIndex"
+                              [disabled]="!migrationConfig.vcsValidity"
+                              (onClick)="onSubmit()" styleClass="footer-ok-btn"></p-button>
+                </div>
+            </div>
+            <div *ngSwitchCase="'schemas'" class="action-buttons">
+                <div>
+                    <p-button label="Close" [outlined]="true" styleClass="footer-close-btn"
+                              (onClick)="onClose()"></p-button>
+                </div>
+                <div>
+                    <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
+                              (onClick)="prevStep()"></p-button>
+                    <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex"
+                              [disabled]="!migrationConfig.schemasValidity" (onClick)="nextStep()"></p-button>
+                    <p-button label="Finish" *ngIf="items.length - 1 === activeIndex"
+                              [disabled]="!migrationConfig.schemasValidity" (onClick)="onSubmit()"
+                              styleClass="footer-ok-btn"></p-button>
+                </div>
+            </div>
+            <div *ngSwitchCase="'roles'" class="action-buttons">
+                <div>
+                    <p-button label="Close" [outlined]="true" styleClass="footer-close-btn"
+                              (onClick)="onClose()"></p-button>
+                </div>
+                <div>
+                    <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
+                              (onClick)="prevStep()"></p-button>
+                    <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex"
+                              (onClick)="nextStep()"></p-button>
+                    <p-button label="Finish" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
+                              styleClass="footer-ok-btn"></p-button>
+                </div>
+            </div>
+            <div *ngSwitchCase="'groups'" class="action-buttons">
+                <div>
+                    <p-button label="Close" [outlined]="true" styleClass="footer-close-btn"
+                              (onClick)="onClose()"></p-button>
+                </div>
+                <div>
+                    <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
+                              (onClick)="prevStep()"></p-button>
+                    <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex"
+                              (onClick)="nextStep()"></p-button>
+                    <p-button label="Finish" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
+                              styleClass="footer-ok-btn"></p-button>
+                </div>
+            </div>
+            <div *ngSwitchCase="'blocks'" class="action-buttons">
+                <div>
+                    <p-button label="Close" [outlined]="true" styleClass="footer-close-btn"
+                              (onClick)="onClose()"></p-button>
+                </div>
+                <div>
+                    <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
+                              (onClick)="prevStep()"></p-button>
+                    <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex"
+                              (onClick)="nextStep()"></p-button>
+                    <p-button label="Finish" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
+                              styleClass="footer-ok-btn"></p-button>
+                </div>
+            </div>
+            <div *ngSwitchCase="'tokens'" class="action-buttons">
+                <div>
+                    <p-button label="Close" [outlined]="true" styleClass="footer-close-btn"
+                              (onClick)="onClose()"></p-button>
+                </div>
+                <div>
+                    <p-button label="Previous" *ngIf="activeIndex !== 0" [outlined]="true" styleClass="footer-prev-btn"
+                              (onClick)="prevStep()"></p-button>
+                    <p-button label="Next" styleClass="footer-next-btn" *ngIf="items.length - 1 > activeIndex"
+                              (onClick)="nextStep()"></p-button>
+                    <p-button label="Finish" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
+                              styleClass="footer-ok-btn"></p-button>
+                </div>
+            </div>
         </div>
-        <div></div>
+        <div *ngIf="activeTabIndex === 1" class="action-buttons">
+            <div>
+                <p-button label="Close" [outlined]="true" styleClass="footer-close-btn"
+                          (onClick)="onClose()"></p-button>
+            </div>
+            <div></div>
+        </div>
     </div>
-</div>
 
-<ng-template #spinner let-loading="loading">
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
-    </div>
-</ng-template>
+    <ng-template #spinner let-loading="loading">
+        <div *ngIf="loading" class="loading">
+            <div class="preloader-image preloader-image-l-size"></div>
+        </div>
+    </ng-template>
 </div>

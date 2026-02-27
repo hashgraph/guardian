@@ -196,34 +196,42 @@ Promise.all([
 
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
-    if (process.env.HEDERA_CUSTOM_NODES) {
-        try {
-            const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
-            Environment.setNodes(nodes);
-        } catch (error) {
-            await logger.warn(
-                'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
-                ['GUARDIAN_SERVICE'],
-                null
-            );
-            console.warn(error);
+
+    if (process.env.OVERRIDE_NETWORK_CONFIGURATION === 'true') {
+        if (process.env.OVERRIDE_HEDERA_CONSENSUS_NODES) {
+            try {
+                const nodes = JSON.parse(process.env.OVERRIDE_HEDERA_CONSENSUS_NODES);
+                Environment.setNodes(nodes);
+            } catch (error) {
+                await logger.warn(
+                    'OVERRIDE_HEDERA_CONSENSUS_NODES field in settings: ' + error.message,
+                    ['GUARDIAN_SERVICE'],
+                    null
+                );
+                console.warn(error);
+            }
+        }
+        if (process.env.OVERRIDE_HEDERA_MIRROR_NODES) {
+            try {
+                const mirrorNodes = JSON.parse(
+                    process.env.OVERRIDE_HEDERA_MIRROR_NODES
+                );
+                Environment.setMirrorNodes(mirrorNodes);
+            } catch (error) {
+                await logger.warn(
+                    'OVERRIDE_HEDERA_MIRROR_NODES field in settings: ' + error.message,
+                    ['GUARDIAN_SERVICE'],
+                    null
+                );
+                console.warn(error);
+            }
+        }
+    
+        if (process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API) {
+            Environment.setMirrorNodesBaseApi(process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API);
         }
     }
-    if (process.env.HEDERA_CUSTOM_MIRROR_NODES) {
-        try {
-            const mirrorNodes = JSON.parse(
-                process.env.HEDERA_CUSTOM_MIRROR_NODES
-            );
-            Environment.setMirrorNodes(mirrorNodes);
-        } catch (error) {
-            await logger.warn(
-                'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' + error.message,
-                ['GUARDIAN_SERVICE'],
-                null
-            );
-            console.warn(error);
-        }
-    }
+
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
     // TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);

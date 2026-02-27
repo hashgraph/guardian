@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FormulaFiles, FormulaItem, FormulasTree, SchemaItem } from '../../models/formula-tree';
 import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
@@ -17,6 +17,9 @@ export class FormulasViewDialog {
     public current: FormulaItem | SchemaItem | null;
     public nav: TreeListView<any>;
     public files: FormulaFiles[];
+
+    public isLargeSize: boolean = true;
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     public viewDocumentOptions = [
         { label: 'Formulas', key: 'formulas', icon: 'function' },
@@ -84,5 +87,26 @@ export class FormulasViewDialog {
     public setTab(event: any): void {
         const opt = this.viewDocumentOptions[event.index];
         this.activeTab = opt?.key || 'formulas';
+    }
+
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
     }
 }

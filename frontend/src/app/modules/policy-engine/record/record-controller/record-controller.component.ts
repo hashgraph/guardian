@@ -144,7 +144,7 @@ export class RecordControllerComponent implements OnInit {
         });
     }
 
-public runRecord() {
+    public runRecord() {
         const dialogRef = this.dialogService.open(ImportEntityDialog, {
             showHeader: false,
             width: '720px',
@@ -415,7 +415,7 @@ public runRecord() {
 
     public showResult() {
         this._resultDialog = this.dialog.open(RecordResultDialog, {
-            width: '700px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             modal: true,
             closable: false,
