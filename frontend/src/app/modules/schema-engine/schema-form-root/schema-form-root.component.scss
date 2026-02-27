@@ -1,19 +1,24 @@
 .schema-form-root {
     display: flex;
-    gap: 16px;
+    gap: 8px;
     width: 100%;
 }
 
 .schema-form-view-nav {
-    width: 25%;
-    min-width: 25%;
+    width: 25%; 
+    min-width: 25%; 
+    max-width: 75%; 
+    align-self: flex-start;
+    position: sticky;
+    top: 0;
+    max-height: calc(100vh - 440px);
     overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .schema-form-content {
     flex: 1;
     min-width: 0;
-    overflow: auto;
 }
 
 .schema-form-content.full-width {

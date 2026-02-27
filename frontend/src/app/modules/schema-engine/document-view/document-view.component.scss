@@ -189,13 +189,14 @@ form {
 
 .content {
     display: flex;
-    gap: 16px;
+    gap: 8px;
     width: 100%;
 }
 
 .schema-form-view-nav {
-    width: 25%;
-    min-width: 25%;
+    width: 25%; 
+    min-width: 0%; 
+    max-width: 75%; 
     align-self: flex-start;
     position: sticky;
     top: 0;
