@@ -100,6 +100,7 @@ export class VCFullscreenDialog {
     public versionOptions: { label: string; value: number }[] = [];
     public selectedVersionIndex: number = 0;
     public tags: any[] = [];
+    public disconnected: boolean = false;
 
     private _destroy$ = new Subject<void>();
     private _subscription?: Subscription | null;
@@ -188,6 +189,7 @@ export class VCFullscreenDialog {
             this.messageId = row.messageId;
             this.schemaId = row.schema;
             this.relayerAccount = row.relayerAccount;
+            this.disconnected = !!row.disconnected;
         }
 
         this.id = id;
@@ -551,7 +553,7 @@ export class VCFullscreenDialog {
 
             await this.tablePersist.persistTablesInDocument(data, false);
             prepareVcData(data);
-            
+
             this.policyEngineService
                 .createNewVersionVcDocument(this.policyId!, {
                     documentId: this.lastVersionVcDoc.id ?? this.documentId,

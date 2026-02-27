@@ -224,7 +224,7 @@ export class PolicyEngineService {
             params = params.set('demo', demo);
         }
 
-        if(originalTracking) {
+        if (originalTracking) {
             params = params.set('originalTracking', originalTracking);
         }
 
@@ -673,5 +673,17 @@ export class PolicyEngineService {
 
     public getAllVersionVcDocuments(policyId?: string, documentId?: string): Observable<any> {
         return this.http.get<void>(`${this.url}/${policyId}/get-all-version-vc-documents/${documentId}`);
+    }
+
+    public disconnect(policyId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/disconnect`, null);
+    }
+
+    public getDisconnectedPolicy(policyId: string) {
+        return this.http.get<any>(`${this.url}/${policyId}/disconnected`);
+    }
+
+    public reconnect(policyId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/reconnect`, null);
     }
 }

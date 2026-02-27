@@ -914,6 +914,49 @@ export class PolicyApi {
     }
 
     /**
+     * Get disconnected policy
+     */
+    @Get('/:policyId/disconnected')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+        Permissions.POLICIES_POLICY_AUDIT,
+    )
+    @ApiOperation({
+        summary: 'Checks whether the user is disconnected from the policy or not.',
+        description: 'Checks whether the user is disconnected from the policy or not.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Policy configuration.',
+        type: PolicyDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getDisconnectedPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<PolicyDTO> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getDisconnectedPolicy(policyId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Updates policy
      */
     @Put('/:policyId')
@@ -1293,6 +1336,83 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * Disconnect
+     */
+    @Put('/:policyId/disconnect')
+    @Auth(Permissions.POLICIES_POLICY_READ)
+    @ApiOperation({
+        summary: 'Disconnects the user from the selected policy.',
+        description: 'Disconnects the user from the selected policy.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: PolicyDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async disconnectPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string
+    ): Promise<boolean> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.disconnectPolicy(policyId, user);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Reconnect
+     */
+    @Put('/:policyId/reconnect')
+    @Auth(Permissions.POLICIES_POLICY_READ)
+    @ApiOperation({
+        summary: 'Restores the user’s participation in the policy after disconnection.',
+        description: 'Restores the user’s participation in the policy after disconnection.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: PolicyDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async reconnectPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string
+    ): Promise<boolean> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.reconnectPolicy(policyId, user);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
     //#endregion
 
     //#region Other

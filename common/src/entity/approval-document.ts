@@ -115,6 +115,15 @@ export class ApprovalDocument extends RestoreEntity implements IApprovalDocument
     _documentFileId?: ObjectId;
 
     /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

@@ -89,6 +89,15 @@ export class MultiDocuments extends RestoreEntity {
     _documentFileId?: ObjectId;
 
     /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

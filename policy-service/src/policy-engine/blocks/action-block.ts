@@ -64,7 +64,8 @@ export class InterfaceDocumentActionBlock {
         }
 
         if (ref.options.type === 'dropdown') {
-            const documents: any[] = await ref.getSources(user, null);
+            let documents: any[] = await ref.getSources(user, null);
+            documents = documents.filter((e) => !e.disconnected);
             data.name = ref.options.name;
             data.value = ref.options.value;
             data.field = ref.options.field;

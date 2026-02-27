@@ -54,6 +54,12 @@ export class PolicyActionsService {
         await this.topicListener.subscribe(this.loadTask.bind(this));
     }
 
+    public async destroy(): Promise<void> {
+        if (this.topicListener) {
+            await this.topicListener.close();
+        }
+    }
+
     public async selectGroup(
         user: PolicyUser,
         uuid: string
@@ -670,7 +676,7 @@ export class PolicyActionsService {
     }
 
     private async executeRemoteAction(row: PolicyAction, policyUser: PolicyUser) {
-        const result = await PolicyActionsUtils.complete(row, policyUser, this.policyOwner, this.policyOwnerId);
+        const result = await PolicyActionsUtils.complete(row, policyUser, this.policyOwner, this.policyOwnerId, this.policyId);
         this.policyInstance.backup();
         await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
     }

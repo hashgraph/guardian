@@ -419,3 +419,8 @@ tr.revoked td:not(.mat-column-history) {
 .col-container {
     min-height: 37px;
 }
+
+*[disconnected="true"] {
+    background: #EFF3F7;
+    color: #848FA9;
+}

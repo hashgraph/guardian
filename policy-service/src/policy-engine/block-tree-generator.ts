@@ -465,6 +465,36 @@ export class BlockTreeGenerator extends NatsService {
                 return new MessageResponse(docs);
             }
         );
+
+        this.getPolicyMessages(PolicyEvents.DISCONNECT_POLICY, policyId, async (msg: any) => {
+            try {
+                const { user } = msg;
+                const result = await PolicyComponentsUtils.DisconnectPolicy(policyId, user);
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.RECONNECT_POLICY, policyId, async (msg: any) => {
+            try {
+                const { user } = msg;
+                const result = await PolicyComponentsUtils.ReconnectPolicy(policyId, user);
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.DISCONNECT_REMOTE_POLICY, policyId, async (msg: any) => {
+            try {
+                const { user } = msg;
+                const row = await PolicyComponentsUtils.DisconnectRemotePolicy(policyInstance, policyId, user);
+                return new MessageResponse(row);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
     }
 
     /**
@@ -633,6 +663,18 @@ export class BlockTreeGenerator extends NatsService {
 
     public async destroyModel(policyId: string, logger: PinoLogger, policyOwnerId: string | null): Promise<void> {
         try {
+            const backupService = PolicyComponentsUtils.GetBackupService(policyId);
+            const restoreService = PolicyComponentsUtils.GetRestoreService(policyId);
+            const actionsService = PolicyComponentsUtils.GetActionsService(policyId);
+            if (backupService) {
+                await backupService.destroy();
+            }
+            if (restoreService) {
+                await restoreService.destroy();
+            }
+            if (actionsService) {
+                await actionsService.destroy();
+            }
             await RecordUtils.DestroyRecording(policyId);
             await RecordUtils.DestroyRunning(policyId);
             await PolicyComponentsUtils.UnregisterBlocks(policyId);

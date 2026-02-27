@@ -808,6 +808,25 @@ export class PolicyEngineService {
                 return new MessageResponse(result);
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_DISCONNECTED_POLICY,
+            async (msg: {
+                policyId: string,
+                owner: IOwner
+            }) => {
+                const { policyId, owner } = msg;
+                const disconnected = await DatabaseServer.getDisconnectedPolicy(policyId, owner.creator);
+                if (disconnected) {
+                    const policy = await DatabaseServer.getPolicy({ id: policyId });
+                    if (policy) {
+                        const userFull = await (new Users()).getUserById(owner.creator, owner.id);
+                        await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
+                    }
+                    return new MessageResponse(policy);
+                } else {
+                    return new MessageResponse(null);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICIES,
             async (msg: { options: any, owner: IOwner }) => {
                 try {
@@ -849,7 +868,7 @@ export class PolicyEngineService {
                         otherOptions.limit = 100;
                     }
                     await this.policyEngine.addAccessFilters(_filters, owner);
-                    await this.policyEngine.addLocationFilters(_filters, type);
+                    await this.policyEngine.addLocationFilters(_filters, type, owner);
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
                     const userFull = await (new Users()).getUserById(owner.creator, owner.id);
                     for (const policy of policies) {
@@ -884,7 +903,7 @@ export class PolicyEngineService {
                         otherOptions.limit = 100;
                     }
                     await this.policyEngine.addAccessFilters(_filters, owner);
-                    await this.policyEngine.addLocationFilters(_filters, type);
+                    await this.policyEngine.addLocationFilters(_filters, type, owner);
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
 
                     const userFull = await (new Users()).getUserById(owner.creator, owner.id);
@@ -1455,6 +1474,48 @@ export class PolicyEngineService {
                     return new MessageResponse(true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DISCONNECT_POLICY,
+            async (msg: { policyId: string, user: IAuthUser, }): Promise<IMessageResponse<boolean>> => {
+                try {
+                    const { policyId, user } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (policy) {
+                        const result = await new GuardiansService()
+                            .sendPolicyMessage<boolean>(PolicyEvents.DISCONNECT_POLICY, policyId, {
+                                user,
+                                policyId,
+                            }) as any
+                        return new MessageResponse(result);
+                    } else {
+                        return new MessageResponse(true);
+                    }
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RECONNECT_POLICY,
+            async (msg: { policyId: string, user: IAuthUser, }): Promise<IMessageResponse<boolean>> => {
+                try {
+                    const { policyId, user } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (policy) {
+                        const result = await new GuardiansService()
+                            .sendPolicyMessage<boolean>(PolicyEvents.RECONNECT_POLICY, policyId, {
+                                user,
+                                policyId,
+                            }) as any
+                        return new MessageResponse(result);
+                    } else {
+                        return new MessageResponse(true);
+                    }
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
                 }
             });
