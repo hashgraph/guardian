@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Register", { tags: ['comments', 'firstPool', 'all'] }, () => {
+context("Get comments", { tags: ['comments', 'firstPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
@@ -47,13 +47,11 @@ context("Register", { tags: ['comments', 'firstPool', 'all'] }, () => {
                 })
                 cy.getBlockByTag(authorization, policyId, "registrants_grid").then((response) => {
                     documentId = response.body.data.at(0).id;
-                    getDiscussions({ authorization, policyId, documentId }).then((response) => {
-                        discussionId = response.body.at(0).id;
-                        Authorization.getAccessToken(UserUsername).then((authorization) => {
-                            getDiscussions({ authorization, policyId, documentId }).then((response) => {
-                                discussionIdUser = response.body.at(1).id;
-                                discussionIdRole = response.body.at(2).id;
-                            })
+                    Authorization.getAccessToken(UserUsername).then((authorization) => {
+                        getDiscussions({ authorization, policyId, documentId }).then((response) => {
+                            discussionIdRole = response.body.at(0).id;
+                            discussionIdUser = response.body.at(1).id;
+                            discussionId = response.body.at(2).id;
                         })
                     })
                 })

@@ -81,19 +81,19 @@ context("Get discussions", { tags: ['comments', 'firstPool', 'all'] }, () => {
         });
     })
 
-    it("Create discussion without auth - Negative", () => {
+    it("Get discussion without auth - Negative", () => {
         getDiscussions({ policyId, documentId, failOnStatusCode: false }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Create discussion with invalid auth - Negative", () => {
+    it("Get discussion with invalid auth - Negative", () => {
         getDiscussions({ authorization: 'bearer 11111111111111111111@#$', policyId, documentId, failOnStatusCode: false }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Create discussion with empty auth - Negative", () => {
+    it("Get discussion with empty auth - Negative", () => {
         getDiscussions({ authorization: '', policyId, documentId, failOnStatusCode: false }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         });

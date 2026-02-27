@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Create discussion comments", { tags: ['comments', 'firstPool', 'all'] }, () => {
+context("Create a lot of discussion comments", { tags: ['comments', 'firstPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');

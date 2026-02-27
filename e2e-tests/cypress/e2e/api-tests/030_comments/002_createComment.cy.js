@@ -55,7 +55,7 @@ context("Create discussion comments", { tags: ['comments', 'firstPool', 'all'] }
                         Authorization.getAccessToken(UserUsername).then((authorization) => {
                             getDiscussions({ authorization, policyId, documentId }).then((response) => {
                                 discussionIdUser = response.body.at(1).id;
-                                discussionIdRole = response.body.at(2).id;
+                                discussionIdRole = response.body.at(0).id;
                             })
                         })
                     })
@@ -83,7 +83,7 @@ context("Create discussion comments", { tags: ['comments', 'firstPool', 'all'] }
                 expect(response.status).eq(STATUS_CODE.OK);
                 expect(response.body.policyId).eq(policyId);
                 expect(response.body.targetId).eq(documentId);
-                expect(response.body.text).eq(discussionCommentTextRole);
+                expect(response.body.text).eq(discussionCommentTextUser);
                 expect(response.body.discussionId).eq(discussionIdUser);
             })
         });
@@ -96,7 +96,7 @@ context("Create discussion comments", { tags: ['comments', 'firstPool', 'all'] }
                 expect(response.status).eq(STATUS_CODE.OK);
                 expect(response.body.policyId).eq(policyId);
                 expect(response.body.targetId).eq(documentId);
-                expect(response.body.text).eq(discussionCommentTextUser);
+                expect(response.body.text).eq(discussionCommentTextRole);
                 expect(response.body.discussionId).eq(discussionIdRole);
             })
         });
