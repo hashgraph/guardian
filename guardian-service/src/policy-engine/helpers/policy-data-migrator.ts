@@ -1211,7 +1211,7 @@ export class PolicyDataMigrator {
                         startedBy: run.startedBy,
                         srcPolicyId: run.srcPolicyId,
                         dstPolicyId: run.dstPolicyId,
-                        entityType: entityType,
+                        entityType,
                         srcEntityId,
                         srcMessageId: srcEntityId,
                         dstMessageId: srcEntityId
@@ -2421,8 +2421,8 @@ export class PolicyDataMigrator {
         let vpChanged = false;
 
         if (Array.isArray(doc.relationships)) {
-            for (let i = 0; i < doc.relationships.length; i++) {
-                const relationship = String(doc.relationships[i]);
+            for (const relationshipValue of doc.relationships) {
+                const relationship = String(relationshipValue);
                 const migratedVc = this.vcMessageIds.get(relationship);
                 if (migratedVc?.document) {
                     const migratedVcDef = VcDocumentDefinition.fromJsonTree(
@@ -2764,10 +2764,10 @@ export class PolicyDataMigrator {
                     // target mintRequestId from local map or global mapping cache
                     let dstMintRequestId = mintRequestsMapping.get(srcMintRequestId);
                     if (!dstMintRequestId) {
-                        const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
+                        const mintRequestScopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
 
                         dstMintRequestId = PolicyDataMigrator.getMessageMapping(
-                            scopeKey,
+                            mintRequestScopeKey,
                             'mintRequest',
                             srcMintRequestId
                         );
@@ -3949,7 +3949,6 @@ export class PolicyDataMigrator {
 
                             const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, src);
                             const srcMapKey = sourceKeys.srcMessageId || sourceKeys.srcEntityId || srcEntityId;
-                            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
                             const mappedByMessage = srcMapKey
                                 ? PolicyDataMigrator.getMessageMapping(scopeKey, entityType, srcMapKey)
                                 : undefined;
@@ -3995,7 +3994,6 @@ export class PolicyDataMigrator {
 
                             const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, src);
                             const srcMapKey = sourceKeys.srcMessageId || sourceKeys.srcEntityId || srcEntityId;
-                            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
                             const mappedByMessage = srcMapKey
                                 ? PolicyDataMigrator.getMessageMapping(scopeKey, entityType, srcMapKey)
                                 : undefined;
@@ -4034,7 +4032,6 @@ export class PolicyDataMigrator {
 
                             const sourceKeys = PolicyDataMigrator.extractSourceKeys(entityType, src);
                             const srcMapKey = sourceKeys.srcMessageId || sourceKeys.srcEntityId || srcEntityId;
-                            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
                             const mappedByMessage = srcMapKey
                                 ? PolicyDataMigrator.getMessageMapping(scopeKey, entityType, srcMapKey)
                                 : undefined;
@@ -4210,7 +4207,6 @@ export class PolicyDataMigrator {
                             }
 
                             const sourceVpMessageId = src.vpMessageId || undefined;
-                            const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
                             const mappedVpMessageId = sourceVpMessageId
                                 ? PolicyDataMigrator.getMessageMapping(scopeKey, 'vpDocument', sourceVpMessageId)
                                 : undefined;
@@ -4248,8 +4244,6 @@ export class PolicyDataMigrator {
 
                             let dstMintRequestId = localMintRequestMap.get(srcMintRequestId);
                             if (!dstMintRequestId) {
-                                const scopeKey = PolicyDataMigrator.getScopeKeyMappingCache(run.srcPolicyId, run.dstPolicyId, run.startedBy);
-
                                 dstMintRequestId = PolicyDataMigrator.getMessageMapping(
                                     scopeKey,
                                     'mintRequest',

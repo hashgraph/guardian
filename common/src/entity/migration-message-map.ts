@@ -1,4 +1,4 @@
-import { Entity, Index, Property, Unique } from '@mikro-orm/core';
+import { Entity, Index, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/base-entity.js';
 
 /**
