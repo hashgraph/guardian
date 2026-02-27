@@ -8842,6 +8842,80 @@ paths:
       summary: Get all version VC documents.
       tags:
         - policies
+  /policies/{policyId}/parameters:
+    post:
+      description: Save policy config with values to the PolicyParameters tale
+      operationId: PolicyApi_savePolicyParametersValues
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Policy parameters.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PolicyEditableFieldDTO'
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Save policy config with values
+      tags:
+        - policies
+  /policies/{policyId}/parameters/config:
+    get:
+      description: Get policy parameters.
+      operationId: PolicyApi_getPolicyParametersConfig
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Policy parameters.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PolicyEditableFieldDTO'
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get policy parameters.
+      tags:
+        - policies
   /schema/{schemaId}:
     get:
       description: >-
@@ -18604,6 +18678,9 @@ components:
         - progress
         - resultId
         - result
+    PolicyEditableFieldDTO:
+      type: object
+      properties: {}
     IgnoreRuleDTO:
       type: object
       properties:
@@ -18683,7 +18760,9 @@ components:
         originalChanged:
           type: string
         editableParametersSettings:
-          type: string
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyEditableFieldDTO'
         config:
           type: object
           additionalProperties: true
@@ -18805,6 +18884,7 @@ components:
         - codeVersion
         - createDate
         - version
+        - editableParametersSettings
         - config
         - userRole
         - userRoles
@@ -20794,6 +20874,28 @@ components:
         - id
         - name
         - type
+    PolicyParametersDTO:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: '000000000000000000000001'
+        policyId:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        config:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyEditableFieldDTO'
+        updated:
+          type: boolean
+          example: true
+        propValue:
+          type: string
+          example: Prop Value
+      required:
+        - userId
+        - policyId
     VersionSchemaDTO:
       type: object
       properties:
