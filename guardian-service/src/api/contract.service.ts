@@ -114,7 +114,7 @@ const retireEventsAbi = new ethers.Interface([
 ]);
 
 async function resolveAccountFromEvmAddress(evmAddress: string): Promise<string> {
-    const url = `${Environment.HEDERA_ACCOUNT_API}${evmAddress}`;
+    const url = `${Environment.HEDERA_ACCOUNT_API}/${evmAddress}`;
     const res = await fetch(url);
     if (!res.ok) {
         throw new Error(`Failed to resolve account for EVM address ${evmAddress}: mirror node returned ${res.status}`);
