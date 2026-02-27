@@ -954,7 +954,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     const policyRows = await this.databaseServer.find(PolicyParameters, { policyId: this.policyId });
 
                     for (const item of policyRows) {
-                        for (const config of item.config) {
+                        for (const config of item.config ?? []) {
                             if(
                                 config.applyTo.includes('All') ||
                                 config.applyTo.includes(user.role) ||
@@ -977,7 +977,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                         this.databaseServer.save(PolicyParameters, {
                             policyId: this.policyId,
                             userDID: user.did,
-                            config: null,
+                            config: [],
                             updated: false,
                             properties
                         });
@@ -985,7 +985,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 } else {
                     properties = row.properties;
                 }
-                
+
                 if(properties && properties[this.tag]) {
                     return Object.assign({}, this.options, properties[this.tag]);
                 } else {
