@@ -126,6 +126,19 @@ async function resolveAccountFromEvmAddress(evmAddress: string): Promise<string>
     return data.account;
 }
 
+async function resolveEVMAddressFromAccount(accountId: string): Promise<string> {
+    const url = `${Environment.HEDERA_ACCOUNT_API}/${accountId}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(`Failed to resolve EVM address for account ${accountId}: mirror node returned ${res.status}`);
+    }
+    const data = await res.json() as { evm_address?: string };
+    if (!data.evm_address) {
+        throw new Error(`Failed to resolve EVM address for account ${accountId}: no EVM address in response`);
+    }
+    return data.evm_address;
+}
+
 async function getContractMessage(
     workers: Workers,
     contractId: string,
@@ -2422,9 +2435,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -2487,9 +2498,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -2552,9 +2561,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -2617,9 +2624,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -3733,9 +3738,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -3798,9 +3801,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
