@@ -4,4 +4,4 @@ services:
       - ./certs:/certs:ro
       - ./web-proxy/configs/https-default.conf:/etc/nginx/templates/default.conf.template:ro
     ports: !override
-      - '127.0.0.1:3000:443'
+      - '127.0.0.1:443:443'
