@@ -734,23 +734,39 @@ The GitBook assistant widget requires HTTPS to function properly. There are two 
 
 1. Install [mkcert](https://github.com/FiloSottile/mkcert):
 
+   **Linux (Ubuntu / Debian):** Open a terminal and run:
+
    ```shell
-   # Ubuntu / Debian
    sudo apt install libnss3-tools
    sudo apt install mkcert
+   ```
 
-   # macOS
+   **macOS:** Open a terminal and run:
+
+   ```shell
    brew install mkcert
+   ```
 
-   # Windows (using Chocolatey)
+   **Windows:**
+
+   Open **Command Prompt (cmd)** and run:
+
+   ```shell
    choco install mkcert
+   ```
 
-   # Windows (using Scoop)
+   Alternatively, using Scoop:
+
+   ```shell
    scoop bucket add extras
    scoop install mkcert
    ```
 
+   > **Note:** If the commands do not work as Administrator, try running them without Administrator privileges.
+
 2. Generate trusted local certificates:
+
+   **Windows:** Open **PowerShell**, navigate to the project root directory and run:
 
    ```shell
    mkcert -install
@@ -758,7 +774,25 @@ The GitBook assistant widget requires HTTPS to function properly. There are two 
    mkcert localhost 127.0.0.1 ::1
    ```
 
-3. Start with the SSL overlay by adding `-f docker-compose.ssl.yml` to any of the Docker Compose configurations:
+   > **Note:** If the commands do not work as Administrator, try running them without Administrator privileges.
+
+   **Linux / macOS:** Run from the project root directory:
+
+   ```shell
+   mkcert -install
+   cd certs
+   mkcert localhost 127.0.0.1 ::1
+   ```
+
+3. **Important:** Before starting with HTTPS, it is recommended to clean up existing Guardian Docker containers, images, and volumes to avoid conflicts:
+
+   ```shell
+   docker compose down -v --rmi all
+   ```
+
+   This will stop and remove all Guardian containers, their images, and associated volumes. Other Docker projects on your machine will not be affected.
+
+4. Start with the SSL overlay by adding `-f docker-compose.ssl.yml` to any of the Docker Compose configurations:
 
    ```shell
    # Demo mode with pre-built images
@@ -774,7 +808,24 @@ The GitBook assistant widget requires HTTPS to function properly. There are two 
    docker compose -f docker-compose-quickstart.yml -f docker-compose.ssl.yml up -d --pull always
    ```
 
-4. Access the application at <https://localhost:3000>
+5. Access the application at <https://localhost/>
+
+#### Troubleshooting certificate permission issues
+
+If Docker containers cannot read the certificate files, you may encounter SSL errors on startup. To fix this, grant read permissions to the certificate files:
+
+**Linux / macOS:**
+
+```shell
+chmod 644 certs/localhost+2.pem certs/localhost+2-key.pem
+```
+
+**Windows (PowerShell as Administrator):**
+
+```powershell
+icacls certs\localhost+2.pem /grant Everyone:R
+icacls certs\localhost+2-key.pem /grant Everyone:R
+```
 
 #### Option B: Local frontend with HTTPS (without Docker)
 
