@@ -2,7 +2,7 @@
 icon: message-bot
 ---
 
-# Hedera\_Guardian\_AI\_Toolkit
+# Hedera Guardian AI Toolkit
 
 ## Turning Complex Methodologies into Machine-Readable Infrastructure
 
@@ -143,23 +143,23 @@ All components run locally via Docker and can be deployed in multiple configurat
 
 {% stepper %}
 {% step %}
-### [Repository & Architecture Walkthrough](repository_and_architecture_walkthrough.md)
+### [Repository & Architecture Walkthrough](repository-and-architecture-wlakthrough.md)
 {% endstep %}
 
 {% step %}
-### [Installation & Setup From Zero](installation_and_setup_from_zero.md)
+### [Installation & Setup From Zero](installation-and-setup-from-zero.md)
 {% endstep %}
 
 {% step %}
-### [First Ingestion & Semantic Search](first_ingestion_and_semantic_search.md)
+### [First Ingestion & Semantic Search](first-ingestion-and-semantic-search.md)
 {% endstep %}
 
 {% step %}
-### [Schema & Formula Generation](schema_and_formula_generation.md)
+### [Schema & Formula Generation](schema-and-formula-generation.md)
 {% endstep %}
 
 {% step %}
-### [Schema Ingestion & Mapping](mapping_and_transformation.md)
+### [Schema Ingestion & Mapping](mapping-and-transformation.md)
 {% endstep %}
 {% endstepper %}
 

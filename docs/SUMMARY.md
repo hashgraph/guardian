@@ -1059,12 +1059,12 @@
 
 ## AI-ToolKit
 
-* [Hedera\_Guardian\_AI\_Toolkit](ai-toolkit/hedera_guardian_ai_toolkit.md)
-* [Installation\_And\_Setup\_From\_Zero](ai-toolkit/installation_and_setup_from_zero.md)
-* [Repository\_And\_Architecture\_Walkthrough](ai-toolkit/repository_and_architecture_walkthrough.md)
-* [First\_Ingestion\_And\_Semantic\_Search](ai-toolkit/first_ingestion_and_semantic_search.md)
-* [Schema\_And\_Formula\_Generation](ai-toolkit/schema_and_formula_generation.md)
-* [Mapping\_And\_Transformation](ai-toolkit/mapping_and_transformation.md)
+* [Hedera Guardian AI Toolkit](ai-toolkit/hedera-guardian-ai-toolkit.md)
+* [Repository and Architecture Wlakthrough](ai-toolkit/repository-and-architecture-wlakthrough.md)
+* [Installation and Setup from Zero](ai-toolkit/installation-and-setup-from-zero.md)
+* [First Ingestion and Semantic Search](ai-toolkit/first-ingestion-and-semantic-search.md)
+* [Schema and Formula Generation](ai-toolkit/schema-and-formula-generation.md)
+* [Mapping and Transformation](ai-toolkit/mapping-and-transformation.md)
 
 ***
 
