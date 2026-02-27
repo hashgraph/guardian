@@ -1053,6 +1053,10 @@
     * [⚙️ Guardian Integration](methodology-digitization-handbook/_shared/guardian-integration/README.md)
     * [🗂️ Artifacts Collection](methodology-digitization-handbook/_shared/artifacts/README.md)
 
+## AI-ToolKit
+
+* [Hedera Guardian AI Toolkit](ai-toolkit/hedera-guardian-ai-toolkit.md)
+
 ***
 
 * [Feedback](feedback/README.md)
