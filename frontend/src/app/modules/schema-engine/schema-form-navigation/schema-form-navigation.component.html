@@ -1,0 +1,35 @@
+<div class="schema-nav">
+    <div class="schema-nav-tree">
+        <ng-container *ngFor="let node of navTree">
+            <ng-container [ngTemplateOutlet]="nodeTpl" [ngTemplateOutletContext]="{ $implicit: node, level: 0 }"></ng-container>
+        </ng-container>
+    </div>
+
+    <ng-template #nodeTpl let-node let-level="level">
+        <div class="nav-node" [style.paddingLeft.px]="level * 30">
+            <button 
+                class="nav-toggle" 
+                *ngIf="node.children?.length" 
+                (click)="toggle(node.accordionId); $event.stopPropagation();"
+                type="button"
+            >
+                <span class="chev" [class.open]="isExpanded(node.accordionId)">▾</span>
+            </button>
+
+            <button 
+                class="nav-label" 
+                (click)="onSelect(node)"
+                [pTooltip]="node.title"
+            >
+                <span class="nav-title">{{ node.title }}</span>
+                <span *ngIf="node.count" class="nav-count">{{ node.count }}</span>
+            </button>
+        </div>
+
+        <div *ngIf="node.children?.length && isExpanded(node.accordionId)" class="nav-children">
+            <ng-container *ngFor="let c of node.children">
+                <ng-container [ngTemplateOutlet]="nodeTpl" [ngTemplateOutletContext]="{ $implicit: c, level: level + 1 }"></ng-container>
+            </ng-container>
+        </div>
+    </ng-template>
+</div>

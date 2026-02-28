@@ -1,5 +1,5 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { LocationType, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyRequestDTO, PolicyRequestCountDTO } from '#middlewares';
@@ -355,6 +355,93 @@ export class ExternalPoliciesApi {
     }
 
     /**
+     * Disconnect
+     */
+    @Put('/:messageId/disconnect')
+    @Auth(Permissions.POLICIES_POLICY_READ)
+    @ApiOperation({
+        summary: 'Disconnects the user from the selected remote policy on the current Guardian instance only.',
+        description: 'Disconnects the user from the selected remote policy on the current Guardian instance only.',
+    })
+    @ApiParam({
+        name: 'messageId',
+        type: String,
+        description: 'Policy message id',
+        required: true,
+        example: Examples.MESSAGE_ID
+    })
+    @ApiQuery({
+        name: 'full',
+        type: Boolean,
+        description: 'Disconnects the user from the selected remote policy on the current Guardian instance and from the same policy on the Main Guardian instance where it is deployed.',
+        required: false,
+        example: 0
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async disconnectPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string,
+        @Query('full') full?: string | boolean,
+    ): Promise<boolean> {
+        try {
+            const guardians = new Guardians();
+            const _full = full === 'true' || full === true;
+            return await guardians.disconnectPolicy(messageId, _full, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Disconnect
+     */
+    @Delete('/:messageId')
+    @Auth(Permissions.POLICIES_EXTERNAL_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Removes the remote policy from the current Guardian instance.',
+        description: 'Removes the remote policy from the current Guardian instance.',
+    })
+    @ApiParam({
+        name: 'messageId',
+        type: String,
+        description: 'Policy message id',
+        required: true,
+        example: Examples.MESSAGE_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async deletePolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string
+    ): Promise<boolean> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.deletePolicy(messageId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Returns the list of requests
      */
     @Get('/requests')
@@ -443,7 +530,7 @@ export class ExternalPoliciesApi {
     }
 
     /**
-     * UApproves a request
+     * Approves a request
      */
     @Put('/requests/:messageId/approve')
     @AuthAndLocation(
@@ -460,10 +547,10 @@ export class ExternalPoliciesApi {
     })
     @ApiParam({
         name: 'messageId',
-        type: 'string',
+        type: String,
+        description: 'Policy message id',
         required: true,
-        description: 'Schema Rule Identifier',
-        example: Examples.MESSAGE_ID,
+        example: Examples.MESSAGE_ID
     })
     @ApiBody({
         description: 'Object that contains a configuration.',
@@ -513,10 +600,10 @@ export class ExternalPoliciesApi {
     })
     @ApiParam({
         name: 'messageId',
-        type: 'string',
+        type: String,
+        description: 'Policy message id',
         required: true,
-        description: 'Schema Rule Identifier',
-        example: Examples.MESSAGE_ID,
+        example: Examples.MESSAGE_ID
     })
     @ApiBody({
         description: 'Object that contains a configuration.',

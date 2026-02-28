@@ -21,6 +21,9 @@ export async function getTarget(
         case AssignedEntityType.Policy: {
             return await DatabaseServer.getPolicyById(id);
         }
+        case AssignedEntityType.RemotePolicy: {
+            return await DatabaseServer.getPolicyById(id);
+        }
         case AssignedEntityType.Schema: {
             const schema = await DatabaseServer.getSchemaById(id);
             if (schema && schema.topicId) {
@@ -57,6 +60,9 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
                 throw new Error('Invalid assign parameters');
             }
             const { type, entityIds, assign, did, owner } = msg;
+            if (type === AssignedEntityType.RemotePolicy) {
+                throw new Error('Invalid assign parameters');
+            }
             for (const entityId of entityIds) {
                 const target = await getTarget(type, entityId);
                 if (!target || target.owner !== owner) {
@@ -154,6 +160,9 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
                 throw new Error('Invalid assign parameters');
             }
             const { type, entityIds, assign, did, owner } = msg;
+            if (type === AssignedEntityType.RemotePolicy) {
+                throw new Error('Invalid assign parameters');
+            }
             for (const entityId of entityIds) {
                 const target = await getTarget(type, entityId);
                 if (!target) {

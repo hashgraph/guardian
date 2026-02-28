@@ -14,15 +14,16 @@ import { PolicyProgressService } from '../../services/policy-progress.service';
 import { IStep } from '../../structures';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 import { RestoreSavepointDialog, IRestoreSavepointAction } from
-        'src/app/modules/policy-engine/policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
+    'src/app/modules/policy-engine/policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
 import { AddSavepointDialog, AddSavepointResult } from
-        'src/app/modules/policy-engine/policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component';
+    'src/app/modules/policy-engine/policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component';
 import { DynamicDialogConfig } from 'primeng/dynamicdialog'
-import {OnLoadSavepointDialog} from "../dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
+import { OnLoadSavepointDialog } from "../dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
 import { PolicyParametersDialog } from '../../dialogs/policy-parameters-dialog/policy-parameters-dialog.component';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 /**
  * Component for choosing a policy and
@@ -69,6 +70,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public timer: any;
     private destroy$: Subject<boolean> = new Subject<boolean>();
     public activeTabIndex = 0;
+    public disconnected: boolean = false;
 
     public currentSavepoint: any = null;
     private restoreDialogOpened: boolean = false;
@@ -240,13 +242,30 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.isConfirmed = !!(profile && profile.confirmed);
                 this.role = profile ? profile.role : null;
                 if (this.isConfirmed) {
-                    this.loadPolicyById(this.policyId);
+                    this.checkPolicyStatus(this.policyId);
                 } else {
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
                 }
             }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    async checkPolicyStatus(policyId: string) {
+        this.policyEngineService.getDisconnectedPolicy(policyId)
+            .subscribe((policy: any) => {
+                this.disconnected = !!policy;
+                if (this.disconnected) {
+                    this.policyInfo = policy;
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                } else {
+                    this.loadPolicyById(this.policyId);
+                }
+            }, (e: any) => {
                 this.loading = false;
             });
     }
@@ -619,11 +638,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     public onTabChange(index: number) {
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: { tab: index },
-        queryParamsHandling: 'merge',
-      });
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { tab: index },
+            queryParamsHandling: 'merge',
+        });
     }
 
     public openAddSavepointDialog(): void {
@@ -780,7 +799,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         closable: false,
                         width: '90%',
                         styleClass: 'guardian-dialog restore-onload-dialog',
-                        data: {policyId: this.policyId, items, currentSavepointId: currentId}
+                        data: { policyId: this.policyId, items, currentSavepointId: currentId }
                     });
 
                     ref.onClose.subscribe((res?: { type: 'apply' | 'close'; savepoint?: any }) => {
@@ -848,5 +867,36 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             catchError(() => of(null)),
             tap(() => { this.forceAdminAfterReload = false; })
         );
+    }
+
+    public reconnect() {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Reconnect',
+                text: 'Are you sure want to reconnect this policy?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Reconnect',
+                    class: 'primary'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Reconnect') {
+                this.loading = true;
+                this.policyEngineService
+                    .reconnect(this.policyId)
+                    .subscribe((result: any) => {
+                        this.checkPolicyStatus(this.policyId);
+                    }, (e: any) => {
+                        this.loading = false;
+                    });
+            }
+        });
     }
 }

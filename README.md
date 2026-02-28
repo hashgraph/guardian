@@ -726,6 +726,119 @@ VAULT_PROVIDER = "hashicorp"
 
 3. Access local development using <http://localhost:3000> or <http://localhost:4200>
 
+### Running with HTTPS (required for GitBook widget)
+
+The GitBook assistant widget requires HTTPS to function properly. There are two ways to run the project with HTTPS:
+
+#### Option A: Docker with HTTPS
+
+1. Install [mkcert](https://github.com/FiloSottile/mkcert):
+
+   **Linux (Ubuntu / Debian):** Open a terminal and run:
+
+   ```shell
+   sudo apt install libnss3-tools
+   sudo apt install mkcert
+   ```
+
+   **macOS:** Open a terminal and run:
+
+   ```shell
+   brew install mkcert
+   ```
+
+   **Windows:**
+
+   Open **Command Prompt (cmd)** and run:
+
+   ```shell
+   choco install mkcert
+   ```
+
+   Alternatively, using Scoop:
+
+   ```shell
+   scoop bucket add extras
+   scoop install mkcert
+   ```
+
+   > **Note:** If the commands do not work as Administrator, try running them without Administrator privileges.
+
+2. Generate trusted local certificates:
+
+   **Windows:** Open **PowerShell**, navigate to the project root directory and run:
+
+   ```shell
+   mkcert -install
+   cd certs
+   mkcert localhost 127.0.0.1 ::1
+   ```
+
+   > **Note:** If the commands do not work as Administrator, try running them without Administrator privileges.
+
+   **Linux / macOS:** Run from the project root directory:
+
+   ```shell
+   mkcert -install
+   cd certs
+   mkcert localhost 127.0.0.1 ::1
+   ```
+
+3. **Important:** Before starting with HTTPS, it is recommended to clean up existing Guardian Docker containers, images, and volumes to avoid conflicts:
+
+   ```shell
+   docker compose down -v --rmi all
+   ```
+
+   This will stop and remove all Guardian containers, their images, and associated volumes. Other Docker projects on your machine will not be affected.
+
+4. Start with the SSL overlay by adding `-f docker-compose.ssl.yml` to any of the Docker Compose configurations:
+
+   ```shell
+   # Demo mode with pre-built images
+   docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d --build --pull always
+
+   # Build from source (demo mode)
+   docker compose -f docker-compose-build.yml -f docker-compose.ssl.yml up -d --build
+
+   # Production with pre-built images
+   docker compose -f docker-compose-production.yml -f docker-compose.ssl.yml up -d --build --pull always
+
+   # Quickstart
+   docker compose -f docker-compose-quickstart.yml -f docker-compose.ssl.yml up -d --pull always
+   ```
+
+5. Access the application at <https://localhost/>
+
+#### Troubleshooting certificate permission issues
+
+If Docker containers cannot read the certificate files, you may encounter SSL errors on startup. To fix this, grant read permissions to the certificate files:
+
+**Linux / macOS:**
+
+```shell
+chmod 644 certs/localhost+2.pem certs/localhost+2-key.pem
+```
+
+**Windows (PowerShell as Administrator):**
+
+```powershell
+icacls certs\localhost+2.pem /grant Everyone:R
+icacls certs\localhost+2-key.pem /grant Everyone:R
+```
+
+#### Option B: Local frontend with HTTPS (without Docker)
+
+1. Start all backend services as usual.
+2. Start the frontend with SSL enabled:
+
+   ```shell
+   cd frontend
+   npm run start:ssl
+   ```
+
+3. Access the application at <https://localhost:4200>
+
 ## Troubleshoot
 
 ### Delete all the containers

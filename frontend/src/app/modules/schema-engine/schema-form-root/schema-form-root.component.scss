@@ -1,0 +1,21 @@
+.schema-form-root {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+}
+
+.schema-form-view-nav {
+    width: 25%;
+    min-width: 25%;
+    overflow-y: auto;
+}
+
+.schema-form-content {
+    flex: 1;
+    min-width: 0;
+    overflow: auto;
+}
+
+.schema-form-content.full-width {
+    flex: 0 0 100%;
+}

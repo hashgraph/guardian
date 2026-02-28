@@ -30,6 +30,15 @@ export class GlobalEventsWriterStream extends RestoreEntity {
     @Property({ nullable: false, index: true })
     public lastPublishMessageId: string = '';
 
+    /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
     @BeforeCreate()
     @BeforeUpdate()
     public prepareEntity(): void {

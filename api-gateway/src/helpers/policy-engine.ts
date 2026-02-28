@@ -30,6 +30,15 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Get disconnected policy
+     * @param policyId
+     * @param user
+     */
+    public async getDisconnectedPolicy(policyId: any, owner: IOwner): Promise<PolicyDTO | null> {
+        return await this.sendMessage(PolicyEngineEvents.GET_DISCONNECTED_POLICY, { policyId, owner });
+    }
+
+    /**
      * Get policy
      * @param policyId
      */
@@ -233,6 +242,30 @@ export class PolicyEngine extends NatsService {
         owner: IOwner
     ): Promise<boolean> {
         return await this.sendMessage(PolicyEngineEvents.DRAFT_POLICIES, { policyId, owner });
+    }
+
+    /**
+     * Disconnect policy
+     * @param policyId
+     * @param user
+     */
+    public async disconnectPolicy(
+        policyId: string,
+        user: IAuthUser,
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.DISCONNECT_POLICY, { policyId, user });
+    }
+
+    /**
+     * Reconnect policy
+     * @param policyId
+     * @param user
+     */
+    public async reconnectPolicy(
+        policyId: string,
+        user: IAuthUser,
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.RECONNECT_POLICY, { policyId, user });
     }
 
     /**
@@ -1057,6 +1090,79 @@ export class PolicyEngine extends NatsService {
         task: NewTask
     ): Promise<NewTask> {
         return await this.sendMessage(PolicyEngineEvents.MIGRATE_DATA_ASYNC, { owner, migrationConfig, task });
+    }
+
+    /**
+     * Resume migration async by run id
+     * @param owner Owner
+     * @param runId Migration run id
+     * @param task Task
+     */
+    public async resumeMigrateDataAsync(
+        owner: IOwner,
+        runId: string,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(
+            PolicyEngineEvents.RESUME_MIGRATE_DATA_ASYNC,
+            { owner, runId, task }
+        );
+    }
+
+    /**
+     * Retry failed migration items async by run id
+     * @param owner Owner
+     * @param runId Migration run id
+     * @param task Task
+     */
+    public async retryFailedMigrateDataAsync(
+        owner: IOwner,
+        runId: string,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(
+            PolicyEngineEvents.RETRY_FAILED_MIGRATE_DATA_ASYNC,
+            { owner, runId, task }
+        );
+    }
+
+    /**
+     * Get migration status by source/destination policy pair
+     * @param owner Owner
+     * @param srcPolicyId Source policy identifier
+     * @param dstPolicyId Destination policy identifier
+     */
+    public async getMigrationStatus(
+        owner: IOwner,
+        srcPolicyId: string,
+        dstPolicyId: string
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_MIGRATION_STATUS, {
+            owner,
+            srcPolicyId,
+            dstPolicyId
+        });
+    }
+
+    /**
+     * Get migration runs list
+     * @param owner Owner
+     * @param pageIndex Page index
+     * @param pageSize Page size
+     * @param status Optional run status
+     */
+    public async getMigrationRuns(
+        owner: IOwner,
+        pageIndex?: number,
+        pageSize?: number,
+        status?: string[]
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_MIGRATION_RUNS, {
+            owner,
+            pageIndex,
+            pageSize,
+            status
+        });
     }
 
     /**

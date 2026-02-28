@@ -1,6 +1,6 @@
 import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
-import { ExternalPolicyStatus } from '@guardian/interfaces';
+import { ExternalPolicyStatus, ExternalPolicyType } from '@guardian/interfaces';
 
 /**
  * External policy
@@ -78,6 +78,12 @@ export class ExternalPolicy extends BaseEntity {
      */
     @Property({ nullable: true })
     username?: string;
+
+    /**
+     * Request type
+     */
+    @Property({ nullable: true })
+    type?: ExternalPolicyType;
 
     /**
      * Set defaults

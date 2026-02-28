@@ -3844,18 +3844,6 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Return external policies
-     *
-     * @param filters
-     * @param owner
-     *
-     * @returns {ResponseAndCount<PolicyLabelDTO>}
-     */
-    public async getExternalPolicyRequests(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<PolicyLabelDTO>> {
-        return await this.sendMessage(MessageAPI.GET_EXTERNAL_POLICY_REQUESTS, { filters, owner });
-    }
-
-    /**
      * Return external policy
      *
      * @param messageId
@@ -3941,6 +3929,26 @@ export class Guardians extends NatsService {
      */
     public async groupExternalPolicyRequests(filters: { full: boolean, pageIndex: any, pageSize: any }, owner: IOwner): Promise<ResponseAndCount<PolicyLabelDTO>> {
         return await this.sendMessage(MessageAPI.GROUP_EXTERNAL_POLICY_REQUESTS, { filters, owner });
+    }
+
+    /**
+     * Disconnect policy
+     *
+     * @param messageId
+     * @param owner
+     */
+    public async disconnectPolicy(messageId: string, full: boolean, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DISCONNECT_EXTERNAL_POLICY, { messageId, full, owner });
+    }
+
+    /**
+     * Delete policy
+     *
+     * @param messageId
+     * @param owner
+     */
+    public async deletePolicy(messageId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_EXTERNAL_POLICY, { messageId, owner });
     }
 
     /**
