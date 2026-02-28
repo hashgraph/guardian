@@ -12,7 +12,6 @@ type PolicyEditableFieldForm = {
   property: FormControl<string>;
   visible: FormControl<string[]>;
   applyTo: FormControl<string[]>;
-  defaultLabel: FormControl<string>;
   required: FormControl<boolean>;
   label: FormControl<string>;
   shortDescription: FormControl<string>;
@@ -141,7 +140,6 @@ export class PolicyParametersConfigDialog implements OnInit {
             visible: this.fb.control(m?.visible ?? [], { nonNullable: true, validators: [Validators.required] }),
             applyTo: this.fb.control(m?.applyTo ?? [], { nonNullable: true, validators: [Validators.required] }),
             label: this.fb.control(m?.label ?? '', { nonNullable: true, validators: [Validators.required] }),
-            defaultLabel: this.fb.control(m?.defaultLabel ?? null),
             required: this.fb.control(m?.required ?? false, { nonNullable: true }),
             shortDescription: this.fb.control(m?.shortDescription ?? '', { nonNullable: true }),
         });
@@ -177,7 +175,6 @@ export class PolicyParametersConfigDialog implements OnInit {
                     field.visible = val.visible;
                     field.applyTo = val.applyTo;
                     field.label = val.label;
-                    field.defaultLabel = val.defaultLabel;
                     field.required = val.required;
                     field.shortDescription = val.shortDescription;
                     return field;

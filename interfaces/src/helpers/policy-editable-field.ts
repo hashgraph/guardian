@@ -5,7 +5,6 @@ export class PolicyEditableFieldDTO {
 	public visible: string[];
 	public applyTo: string[];
 	public label: string;
-	public defaultLabel: any;
 	public required: boolean;
 	public shortDescription: string;
 
@@ -22,7 +21,6 @@ export class PolicyEditableField {
     public propertyPath: string = '';
     public visible: string[] = [];
     public applyTo: string[] = [];
-    public defaultLabel: any = null;
     public required: boolean = false;
     public blocks: any[] = [];
     public properties: any[] = [];
@@ -39,7 +37,6 @@ export class PolicyEditableField {
 		dto.visible = this.visible;
 		dto.applyTo = this.applyTo;
 		dto.label = this.label;
-		dto.defaultLabel = this.defaultLabel;
 		dto.required = this.required;
 		dto.shortDescription = this.shortDescription;
 

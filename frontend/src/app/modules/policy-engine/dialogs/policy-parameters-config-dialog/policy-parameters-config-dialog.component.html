@@ -5,53 +5,54 @@
                 <div *ngFor="let fg of fieldGroups; let i = index; trackBy: trackByIndex" [formGroupName]="i">
                     <div class="fields-grid group-container">
                         <div class="field">
-                            <label>Blocks
-                                <select-block
-                                    [blocks]="this.policyTemplate.allBlocks"
-                                    [value]="fg.controls.blockTag.value"
-                                    (valueChange)="onBlockChange($event, i)"
-                                ></select-block>
-                            </label>
+                            <label class="parameter-label">Blocks</label>
+                            <select-block
+                                class="parameter-dropdown"
+                                [blocks]="this.policyTemplate.allBlocks"
+                                [value]="fg.controls.blockTag.value"
+                                (valueChange)="onBlockChange($event, i)"
+                            ></select-block>
                         </div>
                         <div class="field">
-                            <label>Property
-                                <p-dropdown
-                                    formControlName="property"
-                                    [options]="propertiesOptions(i)"
-                                    optionLabel="label"
-                                    optionValue="path"
-                                    [showClear]="false"
-                                    aria-required="true"
-                                    >
-                                </p-dropdown>
-                            </label>
+                            <label class="parameter-label">Property</label>
+                            <p-dropdown
+                                placeholder="Select..."
+                                formControlName="property"
+                                class="parameter-dropdown"
+                                [options]="propertiesOptions(i)"
+                                optionLabel="label"
+                                optionValue="path"
+                                [showClear]="false"
+                                aria-required="true"
+                                >
+                            </p-dropdown>
                         </div>
                         <div class="field">
-                            <label>Visible
-                                <p-multiSelect
-                                    formControlName="visible"
-                                    [options]="this.policyTemplate.policyRoles"
-                                    class="guardian-multiselect full-size"
-                                    appendTo="body"
-                                    optionLabel="_name" 
-                                    optionValue="_name"
-                                    filterBy="_name">
-                                </p-multiSelect>
-                            </label>
+                            <label class="parameter-label">Visible</label>
+                            <p-multiSelect
+                                formControlName="visible"
+                                [options]="this.policyTemplate.policyRoles"
+                                class="parameter-dropdown"
+                                appendTo="body"
+                                placeholder="Select..."
+                                optionLabel="_name" 
+                                optionValue="_name"
+                                filterBy="_name">
+                            </p-multiSelect>
                         </div>
                         <div class="field">
-                            <label>Apply For
-                                <p-multiSelect
-                                    formControlName="applyTo"
-                                    [options]="applyToOptions"
-                                    class="guardian-multiselect full-size"
-                                    appendTo="body"
-                                    optionLabel="_name" 
-                                    optionValue="_name"
-                                    filterBy="_name"
-                                    >
-                                </p-multiSelect>
-                            </label>
+                            <label class="parameter-label">Apply For </label>
+                            <p-multiSelect
+                                placeholder="Select..."
+                                formControlName="applyTo"
+                                class="parameter-dropdown"
+                                [options]="applyToOptions"
+                                appendTo="body"
+                                optionLabel="_name" 
+                                optionValue="_name"
+                                filterBy="_name"
+                                >
+                            </p-multiSelect>
                         </div>
                         <div class="delete-field">
                             <button
@@ -66,18 +67,14 @@
                             </button>
                         </div>
                         <div class="field label-field">
-                            <label for="label">Label</label>
-                            <input id="label" pInputText formControlName="label">
+                            <label for="label" class="parameter-label">Label</label>
+                            <input placeholder="Please enter a label here" id="label" pInputText formControlName="label">
                         </div>
                         <div class="field description-field">
-                            <label for="shortDescription">Short Description</label>
-                            <input id="shortDescription" pInputText formControlName="shortDescription">
+                            <label for="shortDescription" class="parameter-label">Short Description</label>
+                            <input placeholder="Please enter a short description here" id="shortDescription" pInputText formControlName="shortDescription">
                         </div>
-                        <div class="field default-field">
-                            <label for="defaultLabel">Default Label</label>
-                            <input id="defaultLabel" pInputText formControlName="defaultLabel">
-                        </div>
-                        <div class="field required-field">
+                        <div class="required-field">
                             <p-checkbox
                                 formControlName="required"
                                 [binary]="true"

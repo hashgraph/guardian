@@ -42,10 +42,21 @@ form {
 }
 
 .field {
-  display: inline-block;
-  width: auto;
-  vertical-align: top;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   width: 210px;
+
+  input {
+    height: 40px;
+    border-radius: 8px;
+    font-family: Inter;
+    font-weight: 400;
+    font-size: 14px !important;
+    color: #23252E;
+    line-height: 16px;
+    padding: 12px 16px;
+  }
 }
 
 .fields-grid {
@@ -58,7 +69,7 @@ form {
   grid-column: 5;
   justify-self:end;
   position: relative;
-  top: -3px;
+  top: -4px;
 }
 .label-field{ grid-column: 1; }
 .description-field{ 
@@ -66,13 +77,18 @@ form {
     min-width: 0;
     width: 100%;
 }
-.default-field{ grid-column: 1; }
+
 .required-field{
-  grid-column: 2 / 5;
+  grid-column: 1 / 5;
   display:flex;
   align-items:center;
   gap:10px;
   padding-bottom:10px;
+  margin-top: 8px;
+  font-family: Inter;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 24px;
 }
 
 .group-container {
@@ -98,4 +114,40 @@ form {
 
 .add-button {
     margin-bottom: 24px;
+}
+
+.parameter-label {
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 14px;
+}
+
+::ng-deep  .parameter-dropdown {
+    .p-dropdown,
+    .p-multiselect {
+        border-radius: 8px !important;
+        height: 40px;
+
+        .custom {
+            position: inherit;
+            line-height: 16px;
+        }
+    }
+
+    .p-dropdown-label,
+    .p-multiselect-label {
+        height: 40px;
+        font-family: Inter;
+        font-weight: 400;
+        font-size: 14px;
+        padding: 12px 16px;
+        color: #23252E;
+        line-height: 16px;
+    }
+
+    .guardian-dropdown .p-dropdown .p-inputtext {
+        padding: 12px 16px;
+        color: #23252E;
+    }
+
 }
