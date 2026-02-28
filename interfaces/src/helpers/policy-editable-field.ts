@@ -1,7 +1,4 @@
 export class PolicyEditableFieldDTO {
-	constructor() {
-	}
-
 	public blockType: string;
 	public blockTag: string;
 	public propertyPath: string;
@@ -33,9 +30,6 @@ export class PolicyEditableField {
     public targets: any[] = [];
 	public label: string = '';
 	public shortDescription: string = '';
-
-	constructor() {
-	}
 
 	toDTO(): PolicyEditableFieldDTO {
 		const dto = new PolicyEditableFieldDTO();

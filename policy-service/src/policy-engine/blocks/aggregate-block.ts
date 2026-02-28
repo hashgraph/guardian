@@ -10,7 +10,6 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
 import { RecordActionStep } from '../record-action-step.js';
-import { PolicyUser } from '../policy-user.js';
 
 /**
  * Aggregate block
@@ -255,8 +254,9 @@ export class AggregateBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    private async tickAggregate(ref: AnyBlockType, document: any, userId: string | null, actionStatus: RecordActionStep, user?: PolicyUser) {
-        let options = await ref.getOptions(user);
+    private async tickAggregate(ref: AnyBlockType, document: any, userId: string | null, actionStatus: RecordActionStep) {
+        const user = await PolicyUtils.getDocumentOwner(ref, document, userId);
+        const options = await ref.getOptions(user);
 
         const { expressions, condition, disableUserGrouping, groupByFields } = options;
         const groupByUser = !disableUserGrouping;
@@ -292,7 +292,6 @@ export class AggregateBlock {
         }
 
         if (result === true) {
-            const user = await PolicyUtils.getDocumentOwner(ref, document, userId);
             rawEntities = await this.removeDocuments(ref, rawEntities);
             const state: IPolicyEventState = { data: rawEntities };
             // actionStatus.saveResult(state);
@@ -358,13 +357,13 @@ export class AggregateBlock {
             for (const doc of docs) {
                 await this.saveDocuments(ref, doc);
                 if (aggregateType === 'cumulative') {
-                    await this.tickAggregate(ref, doc, event?.user?.userId, event.actionStatus, event.user);
+                    await this.tickAggregate(ref, doc, event?.user?.userId, event.actionStatus);
                 }
             }
         } else {
             await this.saveDocuments(ref, docs);
             if (aggregateType === 'cumulative') {
-                await this.tickAggregate(ref, docs, event?.user?.userId, event.actionStatus, event.user);
+                await this.tickAggregate(ref, docs, event?.user?.userId, event.actionStatus);
             }
         }
 

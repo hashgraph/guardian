@@ -714,7 +714,7 @@ export class PolicyApi {
             model.categories = policy.categories;
             model.projectSchema = policy.projectSchema;
             model.editableParametersSettings = policy.editableParametersSettings;
-            
+
             const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`, `${PREFIXES.SCHEMES}schema-with-sub-schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 

@@ -144,7 +144,7 @@ export class HttpRequestBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         event.data.data = event.data.data || {};
 
-        let options = await ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
 
         const variablesObj: any = {
             did: event?.user?.did,

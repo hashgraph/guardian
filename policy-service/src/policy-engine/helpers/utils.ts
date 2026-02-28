@@ -2002,7 +2002,7 @@ export class PolicyUtils {
     }
 
     public static deepAssign(target, ...sources) {
-        if (target == null) {
+        if (target === null) {
             throw new TypeError('Cannot convert undefined or null to object');
         }
 
@@ -2010,20 +2010,22 @@ export class PolicyUtils {
             obj && typeof obj === 'object' && !Array.isArray(obj);
 
         for (const source of sources) {
-            if (!isObject(source) && !Array.isArray(source)) continue;
+            if (!isObject(source) && !Array.isArray(source)) {
+                continue;
+            }
 
             for (const key of Object.keys(source)) {
             const value = source[key];
 
             if (Array.isArray(value)) {
                 target[key] = value.map((item) =>
-                isObject(item) ? this.deepAssign({}, item) : item
+                isObject(item) ? PolicyUtils.deepAssign({}, item) : item
                 );
             } else if (isObject(value)) {
                 if (!isObject(target[key])) {
                 target[key] = {};
                 }
-                this.deepAssign(target[key], value);
+                PolicyUtils.deepAssign(target[key], value);
             } else {
                 target[key] = value;
             }

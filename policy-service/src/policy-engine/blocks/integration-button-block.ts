@@ -27,7 +27,7 @@ export class IntegrationButtonBlock {
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const options = await ref.getOptions(user);
-        
+
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,

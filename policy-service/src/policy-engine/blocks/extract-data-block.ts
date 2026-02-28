@@ -256,7 +256,7 @@ export class ExtractDataBlock {
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        let options = await ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
 
         if (options.action === 'set') {
             await this.setAction(ref, event);

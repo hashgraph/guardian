@@ -328,7 +328,7 @@ export class CreateTokenBlock {
         const user = event.user;
         const eventData = event.data;
 
-        let options = await ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         if (!this.state.tokenNumber) {
             this.state.tokenNumber = 0;

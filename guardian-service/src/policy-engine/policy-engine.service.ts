@@ -4575,7 +4575,6 @@ export class PolicyEngineService {
             async (msg: { owner: IOwner, userDID: string, policyId: string }) => {
                 try {
                     const { userDID, policyId } = msg;
-                    
                     let result;
                     const parameters = await DatabaseServer.getPolicyParameters(userDID, policyId);
                     if(parameters && parameters.config?.length) {

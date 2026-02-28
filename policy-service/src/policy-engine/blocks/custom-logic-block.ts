@@ -179,7 +179,7 @@ export class CustomLogicBlock {
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
                 const options = await ref.getOptions(user);
-                
+
                 let documents: IPolicyDocument[];
                 if (Array.isArray(state.data)) {
                     documents = state.data;
@@ -450,7 +450,7 @@ export class CustomLogicBlock {
         // <-- new vc
         const VCHelper = new VcHelper();
 
-        let options = await ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
         const vcSubject: any = {

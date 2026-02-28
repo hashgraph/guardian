@@ -75,7 +75,7 @@ export class CalculateContainerBlock {
         userId: string | null,
         user?: PolicyUser
     ): Promise<VcDocumentCollection> {
-        let options = await ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const fields = options.inputFields;
         let scope = {};
@@ -132,7 +132,7 @@ export class CalculateContainerBlock {
         const context = await ref.debugContext({ documents });
         const contextDocuments = context.documents as IPolicyDocument | IPolicyDocument[];
 
-        let options = await ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const isArray = Array.isArray(contextDocuments);
         if (!contextDocuments || (isArray && !contextDocuments.length)) {
@@ -178,7 +178,6 @@ export class CalculateContainerBlock {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
         const relationships = [];
-        let options = await ref.getOptions(user);
 
         let accounts: any = {};
         let tokens: any = {};
@@ -249,7 +248,7 @@ export class CalculateContainerBlock {
         } = metadata;
         // <-- new vc
         const VCHelper = new VcHelper();
-        let options = await ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
         const vcSubject: any = {
@@ -323,7 +322,7 @@ export class CalculateContainerBlock {
     @CatchErrors()
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
-        let options = await ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
 
         if (options.inputDocuments === 'separate') {
             if (Array.isArray(event.data.data)) {

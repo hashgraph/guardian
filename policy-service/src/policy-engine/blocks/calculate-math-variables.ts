@@ -159,7 +159,7 @@ export class CalculateMathVariables {
     public async run(scope: any, user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
         const options = await ref.getOptions(user);
-        
+
         const filters: any = {};
         if (options.onlyOwnDocuments) {
             filters.owner = user.did;

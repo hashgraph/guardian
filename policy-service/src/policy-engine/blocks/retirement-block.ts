@@ -325,7 +325,7 @@ export class RetirementBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        let options = await ref.getOptions(event.user);
+        const options = await ref.getOptions(event.user);
 
         const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
         if (!docs.length && docs[0]) {

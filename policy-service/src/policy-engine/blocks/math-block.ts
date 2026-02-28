@@ -165,7 +165,7 @@ export class MathBlock {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
         }
 
-        let options = await ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const sources: IPolicyDocument[] = await PolicyUtils.findRelationships(ref, documents);
 
@@ -272,7 +272,7 @@ export class MathBlock {
         // <-- new vc
         const VCHelper = new VcHelper();
 
-        let options = await ref.getOptions(user);
+        const options = await ref.getOptions(user);
 
         const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
 
