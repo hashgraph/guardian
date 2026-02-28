@@ -61,7 +61,7 @@ import {
     IgnoreRule,
     SchemaStatus,
     PolicyEditableFieldDTO,
-    MigrationConfig, 
+    MigrationConfig,
     MigrationRunStatus
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
