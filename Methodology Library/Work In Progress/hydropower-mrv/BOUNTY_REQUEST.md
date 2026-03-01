@@ -22,12 +22,10 @@ Current Guardian library covers:
 5. Complete testnet deployment with evidence
 
 ### Verra Alignment
-- VM0040: Methodology for Improved Hydrological Systems
+- Verra ACM0002 v22.0: Grid-connected electricity generation from renewable sources
 - I-REC Standard compliance
 - Gold Standard renewable energy requirements
 
-## Request
-We request DLT Earth/Exponential Science/HBAR Foundation to:
 1. Add Hydropower MRV to the official bounty list
 2. Or provide guidance on alternative funding/recognition pathways
 3. Or accept as a pioneering general contribution with community recognition

@@ -181,13 +181,29 @@ export interface ITokenReport {
      */
     amount?: string;
     /**
+     * Mint amount
+     */
+    mintAmount?: string;
+    /**
+     * Transfer amount
+     */
+    transferAmount?: string;
+    /**
+     * Mint expected
+     */
+    mintExpected?: string;
+    /**
+     * Transfer expected
+     */
+    transferExpected?: string;
+    /**
+     * Main VP
+     */
+    mainDocument?: string;
+    /**
      * Was transfer needed
      */
     wasTransferNeeded?: boolean;
-    /**
-     * Token amount
-     */
-    transferAmount?: string;
     /**
      * Report tag
      */

@@ -7,6 +7,10 @@ on:
         type: string
         description: Tags for API tests scope(s) (smoke, accounts, policies, etc.)
         default: "all"
+      report_name:
+        type: string
+        description: Cypress Report name
+        default: "Guardian's Cypress Report"
 
 jobs:
   buildAndTest:
@@ -23,7 +27,7 @@ jobs:
         mongodb-version: [7.0.21]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
         with:
           egress-policy: audit
 
@@ -164,6 +168,7 @@ jobs:
             -e CYPRESS_MGSIndexerAPIToken=${{ secrets.MGSIndexerAPIToken }} \
             -e CYPRESS_grepTags="preparing ${{ inputs.tags }}" \
             -e CYPRESS_grepFilterSpecs=true \
+            -e ReportName="${{ inputs.report_name }}" \
             cypress-runner \
             --browser chrome
 
@@ -172,13 +177,27 @@ jobs:
         run: |
           docker cp cypress-test-run:/e2e/cypress/test_results ./e2e-tests/cypress/test_results || true
 
+      - name: Copy cypress reports from Docker container
+        if: always()
+        run: |
+          docker cp cypress-test-run:/e2e/cypress/reports ./e2e-tests/cypress/reports || true
+          find e2e-tests/cypress/reports -type f || true
+
       - name: Cleanup Docker resources
         if: always()
         run: |
           docker rm -f cypress-test-run || true
 
       - name: Publish API Test Results
-        uses: step-security/publish-unit-test-result-action@914f0f642c242f38335a491805adfc9bd64b1cbb # v2.21.1
+        uses: step-security/publish-unit-test-result-action@7dff603bf17ef13dee847147bef8d7cd1728b566 # v2.22.0
         if: always()
         with:
           files: e2e-tests/cypress/test_results/**/*.xml
+
+      - name: Upload tests results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          path: e2e-tests/cypress/reports/html/.jsons/**
+          include-hidden-files: true
+          retention-days: 1

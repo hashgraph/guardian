@@ -88,3 +88,42 @@ For the avoidance of doubt, such confirmations to do not pass private keys to th
 ![](<../../.gitbook/assets/9 (21).png>)
 
 ![](<../../.gitbook/assets/10 (22).png>)
+
+#### 6. Disconnecting from a Remote Policy
+
+When disconnecting from a remote (external) policy, there are two available options.
+
+<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
+**2.1. Disconnect from the Remote Policy Only**
+
+This option disconnects your user from the remote policy on the current Guardian instance. Your account on the Main Guardian instance (where the policy is originally deployed) remains connected and unaffected.
+
+**2.2. Full Disconnection from the Policy**
+
+Full disconnection removes your user from:
+
+* The remote policy on the current Guardian instance, and
+* The same policy on the Main Guardian instance where it is deployed.
+
+In this case, if you need to resume working with the policy, you will have to:
+
+1. Reconnect (import/connect) the policy again on the remote Guardian instance.
+2. Log in to the Main Guardian instance where the policy is deployed and reconnect there as well (see Section 1).
+
+**2.3. Removing a Remote Policy from Guardian**
+
+A System Administrator (SR) can disconnect a remote policy and completely remove it from the Guardian instance, thereby freeing server resources.
+
+<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="info" %}
+Note:&#x20;
+
+This removal:
+
+* Does not affect the Main Guardian instance where the policy is deployed.
+* Does not affect any data stored within the policy.
+
+After removal, the policy can be restored by importing it again. All data will be restored except for local cache-related data (for example, grid sorting preferences).
+{% endhint %}

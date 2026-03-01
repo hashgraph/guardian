@@ -2235,16 +2235,20 @@ export abstract class AbstractDatabaseServer {
     public abstract getVPMintInformation(
         vpDocument: VpDocument
     ): Promise<
-        [
+        {
             serials: { serial: number; tokenId: string }[],
             amount: number,
             error: string,
             wasTransferNeeded: boolean,
             transferSerials: number[],
+            mintAmount: number,
             transferAmount: number,
+            mintExpected: number,
+            transferExpected: number,
             tokenIds: string[],
             target: string,
-        ]
+            mainDocument: string
+        }
     >
 
     /**

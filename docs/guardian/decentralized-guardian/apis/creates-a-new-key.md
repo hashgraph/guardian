@@ -1,10 +1,8 @@
 # Creates a new key
 
-`Post``         `_`/api/v1/profiles/keys`_
+<mark style="color:$success;">`Post`</mark>_`/api/v1/profiles/keys`_
 
-```yaml
-Create policy key.
-```
+Create a Policy Key
 
 **Headers**
 
@@ -15,7 +13,7 @@ Create policy key.
 
 **Body**
 
-<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td><ul class="contains-task-list"><li><input type="checkbox">DID</li></ul></td><td>string</td><td><p></p><p></p><pre class="language-yaml"><code class="lang-yaml">DID Document and keys.
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td><ul class="contains-task-list"><li><input type="checkbox">DID</li></ul></td><td>string</td><td><pre class="language-yaml"><code class="lang-yaml">DID Document and keys.
 </code></pre></td></tr></tbody></table>
 
 **Response**

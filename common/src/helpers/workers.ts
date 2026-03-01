@@ -227,24 +227,24 @@ export class Workers extends NatsService {
             if (!data.id) {
                 throw new Error('Message without id');
             }
-            if (data.error) {
-                console.error(data);
-            }
             if (this.tasksCallbacks.has(data.id)) {
+                if (data.error) {
+                    console.error(data);
+                }
                 const activeTask = this.tasksCallbacks.get(data.id);
                 activeTask.callback(data.data, data.error, data.isTimeoutError);
                 this.tasksCallbacks.delete(data.id)
             }
         })
 
-        this.subscribe(WorkerEvents.TASK_COMPLETE, async (data: any) => {
+        this.subscribe(WorkerEvents.TASK_COMPLETE_DIRECT, async (data: any) => {
             if (!data.id) {
                 throw new Error('Message without id');
             }
-            if (data.error) {
-                console.error(data);
-            }
             if (this.tasksCallbacks.has(data.id)) {
+                if (data.error) {
+                    console.error(data);
+                }
                 const activeTask = this.tasksCallbacks.get(data.id);
                 activeTask.callback(data.data, data.error, data.isTimeoutError);
                 this.tasksCallbacks.delete(data.id);
@@ -401,9 +401,13 @@ export class Workers extends NatsService {
         }
 
         const worker = availableWorkers[candidateIndex];
+        const subject = worker.subject.replace(
+            WorkerEvents.SEND_TASK_TO_WORKER,
+            WorkerEvents.SEND_TASK_TO_WORKER_DIRECT
+        );
 
         const response = await this.sendMessage<{ result: boolean }>(
-            worker.subject,
+            subject,
             {
                 ...task,
                 reply: this.messageQueueName

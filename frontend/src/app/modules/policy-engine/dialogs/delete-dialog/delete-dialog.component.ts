@@ -7,14 +7,16 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     styleUrls: ['./delete-dialog.component.scss'],
 })
 export class DeleteDialogComponent implements OnInit {
-    loading = true;
-    notificationText: string;
-    itemNames: string[];
+    public loading = true;
+    public title: string;
+    public notificationText: string;
+    public itemNames: string[];
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig
     ) {
+        this.title = this.config.header || 'Delete';
         this.notificationText = this.config.data.notificationText;
         this.itemNames = this.config.data.itemNames;
     }

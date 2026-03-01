@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import {
     DialogService,
@@ -82,7 +82,7 @@ class MigrationConfig {
     constructor(
         private _src?: string,
         private _dst?: string
-    ) {}
+    ) { }
 
     updatePolicyValidity() {
         this._policiesValidity = !!this._src && !!this._dst;
@@ -247,6 +247,18 @@ class MigrationConfig {
         };
     }
 
+    ifSystem(iri: string): boolean {
+        if (!iri) {
+            return false;
+        }
+        for (const systemIRI of this._systemSchemas) {
+            if (iri.startsWith(systemIRI)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     addVC(vc: { id: string; schema: string }) {
         this._vcs.push({
             id: vc.id,
@@ -254,7 +266,7 @@ class MigrationConfig {
         });
         this.updateVcValidity();
         if (
-            !this._systemSchemas.includes(vc.schema) &&
+            !this.ifSystem(vc.schema) &&
             !this._schemas.hasOwnProperty(vc.schema)
         ) {
             this._schemas[vc.schema] = undefined;
@@ -370,6 +382,9 @@ export class MigrateData {
     dstTokenMap: string[] = [];
 
     showMigrateRetirePools = false;
+    
+    public isLargeSize: boolean = true;
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -547,8 +562,8 @@ export class MigrateData {
                 this.migrationConfig.src === this.uploadedPolicy?.id
                     ? this.uploadedPolicy
                     : await this._policyEngineService
-                          .policy(this.migrationConfig.src)
-                          .toPromise();
+                        .policy(this.migrationConfig.src)
+                        .toPromise();
 
             this.srcRoles = srcPolicy.policyRoles || [];
             if (this.dstRoles.length > 0) {
@@ -589,8 +604,8 @@ export class MigrateData {
         }
 
         this.showMigrateRetirePools = (srcPolicy?.status !== PolicyStatus.DRY_RUN);
-        
-        if (!this.showMigrateRetirePools){
+
+        if (!this.showMigrateRetirePools) {
             this.migrationConfig.migrateRetirePools = false;
         }
 
@@ -627,7 +642,7 @@ export class MigrateData {
         this._dialogService.open(JsonEditorDialogComponent, {
             closable: true,
             modal: true,
-            width: '70vw',
+            width: '90%',
             styleClass: 'custom-json-dialog',
             header: 'View document',
             data: {
@@ -741,7 +756,7 @@ export class MigrateData {
             .open(JsonEditorDialogComponent, {
                 closable: true,
                 modal: true,
-                width: '70vw',
+                width: '90%',
                 styleClass: 'custom-json-dialog',
                 header: 'Edit document',
                 data: {
@@ -766,7 +781,7 @@ export class MigrateData {
                     } else {
                         this.migrationConfig.editedVCs[doc.id] = editedVC;
                     }
-                } catch {}
+                } catch { }
             });
     }
 
@@ -810,5 +825,30 @@ export class MigrateData {
         } else {
             this.items = this.items.filter((item) => item.id !== 'blocks');
         }
+    }
+
+    onNoClick(): void {
+        this.ref.close(null);
+    }
+
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
     }
 }

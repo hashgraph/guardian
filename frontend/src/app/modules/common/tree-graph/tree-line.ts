@@ -13,14 +13,16 @@ export class Line {
     public start: TreeNode<any>;
     public end: TreeNode<any>;
     public type: string;
+    public variant: string;
     public selected: SelectType;
     private _width: number;
 
-    constructor(width: number) {
+    constructor(width: number, variant?: string) {
         this._width = width;
         this.items = [];
         this.width = 0;
         this.height = 0;
+        this.variant = variant || '';
     }
 
     public addStart(node: TreeNode<any>): void {

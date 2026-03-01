@@ -6,7 +6,7 @@ import { ISchema } from '../interface/schema.interface.js';
 import { SchemaEntity } from '../type/schema-entity.type.js';
 import { SchemaStatus } from '../type/schema-status.type.js';
 import { GenerateUUIDv4 } from '../helpers/generate-uuid-v4.js';
-import { SchemaField } from '../interface/schema-field.interface.js';
+import { IFieldNode, SchemaField } from '../interface/schema-field.interface.js';
 import { SchemaCategory } from '../type/schema-category.type.js';
 
 /**
@@ -290,6 +290,40 @@ export class Schema implements ISchema {
                 this.setTypes(f.fields, f);
             }
         }
+    }
+
+    /**
+     * Deep find
+     * @public
+     */
+    public getDeepFields(): IFieldNode[] {
+        return this._getDeepFields(this.fields, '', null);
+    }
+
+    /**
+     * Deep find
+     * @private
+     */
+    private _getDeepFields(fields: SchemaField[], parentPath: string, parent: IFieldNode | null): IFieldNode[] {
+        if (!Array.isArray(fields) || !fields.length) {
+            return [];
+        }
+        const result: IFieldNode[] = new Array(fields.length);
+        for (let i = 0; i < fields.length; i++) {
+            const element = fields[i];
+            const arrayLvl = (parent ? parent.arrayLvl : 0) + (element.isArray ? 1 : 0);
+            const path = parentPath + element.name;
+            const type = (element.isRef ? 'object' : (element.type || 'Help Text')) + '[]'.repeat(arrayLvl);
+            const node: any = {
+                path,
+                type,
+                arrayLvl,
+                field: element
+            }
+            node.fields = this._getDeepFields(element.fields, path + '.', node);
+            result[i] = node;
+        }
+        return result;
     }
 
     /**

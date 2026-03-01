@@ -55,6 +55,49 @@ For Policies with dynamic tokens mapping of token templates might be required.
 
 <figure><img src="../../../.gitbook/assets/image (602) (1).png" alt=""><figcaption></figcaption></figure>
 
+## 6. Rerunning Migration
+
+**Re-running migration for the same policy pair**
+
+Even if migration for the selected Source Policy → Destination Policy pair was already executed, you can start a new migration with a new configuration.
+
+* Previously migrated records will not be migrated again (deduplication/idempotency).
+* Starting a new migration replaces the previous run history for this policy pair.
+* As a result, you cannot resume the previous run if it was stopped or not completed.
+
+Concurrent migration limitation:
+
+You cannot start a new migration while another migration is already running.
+
+* Wait until the current migration finishes.
+* After that, you can start a new one.
+
+<figure><img src="../../../.gitbook/assets/unknown.png" alt=""><figcaption></figcaption></figure>
+
+### History
+
+The History tab shows previously started migration runs and their statistics:
+
+* Source Policy / Destination Policy — migration policy pair
+* Total — total number of items in the run
+* Failed — failed items (and percentage)
+* Succeeded — percentage of successfully processed items
+
+#### Resume
+
+If a migration was stopped or interrupted (for example, due to a service restart), you can continue it from the same point using Resume.
+
+#### Retry Failed Data
+
+If some items failed, you can retry only the failed items using Retry Failed Data.
+
+Failures may be caused not only by transient issues, but also by incorrect migration configuration mapping (Schemas/Roles/Groups/Tokens/Blocks).\
+If the issue is configuration-related, start a new migration with an updated configuration.
+
+<figure><img src="../../../.gitbook/assets/unknown (1).png" alt=""><figcaption></figcaption></figure>
+
+
+
 ## 2. Demo Video
 
 [Youtube](https://youtu.be/stSudc82pZU?si=Nsv6RyM6I_NpRvwE\&t=110)

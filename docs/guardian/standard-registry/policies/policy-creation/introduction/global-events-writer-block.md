@@ -22,7 +22,7 @@ Publishes document references to one or more global Hedera topics.
 | Active by default                      | controls the visibility                                                                                   | Checked/Unchecked |
 | Document type                          | which documentType the Writer writes into the event message for this topic (VC / JSON / CSV / TEXT / ANY) | VC                |
 
-<figure><img src="../../../../../.gitbook/assets/unknown (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 1.2 API
 
