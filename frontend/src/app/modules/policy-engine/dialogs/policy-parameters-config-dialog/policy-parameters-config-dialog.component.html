@@ -11,6 +11,7 @@
                                 [blocks]="this.policyTemplate.allBlocks"
                                 [value]="fg.controls.blockTag.value"
                                 (valueChange)="onBlockChange($event, i)"
+                                [class.is-invalid]="fg.controls.blockTag.invalid && fg.controls.blockTag.touched && submitted"
                             ></select-block>
                         </div>
                         <div class="field">

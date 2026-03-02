@@ -28,6 +28,7 @@ type PolicyForm = {
 })
 export class PolicyParametersConfigDialog implements OnInit {
     loading = true;
+    submitted = false;
     form: FormGroup<PolicyForm>;
     policyTemplate: PolicyTemplate;
     policyEditableFields: PolicyEditableField[] = [];
@@ -122,6 +123,10 @@ export class PolicyParametersConfigDialog implements OnInit {
         const fg = this.fields.at(index) as FormGroup<PolicyEditableFieldForm>;
         fg.controls.blockTag.setValue(selected?.tag ?? selected);
 
+        fg.controls.blockTag.markAsDirty();
+        fg.controls.blockTag.markAsTouched();
+        fg.controls.blockTag.updateValueAndValidity({ emitEvent: true });
+
         this.policyEditableFields[index].properties = [];
 
         this.policyTemplate.allBlocks.forEach(block => {
@@ -185,6 +190,8 @@ export class PolicyParametersConfigDialog implements OnInit {
     }
 
   async submit(): Promise<void> {
+    this.submitted = true;
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
