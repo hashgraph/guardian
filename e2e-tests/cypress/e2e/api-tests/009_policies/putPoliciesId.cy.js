@@ -18,7 +18,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                policyId = response.body.at(0).id;
+                policyId = response.body.at(1).id;
             });
         })
     });
