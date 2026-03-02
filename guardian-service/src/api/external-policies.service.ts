@@ -278,6 +278,9 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 for (const item of items) {
                     item.status = ExternalPolicyStatus.APPROVED;
                     await DatabaseServer.updateExternalPolicy(item);
+                    if (policy) {
+                        await assignPolicy(policy.id, item.creator, true);
+                    }
                 }
 
                 if (policy) {
@@ -326,6 +329,9 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     for (const item of items) {
                         item.status = ExternalPolicyStatus.APPROVED;
                         await DatabaseServer.updateExternalPolicy(item);
+                        if (policy) {
+                            await assignPolicy(policy.id, item.creator, true);
+                        }
                     }
 
                     if (policy) {
