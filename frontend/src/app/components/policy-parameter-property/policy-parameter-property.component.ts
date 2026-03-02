@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation, } from '@angular/core';
+import { AbstractControl, FormArray, FormControl, FormGroup } from '@angular/forms';
 import { PolicyEditableFieldDTO } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
 import { CodeEditorDialogComponent } from 'src/app/modules/policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
@@ -15,6 +16,7 @@ import { PolicyBlock } from 'src/app/modules/policy-engine/structures';
     encapsulation: ViewEncapsulation.None,
 })
 export class PolicyParameterPropertyComponent implements OnInit {
+    @Input() control!: AbstractControl;
     @Input('block') currentBlock?: PolicyBlock;
     @Input('property') property!: any;
     @Input('collapse') collapse!: any;
@@ -26,22 +28,6 @@ export class PolicyParameterPropertyComponent implements OnInit {
 
     rootPath: string;
     pathValue: string;
-    
-    get value(): any {
-         if(this.isArrayElement) {
-             return (this.config as any)[this.property?.name];
-         } else {
-            return this.config.value;   
-        }
-    }
-
-    set value(v: any) {
-         if(this.isArrayElement) {
-             (this.config as any)[this.property?.name] = v;
-         } else {
-            this.config.value = v;
-        }
-    }
 
     pathOptions = [
         { label: 'Root', value: '', title: ' ' },
@@ -66,20 +52,49 @@ export class PolicyParameterPropertyComponent implements OnInit {
     ) {
     }
 
+    get isArray(): boolean { return this.control instanceof FormArray; }
+    get fc(): FormControl { return this.control as FormControl; }
+
+
+    get rows(): AbstractControl[] {
+        return (this.control as FormArray).controls;
+    }
+
+    get group(): FormGroup {
+        return this.control as FormGroup;
+    }
+    
+    get pathCtrl(): FormControl {
+        return this.group.controls['path'] as FormControl;
+    }
+
+    get valueCtrl(): FormControl {
+        return this.group.controls['value'] as FormControl;
+    }
+
     addItems() {
         this.needUpdate = true;
-        const item: any = {};
-        for (const p of this.property?.items?.properties) {
-            item[p.name] = '';
+        const rows = this.control as FormArray;
+        const group: Record<string, FormControl> = {};
+        for (const p of this.property?.items?.properties ?? []) {
+            group[p.name] = new FormControl('', []);
         }
 
-        this.value.push(item);
+        rows.push(new FormGroup(group));
         this.update.emit();
     }
 
-    removeItems(i: number) {
+    rowGroup(row: AbstractControl): FormGroup {
+        return row as FormGroup;
+    }
+
+    removeItems(index: number) {
+        const rows = this.control as FormArray;
+
+        if (!rows || index < 0 || index >= rows.length) return;
+
+        rows.removeAt(index);
         this.needUpdate = true;
-        this.value.splice(i, 1);
         this.update.emit();
     }
 
@@ -94,7 +109,6 @@ export class PolicyParameterPropertyComponent implements OnInit {
     }
     
     onPathPropertyChanged() {
-        this.value = this.rootPath + this.pathValue;
         this.onSave();
     }
 
@@ -110,13 +124,13 @@ export class PolicyParameterPropertyComponent implements OnInit {
             styleClass: 'guardian-dialog',
             data: {
                 test: false,
-                expression: this.value,
+                expression: this.fc.value,
                 readonly: this.readonly
             }
         })
         dialogRef.onClose.subscribe(result => {
             if (result) {
-                this.value = result.expression;
+                this.fc.setValue(result.expression);
                 if (result.type === 'save') {
                     this.needUpdate = true;
                     this.update.emit();

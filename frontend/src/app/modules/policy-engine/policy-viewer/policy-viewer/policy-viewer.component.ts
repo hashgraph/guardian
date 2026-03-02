@@ -278,7 +278,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policyEngineService.policy(policyId),
                 this.policyEngineService.policyBlock(policyId, null),
                 this.policyEngineService.getGroups(policyId, this.savepointIds),
-                this.externalPoliciesService.getActionRequestsCount({ policyId })
+                this.externalPoliciesService.getActionRequestsCount({ policyId }),
+                this.policyEngineService.getParametersConfig(policyId),
             ]))
         ).subscribe(
             (value) => {
@@ -286,6 +287,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policy = value[1];
                 this.groups = value[2] || [];
                 const count: any = value[3]?.body || {};
+                const editableParameters = value[4];
 
                 this.virtualUsers = [];
                 this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
@@ -324,6 +326,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                 this.newRequestsExist = count.requestsCount > 0;
                 this.newActionsExist = count.actionsCount > 0 || count.delayCount > 0;
+
+                if (editableParameters?.length && editableParameters.some((p: any) => p.required && !p.value)) {
+                    this.openParametersSettings();
+                }
             }, (e) => {
                 this.loading = false;
             });

@@ -45,6 +45,12 @@
         height: 28px;
         padding: 6px 16px;
     }
+
+    .property-label {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
 }
 
 .element-array-group {
@@ -66,7 +72,7 @@
 
     .element-array-delete {
         position: relative;
-        top: 10px;
+        top: 22px;
     }
 
     .property-label {

@@ -6,9 +6,9 @@
             <input
                 pInputText
                 class="prop-input" 
-                [(ngModel)]="value" 
                 [readonly]="readonly" 
-                (blur)="onSave()" 
+                (blur)="onSave()"
+                [formControl]="fc"
                 type="text"/>
         </label>
     </div>
@@ -22,9 +22,9 @@
             <input 
                 pInputText 
                 class="prop-input" 
-                [(ngModel)]="value" 
                 [readonly]="true"
                 (click)="editCode($event)"
+                [formControl]="fc"
                 (blur)="onSave()"/>
         </label>
     </div>
@@ -36,9 +36,9 @@
             <span class="property-description">{{ config.shortDescription }}</span>
             <p-checkbox class="prop-input prop-checkbox" 
                         type="checkbox" 
-                        [(ngModel)]="value" 
                         [readonly]="readonly"
                         [binary]="true"
+                        [formControl]="fc"
                         (change)="onSave()">
             </p-checkbox>
         </label>
@@ -50,14 +50,12 @@
         <label class="form-label property-label">{{ isArrayElement ? property.label : config.label }}
             <span *ngIf="!isArrayElement" class="property-description">{{ config.shortDescription }}</span>
             <p-dropdown
-                [(ngModel)]="value"
                 [options]="property.items"
-                optionLabel="label"
-                optionValue="value"
                 [disabled]="readonly"
                 placeholder="Select an option"
                 (onChange)="onSave()"
                 [appendTo]="'body'"
+                [formControl]="fc"
             >
             </p-dropdown>
         </label>
@@ -73,9 +71,7 @@
             <p-dropdown
                 class="select"
                 [options]="pathOptions"
-                [(ngModel)]="rootPath"
-                optionLabel="label"
-                optionValue="value"
+                [formControl]="pathCtrl"
                 (onChange)="onPathPropertyChanged()"
                 appendTo="body">
             </p-dropdown>
@@ -83,8 +79,7 @@
             <input 
                 pInputText 
                 class="prop-input" 
-                [(ngModel)]="pathValue" 
-                [readonly]="readonly" 
+                [formControl]="valueCtrl"
                 (blur)="onPathPropertyChanged()"
                 (change)="onPathPropertyChanged()"
                 type="text"
@@ -99,27 +94,26 @@
         <span class="property-description">{{ config.shortDescription }}</span>
 
         <div class="element-array">
-            <ng-container *ngFor="let item of value; let i=index">
+            <ng-container *ngFor="let rowCtrl of rows; let i = index">
                 <div class="element-array-group">
-                    <div *ngFor="let p of property.items.properties" 
-                        policy-parameter-property 
-                        [config]="item"
-                        [property]="p"
-                        [readonly]="readonly"
-                        [block]="currentBlock"
-                        (update)="onSave()"
-                        [isArrayElement]="true">
-                    </div>
-                    <button
-                        class="element-array-delete guardian-icon-button big"
-                        (click)="$event.preventDefault(); removeItems(i)"
-                        >
-                        <svg-icon
-                            class="icon-btn svg-icon"
-                            src="/assets/images/icons/delete.svg"
-                            svgClass='ghost-color'>
-                        </svg-icon>
-                    </button>
+                <div *ngFor="let p of property.items.properties"
+                    policy-parameter-property
+                    [config]="config"
+                    [property]="p"
+                    [readonly]="readonly"
+                    [block]="currentBlock"
+                    (update)="onSave()"
+                    [control]="rowGroup(rowCtrl).controls[p.name]">
+                </div>
+                <button
+                    class="element-array-delete guardian-icon-button big"
+                    (click)="$event.preventDefault(); removeItems(i)">
+                    <svg-icon
+                    class="icon-btn svg-icon"
+                    src="/assets/images/icons/delete.svg"
+                    svgClass="ghost-color">
+                    </svg-icon>
+                </button>
                 </div>
             </ng-container>
             <ng-container>
