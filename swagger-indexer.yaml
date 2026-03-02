@@ -2751,6 +2751,153 @@ paths:
       summary: Try to unpack schemas
       tags:
         - entities
+  /entities/token-mints:
+    get:
+      description: >-
+        Search for issued token mint events (VP documents representing token
+        minting). Supports filtering by amount range, time period, policy
+        (methodology), token, geography, schema name (standard), and issuer.
+        Results include enriched token and policy information. Useful for finding
+        suitable carbon credits.
+      operationId: EntityApi_searchTokenMints
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: Page index
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: Page size
+          schema:
+            type: number
+            maximum: 100
+        - name: orderField
+          required: false
+          in: query
+          description: Order field
+          schema:
+            example: analytics.tokenAmount
+            type: string
+        - name: orderDir
+          required: false
+          in: query
+          description: Order direction
+          examples:
+            ASC:
+              value: ASC
+              description: Ascending ordering
+            DESC:
+              value: DESC
+              description: Descending ordering
+          schema:
+            type: string
+        - name: minAmount
+          required: false
+          in: query
+          description: Minimum token amount (inclusive)
+          schema:
+            example: '1000'
+            type: string
+        - name: maxAmount
+          required: false
+          in: query
+          description: Maximum token amount (inclusive)
+          schema:
+            example: '100000'
+            type: string
+        - name: startDate
+          required: false
+          in: query
+          description: >-
+            Start date for minting time filter (ISO 8601, e.g.
+            2024-01-01T00:00:00Z)
+          schema:
+            example: '2024-01-01T00:00:00Z'
+            type: string
+        - name: endDate
+          required: false
+          in: query
+          description: >-
+            End date for minting time filter (ISO 8601, e.g.
+            2024-12-31T23:59:59Z)
+          schema:
+            example: '2024-12-31T23:59:59Z'
+            type: string
+        - name: policyId
+          required: false
+          in: query
+          description: Policy message identifier (methodology)
+          schema:
+            example: '1706823227.586179534'
+            type: string
+        - name: tokenId
+          required: false
+          in: query
+          description: Token identifier
+          schema:
+            example: 0.0.1621155
+            type: string
+        - name: geography
+          required: false
+          in: query
+          description: Geography / region keyword to search
+          schema:
+            example: United States
+            type: string
+        - name: schemaName
+          required: false
+          in: query
+          description: Schema name / standard type
+          schema:
+            example: Monitoring Report
+            type: string
+        - name: issuer
+          required: false
+          in: query
+          description: Issuer DID
+          schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            type: string
+        - name: keywords
+          required: false
+          in: query
+          description: Keywords to search (JSON array)
+          schema:
+            example: '["carbon"]'
+            type: string
+      responses:
+        '200':
+          description: Token Mints
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageDTO'
+                  - properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TokenMintResultDTO'
+                      totalAmount:
+                        type: number
+                        description: >-
+                          Sum of all matching token amounts across the
+                          entire result set
+                        example: 500000
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Search token mints
+      tags:
+        - entities
   /landing/analytics:
     get:
       description: >-
@@ -3332,6 +3479,75 @@ components:
       required:
         - code
         - message
+    TokenMintResultDTO:
+      type: object
+      properties:
+        consensusTimestamp:
+          type: string
+          description: Consensus timestamp (unique message identifier)
+          example: '1706823227.586179534'
+        topicId:
+          type: string
+          description: Topic identifier
+          example: '0.0.1960'
+        tokenId:
+          type: string
+          description: Token identifier
+          example: '0.0.1621155'
+        tokenName:
+          type: string
+          description: Token name
+          example: Carbon Credit Token
+        tokenSymbol:
+          type: string
+          description: Token symbol
+          example: CCT
+        tokenAmount:
+          type: string
+          description: Minted token amount
+          example: '5000'
+        tokenAmountNumeric:
+          type: number
+          description: Parsed numeric amount for sorting
+          example: 5000
+        policyId:
+          type: string
+          description: Policy message identifier (methodology)
+          example: '1706823227.586179534'
+        policyDescription:
+          type: string
+          description: Policy description / name
+          example: iREC Policy
+        schemaNames:
+          type: array
+          description: Schema names (standard type)
+          items:
+            type: string
+          example:
+            - MintToken
+            - Monitoring Report
+        issuer:
+          type: string
+          description: Issuer DID
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        owner:
+          type: string
+          description: Owner
+          example: '0.0.1234'
+        mintDate:
+          type: string
+          description: Mint date (derived from consensus timestamp)
+          example: '2024-02-06T05:40:45.000Z'
+        geography:
+          type: string
+          description: Geography (if available)
+          example: United States
+      required:
+        - consensusTimestamp
+        - topicId
+        - tokenId
+        - tokenAmount
     RegistryOptionsDTO:
       type: object
       properties:

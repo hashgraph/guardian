@@ -120,6 +120,10 @@ export class HeaderComponent {
             label: 'header.label_documents',
             routerLink: '/label-documents',
         },
+        {
+            label: 'header.token_mints',
+            routerLink: '/token-mints',
+        },
     ];
 
     public othersMenu: MenuItem[] = [

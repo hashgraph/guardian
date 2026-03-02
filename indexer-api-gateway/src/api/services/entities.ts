@@ -62,7 +62,9 @@ import {
     FormulaDetailsDTO,
     FormulaDTO,
     FormulaRelationshipsDTO,
-    SchemasPackageDetailsDTO
+    SchemasPackageDetailsDTO,
+    TokenMintResultDTO,
+    TokenMintPageDTO
 } from '#dto';
 
 @Controller('entities')
@@ -2115,6 +2117,127 @@ export class EntityApi extends ApiClient {
             IndexerMessageAPI.UNPACK_SCHEMAS,
             body
         );
+    }
+    //#endregion
+
+    //#region TOKEN MINTS
+    @ApiOperation({
+        summary: 'Search token mints',
+        description:
+            'Search for issued token mint events (VP documents representing token minting). ' +
+            'Supports filtering by amount range, time period, policy (methodology), token, ' +
+            'geography, schema name (standard), and issuer. Results include enriched token ' +
+            'and policy information. Useful for finding suitable carbon credits.',
+    })
+    @ApiPaginatedRequest
+    @ApiOkResponse({
+        description: 'Token Mints',
+        type: TokenMintPageDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO,
+    })
+    @Get('/token-mints')
+    @ApiQuery({
+        name: 'minAmount',
+        description: 'Minimum token amount (inclusive)',
+        example: '1000',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'maxAmount',
+        description: 'Maximum token amount (inclusive)',
+        example: '100000',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'startDate',
+        description: 'Start date for minting time filter (ISO 8601 or epoch seconds, e.g. 2024-01-01T00:00:00Z)',
+        example: '2024-01-01T00:00:00Z',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'endDate',
+        description: 'End date for minting time filter (ISO 8601 or epoch seconds, e.g. 2024-12-31T23:59:59Z)',
+        example: '2024-12-31T23:59:59Z',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'policyId',
+        description: 'Policy message identifier (methodology)',
+        example: '1706823227.586179534',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'tokenId',
+        description: 'Token identifier',
+        example: '0.0.1621155',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'geography',
+        description: 'Geography / region keyword to search',
+        example: 'United States',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'schemaName',
+        description: 'Schema name / standard type',
+        example: 'Monitoring Report',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'issuer',
+        description: 'Issuer DID',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search (JSON array)',
+        examples: {
+            'carbon': {
+                description: 'Search for carbon-related mint events',
+                value: '["carbon"]',
+            },
+        },
+        required: false,
+    })
+    @HttpCode(HttpStatus.OK)
+    async searchTokenMints(
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('orderField') orderField?: string,
+        @Query('orderDir') orderDir?: string,
+        @Query('keywords') keywords?: string,
+        @Query('minAmount') minAmount?: string,
+        @Query('maxAmount') maxAmount?: string,
+        @Query('startDate') startDate?: string,
+        @Query('endDate') endDate?: string,
+        @Query('policyId') policyId?: string,
+        @Query('tokenId') tokenId?: string,
+        @Query('geography') geography?: string,
+        @Query('schemaName') schemaName?: string,
+        @Query('issuer') issuer?: string
+    ) {
+        return await this.send(IndexerMessageAPI.SEARCH_TOKEN_MINTS, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+            keywords,
+            minAmount,
+            maxAmount,
+            startDate,
+            endDate,
+            policyId,
+            tokenId,
+            geography,
+            schemaName,
+            issuer,
+        });
     }
     //#endregion
     //#endregion

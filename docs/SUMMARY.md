@@ -71,6 +71,7 @@
     * [Returns Schema Tree](guardian/global-indexer/indexer-apis/returns-schema-tree.md)
     * [Returns Tokens](guardian/global-indexer/indexer-apis/returns-tokens.md)
     * [Returns Token as per TokenID](guardian/global-indexer/indexer-apis/returns-token-as-per-tokenid.md)
+    * [Returns Token Mints](guardian/global-indexer/indexer-apis/returns-token-mints.md)
     * [Returns Roles](guardian/global-indexer/indexer-apis/returns-roles.md)
     * [Returns Role as per MessageID](guardian/global-indexer/indexer-apis/returns-role-as-per-messageid.md)
     * [Returns DIDs](guardian/global-indexer/indexer-apis/returns-dids.md)

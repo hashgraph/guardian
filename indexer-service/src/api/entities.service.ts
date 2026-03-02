@@ -11,6 +11,7 @@ import {
     TopicCache,
     TokenCache,
     NftCache,
+    ProjectCoordinates,
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
 import { Relationships } from '../utils/relationships.js';
@@ -60,7 +61,9 @@ import {
     FormulaRelationships,
     PolicyActivity,
     SchemasPackageDetails,
-    TagType
+    TagType,
+    TokenMintFilters,
+    TokenMintResult
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -2612,6 +2615,323 @@ export class EntityService {
         } catch (error) {
             return new MessageError(error, getErrorCode(error.code));
         }
+    }
+    //#endregion
+
+    //#region TOKEN MINTS
+    @MessagePattern(IndexerMessageAPI.SEARCH_TOKEN_MINTS)
+    async searchTokenMints(
+        @Payload() msg: TokenMintFilters
+    ): Promise<AnyResponse<Page<TokenMintResult>>> {
+        try {
+            const options = parsePageParams(msg as any);
+            const em = DataBaseHelper.getEntityManager();
+
+            // Build base filter: VP documents that have a tokenId in analytics (i.e. mint events)
+            const filters: any = {
+                type: MessageType.VP_DOCUMENT,
+                'analytics.tokenId': { $exists: true, $ne: null },
+            };
+
+            // Filter by tokenId
+            if (msg.tokenId) {
+                filters['analytics.tokenId'] = msg.tokenId;
+            }
+
+            // Filter by policyId (methodology)
+            if (msg.policyId) {
+                filters['analytics.policyId'] = msg.policyId;
+            }
+
+            // Filter by issuer
+            if (msg.issuer) {
+                filters['analytics.issuer'] = {
+                    $regex: `.*${escapeStringRegexp(msg.issuer).trim()}.*`,
+                    $options: 'si',
+                };
+            }
+
+            // Filter by schemaName (standard type)
+            if (msg.schemaName) {
+                filters['analytics.schemaNames'] = {
+                    $regex: `.*${escapeStringRegexp(msg.schemaName).trim()}.*`,
+                    $options: 'si',
+                };
+            }
+
+            // Filter by geography (text search in analytics.textSearch)
+            if (msg.geography) {
+                filters['analytics.textSearch'] = {
+                    $regex: `.*${escapeStringRegexp(msg.geography).trim()}.*`,
+                    $options: 'si',
+                };
+            }
+
+            // Filter by keywords
+            if (msg.keywords) {
+                let keywords: string[];
+                try {
+                    keywords = JSON.parse(msg.keywords);
+                } catch {
+                    keywords = [];
+                }
+                if (keywords.length > 0) {
+                    if (!filters.$and) {
+                        filters.$and = [];
+                    }
+                    for (const keyword of keywords) {
+                        filters.$and.push({
+                            'analytics.textSearch': {
+                                $regex: `.*${escapeStringRegexp(keyword).trim()}.*`,
+                                $options: 'si',
+                            },
+                        });
+                    }
+                }
+            }
+
+            // Filter by consensus timestamp range (time period)
+            if (msg.startDate || msg.endDate) {
+                const timestampFilter: any = {};
+                if (msg.startDate) {
+                    const startEpoch = new Date(msg.startDate).getTime() / 1000;
+                    if (!isNaN(startEpoch)) {
+                        timestampFilter.$gte = String(startEpoch);
+                    }
+                }
+                if (msg.endDate) {
+                    const endEpoch = new Date(msg.endDate).getTime() / 1000;
+                    if (!isNaN(endEpoch)) {
+                        timestampFilter.$lte = String(endEpoch);
+                    }
+                }
+                if (Object.keys(timestampFilter).length > 0) {
+                    filters.consensusTimestamp = timestampFilter;
+                }
+            }
+
+            // For amount filtering, we need to use aggregation pipeline since
+            // tokenAmount is stored as a string in analytics
+            const hasAmountFilter = msg.minAmount || msg.maxAmount;
+
+            if (hasAmountFilter) {
+                // Use MongoDB aggregation for numeric comparison on string amounts
+                const pipeline: any[] = [
+                    { $match: filters },
+                    {
+                        $addFields: {
+                            _tokenAmountNum: {
+                                $convert: { input: '$analytics.tokenAmount', to: 'double', onError: 0, onNull: 0 },
+                            },
+                        },
+                    },
+                ];
+
+                const amountMatch: any = {};
+                if (msg.minAmount) {
+                    amountMatch.$gte = parseFloat(msg.minAmount);
+                }
+                if (msg.maxAmount) {
+                    amountMatch.$lte = parseFloat(msg.maxAmount);
+                }
+                pipeline.push({ $match: { _tokenAmountNum: amountMatch } });
+
+                // Count total and compute totalAmount BEFORE pagination
+                const countPipeline = [...pipeline, { $count: 'total' }];
+                const countResult = await em.aggregate(Message, countPipeline);
+                const total = countResult.length > 0 ? countResult[0].total : 0;
+
+                const totalAmountPipeline = [...pipeline, {
+                    $group: { _id: null, totalAmount: { $sum: '$_tokenAmountNum' } }
+                }];
+                const totalAmountResult = await em.aggregate(Message, totalAmountPipeline);
+                const totalAmount = totalAmountResult.length > 0 ? totalAmountResult[0].totalAmount : 0;
+
+                // Sort
+                if (options.orderBy) {
+                    const sortField = Object.keys(options.orderBy)[0];
+                    const sortDir = options.orderBy[sortField] === 'ASC' ? 1 : -1;
+                    if (sortField === 'analytics.tokenAmount') {
+                        pipeline.push({ $sort: { _tokenAmountNum: sortDir } });
+                    } else {
+                        pipeline.push({ $sort: { [sortField]: sortDir } });
+                    }
+                } else {
+                    pipeline.push({ $sort: { _tokenAmountNum: -1 } });
+                }
+
+                // Paginate
+                pipeline.push({ $skip: options.offset });
+                pipeline.push({ $limit: options.limit });
+
+                const rows = await em.aggregate(Message, pipeline);
+
+                // Enrich results with token and policy info
+                const enriched = await this.enrichTokenMints(em, rows);
+
+                return new MessageResponse<any>({
+                    items: enriched,
+                    pageIndex: options.offset / options.limit,
+                    pageSize: options.limit,
+                    total,
+                    totalAmount,
+                    order: options.orderBy,
+                });
+            } else {
+                // No amount filter - use standard findAndCount
+                // Default sort by consensusTimestamp descending if no order specified
+                if (!options.orderBy) {
+                    options.orderBy = { consensusTimestamp: 'DESC' };
+                }
+
+                const [rows, total] = await em.findAndCount(
+                    Message,
+                    filters,
+                    options
+                );
+
+                // Compute totalAmount from all matching documents
+                const totalAmountAgg = await em.aggregate(Message, [
+                    { $match: filters },
+                    {
+                        $addFields: {
+                            _tokenAmountNum: {
+                                $convert: { input: '$analytics.tokenAmount', to: 'double', onError: 0, onNull: 0 },
+                            },
+                        },
+                    },
+                    { $group: { _id: null, totalAmount: { $sum: '$_tokenAmountNum' } } },
+                ]);
+                const totalAmount = totalAmountAgg.length > 0 ? totalAmountAgg[0].totalAmount : 0;
+
+                // Enrich results with token and policy info
+                const enriched = await this.enrichTokenMints(em, rows);
+
+                return new MessageResponse<any>({
+                    items: enriched,
+                    pageIndex: options.offset / options.limit,
+                    pageSize: options.limit,
+                    total,
+                    totalAmount,
+                    order: options.orderBy,
+                });
+            }
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+
+    /**
+     * Enrich VP mint documents with token cache and policy information
+     */
+    private async enrichTokenMints(
+        em: any,
+        rows: any[]
+    ): Promise<TokenMintResult[]> {
+        // Collect unique token IDs, policy IDs, and related VC IDs for geography
+        const tokenIds = new Set<string>();
+        const policyIds = new Set<string>();
+        const relatedVcIds = new Set<string>();
+        for (const row of rows) {
+            if (row.analytics?.tokenId) {
+                tokenIds.add(row.analytics.tokenId);
+            }
+            if (row.analytics?.policyId) {
+                policyIds.add(row.analytics.policyId);
+            }
+            // Collect related VC IDs for geography lookup
+            if (Array.isArray(row.options?.relationships)) {
+                for (const rel of row.options.relationships) {
+                    if (rel) {
+                        relatedVcIds.add(rel);
+                    }
+                }
+            }
+        }
+
+        // Batch load token info
+        const tokenMap = new Map<string, any>();
+        if (tokenIds.size > 0) {
+            const tokens = await em.find(TokenCache, {
+                tokenId: { $in: [...tokenIds] },
+            });
+            for (const token of tokens) {
+                tokenMap.set(token.tokenId, token);
+            }
+        }
+
+        // Batch load policy info
+        const policyMap = new Map<string, any>();
+        if (policyIds.size > 0) {
+            const policies = await em.find(Message, {
+                type: MessageType.INSTANCE_POLICY,
+                consensusTimestamp: { $in: [...policyIds] },
+            } as any);
+            for (const policy of policies) {
+                policyMap.set(policy.consensusTimestamp, policy);
+            }
+        }
+
+        // Batch load project coordinates for geography
+        // ProjectCoordinates.projectId = VC consensusTimestamp
+        const coordMap = new Map<string, string>();
+        if (relatedVcIds.size > 0) {
+            const coords = await em.find(ProjectCoordinates, {
+                projectId: { $in: [...relatedVcIds] },
+            });
+            for (const coord of coords) {
+                coordMap.set(coord.projectId, coord.coordinates);
+            }
+        }
+
+        // Map to enriched results
+        return rows.map((row) => {
+            const tokenInfo = tokenMap.get(row.analytics?.tokenId);
+            const policyInfo = policyMap.get(row.analytics?.policyId);
+
+            // Parse consensus timestamp to date
+            let mintDate: string | undefined;
+            if (row.consensusTimestamp) {
+                try {
+                    const epochSeconds = parseFloat(row.consensusTimestamp);
+                    mintDate = new Date(epochSeconds * 1000).toISOString();
+                } catch {
+                    // ignore parse errors
+                }
+            }
+
+            // Resolve geography from project coordinates of related VCs
+            let geography: string | undefined;
+            if (Array.isArray(row.options?.relationships)) {
+                for (const rel of row.options.relationships) {
+                    const coordStr = coordMap.get(rel);
+                    if (coordStr) {
+                        geography = coordStr;
+                        break;
+                    }
+                }
+            }
+
+            const amountStr = row.analytics?.tokenAmount || '0';
+            const amountNum = parseFloat(amountStr);
+
+            return {
+                consensusTimestamp: row.consensusTimestamp,
+                topicId: row.topicId,
+                tokenId: row.analytics?.tokenId || '',
+                tokenName: tokenInfo?.name || undefined,
+                tokenSymbol: tokenInfo?.symbol || undefined,
+                tokenAmount: amountStr,
+                tokenAmountNumeric: isNaN(amountNum) ? 0 : amountNum,
+                policyId: row.analytics?.policyId || undefined,
+                policyDescription: policyInfo?.options?.description || policyInfo?.options?.name || undefined,
+                schemaNames: row.analytics?.schemaNames || undefined,
+                issuer: row.analytics?.issuer || row.options?.issuer || undefined,
+                owner: row.owner || undefined,
+                mintDate,
+                geography,
+            } as TokenMintResult;
+        });
     }
     //#endregion
     //#region FILES

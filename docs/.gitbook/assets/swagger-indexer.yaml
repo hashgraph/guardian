@@ -2335,6 +2335,146 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
+  /entities/token-mints:
+    get:
+      operationId: EntityApi_searchTokenMints
+      summary: Search token mints (carbon credits)
+      description: >-
+        Search for issued tokens (Mint Token VPs) with filtering by amount,
+        time period, geography, policy, methodology, and other criteria.
+        Returns enriched results with token info, policy details, and
+        project attributes.
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: Page index (zero-based)
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: Page size
+          example: 20
+          schema:
+            type: number
+        - name: orderField
+          required: false
+          in: query
+          description: Field to order by
+          example: analytics.tokenAmount
+          schema:
+            type: string
+        - name: orderDir
+          required: false
+          in: query
+          description: Order direction
+          example: DESC
+          schema:
+            type: string
+        - name: keywords
+          required: false
+          in: query
+          description: Keywords for text search (JSON array)
+          example: '["carbon","solar"]'
+          schema:
+            type: string
+        - name: minAmount
+          required: false
+          in: query
+          description: Minimum token amount
+          example: '100'
+          schema:
+            type: string
+        - name: maxAmount
+          required: false
+          in: query
+          description: Maximum token amount
+          example: '10000'
+          schema:
+            type: string
+        - name: startDate
+          required: false
+          in: query
+          description: Start date for filtering (ISO 8601)
+          example: '2024-01-01T00:00:00Z'
+          schema:
+            type: string
+        - name: endDate
+          required: false
+          in: query
+          description: End date for filtering (ISO 8601)
+          example: '2024-12-31T23:59:59Z'
+          schema:
+            type: string
+        - name: policyId
+          required: false
+          in: query
+          description: Filter by policy topic ID
+          example: 0.0.12345
+          schema:
+            type: string
+        - name: tokenId
+          required: false
+          in: query
+          description: Filter by Hedera token ID
+          example: 0.0.67890
+          schema:
+            type: string
+        - name: geography
+          required: false
+          in: query
+          description: Filter by geography / location keyword
+          example: India
+          schema:
+            type: string
+        - name: schemaName
+          required: false
+          in: query
+          description: Filter by schema / methodology name
+          example: iRec
+          schema:
+            type: string
+        - name: issuer
+          required: false
+          in: query
+          description: Filter by issuer DID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Token mint search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TokenMintResultDTO'
+                  pageIndex:
+                    type: number
+                  pageSize:
+                    type: number
+                  total:
+                    type: number
+                  totalAmount:
+                    type: number
+                    description: >-
+                      Sum of all matching token amounts across the
+                      entire result set
+                    example: 500000
+                  order:
+                    type: object
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
   /landing/analytics:
     get:
       operationId: LandingApi_getOnboardingStat
@@ -7652,3 +7792,72 @@ components:
         - tokensCount
         - rate
         - tags
+    TokenMintResultDTO:
+      type: object
+      description: Token mint (carbon credit) search result
+      properties:
+        consensusTimestamp:
+          type: string
+          description: Consensus timestamp
+          example: '1706823227.586179534'
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        tokenId:
+          type: string
+          description: Hedera token identifier
+          example: 0.0.67890
+        tokenName:
+          type: string
+          description: Token name from Hedera
+          example: Carbon Credit Token
+        tokenSymbol:
+          type: string
+          description: Token symbol
+          example: CCT
+        tokenAmount:
+          type: string
+          description: Minted token amount (string)
+          example: '1000'
+        tokenAmountNumeric:
+          type: number
+          description: Minted token amount (numeric)
+          example: 1000
+        policyId:
+          type: string
+          description: Policy topic identifier
+          example: 0.0.12345
+        policyDescription:
+          type: string
+          description: Policy description
+          example: Solar energy carbon credit policy
+        schemaNames:
+          description: Schema/methodology names
+          type: array
+          items:
+            type: string
+          example:
+            - iRec
+        issuer:
+          type: string
+          description: Issuer DID
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        owner:
+          type: string
+          description: Owner
+        mintDate:
+          type: string
+          description: Mint date (ISO 8601)
+          example: '2024-06-15T12:00:00.000Z'
+        geography:
+          type: string
+          description: Geography / project location
+          example: India
+      required:
+        - consensusTimestamp
+        - topicId
+        - tokenId
+        - tokenAmount
+        - tokenAmountNumeric

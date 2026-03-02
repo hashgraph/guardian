@@ -12,7 +12,8 @@
         "experimentalDecorators": true,
         "esModuleInterop": true,
         "declaration": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "types": ["node"]
     },
     "include": [
         "src/**/*"

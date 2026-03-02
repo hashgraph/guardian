@@ -251,6 +251,7 @@ const API = {
     IndexerNFTs: "entities/nfts/",
     IndexerTopics: "entities/topics/",
     IndexerContracts: "entities/contracts/",
+    IndexerTokenMints: "entities/token-mints/",
 
     //Worker tasks
     WorkerTasks: "worker-tasks/",
@@ -296,6 +297,7 @@ const API = {
     TenantsDelete: "tenants/delete",
     TenantsInvite: "tenants/invite",
     TermsAgree: "accounts/terms/agree"
+    
     
 };
 export default API;
