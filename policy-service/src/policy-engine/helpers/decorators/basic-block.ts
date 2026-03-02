@@ -933,18 +933,35 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             setPropValue(properties:any, path:string, value:any) {
+                if (!path) return;
+
                 const keys = path.split('.');
                 const last = keys.pop();
+                if (!last) return;
+                
+                let current = properties;
+
                 for (const key of keys) {
-                    if(!(properties[key] && typeof properties[key] === 'object')) {
-                        properties[key] = {};
+                    if(!(current[key] && typeof current[key] === 'object')) {
+                        current[key] = {};
                     }
+
+                    current = current[key];
                 }
-                properties[last] = value;
+
+                current[last] = value;
             }
 
             public async getOptions(user?: any) {
+                console.log('this.tag', this.tag);
+                console.log('this.options', this.options);
+
+                if(this.tag === 'revoke_pp_sr'){
+                    console.log('!!!!!!!!!!!!!!!1');
+                }
+                
                 if(!user) {
+                    console.log('no user');
                     return this.options;
                 }
                 const row = await DatabaseServer.getPolicyParameters(user.did, this.policyId);
@@ -984,6 +1001,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 } else {
                     properties = row.properties;
                 }
+                console.log('properties', properties);
+                console.log('deep assign', PolicyUtils.deepAssign({}, this.options, properties[this.tag]));
 
                 if(properties && properties[this.tag]) {
                     return PolicyUtils.deepAssign({}, this.options, properties[this.tag]);
