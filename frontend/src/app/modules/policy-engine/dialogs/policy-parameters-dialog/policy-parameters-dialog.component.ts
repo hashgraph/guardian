@@ -13,6 +13,7 @@ import { Subject, takeUntil } from 'rxjs';
 interface PolicyParameterItem {
     block: PolicyBlock,
     property: any,
+    propertyPath: string,
     config: PolicyEditableFieldDTO,
 }
 
@@ -92,6 +93,7 @@ export class PolicyParametersDialog {
             this.items.push({
                 block,
                 property,
+                propertyPath: field.propertyPath,
                 config: field
             });
             if (property.type === 'Array') {
@@ -145,7 +147,7 @@ export class PolicyParametersDialog {
                 );
             }
         }
-        
+
         setTimeout(() => {
             Object.values(this.form.controls).forEach(ctrl => {
                 ctrl.markAsDirty();
@@ -172,14 +174,14 @@ export class PolicyParametersDialog {
     async onSubmit() {
         for(let i=0; i< this.editableParameters.length; i++) {
             const field = this.editableParameters[i];
-            const item = this.items.find(item => item.config.propertyPath === field.propertyPath);
+            const item = this.items.find(item => item.propertyPath === field.propertyPath);
             let value = null;
             if(item && item.property.type === 'Path') {
                 const group = this.form.get(field.propertyPath) as FormGroup;
                 const path = group.get('path')?.value ?? '';
                 value = path + (group.get('value')?.value ?? '');
             } else {
-                value = this.form.get(field.propertyPath)?.value;
+                value = item && this.form.controls[item.propertyPath]?.value;
             }
             field.value = value;
         }

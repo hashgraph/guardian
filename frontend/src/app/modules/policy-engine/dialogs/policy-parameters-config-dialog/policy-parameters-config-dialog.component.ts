@@ -122,6 +122,8 @@ export class PolicyParametersConfigDialog implements OnInit {
         const fg = this.fields.at(index) as FormGroup<PolicyEditableFieldForm>;
         fg.controls.blockTag.setValue(selected?.tag ?? selected);
 
+        this.policyEditableFields[index].properties = [];
+
         this.policyTemplate.allBlocks.forEach(block => {
             if (block.tag === selected) {
                 const props = this.registeredService.getCustomProperties(block.blockType);

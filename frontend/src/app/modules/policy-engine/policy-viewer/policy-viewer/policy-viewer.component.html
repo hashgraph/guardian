@@ -261,7 +261,7 @@
                     >
                         Role: {{ policyInfo.userRoles.join(", ") }}
                     </span>
-                    <button (click)="openParametersSettings()" class="policy-settings-button guardian-button guardian-button-secondary">
+                    <button *ngIf="userRole === 'Administrator'"  (click)="openParametersSettings()" class="policy-settings-button guardian-button guardian-button-secondary">
                         <div class="guardian-button-icon">
                             <i class="pi pi-cog"></i>
                         </div>

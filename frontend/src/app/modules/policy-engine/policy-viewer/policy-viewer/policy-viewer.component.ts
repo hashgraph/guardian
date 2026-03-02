@@ -327,7 +327,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.newRequestsExist = count.requestsCount > 0;
                 this.newActionsExist = count.actionsCount > 0 || count.delayCount > 0;
 
-                if (editableParameters?.length && editableParameters.some((p: any) => p.required && !p.value)) {
+                if (this.userRole === 'Administrator' && editableParameters?.length && editableParameters.some((p: any) => p.required && !p.value)) {
                     this.openParametersSettings();
                 }
             }, (e) => {

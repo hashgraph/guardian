@@ -15,17 +15,19 @@
             <i class="pi pi-info-circle"></i>
             <span>These settings will be used during policy execution. Please fill in all required fields where applicable.</span>
         </div>
-        <div *ngFor="let item of items; let i = index"
-            policy-parameter-property
-            class="custom-properties"
-            [block]="item.block"
-            [property]="item.property"
-            [config]="item.config"
-            [readonly]="readonly"
-            [control]="form.get(item.property.name)!"
-            (update)="onSave()"
-            >
-        </div>
+        <form [formGroup]="form">
+            <div *ngFor="let item of items; let i = index"
+                policy-parameter-property
+                class="custom-properties"
+                [block]="item.block"
+                [property]="item.property"
+                [config]="item.config"
+                [readonly]="readonly"
+                [control]="form.controls[item.propertyPath]"
+                (update)="onSave()"
+                >
+            </div>
+        </form>
     </div>
 </div>
 <div class="dialog-footer">
