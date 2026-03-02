@@ -95,21 +95,12 @@ context("Contracts", { tags: ['policies', 'comments', 'firstPool', 'all'] }, () 
                         },
                     })
                 })
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.Permissions + API.Users + UserUsername + "/" + API.Policies + API.Assign,
-                    body: {
-                        policyIds: [
-                            policyId
-                        ],
-                        assign: true
-                    },
-                    headers: {
-                        authorization
-                    },
-                }).then((response) => {
+                
+                cy.assignPolicyToUser(authorization, UserUsername, policyId)
+                .then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                })
+                });
+                
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + 'profiles/' + UserUsername,
