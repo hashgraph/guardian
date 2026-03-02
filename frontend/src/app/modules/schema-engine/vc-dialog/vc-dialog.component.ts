@@ -289,6 +289,7 @@ export class VCViewerDialog {
                 title: 'Tag',
                 type: 'JSON',
                 value: tag,
+                dryRun: this.dryRun
             }
         });
     }

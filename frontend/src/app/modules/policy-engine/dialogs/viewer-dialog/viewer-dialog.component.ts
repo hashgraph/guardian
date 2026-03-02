@@ -15,6 +15,7 @@ export class ViewerDialog {
     public text: any = '';
     public json: any = '';
     public links: any = [];
+    public dryRun: boolean = false;
 
     public data: any
 
@@ -33,8 +34,10 @@ export class ViewerDialog {
             value,
             title,
             type,
+            dryRun
         } = this.data;
 
+        this.dryRun = dryRun;
         this.title = title;
         this.type = type || 'TEXT';
         if (this.type === 'JSON') {
