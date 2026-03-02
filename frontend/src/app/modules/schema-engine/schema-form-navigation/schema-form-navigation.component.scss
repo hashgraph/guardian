@@ -3,12 +3,10 @@
     border-radius: 6px;
     padding: 8px;
     background: #fff;
-    position: fixed;
-    width: calc(25% - 16px);
-    min-width: calc(25% - 16px);
-    max-width: calc(25% - 16px);
-    max-height: calc(100% - 255px);
+    position: relative;
+    width: 100%;
     overflow-y: auto;
+    max-height: 100%;
     box-sizing: border-box;
 }
 
