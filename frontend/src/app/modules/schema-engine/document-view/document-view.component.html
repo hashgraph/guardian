@@ -21,7 +21,15 @@
                 <div class="guardian-loading-image"></div>
             </div>
 
-            <div *ngIf="document" class="form-body">
+    <div *ngIf="document" class="form-body">
+        <div *ngIf="disconnected" class="disconnected-message">
+            <svg-icon
+                class="icon-btn svg-icon-16"
+                src="/assets/images/icons/16/warning.svg"
+                svgClass="icon-color-warning"
+            ></svg-icon>
+            User that created this document was disconnected.
+        </div>
 
                 <div class="guardian-accordion-container">
                     <p-accordion [activeIndex]="0" class="guardian-accordion">

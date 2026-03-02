@@ -50,7 +50,7 @@ import {
     TopicConfig,
     TopicHelper,
     Users,
-    VcHelper,
+    VcHelper
 } from '@guardian/common';
 import {
     deleteDemoSchema,
@@ -72,6 +72,7 @@ import { GuardiansService } from '../helpers/guardians.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 import { publishFormula } from '../api/helpers/formulas-helpers.js';
 import { FilterObject } from '@mikro-orm/core';
+import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 
 /**
  * Result of publishing
@@ -146,6 +147,8 @@ export class PolicyEngine extends NatsService {
      * @private
      */
     private readonly policyInitializationErrors: Map<string, string> = new Map();
+
+    private static readonly policyRestartQueue = new Map<string, Promise<void>>();
 
     /**
      * Initialization
@@ -246,16 +249,28 @@ export class PolicyEngine extends NatsService {
 
     /**
      * Check access
+     *
      * @param policy
      * @param user
+     * @param action
      */
-    public async accessPolicy(policy: Policy, user: IOwner, action: string): Promise<boolean> {
+    public async accessPolicy(
+        policy: Policy,
+        user: IOwner,
+        action: 'create' | 'read' | 'edit' | 'update' | 'execute' | 'delete' | 'discontinue' | 'publish'
+    ): Promise<boolean> {
         const code = await this.accessPolicyCode(policy, user);
         if (code === PolicyAccessCode.NOT_EXIST) {
             throw new Error('Policy does not exist.');
         }
         if (code === PolicyAccessCode.UNAVAILABLE) {
             throw new Error(`Insufficient permissions to ${action} the policy.`);
+        }
+        if (action === 'execute') {
+            const disconnected = await DatabaseServer.getDisconnectedPolicy(policy.id, user.creator);
+            if(disconnected) {
+                throw new Error('You were disconnected from this policy.');
+            }
         }
         return true;
     }
@@ -266,51 +281,64 @@ export class PolicyEngine extends NatsService {
      * @param user
      */
     public async addAccessFilters(filters: { [field: string]: any }, user: IOwner): Promise<any> {
-        const subFilters: any = {};
-        subFilters.owner = user.owner;
+        //Local
+        const localFilters: any = {};
+        localFilters.owner = user.owner;
         switch (user.access) {
             case AccessType.ALL: {
                 break;
             }
             case AccessType.ASSIGNED_OR_PUBLISHED: {
-                const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
-                const assignedMap = assigned.map((e) => e.entityId);
-                subFilters.$or = [
+                const assigned1 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
+                const assignedMap1 = assigned1.map((e) => e.entityId);
+                localFilters.$or = [
                     { status: { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] } },
-                    { id: { $in: assignedMap } }
+                    { id: { $in: assignedMap1 } }
                 ];
                 break;
             }
             case AccessType.PUBLISHED: {
-                subFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
+                localFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
                 break;
             }
             case AccessType.ASSIGNED: {
-                const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
-                const assignedMap = assigned.map((e) => e.entityId);
-                subFilters.id = { $in: assignedMap };
+                const assigned2 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
+                const assignedMap2 = assigned2.map((e) => e.entityId);
+                localFilters.id = { $in: assignedMap2 };
                 break;
             }
             case AccessType.ASSIGNED_AND_PUBLISHED: {
-                const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
-                const assignedMap = assigned.map((e) => e.entityId);
-                subFilters.id = { $in: assignedMap };
-                subFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
+                const assigned3 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
+                const assignedMap3 = assigned3.map((e) => e.entityId);
+                localFilters.id = { $in: assignedMap3 };
+                localFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
                 break;
             }
             case AccessType.NONE: {
-                subFilters.id = { $in: [] };
+                localFilters.id = { $in: [] };
                 break;
             }
             default: {
-                subFilters.id = { $in: [] };
+                localFilters.id = { $in: [] };
                 break;
             }
         }
-        filters.$or = [{
+
+        //Remote
+        const remoteFilters: any = {
             locationType: { $eq: LocationType.REMOTE },
             status: PolicyStatus.VIEW
-        }, subFilters]
+        }
+        const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.RemotePolicy);
+        const assignedMap = assigned.map((e) => e.entityId);
+        remoteFilters.id = { $in: assignedMap };
+
+        //All
+        filters.$or = [
+            localFilters,
+            remoteFilters
+        ];
+        return filters;
     }
 
     /**
@@ -318,11 +346,31 @@ export class PolicyEngine extends NatsService {
      * @param filters
      * @param type
      */
-    public async addLocationFilters(filters: { [field: string]: any }, type: LocationType): Promise<any> {
-        if (type === LocationType.REMOTE) {
+    public async addLocationFilters(
+        filters: { [field: string]: any },
+        type: 'local' | 'remote' | 'disconnected',
+        user: IOwner
+    ): Promise<any> {
+        if (type === 'remote') {
             filters.locationType = { $eq: LocationType.REMOTE }
         } else {
             filters.locationType = { $ne: LocationType.REMOTE }
+
+            //Disconnected
+            const disconnected = await DatabaseServer.getDisconnectedPolicies(user.creator);
+            const disconnectedMap = disconnected.map((e) => e.policyId);
+            if (!filters.$and) {
+                filters.$and = [];
+            }
+            filters.$and.push({
+                id: type === 'disconnected' ? { $in: disconnectedMap } : { $nin: disconnectedMap }
+            });
+            if (filters.id) {
+                filters.$and.push({
+                    id: filters.id
+                });
+                delete filters.id;
+            }
         }
     }
 
@@ -681,6 +729,88 @@ export class PolicyEngine extends NatsService {
 
         notifier.startStep(STEP_DELETE_INSTANCE);
         await this.destroyModel(policyToDelete.id.toString(), user.id);
+        const databaseServer = new DatabaseServer(policyToDelete.id.toString());
+        await databaseServer.clear(true);
+        notifier.completeStep(STEP_DELETE_INSTANCE);
+
+        notifier.startStep(STEP_DELETE_SCHEMAS);
+        const schemasToDelete = await DatabaseServer.getSchemas({
+            topicId: policyToDelete.topicId
+        });
+        for (const schema of schemasToDelete) {
+            const step = notifier.addStep(`Delete schema ${schema.name}`);
+            step.setId(schema.id);
+            step.minimize(true);
+        }
+        for (const schema of schemasToDelete) {
+            await deleteDemoSchema(
+                schema.id,
+                user,
+                notifier.getStepById(schema.id)
+            );
+        }
+        notifier.completeStep(STEP_DELETE_SCHEMAS);
+
+        notifier.startStep(STEP_DELETE_ARTIFACTS);
+        const artifactsToDelete = await new DatabaseServer().find(Artifact, {
+            policyId: policyToDelete.id
+        });
+        for (const artifact of artifactsToDelete) {
+            await DatabaseServer.removeArtifact(artifact);
+        }
+        notifier.completeStep(STEP_DELETE_ARTIFACTS);
+
+        notifier.startStep(STEP_DELETE_TESTS);
+        await DatabaseServer.deletePolicyTests(policyToDelete.id);
+        notifier.completeStep(STEP_DELETE_TESTS);
+
+        notifier.startStep(STEP_DELETE_POLICY);
+        await DatabaseServer.deletePolicy(policyToDelete.id);
+        notifier.completeStep(STEP_DELETE_POLICY);
+
+        notifier.complete();
+        return true;
+    }
+
+    /**
+     * Delete policy
+     *
+     * @param policyId Policy ID
+     * @param owner User
+     * @param notifier Notifier
+     * @param logger Notifier
+     * @returns Result
+     */
+    public async deleteViewPolicy(
+        policyToDelete: Policy,
+        user: IOwner,
+        notifier: INotificationStep,
+        logger: PinoLogger
+    ): Promise<boolean> {
+        // <-- Steps
+        const STEP_DELETE_INSTANCE = 'Delete policy instance';
+        const STEP_DELETE_SCHEMAS = 'Delete schemas';
+        const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
+        const STEP_DELETE_TESTS = 'Delete tests';
+        const STEP_DELETE_POLICY = 'Delete policy from DB';
+        // Steps -->
+
+        notifier.addStep(STEP_DELETE_INSTANCE);
+        notifier.addStep(STEP_DELETE_SCHEMAS);
+        notifier.addStep(STEP_DELETE_ARTIFACTS);
+        notifier.addStep(STEP_DELETE_TESTS);
+        notifier.addStep(STEP_DELETE_POLICY);
+        notifier.start();
+
+        await logger.info('Delete Policy', ['GUARDIAN_SERVICE'], user.id);
+
+        if ((policyToDelete.status !== PolicyStatus.VIEW)) {
+            throw new Error(`Policy does not exist.`);
+        }
+
+        notifier.startStep(STEP_DELETE_INSTANCE);
+        await this.destroyModel(policyToDelete.id.toString(), user.id);
+        await this.deletePolicyDocuments(policyToDelete.id.toString(), null, user.id);
         const databaseServer = new DatabaseServer(policyToDelete.id.toString());
         await databaseServer.clear(true);
         notifier.completeStep(STEP_DELETE_INSTANCE);
@@ -1710,6 +1840,7 @@ export class PolicyEngine extends NatsService {
             if (policy.status === PolicyStatus.DRY_RUN) {
                 await this.destroyModel(policyId, owner.id);
                 await DatabaseServer.clearDryRun(policy.id.toString(), true);
+                PolicyDataMigrator.clearRunCacheByPolicyId(policy.id.toString());
             }
             const newPolicy = await this.publishPolicy(
                 policy,
@@ -1907,9 +2038,101 @@ export class PolicyEngine extends NatsService {
      * @param policyId Policy identifier
      * @param userId
      */
-    public async regenerateModel(policyId: string, userId: string | null): Promise<any> {
-        await this.destroyModel(policyId, userId);
-        return await this.generateModel(policyId);
+    public async regenerateModel(policyId: string, userId: string | null): Promise<void> {
+        await this.withPolicyRestartLock(policyId, async () => {
+            await this.destroyModelForMigration(policyId, userId);
+            await this.generateModel(policyId);
+            await this.waitForPolicyAliveState(
+                policyId,
+                true,
+                60 * 1000
+            );
+        });
+    }
+
+    /**
+     * Destroy model and wait until policy process is fully stopped.
+     * @param policyId
+     * @param policyOwnerId
+     */
+    public async destroyModelForMigration(policyId: string, policyOwnerId: string | null): Promise<void> {
+        PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
+
+        const guardians = new GuardiansService();
+        const isAlive = await guardians.checkIfPolicyAlive(policyId);
+
+        if (isAlive) {
+            void guardians.sendPolicyMessage(
+                PolicyEvents.DELETE_POLICY,
+                policyId,
+                { policyOwnerId },
+                1000
+            ).catch(() => {
+                //
+            });
+        }
+
+        await this.waitForPolicyAliveState(
+            policyId,
+            false,
+            60 * 1000
+        );
+    }
+
+    private async withPolicyRestartLock<T>(policyId: string, callback: () => Promise<T>): Promise<T> {
+        const previous = PolicyEngine.policyRestartQueue.get(policyId) || Promise.resolve();
+        let release: (() => void) | undefined;
+
+        const current = new Promise<void>((resolve) => {
+            release = () => {
+                resolve();
+            };
+        });
+
+        PolicyEngine.policyRestartQueue.set(policyId, current);
+        await previous;
+
+        try {
+            return await callback();
+        } finally {
+            release();
+            const tail = PolicyEngine.policyRestartQueue.get(policyId);
+            if (tail === current) {
+                PolicyEngine.policyRestartQueue.delete(policyId);
+            }
+        }
+    }
+
+    private async waitForPolicyAliveState(
+        policyId: string,
+        expectedAlive: boolean,
+        timeoutMs: number
+    ): Promise<void> {
+        const guardians = new GuardiansService();
+        const startedAt = Date.now();
+
+        while (true) {
+            const isAlive = await guardians.checkIfPolicyAlive(policyId);
+            if (isAlive === expectedAlive) {
+                return;
+            }
+
+            const elapsedMs = Date.now() - startedAt;
+            if (elapsedMs >= timeoutMs) {
+                const expectedState = expectedAlive ? 'running' : 'stopped';
+                throw new Error(
+                    `Policy ${policyId} did not reach "${expectedState}" state in ${timeoutMs} ms`
+                );
+            }
+
+            await this.sleep(300);
+        }
+    }
+
+    private async sleep(policyRestartPollIntervalMs: number): Promise<void> {
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, policyRestartPollIntervalMs);
+        });
     }
 
     /**
@@ -2089,5 +2312,14 @@ export class PolicyEngine extends NatsService {
         await this.generateModel(policy.id.toString());
         notifier.completeStep(STEP_RUN_POLICY);
         notifier.complete();
+    }
+
+    private async deletePolicyDocuments(
+        policyId: string,
+        owner: string | null,
+        userId: string | null
+    ) {
+        const db = new DatabaseServer();
+        await db.deletePolicyDocuments(policyId);
     }
 }

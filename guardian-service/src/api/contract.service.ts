@@ -24,7 +24,8 @@ import {
     VCMessage,
     Wallet,
     WiperRequest,
-    Workers
+    Workers,
+    Environment,
 } from '@guardian/common';
 import {
     ContractAPI,
@@ -56,11 +57,13 @@ const retireAbi = new ethers.Interface([
 ]);
 
 const versionEventsAbi = new ethers.Interface([
-    'event Version(uint256[3])',
+    'event VersionInfo(uint256[3])',
 ]);
 
 const accessEventsAbi = new ethers.Interface([
-    'event OwnerAdded(address)',
+    'event OwnerAdded(address indexed account)',
+    'event OwnerRemoved(address indexed account)',
+    'event OwnerProposed(address indexed pendingOwner)',
 ]);
 
 // tslint:disable-next-line:variable-name
@@ -109,6 +112,32 @@ const retireEventsAbi = new ethers.Interface([
     ...versionEventsAbi.fragments,
     ...accessEventsAbi.fragments
 ]);
+
+async function resolveAccountFromEvmAddress(evmAddress: string): Promise<string> {
+    const url = `${Environment.HEDERA_ACCOUNT_API}/${evmAddress}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(`Failed to resolve account for EVM address ${evmAddress}: mirror node returned ${res.status}`);
+    }
+    const data = await res.json() as { account?: string };
+    if (!data.account) {
+        throw new Error(`Failed to resolve account for EVM address ${evmAddress}: no account in response`);
+    }
+    return data.account;
+}
+
+async function resolveEVMAddressFromAccount(accountId: string): Promise<string> {
+    const url = `${Environment.HEDERA_ACCOUNT_API}/${accountId}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(`Failed to resolve EVM address for account ${accountId}: mirror node returned ${res.status}`);
+    }
+    const data = await res.json() as { evm_address?: string };
+    if (!data.evm_address) {
+        throw new Error(`Failed to resolve EVM address for account ${accountId}: no EVM address in response`);
+    }
+    return data.evm_address;
+}
 
 async function getContractMessage(
     workers: Workers,
@@ -540,7 +569,7 @@ export async function syncWipeContract(
 
         for (const log of result) {
             const eventName = eventAbi.getEventName(log.topics[0]);
-            const data = eventAbi.decodeEventLog(eventName, log.data);
+            const data = eventAbi.decodeEventLog(eventName, log.data, log.topics);
             // tslint:disable-next-line:no-shadowed-variable
             const contracts = await dataBaseServer.find(
                 Contract,
@@ -711,6 +740,84 @@ export async function syncWipeContract(
                     }
                     break;
                 }
+                case 'OwnerAdded': {
+                    const newOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
+                    const newOwnerUser = await users.getUserByAccount(newOwnerAccount, userId);
+                    if (newOwnerUser?.did) {
+                        const ownerDid = newOwnerUser.role === UserRole.STANDARD_REGISTRY
+                            ? newOwnerUser.did
+                            : newOwnerUser.parent;
+                        const existingRecord = contracts.find(
+                            (c) => c.owner === ownerDid
+                        );
+                        if (!existingRecord) {
+                            const sourceContract = contracts[0];
+                            if (sourceContract) {
+                                const fullSource = await dataBaseServer.findOne(Contract, {
+                                    contractId,
+                                });
+                                if (fullSource) {
+                                    await dataBaseServer.save(Contract, {
+                                        contractId,
+                                        owner: ownerDid,
+                                        description: fullSource.description || '',
+                                        permissions: 1,
+                                        topicId: fullSource.topicId,
+                                        type: fullSource.type,
+                                        wipeContractIds: [],
+                                        wipeTokenIds: [],
+                                        lastSyncEventTimeStamp: fullSource.lastSyncEventTimeStamp,
+                                        syncPoolsDate: fullSource.syncPoolsDate,
+                                        syncRequestsDate: fullSource.syncRequestsDate,
+                                        syncDisabled: false,
+                                        version: (fullSource as any).version,
+                                    });
+                                }
+                            }
+                        }
+                        if (sendNotifications && newOwnerUser.id) {
+                            NotificationHelper.info(
+                                `Owner added in contract: ${contractId}`,
+                                `Account ${newOwnerAccount} has been added as owner`,
+                                newOwnerUser.id
+                            );
+                        }
+                    }
+                    break;
+                }
+                case 'OwnerRemoved': {
+                    const removedOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
+                    const removedOwnerUser = await users.getUserByAccount(removedOwnerAccount, userId);
+                    if (removedOwnerUser?.did) {
+                        const removedOwnerDid = removedOwnerUser.role === UserRole.STANDARD_REGISTRY
+                            ? removedOwnerUser.did
+                            : removedOwnerUser.parent;
+                        await dataBaseServer.deleteEntity(Contract, {
+                            contractId,
+                            owner: removedOwnerDid,
+                        });
+                    }
+                    if (removedOwnerUser?.id && sendNotifications) {
+                        NotificationHelper.info(
+                            `Owner removed from contract: ${contractId}`,
+                            `Account ${removedOwnerAccount} has been removed as owner`,
+                            removedOwnerUser.id
+                        );
+                    }
+                    break;
+                }
+                case 'OwnerProposed': {
+                    const proposedOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
+                    const proposedOwnerUser = await users.getUserByAccount(proposedOwnerAccount, userId);
+                    if (proposedOwnerUser?.id && sendNotifications) {
+                        NotificationHelper.info(
+                            `Owner proposed for contract: ${contractId}`,
+                            `Account ${proposedOwnerAccount} has been proposed as new owner`,
+                            proposedOwnerUser.id
+                        );
+                    }
+                    break;
+                }
                 default:
                     break;
             }
@@ -837,7 +944,7 @@ export async function syncRetireContract(
 
         for (const log of result) {
             const eventName = retireEventsAbi.getEventName(log.topics[0]);
-            const data = retireEventsAbi.decodeEventLog(eventName, log.data);
+            const data = retireEventsAbi.decodeEventLog(eventName, log.data, log.topics);
 
             // tslint:disable-next-line:no-shadowed-variable
             const contracts = await dataBaseServer.find(
@@ -1074,6 +1181,84 @@ export async function syncRetireContract(
                     );
                     break;
                 }
+                case 'OwnerAdded': {
+                    const newOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
+                    const newOwnerUser = await users.getUserByAccount(newOwnerAccount, userId);
+                    if (newOwnerUser?.did) {
+                        const ownerDid = newOwnerUser.role === UserRole.STANDARD_REGISTRY
+                            ? newOwnerUser.did
+                            : newOwnerUser.parent;
+                        const existingRecord = contracts.find(
+                            (c) => c.owner === ownerDid
+                        );
+                        if (!existingRecord) {
+                            const sourceContract = contracts[0];
+                            if (sourceContract) {
+                                const fullSource = await dataBaseServer.findOne(Contract, {
+                                    contractId,
+                                });
+                                if (fullSource) {
+                                    await dataBaseServer.save(Contract, {
+                                        contractId,
+                                        owner: ownerDid,
+                                        description: fullSource.description || '',
+                                        permissions: 1,
+                                        topicId: fullSource.topicId,
+                                        type: fullSource.type,
+                                        wipeContractIds: [],
+                                        wipeTokenIds: [],
+                                        lastSyncEventTimeStamp: fullSource.lastSyncEventTimeStamp,
+                                        syncPoolsDate: fullSource.syncPoolsDate,
+                                        syncRequestsDate: fullSource.syncRequestsDate,
+                                        syncDisabled: false,
+                                        version: (fullSource as any).version,
+                                    });
+                                }
+                            }
+                        }
+                        if (sendNotifications && newOwnerUser.id) {
+                            NotificationHelper.info(
+                                `Owner added in contract: ${contractId}`,
+                                `Account ${newOwnerAccount} has been added as owner`,
+                                newOwnerUser.id
+                            );
+                        }
+                    }
+                    break;
+                }
+                case 'OwnerRemoved': {
+                    const removedOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
+                    const removedOwnerUser = await users.getUserByAccount(removedOwnerAccount, userId);
+                    if (removedOwnerUser?.did) {
+                        const removedOwnerDid = removedOwnerUser.role === UserRole.STANDARD_REGISTRY
+                            ? removedOwnerUser.did
+                            : removedOwnerUser.parent;
+                        await dataBaseServer.deleteEntity(Contract, {
+                            contractId,
+                            owner: removedOwnerDid,
+                        });
+                    }
+                    if (removedOwnerUser?.id && sendNotifications) {
+                        NotificationHelper.info(
+                            `Owner removed from contract: ${contractId}`,
+                            `Account ${removedOwnerAccount} has been removed as owner`,
+                            removedOwnerUser.id
+                        );
+                    }
+                    break;
+                }
+                case 'OwnerProposed': {
+                    const proposedOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
+                    const proposedOwnerUser = await users.getUserByAccount(proposedOwnerAccount, userId);
+                    if (proposedOwnerUser?.id && sendNotifications) {
+                        NotificationHelper.info(
+                            `Owner proposed for contract: ${contractId}`,
+                            `Account ${proposedOwnerAccount} has been proposed as new owner`,
+                            proposedOwnerUser.id
+                        );
+                    }
+                    break;
+                }
                 default:
                     break;
             }
@@ -1136,7 +1321,7 @@ async function isContractWiper(
 
         for (const log of result) {
             const eventName = eventAbi.getEventName(log.topics[0]);
-            const data = eventAbi.decodeEventLog(eventName, log.data);
+            const data = eventAbi.decodeEventLog(eventName, log.data, log.topics);
 
             switch (eventName) {
                 case 'WiperAdded': {
@@ -2250,9 +2435,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -2315,9 +2498,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -2380,9 +2561,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -2445,9 +2624,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -3561,9 +3738,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -3626,9 +3801,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );

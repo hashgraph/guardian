@@ -5366,6 +5366,177 @@ paths:
       summary: Migrate policy data asynchronous.
       tags:
         - policies
+  /policies/push/migrate-data/resume:
+    post:
+      description: >-
+        Resume migration asynchronous. Only users with the Standard Registry
+        role are allowed to make the request.
+      operationId: PolicyApi_resumeMigrateDataAsync
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - runId
+              properties:
+                runId:
+                  type: string
+                  example: '000000000000000000000001'
+      responses:
+        '202':
+          description: Created task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Resume migration asynchronous.
+      tags:
+        - policies
+  /policies/push/migrate-data/retry-failed:
+    post:
+      description: >-
+        Retry failed migration items asynchronous. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: PolicyApi_retryFailedMigrateDataAsync
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - runId
+              properties:
+                runId:
+                  type: string
+                  example: '000000000000000000000001'
+      responses:
+        '202':
+          description: Created task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Retry failed migration items asynchronous.
+      tags:
+        - policies
+  /policies/migrate-data/status:
+    get:
+      description: >-
+        Returns latest migration run status for source/destination pair. Only
+        users with the Standard Registry role are allowed to make the request.
+      operationId: PolicyApi_getMigrationStatus
+      parameters:
+        - name: srcPolicyId
+          required: true
+          in: query
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: dstPolicyId
+          required: true
+          in: query
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Migration run status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationStatusResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get migration status by policy pair.
+      tags:
+        - policies
+  /policies/migrate-data/runs:
+    get:
+      description: Returns migration runs.
+      operationId: PolicyApi_getMigrationRuns
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          schema:
+            example: 10
+            type: number
+        - name: status
+          required: false
+          in: query
+          schema:
+            example:
+              - running
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Migration runs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationRunsResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get migration runs list.
+      tags:
+        - policies
   /policies/push:
     post:
       description: >-
@@ -5592,6 +5763,40 @@ paths:
       security:
         - bearer: []
       summary: Updates policy configuration.
+      tags:
+        - policies
+  /policies/{policyId}/disconnected:
+    get:
+      description: Checks whether the user is disconnected from the policy or not.
+      operationId: PolicyApi_getDisconnectedPolicy
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Policy configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Checks whether the user is disconnected from the policy or not.
       tags:
         - policies
   /policies/{policyId}/publish:
@@ -5841,6 +6046,78 @@ paths:
       security:
         - bearer: []
       summary: Validates policy.
+      tags:
+        - policies
+  /policies/{policyId}/disconnect:
+    put:
+      description: Disconnects the user from the selected policy.
+      operationId: PolicyApi_disconnectPolicy
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Disconnects the user from the selected policy.
+      tags:
+        - policies
+  /policies/{policyId}/reconnect:
+    put:
+      description: Restores the user’s participation in the policy after disconnection.
+      operationId: PolicyApi_reconnectPolicy
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Restores the user’s participation in the policy after disconnection.
       tags:
         - policies
   /policies/{policyId}/navigation:
@@ -16087,6 +16364,92 @@ paths:
       summary: Rejects the request to import a remote policy.
       tags:
         - external-policies
+  /external-policies/{messageId}/disconnect:
+    put:
+      description: >-
+        Disconnects the user from the selected remote policy on the current
+        Guardian instance only.
+      operationId: ExternalPoliciesApi_disconnectPolicy
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Policy message id
+          schema:
+            example: '0000000000.000000001'
+            type: string
+        - name: full
+          required: false
+          in: query
+          description: >-
+            Disconnects the user from the selected remote policy on the current
+            Guardian instance and from the same policy on the Main Guardian
+            instance where it is deployed.
+          schema:
+            example: 0
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: >-
+        Disconnects the user from the selected remote policy on the current
+        Guardian instance only.
+      tags:
+        - external-policies
+  /external-policies/{messageId}:
+    delete:
+      description: Removes the remote policy from the current Guardian instance.
+      operationId: ExternalPoliciesApi_deletePolicy
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Policy message id
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Removes the remote policy from the current Guardian instance.
+      tags:
+        - external-policies
   /external-policies/requests:
     get:
       description: Returns the list of requests for action from remote Guardians.
@@ -16166,7 +16529,7 @@ paths:
         - name: messageId
           required: true
           in: path
-          description: Schema Rule Identifier
+          description: Policy message id
           schema:
             example: '0000000000.000000001'
             type: string
@@ -16207,7 +16570,7 @@ paths:
         - name: messageId
           required: true
           in: path
-          description: Schema Rule Identifier
+          description: Policy message id
           schema:
             example: '0000000000.000000001'
             type: string
@@ -20532,6 +20895,10 @@ components:
           type: object
           additionalProperties:
             type: string
+        tokensMap:
+          type: object
+          additionalProperties:
+            type: string
         migrateState:
           type: boolean
         migrateRetirePools:
@@ -20542,6 +20909,15 @@ components:
             type: string
         retireContractId:
           type: string
+        mode:
+          type: string
+          enum:
+            - start_new
+            - resume
+            - retry_failed
+          default: start_new
+        runId:
+          type: string
       required:
         - policies
         - vcs
@@ -20551,10 +20927,117 @@ components:
         - roles
         - blocks
         - tokens
+        - tokensMap
         - migrateState
         - migrateRetirePools
         - editedVCs
         - retireContractId
+    MigrationFailedItemDTO:
+      type: object
+      properties:
+        srcPolicyId:
+          type: string
+        dstPolicyId:
+          type: string
+        entityType:
+          type: string
+        srcEntityId:
+          type: string
+        runId:
+          type: string
+        attemptCount:
+          type: number
+        errorCode:
+          type: string
+          nullable: true
+        errorMessage:
+          type: string
+          nullable: true
+        firstFailedAt:
+          type: string
+          format: date-time
+        lastFailedAt:
+          type: string
+          format: date-time
+      required:
+        - srcPolicyId
+        - dstPolicyId
+        - entityType
+        - srcEntityId
+        - runId
+        - attemptCount
+        - errorCode
+        - errorMessage
+        - firstFailedAt
+        - lastFailedAt
+    MigrationRunStatusDTO:
+      type: object
+      properties:
+        runId:
+          type: string
+        srcPolicyId:
+          type: string
+        dstPolicyId:
+          type: string
+        status:
+          type: string
+          enum:
+            - running
+            - completed
+            - failed
+            - stopped
+        isDryRun:
+          type: boolean
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        finishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        summary:
+          type: object
+          additionalProperties: true
+        failedItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigrationFailedItemDTO'
+      required:
+        - runId
+        - srcPolicyId
+        - dstPolicyId
+        - status
+        - startedAt
+        - finishedAt
+        - summary
+    MigrationStatusResponseDTO:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigrationRunStatusDTO'
+      required:
+        - items
+    MigrationRunsResponseDTO:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MigrationRunStatusDTO'
+        count:
+          type: number
+        pageIndex:
+          type: number
+        pageSize:
+          type: number
+      required:
+        - items
+        - count
+        - pageIndex
+        - pageSize
     PoliciesValidationDTO:
       type: object
       properties:

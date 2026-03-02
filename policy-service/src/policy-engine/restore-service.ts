@@ -27,6 +27,12 @@ class Timer {
         this._tickEnd = this.tickEnd.bind(this);
     }
 
+    public destroy(): void {
+        this._lock = true;
+        clearTimeout(this._minTimer);
+        clearTimeout(this._maxTimer);
+    }
+
     public subscribe(callback: () => Promise<void>): Timer {
         this.callback = callback;
         return this;
@@ -124,6 +130,10 @@ export class PolicyBackupService {
         this.backup();
     }
 
+    public async destroy(): Promise<void> {
+        this.timer.destroy();
+    }
+
     public backup(): void {
         this.timer.push();
     }
@@ -210,6 +220,12 @@ export class PolicyRestoreService {
         this.topicListener = new TopicListener(this.topicId);
         this.topicListener.setListenerName(`policy_restore_${this.policyId}`);
         await this.topicListener.subscribe(this.task.bind(this));
+    }
+
+    public async destroy(): Promise<void> {
+        if (this.topicListener) {
+            await this.topicListener.close();
+        }
     }
 
     private async task(data: ITopicMessage): Promise<boolean> {
