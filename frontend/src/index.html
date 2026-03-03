@@ -87,6 +87,19 @@
             }
         };
 
+        const constrainPosition = (btn, x, y) => {
+            const rect = btn.getBoundingClientRect();
+            const viewport = { w: window.innerWidth, h: window.innerHeight };
+            
+            const maxX = viewport.w - rect.width;
+            const maxY = viewport.h - rect.height;
+            
+            return {
+                x: getMin(x, 0, maxX),
+                y: getMin(y, 0, maxY)
+            };
+        };
+
         const applyButtonPosition = (btn, x, y) => {
             btn.style.position = 'fixed';
             btn.style.right = 'auto';
@@ -212,9 +225,14 @@
         };
 
         const setupDrag = (btn) => {
+            const rect = btn.getBoundingClientRect();
+            const startPos = constrainPosition(btn, rect.left, Math.max(0, rect.top - 50));
+            applyButtonPosition(btn, startPos.x, startPos.y);
+
             const saved = readSavedPosition();
             if (saved) {
-                applyButtonPosition(btn, saved.x, saved.y);
+                const constrained = constrainPosition(btn, saved.x, saved.y);
+                applyButtonPosition(btn, constrained.x, constrained.y);
             }
 
             let dragActive = false;
@@ -271,13 +289,8 @@
 
                 moved = true;
 
-                const maxLeft = window.innerWidth - btn.offsetWidth;
-                const maxTop = window.innerHeight - btn.offsetHeight;
-
-                const x = getMin(originLeft + dragX, 0, maxLeft);
-                const y = getMin(originTop + dragY, 0, maxTop);
-
-                applyButtonPosition(btn, x, y);
+                const constrained = constrainPosition(btn, originLeft + dragX, originTop + dragY);
+                applyButtonPosition(btn, constrained.x, constrained.y);
             });
 
             document.addEventListener('mouseup', () => {
@@ -295,12 +308,35 @@
                 clickBlockOnce = true;
 
                 const r = btn.getBoundingClientRect();
-                savePosition(r.left, r.top);
+                const finalPos = constrainPosition(btn, r.left, r.top);
+                applyButtonPosition(btn, finalPos.x, finalPos.y);
+                savePosition(finalPos.x, finalPos.y);
+            });
+        };
+
+
+        const observeButtonClasses = (btn) => {
+            const observer = new MutationObserver((mutations) => {
+                if (!btn.classList.contains('hidden')) {
+                    const rect = btn.getBoundingClientRect();
+                    const constrained = constrainPosition(btn, rect.left, rect.top);
+                    
+                    if (Math.abs(rect.left - constrained.x) > 1 || Math.abs(rect.top - constrained.y) > 1) {
+                        applyButtonPosition(btn, constrained.x, constrained.y);
+                        savePosition(constrained.x, constrained.y);
+                    }
+                }
+            })
+            
+            observer.observe(btn, { 
+                attributes: true, 
+                attributeFilter: ['class'] 
             });
         };
 
         const boot = (btn) => {
             setupDrag(btn);
+            observeButtonClasses(btn);
 
             const windowElement = getWindowEl();
             if (windowElement) {
@@ -318,6 +354,18 @@
         } else {
             start();
         }
+
+        window.addEventListener('resize', () => {
+            const btn = getButtonEl();
+            if (btn && isButtonVisible(btn)) {
+                const rect = btn.getBoundingClientRect();
+                const constrained = constrainPosition(btn, rect.left, rect.top);
+                if (Math.abs(rect.left - constrained.x) > 1 || Math.abs(rect.top - constrained.y) > 1) {
+                    applyButtonPosition(btn, constrained.x, constrained.y);
+                    savePosition(constrained.x, constrained.y);
+                }
+            }
+        });
     </script>
     <script>
         const TARGET_IFRAME_ID = 'gitbook-widget-iframe';
