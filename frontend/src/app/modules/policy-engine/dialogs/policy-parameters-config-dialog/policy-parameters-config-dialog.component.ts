@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { PolicyTemplate } from '../../structures';
+import { PolicyBlock, PolicyTemplate } from '../../structures';
 import { RegisteredService } from '../../services/registered.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -31,7 +31,9 @@ export class PolicyParametersConfigDialog implements OnInit {
     submitted = false;
     form: FormGroup<PolicyForm>;
     policyTemplate: PolicyTemplate;
-    policyEditableFields: PolicyEditableField[] = [];
+    policyEditableFields: PolicyEditableField[] = [];    
+    filteredBlocks: Map<string, any[]> = new Map();
+    currentBlocks: PolicyBlock[] = [];
     additionalOptionsApplyTo = [
         { _name: 'All' },
         { _name: 'Self' }
@@ -64,10 +66,25 @@ export class PolicyParametersConfigDialog implements OnInit {
             .pipe(takeUntil(this._destroy$))
             .subscribe(blockInfo => {
                 this.registeredService.registerConfig(blockInfo);
+                this.filterBlocks();
                 this.loadData();
             });
     }
- 
+
+    filterBlocks(): void {
+        this.currentBlocks = [];
+        this.policyTemplate.allBlocks.forEach(block => {
+            const props = this.registeredService.getCustomProperties(block.blockType);
+            if(props && props.length > 0) {
+                const propsWithPath = this.setPath(props.filter((prop: any) => prop.editable), []);
+                if(propsWithPath && propsWithPath.length > 0) {
+                    this.filteredBlocks.set(block.tag, propsWithPath);
+                    this.currentBlocks.push(block);
+                }  
+            }
+        });
+    }
+
     loadData() {
         const fields = this.policyTemplate.editableParametersSettings;
         if(!fields?.length) {
@@ -75,8 +92,7 @@ export class PolicyParametersConfigDialog implements OnInit {
         }
 
         fields.forEach((field: PolicyEditableFieldDTO) => {
-            const block = this.policyTemplate.allBlocks.find(b => b.tag === field.blockTag);
-            if(!block) {
+            if(!this.filteredBlocks.has(field.blockTag)) {
                 return;
             }
 
@@ -104,6 +120,24 @@ export class PolicyParametersConfigDialog implements OnInit {
         return this.policyEditableFields[index]?.properties ?? [];
     }
 
+    private propertyInCurrentBlock(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            if (!control.parent) return null;
+
+            const propertyValue = control.value;
+            if (!propertyValue) return null;
+
+            const blockTag = control.parent.get('blockTag')?.value;
+            if (!blockTag) return null;
+
+            const props = this.filteredBlocks.get(blockTag) ?? [];
+
+            return props.some(p => p.path === propertyValue)
+            ? null
+            : { notInOptions: true };
+        };
+    }
+
     private setPath(properties:any[], result:any[], parent?:string) {
         if(!properties) return;
 
@@ -121,29 +155,19 @@ export class PolicyParametersConfigDialog implements OnInit {
 
     onBlockChange(selected: any, index: number): void {
         const fg = this.fields.at(index) as FormGroup<PolicyEditableFieldForm>;
-        fg.controls.blockTag.setValue(selected?.tag ?? selected);
+        fg.controls.blockTag.setValue(selected);
+
+        this.policyEditableFields[index].properties = this.filteredBlocks.get(selected) ?? [];
 
         fg.controls.blockTag.markAsDirty();
         fg.controls.blockTag.markAsTouched();
-        fg.controls.blockTag.updateValueAndValidity({ emitEvent: true });
-
-        this.policyEditableFields[index].properties = [];
-
-        this.policyTemplate.allBlocks.forEach(block => {
-            if (block.tag === selected) {
-                const props = this.registeredService.getCustomProperties(block.blockType);
-                const propsWithPath = this.setPath(props.filter((prop: any) => prop.editable), []);
-                if(propsWithPath && propsWithPath.length > 0) {
-                    this.policyEditableFields[index].properties = propsWithPath;
-                }
-            }
-        });
+        fg.controls.property.updateValueAndValidity({ emitEvent: false });
     }
 
     createFieldGroup(m?: Partial<PolicyEditableField>): FormGroup<PolicyEditableFieldForm> {
         return this.fb.group<PolicyEditableFieldForm>({
             blockTag: this.fb.control(m?.blockTag ?? '', { nonNullable: true, validators: [Validators.required] }),
-            property: this.fb.control(m?.propertyPath ?? '', { nonNullable: true, validators: [Validators.required] }),
+            property: this.fb.control(m?.propertyPath ?? '', { nonNullable: true, validators: [Validators.required, this.propertyInCurrentBlock()] }),
             visible: this.fb.control(m?.visible ?? [], { nonNullable: true, validators: [Validators.required] }),
             applyTo: this.fb.control(m?.applyTo ?? [], { nonNullable: true, validators: [Validators.required] }),
             label: this.fb.control(m?.label ?? '', { nonNullable: true, validators: [Validators.required] }),

@@ -8,7 +8,7 @@
                             <label class="parameter-label">Blocks</label>
                             <select-block
                                 class="parameter-dropdown"
-                                [blocks]="this.policyTemplate.allBlocks"
+                                [blocks]="currentBlocks"
                                 [value]="fg.controls.blockTag.value"
                                 (valueChange)="onBlockChange($event, i)"
                                 [class.is-invalid]="fg.controls.blockTag.invalid && fg.controls.blockTag.touched && submitted"
