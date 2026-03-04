@@ -1,0 +1,33 @@
+# Pre-commit hooks for code quality and consistency
+# Install: poetry run pre-commit install
+# Run manually: poetry run pre-commit run --all-files
+
+repos:
+  # Ruff - Fast Python linter and formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.0
+    hooks:
+      # Run the linter
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi]
+
+      # Run the formatter
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # Basic file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^tests/.*snapshots/
+      - id: end-of-file-fixer
+        exclude: ^tests/.*snapshots/
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key

@@ -1,0 +1,249 @@
+name: hedera-guardian-ai-toolkit
+
+services:
+  # ── Infrastructure (always-on) ──────────────────────────
+
+  qdrant:
+    image: qdrant/qdrant:v1.16
+    container_name: qdrant
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ports:
+      - "6333:6333"  # HTTP API
+      - "6334:6334"  # gRPC API
+    restart: always
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    mem_limit: 4g
+    memswap_limit: 5g
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333 && echo -e \"GET /readyz HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n\" >&3 && grep -q \"200 OK\" <&3'",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  hedera-guardian-mcp-server:
+    build:
+      context: .
+      dockerfile: ./packages/hedera_guardian_mcp_server/Dockerfile
+      args:
+        VARIANT: cpu
+    image: hedera-guardian-mcp-server:latest
+    container_name: hedera-guardian-mcp-server
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+      - huggingface_cache:/home/nonroot/.cache/huggingface  # Shared model cache
+    environment:
+      # HuggingFace cache (shared volume for BGE-M3 model)
+      - HF_HOME=/home/nonroot/.cache/huggingface
+      # Suppress "None of PyTorch, TensorFlow >= 2.0, or Flax" warning (only ONNX Runtime needed)
+      - TRANSFORMERS_VERBOSITY=error
+      # Qdrant connection settings
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - QDRANT_API_KEY=${QDRANT_API_KEY:-}
+
+      # Embedding configuration (BGE-M3 ONNX with dense + sparse for hybrid search)
+      - EMBEDDING_MODEL=aapot/bge-m3-onnx
+      - EMBEDDING_PROVIDER=bge_m3_onnx
+
+      # MCP-specific collections
+      - QDRANT_SCHEMA_COLLECTION=schema_properties
+      - QDRANT_METHODOLOGY_COLLECTION=methodology_documents
+
+      # Excel output directory
+      - EXCEL_OUTPUT_DIR=/data/output
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket; s=socket.create_connection(('127.0.0.1', 9000), timeout=3); s.close()\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s  # BGE-M3 ONNX model loading takes 30-45s cold, 10-20s cached
+    mem_limit: 4g
+    memswap_limit: 5g
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      qdrant:
+        condition: service_healthy
+
+  # ── Workers (on-demand, run with: docker compose run --rm <service>) ──
+  # WARNING: --profile workers starts ALL workers simultaneously (4g + 10g = 14g+).
+  # Prefer running workers individually: docker compose run --rm <service>
+
+  # Schema ingestion worker - processes JSON schemas
+  schema-ingestion-worker:
+    profiles: ["workers", "ingest-schemas"]
+    build:
+      context: .
+      dockerfile: ./packages/schema_ingestion_worker/Dockerfile
+      args:
+        VARIANT: cpu
+    image: schema-ingestion-worker:latest
+    container_name: schema-ingestion-worker
+    restart: "no"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # Memory limits to prevent silent OOM kills.
+    # Peak memory during ONNX inference: ~600MB model + attention matrices + ColBERT output.
+    # With inference sub-batching (32 texts/call), peak stays under 3GB.
+    # 4GB provides headroom for large schemas and OS overhead.
+    mem_limit: 4g
+    memswap_limit: 5g
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+    volumes:
+      # Host: hedera-guardian-ai-toolkit/data → Container: /data
+      - ./data:/data
+      - huggingface_cache:/home/nonroot/.cache/huggingface  # Shared model cache
+    environment:
+      # ---- Docker-specific (HARDCODED - .env must NOT override these) ----
+      - HF_HOME=/home/nonroot/.cache/huggingface
+      - TRANSFORMERS_VERBOSITY=error
+      - SCHEMA_INGESTION_QDRANT_URL=http://qdrant:6333
+      - SCHEMA_INGESTION_INPUT_SCHEMAS_DIR=/data/input/schemas
+      - SCHEMA_INGESTION_OUTPUT_DIR=/data/output
+      # ---- Shared config (hardcoded, rarely changed) ----
+      - SCHEMA_INGESTION_QDRANT_COLLECTION_NAME=schema_properties
+      - SCHEMA_INGESTION_QDRANT_API_KEY=${QDRANT_API_KEY:-}
+      - SCHEMA_INGESTION_EMBEDDING_MODEL_NAME=aapot/bge-m3-onnx
+      - SCHEMA_INGESTION_EMBEDDING_PROVIDER_TYPE=bge_m3_onnx
+      # ---- User-tunable (${} so .env overrides propagate to Docker) ----
+      - SCHEMA_INGESTION_EMBEDDING_BATCH_SIZE=${SCHEMA_INGESTION_EMBEDDING_BATCH_SIZE:-256}
+      - SCHEMA_INGESTION_VECTOR_UPSERT_BATCH_SIZE=${SCHEMA_INGESTION_VECTOR_UPSERT_BATCH_SIZE:-50}
+      - SCHEMA_INGESTION_ONNX_INFERENCE_BATCH_SIZE=${SCHEMA_INGESTION_ONNX_INFERENCE_BATCH_SIZE:-32}
+      - SCHEMA_INGESTION_EMBEDDING_TIMEOUT=${SCHEMA_INGESTION_EMBEDDING_TIMEOUT:-300}
+      - SCHEMA_INGESTION_UPSERT_TIMEOUT=${SCHEMA_INGESTION_UPSERT_TIMEOUT:-60}
+      - SCHEMA_INGESTION_MODE=${SCHEMA_INGESTION_MODE:-override}
+      - SCHEMA_INGESTION_LOG_LEVEL=${SCHEMA_INGESTION_LOG_LEVEL:-INFO}
+    depends_on:
+      qdrant:
+        condition: service_healthy
+
+  # Document ingestion worker - CPU version (default)
+  # For GPU version, use: docker compose -f docker-compose.yml -f docker-compose.gpu.yml
+  document-ingestion-worker:
+    profiles: ["workers", "ingest-documents"]
+    build:
+      context: .
+      dockerfile: ./packages/document_ingestion_worker/Dockerfile
+      args:
+        VARIANT: cpu
+    image: document-ingestion-worker:latest
+    container_name: document-ingestion-worker
+    restart: "no"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # Memory limits to prevent silent OOM kills on constrained systems.
+    # On Windows/macOS Docker Desktop, the VM reserves 3-6GB overhead.
+    # Adjust mem_limit based on your total RAM:
+    #   - 8-12GB RAM: use docker-compose.low-memory.yml override (mem_limit=6g)
+    #   - 16GB RAM:   mem_limit=10g (default, leaves ~6GB for system)
+    #   - 32GB RAM:   mem_limit=24g
+    mem_limit: 10g
+    memswap_limit: 12g
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+    volumes:
+      - ./data:/data
+      - huggingface_cache:/home/nonroot/.cache/huggingface  # Shared model cache
+      - datalab_cache:/home/nonroot/.cache/datalab  # Surya OCR model cache (~1.4GB)
+    environment:
+      # HuggingFace cache (shared volume for BGE-M3 model)
+      - HF_HOME=/home/nonroot/.cache/huggingface
+      # Suppress "None of PyTorch, TensorFlow >= 2.0, or Flax" warning (only ONNX Runtime needed)
+      - TRANSFORMERS_VERBOSITY=error
+      # Qdrant settings
+      - DOCUMENT_INGESTION_QDRANT_URL=http://qdrant:6333
+      - DOCUMENT_INGESTION_QDRANT_COLLECTION_NAME=${DOCUMENT_INGESTION_QDRANT_COLLECTION_NAME:-methodology_documents}
+      - DOCUMENT_INGESTION_QDRANT_API_KEY=${QDRANT_API_KEY:-}
+      # Path settings (paths derived from data_dir: input/documents, staged/documents, output/documents)
+      - DOCUMENT_INGESTION_DATA_DIR=/data
+      # Processing settings (Balanced 16GB defaults)
+      - DOCUMENT_INGESTION_MAX_PARALLEL_FILES=${DOCUMENT_INGESTION_MAX_PARALLEL_FILES:-1}
+      # Subprocess timeout (seconds) per document (default: 2h for large methodology docs)
+      - DOCUMENT_INGESTION_SUBPROCESS_TIMEOUT_SECONDS=${DOCUMENT_INGESTION_SUBPROCESS_TIMEOUT_SECONDS:-7200}
+      # Per-subprocess memory limit (GB). None=disabled. Set on Windows (no OOM killer).
+      # Requires psutil (bundled). Example: 8 for 16GB system with mem_limit=10g
+      - DOCUMENT_INGESTION_SUBPROCESS_MEMORY_LIMIT_GB=${DOCUMENT_INGESTION_SUBPROCESS_MEMORY_LIMIT_GB:-}
+      # Ingestion mode
+      - DOCUMENT_INGESTION_MODE=${DOCUMENT_INGESTION_MODE:-override}
+      # Embedding settings (BGE-M3 ONNX with dense + sparse for hybrid search)
+      - DOCUMENT_INGESTION_EMBEDDING_MODEL_NAME=${DOCUMENT_INGESTION_EMBEDDING_MODEL_NAME:-aapot/bge-m3-onnx}
+      - DOCUMENT_INGESTION_EMBEDDING_PROVIDER_TYPE=${DOCUMENT_INGESTION_EMBEDDING_PROVIDER_TYPE:-bge_m3_onnx}
+      - DOCUMENT_INGESTION_EMBEDDING_BATCH_SIZE=${DOCUMENT_INGESTION_EMBEDDING_BATCH_SIZE:-5}
+      - DOCUMENT_INGESTION_VECTOR_UPSERT_BATCH_SIZE=${DOCUMENT_INGESTION_VECTOR_UPSERT_BATCH_SIZE:-20}
+      # PDF Parser settings (optimized for digital PDFs - OCR disabled by default)
+      - DOCUMENT_INGESTION_PDF_BACKEND=${DOCUMENT_INGESTION_PDF_BACKEND:-dlparse_v2}
+      - DOCUMENT_INGESTION_DO_OCR=${DOCUMENT_INGESTION_DO_OCR:-false}
+      - DOCUMENT_INGESTION_DO_TABLE_STRUCTURE=${DOCUMENT_INGESTION_DO_TABLE_STRUCTURE:-true}
+      - DOCUMENT_INGESTION_DO_CELL_MATCHING=${DOCUMENT_INGESTION_DO_CELL_MATCHING:-true}
+      - DOCUMENT_INGESTION_DO_FORMULA_ENRICHMENT=${DOCUMENT_INGESTION_DO_FORMULA_ENRICHMENT:-true}
+      # Accelerator settings (GPU/CPU)
+      - DOCUMENT_INGESTION_ACCELERATOR_DEVICE=${DOCUMENT_INGESTION_ACCELERATOR_DEVICE:-auto}
+      - DOCUMENT_INGESTION_NUM_THREADS=${DOCUMENT_INGESTION_NUM_THREADS:-2}
+      # Batch processing settings (Balanced 16GB profile; GPU override uses higher values)
+      - DOCUMENT_INGESTION_OCR_BATCH_SIZE=${DOCUMENT_INGESTION_OCR_BATCH_SIZE:-2}
+      - DOCUMENT_INGESTION_LAYOUT_BATCH_SIZE=${DOCUMENT_INGESTION_LAYOUT_BATCH_SIZE:-2}
+      - DOCUMENT_INGESTION_TABLE_BATCH_SIZE=${DOCUMENT_INGESTION_TABLE_BATCH_SIZE:-2}
+      # Chunker settings
+      - DOCUMENT_INGESTION_CHUNK_MAX_TOKENS=${DOCUMENT_INGESTION_CHUNK_MAX_TOKENS:-5000}
+      - DOCUMENT_INGESTION_CHUNK_OVERLAP_TOKENS=${DOCUMENT_INGESTION_CHUNK_OVERLAP_TOKENS:-0}
+      # Pipeline control
+      - DOCUMENT_INGESTION_START_FROM=${DOCUMENT_INGESTION_START_FROM:-beginning}
+      # Surya formula enrichment (Balanced 16GB profile)
+      - DOCUMENT_INGESTION_USE_SURYA_FORMULA_ENRICHMENT=${DOCUMENT_INGESTION_USE_SURYA_FORMULA_ENRICHMENT:-true}
+      - DOCUMENT_INGESTION_SURYA_BATCH_SIZE=${DOCUMENT_INGESTION_SURYA_BATCH_SIZE:-2}
+      - DOCUMENT_INGESTION_SURYA_UPSCALE_FACTOR=${DOCUMENT_INGESTION_SURYA_UPSCALE_FACTOR:-1.5}
+      - DOCUMENT_INGESTION_SURYA_EXPANSION_FACTOR_HORIZONTAL=${DOCUMENT_INGESTION_SURYA_EXPANSION_FACTOR_HORIZONTAL:-0.15}
+      - DOCUMENT_INGESTION_SURYA_EXPANSION_FACTOR_VERTICAL=${DOCUMENT_INGESTION_SURYA_EXPANSION_FACTOR_VERTICAL:-0.15}
+      - DOCUMENT_INGESTION_PDF_IMAGES_SCALE=${DOCUMENT_INGESTION_PDF_IMAGES_SCALE:-2.0}
+      # Logging
+      - DOCUMENT_INGESTION_LOG_LEVEL=${DOCUMENT_INGESTION_LOG_LEVEL:-INFO}
+    depends_on:
+      qdrant:
+        condition: service_healthy
+
+networks:
+  default:
+    name: hedera-guardian-ai-toolkit
+
+volumes:
+  qdrant_storage:
+  huggingface_cache:  # Shared cache for BGE-M3 and other HF models (~2.3GB)
+  datalab_cache:      # Surya OCR model cache (~1.4GB, document-ingestion-worker only)
