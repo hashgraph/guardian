@@ -63,6 +63,19 @@
                     </p-dropdown>
                 </div>
                 <div *ngIf="isPolicy || isTool || isModule" class="guardian-input-container text-search">
+                    <p-multiSelect
+                        [(ngModel)]="textSearchOptionsValue"
+                        [options]="textSearchOptions"
+                        class="guardian-multiselect"
+                        appendTo="body"
+                        placeholder="Not selected"
+                        optionLabel="label" 
+                        optionValue="value"
+                        [showHeader]="false"
+                        [filter]="false"
+                        panelStyleClass="guardian-multiselect-panel schema-text-search-options"
+                        (onPanelHide)="onFilter()">
+                    </p-multiSelect>
                     <input
                         (change)="onFilter()"
                         [(ngModel)]="textSearch"

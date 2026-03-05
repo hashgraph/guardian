@@ -654,6 +654,29 @@ a {
 
 .text-search {
     position: relative;
+    display: grid;
+    grid-template-columns: 140px auto;
+
+    &::ng-deep {
+        .guardian-multiselect {
+            .p-multiselect {
+                border-top-right-radius: 0px;
+                border-bottom-right-radius: 0px;
+            }
+
+            &:hover {
+                z-index: 2;
+            }
+        }
+    }
+
+    input {
+        border-top-left-radius: 0px;
+        border-bottom-left-radius: 0px;
+        position: relative;
+        left: -1px;
+        z-index: 1;
+    }
 
     .search-icon {
         position: absolute;
@@ -661,6 +684,12 @@ a {
         right: 12px;
         pointer-events: none;
         color: #6c757d;
+    }
+}
+
+::ng-deep .schema-text-search-options {
+    .p-multiselect-items-wrapper {
+        max-height: 300px !important;
     }
 }
 
@@ -790,7 +819,7 @@ a {
     }
 }
 
-.p-treetable .p-treetable-thead > tr > th {
+.p-treetable .p-treetable-thead>tr>th {
     padding: 0;
 }
 
@@ -817,10 +846,12 @@ a {
             background-color: var(--color-grey-white, #FFF);
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
+
             &:first-child {
                 border-top-left-radius: 8px;
                 border-top-right-radius: 8px;
             }
+
             &:last-child {
                 border-top-right-radius: 8px;
             }
