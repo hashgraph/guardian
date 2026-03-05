@@ -32,6 +32,7 @@ export class SchemaDialog {
     public subSchemas: Schema[];
     public topicId: any;
     public policies: any[];
+    public allPolicies: any[];
     public tools: any[];
     public properties: any[];
     public category: string;
@@ -76,6 +77,7 @@ export class SchemaDialog {
         this.type = this.config.data.type || null;
         this.schemaType = this.config.data.schemaType || 'policy';
         this.policies = this.config.data.policies || [];
+        this.allPolicies = this.config.data.allPolicies || [];
         this.tools = this.config.data.tools || [];
         this.properties = this.config.data.properties || [];
         this.category = this.config.data.category;
