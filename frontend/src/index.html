@@ -322,7 +322,7 @@
                     const constrained = constrainPosition(btn, rect.left, rect.top);
                     
                     if (Math.abs(rect.left - constrained.x) > 1 || Math.abs(rect.top - constrained.y) > 1) {
-                        applyButtonPosition(btn, constrained.x, constrained.y);
+                        applyButtonPosition(btn, constrained.x - 15, constrained.y);
                         savePosition(constrained.x, constrained.y);
                     }
                 }
