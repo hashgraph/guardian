@@ -188,10 +188,21 @@ export class PolicyUtils {
      * @param token
      * @param amount
      */
-    public static tokenAmount(token: Token, amount: number): [number, string] {
+    public static tokenAmount(token: Token, amount: number, method: string): [number, string] {
         const decimals = parseFloat(token.decimals) || 0;
         const _decimals = Math.pow(10, decimals);
-        const tokenValue = Math.round(amount * _decimals);
+        let tokenValue: number;
+        switch (method) {
+            case 'ceil':
+                tokenValue = Math.ceil(amount * _decimals);
+                break;
+            case 'floor':
+                tokenValue = Math.floor(amount * _decimals);
+                break;
+            case 'round':
+            default:
+                tokenValue = Math.round(amount * _decimals);
+        }
         const tokenAmount = (tokenValue / _decimals).toFixed(decimals);
         return [tokenValue, tokenAmount];
     }
