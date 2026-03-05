@@ -78,22 +78,15 @@ export class IpfsTransformationUIAddonCode {
         const cid = match[1];
         
         if (this.transformationType === TransformationIpfsLinkType.Base64) {
-            const base64 = await this.processIpfsMatchToBase64({ fullMatch: ipfsString, cid });
-            return { base64String: base64 };
+            return await this.convertToBase64({ fullMatch: ipfsString, cid });
         } else if (this.transformationType === TransformationIpfsLinkType.IpfsGateway) {
-            let gatewayUrl = "";
-            if (this.ipfsGatewayTemplate.includes('{cid}')) {
-                gatewayUrl = this.ipfsGatewayTemplate.replace('{cid}', cid);
-            } else {
-                gatewayUrl = `${this.ipfsGatewayTemplate}/${cid}`;
-            }
-            return { resourceUrl: gatewayUrl };
+            return this.convertToIpfsGateway(cid);
         }
         
         return ipfsString;
     }
 
-    private async processIpfsMatchToBase64(match: IpfsMatch): Promise<string> {
+    private async convertToBase64(match: IpfsMatch): Promise<any> {
         if (!match.cid) {
             return match.fullMatch;
         } 
@@ -106,11 +99,21 @@ export class IpfsTransformationUIAddonCode {
             const arrayBuffer = await this.loadFileFromIpfs(match.cid);
             const base64 = this.arrayBufferToBase64(arrayBuffer);
             this.cache.set(match.cid, base64);
-            return base64;
+            return { base64String: base64 };
         } catch (error) {
-            console.error(`processIpfsMatch by CID ${match.cid}:`, error);
+            console.error(`convertToBase64 by CID ${match.cid}:`, error);
             return match.fullMatch;
         }
+    }
+
+    private convertToIpfsGateway(cid: string): any {
+        let gatewayUrl = "";
+        if (this.ipfsGatewayTemplate.includes('{cid}')) {
+            gatewayUrl = this.ipfsGatewayTemplate.replace('{cid}', cid);
+        } else {
+            gatewayUrl = `${this.ipfsGatewayTemplate}/${cid}`;
+        }
+        return { resourceUrl: gatewayUrl };
     }
 
     private async loadFileFromIpfs(cid: string): Promise<ArrayBuffer> {
