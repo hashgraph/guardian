@@ -40,6 +40,8 @@
             [(ngModel)]="schema" 
             [options]="schemas" 
             optionLabel="name"
+            class="guardian-dropdown"
+            panelStyleClass="guardian-dropdown-panel"
         >
             <ng-template pTemplate="selectedItem">
                 <div *ngIf="schema" class="country-item country-item-value">
@@ -57,9 +59,20 @@
             <div class="artifact-form-label">
                 {{ schema.name }}
             </div>
-            <div (click)="onDeleteArtifact()" class="delete-artifact">
-                <i class="pi pi-trash"></i>
+
+            <div
+                class="guardian-icon-button big delete-artifact"
+                (click)="onDeleteArtifact()">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/delete.svg"
+                    [svgClass]="'icon-color-delete'">
+                </svg-icon>
             </div>
+
+            <!-- <div (click)="onDeleteArtifact()" class="delete-artifact">
+                <i class="pi pi-trash"></i>
+            </div> -->
             <form [formGroup]="schemaForm">
                 <app-schema-form-root
                     [schema]="schema" 
@@ -70,89 +83,10 @@
         </div>
     </div>
     <div class="dialog-footer">
-        <button (click)="onAddArtifact(schema)" *ngIf="!schema" class="button secondary" label="Add Document"
-                pButton style="margin-right: auto;"></button>
+        <button (click)="!noSchemas && onAddArtifact(schema)" *ngIf="!schema" [class.disabled-button]="noSchemas"
+            [pTooltip]="noSchemas ? 'Create and publish document schema first' : undefined" tooltipPosition="top"
+            class="button secondary" label="Add Document" pButton style="margin-right: auto;"></button>
         <button (click)="onNoClick()" class="button secondary" label="Cancel" pButton></button>
         <button (click)="onCreate()" [disabled]="disabled" [label]="'Create'" class="button" pButton></button>
-    </div>
-</div>
-
-<div *ngIf="false" class="g-dialog-content">
-    <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onNoClick()">
-                <i class="pi pi-times"></i>
-            </div>
-        </div>
-        <div class="g-dialog-title">
-            {{ title }}
-        </div>
-        <div class="g-dialog-actions">
-            <div class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="disabled">
-                Create
-            </div>
-        </div>
-    </div>
-    <div class="g-dialog-body">
-        <div style="padding: 20px 35px 30px 35px">
-            <form [formGroup]="dataForm">
-                <div class="form-group example-full-width">
-                    <label for="labelInput" class="form-label">* Label</label>
-                    <input
-                        pInputText
-                        id="labelInput"
-                        type="text"
-                        placeholder="Label"
-                        formControlName="name"
-                        class="full-width">
-                </div>
-                <div class="form-group example-full-width">
-                    <label for="descriptionInput" class="form-label">Description</label>
-                    <input
-                        pInputText
-                        id="descriptionInput"
-                        type="text"
-                        placeholder="Description"
-                        formControlName="description"
-                        class="full-width">
-                </div>
-            </form>
-
-            <div *ngIf="schemas && schemas.length" class="artifact-container">
-                <div *ngIf="!schema" class="add-artifact" (click)="onAddArtifact(selector)">
-                    <i class="pi pi-plus add-icon"></i>
-                    <div class="btn-name">
-                        Add Document
-                    </div>
-                </div>
-                <p-dropdown
-                    #selector
-                    class="artifact-selector"
-                    [(ngModel)]="schema"
-                    (onChange)="onSelectSchema()"
-                    [options]="schemas"
-                    optionLabel="name"
-                    placeholder="Select a schema"
-                    [appendTo]="'body'"
-                >
-                </p-dropdown>
-                <div *ngIf="schema" class="artifact-form">
-                    <div class="artifact-form-label">
-                        {{ schema.name }}
-                    </div>
-                    <div class="delete-artifact" (click)="onDeleteArtifact()">
-                        <i class="pi pi-times"></i>
-                    </div>
-                    <form [formGroup]="schemaForm">
-                        <app-schema-form-root 
-                            [formGroup]="schemaForm" 
-                            [schema]="schema"
-                            [showButtons]="false"
-                            (form)="initForm($event)">
-                        </app-schema-form-root>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
