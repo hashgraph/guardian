@@ -1,5 +1,5 @@
 import { LocationType } from '@guardian/interfaces';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { UIAddon } from '../helpers/decorators/index.js';
 import { IPolicyGetData, AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
@@ -22,7 +22,35 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
         input: null,
         output: null,
         defaultEvent: false,
-        properties: []
+        properties: [
+            {
+                name: 'transformationType',
+                label: 'Transformation Type',
+                title: 'Transformation Type',
+                type: PropertyType.Select,
+                items: [
+                    {
+                        label: 'Base64',
+                        value: 'base64'
+                    },
+                    {
+                        label: 'IPFS Gateway',
+                        value: 'ipfsGateway'
+                    },
+                ],
+                default: 'base64',
+                required: true,
+            },
+            {
+                name: 'ipfsGatewayTemplate',
+                label: 'IPFS Gateway Template',
+                title: 'IPFS Gateway Template',
+                type: PropertyType.Input,
+                visible: 'transformationType === "ipfsGateway"',
+                default: 'https://{cid}.ipfs.w3s.link',
+                required: true
+            },
+        ]
     },
     variables: []
 })
@@ -40,6 +68,8 @@ export class IpfsTransformationUIAddon {
             blockType: ref.blockType,
             actionType: ref.actionType,
             expression: options.expression,
+            transformationType: options.transformationType,
+            ipfsGatewayTemplate: options.ipfsGatewayTemplate,
             readonly: (
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE

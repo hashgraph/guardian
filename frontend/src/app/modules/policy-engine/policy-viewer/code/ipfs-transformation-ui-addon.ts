@@ -10,68 +10,90 @@ interface DocumentData {
 interface IpfsMatch {
     fullMatch: string;
     cid: string;
-    index: number;
+}
+
+enum TransformationIpfsLinkType {
+    Base64 = 'base64',
+    IpfsGateway = 'ipfsGateway'
 }
 
 export class IpfsTransformationUIAddonCode {
-    private readonly ipfsPattern: RegExp = /ipfs:\/\/([a-zA-Z0-9]+)/g;
+    private readonly ipfsPattern: RegExp = /ipfs:\/\/([a-zA-Z0-9]+)/;
     private cache: Map<string, string> = new Map();
+
+    private readonly transformationType: string;
+    private readonly ipfsGatewayTemplate: string;
     
     constructor(
         private config: any,
         private ipfsService: IPFSService,
         private dryRun: boolean
-    ) {}
+    ) {
+        this.transformationType = this.config.transformationType;
+        this.ipfsGatewayTemplate = this.config.ipfsGatewayTemplate;
+    }
 
     public async run(data: DocumentData): Promise<DocumentData> {
         try {
-            const documentStr = JSON.stringify(data.document);
-            const matches = this.findIpfsMatches(documentStr);
-            
-            if (matches.length === 0) {
-                return data;
-            }
-
-            const documentWithReplacements = await this.replaceIpfsLinks(documentStr, matches);
-            data.document = JSON.parse(documentWithReplacements);
-            
+            await this.processDocument(data.document);
             return data;
         } catch (error) {
             console.error('Error processing IPFS transformations:', error);
-            throw error
+            throw error;
         }
     }
 
-    private findIpfsMatches(documentStr: string): IpfsMatch[] {
-        const matches: IpfsMatch[] = [];
-        let match: RegExpExecArray | null;
+    private async processDocument(document: any): Promise<void> {
+        if (!document || typeof(document) !== 'object') {
+            return;
+        }
+
+        if (Array.isArray(document)) {
+            for (let i = 0; i < document.length; i++) {
+                if (typeof(document[i]) === 'string' && document[i].startsWith('ipfs://')) {
+                    document[i] = await this.processIpfsString(document[i]);
+                } else if (typeof(document[i]) === 'object' && document[i] !== null) {
+                    await this.processDocument(document[i]);
+                }
+            }
+        } else {
+            for (const key in document) {
+                const value = document[key];
+                
+                if (typeof(value) === 'string' && value.startsWith('ipfs://')) {
+                    document[key] = await this.processIpfsString(value);
+                } else if (typeof(value) === 'object' && value !== null) {
+                    await this.processDocument(value);
+                }
+            }
+        }
+    }
+
+    private async processIpfsString(ipfsString: string): Promise<any> {
+        const match = this.ipfsPattern.exec(ipfsString);
+        if (!match) {
+            return ipfsString;
+        }
         
-        while ((match = this.ipfsPattern.exec(documentStr)) !== null) {
-            matches.push({
-                fullMatch: match[0],
-                cid: match[1],
-                index: match.index
-            });
+        const cid = match[1];
+        
+        if (this.transformationType === TransformationIpfsLinkType.Base64) {
+            const base64 = await this.processIpfsMatchToBase64({ fullMatch: ipfsString, cid });
+            return { base64String: base64 };
+        } else if (this.transformationType === TransformationIpfsLinkType.IpfsGateway) {
+            let gatewayUrl = "";
+            if (this.ipfsGatewayTemplate.includes('{cid}')) {
+                gatewayUrl = this.ipfsGatewayTemplate.replace('{cid}', cid);
+            } else {
+                gatewayUrl = `${this.ipfsGatewayTemplate}/${cid}`;
+            }
+            return { resourceUrl: gatewayUrl };
         }
         
-        return matches;
+        return ipfsString;
     }
 
-    private async replaceIpfsLinks(documentStr: string, matches: IpfsMatch[]): Promise<string> {
-        const replacements = await Promise.all(
-            matches.map(match => this.processIpfsMatch(match))
-        );
-
-        let newDocument = documentStr;
-        for (let i = matches.length - 1; i >= 0; i--) {
-            const match = matches[i];
-            newDocument = this.replaceAt(newDocument, match.index, match.fullMatch.length, replacements[i]);
-        }
-
-        return newDocument;
-    }
-
-    private async processIpfsMatch(match: IpfsMatch): Promise<string> {
+    private async processIpfsMatchToBase64(match: IpfsMatch): Promise<string> {
         if (!match.cid) {
             return match.fullMatch;
         } 
@@ -83,9 +105,8 @@ export class IpfsTransformationUIAddonCode {
         try {
             const arrayBuffer = await this.loadFileFromIpfs(match.cid);
             const base64 = this.arrayBufferToBase64(arrayBuffer);
-            const result = `base64:${base64}`;
-            this.cache.set(match.cid, result);
-            return result;
+            this.cache.set(match.cid, base64);
+            return base64;
         } catch (error) {
             console.error(`processIpfsMatch by CID ${match.cid}:`, error);
             return match.fullMatch;
@@ -112,9 +133,5 @@ export class IpfsTransformationUIAddonCode {
         }
         
         return btoa(chunks.join(''));
-    }
-
-    private replaceAt(str: string, index: number, length: number, replacement: string): string {
-        return str.substring(0, index) + replacement + str.substring(index + length);
     }
 }
