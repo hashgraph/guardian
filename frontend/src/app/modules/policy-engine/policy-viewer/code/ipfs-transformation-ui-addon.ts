@@ -92,7 +92,8 @@ export class IpfsTransformationUIAddonCode {
         } 
         
         if (this.cache.has(match.cid)) {
-            return this.cache.get(match.cid)!;
+            const cachedBase64 = this.cache.get(match.cid)!;
+            return { base64String: cachedBase64 };
         }
 
         try {
