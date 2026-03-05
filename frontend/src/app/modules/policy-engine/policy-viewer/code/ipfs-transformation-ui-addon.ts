@@ -1,5 +1,6 @@
 import { IPFSService } from "src/app/services/ipfs.service";
 import { firstValueFrom } from 'rxjs';
+import { fileTypeFromBuffer } from 'file-type';
 
 interface DocumentData {
     document: any;
@@ -77,13 +78,23 @@ export class IpfsTransformationUIAddonCode {
         
         const cid = match[1];
         
-        if (this.transformationType === TransformationIpfsLinkType.Base64) {
-            return await this.convertToBase64({ fullMatch: ipfsString, cid });
-        } else if (this.transformationType === TransformationIpfsLinkType.IpfsGateway) {
+        if (this.transformationType === TransformationIpfsLinkType.IpfsGateway) {
             return this.convertToIpfsGateway(cid);
+        } else if (this.transformationType === TransformationIpfsLinkType.Base64) {
+            return await this.convertToBase64({ fullMatch: ipfsString, cid });
         }
         
         return ipfsString;
+    }
+
+    private convertToIpfsGateway(cid: string): any {
+        let gatewayUrl = "";
+        if (this.ipfsGatewayTemplate.includes('{cid}')) {
+            gatewayUrl = this.ipfsGatewayTemplate.replace('{cid}', cid);
+        } else {
+            gatewayUrl = `${this.ipfsGatewayTemplate}/${cid}`;
+        }
+        return { resourceUrl: gatewayUrl };
     }
 
     private async convertToBase64(match: IpfsMatch): Promise<any> {
@@ -98,23 +109,14 @@ export class IpfsTransformationUIAddonCode {
 
         try {
             const arrayBuffer = await this.loadFileFromIpfs(match.cid);
-            const base64 = this.arrayBufferToBase64(arrayBuffer);
-            this.cache.set(match.cid, base64);
-            return { base64String: base64 };
+            const dataUrl = await this.arrayBufferToDataUrl(arrayBuffer);
+            this.cache.set(match.cid, dataUrl);
+
+            return { base64String: dataUrl };
         } catch (error) {
             console.error(`convertToBase64 by CID ${match.cid}:`, error);
             return match.fullMatch;
         }
-    }
-
-    private convertToIpfsGateway(cid: string): any {
-        let gatewayUrl = "";
-        if (this.ipfsGatewayTemplate.includes('{cid}')) {
-            gatewayUrl = this.ipfsGatewayTemplate.replace('{cid}', cid);
-        } else {
-            gatewayUrl = `${this.ipfsGatewayTemplate}/${cid}`;
-        }
-        return { resourceUrl: gatewayUrl };
     }
 
     private async loadFileFromIpfs(cid: string): Promise<ArrayBuffer> {
@@ -124,6 +126,19 @@ export class IpfsTransformationUIAddonCode {
             : this.ipfsService.getFile(cid);
         
         return await firstValueFrom(file$);
+    }
+
+    private async arrayBufferToDataUrl(buffer: ArrayBuffer): Promise<string> {
+        const base64 = this.arrayBufferToBase64(buffer);
+        
+        const fileType = await fileTypeFromBuffer(buffer);
+        let mimeType = 'application/octet-stream'; 
+        
+        if (fileType) {
+            mimeType = fileType.mime;
+        }
+        
+        return `data:${mimeType};base64,${base64}`;
     }
 
     private arrayBufferToBase64(buffer: ArrayBuffer): string {
