@@ -12,7 +12,27 @@
         <div class="preloader-image preloader-image-l-size"></div>
     </div>
 
-    <div class="confirmation-text">{{ text }}</div>
+    <div *ngIf="text" class="confirmation-text">{{ text }}</div>
+    <div *ngIf="texts" class="confirmation-texts">
+        <div *ngFor="let t of texts" >{{t}}</div>
+    </div>
+    
+    <div *ngIf="options" class="options">
+        <div *ngFor="let op of options" class="option-value">
+            <div class="option-value-select">
+                <p-radioButton
+                    class="guardian-radio-button radio-button-24"
+                    name="types"
+                    [value]="op.value"
+                    [(ngModel)]="option"
+                    inputId="{{op.id}}"></p-radioButton>
+            </div>
+            <label class="option-value-name" for="{{op.id}}">
+                <div>{{op.title}}</div>
+                <div *ngIf="op.sub" class="option-value-name-sub">{{op.sub}}</div>
+            </label>
+        </div>
+    </div>
 </div>
 
 <div class="dialog-footer">

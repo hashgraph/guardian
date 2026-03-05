@@ -21,7 +21,7 @@ import {
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface.js';
-import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyAction, PolicyComment, PolicyDiscussion, PolicyRoles, PolicyTool, Users } from '@guardian/common';
+import { DatabaseServer, IAuthUser, MessageError, MessageResponse, Policy, PolicyAction, PolicyComment, PolicyDiscussion, PolicyRoles, PolicyTool, Users } from '@guardian/common';
 import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
@@ -1469,6 +1469,30 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Get Backup Controller
+     * @param policyId
+     */
+    public static GetBackupService(policyId: string) {
+        return PolicyComponentsUtils.BackupControllers.get(policyId);
+    }
+
+    /**
+     * Get Restore Controller
+     * @param policyId
+     */
+    public static GetRestoreService(policyId: string) {
+        return PolicyComponentsUtils.RestoreControllers.get(policyId);
+    }
+
+    /**
+     * Get Actions Controller
+     * @param policyId
+     */
+    public static GetActionsService(policyId: string) {
+        return PolicyComponentsUtils.ActionsControllers.get(policyId);
+    }
+
+    /**
      * Unregister Backup Controller
      * @param policyId
      */
@@ -1844,5 +1868,34 @@ export class PolicyComponentsUtils {
                 return false;
             }
         }
+    }
+
+    public static async DisconnectPolicy(policyId: string, user: IAuthUser): Promise<boolean> {
+        const db = new DatabaseServer();
+        await DatabaseServer.disconnectPolicy(policyId, user.did);
+        await db.disconnectPolicyDocuments(policyId, user);
+        return true;
+    }
+
+    public static async DisconnectRemotePolicy(
+        policy: IPolicyInstance | AnyBlockType,
+        policyId: string,
+        user: IAuthUser
+    ): Promise<boolean> {
+        if (policy.locationType === LocationType.REMOTE) {
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
+            const userId = policyUser.userId;
+            await PolicyActionsUtils.disconnectPolicy({ policyId, user: policyUser, userId });
+            return true;
+        } else {
+            return true;
+        }
+    }
+
+    public static async ReconnectPolicy(policyId: string, user: IAuthUser): Promise<boolean> {
+        const db = new DatabaseServer();
+        await DatabaseServer.reconnectPolicy(policyId, user.did);
+        await db.reconnectPolicyDocuments(policyId, user);
+        return true;
     }
 }

@@ -23,13 +23,13 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-  
+
 import { METHOD } from "./api/api-const";
 import API from "./ApiUrls";
 
 Cypress.Commands.add('checkIfFileExistByPartialName', (partialName) => {
     cy.task('checkFile', partialName).then(fileExists => {
-      expect(fileExists).to.be.true;
+        expect(fileExists).to.be.true;
     });
 });
 
@@ -160,6 +160,15 @@ Cypress.Commands.add('registerUserIfNeededOrMissing', (username, password, role)
     });
 });
 
+Cypress.Commands.add('getBlockByTag', (authorization, policyId, tag) => {
+    return cy.request({
+        method: METHOD.GET,
+        url: API.BlockByTag(policyId, tag),
+        headers: { authorization },
+        timeout: 600000
+    })
+});
+
 Cypress.Commands.add('getHederaKeys', (token) => {
     return cy.request({
         method: 'GET',
@@ -173,16 +182,16 @@ Cypress.Commands.add('getHederaKeys', (token) => {
 });
 
 Cypress.Commands.add('setupLocalProfile', (username, auth, additionalBody = {}) => {
-    cy.request({ 
-        method: 'GET', 
-        url: `${API.ApiServer}profiles/${username}`, 
-        headers: { authorization: auth } 
+    cy.request({
+        method: 'GET',
+        url: `${API.ApiServer}profiles/${username}`,
+        headers: { authorization: auth }
     }).then((res) => {
         if (!res.body.confirmed) {
-            cy.request({ 
-                method: 'GET', 
-                url: API.ApiServer + API.RandomKey, 
-                headers: { authorization: auth } 
+            cy.request({
+                method: 'GET',
+                url: API.ApiServer + API.RandomKey,
+                headers: { authorization: auth }
             }).then((keyRes) => {
                 cy.wait(3000); // Wait for Hedera propagation
                 const baseBody = {

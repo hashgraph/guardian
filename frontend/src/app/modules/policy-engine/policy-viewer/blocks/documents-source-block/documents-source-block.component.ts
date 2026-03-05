@@ -496,6 +496,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 title: field.title,
                 type: 'LINK',
                 value: links,
+                dryRun: this.dryRun
             }
         });
         dialogRef.onClose.subscribe(async (result) => {

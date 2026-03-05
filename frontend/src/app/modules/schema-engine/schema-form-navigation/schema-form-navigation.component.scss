@@ -1,0 +1,90 @@
+.schema-nav {
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 6px;
+    padding: 8px;
+    background: #fff;
+    position: relative;
+    width: 100%;
+    overflow-y: auto;
+    max-height: 100%;
+    box-sizing: border-box;
+}
+
+.schema-nav-tree {
+    display: block;
+    width: 100%;
+}
+
+.nav-node {
+    display: flex;
+    align-items: center;
+    padding: 4px 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.nav-node:hover {
+    background: rgba(65, 105, 226, 0.08);
+}
+
+.nav-toggle {
+    background: transparent;
+    border: none;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    cursor: pointer;
+    margin-right: 4px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.chev {
+    opacity: 0.7;
+    display: inline-block;
+    transform: rotate(0deg);
+}
+
+.chev.open {
+    transform: rotate(180deg);
+}
+
+.nav-label {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+    padding: 4px 8px;
+    border-radius: 6px;
+    min-width: 0; 
+}
+
+.nav-title {
+    flex: 1 1 auto;
+    font-size: 13px;
+    color: #333;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; 
+}
+
+.nav-count {
+    background: rgba(239, 243, 247, 1);
+    color: #333;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.nav-children {
+    margin-top: 2px;
+    width: 100%;
+}

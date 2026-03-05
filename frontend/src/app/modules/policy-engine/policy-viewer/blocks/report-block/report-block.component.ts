@@ -225,6 +225,26 @@ export class ReportBlockComponent implements OnInit {
         return result;
     }
 
+    openPolicyOverview(
+        item: IPolicyReport
+    ) {
+        this.openVCDocument({
+            description: item.description,
+            issuer: item.issuer,
+            tag: item.tag,
+            title: item.description,
+            type: item.type,
+            username: item.username,
+            visible: true,
+            document: {
+                issuer: item.issuer,
+                tag: item.tag,
+                username: item.username,
+                document: item.document
+            },
+        });
+    }
+
     openVCDocument(
         item: any,
         document?: any

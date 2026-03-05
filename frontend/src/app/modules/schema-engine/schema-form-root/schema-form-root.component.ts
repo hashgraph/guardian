@@ -1,7 +1,9 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { SchemaFormComponent } from '../schema-form/schema-form.component';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaField, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { FieldForm, IFieldControl } from '../schema-form-model/field-form';
+import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-form-navigation.component';
 
 /**
  * Form built by schema
@@ -15,6 +17,19 @@ export class SchemaFormRootComponent implements OnInit {
     public group: UntypedFormGroup;
     public model: FieldForm | null;
     public loading: boolean = true;
+    public hasNavigation = true;
+    
+    private startX: number = 0;
+    private startWidthPercent: number = 25;
+    private containerWidth: number = 0;
+    private readonly MIN_WIDTH_PERCENT = 0;
+    private readonly MAX_WIDTH_PERCENT = 75;
+    private rafId: number | null = null;
+
+    @ViewChild('childForm') private childForm?: SchemaFormComponent;
+    @ViewChild('schemaNav') private schemaNav?: SchemaFormNavigationComponent;
+    @ViewChild('navContainer') navContainerRef?: ElementRef;
+    @ViewChild('contentContainer') contentContainerRef?: ElementRef;
 
     @Input('schema') schema: Schema;
     @Input('fields') fields: SchemaField[];
@@ -53,7 +68,7 @@ export class SchemaFormRootComponent implements OnInit {
     @Output() submitBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() saveBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() updatableBtnEvent = new EventEmitter();
-
+    
     constructor(
         private fb: UntypedFormBuilder,
         protected changeDetectorRef: ChangeDetectorRef
@@ -90,6 +105,14 @@ export class SchemaFormRootComponent implements OnInit {
         if (this.model) {
             this.model.destroy();
         }
+        document.removeEventListener('mousemove', this.onResizeMove);
+        document.removeEventListener('mouseup', this.onResizeEnd);
+        
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+        }
+        
+        document.body.classList.remove('resizing');
     }
 
     private buildFields() {
@@ -139,6 +162,91 @@ export class SchemaFormRootComponent implements OnInit {
     public preset(data: any) {
         this.presetDocument = data;
         this.buildFields();
+        this.changeDetectorRef.detectChanges();
+    }
+
+    public onNavSelectEvent(link: string) {
+        if (this.childForm && typeof this.childForm.openField === 'function') {
+            this.childForm.openField(link);
+        }
+    }
+
+    public onNavHasItemsEvent(hasItems: boolean): void {
+        this.hasNavigation = hasItems;
+        this.changeDetectorRef.detectChanges();
+    }
+
+    public onAccordionSelect(accordionInfo: {path: string, isOpen: boolean}) {
+        if (this.schemaNav && typeof this.schemaNav.expandedByAccordionId === 'function') {
+            this.schemaNav.expandedByAccordionId(accordionInfo);
+        }
+    }
+
+        public onResizeStart(event: MouseEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        this.startX = event.clientX;
+        
+        if (this.contentContainerRef) {
+            this.containerWidth = this.contentContainerRef.nativeElement.offsetWidth;
+        }
+        
+        if (this.navContainerRef) {
+            const currentWidth = this.navContainerRef.nativeElement.offsetWidth;
+            this.startWidthPercent = (currentWidth / this.containerWidth) * 100;
+        }
+        
+        document.body.classList.add('resizing');
+        document.addEventListener('mousemove', this.onResizeMove);
+        document.addEventListener('mouseup', this.onResizeEnd);
+    }
+
+    private onResizeMove = (event: MouseEvent): void => {
+        event.preventDefault();
+        
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+        }
+        
+        this.rafId = requestAnimationFrame(() => {
+            if (!this.navContainerRef || !this.contentContainerRef)
+                return;
+            
+            const navElement = this.navContainerRef.nativeElement;
+            const contentElement = this.contentContainerRef.nativeElement;
+            
+            this.containerWidth = contentElement.offsetWidth;
+            const deltaX = event.clientX - this.startX;
+            const deltaPercent = (deltaX / this.containerWidth) * 100;
+            let newWidthPercent = this.startWidthPercent + deltaPercent;
+            
+            newWidthPercent = Math.max(
+                this.MIN_WIDTH_PERCENT, 
+                Math.min(this.MAX_WIDTH_PERCENT, newWidthPercent)
+            );
+            
+            navElement.style.width = `${newWidthPercent}%`;
+            
+            this.startWidthPercent = newWidthPercent;
+            this.startX = event.clientX;
+            
+            this.changeDetectorRef.detectChanges();
+            this.rafId = null;
+        });
+    }
+
+    private onResizeEnd = (event: MouseEvent): void => {
+        document.body.classList.remove('resizing');
+        
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+            this.rafId = null;
+        }
+        
+        document.removeEventListener('mousemove', this.onResizeMove);
+        document.removeEventListener('mouseup', this.onResizeEnd);
+        
         this.changeDetectorRef.detectChanges();
     }
 }

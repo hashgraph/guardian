@@ -38,8 +38,10 @@ data:
 
     #LOG_LEVEL=2
     #MQ_MESSAGE_CHUNK=5000000
-    #HEDERA_CUSTOM_NODES={"0.testnet.hedera.com:50211":"0.0.3"}
-    #HEDERA_CUSTOM_MIRROR_NODES=["testnet.mirrornode.hedera.com:443"]
+    OVERRIDE_NETWORK_CONFIGURATION="false" # if true, the OVERRIDE configurations will be applied on top of the base configuration defined by the HEDERA_NET value
+    OVERRIDE_HEDERA_CONSENSUS_NODES={"0.testnet.hedera.com:50211":"0.0.3"}  # object list: {"10.0.2.15:50211":"0.0.3", "10.0.2.16:50211":"0.0.3", ...}
+    OVERRIDE_HEDERA_MIRROR_NODES=["testnet.mirrornode.hedera.com:443"]  # array of base URLs: ["http://10.0.2.15:8090", "http://10.0.2.15:8090", ...]
+    OVERRIDE_HEDERA_MIRROR_NODES_BASE_API="/api/v1"
 
     #MAP_API_KEY=...
     #DOCUMENT_CACHE_FIELD_LIMIT=100

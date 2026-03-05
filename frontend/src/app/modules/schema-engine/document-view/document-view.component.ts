@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, } from '@angular/core';
 import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -6,6 +6,8 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { FormulasTree } from '../../formulas/models/formula-tree';
+import { SchemaFormViewComponent } from '../schema-form-view/schema-form-view.component';
+import { SchemaFormViewNavigationComponent } from '../schema-form-view-navigation/schema-form-view-navigation.component';
 
 /**
  * View document
@@ -17,6 +19,7 @@ import { FormulasTree } from '../../formulas/models/formula-tree';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DocumentViewComponent implements OnInit {
+    @Input() dialogContext?: 'fullscreen' | 'viewer';
     @Input('getByUser') getByUser: boolean = false;
     @Input('document') document: any;
     @Input('formulas') formulas: FormulasTree | null;
@@ -33,7 +36,15 @@ export class DocumentViewComponent implements OnInit {
     @Input() schemaId?: string;
     @Input('relayer-account') relayerAccount?: string;
 
+    @Input('disconnected') disconnected: boolean = false;
+    
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
+
+    @ViewChild(SchemaFormViewComponent) private schemaView?: SchemaFormViewComponent;
+    @ViewChild(SchemaFormViewNavigationComponent) public schemaNav?: SchemaFormViewNavigationComponent;
+
+    @ViewChild('navContainer') navContainerRef?: ElementRef;
+    @ViewChild('contentContainer') contentContainerRef?: ElementRef;
 
     public loading: boolean = false;
     public isIssuerObject: boolean = false;
@@ -48,17 +59,23 @@ export class DocumentViewComponent implements OnInit {
     public rulesResults: SchemaRuleValidateResult;
     public formulasResults: any | null;
     public link: string | undefined;
+    public accordionLink: string | undefined;
 
     private destroy$: Subject<boolean> = new Subject<boolean>();
+
+    private startX: number = 0;
+    private startWidthPercent: number = 25;
+    private containerWidth: number = 0;
+    private readonly MIN_WIDTH_PERCENT = 0;
+    private readonly MAX_WIDTH_PERCENT = 75;
+    private rafId: number | null = null;
 
     constructor(
         private schemaService: SchemaService,
         private schemaRulesService: SchemaRulesService,
         private formulasService: FormulasService,
         private ref: ChangeDetectorRef
-    ) {
-
-    }
+    ) { }
 
     ngOnInit(): void {
         if (!this.document) {
@@ -103,6 +120,15 @@ export class DocumentViewComponent implements OnInit {
     ngOnDestroy() {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
+        
+        document.removeEventListener('mousemove', this.onResizeMove);
+        document.removeEventListener('mouseup', this.onResizeEnd);
+        
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+        }
+        
+        document.body.classList.remove('resizing');
     }
 
     private loadData() {
@@ -244,14 +270,91 @@ export class DocumentViewComponent implements OnInit {
     public onDiscussionAction($event: any) {
         this.discussionActionEvent.emit($event);
     }
-
+    
     public openField(id?: string): void {
         const path = id?.split('/');
         this.link = path && path.length > 1 ? path[path.length - 1] : undefined;
         this.ref.detectChanges();
     }
 
+    public navigateToField(id?: string): void {
+        if (!id) {
+            return;
+        }
+        if (this.schemaView) {
+            this.schemaView.navigateToField(id);
+        }
+    }
+
     public getTagJson(tag: any): string {
         return tag ? JSON.stringify(tag, null, 4) : '';
+    }
+
+     public onResizeStart(event: MouseEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        this.startX = event.clientX;
+        
+        if (this.contentContainerRef) {
+            this.containerWidth = this.contentContainerRef.nativeElement.offsetWidth;
+        }
+        
+        if (this.navContainerRef) {
+            const currentWidth = this.navContainerRef.nativeElement.offsetWidth;
+            this.startWidthPercent = (currentWidth / this.containerWidth) * 100;
+        }
+        
+        document.body.classList.add('resizing');
+        document.addEventListener('mousemove', this.onResizeMove);
+        document.addEventListener('mouseup', this.onResizeEnd);
+    }
+
+    private onResizeMove = (event: MouseEvent): void => {
+        event.preventDefault();
+        
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+        }
+        
+        this.rafId = requestAnimationFrame(() => {
+            if (!this.navContainerRef || !this.contentContainerRef)
+                return;
+            
+            const navElement = this.navContainerRef.nativeElement;
+            const contentElement = this.contentContainerRef.nativeElement;
+            
+            this.containerWidth = contentElement.offsetWidth;
+            const deltaX = event.clientX - this.startX;
+            const deltaPercent = (deltaX / this.containerWidth) * 100;
+            let newWidthPercent = this.startWidthPercent + deltaPercent;
+            
+            newWidthPercent = Math.max(
+                this.MIN_WIDTH_PERCENT, 
+                Math.min(this.MAX_WIDTH_PERCENT, newWidthPercent)
+            );
+            
+            navElement.style.width = `${newWidthPercent}%`;
+            
+            this.startWidthPercent = newWidthPercent;
+            this.startX = event.clientX;
+            
+            this.ref.detectChanges();
+            this.rafId = null;
+        });
+    }
+
+    private onResizeEnd = (event: MouseEvent): void => {
+        document.body.classList.remove('resizing');
+        
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+            this.rafId = null;
+        }
+        
+        document.removeEventListener('mousemove', this.onResizeMove);
+        document.removeEventListener('mouseup', this.onResizeEnd);
+        
+        this.ref.detectChanges();
     }
 }

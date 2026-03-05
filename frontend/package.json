@@ -83,10 +83,11 @@
     "dev:docker": "ng serve --host 0.0.0.0 --disable-host-check --proxy-config ./proxy.docker.json",
     "ng": "ng",
     "start": "ng serve --proxy-config ./proxy.conf.json",
+    "start:ssl": "ng serve --ssl --proxy-config ./proxy.conf.json",
     "start:demo": "ng serve --proxy-config ./proxy.conf.json --configuration=demo",
     "start:prod": "ng serve --proxy-config ./proxy.conf.json --configuration=production",
     "test": "ng test",
     "watch": "ng build --watch --configuration development --output-path ../www-data"
   },
-  "version": "3.5.0-rc"
+  "version": "3.5.0"
 }

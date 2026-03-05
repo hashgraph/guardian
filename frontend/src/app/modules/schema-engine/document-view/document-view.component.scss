@@ -166,6 +166,28 @@ form {
             width: 100%;
         }
     }
+
+    .disconnected-message {
+        height: 40px;
+        margin-bottom: 16px;
+        background: #FFF6E3;
+        border: 1px solid #DA9B22;
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: Inter;
+        font-weight: 500;
+        font-size: 12px;
+        line-height: 14px;
+        color: #DA9B22;
+
+        svg-icon {
+            position: relative;
+            top: -1px;
+            margin-right: 6px;
+        }
+    }
 }
 
 *[readonly] {
@@ -185,4 +207,27 @@ form {
 
 :host ::ng-deep .form-field-table {
     width: 100%;
+}
+
+.content {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.schema-form-view-nav {
+    width: 25%; 
+    min-width: 0%; 
+    max-width: 75%; 
+    align-self: flex-start;
+    position: sticky;
+    top: 0;
+    max-height: calc(100vh - 230px);
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.schema-form-content {
+    flex: 1;
+    min-width: 0;
 }
