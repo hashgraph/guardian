@@ -1,6 +1,6 @@
 import { PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { InternalServerErrorDTO, RegisteredUsersDTO, TaskDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
@@ -22,11 +22,13 @@ export class DemoApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: RegisteredUsersDTO
+        type: RegisteredUsersDTO,
+        example: { username: 'alice', did: 'did:hedera:testnet:abc123', parent: 'string', role: 'STANDARD_REGISTRY', policyRoles: ['string'] }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RegisteredUsersDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -66,10 +68,15 @@ export class DemoApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        schema: {
+            type: 'string',
+            example: 'DEMO-KEY-8F3A2C'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -120,13 +127,15 @@ export class DemoApi {
         summary: 'Generate demo key.',
         description: 'Generate demo key.',
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)

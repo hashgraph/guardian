@@ -127,6 +127,18 @@ class UserAccountDTO {
     did: string;
 }
 
+export class AccessTokenRequestDTO {
+    @ApiProperty({ description: 'Refresh token', example: 'eyJhbGciOi...' })
+    @IsString()
+    @IsNotEmpty()
+    refreshToken: string;
+}
+
+export class AccessTokenResponseDTO {
+    @ApiProperty({ description: 'Access token', example: 'eyJhbGciOi...' })
+    accessToken: string;
+}
+
 export class BalanceResponseDTO {
     @ApiProperty()
     balance: number;

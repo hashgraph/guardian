@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class SeqUrlResponseDTO {
+    @ApiProperty({ type: 'string', nullable: true, description: 'SEQ UI URL', example: 'http://localhost:5341' })
+    // tslint:disable-next-line:variable-name
+    seq_url: string | null;
+}
+
 export class LogFilterDTO {
     @ApiProperty({ type: 'string', nullable: true })
     type?: string;

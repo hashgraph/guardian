@@ -4,7 +4,7 @@ import { CacheService, getCacheKey, InternalException, PolicyEngine, UseCache } 
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Permissions, UserPermissions } from '@guardian/interfaces';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Query, Req, Response, StreamableFile } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import {
     Examples,
     InternalServerErrorDTO,
@@ -57,11 +57,14 @@ export class PolicyCommentsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: PolicyCommentUserDTO
+        type: PolicyCommentUserDTO,
+        example: [{ label: 'Administrator', value: 'Administrator', type: 'role' }]
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyCommentUserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -111,11 +114,14 @@ export class PolicyCommentsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: PolicyCommentRelationshipDTO
+        type: PolicyCommentRelationshipDTO,
+        example: [{ label: 'Description', value: 'string' }]
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyCommentRelationshipDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -165,11 +171,29 @@ export class PolicyCommentsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -240,11 +264,43 @@ export class PolicyCommentsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: PolicyDiscussionDTO
+        type: PolicyDiscussionDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            creator: 'string',
+            owner: 'string',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            target: 'string',
+            targetId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            parent: 'string',
+            hash: 'QmExampleHash',
+            name: 'Common',
+            field: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1',
+            fieldName: 'Field name',
+            relationships: [Examples.MESSAGE_ID],
+            relationshipIds: [Examples.DB_ID],
+            privacy: 'public',
+            roles: ['string'],
+            users: ['string'],
+            system: true,
+            count: 0,
+            document: { id: 'f3b2a9c1e4d5678901234567',
+            type: ['string'],
+            credentialSubject: {},
+            issuer: {},
+            issuanceDate: 'string',
+            proof: { type: 'string',
+            created: 'string',
+            verificationMethod: 'string',
+            proofPurpose: 'string',
+            jws: 'string' } } }]
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyDiscussionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -305,11 +361,43 @@ export class PolicyCommentsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyDiscussionDTO
+        type: PolicyDiscussionDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            creator: 'string',
+            owner: 'string',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            target: 'string',
+            targetId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            parent: 'string',
+            hash: 'QmExampleHash',
+            name: 'Common',
+            field: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1',
+            fieldName: 'Field name',
+            relationships: ['message-id'],
+            relationshipIds: ['f3b2a9c1e4d5678901234567'],
+            privacy: 'public',
+            roles: ['string'],
+            users: ['string'],
+            system: true,
+            count: 0,
+            document: { id: 'f3b2a9c1e4d5678901234567',
+            type: ['string'],
+            credentialSubject: {},
+            issuer: {},
+            issuanceDate: 'string',
+            proof: { type: 'string',
+            created: 'string',
+            verificationMethod: 'string',
+            proofPurpose: 'string',
+            jws: 'string' } } }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyDiscussionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -367,15 +455,49 @@ export class PolicyCommentsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyCommentDTO
+        type: PolicyCommentDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            creator: 'string',
+            owner: 'string',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            policyTopicId: 'f3b2a9c1e4d5678901234567',
+            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            target: 'string',
+            targetId: 'f3b2a9c1e4d5678901234567',
+            discussionMessageId: 'f3b2a9c1e4d5678901234567',
+            discussionId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            timestamp: 1759493933458,
+            hash: 'QmExampleHash',
+            sender: 'string',
+            senderRole: 'Administrator',
+            senderName: 'StandardRegistry',
+            recipients: ['did:hedera:testnet:abc123'],
+            fields: ['#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'],
+            text: 'text',
+            document: { id: 'f3b2a9c1e4d5678901234567',
+            type: ['string'],
+            credentialSubject: {},
+            issuer: {},
+            issuanceDate: 'string',
+            proof: { type: 'string',
+            created: 'string',
+            verificationMethod: 'string',
+            proofPurpose: 'string',
+            jws: 'string' } } }
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
         type: ServiceUnavailableErrorDTO,
+        example: { code: 503, message: 'Error message' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyCommentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -445,10 +567,42 @@ export class PolicyCommentsApi {
         isArray: true,
         headers: pageHeader,
         type: PolicyCommentDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            creator: 'string',
+            owner: 'string',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            policyTopicId: 'f3b2a9c1e4d5678901234567',
+            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            target: 'string',
+            targetId: 'f3b2a9c1e4d5678901234567',
+            discussionMessageId: 'f3b2a9c1e4d5678901234567',
+            discussionId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            timestamp: 1759493933458,
+            hash: 'QmExampleHash',
+            sender: 'string',
+            senderRole: 'Administrator',
+            senderName: 'StandardRegistry',
+            recipients: [Examples.DID],
+            fields: ['#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'],
+            text: 'text',
+            document: { id: 'f3b2a9c1e4d5678901234567',
+            type: ['string'],
+            credentialSubject: {},
+            issuer: {},
+            issuanceDate: 'string',
+            proof: { type: 'string',
+            created: 'string',
+            verificationMethod: 'string',
+            proofPurpose: 'string',
+            jws: 'string' } } }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyCommentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -499,15 +653,19 @@ export class PolicyCommentsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyCommentCountDTO
+        type: PolicyCommentCountDTO,
+        example: { fields: ['#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'], count: 0 }
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
         type: ServiceUnavailableErrorDTO,
+        example: { code: 503, message: 'Error message' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyCommentCountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -562,13 +720,17 @@ export class PolicyCommentsApi {
         description: 'Binary data.',
         required: true,
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: String
+        type: String,
+        example: 'string'
     })
+    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -646,10 +808,13 @@ export class PolicyCommentsApi {
             type: 'string',
             format: 'binary'
         },
+        example: { result: 'ok' }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
@@ -711,10 +876,13 @@ export class PolicyCommentsApi {
             type: 'string',
             format: 'binary'
         },
+        example: { result: 'ok' }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })

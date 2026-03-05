@@ -15,7 +15,7 @@ import {
     Req,
     Response
 } from '@nestjs/common';
-import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { AssignPolicyDTO, Examples, InternalServerErrorDTO, PermissionsDTO, PolicyDTO, RoleDTO, UserDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, Users } from '#helpers';
@@ -44,10 +44,12 @@ export class PermissionsApi {
         description: 'Successful operation.',
         isArray: true,
         type: PermissionsDTO,
+        example: [{ name: 'string', category: 'string', entity: 'string', action: 'string', disabled: true, dependOn: [Permissions.POLICIES_POLICY_READ] }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -99,10 +101,12 @@ export class PermissionsApi {
         isArray: true,
         headers: pageHeader,
         type: RoleDTO,
+        example: [{ uuid: 'f3b2a9c1e4d5678901234567', name: 'Name', description: 'Description', owner: 'string', permissions: [Permissions.POLICIES_POLICY_READ] }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -146,13 +150,15 @@ export class PermissionsApi {
         required: true,
         type: RoleDTO,
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Created role.',
-        type: RoleDTO
+        type: RoleDTO,
+        example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'Name', description: 'Description', owner: 'string', permissions: ['POLICIES_POLICY_READ'] }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -195,11 +201,14 @@ export class PermissionsApi {
     })
     @ApiOkResponse({
         description: 'Role configuration.',
-        type: RoleDTO
+        type: RoleDTO,
+        example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'Name', description: 'Description', owner: 'string', permissions: ['POLICIES_POLICY_READ'] }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -259,10 +268,13 @@ export class PermissionsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
+        example: true
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -320,13 +332,15 @@ export class PermissionsApi {
             }
         }
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Created role.',
-        type: RoleDTO
+        type: RoleDTO,
+        example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'Name', description: 'Description', owner: 'string', permissions: ['POLICIES_POLICY_READ'] }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -394,10 +408,14 @@ export class PermissionsApi {
         isArray: true,
         headers: pageHeader,
         type: UserDTO,
+        example: [{ username: 'username', role: 'STANDARD_REGISTRY', permissionsGroup: [{
+
+        }], permissions: [Permissions.POLICIES_POLICY_READ], did: 'did:hedera:testnet:abc123', parent: 'string', hederaAccountId: '0.0.1001' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(UserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -455,11 +473,16 @@ export class PermissionsApi {
     })
     @ApiOkResponse({
         description: 'User permissions.',
-        type: UserDTO
+        type: UserDTO,
+        example: { username: 'username', role: 'USER', permissionsGroup: [{
+
+        }], permissions: [Permissions.POLICIES_POLICY_READ], did: Examples.DID, parent: Examples.DID, hederaAccountId: Examples.ACCOUNT_ID }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(UserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -511,11 +534,16 @@ export class PermissionsApi {
     })
     @ApiOkResponse({
         description: 'User permissions.',
-        type: UserDTO
+        type: UserDTO,
+        example: { username: 'username', role: 'USER', permissionsGroup: [{
+
+        }], permissions: [Permissions.POLICIES_POLICY_READ], did: Examples.DID, parent: Examples.DID, hederaAccountId: Examples.ACCOUNT_ID }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(UserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -601,10 +629,91 @@ export class PermissionsApi {
         isArray: true,
         headers: pageHeader,
         type: PolicyDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Policy name',
+            description: 'Description',
+            topicDescription: 'Description',
+            policyTag: 'Tag',
+            status: 'string',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            version: '1.0.0',
+            originalChanged: true,
+            config: {},
+            userRole: 'Installer',
+            userRoles: ['Installer'],
+            userGroup: {
+            uuid: Examples.UUID,
+            role: 'Installer',
+            groupLabel: 'Label',
+            groupName: 'Name',
+            active: true
+        }, userGroups: [{
+            uuid: Examples.UUID,
+            role: 'Installer',
+            groupLabel: 'Label',
+            groupName: 'Name',
+            active: true
+        }], policyRoles: ['Registrant'], policyNavigation: [{
+            role: 'Registrant',
+            steps: [{
+                block: 'Block tag',
+                level: 1,
+                name: 'Step name'
+            }]
+        }], policyTopics: [{
+            name: 'Project',
+            description: 'Project',
+            memoObj: 'topic',
+            static: false,
+            type: 'any'
+        }], policyTokens: [{
+            tokenName: 'Token name',
+            tokenSymbol: 'Token symbol',
+            tokenType: 'non-fungible',
+            decimals: '',
+            changeSupply: true,
+            enableAdmin: true,
+            enableFreeze: true,
+            enableKYC: true,
+            enableWipe: true,
+            templateTokenTag: 'token_template_0'
+        }], policyGroups: [{
+            name: 'Group name',
+            creator: 'Registrant',
+            groupAccessType: 'Private',
+            groupRelationshipType: 'Multiple',
+            members: ['Registrant']
+        }],
+        categories: ['string'],
+        projectSchema: 'string',
+        tests: [{ id: 'f3b2a9c1e4d5678901234567',
+        uuid: 'f3b2a9c1e4d5678901234567',
+        name: 'Test Name',
+        policyId: 'f3b2a9c1e4d5678901234567',
+        owner: 'string',
+        status: 'string',
+        date: 'string',
+        duration: 0,
+        progress: 0,
+        resultId: 'f3b2a9c1e4d5678901234567',
+        result: {} }],
+        ignoreRules: [{ code: 'string',
+        blockType: 'string',
+        property: 'string',
+        contains: 'string',
+        severity: 'warning' }] }]
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -667,13 +776,94 @@ export class PermissionsApi {
         required: true,
         type: AssignPolicyDTO,
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Assigned policy.',
-        type: PolicyDTO
+        type: PolicyDTO,
+        example: { id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Policy name',
+            description: 'Description',
+            topicDescription: 'Description',
+            policyTag: 'Tag',
+            status: 'DRAFT',
+            creator: Examples.DID,
+            owner: Examples.DID,
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
+            codeVersion: '1.0.0',
+            createDate: Examples.DATE,
+            version: '1.0.0',
+            originalChanged: true,
+            config: {},
+            userRole: 'Installer',
+            userRoles: ['Installer'],
+            userGroup: {
+            uuid: Examples.UUID,
+            role: 'Installer',
+            groupLabel: 'Label',
+            groupName: 'Name',
+            active: true
+        }, userGroups: [{
+            uuid: Examples.UUID,
+            role: 'Installer',
+            groupLabel: 'Label',
+            groupName: 'Name',
+            active: true
+        }], policyRoles: ['Registrant'], policyNavigation: [{
+            role: 'Registrant',
+            steps: [{
+                block: 'Block tag',
+                level: 1,
+                name: 'Step name'
+            }]
+        }], policyTopics: [{
+            name: 'Project',
+            description: 'Project',
+            memoObj: 'topic',
+            static: false,
+            type: 'any'
+        }], policyTokens: [{
+            tokenName: 'Token name',
+            tokenSymbol: 'Token symbol',
+            tokenType: 'non-fungible',
+            decimals: '',
+            changeSupply: true,
+            enableAdmin: true,
+            enableFreeze: true,
+            enableKYC: true,
+            enableWipe: true,
+            templateTokenTag: 'token_template_0'
+        }], policyGroups: [{
+            name: 'Group name',
+            creator: 'Registrant',
+            groupAccessType: 'Private',
+            groupRelationshipType: 'Multiple',
+            members: ['Registrant']
+        }],
+        categories: ['string'],
+        projectSchema: Examples.UUID,
+        tests: [{ id: Examples.DB_ID,
+        uuid: Examples.UUID,
+        name: 'Test Name',
+        policyId: Examples.DB_ID,
+        owner: Examples.DID,
+        status: 'NEW',
+        date: Examples.DATE,
+        duration: 0,
+        progress: 0,
+        resultId: Examples.UUID,
+        result: {} }],
+        ignoreRules: [{ code: 'string',
+        blockType: 'string',
+        property: 'string',
+        contains: 'string',
+        severity: 'warning' }] }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -736,11 +926,16 @@ export class PermissionsApi {
     })
     @ApiOkResponse({
         description: 'User permissions.',
-        type: UserDTO
+        type: UserDTO,
+        example: { username: 'username', role: 'USER', permissionsGroup: [{
+
+        }], permissions: [Permissions.POLICIES_POLICY_READ], did: Examples.DID, parent: Examples.DID, hederaAccountId: Examples.ACCOUNT_ID }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(UserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -794,13 +989,94 @@ export class PermissionsApi {
         required: true,
         type: AssignPolicyDTO,
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Assigned policy.',
-        type: PolicyDTO
+        type: PolicyDTO,
+        example: { id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Policy name',
+            description: 'Description',
+            topicDescription: 'Description',
+            policyTag: 'Tag',
+            status: 'DRAFT',
+            creator: Examples.DID,
+            owner: Examples.DID,
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
+            codeVersion: '1.0.0',
+            createDate: Examples.DATE,
+            version: '1.0.0',
+            originalChanged: true,
+            config: {},
+            userRole: 'Installer',
+            userRoles: ['Installer'],
+            userGroup: {
+            uuid: Examples.UUID,
+            role: 'Installer',
+            groupLabel: 'Label',
+            groupName: 'Name',
+            active: true
+        }, userGroups: [{
+            uuid: Examples.UUID,
+            role: 'Installer',
+            groupLabel: 'Label',
+            groupName: 'Name',
+            active: true
+        }], policyRoles: ['Registrant'], policyNavigation: [{
+            role: 'Registrant',
+            steps: [{
+                block: 'Block tag',
+                level: 1,
+                name: 'Step name'
+            }]
+        }], policyTopics: [{
+            name: 'Project',
+            description: 'Project',
+            memoObj: 'topic',
+            static: false,
+            type: 'any'
+        }], policyTokens: [{
+            tokenName: 'Token name',
+            tokenSymbol: 'Token symbol',
+            tokenType: 'non-fungible',
+            decimals: '',
+            changeSupply: true,
+            enableAdmin: true,
+            enableFreeze: true,
+            enableKYC: true,
+            enableWipe: true,
+            templateTokenTag: 'token_template_0'
+        }], policyGroups: [{
+            name: 'Group name',
+            creator: 'Registrant',
+            groupAccessType: 'Private',
+            groupRelationshipType: 'Multiple',
+            members: ['Registrant']
+        }],
+        categories: ['string'],
+        projectSchema: Examples.UUID,
+        tests: [{ id: Examples.DB_ID,
+        uuid: Examples.UUID,
+        name: 'Test Name',
+        policyId: Examples.DB_ID,
+        owner: Examples.DID,
+        status: 'NEW',
+        date: Examples.DATE,
+        duration: 0,
+        progress: 0,
+        resultId: Examples.UUID,
+        result: {} }],
+        ignoreRules: [{ code: 'string',
+        blockType: 'string',
+        property: 'string',
+        contains: 'string',
+        severity: 'warning' }] }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)

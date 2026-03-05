@@ -9,6 +9,13 @@ import {
     TokenType,
 } from '@guardian/interfaces';
 
+export class ImportContractDTO {
+    @ApiProperty({ description: 'Hedera contract identifier', example: '0.0.1' })
+    contractId: string;
+    @ApiProperty({ description: 'Contract description', required: false })
+    description?: string;
+}
+
 export class ContractConfigDTO {
     @ApiProperty()
     type: ContractType;

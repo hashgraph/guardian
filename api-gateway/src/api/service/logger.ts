@@ -3,7 +3,7 @@ import { ApiTags, ApiBody, ApiOperation, ApiOkResponse, ApiInternalServerErrorRe
 import { IPageParameters, MessageAPI, Permissions } from '@guardian/interfaces';
 import { ClientProxy, NatsRecordBuilder } from '@nestjs/microservices';
 import {Auth, AuthUser} from '#auth';
-import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from '#middlewares';
+import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO, SeqUrlResponseDTO } from '#middlewares';
 import {UseCache, InternalException, UsersService} from '#helpers';
 import axios from 'axios';
 import {IAuthUser, JwtServicesValidator, PinoLogger} from '@guardian/common';
@@ -117,11 +117,13 @@ export class LoggerApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: LogResultDTO
+        type: LogResultDTO,
+        example: { totalCount: 0, logs: [{}] }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(LogFilterDTO, LogResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -187,8 +189,8 @@ export class LoggerApi {
     })
     @ApiQuery({
         name: 'name',
-        type: Number,
-        description: 'Name',
+        type: String,
+        description: 'Attribute name filter',
         required: false,
         example: 'Search'
     })
@@ -202,10 +204,18 @@ export class LoggerApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        schema: {
+            type: 'array',
+            items: {
+                type: 'string'
+            },
+            example: ['WORKER', 'POLICY', 'SCHEMA']
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache()
@@ -244,20 +254,15 @@ export class LoggerApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'object',
-            properties: {
-                seq_url: {
-                    type: 'string',
-                    example: 'http://localhost:5341',
-                },
-            },
-        },
+        type: SeqUrlResponseDTO,
+        example: { seq_url: 'http://localhost:5341' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
+    @ApiExtraModels(SeqUrlResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getSeqUrl(): Promise<{ seq_url: string | null }> {
         const isSeqTransport = process.env.TRANSPORTS.includes('SEQ');

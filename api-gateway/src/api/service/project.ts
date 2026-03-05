@@ -1,6 +1,6 @@
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post, Version } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { ProjectDTO, PropertiesDTO, CompareDocumentsDTO, CompareDocumentsV2DTO, FilterDocumentsDTO, InternalServerErrorDTO, Examples } from '#middlewares';
 import { CACHE } from '#constants';
 import { UseCache, Guardians, InternalException, ProjectService } from '#helpers';
@@ -33,14 +33,16 @@ export class ProjectsAPI {
             }
         }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
         isArray: true,
         type: ProjectDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567', policyId: 'f3b2a9c1e4d5678901234567', policyName: 'string', registered: 'string', title: 'string', companyName: 'string', sectoralScope: 'string' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ProjectDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -85,11 +87,14 @@ export class ProjectsAPI {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: CompareDocumentsDTO
+        type: CompareDocumentsDTO,
+        example: { documents: {}, left: {}, right: {}, total: {} }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterDocumentsDTO, CompareDocumentsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -172,11 +177,14 @@ export class ProjectsAPI {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: CompareDocumentsV2DTO
+        type: CompareDocumentsV2DTO,
+        example: { projects: { documents: {}, left: {}, right: {}, total: {} }, presentations: { documents: {}, left: {}, right: {}, total: {} } }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @Version('2')
     @ApiExtraModels(FilterDocumentsDTO, CompareDocumentsV2DTO, InternalServerErrorDTO)
@@ -260,14 +268,16 @@ export class ProjectsAPI {
         summary: 'Get all properties',
         description: 'Get all properties',
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
         isArray: true,
         type: PropertiesDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567', title: 'string', value: 'string' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PropertiesDTO, InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })

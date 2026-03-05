@@ -1,7 +1,7 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
-import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, StatisticDefinitionDTO, StatisticAssessmentDTO, VcDocumentDTO, pageHeader, StatisticAssessmentRelationshipsDTO, StatisticDefinitionRelationshipsDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner } from '#helpers';
 import { AuthUser, Auth } from '#auth';
@@ -25,13 +25,28 @@ export class PolicyStatisticsApi {
         type: StatisticDefinitionDTO,
         required: true
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         type: StatisticDefinitionDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            policyTopicId: 'f3b2a9c1e4d5678901234567',
+            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            status: 'string',
+            config: {} }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -85,11 +100,25 @@ export class PolicyStatisticsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: StatisticDefinitionDTO
+        type: StatisticDefinitionDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            policyTopicId: 'f3b2a9c1e4d5678901234567',
+            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            status: 'string',
+            config: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -128,11 +157,26 @@ export class PolicyStatisticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticDefinitionDTO
+        type: StatisticDefinitionDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            policyTopicId: 'f3b2a9c1e4d5678901234567',
+            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            status: 'string',
+            config: {} }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -175,11 +219,27 @@ export class PolicyStatisticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticDefinitionDTO
+        type: StatisticDefinitionDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            policyTopicId: 'f3b2a9c1e4d5678901234567',
+            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            status: 'string',
+            config: {} }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -222,11 +282,14 @@ export class PolicyStatisticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -264,11 +327,27 @@ export class PolicyStatisticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticDefinitionDTO
+        type: StatisticDefinitionDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            policyTopicId: 'f3b2a9c1e4d5678901234567',
+            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            status: 'string',
+            config: {} }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -310,11 +389,124 @@ export class PolicyStatisticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticDefinitionRelationshipsDTO
+        type: StatisticDefinitionRelationshipsDTO,
+        example: { policy: { id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Policy name',
+            description: 'Description',
+            topicDescription: 'Description',
+            policyTag: 'Tag',
+            status: 'DRAFT',
+            creator: Examples.DID,
+            owner: Examples.DID,
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
+            codeVersion: '1.0.0',
+            createDate: Examples.DATE,
+            version: '1.0.0',
+            originalChanged: true,
+            config: {},
+            userRole: 'Installer',
+            userRoles: ['Installer'],
+            userGroup: {
+            uuid: Examples.UUID,
+            role: 'Installer',
+            groupLabel: 'Label',
+            groupName: 'Name',
+            active: true
+        }, userGroups: [{
+            uuid: Examples.UUID,
+            role: 'Installer',
+            groupLabel: 'Label',
+            groupName: 'Name',
+            active: true
+        }], policyRoles: ['Registrant'], policyNavigation: [{
+            role: 'Registrant',
+            steps: [{
+                block: 'Block tag',
+                level: 1,
+                name: 'Step name'
+            }]
+        }], policyTopics: [{
+            name: 'Project',
+            description: 'Project',
+            memoObj: 'topic',
+            static: false,
+            type: 'any'
+        }], policyTokens: [{
+            tokenName: 'Token name',
+            tokenSymbol: 'Token symbol',
+            tokenType: 'non-fungible',
+            decimals: '',
+            changeSupply: true,
+            enableAdmin: true,
+            enableFreeze: true,
+            enableKYC: true,
+            enableWipe: true,
+            templateTokenTag: 'token_template_0'
+        }], policyGroups: [{
+            name: 'Group name',
+            creator: 'Registrant',
+            groupAccessType: 'Private',
+            groupRelationshipType: 'Multiple',
+            members: ['Registrant']
+        }],
+        categories: ['string'],
+        projectSchema: Examples.UUID,
+        tests: [{ id: Examples.DB_ID,
+        uuid: Examples.UUID,
+        name: 'Test Name',
+        policyId: Examples.DB_ID,
+        owner: Examples.DID,
+        status: 'NEW',
+        date: Examples.DATE,
+        duration: 0,
+        progress: 0,
+        resultId: Examples.UUID,
+        result: {} }],
+        ignoreRules: [{ code: 'string',
+        blockType: 'string',
+        property: 'string',
+        contains: 'string',
+        severity: 'warning' }] },
+        schemas: [{ id: Examples.DB_ID,
+        uuid: Examples.UUID,
+        name: 'Schema name',
+        description: 'Description',
+        entity: 'POLICY',
+        iri: Examples.UUID,
+        status: 'DRAFT',
+        topicId: Examples.ACCOUNT_ID,
+        version: '1.0.0',
+        owner: Examples.DID,
+        messageId: Examples.MESSAGE_ID,
+        category: 'POLICY',
+        documentURL: Examples.IPFS,
+        contextURL: Examples.IPFS,
+        document: {},
+        context: {} }],
+        schema: { id: Examples.DB_ID,
+        uuid: Examples.UUID,
+        name: 'Schema name',
+        description: 'Description',
+        entity: 'POLICY',
+        iri: Examples.UUID,
+        status: 'DRAFT',
+        topicId: Examples.ACCOUNT_ID,
+        version: '1.0.0',
+        owner: Examples.DID,
+        messageId: Examples.MESSAGE_ID,
+        category: 'POLICY',
+        documentURL: Examples.IPFS,
+        contextURL: Examples.IPFS,
+        document: {},
+        context: {} } }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(StatisticDefinitionRelationshipsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -368,11 +560,32 @@ export class PolicyStatisticsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: VcDocumentDTO
+        type: VcDocumentDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            hash: 'hash',
+            signature: 0,
+            status: 'NEW',
+            tag: 'Block tag',
+            type: 'Document type',
+            createDate: 'string',
+            updateDate: 'string',
+            owner: 'string',
+            document: { id: 'f3b2a9c1e4d5678901234567',
+            type: ['string'],
+            credentialSubject: {},
+            issuer: {},
+            issuanceDate: 'string',
+            proof: { type: 'string',
+            created: 'string',
+            verificationMethod: 'string',
+            proofPurpose: 'string',
+            jws: 'string' } } }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(VcDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -414,13 +627,27 @@ export class PolicyStatisticsApi {
         type: StatisticAssessmentDTO,
         required: true
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         type: StatisticAssessmentDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            definitionId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            policyTopicId: 'f3b2a9c1e4d5678901234567',
+            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            creator: 'string',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            target: 'string',
+            relationships: ['message-id'],
+            document: {} }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(StatisticAssessmentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -478,11 +705,25 @@ export class PolicyStatisticsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: StatisticAssessmentDTO
+        type: StatisticAssessmentDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            definitionId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            policyTopicId: 'f3b2a9c1e4d5678901234567',
+            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            creator: 'string',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            target: 'string',
+            relationships: [Examples.MESSAGE_ID],
+            document: {} }]
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(StatisticAssessmentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -531,11 +772,25 @@ export class PolicyStatisticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticAssessmentDTO
+        type: StatisticAssessmentDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            definitionId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            policyTopicId: 'f3b2a9c1e4d5678901234567',
+            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            creator: 'string',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            target: 'string',
+            relationships: ['message-id'],
+            document: {} }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -581,11 +836,53 @@ export class PolicyStatisticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticAssessmentRelationshipsDTO
+        type: StatisticAssessmentRelationshipsDTO,
+        example: { target: { id: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            hash: 'hash',
+            signature: 0,
+            status: 'NEW',
+            tag: 'Block tag',
+            type: 'Document type',
+            createDate: 'string',
+            updateDate: 'string',
+            owner: 'string',
+            document: { id: 'f3b2a9c1e4d5678901234567',
+            type: ['string'],
+            credentialSubject: {},
+            issuer: {},
+            issuanceDate: 'string',
+            proof: { type: 'string',
+            created: 'string',
+            verificationMethod: 'string',
+            proofPurpose: 'string',
+            jws: 'string' } } },
+            relationships: [{ id: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            hash: 'hash',
+            signature: 0,
+            status: 'NEW',
+            tag: 'Block tag',
+            type: 'Document type',
+            createDate: 'string',
+            updateDate: 'string',
+            owner: 'string',
+            document: { id: 'f3b2a9c1e4d5678901234567',
+            type: [{}],
+            credentialSubject: {},
+            issuer: {},
+            issuanceDate: 'string',
+            proof: { type: {},
+            created: {},
+            verificationMethod: {},
+            proofPurpose: {},
+            jws: {} } } }] }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -626,13 +923,27 @@ export class PolicyStatisticsApi {
         description: 'A zip file containing statistic definition to be imported.',
         required: true
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: StatisticDefinitionDTO
+        type: StatisticDefinitionDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            policyTopicId: 'f3b2a9c1e4d5678901234567',
+            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            status: 'string',
+            config: {} }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -666,12 +977,19 @@ export class PolicyStatisticsApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiProduces('application/zip')
     @ApiOkResponse({
-        description: 'Successful operation. Response zip file.'
+        description: 'Successful operation. Response zip file.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -706,11 +1024,25 @@ export class PolicyStatisticsApi {
     })
     @ApiOkResponse({
         description: 'Statistic definition preview.',
-        type: StatisticDefinitionDTO
+        type: StatisticDefinitionDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            policyTopicId: 'f3b2a9c1e4d5678901234567',
+            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            status: 'string',
+            config: {} }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

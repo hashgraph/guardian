@@ -1,7 +1,7 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
-import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader, ToolVersionDTO } from '#middlewares';
 import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, EntityOwner, CacheService } from '#helpers';
 import { AuthUser, Auth } from '#auth';
@@ -29,13 +29,30 @@ export class ToolsApi {
         type: ToolDTO,
         required: true
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         type: ToolDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -76,13 +93,16 @@ export class ToolsApi {
         description: 'Policy configuration.',
         type: ToolDTO,
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -145,11 +165,27 @@ export class ToolsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: ToolDTO
+        type: ToolDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -217,11 +253,27 @@ export class ToolsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: ToolDTO
+        type: ToolDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -272,11 +324,14 @@ export class ToolsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -322,11 +377,28 @@ export class ToolsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: ToolDTO
+        type: ToolDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -371,13 +443,30 @@ export class ToolsApi {
         type: ToolDTO,
         required: true
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: ToolDTO
+        type: ToolDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -432,11 +521,37 @@ export class ToolsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: ToolValidationDTO
+        type: ToolValidationDTO,
+        example: { tool: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' },
+            results: { blocks: [{ id: 'f3b2a9c1e4d5678901234567',
+            name: 'string',
+            errors: [{}],
+            warnings: [{}],
+            infos: [{}],
+            isValid: true }],
+            errors: ['string'],
+            warnings: ['string'],
+            infos: ['string'] } }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolValidationDTO, ToolVersionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -488,11 +603,14 @@ export class ToolsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolVersionDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -543,11 +661,37 @@ export class ToolsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: ToolValidationDTO
+        type: ToolValidationDTO,
+        example: { tool: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' },
+            results: { blocks: [{ id: 'f3b2a9c1e4d5678901234567',
+            name: 'string',
+            errors: [{}],
+            warnings: [{}],
+            infos: [{}],
+            isValid: true }],
+            errors: ['string'],
+            warnings: ['string'],
+            infos: ['string'] } }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -593,11 +737,37 @@ export class ToolsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: ToolValidationDTO
+        type: ToolValidationDTO,
+        example: { tool: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' },
+            results: { blocks: [{ id: 'f3b2a9c1e4d5678901234567',
+            name: 'string',
+            errors: [{}],
+            warnings: [{}],
+            infos: [{}],
+            isValid: true }],
+            errors: ['string'],
+            warnings: ['string'],
+            infos: ['string'] } }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -643,10 +813,35 @@ export class ToolsApi {
     @ApiOkResponse({
         description: 'Validation result.',
         type: ToolValidationDTO,
+        example: { tool: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' },
+            results: { blocks: [{ id: 'f3b2a9c1e4d5678901234567',
+            name: 'string',
+            errors: [{}],
+            warnings: [{}],
+            infos: [{}],
+            isValid: true }],
+            errors: ['string'],
+            warnings: ['string'],
+            infos: ['string'] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, ToolValidationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -686,12 +881,20 @@ export class ToolsApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiProduces('application/zip')
     @ApiOkResponse({
-        description: 'Successful operation. Response zip file.'
+        description: 'Successful operation. Response zip file.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+        example: { result: 'ok' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
     async toolExportFile(
@@ -735,11 +938,14 @@ export class ToolsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: ExportMessageDTO
+        type: ExportMessageDTO,
+        example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'string', description: 'string', messageId: 'f3b2a9c1e4d5678901234567', owner: 'string' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ExportMessageDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -777,11 +983,45 @@ export class ToolsApi {
     })
     @ApiOkResponse({
         description: 'Tool preview.',
-        type: ToolPreviewDTO
+        type: ToolPreviewDTO,
+        example: { tool: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' },
+            schemas: [{}],
+            tags: [{}],
+            tools: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' }] }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ImportMessageDTO, ToolPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -822,13 +1062,30 @@ export class ToolsApi {
         description: 'Message.',
         type: ImportMessageDTO,
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: ToolDTO
+        type: ToolDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ImportMessageDTO, ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -870,11 +1127,44 @@ export class ToolsApi {
     })
     @ApiOkResponse({
         description: 'Module preview.',
-        type: ToolPreviewDTO
+        type: ToolPreviewDTO,
+        example: { tool: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' },
+            schemas: [{}],
+            tags: [{}],
+            tools: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' }] }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -910,13 +1200,29 @@ export class ToolsApi {
     @ApiBody({
         description: 'File.',
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: ToolDTO
+        type: ToolDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -950,9 +1256,24 @@ export class ToolsApi {
         summary: 'Imports new tool from a zip file.',
         description: 'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: ToolDTO
+        type: ToolDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' }
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
@@ -975,6 +1296,7 @@ export class ToolsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @UseInterceptors(AnyFilesInterceptor())
     @HttpCode(HttpStatus.CREATED)
@@ -1025,13 +1347,15 @@ export class ToolsApi {
         required: true,
         type: String
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1093,13 +1417,15 @@ export class ToolsApi {
             }
         }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @UseInterceptors(AnyFilesInterceptor())
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1164,13 +1490,16 @@ export class ToolsApi {
         description: 'Message.',
         type: ImportMessageDTO,
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ImportMessageDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1221,10 +1550,26 @@ export class ToolsApi {
         description: 'Modules.',
         isArray: true,
         type: ToolDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tool name',
+            description: 'Description',
+            status: 'NEW',
+            creator: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            codeVersion: '1.0.0',
+            createDate: 'string',
+            config: { id: 'f3b2a9c1e4d5678901234567',
+            blockType: 'string',
+            blocks: [{}] },
+            version: '1.0.0' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @UseCache()
@@ -1264,10 +1609,12 @@ export class ToolsApi {
     @ApiOkResponse({
         description: 'Availability of the tool.',
         type: Boolean,
+        example: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @UseCache()

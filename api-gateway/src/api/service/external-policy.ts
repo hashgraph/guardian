@@ -1,7 +1,7 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { LocationType, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
-import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyRequestDTO, PolicyRequestCountDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner, TaskManager, ServiceError, PolicyEngine } from '#helpers';
 import { AuthUser, Auth, AuthAndLocation } from '#auth';
@@ -38,11 +38,13 @@ export class ExternalPoliciesApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: ExternalPolicyDTO
+        type: ExternalPolicyDTO,
+        example: [{ uuid: 'f3b2a9c1e4d5678901234567', name: 'Policy Name', description: 'Policy Description', version: '1.0.0', topicId: 'f3b2a9c1e4d5678901234567', instanceTopicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', policyTag: 'Tag', owner: 'string', status: 'string', username: 'Username' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ExternalPolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -85,11 +87,27 @@ export class ExternalPoliciesApi {
     })
     @ApiOkResponse({
         description: 'Policy preview.',
-        type: PolicyPreviewDTO
+        type: PolicyPreviewDTO,
+        example: {
+            module: {
+                id: Examples.DB_ID,
+                uuid: Examples.UUID,
+                name: 'Policy name',
+                status: 'DRAFT',
+                owner: Examples.DID,
+                topicId: Examples.ACCOUNT_ID
+            },
+            messageId: Examples.MESSAGE_ID,
+            schemas: [],
+            tags: [],
+            moduleTopicId: Examples.ACCOUNT_ID
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ImportMessageDTO, PolicyPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -125,11 +143,14 @@ export class ExternalPoliciesApi {
     })
     @ApiOkResponse({
         description: 'Policy.',
-        type: ExternalPolicyDTO
+        type: ExternalPolicyDTO,
+        example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'Policy Name', description: 'Policy Description', version: '1.0.0', topicId: 'f3b2a9c1e4d5678901234567', instanceTopicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', policyTag: 'Tag', owner: 'string', status: 'string', username: 'Username' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ImportMessageDTO, ExternalPolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -166,13 +187,17 @@ export class ExternalPoliciesApi {
         required: true,
         example: Examples.MESSAGE_ID
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -222,13 +247,17 @@ export class ExternalPoliciesApi {
         required: true,
         example: Examples.MESSAGE_ID
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -280,14 +309,18 @@ export class ExternalPoliciesApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    @HttpCode(HttpStatus.ACCEPTED)
+    @HttpCode(HttpStatus.OK)
     async approveExternalPolicy(
         @AuthUser() user: IAuthUser,
         @Param('messageId') messageId: string
@@ -326,14 +359,18 @@ export class ExternalPoliciesApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    @HttpCode(HttpStatus.ACCEPTED)
+    @HttpCode(HttpStatus.OK)
     async rejectExternalPolicy(
         @AuthUser() user: IAuthUser,
         @Param('messageId') messageId: string
@@ -380,11 +417,13 @@ export class ExternalPoliciesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: Boolean
+        type: Boolean,
+        example: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -421,11 +460,13 @@ export class ExternalPoliciesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: Boolean
+        type: Boolean,
+        example: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -494,10 +535,26 @@ export class ExternalPoliciesApi {
         isArray: true,
         headers: pageHeader,
         type: PolicyRequestDTO,
+        example: [{ uuid: 'f3b2a9c1e4d5678901234567',
+            type: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            startMessageId: 'f3b2a9c1e4d5678901234567',
+            status: 'string',
+            lastStatus: 'string',
+            accountId: '0.0.1001',
+            sender: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            document: {},
+            policyId: 'f3b2a9c1e4d5678901234567',
+            blockTag: 'Tag',
+            policyMessageId: 'f3b2a9c1e4d5678901234567',
+            loaded: true }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -559,11 +616,28 @@ export class ExternalPoliciesApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyRequestDTO
+        type: PolicyRequestDTO,
+        example: { uuid: 'f3b2a9c1e4d5678901234567',
+            type: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            startMessageId: 'f3b2a9c1e4d5678901234567',
+            status: 'string',
+            lastStatus: 'string',
+            accountId: '0.0.1001',
+            sender: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            document: {},
+            policyId: 'f3b2a9c1e4d5678901234567',
+            blockTag: 'Tag',
+            policyMessageId: 'f3b2a9c1e4d5678901234567',
+            loaded: true }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -612,11 +686,28 @@ export class ExternalPoliciesApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyRequestDTO
+        type: PolicyRequestDTO,
+        example: { uuid: 'f3b2a9c1e4d5678901234567',
+            type: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            startMessageId: 'f3b2a9c1e4d5678901234567',
+            status: 'string',
+            lastStatus: 'string',
+            accountId: '0.0.1001',
+            sender: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            document: {},
+            policyId: 'f3b2a9c1e4d5678901234567',
+            blockTag: 'Tag',
+            policyMessageId: 'f3b2a9c1e4d5678901234567',
+            loaded: true }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -665,11 +756,28 @@ export class ExternalPoliciesApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyRequestDTO
+        type: PolicyRequestDTO,
+        example: { uuid: 'f3b2a9c1e4d5678901234567',
+            type: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            startMessageId: 'f3b2a9c1e4d5678901234567',
+            status: 'string',
+            lastStatus: 'string',
+            accountId: '0.0.1001',
+            sender: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            document: {},
+            policyId: 'f3b2a9c1e4d5678901234567',
+            blockTag: 'Tag',
+            policyMessageId: 'f3b2a9c1e4d5678901234567',
+            loaded: true }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -718,11 +826,28 @@ export class ExternalPoliciesApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyRequestDTO
+        type: PolicyRequestDTO,
+        example: { uuid: 'f3b2a9c1e4d5678901234567',
+            type: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            startMessageId: 'f3b2a9c1e4d5678901234567',
+            status: 'string',
+            lastStatus: 'string',
+            accountId: '0.0.1001',
+            sender: 'string',
+            owner: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            document: {},
+            policyId: 'f3b2a9c1e4d5678901234567',
+            blockTag: 'Tag',
+            policyMessageId: 'f3b2a9c1e4d5678901234567',
+            loaded: true }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -764,10 +889,12 @@ export class ExternalPoliciesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyRequestCountDTO,
+        example: { requestsCount: 0, actionsCount: 0, delayCount: 0, total: 0 }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -811,11 +938,17 @@ export class ExternalPoliciesApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyRequestCountDTO,
+        schema: {
+            type: 'object',
+            additionalProperties: true,
+            description: 'Request document object',
+        },
+        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -823,7 +956,7 @@ export class ExternalPoliciesApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('startMessageId') startMessageId?: string,
-    ): Promise<PolicyRequestCountDTO> {
+    ): Promise<any> {
         try {
             const options: any = {
                 filters: {},

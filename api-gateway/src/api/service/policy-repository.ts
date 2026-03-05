@@ -3,7 +3,7 @@ import { InternalException, PolicyEngine } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Permissions } from '@guardian/interfaces';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Param, Query, Response } from '@nestjs/common';
-import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import {
     Examples,
     InternalServerErrorDTO,
@@ -40,11 +40,14 @@ export class PolicyRepositoryApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: Object
+        type: PolicyCommentUserDTO,
+        example: [{ label: 'Administrator', value: 'Administrator', type: 'role' }]
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyCommentUserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -84,11 +87,29 @@ export class PolicyRepositoryApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -142,7 +163,7 @@ export class PolicyRepositoryApi {
     @ApiQuery({
         name: 'type',
         type: String,
-        description: '',
+        description: 'Document type',
         required: false,
         example: 'VC'
     })
@@ -170,11 +191,33 @@ export class PolicyRepositoryApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: VcDocumentDTO
+        type: VcDocumentDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            hash: 'hash',
+            signature: 0,
+            status: 'NEW',
+            tag: 'Block tag',
+            type: 'Document type',
+            createDate: 'string',
+            updateDate: 'string',
+            owner: 'string',
+            document: { id: 'f3b2a9c1e4d5678901234567',
+            type: ['string'],
+            credentialSubject: {},
+            issuer: {},
+            issuanceDate: 'string',
+            proof: { type: 'string',
+            created: 'string',
+            verificationMethod: 'string',
+            proofPurpose: 'string',
+            jws: 'string' } } }]
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

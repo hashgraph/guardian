@@ -56,11 +56,30 @@ export class TrustChainsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: VpDocumentDTO
+        type: VpDocumentDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            hash: 'hash',
+            signature: 0,
+            status: 'NEW',
+            tag: 'Block tag',
+            type: 'Document type',
+            createDate: 'string',
+            updateDate: 'string',
+            owner: 'string',
+            document: [{ id: 'f3b2a9c1e4d5678901234567',
+            type: ['string'],
+            verifiableCredential: [{}],
+            proof: { type: 'string',
+            created: 'string',
+            verificationMethod: 'string',
+            proofPurpose: 'string',
+            jws: 'string' } }] }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(VpDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -173,10 +192,12 @@ export class TrustChainsApi {
                 'userMap'
             ],
         },
+        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache()

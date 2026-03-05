@@ -33,11 +33,13 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: RecordStatusDTO
+        type: RecordStatusDTO,
+        example: { type: 'string', policyId: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', status: 'string' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RecordStatusDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -81,11 +83,13 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -133,11 +137,13 @@ export class RecordApi {
         schema: {
             type: 'string',
             format: 'binary'
-        }
+        },
+        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -182,11 +188,13 @@ export class RecordApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: RecordActionDTO
+        type: RecordActionDTO,
+        example: [{ uuid: 'f3b2a9c1e4d5678901234567', policyId: 'f3b2a9c1e4d5678901234567', method: 'string', action: 'string', time: 'string', user: 'string', target: 'string' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RecordActionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -230,11 +238,13 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Record UUID.',
-        type: String
+        type: String,
+        example: 'string'
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -283,11 +293,13 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RecordActionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -327,11 +339,13 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: RunningResultDTO
+        type: RunningResultDTO,
+        example: { info: { tokens: 'eyJhbGciOi...', documents: 0 }, total: 0, documents: [{ type: 'string', schema: 'string', rate: 'string', documents: {} }] }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RunningResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -370,11 +384,13 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: RunningDetailsDTO
+        type: RunningDetailsDTO,
+        example: { left: {}, right: {}, total: 0, documents: {} }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RunningDetailsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -418,11 +434,13 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -467,11 +485,13 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -516,11 +536,13 @@ export class RecordApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

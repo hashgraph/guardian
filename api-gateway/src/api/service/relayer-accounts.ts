@@ -2,7 +2,7 @@ import { Auth, AuthUser } from '#auth';
 import { InternalException, Guardians, Users } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Response } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import {
     Examples,
     InternalServerErrorDTO,
@@ -44,7 +44,7 @@ export class RelayerAccountsApi {
     @ApiQuery({
         name: 'search',
         type: String,
-        description: '',
+        description: 'Search filter',
         required: false,
         example: 'search'
     })
@@ -52,11 +52,13 @@ export class RelayerAccountsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: RelayerAccountDTO
+        type: RelayerAccountDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'name', username: 'username', owner: 'string', parent: 'string', account: 'string' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -96,11 +98,14 @@ export class RelayerAccountsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: RelayerAccountDTO
+        type: RelayerAccountDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', name: 'name', username: 'username', owner: 'string', parent: 'string', account: 'string' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -129,11 +134,13 @@ export class RelayerAccountsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: RelayerAccountDTO
+        type: RelayerAccountDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', name: 'name', username: 'username', owner: 'string', parent: 'string', account: 'string' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -161,11 +168,13 @@ export class RelayerAccountsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: RelayerAccountDTO
+        type: RelayerAccountDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'name', username: 'username', owner: 'string', parent: 'string', account: 'string' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -199,11 +208,13 @@ export class RelayerAccountsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        type: Object,
+        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -230,11 +241,14 @@ export class RelayerAccountsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Object
+        type: Object,
+        example: { result: 'ok' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -277,7 +291,7 @@ export class RelayerAccountsApi {
     @ApiQuery({
         name: 'search',
         type: String,
-        description: '',
+        description: 'Search filter',
         required: false,
         example: 'search'
     })
@@ -285,11 +299,13 @@ export class RelayerAccountsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: RelayerAccountDTO
+        type: RelayerAccountDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'name', username: 'username', owner: 'string', parent: 'string', account: 'string' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -349,11 +365,32 @@ export class RelayerAccountsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: VcDocumentDTO
+        type: VcDocumentDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            hash: 'hash',
+            signature: 0,
+            status: 'NEW',
+            tag: 'Block tag',
+            type: 'Document type',
+            createDate: 'string',
+            updateDate: 'string',
+            owner: 'string',
+            document: { id: 'f3b2a9c1e4d5678901234567',
+            type: ['string'],
+            credentialSubject: {},
+            issuer: {},
+            issuanceDate: 'string',
+            proof: { type: 'string',
+            created: 'string',
+            verificationMethod: 'string',
+            proofPurpose: 'string',
+            jws: 'string' } } }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(VcDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

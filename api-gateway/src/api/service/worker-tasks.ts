@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Response } from '@nestjs/common';
-import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Auth, AuthUser } from '#auth';
 import { Examples, InternalServerErrorDTO, pageHeader, WorkersTasksDTO } from '#middlewares';
 import { IAuthUser } from '@guardian/common';
@@ -9,7 +9,7 @@ import { Guardians, parseInteger } from '#helpers';
 @ApiTags('worker-tasks')
 export class WorkerTasksController {
     /**
-     * Get all notifications
+     * Get all worker tasks
      */
     @Get('/')
     @Auth()
@@ -39,14 +39,16 @@ export class WorkerTasksController {
         example: 'NEW'
     })
     @ApiOkResponse({
-        description: 'Successful operation. Returns notifications and count.',
+        description: 'Successful operation. Returns worker tasks and count.',
         isArray: true,
         headers: pageHeader,
-        type: WorkersTasksDTO
+        type: WorkersTasksDTO,
+        example: [{ createDate: 'string', done: true, id: 'f3b2a9c1e4d5678901234567', isRetryableTask: true, processedTime: 'string', sent: true, taskId: 'f3b2a9c1e4d5678901234567', type: 'string', updateDate: 'string' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(WorkersTasksDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -62,21 +64,42 @@ export class WorkerTasksController {
         res.header('X-Total-Count', count).send(tasks);
     }
 
+    @Post('restart')
     @Auth()
     @ApiOperation({
         summary: 'Restart task',
-        description: 'Restart task'
+        description: 'Restart task.',
+    })
+    @ApiBody({
+        description: 'Task restart request payload.',
+        required: true,
+        schema: {
+            type: 'object',
+            required: ['taskId'],
+            properties: {
+                taskId: {
+                    type: 'string',
+                    description: 'Worker task identifier',
+                    example: Examples.DB_ID
+                }
+            }
+        }
     })
     @ApiOkResponse({
-        description: 'Successful operation. Returns notifications.',
-        isArray: false,
-        type: null
+        description: 'Task restart request accepted. Empty response body.',
+        schema: {
+            type: 'object',
+            nullable: true,
+            example: null
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @Post('restart')
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
     async restartTask(
         @AuthUser() user: IAuthUser,
         @Body() body: any
@@ -85,15 +108,11 @@ export class WorkerTasksController {
         await guardians.restartTask(body.taskId, user.id.toString());
     }
 
+    @Delete('delete/:taskId')
     @Auth()
     @ApiOperation({
         summary: 'Delete task',
-        description: 'Delete task'
-    })
-    @ApiOkResponse({
-        description: 'Successful operation. Returns notifications.',
-        isArray: false,
-        type: null
+        description: 'Delete task.',
     })
     @ApiParam({
         name: 'taskId',
@@ -102,11 +121,21 @@ export class WorkerTasksController {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiOkResponse({
+        description: 'Task deleted. Empty response body.',
+        schema: {
+            type: 'object',
+            nullable: true,
+            example: null
+        }
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @Delete('delete/:taskId')
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
     async deleteTask(
         @AuthUser() user: IAuthUser,
         @Param('taskId') taskId: string,

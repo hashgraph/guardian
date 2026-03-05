@@ -1,7 +1,7 @@
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response, Query, Delete } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, Examples, InternalServerErrorDTO, PolicyKeyConfigDTO, PolicyKeyDTO, ProfileDTO, TaskDTO, pageHeader } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { CacheService, getCacheKey, Guardians, InternalException, ServiceError, TaskManager, UseCache } from '#helpers';
@@ -31,11 +31,13 @@ export class ProfileApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: ProfileDTO
+        type: ProfileDTO,
+        example: { confirmed: true, failed: true, topicId: 'f3b2a9c1e4d5678901234567', parentTopicId: 'f3b2a9c1e4d5678901234567', didDocument: {}, vcDocument: {} }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ProfileDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -77,12 +79,15 @@ export class ProfileApi {
         required: true,
         type: CredentialsDTO
     })
-    @ApiOkResponse({
-        description: 'Created.',
+    @ApiNoContentResponse({
+        description: 'Hedera credentials set successfully.',
+        example: { result: 'ok' }
     })
+    @ApiUnauthorizedResponse({ description: 'Unauthorized.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(CredentialsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
@@ -130,13 +135,15 @@ export class ProfileApi {
         required: true,
         type: CredentialsDTO
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(CredentialsDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -189,11 +196,14 @@ export class ProfileApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: String
+        type: String,
+        example: 'string'
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.SHORT_TTL })
@@ -238,13 +248,15 @@ export class ProfileApi {
         required: true,
         type: CredentialsDTO
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(CredentialsDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -296,13 +308,15 @@ export class ProfileApi {
         required: true,
         type: CredentialsDTO
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(CredentialsDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -351,10 +365,13 @@ export class ProfileApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: DidDocumentStatusDTO,
+        example: { valid: true, error: 'string', didDocument: {} }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(DidDocumentDTO, DidDocumentStatusDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -394,10 +411,13 @@ export class ProfileApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: DidKeyStatusDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', key: 'string', valid: true }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(DidKeyStatusDTO, DidDocumentWithKeyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -450,11 +470,13 @@ export class ProfileApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: PolicyKeyDTO
+        type: PolicyKeyDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567', createDate: 'string', updateDate: 'string', messageId: 'f3b2a9c1e4d5678901234567', owner: 'string', policyName: 'Policy name', key: 'Key' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyKeyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -490,10 +512,13 @@ export class ProfileApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyKeyDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', createDate: 'string', updateDate: 'string', messageId: 'f3b2a9c1e4d5678901234567', owner: 'string', policyName: 'Policy name', key: 'Key' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(PolicyKeyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -534,11 +559,14 @@ export class ProfileApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

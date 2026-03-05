@@ -1,6 +1,6 @@
 import { DocumentGenerator, ISchema, Permissions, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { Auth, AuthUser } from '#auth';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
@@ -33,11 +33,29 @@ export class SingleSchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.SHORT_TTL })
@@ -89,11 +107,28 @@ export class SingleSchemaApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -149,11 +184,13 @@ export class SingleSchemaApi {
                     }
                 }
             }
-        }
+        },
+        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -188,10 +225,20 @@ export class SingleSchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        schema: {
+            type: 'object',
+            additionalProperties: true,
+            example: {
+                id: 'did:hedera:testnet:abc',
+                type: 'SomeSchema'
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
     async getSampleSchemaPayload(
@@ -262,7 +309,7 @@ export class SchemaApi {
         type: String,
         description: 'Schema category',
         required: false,
-        example: SchemaCategory.POLICY
+        example: 'POLICY'
     })
     @ApiQuery({
         name: 'policyId',
@@ -296,11 +343,28 @@ export class SchemaApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -380,7 +444,7 @@ export class SchemaApi {
         type: String,
         description: 'Schema category',
         required: false,
-        example: SchemaCategory.POLICY
+        example: 'POLICY'
     })
     @ApiQuery({
         name: 'policyId',
@@ -421,11 +485,28 @@ export class SchemaApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -520,17 +601,34 @@ export class SchemaApi {
         type: String,
         description: 'Schema category',
         required: false,
-        example: SchemaCategory.POLICY
+        example: 'POLICY'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -582,11 +680,29 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -640,11 +756,29 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -699,11 +833,28 @@ export class SchemaApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @UseCache()
@@ -751,16 +902,33 @@ export class SchemaApi {
         type: String,
         description: 'Schema category',
         required: false,
-        example: SchemaCategory.POLICY
+        example: 'POLICY'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @UseCache()
@@ -809,16 +977,33 @@ export class SchemaApi {
         type: String,
         description: 'Schema category',
         required: false,
-        example: SchemaCategory.POLICY
+        example: 'POLICY'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @UseCache()
@@ -875,14 +1060,31 @@ export class SchemaApi {
         required: true,
         type: SchemaDTO
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -929,13 +1131,15 @@ export class SchemaApi {
     @ApiBody({
         description: 'Object that contains a valid schema.'
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -988,13 +1192,15 @@ export class SchemaApi {
         required: true,
         type: SchemaDTO
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1049,11 +1255,31 @@ export class SchemaApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1123,11 +1349,16 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1215,11 +1446,31 @@ export class SchemaApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(VersionSchemaDTO, SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1309,13 +1560,17 @@ export class SchemaApi {
             }
         }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, VersionSchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1392,11 +1647,29 @@ export class SchemaApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaDTO,
-        isArray: true
+        isArray: true,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(MessageSchemaDTO, SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1441,13 +1714,16 @@ export class SchemaApi {
             }
         }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(MessageSchemaDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1491,11 +1767,29 @@ export class SchemaApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaDTO,
-        isArray: true
+        isArray: true,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1534,11 +1828,28 @@ export class SchemaApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaDTO,
-        isArray: true
+        isArray: true,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1587,15 +1898,33 @@ export class SchemaApi {
             }
         }
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(MessageSchemaDTO, SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -1660,13 +1989,16 @@ export class SchemaApi {
             }
         }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, MessageSchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1723,15 +2055,33 @@ export class SchemaApi {
         description: 'A zip file containing schema to be imported.',
         required: true
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -1788,13 +2138,16 @@ export class SchemaApi {
         description: 'A zip file containing schema to be imported.',
         required: true
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1849,11 +2202,14 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: ExportSchemaDTO
+        type: ExportSchemaDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', name: 'Schema name', description: 'Description', version: '1.0.0', owner: 'string', messageId: 'f3b2a9c1e4d5678901234567' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ExportSchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1901,12 +2257,20 @@ export class SchemaApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiProduces('application/zip')
     @ApiOkResponse({
-        description: 'Successful operation. Response zip file.'
+        description: 'Successful operation. Response zip file.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+        example: { result: 'ok' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1968,13 +2332,31 @@ export class SchemaApi {
         required: true,
         example: 'username'
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -2054,11 +2436,28 @@ export class SchemaApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2118,11 +2517,28 @@ export class SchemaApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2168,11 +2584,16 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2241,11 +2662,31 @@ export class SchemaApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2306,10 +2747,19 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        schema: {
+            type: 'object',
+            nullable: true,
+            example: null
+        }
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2361,11 +2811,28 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2419,10 +2886,12 @@ export class SchemaApi {
             type: 'string',
             format: 'binary'
         },
+        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2469,15 +2938,18 @@ export class SchemaApi {
         required: true,
         type: String
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         schema: {
             'type': 'object'
         },
+        example: { result: 'ok' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -2534,15 +3006,18 @@ export class SchemaApi {
         required: true,
         type: String
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
         schema: {
             'type': 'object'
         },
+        example: { result: 'ok' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -2597,10 +3072,13 @@ export class SchemaApi {
         schema: {
             'type': 'object'
         },
+        example: { result: 'ok' }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2638,10 +3116,12 @@ export class SchemaApi {
             type: 'string',
             format: 'binary'
         },
+        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ isFastify: true })
@@ -2690,11 +3170,28 @@ export class SchemaApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2735,21 +3232,78 @@ export class SchemaApi {
         summary: 'Returns all child schemas.',
         description: 'Returns all child schemas.',
     })
-    @ApiParam({
-        name: 'schemaIds',
-        type: [String],
-        description: 'Schema Ids',
+    @ApiBody({
+        description: 'Schema IDs to include into deletion preview.',
         required: true,
-        example: [Examples.DB_ID]
+        schema: {
+            type: 'object',
+            required: ['schemaIds'],
+            properties: {
+                schemaIds: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    example: [Examples.DB_ID]
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Schema deletion preview.',
         isArray: true,
-        type: SchemaDeletionPreviewDTO
+        type: SchemaDeletionPreviewDTO,
+        example: [{ deletableChildren: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }],
+            blockedChildren: [{ schema: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} },
+            blockingSchemas: [{ id: {},
+            uuid: {},
+            name: 'Schema name',
+            description: 'Description',
+            entity: {},
+            iri: {},
+            status: {},
+            topicId: {},
+            version: '1.0.0',
+            owner: {},
+            messageId: {},
+            category: {},
+            documentURL: {},
+            contextURL: {},
+            document: {},
+            context: {} }] }] }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDeletionPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2780,26 +3334,40 @@ export class SchemaApi {
         summary: 'Deletes the schema with the provided schema ID.',
         description: 'Deletes the schema with the provided schema ID.' + ONLY_SR,
     })
-    @ApiParam({
-        name: 'schemaIds',
-        type: [String],
-        description: 'Schema Ids',
+    @ApiBody({
+        description: 'Schema IDs to delete.',
         required: true,
-        example: [Examples.DB_ID]
+        schema: {
+            type: 'object',
+            required: ['schemaIds'],
+            properties: {
+                schemaIds: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    example: [Examples.DB_ID]
+                }
+            }
+        }
     })
     @ApiQuery({
         name: 'includeChildren',
         type: Boolean,
         required: false,
         description: 'Include child schemas',
+        example: false
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

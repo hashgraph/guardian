@@ -20,11 +20,13 @@ export class MapApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: String
+        type: String,
+        example: 'string'
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

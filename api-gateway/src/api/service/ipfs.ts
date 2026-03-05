@@ -11,7 +11,7 @@ import {
     Req,
     StreamableFile
 } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
 import { Auth, AuthUser } from '#auth';
 import { Examples, InternalServerErrorDTO } from '#middlewares';
@@ -42,14 +42,19 @@ export class IpfsApi {
     @ApiBody({
         description: 'Binary data.',
         required: true,
+        schema: { type: 'string', format: 'binary' },
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        type: String
+    @ApiCreatedResponse({
+        description: 'File added successfully.',
+        type: String,
+        example: 'string'
     })
+    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -96,14 +101,19 @@ export class IpfsApi {
     @ApiBody({
         description: 'Binary data.',
         required: true,
+        schema: { type: 'string', format: 'binary' },
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        type: String
+    @ApiCreatedResponse({
+        description: 'File added successfully.',
+        type: String,
+        example: 'string'
     })
+    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -159,14 +169,18 @@ export class IpfsApi {
     @ApiBody({
         description: 'Binary data.',
         required: true,
+        schema: { type: 'string', format: 'binary' },
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        type: String
+    @ApiCreatedResponse({
+        description: 'File added successfully.',
+        type: String,
+        example: 'string'
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -215,17 +229,22 @@ export class IpfsApi {
         type: String,
         description: 'File cid',
         required: true,
+        example: Examples.IPFS
     })
+    @ApiProduces('application/octet-stream')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
             type: 'string',
             format: 'binary'
         },
+        example: { result: 'ok' }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
@@ -265,17 +284,22 @@ export class IpfsApi {
         type: String,
         description: 'File cid',
         required: true,
+        example: Examples.IPFS
     })
+    @ApiProduces('application/octet-stream')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
             type: 'string',
             format: 'binary'
         },
+        example: { result: 'ok' }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
@@ -312,11 +336,17 @@ export class IpfsApi {
         required: true
     })
     @ApiOkResponse({
-        description: 'Successful operation.'
+        description: 'Successful operation.',
+        schema: {
+            type: 'object',
+            nullable: true,
+            example: null
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

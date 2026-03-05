@@ -28,11 +28,13 @@ export class SuggestionsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation. Suggested next and nested block types respectively.',
-        type: SuggestionsOutputDTO
+        type: SuggestionsOutputDTO,
+        example: { next: 'string', nested: 'string' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SuggestionsInputDTO, SuggestionsOutputDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -61,12 +63,14 @@ export class SuggestionsApi {
         type: SuggestionsConfigDTO,
     })
     @ApiCreatedResponse({
-        description: 'Successful operation. Response setted suggestions config.',
-        type: SuggestionsConfigDTO
+        description: 'Successful operation. Returns the updated suggestions config.',
+        type: SuggestionsConfigDTO,
+        example: { items: [{ id: 'f3b2a9c1e4d5678901234567', type: 'string', index: 0 }] }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SuggestionsConfigItemDTO, SuggestionsConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -92,11 +96,13 @@ export class SuggestionsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation. Response suggestions config.',
-        type: SuggestionsConfigDTO
+        type: SuggestionsConfigDTO,
+        example: { items: [{ id: 'f3b2a9c1e4d5678901234567', type: 'string', index: 0 }] }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SuggestionsConfigItemDTO, SuggestionsConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

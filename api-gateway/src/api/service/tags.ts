@@ -1,7 +1,7 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Permissions, SchemaCategory, SchemaHelper, TagType, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
-import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, TaskDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { ONLY_SR, SchemaUtils, Guardians, InternalException, EntityOwner, CacheService, getCacheKey, UseCache, TaskManager, ServiceError } from '#helpers';
@@ -32,13 +32,31 @@ export class TagsApi {
         required: true,
         type: TagDTO,
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Created tag.',
         type: TagDTO,
+        example: { uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tag label',
+            description: 'Description',
+            owner: 'DID',
+            date: 'string',
+            entity: 'PolicyDocument',
+            status: 'Published',
+            operation: 'Create',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            uri: 'string',
+            target: 'string',
+            localTarget: 'string',
+            document: {},
+            tagSchemaId: 'f3b2a9c1e4d5678901234567',
+            inheritTags: false }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TagDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -106,10 +124,32 @@ export class TagsApi {
     @ApiOkResponse({
         description: 'Created tag.',
         type: TagMapDTO,
+        example: { entity: 'PolicyDocument',
+            target: 'string',
+            refreshDate: 'string',
+            tags: [{ uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tag label',
+            description: 'Description',
+            owner: 'DID',
+            date: 'string',
+            entity: 'PolicyDocument',
+            status: 'Published',
+            operation: 'Create',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            uri: 'string',
+            target: 'string',
+            localTarget: 'string',
+            document: {},
+            tagSchemaId: 'f3b2a9c1e4d5678901234567',
+            inheritTags: false }] }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TagFilterDTO, TagMapDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -197,10 +237,13 @@ export class TagsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
+        example: true
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -254,10 +297,32 @@ export class TagsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: TagMapDTO,
+        example: { entity: 'PolicyDocument',
+            target: 'string',
+            refreshDate: 'string',
+            tags: [{ uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Tag label',
+            description: 'Description',
+            owner: 'DID',
+            date: 'string',
+            entity: 'PolicyDocument',
+            status: 'Published',
+            operation: 'Create',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            policyId: 'f3b2a9c1e4d5678901234567',
+            uri: 'string',
+            target: 'string',
+            localTarget: 'string',
+            document: {},
+            tagSchemaId: 'f3b2a9c1e4d5678901234567',
+            inheritTags: false }] }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TagMapDTO, TagFilterDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -324,10 +389,27 @@ export class TagsApi {
         isArray: true,
         headers: pageHeader,
         type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @UseCache({ isFastify: true })
@@ -388,10 +470,27 @@ export class TagsApi {
         isArray: true,
         headers: pageHeader,
         type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @UseCache({ isFastify: true })
@@ -441,10 +540,28 @@ export class TagsApi {
     @ApiCreatedResponse({
         description: 'Created schema.',
         type: SchemaDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -500,11 +617,14 @@ export class TagsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -570,10 +690,28 @@ export class TagsApi {
         description: 'Successful operation.',
         type: SchemaDTO,
         isArray: true,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -630,10 +768,28 @@ export class TagsApi {
         description: 'Successful operation.',
         type: SchemaDTO,
         isArray: true,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -677,10 +833,27 @@ export class TagsApi {
         description: 'Successful operation.',
         type: SchemaDTO,
         isArray: true,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     async getPublished(

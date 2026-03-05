@@ -3,7 +3,7 @@ import { IOwner, IToken, Permissions, PolicyStatus, TaskAction, UserPermissions 
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiExtraModels, ApiTags, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, TaskDTO, TokenDTO, TokenInfoDTO, pageHeader } from '#middlewares';
 import { TOKEN_REQUIRED_PROPS } from '#constants';
 
@@ -130,11 +130,13 @@ export class TokensApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: TokenDTO
+        type: TokenDTO,
+        example: [{ tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', initialSupply: '0', decimals: '0', changeSupply: true, enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -222,11 +224,13 @@ export class TokensApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: TokenDTO
+        type: TokenDTO,
+        example: [{ tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', initialSupply: '0', decimals: '0', changeSupply: true, enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -276,15 +280,29 @@ export class TokensApi {
         summary: 'Return a token by id.',
         description: 'Return the token.',
     })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'policyId',
+        type: String,
+        required: false,
+        description: 'Optional policy ID to filter linked policies in response',
+        example: Examples.DB_ID
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        isArray: true,
-        headers: pageHeader,
-        type: TokenDTO
+        type: TokenDTO,
+        example: { tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', initialSupply: '0', decimals: '0', changeSupply: true, enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -332,14 +350,16 @@ export class TokensApi {
         required: true,
         type: TokenDTO
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         type: TokenDTO,
-        isArray: true
+        isArray: true,
+        example: [{ tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', initialSupply: '0', decimals: '0', changeSupply: true, enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -383,13 +403,16 @@ export class TokensApi {
         required: true,
         type: TokenDTO
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -431,13 +454,18 @@ export class TokensApi {
         required: true,
         type: TokenDTO
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Updated token.',
         type: TokenDTO,
+        example: { tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', initialSupply: '0', decimals: '0', changeSupply: true, enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -492,13 +520,18 @@ export class TokensApi {
         required: true,
         type: TokenDTO
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -561,13 +594,25 @@ export class TokensApi {
         required: true,
         example: Examples.DB_ID
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
+    })
+    @ApiNotFoundResponse({
+        description: 'Token does not exist.',
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
+    })
+    @ApiForbiddenResponse({
+        description: 'Token cannot be deleted by current user or token is used in a published policy.',
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -623,20 +668,40 @@ export class TokensApi {
         summary: 'Delete multiple tokens.',
         description: 'Delete multiple tokens by their IDs.' + ONLY_SR,
     })
-    @ApiParam({
-        name: 'tokenIds',
-        type: [String],
-        description: 'Token Ids',
+    @ApiBody({
+        description: 'List of token IDs to delete.',
         required: true,
-        example: [Examples.DB_ID]
+        schema: {
+            type: 'object',
+            required: ['tokenIds'],
+            properties: {
+                tokenIds: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    example: [Examples.DB_ID]
+                }
+            }
+        }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
+    })
+    @ApiNotFoundResponse({
+        description: 'No tokens found for provided IDs.',
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
+    })
+    @ApiForbiddenResponse({
+        description: 'One or more tokens cannot be deleted by current user or are used in published policies.',
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -704,11 +769,15 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', decimals: '0', associated: true, frozen: true, kyc: true, balance: '0', enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -754,13 +823,16 @@ export class TokensApi {
         required: true,
         example: Examples.DB_ID
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -807,11 +879,15 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', decimals: '0', associated: true, frozen: true, kyc: true, balance: '0', enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -857,13 +933,16 @@ export class TokensApi {
         required: true,
         example: Examples.DB_ID
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -915,11 +994,15 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', decimals: '0', associated: true, frozen: true, kyc: true, balance: '0', enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -973,13 +1056,16 @@ export class TokensApi {
         required: true,
         example: 'username'
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1032,11 +1118,15 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', decimals: '0', associated: true, frozen: true, kyc: true, balance: '0', enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1090,13 +1180,16 @@ export class TokensApi {
         required: true,
         example: 'username'
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1149,11 +1242,15 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', decimals: '0', associated: true, frozen: true, kyc: true, balance: '0', enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1209,11 +1306,15 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', decimals: '0', associated: true, frozen: true, kyc: true, balance: '0', enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1267,13 +1368,16 @@ export class TokensApi {
         required: true,
         example: 'username'
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1324,13 +1428,16 @@ export class TokensApi {
         required: true,
         example: 'username'
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1383,11 +1490,15 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', decimals: '0', associated: true, frozen: true, kyc: true, balance: '0', enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1439,10 +1550,13 @@ export class TokensApi {
         description: 'Token serials.',
         isArray: true,
         type: Number,
+        example: 0
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1484,10 +1598,12 @@ export class TokensApi {
         description: 'Modules.',
         isArray: true,
         type: TokenDTO,
+        example: [{ tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', initialSupply: '0', decimals: '0', changeSupply: true, enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1537,11 +1653,15 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', decimals: '0', associated: true, frozen: true, kyc: true, balance: '0', enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1601,11 +1721,15 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', decimals: '0', associated: true, frozen: true, kyc: true, balance: '0', enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1659,13 +1783,16 @@ export class TokensApi {
         required: true,
         example: Examples.ACCOUNT_ID
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1720,11 +1847,15 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567', tokenId: 'eyJhbGciOi...', tokenName: 'Token name', tokenSymbol: 'Token symbol', tokenType: 'non-fungible', decimals: '0', associated: true, frozen: true, kyc: true, balance: '0', enableAdmin: true, enableFreeze: true, enableKYC: true, enableWipe: true }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1778,13 +1909,16 @@ export class TokensApi {
         required: true,
         example: Examples.ACCOUNT_ID
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)

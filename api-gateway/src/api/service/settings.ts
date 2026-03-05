@@ -1,7 +1,7 @@
 import { AboutInterface, CommonSettings, Permissions } from '@guardian/interfaces';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { SettingsDTO, InternalServerErrorDTO } from '#middlewares';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AboutResponseDTO, SettingsDTO, InternalServerErrorDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { Guardians, InternalException } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
@@ -32,15 +32,17 @@ export class SettingsApi {
         required: true,
         type: SettingsDTO,
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
+    @ApiNoContentResponse({
+        description: 'Settings updated successfully.',
+        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SettingsDTO, InternalServerErrorDTO)
-    @HttpCode(HttpStatus.CREATED)
+    @HttpCode(HttpStatus.NO_CONTENT)
     async updateSettings(
         @AuthUser() user: IAuthUser,
         @Body() body: SettingsDTO
@@ -69,11 +71,13 @@ export class SettingsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: SettingsDTO
+        type: SettingsDTO,
+        example: { ipfsStorageApiKey: 'string', operatorId: 'f3b2a9c1e4d5678901234567', operatorKey: 'string' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SettingsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -100,11 +104,13 @@ export class SettingsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: String
+        type: String,
+        example: 'string'
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -133,12 +139,15 @@ export class SettingsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        type: AboutResponseDTO,
+        example: { version: '2.8.1' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(AboutResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getAbout(): Promise<AboutInterface> {
         let version = this.cachedVersion;

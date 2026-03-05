@@ -15,11 +15,11 @@ import {
     Req,
     Res
 } from '@nestjs/common';
-import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBody, ApiConsumes, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey, FilenameSanitizer } from '#helpers';
-import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
+import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem, UpsertFileResponseDTO } from '#middlewares';
 import { ARTIFACT_REQUIRED_PROPS, PREFIXES } from '#constants'
 import { FastifyReply } from 'fastify';
 
@@ -87,11 +87,13 @@ export class ArtifactApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: ArtifactDTOItem
+        type: ArtifactDTOItem,
+        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'string', uuid: 'f3b2a9c1e4d5678901234567', extention: 'string', type: 'string' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -196,11 +198,13 @@ export class ArtifactApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: ArtifactDTOItem
+        type: ArtifactDTOItem,
+        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'string', uuid: 'f3b2a9c1e4d5678901234567', extention: 'string', type: 'string' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -283,14 +287,17 @@ export class ArtifactApi {
             }
         }
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
+    @ApiCreatedResponse({
+        description: 'Artifacts uploaded successfully.',
         isArray: true,
-        type: ArtifactDTOItem
+        type: ArtifactDTOItem,
+        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'string', uuid: 'f3b2a9c1e4d5678901234567', extention: 'string', type: 'string' }]
     })
+    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @UseInterceptors(AnyFilesInterceptor({
@@ -347,11 +354,13 @@ export class ArtifactApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -376,8 +385,23 @@ export class ArtifactApi {
         Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_MANAGE,
     )
-    @ApiOperation({ summary: 'Download file by id', description: 'Returns file from GridFS' })
-    @ApiParam({ name: 'fileId', type: String, required: true, description: 'File _id' })
+    @ApiOperation({ summary: 'Download file by id.', description: 'Returns file from GridFS by its identifier.' })
+    @ApiParam({ name: 'fileId', type: String, required: true, description: 'File identifier', example: Examples.DB_ID })
+    @ApiProduces('text/csv')
+    @ApiOkResponse({
+        description: 'Successful operation. Returns file content.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+        example: { result: 'ok' }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async downloadFile(
         @AuthUser() user: IAuthUser,
@@ -427,6 +451,18 @@ export class ArtifactApi {
         allowedFields: ['file', 'fileId'],
         requiredFields: ['file']
     }))
+    @ApiCreatedResponse({
+        description: 'File uploaded successfully.',
+        type: UpsertFileResponseDTO,
+        example: { fileId: '67b8f31d2a26f8be2a9f0be9' }
+    })
+    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
+    })
+    @ApiExtraModels(UpsertFileResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async upsertFile(
         @AuthUser() user: IAuthUser,
@@ -465,9 +501,22 @@ export class ArtifactApi {
     })
     @ApiParam({
         name: 'fileId',
-        type: String, required: true,
-        description: 'File _id'
+        type: String,
+        required: true,
+        description: 'File identifier',
+        example: Examples.DB_ID
     })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean,
+        example: true
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteFile(
         @AuthUser() user: IAuthUser,

@@ -37,11 +37,13 @@ export class NotificationsApi {
         description: 'Successful operation. Returns notifications and count.',
         isArray: true,
         headers: pageHeader,
-        type: NotificationDTO
+        type: NotificationDTO,
+        example: [{ title: 'string', message: 'string', type: 'string', action: 'string', result: {}, read: true, old: true }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -76,10 +78,12 @@ export class NotificationsApi {
         description: 'Successful operation. Returns new notifications.',
         isArray: true,
         type: NotificationDTO,
+        example: [{ title: 'string', message: 'string', type: 'string', action: 'string', result: {}, read: true, old: true }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -108,11 +112,13 @@ export class NotificationsApi {
     @ApiOkResponse({
         description: 'Successful operation. Returns progresses.',
         isArray: true,
-        type: ProgressDTO
+        type: ProgressDTO,
+        example: [{ action: 'string', message: 'string', progress: 0, type: 'string', taskId: 'f3b2a9c1e4d5678901234567' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(ProgressDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -136,16 +142,18 @@ export class NotificationsApi {
     @Auth()
     @ApiOperation({
         summary: 'Read all notifications',
-        description: 'Returns new notifications.'
+        description: 'Marks all notifications as read and returns them.'
     })
     @ApiOkResponse({
         description: 'Successful operation. Returns notifications.',
         isArray: true,
-        type: NotificationDTO
+        type: NotificationDTO,
+        example: [{ title: 'string', message: 'string', type: 'string', action: 'string', result: {}, read: true, old: true }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -180,11 +188,13 @@ export class NotificationsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation. Returns deleted notifications count.',
-        type: Number
+        type: Number,
+        example: 0
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

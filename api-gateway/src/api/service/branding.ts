@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
-import { ApiExtraModels, ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiExtraModels, ApiNoContentResponse, ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
 import {Auth, AuthUser} from '#auth';
 import { Permissions } from '@guardian/interfaces';
 import { BrandingDTO, InternalServerErrorDTO } from '#middlewares';
@@ -32,12 +32,14 @@ export class BrandingApi {
         required: true,
         type: BrandingDTO
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
+    @ApiNoContentResponse({
+        description: 'Branding updated successfully.',
+        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
@@ -81,13 +83,19 @@ export class BrandingApi {
      * Get branding
      */
     @Get('/')
+    @ApiOperation({
+        summary: 'Returns branding configuration.',
+        description: 'Returns current branding configuration.',
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: BrandingDTO
+        type: BrandingDTO,
+        example: { headerColor: 'string', primaryColor: 'string', companyName: 'string', companyLogoUrl: 'https://example.com', loginBannerUrl: 'https://example.com', faviconUrl: 'https://example.com', headerColor1: 'string', termsAndConditions: 'string' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
     @UseCache()

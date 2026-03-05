@@ -14,6 +14,12 @@ export const updateSettings = () => {
     });
 }
 
+export class AboutResponseDTO {
+    @ApiProperty({ description: 'Application version', example: '2.8.1' })
+    @IsString()
+    version: string;
+}
+
 export class SettingsDTO {
     @ApiProperty()
     @IsString()

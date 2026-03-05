@@ -2,8 +2,8 @@ import { IAuthUser, NotificationHelper, PinoLogger } from '@guardian/common';
 import { Permissions, PolicyStatus, SchemaEntity, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, ChangePasswordDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO } from '#middlewares';
+import { ApiBearerAuth, ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { AccessTokenRequestDTO, AccessTokenResponseDTO, AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, ChangePasswordDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO } from '#middlewares';
 import { Auth, AuthUser, checkPermission } from '#auth';
 import { EntityOwner, Guardians, InternalException, PolicyEngine, UseCache, Users } from '#helpers';
 import { PolicyListResponse } from '../../entities/policy';
@@ -34,10 +34,12 @@ export class AccountApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: AccountsSessionResponseDTO,
+        example: { username: 'alice', role: 'STANDARD_REGISTRY' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @UseCache()
@@ -65,13 +67,17 @@ export class AccountApi {
         summary: 'Registers a new user account.',
         description: 'Object that contain username, password and role (optional) fields.',
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: AccountsResponseDTO
+        type: AccountsResponseDTO,
+        example: { username: 'alice', role: 'STANDARD_REGISTRY' }
     })
+    @ApiConflictResponse({ description: 'Conflict.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnauthorizedResponse({ description: 'Unauthorized.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -127,11 +133,14 @@ export class AccountApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: AccountsSessionResponseDTO
+        type: AccountsSessionResponseDTO,
+        example: { username: 'alice', role: 'STANDARD_REGISTRY' }
     })
+    @ApiUnauthorizedResponse({ description: 'Unauthorized.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -162,11 +171,14 @@ export class AccountApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: AccountsSessionResponseDTO
+        type: AccountsSessionResponseDTO,
+        example: { username: 'alice', role: 'STANDARD_REGISTRY' }
     })
+    @ApiUnauthorizedResponse({ description: 'Unauthorized.', type: InternalServerErrorDTO, example: { result: 'ok' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -192,12 +204,26 @@ export class AccountApi {
         summary: 'Returns access token.',
         description: 'Returns access token.'
     })
-    @ApiOkResponse({
-        description: 'Successful operation.'
+    @ApiBody({
+        description: 'Object that contains a refresh token.',
+        type: AccessTokenRequestDTO,
     })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: AccessTokenResponseDTO,
+        example: { accessToken: 'eyJhbGciOi...' }
+    })
+    @ApiUnauthorizedResponse({ description: 'Unauthorized.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
+    })
+    @ApiExtraModels(AccessTokenRequestDTO, AccessTokenResponseDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
     async getAccessToken(
-        @Body() body: any
-    ): Promise<any> {
+        @Body() body: AccessTokenRequestDTO
+    ): Promise<AccessTokenResponseDTO> {
         try {
             const { refreshToken } = body;
             const users = new Users();
@@ -229,11 +255,14 @@ export class AccountApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: AccountsResponseDTO
+        isArray: true,
+        type: AccountsResponseDTO,
+        example: [{ username: 'alice', role: 'STANDARD_REGISTRY' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @UseCache()
@@ -264,11 +293,13 @@ export class AccountApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: AccountsResponseDTO
+        type: AccountsResponseDTO,
+        example: { username: 'alice', role: 'STANDARD_REGISTRY' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -299,11 +330,13 @@ export class AccountApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: AggregatedDTOItem
+        type: AggregatedDTOItem,
+        example: [{ did: 'f3b2a9c1e4d5678901234567', hederaAccountId: 'f3b2a9c1e4d5678901234567', vcDocument: {}, policies: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(AggregatedDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -367,11 +400,13 @@ export class AccountApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: BalanceResponseDTO
+        type: BalanceResponseDTO,
+        example: { balance: 0, unit: 'string', user: { username: 'alice', did: 'did:hedera:testnet:abc123' } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(BalanceResponseDTO, InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.SHORT_TTL })
