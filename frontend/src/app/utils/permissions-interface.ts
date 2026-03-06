@@ -125,7 +125,8 @@ export const entityNames = new Map<PermissionEntities, string>([
     [PermissionEntities.ROLE, 'Role'],
     [PermissionEntities.STATISTIC, 'Statistic'],
     [PermissionEntities.LABEL, 'Label'],
-    [PermissionEntities.FORMULA, 'Formula']
+    [PermissionEntities.FORMULA, 'Formula'],
+    [PermissionEntities.WORKER_TASK, 'Worker Task']
 ])
 
 export const actionIndexes = new Map<PermissionActions, number>([
@@ -171,7 +172,8 @@ export const categoryNames = new Map<PermissionCategories, string>([
     [PermissionCategories.PERMISSIONS, 'Permissions'],
     [PermissionCategories.STATISTICS, 'Policy Statistics'],
     [PermissionCategories.FORMULAS, 'Formulas'],
-    [PermissionCategories.ACCESS, 'Access']
+    [PermissionCategories.ACCESS, 'Access'], 
+    [PermissionCategories.WORKER_TASKS, 'Worker Tasks'], 
 ])
 
 export const actionName = [

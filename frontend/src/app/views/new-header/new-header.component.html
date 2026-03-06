@@ -92,6 +92,7 @@
             </div>
         </div>
         <div
+            *ngIf="user.WORKER_TASKS_READ"
             [class.current]="activeLink.startsWith('/worker-tasks')"
             [routerLink]="'/worker-tasks'"
             class="item cursor-pointer"
