@@ -44,31 +44,46 @@ export class IpfsTransformationUIAddonCode {
         }
     }
 
-    private async processDocument(document: any): Promise<void> {
-        if (!document || typeof(document) !== 'object') {
+    private async processDocument(rootDocument: any): Promise<void> {
+        if (!rootDocument || typeof(rootDocument) !== 'object') {
             return;
         }
 
-        if (Array.isArray(document)) {
-            for (let i = 0; i < document.length; i++) {
-                if (typeof(document[i]) === 'string' && document[i].startsWith('ipfs://')) {
-                    document[i] = await this.processIpfsString(document[i]);
-                } else if (typeof(document[i]) === 'object' && document[i] !== null) {
-                    await this.processDocument(document[i]);
+        const stack: any[] = [rootDocument];
+        const tasks: Promise<void | any>[] = [];
+
+        while (stack.length) {
+            const documentObject = stack.pop();
+            if (Array.isArray(documentObject)) {
+                for (let i = 0; i < documentObject.length; i++) {
+                    const documentValue = documentObject[i];
+                    if (typeof(documentValue) === 'string' && documentValue.startsWith('ipfs://')) {
+                        tasks.push(this.processIpfsString(documentValue).then(res => { 
+                            documentObject[i] = res; 
+                        }));
+                    } else if (documentValue && typeof(documentValue) === 'object') {
+                        stack.push(documentValue);
+                    }
                 }
-            }
-        } else {
-            for (const key in document) {
-                const value = document[key];
-                
-                if (typeof(value) === 'string' && value.startsWith('ipfs://')) {
-                    document[key] = await this.processIpfsString(value);
-                } else if (typeof(value) === 'object' && value !== null) {
-                    await this.processDocument(value);
+            } else {
+                for (const key in documentObject) {
+                    const value = documentObject[key];
+                    if (typeof(value) === 'string' && value.startsWith('ipfs://')) {
+                        tasks.push(this.processIpfsString(value).then(res => { 
+                            documentObject[key] = res; 
+                        }));
+                    } else if (value && typeof(value) === 'object') {
+                        stack.push(value);
+                    }
                 }
             }
         }
+
+        if (tasks.length) {
+            await Promise.all(tasks);
+        }
     }
+
 
     private async processIpfsString(ipfsString: string): Promise<any> {
         const match = this.ipfsPattern.exec(ipfsString);
