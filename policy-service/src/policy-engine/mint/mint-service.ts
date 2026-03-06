@@ -199,9 +199,10 @@ export class MintService {
                         userId,
                         interception: null
                     })
-                    .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
-                    )
+                    .catch((error) => {
+                        MintService.publishMintFailedEvent(token.tokenId, tokenValue, transactionMemo, PolicyUtils.getErrorMessage(error));
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId);
+                    })
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
                             mintNFT.mintRequestId
@@ -232,9 +233,10 @@ export class MintService {
                         userId,
                         interception: null
                     })
-                    .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
-                    )
+                    .catch((error) => {
+                        MintService.publishMintFailedEvent(token.tokenId, tokenValue, transactionMemo, PolicyUtils.getErrorMessage(error));
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId);
+                    })
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
                             mintFT.mintRequestId
@@ -550,9 +552,10 @@ export class MintService {
                     userId,
                     interception: null
                 })
-                .catch((error) =>
-                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
-                )
+                .catch((error) => {
+                    MintService.publishMintFailedEvent(token.tokenId, tokenValue, memo, PolicyUtils.getErrorMessage(error));
+                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId);
+                })
                 .finally(() => {
                     MintService.activeMintProcesses.delete(
                         mintNFT.mintRequestId
@@ -583,9 +586,10 @@ export class MintService {
                     userId,
                     interception: null
                 })
-                .catch((error) =>
-                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
-                )
+                .catch((error) => {
+                    MintService.publishMintFailedEvent(token.tokenId, tokenValue, memo, PolicyUtils.getErrorMessage(error));
+                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId);
+                })
                 .finally(() => {
                     MintService.activeMintProcesses.delete(
                         mintFT.mintRequestId
@@ -745,6 +749,31 @@ export class MintService {
         } else {
             MintService.logger.error(message, ['POLICY_SERVICE'], userId);
         }
+    }
+
+    /**
+     * Publish TOKEN_MINT_FAILED external event
+     * @param tokenId
+     * @param tokenValue
+     * @param memo
+     * @param error
+     */
+    private static publishMintFailedEvent(
+        tokenId: string,
+        tokenValue: number,
+        memo: string,
+        error: string
+    ): void {
+        new ExternalEventChannel().publishMessage(
+            ExternalMessageEvents.TOKEN_MINT_FAILED,
+            {
+                tokenId,
+                tokenValue,
+                memo,
+                error,
+                timestamp: Date.now(),
+            }
+        );
     }
 
     /**
