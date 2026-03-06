@@ -292,7 +292,7 @@ Alternatively, you can create a single key pair and, instead of adding the publi
 
    ```text
    IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5001"
-   IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}'
+   IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/{cid}'
    IPFS_PROVIDER="local"
    ```
 

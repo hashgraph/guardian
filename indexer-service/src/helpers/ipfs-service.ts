@@ -23,7 +23,9 @@ export class IPFSService {
     public static async get(cid: string, timeout: number): Promise<Buffer> {
         try {
             const items = await axios.get(
-                process.env.IPFS_GATEWAY?.replace('${cid}', cid),
+                process.env.IPFS_GATEWAY
+                    ?.replace('${cid}', cid)
+                    ?.replace('{cid}', cid),
                 {
                     responseType: 'arraybuffer',
                     timeout,
