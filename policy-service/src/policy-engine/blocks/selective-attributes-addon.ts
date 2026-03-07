@@ -23,6 +23,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
             label: 'Attributes To Select',
             title: 'Attributes To Select',
             type: PropertyType.Array,
+            editable: true,
             items: {
                 label: 'Attribute Path',
                 value: '@attributePath',
@@ -30,7 +31,8 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
                     name: 'attributePath',
                     label: 'Attribute Path',
                     title: 'Attribute Path',
-                    type: PropertyType.Input
+                    type: PropertyType.Input,
+                    editable: true
                 }]
             }
         }]

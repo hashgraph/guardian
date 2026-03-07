@@ -79,10 +79,11 @@ export class TokenConfirmationBlock {
     /**
      * Get Schema
      */
-    async getToken(): Promise<TokenCollection> {
+    async getToken(user?: PolicyUser): Promise<TokenCollection> {
         if (!this.token) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-            this.token = await ref.databaseServer.getToken(ref.options.tokenId);
+            const options = await ref.getOptions(user);
+            this.token = await ref.databaseServer.getToken(options.tokenId);
         }
         return this.token;
     }
@@ -93,8 +94,9 @@ export class TokenConfirmationBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
+        const options = await ref.getOptions(user);
         const blockState: any = this.state[user?.id] || {};
-        const token = await this.getToken();
+        const token = await this.getToken(user);
         const block: IPolicyGetData = {
             id: ref.uuid,
             blockType: 'tokenConfirmationBlock',
@@ -103,7 +105,7 @@ export class TokenConfirmationBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            action: ref.options.action,
+            action: options.action,
             accountId: blockState.accountId,
             tokenName: token.tokenName,
             tokenSymbol: token.tokenSymbol,
@@ -133,7 +135,7 @@ export class TokenConfirmationBlock {
         }
 
         if (data.action === 'confirm') {
-            await this.confirm(ref, data, blockState, user.userId);
+            await this.confirm(ref, data, blockState, user.userId, user);
         }
 
         return {
@@ -145,6 +147,7 @@ export class TokenConfirmationBlock {
         action: 'confirm' | 'skip'
     }, actionStatus: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
+        const options = await ref.getOptions(user);
         ref.log(`setData`);
 
         if (!data) {
@@ -160,7 +163,7 @@ export class TokenConfirmationBlock {
         await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, blockState.user, {
             userAction: data.action,
-            action: ref.options.action
+            action: options.action
         }));
     }
 
@@ -205,31 +208,34 @@ export class TokenConfirmationBlock {
             hederaAccountKey: string
         },
         state: any,
-        userId: string | null) {
+        userId: string | null,
+        user?: PolicyUser) {
         const account = {
             id: userId,
             hederaAccountId: state.accountId,
             hederaAccountKey: data.hederaAccountKey
         }
 
+        const options = await ref.getOptions(user);
+
         if (!account.hederaAccountKey) {
             throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
         }
 
         let token: any;
-        if (ref.options.useTemplate) {
+        if (options.useTemplate) {
             if (state.tokenId) {
                 token = await ref.databaseServer.getToken(state.tokenId, ref.dryRun);
             }
         } else {
-            token = await this.getToken();
+            token = await this.getToken(user);
         }
 
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        switch (ref.options.action) {
+        switch (options.action) {
             case 'associate': {
                 await PolicyUtils.associate(ref, token, account, userId);
                 break;
@@ -260,15 +266,17 @@ export class TokenConfirmationBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
 
-        const field = ref.options.accountId;
+        const options = await ref.getOptions(event.user);
+
+        const field = options.accountId;
         if (event) {
             const documents = event.data?.data;
             const id = event.user?.id;
             const userId = event?.user?.userId;
             const doc = Array.isArray(documents) ? documents[0] : documents;
             let tokenId: string;
-            if (ref.options.useTemplate && doc && doc.tokens) {
-                tokenId = doc.tokens[ref.options.template];
+            if (options.useTemplate && doc && doc.tokens) {
+                tokenId = doc.tokens[options.template];
             }
 
             let relayerAccount: string = null;

@@ -40,6 +40,7 @@ import { LocationType } from '@guardian/interfaces';
                 title: 'Option Name',
                 type: PropertyType.Path,
                 required: true,
+                editable: true
             },
             {
                 name: 'optionValue',
@@ -47,6 +48,7 @@ import { LocationType } from '@guardian/interfaces';
                 title: 'Option Value',
                 type: PropertyType.Path,
                 required: true,
+                editable: true
             },
             {
                 name: 'field',
@@ -54,6 +56,7 @@ import { LocationType } from '@guardian/interfaces';
                 title: 'Field',
                 type: PropertyType.Path,
                 required: true,
+                editable: true
             },
         ],
     },
@@ -66,7 +69,7 @@ export class DropdownBlockAddon {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-
+        const options = await ref.getOptions(user);
         const documents: any[] = await ref.getSources(user, null);
 
         const data: IPolicyGetData = {
@@ -77,11 +80,11 @@ export class DropdownBlockAddon {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            ...ref.options,
+            ...options,
             documents: documents.map((e) => {
                 return {
-                    name: findOptions(e, ref.options.optionName),
-                    optionValue: findOptions(e, ref.options.optionValue),
+                    name: findOptions(e, options.optionName),
+                    optionValue: findOptions(e, options.optionValue),
                     value: e.id,
                 };
             }),
@@ -104,6 +107,7 @@ export class DropdownBlockAddon {
         actionStatus
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = await ref.getOptions(user);
         const documents: any[] = await ref.getSources(user, null);
         const dropdownDocument = documents.find(
             // tslint:disable-next-line:no-shadowed-variable
@@ -126,8 +130,8 @@ export class DropdownBlockAddon {
             (document: any) => {
                 document = setOptions(
                     document,
-                    ref.options.field,
-                    findOptions(dropdownDocument, ref.options.optionValue)
+                    options.field,
+                    findOptions(dropdownDocument, options.optionValue)
                 );
                 return {
                     data: document,

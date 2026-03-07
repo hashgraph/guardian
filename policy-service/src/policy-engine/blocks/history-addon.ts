@@ -23,13 +23,15 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
             label: 'Timeline Label Path',
             title: 'Timeline unit label path',
             type: PropertyType.Path,
-            default: ''
+            default: '',
+            editable: true
         }, {
             name: 'timelineDescriptionPath',
             label: 'Timeline Description Path',
             title: 'Timeline unit description',
             type: PropertyType.Path,
-            default: ''
+            default: '',
+            editable: true
         }]
     },
     variables: []

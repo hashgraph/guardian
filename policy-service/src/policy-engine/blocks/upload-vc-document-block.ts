@@ -161,6 +161,7 @@ export class UploadVcDocumentBlock {
     })
     async setData(user: PolicyUser, data: any, _, actionStatus: RecordActionStep): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+        const options = await ref.getOptions(user);
 
         if (!user.did) {
             throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
@@ -193,8 +194,8 @@ export class UploadVcDocumentBlock {
                     const tags = await PolicyUtils.getBlockTags(ref);
                     PolicyUtils.setDocumentTags(doc, tags);
 
-                    doc.type = ref.options.entityType;
-                    doc.schema = ref.options.schema;
+                    doc.type = options.entityType;
+                    doc.schema = options.schema;
                     doc.signature = DocumentSignature.VERIFIED;
 
                     retArray.push(doc);

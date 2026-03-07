@@ -1489,6 +1489,8 @@ export class PolicyEngine extends NatsService {
             if (model.originalHash) {
                 const policyComponents = await PolicyImportExport.loadPolicyComponents(model);
                 currentHash = PolicyImportExport.getPolicyHash(policyComponents);
+                console.log('original hash:', model.originalHash);
+                console.log('current hash:', currentHash);
             }
 
             const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);

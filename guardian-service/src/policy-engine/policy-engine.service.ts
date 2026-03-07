@@ -30,6 +30,7 @@ import {
     PolicyDiscussion,
     PolicyImportExport,
     PolicyMessage,
+    PolicyParameters,
     RecordImportExport,
     RunFunctionAsync,
     Schema as SchemaCollection,
@@ -59,7 +60,9 @@ import {
     PolicyActionStatus,
     IgnoreRule,
     SchemaStatus,
-    MigrationConfig, MigrationRunStatus
+    PolicyEditableFieldDTO,
+    MigrationConfig,
+    MigrationRunStatus
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
@@ -4987,6 +4990,59 @@ export class PolicyEngineService {
                     return new MessageResponse(docs);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            })
+
+        this.channel.getMessages(PolicyEngineEvents.SAVE_POLICY_PARAMETERS_VALUES,
+            async (msg: { owner: IOwner, userDID: string, policyId: string, config: PolicyEditableFieldDTO[] }) => {
+                try {
+                    let result;
+                    const { userDID, policyId, config } = msg;
+
+                    const found = await DatabaseServer.getPolicyParameters(userDID, policyId);
+                    if(found) {
+                        found.config = config;
+                        result = await DatabaseServer.updatePolicyParameters(found);
+                    } else {
+                        const parameters = new PolicyParameters();
+                        parameters.userDID = userDID;
+                        parameters.policyId = policyId;
+                        parameters.config = config;
+                        parameters.properties = {};
+                        parameters.updated = false;
+
+                        result = await DatabaseServer.createPolicyParameters(parameters);
+                    }
+
+                    const allPolicyParameters = await DatabaseServer.getPolicyParametersByPolicyId(policyId);
+                    allPolicyParameters.forEach(parameter => parameter.updated = true);
+                    await DatabaseServer.setPolicyParametersUpdated(allPolicyParameters);
+
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner.id);
+                    return new MessageError(error);
+                }
+            })
+
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_PARAMETERS_VALUES,
+            async (msg: { owner: IOwner, userDID: string, policyId: string }) => {
+                try {
+                    const { userDID, policyId } = msg;
+                    let result;
+                    const parameters = await DatabaseServer.getPolicyParameters(userDID, policyId);
+                    if(parameters && parameters.config?.length) {
+                        result = parameters.config;
+                    }
+                    else {
+                        const foundPolicy = await DatabaseServer.getPolicyById(policyId);
+                        result = foundPolicy?.editableParametersSettings;
+                    }
+
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner.id);
                     return new MessageError(error);
                 }
             })

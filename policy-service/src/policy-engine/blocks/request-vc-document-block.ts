@@ -193,13 +193,14 @@ export class RequestVcDocumentBlock {
 
     private async setBlockData(user: PolicyUser, data: IPolicyDocument, actionStatus: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+        const options = await ref.getOptions(user);
         try {
             //Prepare data
             const document = await this.prepareDocument(data);
             const draft = data.draft;
             const draftId = data.draftId;
-            const editType = ref.options.editType;
-            const forceRelayerAccount = ref.options.forceRelayerAccount;
+            const editType = options.editType;
+            const forceRelayerAccount = options.forceRelayerAccount;
             const inheritRelayerAccount = PolicyComponentsUtils.IsInheritRelayerAccount(ref.policyId, forceRelayerAccount);
 
             const documentRef = await this.getRelationships(ref, data.ref);
@@ -220,7 +221,7 @@ export class RequestVcDocumentBlock {
             }
 
             //Validate preset
-            const presetCheck = await this.checkPreset(ref, document, documentRef)
+            const presetCheck = await this.checkPreset(ref, document, documentRef, user);
             if (!presetCheck.valid) {
                 throw new BlockActionError(
                     JSON.stringify(presetCheck.error),
@@ -325,14 +326,17 @@ export class RequestVcDocumentBlock {
     private async checkPreset(
         ref: AnyBlockType,
         document: any,
-        documentRef: VcDocumentCollection
+        documentRef: VcDocumentCollection,
+        user?: PolicyUser
     ): Promise<CheckResult> {
+        const options = await ref.getOptions(user);
+
         if (
-            ref.options.presetFields &&
-            ref.options.presetFields.length &&
-            ref.options.presetSchema
+            options.presetFields &&
+            options.presetFields.length &&
+            options.presetSchema
         ) {
-            const readonly = ref.options.presetFields.filter(
+            const readonly = options.presetFields.filter(
                 (item: any) => item.readonly && item.value
             );
             if (!readonly.length || !document || !documentRef) {
@@ -398,11 +402,11 @@ export class RequestVcDocumentBlock {
         actionStatusId: string,
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-
+        const options = await ref.getOptions(user);
         SchemaHelper.updateObjectContext(this._schema, document);
 
         const _vcHelper = new VcHelper();
-        const idType = ref.options.idType;
+        const idType = options.idType;
 
         const credentialSubject = document;
         credentialSubject.policyId = ref.policyId;

@@ -161,10 +161,11 @@ export class ExternalDataBlock {
         }
 
         const user: PolicyUser = await PolicyUtils.getDocumentOwner(ref, data, null);
+        const options = await ref.getOptions(user);
         const documentRef = await this.getRelationships(ref, data.ref);
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);
-        const forceRelayerAccount = ref.options.forceRelayerAccount;
+        const forceRelayerAccount = options.forceRelayerAccount;
         const inheritRelayerAccount = PolicyComponentsUtils.IsInheritRelayerAccount(ref.policyId, forceRelayerAccount);
 
         //Relayer Account
@@ -178,8 +179,8 @@ export class ExternalDataBlock {
         const tags = await PolicyUtils.getBlockTags(ref);
         PolicyUtils.setDocumentTags(doc, tags);
 
-        doc.type = ref.options.entityType;
-        doc.schema = ref.options.schema;
+        doc.type = options.entityType;
+        doc.schema = options.schema;
         doc.accounts = accounts;
         doc.relayerAccount = relayerAccount;
         doc.signature = (verify ?

@@ -1,6 +1,6 @@
 import { ApiExtraModels, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {ArrayNotEmpty, IsArray, IsBoolean, IsIn, IsNumber, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
-import { PolicyAvailability, PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
+import { PolicyAvailability, PolicyEditableFieldDTO, PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
 import { Examples } from '../examples.js';
 import { ValidationErrorsDTO } from './blocks.js';
 import {Type} from 'class-transformer';
@@ -246,6 +246,14 @@ export class PolicyDTO {
     @IsOptional()
     @IsBoolean()
     originalChanged?: boolean;
+
+    @ApiProperty({
+        type: () => PolicyEditableFieldDTO,
+        isArray: true
+    })
+    @IsOptional()
+    @IsArray()
+    editableParametersSettings?: PolicyEditableFieldDTO[];
 
     @ApiProperty({
         type: 'object',

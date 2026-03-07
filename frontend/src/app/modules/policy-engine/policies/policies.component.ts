@@ -53,6 +53,7 @@ import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.s
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
 import { ToastrService } from 'ngx-toastr';
 import { UserPolicyDialog } from '../dialogs/user-policy-dialog/user-policy-dialog.component';
+import { PolicyParametersDialog } from '../dialogs/policy-parameters-dialog/policy-parameters-dialog.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 
@@ -629,7 +630,23 @@ export class PoliciesComponent implements OnInit {
                         click: () => this.userPolicyManage(policy)
                     })
                 ]
-            }, {
+            }, 
+            {
+                tooltip: 'Parameters',
+                group: false,
+                visible: PolicyHelper.isPublishMode(policy) && this.user.POLICIES_POLICY_MANAGE,
+                color: 'primary-color',
+                buttons: [
+                    new MenuButton({
+                        visible: true,
+                        disabled: false,
+                        tooltip: 'Policy parameters',
+                        icon: 'settings',
+                        color: 'primary-color',
+                        click: () => this.policyParameters(policy)
+                    })
+                ]
+            },{
                 tooltip: 'Delete',
                 group: false,
                 visible: true,
@@ -1955,6 +1972,19 @@ export class PoliciesComponent implements OnInit {
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => { });
     }
 
+    public policyParameters(policy?: any) {
+        this.policySubMenu?.hide();
+        const dialogRef = this.dialogService.open(PolicyParametersDialog, {
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
+            data: {
+                policyId: policy?.id
+            },
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => { });
+    }
+
     public onSelectAllItems(event: any) {
         if (event.checked) {
             this.selectedItems = [...this.selectedItems, ...this.policiesList.filter((item: any) => (item.status === PolicyStatus.DRAFT ||
@@ -2105,9 +2135,9 @@ export class PoliciesComponent implements OnInit {
                     this.policyEngineService
                         .disconnect(policy.id)
                         .pipe(takeUntil(this._destroy$))
-                        .subscribe((result) => {
+                        .subscribe((result: any) => {
                             this.loadAllPolicy();
-                        }, (e) => {
+                        }, (e: any) => {
                             this.loading = false;
                         });
                 }
@@ -2185,7 +2215,7 @@ export class PoliciesComponent implements OnInit {
                 this.policyEngineService
                     .reconnect(policy.id)
                     .pipe(takeUntil(this._destroy$))
-                    .subscribe((result) => {
+                    .subscribe((result: any) => {
                         this.loadAllPolicy();
                     }, (e) => {
                         this.loading = false;

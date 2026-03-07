@@ -30,6 +30,7 @@ import { BlockActionError } from '../errors/index.js';
             label: 'Impact type',
             title: 'Impact type',
             type: PropertyType.Select,
+            editable: true,
             items: [{
                 label: 'Primary Impacts',
                 value: 'Primary Impacts'
@@ -43,22 +44,26 @@ import { BlockActionError } from '../errors/index.js';
             name: 'label',
             label: 'Label',
             title: 'Label',
+            editable: true,
             type: PropertyType.Input
         }, {
             name: 'description',
             label: 'Description',
             title: 'Description',
+            editable: true,
             type: PropertyType.Input
         }, {
             name: 'amount',
             label: 'Amount (Formula)',
             title: 'Amount (Formula)',
             required: true,
+            editable: true,
             type: PropertyType.Input
         }, {
             name: 'unit',
             label: 'Unit',
             title: 'Unit',
+            editable: true,
             type: PropertyType.Input
         }]
     },
@@ -99,23 +104,24 @@ export class TokenOperationAddon {
         userId: string | null
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const options = await ref.getOptions(user);
         const policySchema = await this.getSchema();
-        const amount = PolicyUtils.aggregate(ref.options.amount, documents);
+        const amount = PolicyUtils.aggregate(options.amount, documents);
         const vcHelper = new VcHelper();
         const vcSubject: any = {
             ...SchemaHelper.getContext(policySchema),
-            impactType: ref.options.impactType === 'Primary Impacts' ? 'Primary Impacts' : 'Secondary Impacts',
+            impactType: options.impactType === 'Primary Impacts' ? 'Primary Impacts' : 'Secondary Impacts',
             date: (new Date()).toISOString(),
             amount: amount.toString(),
         }
-        if (ref.options.unit) {
-            vcSubject.unit = ref.options.unit;
+        if (options.unit) {
+            vcSubject.unit = options.unit;
         }
-        if (ref.options.label) {
-            vcSubject.label = ref.options.label;
+        if (options.label) {
+            vcSubject.label = options.label;
         }
-        if (ref.options.description) {
-            vcSubject.description = ref.options.description;
+        if (options.description) {
+            vcSubject.description = options.description;
         }
         const didDocument = await root.loadDidDocument(ref, userId);
         const uuid = await ref.components.generateUUID();

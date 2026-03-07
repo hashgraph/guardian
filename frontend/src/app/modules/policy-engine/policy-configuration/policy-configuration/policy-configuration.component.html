@@ -332,6 +332,11 @@
             </div>
 
             <div class="delimiter"></div>
+
+            <div (click)="onEditibleFields()" class="top-toolbar-btn all-status" title="Parameters">
+                <i class="pi pi-sliders-h"></i>
+                <span>Parameters</span>
+            </div>
         </div>
 
         <div (cdkDropListDropped)="onDroppedSection($event)" [cdkDropListData]="options.configurationOrder" cdkDropList

@@ -6,12 +6,13 @@ import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../../interfaces/policy-event-type.js';
-import { DatabaseServer, Policy } from '@guardian/common';
+import { DatabaseServer, Policy, PolicyParameters } from '@guardian/common';
 import deepEqual from 'deep-equal';
 import { PolicyUser } from '../../policy-user.js';
 import { ComponentsService } from '../components-service.js';
 import { IDebugContext } from '../../block-engine/block-result.js';
 import { RecordActionStep } from '../../record-action-step.js';
+import { PolicyUtils } from '../utils.js';
 
 /**
  * Basic block decorator
@@ -929,6 +930,85 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 await this.databaseServer.saveBlockCache(
                     this.policyId, this.uuid, did, name, value, true
                 );
+            }
+
+            setPropValue(properties:any, path:string, value:any) {
+                if (!path) return;
+
+                const keys = path.split('.');
+                const last = keys.pop();
+                if (!last) return;
+                
+                let current = properties;
+
+                for (const key of keys) {
+                    if(!(current[key] && typeof current[key] === 'object')) {
+                        current[key] = {};
+                    }
+
+                    current = current[key];
+                }
+
+                current[last] = value;
+            }
+
+            public async getOptions(user?: any) {
+                console.log('this.tag', this.tag);
+                console.log('this.options', this.options);
+
+                if(this.tag === 'revoke_pp_sr'){
+                    console.log('!!!!!!!!!!!!!!!1');
+                }
+                
+                if(!user) {
+                    console.log('no user');
+                    return this.options;
+                }
+                const row = await DatabaseServer.getPolicyParameters(user.did, this.policyId);
+                let properties;
+                if(!row || row.updated || !row.properties || Object.keys(row.properties).length === 0) {
+                    properties = {};
+                    const policyRows = await this.databaseServer.find(PolicyParameters, { policyId: this.policyId });
+                    for (const item of policyRows) {
+                        for (const config of item.config ?? []) {
+                            if(
+                                config.applyTo.includes('All') ||
+                                config.applyTo.includes(user.role) ||
+                                (config.applyTo.includes('Self') && item.userDID === user.did)
+                            ) {
+                                if(!properties[config.blockTag]) {
+                                    properties[config.blockTag] = {};
+                                }
+                                this.setPropValue(properties[config.blockTag], config.propertyPath, config.value);
+                            }
+                        }
+                    }
+                    if(row) {
+                        row.properties = properties;
+                        this.databaseServer.update(PolicyParameters, {
+                            policyId: row.policyId,
+                            userDID: row.userDID,
+                        }, row);
+                    } else {
+                        this.databaseServer.save(PolicyParameters, {
+                            policyId: this.policyId,
+                            userDID: user.did,
+                            config: [],
+                            updated: false,
+                            properties
+                        });
+                    }
+                } else {
+                    properties = row.properties;
+                }
+                console.log('properties', properties);
+                console.log('deep assign', PolicyUtils.deepAssign({}, this.options, properties[this.tag]));
+
+                if(properties && properties[this.tag]) {
+                    return PolicyUtils.deepAssign({}, this.options, properties[this.tag]);
+                } else {
+                    return this.options;
+                }
             }
         };
     };

@@ -144,6 +144,8 @@ export class HttpRequestBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         event.data.data = event.data.data || {};
 
+        const options = await ref.getOptions(event.user);
+
         const variablesObj: any = {
             did: event?.user?.did,
             username: event?.user.username
@@ -156,11 +158,11 @@ export class HttpRequestBlock {
             variablesObj.document = inputObject = (event?.data?.data as IPolicyDocument)?.document;
         }
 
-        const method = ref.options.method;
-        const url = this.replaceVariablesInString(ref.options.url, variablesObj);
+        const method = options.method;
+        const url = this.replaceVariablesInString(options.url, variablesObj);
         const headers = {};
-        if (Array.isArray(ref.options.headers)) {
-            for (const header of ref.options.headers) {
+        if (Array.isArray(options.headers)) {
+            for (const header of options.headers) {
                 headers[header.name] = this.replaceVariablesInString(header.value, variablesObj)
             }
         }

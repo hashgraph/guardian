@@ -36,6 +36,7 @@ export class ButtonBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = await ref.getOptions(user);
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -44,9 +45,9 @@ export class ButtonBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            type: ref.options.type,
-            uiMetaData: ref.options.uiMetaData,
-            user: ref.options.user,
+            type: options.type,
+            uiMetaData: options.uiMetaData,
+            user: options.user,
 
             userId: user ? user.userId : null,
             userDid: user ? user.did : null,

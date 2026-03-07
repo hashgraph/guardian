@@ -1,0 +1,133 @@
+<ng-container *ngIf="property.type === 'Input'">
+    <div class="element-container">
+        <label class="form-label property-label">{{ isArrayElement ? property.label : config.label }}
+            <span *ngIf="!isArrayElement" class="property-description">{{ config.shortDescription }}</span>
+            
+            <input
+                pInputText
+                class="prop-input" 
+                [readonly]="readonly" 
+                (blur)="onSave()"
+                [formControl]="fc"
+                type="text"/>
+        </label>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Code'">
+    <div class="guardian-input-container">
+        <label class="form-label">{{ property.label }}
+            <span class="property-description">{{ config.shortDescription }}</span>
+
+            <input 
+                pInputText 
+                class="prop-input" 
+                [readonly]="true"
+                (click)="editCode($event)"
+                [formControl]="fc"
+                (blur)="onSave()"/>
+        </label>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Checkbox'">
+    <div class="element-container">
+        <label class="form-label property-label">{{ config.label }}
+            <span class="property-description">{{ config.shortDescription }}</span>
+            <p-checkbox class="prop-input prop-checkbox" 
+                        type="checkbox" 
+                        [readonly]="readonly"
+                        [binary]="true"
+                        [formControl]="fc"
+                        (change)="onSave()">
+            </p-checkbox>
+        </label>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Select'">
+    <div class="element-container">
+        <label class="form-label property-label">{{ isArrayElement ? property.label : config.label }}
+            <span *ngIf="!isArrayElement" class="property-description">{{ config.shortDescription }}</span>
+            <p-dropdown
+                [options]="property.items"
+                [disabled]="readonly"
+                placeholder="Select an option"
+                (onChange)="onSave()"
+                [appendTo]="'body'"
+                [formControl]="fc"
+            >
+            </p-dropdown>
+        </label>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Path'">
+    <div class="element-container">
+        <label class="form-label property-label">{{ property.label }}</label>
+        <span class="property-description">{{ config.shortDescription }}</span>
+
+        <div class="element-path">
+            <p-dropdown
+                class="select"
+                [options]="pathOptions"
+                [formControl]="pathCtrl"
+                (onChange)="onPathPropertyChanged()"
+                appendTo="body">
+            </p-dropdown>
+
+            <input 
+                pInputText 
+                class="prop-input" 
+                [formControl]="valueCtrl"
+                (blur)="onPathPropertyChanged()"
+                (change)="onPathPropertyChanged()"
+                type="text"
+            />
+        </div>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Array'">
+    <div class="element-container">
+        <label class="form-label property-label">{{ property.label }}</label>
+        <span class="property-description">{{ config.shortDescription }}</span>
+
+        <div class="element-array">
+            <ng-container *ngFor="let rowCtrl of rows; let i = index">
+                <div class="element-array-group">
+                <div *ngFor="let p of property.items.properties"
+                    policy-parameter-property
+                    [config]="config"
+                    [property]="p"
+                    [readonly]="readonly"
+                    [block]="currentBlock"
+                    (update)="onSave()"
+                    [control]="rowGroup(rowCtrl).controls[p.name]">
+                </div>
+                <button
+                    class="element-array-delete guardian-icon-button big"
+                    (click)="$event.preventDefault(); removeItems(i)">
+                    <svg-icon
+                    class="icon-btn svg-icon"
+                    src="/assets/images/icons/delete.svg"
+                    svgClass="ghost-color">
+                    </svg-icon>
+                </button>
+                </div>
+            </ng-container>
+            <ng-container>
+                <div>
+                    <button (click)="addItems()" class="add-button dialog-button guardian-button guardian-button-secondary add-doc-btn">
+                        <div class="guardian-button-icon">
+                            <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/add.svg"
+                                svgClass="icon-color-primary">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Add</div>
+                    </button>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+</ng-container>

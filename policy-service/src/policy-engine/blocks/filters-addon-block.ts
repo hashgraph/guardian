@@ -53,20 +53,22 @@ export class FiltersAddonBlock {
         }
     }
 
-    private addQuery(filter: any, value: any) {
+    private async addQuery(filter: any, value: any, user?: PolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const query = PolicyUtils.parseQuery(ref.options.queryType || QueryType.eq, value);
+        const options = await ref.getOptions(user);
+        const query = PolicyUtils.parseQuery(options.queryType || QueryType.eq, value);
         if (query && query.expression) {
-            filter[ref.options.field] = query.expression;
+            filter[options.field] = query.expression;
         } else {
             throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
         }
     }
 
-    private checkValues(blockState: any, value: any): boolean {
+    private async checkValues(blockState: any, value: any, user: PolicyUser): Promise<boolean> {
         if (Array.isArray(blockState.lastData)) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-            const query = PolicyUtils.parseQuery(ref.options.queryType || QueryType.eq, value);
+            const options = await ref.getOptions(user);
+            const query = PolicyUtils.parseQuery(options.queryType || QueryType.eq, value);
             const itemValues = query.value;
             if (Array.isArray(itemValues)) {
                 for (const itemValue of itemValues) {
@@ -98,20 +100,21 @@ export class FiltersAddonBlock {
     public async getFilters(user: PolicyUser): Promise<{ [key: string]: string }> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filters = ref.filters[user.id] || {};
+        const options = await ref.getOptions(user);
 
-        if (!filters[ref.options.field] && !ref.options.canBeEmpty) {
+        if (!filters[options.field] && !options.canBeEmpty) {
 
             let filterValue: any;
-            if (ref.options.type === 'dropdown') {
+            if (options.type === 'dropdown') {
                 const data: any[] = await ref.getSources(user, null);
-                filterValue = findOptions(data[0], ref.options.optionValue);
+                filterValue = findOptions(data[0], options.optionValue);
             }
 
-            if (ref.options.type === 'datepicker') {
+            if (options.type === 'datepicker') {
                 filterValue = '';
             }
 
-            if (ref.options.type === 'input') {
+            if (options.type === 'input') {
                 filterValue = '';
             }
 
@@ -122,11 +125,11 @@ export class FiltersAddonBlock {
             } else {
                 filterValue = '';
             }
-            if (ref.options.queryType === 'user_defined') {
+            if (options.queryType === 'user_defined') {
                 filterValue = 'eq:' + filterValue;
             }
 
-            this.addQuery(filters, filterValue)
+            await this.addQuery(filters, filterValue, user);
         }
         return filters;
     }
@@ -137,6 +140,7 @@ export class FiltersAddonBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = await ref.getOptions(user);
 
         const block: IPolicyGetData = {
             id: ref.uuid,
@@ -146,33 +150,33 @@ export class FiltersAddonBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            type: ref.options.type,
-            uiMetaData: ref.options.uiMetaData,
-            canBeEmpty: ref.options.canBeEmpty,
-            queryType: ref.options.queryType
+            type: options.type,
+            uiMetaData: options.uiMetaData,
+            canBeEmpty: options.canBeEmpty,
+            queryType: options.queryType
         };
 
         const data: any[] = await ref.getSources(user, null);
 
-        if (ref.options.type === 'dropdown') {
+        if (options.type === 'dropdown') {
             const blockState = this.state[user.id] || {};
             blockState.lastData = data.map((e) => {
                 return {
-                    name: findOptions(e, ref.options.optionName),
-                    value: findOptions(e, ref.options.optionValue),
+                    name: findOptions(e, options.optionName),
+                    value: findOptions(e, options.optionValue),
                 }
             }).filter((value, index, array) => {
                 const i = array.findIndex(v => v.value === value.value);
                 return i === index;
             });
             block.data = blockState.lastData;
-            block.optionName = ref.options.optionName;
-            block.optionValue = ref.options.optionValue;
+            block.optionName = options.optionName;
+            block.optionValue = options.optionValue;
             block.filterValue = blockState.lastValue;
             this.state[user.id] = blockState;
         }
 
-        if (ref.options.type === 'datepicker' || ref.options.type === 'input') {
+        if (options.type === 'datepicker' || options.type === 'input') {
             const blockState = this.state[user.id] || {};
             block.filterValue = blockState.lastValue;
         }
@@ -194,6 +198,8 @@ export class FiltersAddonBlock {
 
     async setFiltersStrict(user: PolicyUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = await ref.getOptions(user);
+
         this.previousState[user.id] = { ...this.state[user.id] };
         const filter: any = {};
         if (!data) {
@@ -202,27 +208,27 @@ export class FiltersAddonBlock {
 
         const value = data.filterValue;
         const blockState = this.state[user.id] || {};
-        if (ref.options.type === 'dropdown') {
+        if (options.type === 'dropdown') {
             if (!blockState.lastData) {
                 await this.getData(user);
             }
             if (value) {
                 this.addQuery(filter, value);
-            } else if (!ref.options.canBeEmpty) {
+            } else if (!options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }
         }
-        if (ref.options.type === 'datepicker') {
+        if (options.type === 'datepicker') {
             if (value) {
                 this.addQuery(filter, value);
-            } else if (!ref.options.canBeEmpty) {
+            } else if (!options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }
         }
-        if (ref.options.type === 'input') {
+        if (options.type === 'input') {
             if (value) {
                 this.addQuery(filter, value);
-            } else if (!ref.options.canBeEmpty) {
+            } else if (!options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }
         }
@@ -234,6 +240,8 @@ export class FiltersAddonBlock {
 
     async setFilterState(user: PolicyUser, data: any): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = await ref.getOptions(user);
+
         this.previousState[user.id] = { ...this.state[user.id] };
         const filter: any = {};
         if (!data) {
@@ -242,27 +250,27 @@ export class FiltersAddonBlock {
 
         const value = data.filterValue;
         const blockState = this.state[user.id] || {};
-        if (ref.options.type === 'dropdown') {
+        if (options.type === 'dropdown') {
             if (!blockState.lastData) {
                 await this.getData(user);
             }
-            if (this.checkValues(blockState, value)) {
+            if (await this.checkValues(blockState, value, user)) {
                 this.addQuery(filter, value);
-            } else if (!ref.options.canBeEmpty) {
+            } else if (!options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }
         }
-        if (ref.options.type === 'datepicker') {
+        if (options.type === 'datepicker') {
             if (value) {
                 this.addQuery(filter, value);
-            } else if (!ref.options.canBeEmpty) {
+            } else if (!options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }
         }
-        if (ref.options.type === 'input') {
+        if (options.type === 'input') {
             if (value) {
                 this.addQuery(filter, value);
-            } else if (!ref.options.canBeEmpty) {
+            } else if (!options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }
         }

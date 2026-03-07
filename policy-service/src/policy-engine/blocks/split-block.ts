@@ -45,12 +45,14 @@ import { RecordActionStep } from '../record-action-step.js';
             name: 'threshold',
             label: 'Threshold',
             title: 'Threshold',
-            type: PropertyType.Input
+            type: PropertyType.Input,
+            editable: true
         }, {
             name: 'sourceField',
             label: 'Source field',
             title: 'Source field',
-            type: PropertyType.Path
+            type: PropertyType.Path,
+            editable: true
         }]
     },
     variables: []
@@ -88,9 +90,10 @@ export class SplitBlock {
      * @param ref
      * @param doc
      */
-    private async calcDocValue(ref: IPolicyBlock, doc: IPolicyDocument): Promise<number> {
+    private async calcDocValue(ref: IPolicyBlock, doc: IPolicyDocument, user?: PolicyUser): Promise<number> {
         try {
-            const value = PolicyUtils.getObjectValue<any>(doc, ref.options.sourceField);
+            const options = await ref.getOptions(user);
+            const value = PolicyUtils.getObjectValue<any>(doc, options.sourceField);
             return parseFloat(value);
         } catch (error) {
             return 0;
@@ -120,9 +123,11 @@ export class SplitBlock {
         threshold: number,
         userId: string | null,
         actionStatusId: string,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         let clone = PolicyUtils.cloneVC(ref, document);
-        PolicyUtils.setObjectValue(clone, ref.options.sourceField, newValue);
+        const options = await ref.getOptions(user);
+        PolicyUtils.setObjectValue(clone, options.sourceField, newValue);
         let vc = VcDocument.fromJsonTree(clone.document);
         if (document.messageId) {
             const evidenceSchema = await this.getSchema();
@@ -132,7 +137,7 @@ export class SplitBlock {
             vc.addEvidence({
                 type: ['SourceDocument'],
                 messageId: document.messageId,
-                sourceField: ref.options.sourceField,
+                sourceField: options.sourceField,
                 sourceValue,
                 threshold,
                 chunkNumber,
@@ -174,8 +179,9 @@ export class SplitBlock {
         userId: string | null,
         actionStatusId: string
     ) {
-        const threshold = parseFloat(ref.options.threshold);
-        const value = await this.calcDocValue(ref, document);
+        const options = await ref.getOptions(user);
+        const threshold = parseFloat(options.threshold);
+        const value = await this.calcDocValue(ref, document, user);
 
         let sum = 0;
         for (const item of residue) {
@@ -192,7 +198,7 @@ export class SplitBlock {
         if (value < needed) {
             const maxChunks = 1;
             const newDoc = await this.createNewDoc(
-                ref, root, document, value, maxChunks, maxChunks, value, threshold, userId, actionStatusId
+                ref, root, document, value, maxChunks, maxChunks, value, threshold, userId, actionStatusId, user
             );
             residue.push(ref.databaseServer.createResidue(
                 ref.policyId,
@@ -207,7 +213,7 @@ export class SplitBlock {
             const maxChunks = (count > 0 ? count : 0) + (end > 0 ? 1 : 0) + 1;
 
             const newDoc1 = await this.createNewDoc(
-                ref, root, document, needed, 1, maxChunks, value, threshold, userId, actionStatusId
+                ref, root, document, needed, 1, maxChunks, value, threshold, userId, actionStatusId, user
             );
             residue.push(ref.databaseServer.createResidue(
                 ref.policyId,
@@ -222,7 +228,7 @@ export class SplitBlock {
             if (count > 0) {
                 for (let i = 0; i < count; i++) {
                     const newDocN = await this.createNewDoc(
-                        ref, root, document, threshold, i + 2, maxChunks, value, threshold, userId, actionStatusId
+                        ref, root, document, threshold, i + 2, maxChunks, value, threshold, userId, actionStatusId, user
                     );
                     result.push([ref.databaseServer.createResidue(
                         ref.policyId,
@@ -235,7 +241,7 @@ export class SplitBlock {
             }
             if (end > 0) {
                 const newDocL = await this.createNewDoc(
-                    ref, root, document, end, maxChunks, maxChunks, value, threshold, userId, actionStatusId
+                    ref, root, document, end, maxChunks, maxChunks, value, threshold, userId, actionStatusId, user
                 );
                 residue.push(ref.databaseServer.createResidue(
                     ref.policyId,

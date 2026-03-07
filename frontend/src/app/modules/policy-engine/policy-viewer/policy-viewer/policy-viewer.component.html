@@ -261,6 +261,12 @@
                     >
                         Role: {{ policyInfo.userRoles.join(", ") }}
                     </span>
+                    <button *ngIf="userRole === 'Administrator'"  (click)="openParametersSettings()" class="policy-settings-button guardian-button guardian-button-secondary">
+                        <div class="guardian-button-icon">
+                            <i class="pi pi-cog"></i>
+                        </div>
+                        <div class="guardian-button-label">Policy Settings</div>
+                    </button>
                     <span (click)="group.toggle($event)" *ngIf="isMultipleGroups" class="current-user-group">
                         <span
                             [ngClass]="isDryRun ? 'white-additional-policy-info-text' : ''"

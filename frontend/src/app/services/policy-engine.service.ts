@@ -675,6 +675,14 @@ export class PolicyEngineService {
         return this.http.get<void>(`${this.url}/${policyId}/get-all-version-vc-documents/${documentId}`);
     }
 
+    public saveParameters(policyId: string, data: any): Observable<any> {
+        return this.http.post<void>(`${this.url}/${policyId}/parameters/`, data);
+    }
+
+    public getParametersConfig(policyId: string): Observable<any> {
+        return this.http.get<void>(`${this.url}/${policyId}/parameters/config`);
+    }
+
     public disconnect(policyId: string): Observable<any> {
         return this.http.put<any>(`${this.url}/${policyId}/disconnect`, null);
     }

@@ -100,6 +100,7 @@ export class ModuleBlock {
      */
     private _getVariable(name: any, type: string): any {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+
         if (Array.isArray(ref.options.variables)) {
             for (const variable of ref.options.variables) {
                 if (type) {

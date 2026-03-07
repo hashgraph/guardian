@@ -1,0 +1,87 @@
+
+.property-label {
+    display: block;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.element-container {
+    margin-bottom: 24px;
+    border: 1px solid #E1E7EF;
+    background-color: #F9FAFC;
+    padding: 16px;
+    border-radius: 8px;
+}
+.element-path {
+   display: flex;
+   gap: 16px;
+
+   & > * {
+    flex: 1;
+   }
+}
+
+.p-inputtext,
+.p-dropdown {
+    width:100%;
+    border-radius: 8px;
+}
+
+.property-description {
+    color: #848FA9;
+    display: block;
+    font-weight: 500;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.element-array {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 16px;
+    
+    .add-button {
+        height: 28px;
+        padding: 6px 16px;
+    }
+
+    .property-label {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
+.element-array-group {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+
+    > :not(:last-child) {
+        flex: 1;
+    }
+
+    .element-container {
+        padding: 0;
+        border: none;
+        padding-left: 0;
+        padding-right: 0;
+        margin-bottom: 0;
+    }
+
+    .element-array-delete {
+        position: relative;
+        top: 22px;
+    }
+
+    .property-label {
+        font-weight: 500;
+        font-size: 12px;
+    }
+}
+
+.ghost-color {
+    fill: #AAB7C4;
+    color: #AAB7C4;
+}

@@ -28,6 +28,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
                 label: 'Method',
                 title: 'Method',
                 type: PropertyType.Select,
+                editable: true,
                 items: [
                     {
                         label: 'Get',
@@ -50,13 +51,15 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
                 label: 'URL',
                 title: 'URL',
                 type: PropertyType.Input,
-                required: true
+                required: true,
+                editable: true
             },
             {
                 name: 'authentication',
                 label: 'Authentication',
                 title: 'Authentication',
                 type: PropertyType.Select,
+                editable: true,
                 items: [
                     {
                         label: 'No Auth',
@@ -75,7 +78,8 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
                 title: 'Authentication ClientId',
                 type: PropertyType.Input,
                 visible: 'authentication === "bearerToken"',
-                default: ''
+                default: '',
+                editable: true
             },
             {
                 name: 'authenticationURL',
@@ -83,7 +87,8 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
                 title: 'Authentication Url',
                 type: PropertyType.Input,
                 visible: 'authentication === "bearerToken"',
-                default: ''
+                default: '',
+                editable: true
             },
             {
                 name: 'authenticationScopes',
@@ -91,13 +96,15 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
                 title: 'Authentication Scopes',
                 type: PropertyType.Input,
                 visible: 'authentication === "bearerToken"',
-                default: ''
+                default: '',
+                editable: true
             },
             {
                 name: 'headers',
                 label: 'Headers',
                 title: 'Headers',
                 type: PropertyType.Array,
+                editable: true,
                 items: {
                     label: 'Header',
                     value: '',
@@ -106,13 +113,15 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
                             name: 'name',
                             label: 'Header name',
                             title: 'Header name',
-                            type: PropertyType.Input
+                            type: PropertyType.Input,
+                            editable: true
                         },
                         {
                             name: 'value',
                             label: 'Header value',
                             title: 'Header value',
-                            type: PropertyType.Input
+                            type: PropertyType.Input,
+                            editable: true
                         }
                     ]
                 }
@@ -129,7 +138,7 @@ export class HttpRequestUIAddon {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
+        const options = await ref.getOptions(user);
         return {
             id: ref.uuid,
             blockType: ref.blockType,
