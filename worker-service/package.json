@@ -19,7 +19,7 @@
     },
     "description": "",
     "devDependencies": {
-        "@types/glob": "^8.1.0",
+        "@types/glob": "^9.0.0",
         "@types/node": "^22.15.19",
         "chai": "4.3.4",
         "gulp": "^5.0.0",

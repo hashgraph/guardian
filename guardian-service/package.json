@@ -44,7 +44,7 @@
     "devDependencies": {
         "@types/express": "^5.0.1",
         "@types/fs-extra": "^9.0.12",
-        "@types/glob": "^8.1.0",
+        "@types/glob": "^9.0.0",
         "@types/jszip": "^3.4.1",
         "@types/node": "^22.15.19",
         "chai": "4.3.4",
