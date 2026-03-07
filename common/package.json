@@ -31,7 +31,7 @@
         "dotenv": "^16.0.0",
         "exceljs": "^4.4.0",
         "express": "^5.1.0",
-        "geotiff": "^2.1.4-beta.0",
+        "geotiff": "^3.0.3",
         "js-base64": "^3.6.1",
         "jsonld-signatures": "11.5.0",
         "jszip": "^3.7.1",
