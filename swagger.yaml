@@ -9325,6 +9325,15 @@ paths:
           schema:
             example: text
             type: string
+        - name: searchOptions
+          required: false
+          in: query
+          description: Search Options
+          schema:
+            example: name
+            type: array
+            items:
+              type: string
       responses:
         '200':
           description: Successful operation.
