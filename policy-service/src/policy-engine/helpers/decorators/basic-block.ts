@@ -933,12 +933,16 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             setPropValue(properties:any, path:string, value:any) {
-                if (!path) return;
+                if (!path) {
+                    return;
+                }
 
                 const keys = path.split('.');
                 const last = keys.pop();
-                if (!last) return;
-                
+                if (!last) {
+                    return;
+                }
+
                 let current = properties;
 
                 for (const key of keys) {

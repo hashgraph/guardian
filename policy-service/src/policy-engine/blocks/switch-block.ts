@@ -91,7 +91,7 @@ import { LocationType } from '@guardian/interfaces';
                         }
                     ]
                 }
-            },   
+            },
         ]
     },
     variables: []

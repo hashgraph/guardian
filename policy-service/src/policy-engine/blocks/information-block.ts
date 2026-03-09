@@ -39,7 +39,7 @@ import { IPolicyGetData } from '@policy-engine/policy-engine.interface.js';
                 type: PropertyType.Input,
                 editable: true
             },
-            { 
+            {
                 name: 'description',
                 label: 'Description',
                 title: 'Description',

@@ -57,7 +57,7 @@ import { RecordActionStep } from '../record-action-step.js';
             title: 'Set Relayer Account',
             type: PropertyType.Checkbox,
             editable: false
-        },        
+        },
         {
             name: 'forceRelayerAccount',
             label: 'Force User Account',
