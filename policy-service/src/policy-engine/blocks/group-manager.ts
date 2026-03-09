@@ -1,7 +1,7 @@
 import { EventBlock } from '../helpers/decorators/index.js';
 import { GroupAccessType, GroupRelationshipType, LocationType } from '@guardian/interfaces';
 import { IPolicyGetData, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
@@ -30,7 +30,33 @@ import { RecordActionStep } from '../record-action-step.js';
             PolicyInputEventType.RefreshEvent,
         ],
         output: null,
-        defaultEvent: false
+        defaultEvent: false,
+        properties: [
+            {
+                name: 'canInvite',
+                label: 'Can Invite',
+                title: 'Can Invite',
+                type: PropertyType.Select,
+                default: 'owner',
+                items: [
+                    { label: 'Group Owner', value: 'owner'},
+                    { label: 'All', value: 'all'}
+                ],
+                editable: true
+            },
+            {
+                name: 'canDelete',
+                label: 'Can Delete',
+                title: 'Can Delete',
+                type: PropertyType.Select,
+                default: 'owner',
+                items: [
+                    { label: 'Group Owner', value: 'owner'},
+                    { label: 'All', value: 'all'}
+                ],
+                editable: true
+            }
+        ]
     },
     variables: []
 })

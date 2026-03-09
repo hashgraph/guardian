@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -35,7 +35,32 @@ import { RecordActionStep } from '../record-action-step.js';
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true
+        defaultEvent: true,
+        properties: [
+        {
+            name: 'issuer',
+            label: 'Issuer',
+            title: 'Issuer',
+            type: PropertyType.Select,
+            editable: true,
+            items: [
+                { label: 'Current User', value: ''},
+                { label: 'Document Owner', value: 'owner'},
+                { label: 'Policy Owner', value: 'policyOwner'}
+            ]
+        },
+        {
+            name: 'actor',
+            label: 'Actor',
+            title: 'Actor',
+            type: PropertyType.Select,
+            editable: true,
+            items: [
+                { label: 'Current User', value: ''},
+                { label: 'Document Owner', value: 'owner'},
+                { label: 'Document Issuer', value: 'issuer'}
+            ]
+        }]
     },
     variables: []
 })

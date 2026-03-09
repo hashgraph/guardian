@@ -2,7 +2,7 @@ import { SourceAddon, StateField } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyDocument } from '../policy-engine.interface.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils, QueryType } from '../helpers/utils.js';
 import ObjGet from 'lodash.get';
@@ -24,7 +24,114 @@ import { LocationType } from '@guardian/interfaces';
         control: ControlType.Special,
         input: null,
         output: null,
-        defaultEvent: false
+        defaultEvent: false,
+        properties: [{
+            name: 'dataType',
+            label: 'Data Type',
+            title: 'Data Type',
+            type: PropertyType.Select,
+            items: [
+                { label: 'Collection (VC)', value: 'vc-documents' },
+                { label: 'Collection (DID)', value: 'did-documents' },
+                { label: 'Collection (Approve)', value: 'approve' },
+                { label: 'Collection (VP)', value: 'vp-documents' }
+            ],
+            editable: true
+        }, {
+            name: 'schema',
+            label: 'Schema',
+            title: 'Schema',
+            type: PropertyType.Schemas,
+            editable: true
+        }, {
+            name: 'onlyOwnDocuments',
+            label: 'Owned by User',
+            title: 'Owned by User',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'onlyOwnByGroupDocuments',
+            label: 'Owned by Group',
+            title: 'Owned by Group',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'onlyAssignDocuments',
+            label: 'Assigned to User',
+            title: 'Assigned to User',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'onlyAssignByGroupDocuments',
+            label: 'Assigned to Group',
+            title: 'Assigned to Group',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'hidePreviousVersions',
+            label: 'Hide Previous Versions',
+            title: 'Hide Previous Versions',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'orderField',
+            label: 'Order Field',
+            title: 'Order Field',
+            type: PropertyType.Input,
+            editable: true
+        }, {
+            name: 'orderDirection',
+            label: 'Order Direction',
+            title: 'Order Direction',
+            type: PropertyType.Select,
+            items: [
+                { label: 'None', value: '' },
+                { label: 'ASC', value: 'ASC' },
+                { label: 'DESC', value: 'DESC' }
+            ],
+            editable: true
+        }, {
+            name: 'filters',
+            label: 'Filters',
+            title: 'Filters',
+            type: PropertyType.Array,
+            editable: true,
+            items: {
+                label: 'Field',
+                value: '',
+                properties: [{
+                    name: 'type',
+                    label: 'Type',
+                    title: 'Type',
+                    type: PropertyType.Select,
+                    items: [
+                        { label: 'Equal', value: 'equal'},
+                        { label: 'Not Equal', value: 'not_equal'},
+                        { label: 'In', value: 'in'},
+                        { label: 'Not In', value: 'not_in'},
+                        { label: 'Greater Than', value: 'gt'},
+                        { label: 'Greater Than or Equal', value: 'gte'},
+                        { label: 'Less Than', value: 'lt'},
+                        { label: 'Less Than or Equal', value: 'lte'},
+                        { label: 'User Defined', value: 'user_defined'}
+                    ],
+                    editable: true
+                }, {
+                    name: 'field',
+                    label: 'Field',
+                    title: 'Field',
+                    type: PropertyType.Path,
+                    editable: false
+                }, {
+                    name: 'value',
+                    label: 'Value',
+                    title: 'Value',
+                    type: PropertyType.Input,
+                    editable: true
+                }]
+            }
+        }
+        ]
     },
     variables: [
         { path: 'options.schema', alias: 'schema', type: 'Schema' }
