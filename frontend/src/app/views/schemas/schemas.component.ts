@@ -493,14 +493,7 @@ export class SchemaConfigComponent implements OnInit {
 
                 this.policyNameByTopic = {};
                 this.policyIdByTopic = {};
-                this.allPolicies = [{
-                    name: 'All Policies',
-                    topicId: null
-                },
-                {
-                    name: 'No Binding',
-                    topicId: SchemaConfigComponent.NOT_BINDED
-                }];
+                this.allPolicies = [];
                 for (const policy of policies) {
                     if (policy.topicId) {
                         this.policyIdByTopic[policy.topicId] = policy.id;
@@ -1120,6 +1113,7 @@ export class SchemaConfigComponent implements OnInit {
                 schemaType: this.type,
                 topicId: this.currentTopic,
                 policies: this.policies,
+                allPolicies: this.allPolicies,
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,
@@ -1197,6 +1191,7 @@ export class SchemaConfigComponent implements OnInit {
                 schemaType: this.type,
                 topicId: this.currentTopic,
                 policies: this.policies,
+                allPolicies: this.allPolicies,
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,
@@ -1278,6 +1273,7 @@ export class SchemaConfigComponent implements OnInit {
                 topicId: this.currentTopic,
                 schemaType: this.type,
                 policies: this.policies,
+                allPolicies: this.allPolicies,
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,
@@ -1309,6 +1305,7 @@ export class SchemaConfigComponent implements OnInit {
                 topicId: this.currentTopic,
                 schemaType: this.type,
                 policies: this.policies,
+                allPolicies: this.allPolicies,
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,

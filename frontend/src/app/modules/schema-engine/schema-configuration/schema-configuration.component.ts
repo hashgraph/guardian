@@ -42,6 +42,7 @@ function NoBindingValidator(control: UntypedFormControl): ValidationErrors | nul
 export class SchemaConfigurationComponent implements OnInit {
     @Input('type') type!: 'new' | 'edit' | 'version';
     @Input('policies') policies!: any[];
+    @Input('allPolicies') allPolicies!: any[];
     @Input('tools') tools!: any[];
     @Input('schemaType') schemaType!: SchemaType;
     @Input('extended') extended!: boolean;
@@ -268,7 +269,7 @@ export class SchemaConfigurationComponent implements OnInit {
             props.topicId = [this._topicId, NoBindingValidator];
         } else if (this.isPolicy) {
             props.entity = new UntypedFormControl(SchemaEntity.VC, Validators.required);
-            props.topicId = [this._topicId];
+            props.topicId = [this._topicId, Validators.required];
         } else {
             props.entity = new UntypedFormControl(SchemaEntity.VC, Validators.required);
             props.topicId = [this._topicId];
@@ -1028,7 +1029,7 @@ export class SchemaConfigurationComponent implements OnInit {
         if (!field) {
             return;
         }
-        
+
         if (condition.changeEvents) {
             condition.fieldValue.patchValue('', {
                 emitEvent: false
