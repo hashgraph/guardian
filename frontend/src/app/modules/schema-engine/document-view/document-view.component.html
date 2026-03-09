@@ -1,5 +1,5 @@
-<div class="content">
-    <div class="schema-form-view-nav" *ngIf="type !== 'VP'">
+<div class="content" #contentContainer>
+    <div class="schema-form-view-nav" *ngIf="type !== 'VP'" #navContainer>
         <app-schema-form-view-navigation #schemaNav
             [subjects]="subjects"
             [schemaMap]="schemaMap"
@@ -10,6 +10,11 @@
         >
         </app-schema-form-view-navigation>
     </div>
+    <div 
+        *ngIf="type !== 'VP'"
+        class="resize-handler" 
+        (mousedown)="onResizeStart($event)"
+    ></div>
     <div class="schema-form-content">
         <form>
             <div *ngIf="loading" class="guardian-loading">

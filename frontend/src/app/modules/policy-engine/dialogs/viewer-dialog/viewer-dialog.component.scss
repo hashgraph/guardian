@@ -31,7 +31,7 @@
     font-family: monospace;
     cursor: text;
     height: 630px;
-    width: 780px;
+    width: 100%;
     overflow: auto;
     border: 1px solid #eee;
     border-radius: 4px;
@@ -47,7 +47,7 @@
     font-family: monospace;
     cursor: text;
     height: 630px;
-    width: 780px;
+    width: 100%;
     overflow: auto;
     border: 1px solid #eee;
     border-radius: 4px;
@@ -57,13 +57,19 @@
 }
 
 .links {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     margin-bottom: 8px;
-    height: 630px;
-    width: 780px;
+    width: 100%;
     overflow: auto;
     padding: 10px;
     box-sizing: border-box;
     margin-top: 10px;
+    gap: 16px;
+
+    &.dryRun {
+        grid-template-columns: 1fr 1fr 1fr !important;
+    }
 }
 
 .links::ng-deep a {

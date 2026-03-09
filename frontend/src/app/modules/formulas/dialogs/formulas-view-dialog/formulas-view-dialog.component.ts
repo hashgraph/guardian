@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FormulaFiles, FormulaItem, FormulasTree, SchemaItem } from '../../models/formula-tree';
 import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
@@ -19,7 +19,16 @@ export class FormulasViewDialog {
     public files: FormulaFiles[];
 
     public isLargeSize: boolean = true;
+    private startX: number = 0;
+    private startWidthPercent: number = 25;
+    private containerWidth: number = 0;
+    private readonly MIN_WIDTH_PERCENT = 0;
+    private readonly MAX_WIDTH_PERCENT = 75;
+    private rafId: number | null = null;
+
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
+    @ViewChild('navContainer') navContainerRef?: ElementRef;
+    @ViewChild('contentContainer') contentContainerRef?: ElementRef;
 
     public viewDocumentOptions = [
         { label: 'Formulas', key: 'formulas', icon: 'function' },
@@ -33,6 +42,7 @@ export class FormulasViewDialog {
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private dialogService: DialogService,
+        private changeDetectorRef: ChangeDetectorRef
     ) {
         this.tree = this.config.data?.tree;
         this.schema = this.config.data?.schema;
@@ -108,5 +118,73 @@ export class FormulasViewDialog {
                 }
             }
         }, 100);
+    }
+    
+    public onResizeStart(event: MouseEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        this.startX = event.clientX;
+        
+        if (this.contentContainerRef) {
+            this.containerWidth = this.contentContainerRef.nativeElement.offsetWidth;
+        }
+        
+        if (this.navContainerRef) {
+            const currentWidth = this.navContainerRef.nativeElement.offsetWidth;
+            this.startWidthPercent = (currentWidth / this.containerWidth) * 100;
+        }
+        
+        document.body.classList.add('resizing');
+        document.addEventListener('mousemove', this.onResizeMove);
+        document.addEventListener('mouseup', this.onResizeEnd);
+    }
+
+    private onResizeMove = (event: MouseEvent): void => {
+        event.preventDefault();
+        
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+        }
+        
+        this.rafId = requestAnimationFrame(() => {
+            if (!this.navContainerRef || !this.contentContainerRef)
+                return;
+            
+            const navElement = this.navContainerRef.nativeElement;
+            const contentElement = this.contentContainerRef.nativeElement;
+            
+            this.containerWidth = contentElement.offsetWidth;
+            const deltaX = event.clientX - this.startX;
+            const deltaPercent = (deltaX / this.containerWidth) * 100;
+            let newWidthPercent = this.startWidthPercent + deltaPercent;
+            
+            newWidthPercent = Math.max(
+                this.MIN_WIDTH_PERCENT, 
+                Math.min(this.MAX_WIDTH_PERCENT, newWidthPercent)
+            );
+            
+            navElement.style.width = `${newWidthPercent}%`;
+            
+            this.startWidthPercent = newWidthPercent;
+            this.startX = event.clientX;
+            
+            this.changeDetectorRef.detectChanges();
+            this.rafId = null;
+        });
+    }
+
+    private onResizeEnd = (event: MouseEvent): void => {
+        document.body.classList.remove('resizing');
+        
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+            this.rafId = null;
+        }
+        
+        document.removeEventListener('mousemove', this.onResizeMove);
+        document.removeEventListener('mouseup', this.onResizeEnd);
+        
+        this.changeDetectorRef.detectChanges();
     }
 }

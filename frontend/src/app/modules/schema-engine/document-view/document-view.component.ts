@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, } from '@angular/core';
 import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -43,6 +43,9 @@ export class DocumentViewComponent implements OnInit {
     @ViewChild(SchemaFormViewComponent) private schemaView?: SchemaFormViewComponent;
     @ViewChild(SchemaFormViewNavigationComponent) public schemaNav?: SchemaFormViewNavigationComponent;
 
+    @ViewChild('navContainer') navContainerRef?: ElementRef;
+    @ViewChild('contentContainer') contentContainerRef?: ElementRef;
+
     public loading: boolean = false;
     public isIssuerObject: boolean = false;
     public issuerOptions: any[] = [];
@@ -60,14 +63,19 @@ export class DocumentViewComponent implements OnInit {
 
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
+    private startX: number = 0;
+    private startWidthPercent: number = 25;
+    private containerWidth: number = 0;
+    private readonly MIN_WIDTH_PERCENT = 0;
+    private readonly MAX_WIDTH_PERCENT = 75;
+    private rafId: number | null = null;
+
     constructor(
         private schemaService: SchemaService,
         private schemaRulesService: SchemaRulesService,
         private formulasService: FormulasService,
         private ref: ChangeDetectorRef
-    ) {
-
-    }
+    ) { }
 
     ngOnInit(): void {
         if (!this.document) {
@@ -112,6 +120,15 @@ export class DocumentViewComponent implements OnInit {
     ngOnDestroy() {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
+        
+        document.removeEventListener('mousemove', this.onResizeMove);
+        document.removeEventListener('mouseup', this.onResizeEnd);
+        
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+        }
+        
+        document.body.classList.remove('resizing');
     }
 
     private loadData() {
@@ -271,5 +288,73 @@ export class DocumentViewComponent implements OnInit {
 
     public getTagJson(tag: any): string {
         return tag ? JSON.stringify(tag, null, 4) : '';
+    }
+
+     public onResizeStart(event: MouseEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        this.startX = event.clientX;
+        
+        if (this.contentContainerRef) {
+            this.containerWidth = this.contentContainerRef.nativeElement.offsetWidth;
+        }
+        
+        if (this.navContainerRef) {
+            const currentWidth = this.navContainerRef.nativeElement.offsetWidth;
+            this.startWidthPercent = (currentWidth / this.containerWidth) * 100;
+        }
+        
+        document.body.classList.add('resizing');
+        document.addEventListener('mousemove', this.onResizeMove);
+        document.addEventListener('mouseup', this.onResizeEnd);
+    }
+
+    private onResizeMove = (event: MouseEvent): void => {
+        event.preventDefault();
+        
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+        }
+        
+        this.rafId = requestAnimationFrame(() => {
+            if (!this.navContainerRef || !this.contentContainerRef)
+                return;
+            
+            const navElement = this.navContainerRef.nativeElement;
+            const contentElement = this.contentContainerRef.nativeElement;
+            
+            this.containerWidth = contentElement.offsetWidth;
+            const deltaX = event.clientX - this.startX;
+            const deltaPercent = (deltaX / this.containerWidth) * 100;
+            let newWidthPercent = this.startWidthPercent + deltaPercent;
+            
+            newWidthPercent = Math.max(
+                this.MIN_WIDTH_PERCENT, 
+                Math.min(this.MAX_WIDTH_PERCENT, newWidthPercent)
+            );
+            
+            navElement.style.width = `${newWidthPercent}%`;
+            
+            this.startWidthPercent = newWidthPercent;
+            this.startX = event.clientX;
+            
+            this.ref.detectChanges();
+            this.rafId = null;
+        });
+    }
+
+    private onResizeEnd = (event: MouseEvent): void => {
+        document.body.classList.remove('resizing');
+        
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+            this.rafId = null;
+        }
+        
+        document.removeEventListener('mousemove', this.onResizeMove);
+        document.removeEventListener('mouseup', this.onResizeEnd);
+        
+        this.ref.detectChanges();
     }
 }

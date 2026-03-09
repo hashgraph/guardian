@@ -1,5 +1,5 @@
-<div class="schema-form-root">
-    <div class="schema-form-view-nav" *ngIf="model && hasNavigation">
+<div class="schema-form-root" #contentContainer>
+    <div class="schema-form-view-nav" *ngIf="model && hasNavigation" #navContainer>
         <app-schema-form-navigation 
             #schemaNav 
             [schemaFields]="model.controls" 
@@ -8,6 +8,11 @@
         >    
         </app-schema-form-navigation>
     </div>
+    <div 
+        *ngIf="model && hasNavigation"
+        class="resize-handler" 
+        (mousedown)="onResizeStart($event)"
+    ></div>
     <div class="schema-form-content" [class.full-width]="!model || !hasNavigation">
         <app-schema-form
             #childForm

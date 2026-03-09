@@ -265,21 +265,27 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const policy = await DatabaseServer.getPolicy({ messageId });
+                let policy = await DatabaseServer.getPolicy({ messageId });
                 const notifier = NewNotifier.empty();
 
                 let errors: any[] = [];
                 if (!policy) {
                     const result = await addPolicy(messageId, owner, logger, notifier, owner?.id);
                     errors = result.errors;
+                    policy = await DatabaseServer.getPolicy({ messageId });
                 }
 
                 for (const item of items) {
                     item.status = ExternalPolicyStatus.APPROVED;
                     await DatabaseServer.updateExternalPolicy(item);
+                    if (policy) {
+                        await assignPolicy(policy.id, item.creator, true);
+                    }
                 }
 
-                await assignPolicy(policy.id, owner.creator, true);
+                if (policy) {
+                    await assignPolicy(policy.id, owner.creator, true);
+                }
 
                 notifier.result({ id: messageId, errors });
 
@@ -310,21 +316,27 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const policy = await DatabaseServer.getPolicy({ messageId });
+                let policy = await DatabaseServer.getPolicy({ messageId });
                 const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
                     let errors: any[] = [];
                     if (!policy) {
                         const result = await addPolicy(messageId, owner, logger, notifier, owner?.id);
                         errors = result.errors;
+                        policy = await DatabaseServer.getPolicy({ messageId });
                     }
 
                     for (const item of items) {
                         item.status = ExternalPolicyStatus.APPROVED;
                         await DatabaseServer.updateExternalPolicy(item);
+                        if (policy) {
+                            await assignPolicy(policy.id, item.creator, true);
+                        }
                     }
 
-                    await assignPolicy(policy.id, owner.creator, true);
+                    if (policy) {
+                        await assignPolicy(policy.id, owner.creator, true);
+                    }
 
                     notifier.result({ id: messageId, errors });
                 }, async (error) => {

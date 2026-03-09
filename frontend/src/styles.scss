@@ -814,3 +814,38 @@ svg-icon.svg-icon-32 {
         white-space: nowrap;
     }
 }
+
+.resize-handler {
+    width: 6px;
+    background: #ddd;
+    cursor: col-resize;
+    position: relative;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+    border-radius: 3px;
+    
+    &:hover {
+        background: #2196F3;
+    }
+    
+    &:active, &.resizing {
+        background: #1976D2;
+    }
+    
+    &::before {
+        content: '⋮';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: #666;
+        font-size: 16px;
+        line-height: 1;
+        opacity: 0.5;
+    }
+    
+    &:hover::before {
+        opacity: 1;
+        color: white;
+    }
+}

@@ -11,7 +11,7 @@
 </div>
 <div class="dialog-body">
     <div class="content">
-        <div class="links" *ngIf="type === 'LINK'">
+        <div class="links" [class.dryRun]="dryRun" *ngIf="type === 'LINK'">
             <hedera-explorer
                 *ngFor="let link of links"
                 [type]="link.type"
