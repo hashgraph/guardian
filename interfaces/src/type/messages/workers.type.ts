@@ -126,6 +126,16 @@ export interface ITask {
      * UserId
      */
     interception?: string | null | undefined;
+
+    /**
+     * MockId
+     */
+    mockId?: string | null;
+
+    /**
+     * DryRunId
+     */
+    dryRun?: string | null;
 }
 
 /**
@@ -193,4 +203,12 @@ export interface ITaskOptions {
      * Default value = null
      */
     userId?: string,
+    /**
+     * Default value = null
+     */
+    dryRun?: string,
+    /**
+     * Default value = null
+     */
+    mockId?: string,
 }

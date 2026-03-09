@@ -223,6 +223,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * Dry Run id
+             */
+            public get mockId(): string {
+                return this._dryRun;
+            }
+
+            /**
              * Policy status
              */
             public get policyStatus(): PolicyStatus | null {

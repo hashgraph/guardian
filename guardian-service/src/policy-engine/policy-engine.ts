@@ -268,7 +268,7 @@ export class PolicyEngine extends NatsService {
         }
         if (action === 'execute') {
             const disconnected = await DatabaseServer.getDisconnectedPolicy(policy.id, user.creator);
-            if(disconnected) {
+            if (disconnected) {
                 throw new Error('You were disconnected from this policy.');
             }
         }
@@ -516,7 +516,12 @@ export class PolicyEngine extends NatsService {
                 owner: user.owner,
                 policyId: null,
                 policyUUID: null
-            }, user.id);
+            }, {
+                admin: true,
+                submit: true
+            }, {
+                userId: user.id
+            });
             await topic.saveKeys(user.id);
 
             model.topicId = topic.topicId;
@@ -539,7 +544,12 @@ export class PolicyEngine extends NatsService {
                     interception: null
                 });
 
-            await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);
+            await topicHelper.twoWayLink({
+                topic,
+                parent,
+                rationale: messageStatus.getId(),
+                userId: user.id
+            });
             messageServer.setTopicObject(topic);
             step.completeStep(STEP_CREATE_POLICY_MESSAGE);
 
@@ -1286,9 +1296,11 @@ export class PolicyEngine extends NatsService {
                     owner: user.creator,
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
-                }, user.id, {
+                }, {
                     admin: model.availability !== PolicyAvailability.PUBLIC,
                     submit: model.availability !== PolicyAvailability.PUBLIC
+                }, {
+                    userId: user.id
                 });
                 await rootTopic.saveKeys(user.id);
                 await DatabaseServer.saveTopic(rootTopic.toObject());
@@ -1321,7 +1333,9 @@ export class PolicyEngine extends NatsService {
                     owner: user.creator,
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
-                }, user.id, { admin: true, submit: false });
+                }, { admin: true, submit: false }, {
+                    userId: user.id
+                });
                 await synchronizationTopic.saveKeys(user.id);
                 await DatabaseServer.saveTopic(synchronizationTopic.toObject());
                 model.synchronizationTopicId = synchronizationTopic.topicId;
@@ -1348,7 +1362,9 @@ export class PolicyEngine extends NatsService {
                     owner: user.owner,
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
-                }, user.id, { admin: true, submit: true });
+                }, { admin: true, submit: true }, {
+                    userId: user.id
+                });
                 await diffTopic.saveKeys(user.id);
                 await DatabaseServer.saveTopic(diffTopic.toObject());
                 model.restoreTopicId = diffTopic.topicId;
@@ -1379,7 +1395,9 @@ export class PolicyEngine extends NatsService {
                     owner: user.owner,
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
-                }, user.id, { admin: true, submit: false });
+                }, { admin: true, submit: false }, {
+                    userId: user.id
+                });
                 await actionsTopic.saveKeys(user.id);
                 await DatabaseServer.saveTopic(actionsTopic.toObject());
                 model.actionsTopicId = actionsTopic.topicId;
@@ -1410,7 +1428,9 @@ export class PolicyEngine extends NatsService {
                     owner: user.owner,
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
-                }, user.id, { admin: true, submit: false });
+                }, { admin: true, submit: false }, {
+                    userId: user.id
+                });
                 await recordsTopic.saveKeys(user.id);
                 await DatabaseServer.saveTopic(recordsTopic.toObject());
                 model.recordsTopicId = recordsTopic.topicId;
@@ -1437,7 +1457,9 @@ export class PolicyEngine extends NatsService {
                     owner: user.creator,
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
-                }, user.id, { admin: true, submit: false });
+                }, { admin: true, submit: false }, {
+                    userId: user.id
+                });
                 await commentsTopic.saveKeys(user.id);
                 await DatabaseServer.saveTopic(commentsTopic.toObject());
                 model.commentsTopicId = commentsTopic.topicId;
@@ -1502,7 +1524,12 @@ export class PolicyEngine extends NatsService {
                 });
             model.messageId = result.getId();
 
-            await topicHelper.twoWayLink(instancePolicyTopic, topic, result.getId(), user.id);
+            await topicHelper.twoWayLink({
+                topic: instancePolicyTopic,
+                parent: topic,
+                rationale: result.getId(),
+                userId: user.id
+            });
             notifier.completeStep(STEP_PUBLISH_POLICY);
             //#endregion
 
@@ -1614,7 +1641,7 @@ export class PolicyEngine extends NatsService {
         const databaseServer = new DatabaseServer(dryRunId);
 
         // Create Services
-        const [root, topic] = await Promise.all([
+        const [root, policyTopic] = await Promise.all([
             this.users.getHederaAccount(user.owner, user.id),
             TopicConfig.fromObject(
                 await DatabaseServer.getTopicById(model.topicId), !demo, user.id
@@ -1626,7 +1653,7 @@ export class PolicyEngine extends NatsService {
             operatorKey: root.hederaAccountKey,
             signOptions: root.signOptions,
             dryRun: dryRunId
-        }).setTopicObject(topic);
+        }).setTopicObject(policyTopic);
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId);
 
         //'Publish' policy schemas
@@ -1640,18 +1667,27 @@ export class PolicyEngine extends NatsService {
         }
 
         //Create instance topic
-        const rootTopic = await topicHelper.create({
-            type: TopicType.InstancePolicyTopic,
-            name: model.name || TopicType.InstancePolicyTopic,
-            description: model.topicDescription || TopicType.InstancePolicyTopic,
-            owner: user.owner,
-            policyId: dryRunId,
-            policyUUID: model.uuid
-        }, user.id);
-        await rootTopic.saveKeys(user.id);
-        await databaseServer.saveTopic(rootTopic.toObject());
+        const instancePolicyTopic = await topicHelper.create(
+            {
+                type: TopicType.InstancePolicyTopic,
+                name: model.name || TopicType.InstancePolicyTopic,
+                description: model.topicDescription || TopicType.InstancePolicyTopic,
+                owner: user.owner,
+                policyId: dryRunId,
+                policyUUID: model.uuid
+            },
+            {
+                admin: true,
+                submit: true
+            },
+            {
+                userId: user.id
+            }
+        );
+        await instancePolicyTopic.saveKeys(user.id);
+        await databaseServer.saveTopic(instancePolicyTopic.toObject());
 
-        model.instanceTopicId = rootTopic.topicId;
+        model.instanceTopicId = instancePolicyTopic.topicId;
 
         //Send Message
         const zip = await PolicyImportExport.generate(model);
@@ -1671,7 +1707,12 @@ export class PolicyEngine extends NatsService {
         });
 
         // Link topic and message
-        await topicHelper.twoWayLink(rootTopic, topic, result.getId(), user.id);
+        await topicHelper.twoWayLink({
+            topic: instancePolicyTopic,
+            parent: policyTopic,
+            rationale: result.getId(),
+            userId: user.id
+        });
 
         //Create Policy VC
         const messageId = result.getId();
@@ -1950,9 +1991,12 @@ export class PolicyEngine extends NatsService {
         notifier.startStep(STEP_LOAD_FILE);
         const newVersions: any = [];
         if (message.version) {
-            const anotherVersions = await messageServer.getMessages<PolicyMessage>(
-                message.getTopicId(), userId, MessageType.InstancePolicy, MessageAction.PublishPolicy
-            );
+            const anotherVersions = await messageServer.getMessages<PolicyMessage>({
+                topicId: message.getTopicId(),
+                type: MessageType.InstancePolicy,
+                action: MessageAction.PublishPolicy,
+                userId
+            });
             for (const element of anotherVersions) {
                 if (element.version && ModelHelper.versionCompare(element.version, message.version) === 1) {
                     newVersions.push({

@@ -150,7 +150,9 @@ export class MintNFT extends TypedMint {
                         priority: 1,
                         attempts: 10,
                         userId: options.userId,
-                        interception: options.interception
+                        interception: options.interception,
+                        dryRun: null,
+                        mockId: null
                     }
                 ).then(async (startSerial) => {
                     try {
@@ -185,13 +187,14 @@ export class MintNFT extends TypedMint {
                 transaction.mintStatus = MintTransactionStatus.PENDING;
                 await this._db.saveMintTransaction(transaction);
                 try {
+                    const dryRun = this._db.getDryRun();
                     const serials = await new Workers().addRetryableTask(
                         {
                             type: WorkerTaskType.MINT_NFT,
                             data: {
                                 hederaAccountId: relayerAccount.hederaAccountId,
                                 hederaAccountKey: relayerAccount.hederaAccountKey,
-                                dryRun: this._db.getDryRun(),
+                                dryRun: dryRun,
                                 tokenId: this._token.tokenId,
                                 supplyKey: this._token.supplyKey,
                                 metaData: new Array(
@@ -206,7 +209,9 @@ export class MintNFT extends TypedMint {
                             priority: 1,
                             attempts: 0,
                             userId: options.userId,
-                            interception: options.interception
+                            interception: options.interception,
+                            dryRun,
+                            mockId: null
                         }
                     );
                     transaction.serials.push(...serials);
@@ -305,7 +310,9 @@ export class MintNFT extends TypedMint {
                             priority: 1,
                             attempts: 10,
                             userId: options.userId,
-                            interception: options.interception
+                            interception: options.interception,
+                            dryRun: this._ref && this._ref.dryRun,
+                            mockId: null,
                         }
                     );
 
@@ -368,7 +375,9 @@ export class MintNFT extends TypedMint {
                 },
                 {
                     priority: 1,
-                    attempts: 10
+                    attempts: 10,
+                    dryRun: null,
+                    mockId: null
                 }
             );
 
@@ -421,7 +430,9 @@ export class MintNFT extends TypedMint {
                 },
                 {
                     priority: 1,
-                    attempts: 10
+                    attempts: 10,
+                    dryRun: null,
+                    mockId: null
                 }
             );
             const transferPendingTransactions =

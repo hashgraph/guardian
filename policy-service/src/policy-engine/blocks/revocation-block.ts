@@ -140,9 +140,10 @@ export class RevocationBlock {
         const policyTopicsMessages = [];
         for (const topic of policyTopics) {
             const topicMessages = await MessageServer.getMessages({
-                dryRun: ref.dryRun,
                 topicId: topic.topicId,
-                userId
+                userId,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
             policyTopicsMessages.push(...topicMessages);
         }

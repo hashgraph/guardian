@@ -172,6 +172,11 @@ export interface IPolicyBlock {
     readonly dryRun: string;
 
     /**
+     * Mock ID
+     */
+    readonly mockId: string;
+    
+    /**
      * Policy status
      */
     readonly policyStatus: PolicyStatus;

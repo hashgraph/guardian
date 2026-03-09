@@ -268,7 +268,12 @@ class GlobalEventsReaderBlock {
         this.job.start();
     }
 
-    private async fetchEvents(topicId: string, fromCursor: string, userId: string): Promise<GlobalTopicMessage[]> {
+    private async fetchEvents(
+        ref: AnyBlockType,
+        topicId: string,
+        fromCursor: string,
+        userId: string
+    ): Promise<GlobalTopicMessage[]> {
         const workers = new Workers();
 
         const result = await workers.addRetryableTask(
@@ -284,7 +289,9 @@ class GlobalEventsReaderBlock {
             },
             {
                 priority: 10,
-                userId
+                userId,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             }
         ) as WorkerTopicMessageRaw[];
 
@@ -411,7 +418,11 @@ class GlobalEventsReaderBlock {
         return this.ifExtendFields(extension, base);
     }
 
-    private async resolvePayloadObject(payload: string, userId: string): Promise<any> {
+    private async resolvePayloadObject(
+        ref: AnyBlockType,
+        payload: string,
+        userId: string
+    ): Promise<any> {
         let payloadObject: any = payload;
 
         try {
@@ -424,7 +435,11 @@ class GlobalEventsReaderBlock {
                 return payloadObject;
             }
 
-            let file = await IPFS.getFile(cid, 'str', { userId });
+            let file = await IPFS.getFile(cid, 'str', {
+                userId,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
 
             if (file && file.type === 'Buffer' && Array.isArray(file.data)) {
                 file = Buffer.from(file.data).toString('utf-8');
@@ -446,7 +461,7 @@ class GlobalEventsReaderBlock {
     ): Promise<void> {
         const payload = await this.loadPayload(ref, event, user.userId);
 
-        const payloadObject = await this.resolvePayloadObject(payload, user.userId);
+        const payloadObject = await this.resolvePayloadObject(ref, payload, user.userId);
 
         const policyDocument: IPolicyDocument = {
             document: payloadObject,
@@ -473,7 +488,7 @@ class GlobalEventsReaderBlock {
             currentSchemaItem = schemaBatch.find((s) => s?.id === schemaRef);
 
             if (currentSchemaItem) {
-                currentSchema = await this.loadSchemaDocumentFromBatchItem(currentSchemaItem, user.userId);
+                currentSchema = await this.loadSchemaDocumentFromBatchItem(ref, currentSchemaItem, user.userId);
             }
         }
 
@@ -614,7 +629,9 @@ class GlobalEventsReaderBlock {
                 },
                 {
                     priority: 10,
-                    userId
+                    userId,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId
                 }
             );
 
@@ -634,11 +651,16 @@ class GlobalEventsReaderBlock {
     }
 
     private async loadSchemaDocumentFromBatchItem(
+        ref: AnyBlockType,
         item: SchemaBatchItem,
         userId: string
     ): Promise<any | null> {
         try {
-            const row = await IPFS.getFile(item.cid, 'str', { userId });
+            const row = await IPFS.getFile(item.cid, 'str', {
+                userId,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
 
             const doc = typeof row === 'string'
                 ? JSON.parse(row)
@@ -698,7 +720,9 @@ class GlobalEventsReaderBlock {
 
         const messages = await MessageServer.getTopicMessages({
             topicId: policyTopicId,
-            userId
+            userId,
+            dryRun: ref.dryRun,
+            mockId: ref.mockId
         });
 
         const schemaMessages = (messages || []).filter(
@@ -728,7 +752,10 @@ class GlobalEventsReaderBlock {
                 );
             }
 
-            const topicMessage = await MessageServer.getTopic(currentTopicId, userId);
+            const topicMessage = await MessageServer.getTopic(currentTopicId, userId, {
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
             if (!topicMessage) {
                 return { policyTopicId: null };
             }
@@ -786,7 +813,11 @@ class GlobalEventsReaderBlock {
             const metaCID = message.getMetadataUrl(UrlType.cid);
             const documentCID = message.getDocumentUrl(UrlType.cid);
 
-            const metaData = await IPFS.getFile(metaCID, 'str', { userId });
+            const metaData = await IPFS.getFile(metaCID, 'str', {
+                userId,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
             const meta = JSON.parse(metaData);
             const schemas = meta.schemas;
 
@@ -915,6 +946,7 @@ class GlobalEventsReaderBlock {
         }
 
         const messages = await this.fetchEvents(
+            ref,
             stream.globalTopicId,
             stream.lastMessageCursor,
             user.userId
@@ -1217,10 +1249,13 @@ class GlobalEventsReaderBlock {
                         blockId: ref.uuid,
                     },
                 },
-                user.userId,
                 {
                     admin: true,
                     submit: false,
+                },
+                {
+                    userId: user.userId,
+                    mockId: ref.mockId
                 }
             );
 

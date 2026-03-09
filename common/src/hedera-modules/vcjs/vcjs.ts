@@ -406,7 +406,8 @@ export class VCJS {
                     Buffer.from(
                         await IPFS.getFile(
                             (cidMatches && cidMatches[0]) || '',
-                            'raw'
+                            'raw',
+                            IPFS.DEFAULT_OPTIONS
                         )
                     ).toString()
                 );

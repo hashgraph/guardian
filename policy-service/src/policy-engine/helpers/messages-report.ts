@@ -12,6 +12,7 @@ import {
     Workers
 } from '@guardian/common';
 import { TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { AnyBlockType } from '../policy-engine.interface';
 
 /**
  * Trust Chain interface
@@ -74,12 +75,17 @@ export class MessagesReport {
 
     /**
      * Build report
+     * @param ref
      * @param messageId
      * @param userId
      */
-    public async start(messageId: string, userId: string | null) {
-        await this.checkMessage(messageId, userId);
-        await this.checkUsers(userId);
+    public async start(
+        ref: AnyBlockType,
+        messageId: string,
+        userId: string | null
+    ) {
+        await this.checkMessage(ref, messageId, userId);
+        await this.checkUsers(ref, userId);
     }
 
     /**
@@ -96,10 +102,15 @@ export class MessagesReport {
 
     /**
      * Search messages
+     * @param ref
      * @param timestamp
      * @param userId
      */
-    private async checkMessage(timestamp: string, userId: string | null) {
+    private async checkMessage(
+        ref: AnyBlockType,
+        timestamp: string,
+        userId: string | null
+    ) {
         if (this.messages.has(timestamp)) {
             return;
         }
@@ -110,24 +121,29 @@ export class MessagesReport {
                 messageId: timestamp,
                 loadIPFS: false,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
         if (!message) {
             return;
         }
 
         if (this.needDocument(message)) {
-            await MessageServer.loadDocument(message);
+            await MessageServer.loadDocument(message, null, {
+                dryRun: ref.dryRun,
+                mockId: ref.mockId,
+            });
         }
 
         this.messages.set(timestamp, message.toJson());
         this.users.set(message.getOwner(), null);
 
-        await this.checkToken(message, userId);
-        await this.checkTopic(message.getTopicId(), userId);
+        await this.checkToken(ref, message, userId);
+        await this.checkTopic(ref, message.getTopicId(), userId);
 
         for (const id of message.getRelationships()) {
-            await this.checkMessage(id, userId);
+            await this.checkMessage(ref, id, userId);
         }
     }
 
@@ -136,7 +152,11 @@ export class MessagesReport {
      * @param message
      * @param userId
      */
-    private async checkToken(message: Message, userId: string | null) {
+    private async checkToken(
+        ref: AnyBlockType,
+        message: Message,
+        userId: string | null
+    ) {
         if (message.type === MessageType.VCDocument) {
             const document = (message as VCMessage).document;
             if (document &&
@@ -146,7 +166,7 @@ export class MessagesReport {
                 const tokenId = document.credentialSubject[0].tokenId;
                 if (tokenId && !this.tokens.has(tokenId)) {
                     this.tokens.set(tokenId, null);
-                    const info = await this.getToken(tokenId, userId);
+                    const info = await this.getToken(ref, tokenId, userId);
                     if (info) {
                         this.tokens.set(tokenId, {
                             name: info.name,
@@ -164,16 +184,24 @@ export class MessagesReport {
 
     /**
      * Search topics
+     * @param ref
      * @param topicId
      * @param userId
      */
-    private async checkTopic(topicId: string, userId: string | null) {
+    private async checkTopic(
+        ref: AnyBlockType,
+        topicId: string,
+        userId: string | null
+    ) {
         if (this.topics.has(topicId)) {
             return;
         }
         this.topics.set(topicId, null);
 
-        const message = await MessageServer.getTopic(topicId, userId);
+        const message = await MessageServer.getTopic(topicId, userId, {
+            dryRun: ref.dryRun,
+            mockId: ref.mockId,
+        });
         if (!message) {
             return;
         }
@@ -181,32 +209,42 @@ export class MessagesReport {
         this.topics.set(topicId, message.toJson());
 
         if (message.parentId) {
-            await this.checkTopic(message.parentId, userId);
+            await this.checkTopic(ref, message.parentId, userId);
         }
         if (message.rationale) {
-            await this.checkMessage(message.rationale, userId);
+            await this.checkMessage(ref, message.rationale, userId);
         }
 
-        await this.checkSchemas(message, userId);
+        await this.checkSchemas(ref, message, userId);
     }
 
     /**
      * Search schemas
+     * @param ref
      * @param message
      * @param userId
      */
-    private async checkSchemas(message: TopicMessage, userId: string | null) {
+    private async checkSchemas(
+        ref: AnyBlockType,
+        message: TopicMessage,
+        userId: string | null
+    ) {
         if (message.messageType === TopicType.PolicyTopic) {
             const messages: any[] = await MessageServer.getTopicMessages({
                 topicId: message.getTopicId(),
-                userId
+                userId,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId,
             });
             const schemas: SchemaMessage[] = messages
                 .filter((m: SchemaMessage) => m.action === MessageAction.PublishSchema || m.action === MessageAction.PublishSystemSchema);
             for (const schema of schemas) {
                 const id = schema.getContextUrl(UrlType.url);
                 if (!this.schemas.has(id)) {
-                    await MessageServer.loadDocument(schema);
+                    await MessageServer.loadDocument(schema, null, {
+                        dryRun: ref.dryRun,
+                        mockId: ref.mockId,
+                    });
                     this.schemas.set(id, schema.toJson());
                 }
             }
@@ -215,9 +253,10 @@ export class MessagesReport {
 
     /**
      * Search users
+     * @param ref
      * @param userId
      */
-    private async checkUsers(userId: string | null) {
+    private async checkUsers(ref: AnyBlockType, userId: string | null) {
         const topics: Set<string> = new Set<string>();
         for (const did of this.users.keys()) {
             try {
@@ -229,11 +268,19 @@ export class MessagesReport {
         }
         for (const topicId of topics) {
             try {
-                const messages: any[] = await MessageServer.getTopicMessages({ topicId, userId });
+                const messages: any[] = await MessageServer.getTopicMessages({
+                    topicId,
+                    userId,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId,
+                });
                 const documents: DIDMessage[] = messages.filter((m: DIDMessage) => m.action === MessageAction.CreateDID);
                 for (const document of documents) {
                     if (this.users.has(document.did) && !this.users.get(document.did)) {
-                        await MessageServer.loadDocument(document);
+                        await MessageServer.loadDocument(document, null, {
+                            dryRun: ref.dryRun,
+                            mockId: ref.mockId,
+                        });
                         this.messages.set(document.id, document.toJson());
                         this.users.set(document.did, document.toJson());
                     }
@@ -249,14 +296,23 @@ export class MessagesReport {
      * @param tokenId
      * @param userId
      */
-    public async getToken(tokenId: string, userId: string | null): Promise<any> {
+    public async getToken(
+        ref: AnyBlockType,
+        tokenId: string,
+        userId: string | null
+    ): Promise<any> {
         try {
             const workers = new Workers();
             const info = await workers.addRetryableTask({
                 type: WorkerTaskType.GET_TOKEN_INFO,
-                data: { tokenId, payload: { userId } }
+                data: {
+                    tokenId,
+                    payload: { userId }
+                }
             }, {
-                priority: 10
+                priority: 10,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId,
             });
             return info;
         } catch (error) {

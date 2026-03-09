@@ -18,7 +18,8 @@ import {
     Workers,
     EncryptVcHelper,
     SchemaConverterUtils,
-    Tag
+    Tag,
+    MockService
 } from '@guardian/common';
 import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SchemaField, SignatureType, TagType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hiero-ledger/sdk';
@@ -503,7 +504,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
             await NotificationHelper.info(
                 `Associate token`,
@@ -542,7 +545,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
             await NotificationHelper.info(
                 `Dissociate token`,
@@ -585,7 +590,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
         }
     }
@@ -622,7 +629,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
         }
     }
@@ -660,7 +669,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
         }
     }
@@ -698,7 +709,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
         }
     }
@@ -717,11 +730,16 @@ export class PolicyUtils {
         user: UserCredentials,
         userId: string | null
     ): Promise<Token> {
-        let tokenId;
+        let tokenId: string;
         const owner = user.did;
         const policyId = ref.policyId;
         const adminId = user.hederaAccountId;
-        if (!ref.dryRun) {
+
+        if (ref.mockId) {
+            tokenId = await (new MockService(ref.mockId).createToken(tokenTemplate));
+        } else if (ref.dryRun) {
+            tokenId = new TokenId(Date.now()).toString();
+        } else {
             const workers = new Workers();
             const hederaAccountKey = await user.loadHederaKey(ref, userId);
 
@@ -734,7 +752,9 @@ export class PolicyUtils {
                     ...tokenTemplate
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
             tokenId = createdToken.tokenId;
 
@@ -783,8 +803,6 @@ export class PolicyUtils {
                     userId
                 ),
             ]);
-        } else {
-            tokenId = new TokenId(Date.now()).toString();
         }
 
         return await ref.databaseServer.createToken({
@@ -868,11 +886,23 @@ export class PolicyUtils {
                 memoObj: config.memoObj === 'doc'
                     ? memoObj
                     : config
-            }, userId, null);
+            }, {
+                admin: true,
+                submit: true
+            }, {
+                userId,
+                mockId: ref.mockId
+            });
             if (!ref.dryRun) {
                 await topic.saveKeys(userId);
             }
-            await topicHelper.twoWayLink(topic, rootTopic, null, userId);
+            await topicHelper.twoWayLink({
+                topic,
+                parent: rootTopic,
+                rationale: null,
+                userId,
+                mockId: ref.mockId
+            });
             await ref.databaseServer.saveTopic(topic.toObject());
         }
 
@@ -1883,6 +1913,7 @@ export class PolicyUtils {
     }
 
     public static async checkAccountBalance(
+        ref: AnyBlockType,
         relayerAccount?: string | any,
         userId?: string
     ) {
@@ -1896,7 +1927,9 @@ export class PolicyUtils {
                         payload: { userId }
                     }
                 }, {
-                    priority: 20
+                    priority: 20,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId
                 });
                 return (info.balance / 100000000) > 1;
             }

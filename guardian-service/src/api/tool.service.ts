@@ -249,14 +249,23 @@ export async function publishTool(
 
         notifier.startStep(STEP_CREATE_TAGS_TOPIC);
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-        const tagsTopic = await topicHelper.create({
-            type: TopicType.TagsTopic,
-            name: tool.name || TopicType.TagsTopic,
-            description: tool.description || TopicType.TagsTopic,
-            owner: user.owner,
-            policyId: tool.id.toString(),
-            policyUUID: tool.uuid
-        }, user.id, { admin: true, submit: false });
+        const tagsTopic = await topicHelper.create(
+            {
+                type: TopicType.TagsTopic,
+                name: tool.name || TopicType.TagsTopic,
+                description: tool.description || TopicType.TagsTopic,
+                owner: user.owner,
+                policyId: tool.id.toString(),
+                policyUUID: tool.uuid
+            },
+            {
+                admin: true,
+                submit: false
+            },
+            {
+                userId: user.id
+            }
+        );
         await tagsTopic.saveKeys(user.id);
         await DatabaseServer.saveTopic(tagsTopic.toObject());
         tool.tagsTopicId = tagsTopic.topicId;
@@ -456,14 +465,23 @@ export async function createTool(
                 await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, user.id
             );
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-            const topic = await topicHelper.create({
-                type: TopicType.ToolTopic,
-                name: tool.name || TopicType.ToolTopic,
-                description: tool.description || TopicType.ToolTopic,
-                owner: user.owner,
-                targetId: tool.id.toString(),
-                targetUUID: tool.uuid
-            }, user.id, { admin: true, submit: true });
+            const topic = await topicHelper.create(
+                {
+                    type: TopicType.ToolTopic,
+                    name: tool.name || TopicType.ToolTopic,
+                    description: tool.description || TopicType.ToolTopic,
+                    owner: user.owner,
+                    targetId: tool.id.toString(),
+                    targetUUID: tool.uuid
+                },
+                {
+                    admin: true,
+                    submit: true
+                },
+                {
+                    userId: user.id
+                }
+            );
             await topic.saveKeys(user.id);
             notifier.completeStep(STEP_CREATE_TOPIC);
 
@@ -486,7 +504,12 @@ export async function createTool(
             notifier.completeStep(STEP_CREATE_TOOL);
 
             notifier.startStep(STEP_LINK_TOPIC);
-            await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);
+            await topicHelper.twoWayLink({
+                topic,
+                parent,
+                rationale: messageStatus.getId(),
+                userId: user.id
+            });
 
             await DatabaseServer.saveTopic(topic.toObject());
             tool.topicId = topic.topicId;

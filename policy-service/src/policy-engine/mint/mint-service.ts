@@ -455,7 +455,9 @@ export class MintService {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
     }
 
@@ -659,7 +661,9 @@ export class MintService {
                     },
                 },
                 {
-                    priority: 20
+                    priority: 20,
+                    dryRun: null,
+                    mockId: null
                 }
             );
         } else {
@@ -686,7 +690,9 @@ export class MintService {
                     },
                 },
                 {
-                    priority: 10
+                    priority: 10,
+                    dryRun: ref.dryRun,
+                    mockId: null
                 }
             );
         }

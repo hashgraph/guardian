@@ -68,7 +68,7 @@ export class IpfsClientClass {
      * @private
      */
     public async createClient(): Promise<any> {
-        let client;
+        let client: any;
 
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.WEB3STORAGE: {
@@ -152,7 +152,6 @@ export class IpfsClientClass {
      * @param cid
      */
     public async deleteCid(cid: string): Promise<boolean> {
-
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.LOCAL: {
                 await this.client.pin.rm(cid);

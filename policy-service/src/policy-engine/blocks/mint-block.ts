@@ -341,7 +341,9 @@ export class MintBlock {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
         const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC, actionStatus?.id);
 
@@ -376,7 +378,9 @@ export class MintBlock {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
         const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp, actionStatus?.id);

@@ -123,7 +123,8 @@ export class GroupManagerBlock {
                     messageId: member.messageId,
                     loadIPFS: true,
                     userId,
-                    interception: null
+                    interception: null,
+                    mockId: ref.mockId
                 });
             const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
             message.setMessageStatus(MessageStatus.WITHDRAW, text);

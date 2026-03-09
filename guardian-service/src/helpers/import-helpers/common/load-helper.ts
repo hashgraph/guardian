@@ -159,11 +159,11 @@ export async function loadAnotherSchemas(
     const anotherSchemas: (SchemaMessage | SchemaPackageMessage)[] = [];
 
     for (const topicId of uniqueTopics) {
-        const messages = await messageServer.getMessages<SchemaMessage | SchemaPackageMessage>(
+        const messages = await messageServer.getMessages<SchemaMessage | SchemaPackageMessage>({
             topicId,
-            userId,
-            [MessageType.Schema, MessageType.SchemaPackage]
-        );
+            type: [MessageType.Schema, MessageType.SchemaPackage],
+            userId
+        });
         for (const message of messages) {
             if (
                 message.action === MessageAction.PublishSchema ||
@@ -190,7 +190,7 @@ export async function loadAnotherSchemas(
                 messageId: message.getId(),
             })
         } else {
-            const message = (await messageServer.loadDocument(anotherSchema)) as SchemaPackageMessage;
+            const message = (await messageServer.loadDocument(anotherSchema, {})) as SchemaPackageMessage;
             const metadata = message.getMetadata();
             if (Array.isArray(metadata?.schemas)) {
                 for (const schema of metadata.schemas) {

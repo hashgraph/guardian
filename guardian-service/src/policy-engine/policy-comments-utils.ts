@@ -97,10 +97,20 @@ export class PolicyCommentsUtils {
                 owner: policy.owner,
                 policyId: policy.id,
                 policyUUID: policy.uuid
-            }, user.id, { admin: true, submit: false });
+            }, {
+                admin: true,
+                submit: false
+            }, {
+                userId: user.id
+            });
             await topicConfig.saveKeys(user.id);
             await DatabaseServer.saveTopic(topicConfig.toObject());
-            await topicHelper.twoWayLink(topicConfig, rootTopicConfig, null, user.id);
+            await topicHelper.twoWayLink({
+                topic: topicConfig,
+                parent: rootTopicConfig,
+                rationale: null,
+                userId: user.id
+            });
 
             policy.commentsTopicId = topicConfig.topicId;
             await DatabaseServer.updatePolicy(policy);

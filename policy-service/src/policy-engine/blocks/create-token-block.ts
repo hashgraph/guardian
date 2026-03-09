@@ -199,7 +199,9 @@ export class CreateTokenBlock {
             sendToIPFS: true,
             memo: null,
             userId,
-            interception: null
+            interception: null,
+            dryRun: ref.dryRun,
+            mockId: ref.mockId
         });
         // #endregion
 

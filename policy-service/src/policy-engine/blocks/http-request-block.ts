@@ -98,10 +98,19 @@ export class HttpRequestBlock {
         const res = await new Workers().addNonRetryableTask({
             type: WorkerTaskType.HTTP_REQUEST,
             data: {
-                payload: { method, url, headers, body, userId, maxRedirects: 0 }
+                payload: {
+                    method,
+                    url,
+                    headers,
+                    body,
+                    userId,
+                    maxRedirects: 0
+                }
             }
         }, {
-            priority: 10
+            priority: 10,
+            dryRun: ref.dryRun,
+            mockId: ref.mockId
         });
         if (!res) {
             throw new Error('Invalid response');

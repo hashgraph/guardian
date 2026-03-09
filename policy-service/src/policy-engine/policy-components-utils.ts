@@ -1657,7 +1657,7 @@ export class PolicyComponentsUtils {
 
         const relayerAccountConfig = data.relayerAccount;
 
-        const balance = await PolicyUtils.checkAccountBalance(relayerAccountConfig, user.userId);
+        const balance = await PolicyUtils.checkAccountBalance(ref, relayerAccountConfig, user.userId);
         if (balance === false) {
             return 'The relayer account has insufficient balance.';
         }
