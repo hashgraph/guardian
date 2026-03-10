@@ -250,6 +250,10 @@ export class PolicyUser {
             policyId: this.policyId
         }
     }
+
+    public static createById(id: string): PolicyUser {
+        return {id} as PolicyUser
+    }
 }
 
 /**

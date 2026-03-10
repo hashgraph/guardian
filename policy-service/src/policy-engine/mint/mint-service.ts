@@ -8,6 +8,8 @@ import { TokenConfig } from './configs/token-config.js';
 import { MintNFT } from './types/mint-nft.js';
 import { MintFT } from './types/mint-ft.js';
 import { FilterObject } from '@mikro-orm/core';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Mint Service
@@ -200,8 +202,18 @@ export class MintService {
                         interception: null
                     })
                     .catch((error) => {
-                        MintService.publishMintFailedEvent(token.tokenId, tokenValue, transactionMemo, PolicyUtils.getErrorMessage(error));
-                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId);
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId, {
+                                target: targetAccount,
+                                amount: tokenValue,
+                                vpMessageId,
+                                tokenId: token.tokenId,
+                                metadata: vpMessageId,
+                                tokenType: token.tokenType,
+                                decimals: token.decimals,
+                                memo: transactionMemo,
+                                policyId: ref.policyId,
+                                owner: documentOwner.did
+                            });
                     })
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
@@ -234,8 +246,19 @@ export class MintService {
                         interception: null
                     })
                     .catch((error) => {
-                        MintService.publishMintFailedEvent(token.tokenId, tokenValue, transactionMemo, PolicyUtils.getErrorMessage(error));
-                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId);
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId,
+                        {
+                            target: targetAccount,
+                            amount: tokenValue,
+                            vpMessageId,
+                            tokenId: token.tokenId,
+                            metadata: vpMessageId,
+                            tokenType: token.tokenType,
+                            decimals: token.decimals,
+                            memo: transactionMemo,
+                            policyId: ref.policyId,
+                            owner: documentOwner.did
+                        });
                     })
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
@@ -553,8 +576,19 @@ export class MintService {
                     interception: null
                 })
                 .catch((error) => {
-                    MintService.publishMintFailedEvent(token.tokenId, tokenValue, memo, PolicyUtils.getErrorMessage(error));
-                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId);
+                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId,
+                    {
+                        target: targetAccount,
+                        amount: tokenValue,
+                        vpMessageId,
+                        tokenId: token.tokenId,
+                        metadata: vpMessageId,
+                        tokenType: token.tokenType,
+                        decimals: token.decimals,
+                        memo,
+                        policyId,
+                        owner
+                    });
                 })
                 .finally(() => {
                     MintService.activeMintProcesses.delete(
@@ -587,8 +621,19 @@ export class MintService {
                     interception: null
                 })
                 .catch((error) => {
-                    MintService.publishMintFailedEvent(token.tokenId, tokenValue, memo, PolicyUtils.getErrorMessage(error));
-                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId);
+                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId,
+                    {
+                        target: targetAccount,
+                        amount: tokenValue,
+                        vpMessageId,
+                        tokenId: token.tokenId,
+                        metadata: vpMessageId,
+                        tokenType: token.tokenType,
+                        decimals: token.decimals,
+                        memo,
+                        policyId,
+                        owner
+                    });
                 })
                 .finally(() => {
                     MintService.activeMintProcesses.delete(
@@ -736,8 +781,21 @@ export class MintService {
      * @param message
      * @param ref
      * @param userId
+     * @param metadata
      */
-    public static error(message: string, ref: AnyBlockType, userId: string | null) {
+    public static error(message: string, ref: AnyBlockType, userId: string | null, metadata: {
+        target: string,
+        amount: number,
+        vpMessageId: string,
+        tokenId: string,
+        metadata?: string,
+        tokenType: string,
+        decimals?: string,
+        memo: string,
+        policyId: string,
+        owner: string,
+        error?: string
+    } | null) {
         if (ref) {
             MintService.logger.error(message, [
                 'POLICY_SERVICE',
@@ -749,31 +807,11 @@ export class MintService {
         } else {
             MintService.logger.error(message, ['POLICY_SERVICE'], userId);
         }
-    }
 
-    /**
-     * Publish TOKEN_MINT_FAILED external event
-     * @param tokenId
-     * @param tokenValue
-     * @param memo
-     * @param error
-     */
-    private static publishMintFailedEvent(
-        tokenId: string,
-        tokenValue: number,
-        memo: string,
-        error: string
-    ): void {
-        new ExternalEventChannel().publishMessage(
-            ExternalMessageEvents.TOKEN_MINT_FAILED,
-            {
-                tokenId,
-                tokenValue,
-                memo,
-                error,
-                timestamp: Date.now(),
-            }
-        );
+        if (metadata) {
+            metadata.error = message;
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, PolicyUser.createById(userId), metadata));
+        }
     }
 
     /**
