@@ -37,18 +37,6 @@ export class PolicyParametersDialog {
     public items: PolicyParameterItem[] = [];
 
     public form: FormGroup<any>;
-    
-    public pathOptions = [
-        { label: 'Root', value: '', title: ' ' },
-        { label: 'Document', value: 'document.', title: 'document.' },
-        { label: 'Credential Subjects', value: 'document.credentialSubject.', title: 'document.credentialSubject.' },
-        { label: 'First Credential Subjects', value: 'document.credentialSubject.0.', title: 'document.credentialSubject.0.' },
-        { label: 'Last Credential Subjects', value: 'document.credentialSubject.L.', title: 'document.credentialSubject.L.' },
-        { label: 'Verifiable Credentials', value: 'document.verifiableCredential.', title: 'document.verifiableCredential.' },
-        { label: 'First Verifiable Credential', value: 'document.verifiableCredential.0.', title: 'document.verifiableCredential.0.' },
-        { label: 'Last Verifiable Credential', value: 'document.verifiableCredential.L.', title: 'document.verifiableCredential.L.' },
-        { label: 'Attributes', value: 'option.', title: 'option.' }
-    ];
 
     constructor(
         public ref: DynamicDialogRef,
@@ -71,7 +59,6 @@ export class PolicyParametersDialog {
                 this.blockInfo = blockInfo;
                 this.loadConfig();
             });
-
     }
 
     loadConfig() {
@@ -90,12 +77,14 @@ export class PolicyParametersDialog {
             if (!property) {
                 continue;
             }
+
             this.items.push({
                 block,
                 property,
                 propertyPath: field.propertyPath,
                 config: field
             });
+
             if (property.type === 'Array') {
                 const values = Array.isArray(field.value) ? field.value : [];
 
@@ -113,30 +102,7 @@ export class PolicyParametersDialog {
                 );
                 
                 this.form.addControl(field.propertyPath, arr);
-            } else if (property.type === 'Path') {
-                const initial = (field.value ?? '') as string;
-                const options: string[] = this.pathOptions.map(o => String(o.value ?? ''));
-
-                let prefix = '';
-                for (const opt of options.sort((a, b) => b.length - a.length)) {
-                    if (initial.startsWith(opt)) {
-                    prefix = opt;
-                    break;
-                    }
-                }
-
-                const suffix = initial.slice(prefix.length);
-                this.form.addControl(
-                    property.name,
-                    new FormGroup({
-                    path: new FormControl(prefix, []),
-                    value: new FormControl(
-                        suffix,
-                        field.required ? [Validators.required] : []
-                    ),
-                    })
-                );
-            }
+            } 
             else {
                 this.form.addControl(
                         field.propertyPath,
@@ -172,18 +138,12 @@ export class PolicyParametersDialog {
     }
 
     async onSubmit() {
-        for(let i=0; i< this.editableParameters.length; i++) {
+        for(let i = 0; i< this.editableParameters.length; i++) {
             const field = this.editableParameters[i];
             const item = this.items.find(item => item.propertyPath === field.propertyPath);
-            let value = null;
-            if(item && item.property.type === 'Path') {
-                const group = this.form.get(field.propertyPath) as FormGroup;
-                const path = group.get('path')?.value ?? '';
-                value = path + (group.get('value')?.value ?? '');
-            } else {
-                value = item && this.form.controls[item.propertyPath]?.value;
+            if(item) {
+                field.value = this.form.controls[item.propertyPath]?.value;;
             }
-            field.value = value;
         }
 
         this.policyEngineService.saveParameters(

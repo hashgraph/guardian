@@ -3,6 +3,7 @@
     display: block;
     font-weight: 700;
     font-size: 14px;
+    margin-bottom: 4px;
 }
 
 .element-container {
@@ -32,7 +33,7 @@
     display: block;
     font-weight: 500;
     font-size: 12px;
-    margin-bottom: 5px;
+    margin-bottom: 16px;
 }
 
 .element-array {
@@ -46,11 +47,6 @@
         padding: 6px 16px;
     }
 
-    .property-label {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
 }
 
 .element-array-group {
@@ -72,12 +68,13 @@
 
     .element-array-delete {
         position: relative;
-        top: 22px;
+        top: 10px;
     }
 
     .property-label {
         font-weight: 500;
         font-size: 12px;
+        margin-bottom: 6px;
     }
 }
 

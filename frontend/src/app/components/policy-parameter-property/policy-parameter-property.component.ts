@@ -29,18 +29,6 @@ export class PolicyParameterPropertyComponent implements OnInit {
     rootPath: string;
     pathValue: string;
 
-    pathOptions = [
-        { label: 'Root', value: '', title: ' ' },
-        { label: 'Document', value: 'document.', title: 'document.' },
-        { label: 'Credential Subjects', value: 'document.credentialSubject.', title: 'document.credentialSubject.' },
-        { label: 'First Credential Subjects', value: 'document.credentialSubject.0.', title: 'document.credentialSubject.0.' },
-        { label: 'Last Credential Subjects', value: 'document.credentialSubject.L.', title: 'document.credentialSubject.L.' },
-        { label: 'Verifiable Credentials', value: 'document.verifiableCredential.', title: 'document.verifiableCredential.' },
-        { label: 'First Verifiable Credential', value: 'document.verifiableCredential.0.', title: 'document.verifiableCredential.0.' },
-        { label: 'Last Verifiable Credential', value: 'document.verifiableCredential.L.', title: 'document.verifiableCredential.L.' },
-        { label: 'Attributes', value: 'option.', title: 'option.' }
-    ];
-
     needUpdate: boolean = true;
 
     allBlocks: any[] = [];
@@ -63,21 +51,13 @@ export class PolicyParameterPropertyComponent implements OnInit {
     get group(): FormGroup {
         return this.control as FormGroup;
     }
-    
-    get pathCtrl(): FormControl {
-        return this.group.controls['path'] as FormControl;
-    }
-
-    get valueCtrl(): FormControl {
-        return this.group.controls['value'] as FormControl;
-    }
 
     addItems() {
         this.needUpdate = true;
         const rows = this.control as FormArray;
-        const group: Record<string, FormControl> = {};
+        const group: Record<string, AbstractControl> = {};
         for (const p of this.property?.items?.properties ?? []) {
-            group[p.name] = new FormControl('', []);
+                group[p.name] = new FormControl('', []);
         }
 
         rows.push(new FormGroup(group));
