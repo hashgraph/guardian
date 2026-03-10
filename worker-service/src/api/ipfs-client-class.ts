@@ -32,7 +32,7 @@ export class IpfsClientClass {
      * IPFS public gateway
      * @private
      */
-    private readonly IPFS_PUBLIC_GATEWAY = process.env.IPFS_PUBLIC_GATEWAY || 'https://ipfs.io/ipfs/${cid}';
+    private readonly IPFS_PUBLIC_GATEWAY = process.env.IPFS_PUBLIC_GATEWAY || 'https://ipfs.io/ipfs/{cid}';
 
     /**
      * Web3storage instance
@@ -189,8 +189,11 @@ export class IpfsClientClass {
      * @param cid
      */
     public async getFile(cid: string): Promise<any> {
+        const _cid = this.parseCID(cid);
         const fileRes = await axios.get(
-            this.IPFS_PUBLIC_GATEWAY?.replace('${cid}', this.parseCID(cid)),
+            this.IPFS_PUBLIC_GATEWAY
+                ?.replace('${cid}', _cid)
+                ?.replace('{cid}', _cid),
             {
                 responseType: 'arraybuffer',
                 timeout:
