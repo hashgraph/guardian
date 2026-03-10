@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "vector-store"
+version = "0.1.0"
+description = "Shared vector storage infrastructure for Hedera Guardian AI Toolkit"
+authors = ["Hedera Hashgraph LLC"]
+readme = "README.md"
+packages = [{include = "vector_store", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+qdrant-client = {version = ">=1.14.2", extras = ["fastembed"]}
+fastembed = "^0.7.3"
+# BGE-M3 multi-vector support (dense + sparse) via aapot/bge-m3-onnx
+onnxruntime = "^1.20.0"
+transformers = "^4.37.0"
+huggingface-hub = ">=0.20.0,<1.0"
+pydantic = "^2.0"
+pydantic-settings = "^2.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.0"
+pytest-mock = "^3.12.0"
+pytest-cov = "^4.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

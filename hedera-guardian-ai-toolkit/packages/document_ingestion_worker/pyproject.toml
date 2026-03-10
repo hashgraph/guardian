@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "document-ingestion-worker"
+version = "0.1.0"
+description = "Document ingestion worker service for processing PDF documents into vector embeddings"
+authors = ["Hedera Hashgraph LLC"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "document_ingestion_worker", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langgraph = "^0.2.0"
+langchain-core = "^0.3.0"
+python-dotenv = "^1.0.0"
+pydantic = "^2.0.0"
+pydantic-settings = "^2.0.0"
+vector-store = {path = "../vector_store", develop = true}
+aiofiles = "^23.0"
+docling = ">=2.68.0,<2.74.0"
+docling-core = "^2.58.0"
+docling-hierarchical-pdf = "~0.1.0"
+transformers = "^4.30.0"
+unicodeit = "^0.7.5"
+psutil = ">=6.0.0,<8.0.0"
+surya-ocr = { version = "^0.17", optional = true }
+
+[tool.poetry.extras]
+surya = ["surya-ocr"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-mock = "^3.12.0"
+pytest-asyncio = "^0.21.0"
+ruff = ">=0.15.0"
+
+# Component-specific test dependencies
+reportlab = "^4.4.5"
+[tool.poetry.group.test.dependencies]
+pytest-cov = "^4.1.0"  # Code coverage reporting
+pymupdf = "^1.24.0"
+
+# Optional integration test dependencies
+[tool.poetry.group.integration-test]
+optional = true
+
+[tool.poetry.group.integration-test.dependencies]
+pytest-asyncio = "^0.21.0"
+testcontainers = {extras = ["qdrant"], version = "^4.0.0"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
