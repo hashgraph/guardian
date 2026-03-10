@@ -8,7 +8,8 @@ This block is responsible for adding configurations on calculating the amount of
 
 ### Additional Properties
 
-<table><thead><tr><th width="208">Block Property</th><th>Definition</th><th>Example Input</th><th>Status</th></tr></thead><tbody><tr><td>Round Method</td><td>The method which is using for rounding token number.</td><td>Choose option from dropdown(`Round to nearest` by default):<ul><li>Round up</li><li>Round down</li><li>Round to nearest</li></ul></td><td></td></tr><tr></tbody></table>
+<table><thead><tr><th width="208">Block Property</th><th>Definition</th><th>Example Input</th><th>Status</th></tr></thead><tbody><tr><td>Round Method</td><td>The method used to round the number of tokens.</td><td>
+Select an option from the dropdown ('Round to nearest' is selected by default):<ul><li>Round up</li><li>Round down</li><li>Round to nearest</li></ul></td><td></td></tr><tr></tbody></table>
 
 ### UI Properties
 

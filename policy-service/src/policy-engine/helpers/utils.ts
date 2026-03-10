@@ -187,6 +187,7 @@ export class PolicyUtils {
      * Token amount
      * @param token
      * @param amount
+     * @param method
      */
     public static tokenAmount(token: Token, amount: number, method: string): [number, string] {
         const decimals = parseFloat(token.decimals) || 0;
