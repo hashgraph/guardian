@@ -810,7 +810,10 @@ export class MintService {
 
         if (metadata) {
             metadata.error = message;
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, PolicyUser.createById(userId), metadata));
+            new ExternalEventChannel().publishMessage(
+                ExternalMessageEvents.TOKEN_MINT_FAILED,
+                metadata
+            );
         }
     }
 
