@@ -19,7 +19,8 @@ import {
     EncryptVcHelper,
     SchemaConverterUtils,
     Tag,
-    MockService
+    MockService,
+    MockType
 } from '@guardian/common';
 import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SchemaField, SignatureType, TagType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hiero-ledger/sdk';
@@ -736,7 +737,11 @@ export class PolicyUtils {
         const adminId = user.hederaAccountId;
 
         if (ref.mockId) {
-            tokenId = await (new MockService(ref.mockId).createToken(tokenTemplate));
+            tokenId = await (new MockService()).execute({
+                mockId: ref.mockId,
+                type: MockType.CREATE_TOKEN,
+                data: tokenTemplate
+            });
         } else if (ref.dryRun) {
             tokenId = new TokenId(Date.now()).toString();
         } else {

@@ -2,6 +2,7 @@ import {
     MessageBrokerChannel,
     MessageResponse,
     MockService,
+    MockType,
     NatsService,
     NotificationHelper,
     PinoLogger,
@@ -333,7 +334,11 @@ export class Worker extends NatsService {
 
                     let cid: string;
                     if (task.mockId) {
-                        cid = await new MockService(task.mockId).addFile(fileContent);
+                        cid = await (new MockService()).execute({
+                            mockId: task.mockId,
+                            type: MockType.ADD_FILE,
+                            data: fileContent
+                        });
                     } else if (task.dryRun) {
                         cid = GenerateUUIDv4();
                     } else {
@@ -357,7 +362,11 @@ export class Worker extends NatsService {
 
                         let success: boolean;
                         if (task.mockId) {
-                            success = await new MockService(task.mockId).deleteCid(cid);
+                            success = await (new MockService()).execute({
+                                mockId: task.mockId,
+                                type: MockType.DELETE_FILE,
+                                data: cid
+                            });
                         } else if (task.dryRun) {
                             success = true;
                         } else {
@@ -379,7 +388,11 @@ export class Worker extends NatsService {
                         let fileContent: any;
 
                         if (task.mockId) {
-                            fileContent = await new MockService(task.mockId).getFile(task.data.payload.cid);
+                            fileContent = await (new MockService()).execute({
+                                mockId: task.mockId,
+                                type: MockType.GET_FILE,
+                                data: task.data.payload.cid
+                            });
                         } else if (task.dryRun) {
                             throw new Error('Unable to get virtual file');
                         } else {
@@ -486,11 +499,15 @@ export class Worker extends NatsService {
                         maxRedirects = MAX_REDIRECTS.DEFAULT
                     } = task.data.payload;
                     if (task.mockId) {
-                        result.data = await new MockService(task.mockId).api({
-                            method,
-                            url,
-                            headers,
-                            data: body
+                        result.data = await (new MockService()).execute({
+                            mockId: task.mockId,
+                            type: MockType.API,
+                            data: {
+                                method,
+                                url,
+                                headers,
+                                data: body
+                            }
                         });
                     } else {
                         const response = await axios({
@@ -509,6 +526,8 @@ export class Worker extends NatsService {
                     const { operatorId, operatorKey } = task.data.clientOptions;
                     const { dryRun, mockId } = task;
                     const userId = task.data.payload?.userId;
+
+                    console.log('task', task)
 
                     const signOptions: ISignOptions = task.data.signOptions;
                     client = new HederaSDKHelper(operatorId, operatorKey, dryRun, mockId, networkOptions);

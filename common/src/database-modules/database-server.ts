@@ -4565,6 +4565,67 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Save Virtual Message
+     * @param dryRun
+     * @param message
+     *
+     * @virtual
+     */
+    public static async saveMockUpFile(dryRun: string, cid: string, content: string): Promise<void> {
+        await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
+            cid,
+            content,
+        }, dryRun, 'MockUpFile', false));
+    }
+
+    /**
+     * Get Virtual Messages
+     * @param dryRun
+     * @param topicId
+     *
+     * @virtual
+     */
+    public static async getMockUpFile(dryRun: string, cid: string): Promise<string> {
+        const item = (await new DataBaseHelper(DryRun).findOne({
+            dryRunId: dryRun,
+            dryRunClass: 'MockUpFile',
+            cid
+        }));
+        if(item) {
+            return item.content;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get Virtual Messages
+     * @param dryRun
+     * @param topicId
+     *
+     * @virtual
+     */
+    public static async deleteMockUpFile(dryRun: string, cid: string): Promise<void> {
+        const item = (await new DataBaseHelper(DryRun).delete({
+            dryRunId: dryRun,
+            dryRunClass: 'MockUpFile',
+            cid
+        }));
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
      * Set Active Group
      *
      * @param policyId

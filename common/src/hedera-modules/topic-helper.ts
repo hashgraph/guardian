@@ -246,7 +246,7 @@ export class TopicHelper {
                 dryRun: this.dryRun
             });
 
-        if (parent) {
+        if (options.parent) {
             const message2 = new TopicMessage(MessageAction.CreateTopic);
             message2.setDocument({
                 name: options.topic.name,

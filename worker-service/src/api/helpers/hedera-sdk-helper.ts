@@ -53,7 +53,7 @@ import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'process';
 import { FireblocksHelper } from './fireblocks-helper.js';
-import { Environment, MockService } from '@guardian/common';
+import { Environment, MockService, MockType, MockUpHelper } from '@guardian/common';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -1055,6 +1055,7 @@ export class HederaSDKHelper {
         }
 
         const rec = await this.executeAndRecord(client, messageTransaction, 'TopicMessageSubmitTransaction', userId);
+
         const seconds = rec.consensusTimestamp.seconds.toString();
         const nanos = rec.consensusTimestamp.nanos.toString();
 
@@ -1072,7 +1073,13 @@ export class HederaSDKHelper {
         apiOptions: IApiOptions
     ): Promise<any> {
         if (apiOptions.mockId) {
-            return await (new MockService(apiOptions.mockId)).getApi('HEDERA_TOKEN', { tokenId });
+            return await (new MockService()).execute({
+                mockId: apiOptions.mockId,
+                type: MockType.GET_TOKEN,
+                data: {
+                    tokenId
+                }
+            });
         }
         const res = await axios.get(
             `${Environment.HEDERA_TOKENS_API}/${tokenId}`,
@@ -1101,7 +1108,13 @@ export class HederaSDKHelper {
         message: string;
     }> {
         if (apiOptions.mockId) {
-            return await (new MockService(apiOptions.mockId)).getApi('HEDERA_MESSAGE', { timeStamp });
+            return await (new MockService()).execute({
+                mockId: apiOptions.mockId,
+                type: MockType.GET_MESSAGE,
+                data: {
+                    timeStamp
+                }
+            });
         }
         const res = await axios.get(
             `${Environment.HEDERA_MESSAGE_API}/${timeStamp}`,
@@ -1139,7 +1152,13 @@ export class HederaSDKHelper {
         message: string;
     }[]> {
         if (apiOptions.mockId) {
-            return await (new MockService(apiOptions.mockId)).getApi('HEDERA_MESSAGES', { topicId, startTimestamp });
+            return await (new MockService()).execute({
+                mockId: apiOptions.mockId,
+                type: MockType.GET_MESSAGES,
+                data: {
+                    topicId, startTimestamp
+                }
+            });
         }
 
         let goNext = true;
@@ -1227,7 +1246,14 @@ export class HederaSDKHelper {
         message: string;
     }> {
         if (apiOptions.mockId) {
-            return await (new MockService(apiOptions.mockId)).getApi('HEDERA_MESSAGE', { topicId, index });
+            return await (new MockService()).execute({
+                mockId: apiOptions.mockId,
+                type: MockType.GET_MESSAGE,
+                data: {
+                    topicId,
+                    index
+                }
+            });
         }
 
         const url = `${Environment.HEDERA_TOPIC_API}/${topicId}/messages/${index}`;
@@ -1262,11 +1288,36 @@ export class HederaSDKHelper {
         metadata?: any
     ): Promise<TransactionReceipt> {
         if (this.mockId) {
-            return await this._mockExecuteAndReceipt(transaction, type, userId, metadata);
+            return await this._mockExecuteAndReceipt(client, transaction, type, userId, metadata);
         } else if (this.dryRun) {
             return await this._dryRunExecuteAndReceipt(type, userId, metadata);
         } else {
             return await this._executeAndReceipt(client, transaction, type, userId, metadata);
+        }
+    }
+
+    /**
+     * Execute and record
+     * @param client
+     * @param transaction
+     * @param type
+     * @param userId
+     * @param metadata
+     * @private
+     */
+    private async executeAndRecord(
+        client: Client,
+        transaction: Transaction,
+        type: string,
+        userId: string | null,
+        metadata?: any
+    ): Promise<TransactionRecord> {
+        if (this.mockId) {
+            return await this._mockExecuteAndRecord(client, transaction, type, userId);
+        } else if (this.dryRun) {
+            return await this._dryRunExecuteAndRecord(type, userId);
+        } else {
+            return await this._executeAndRecord(client, transaction, type, userId, metadata);
         }
     }
 
@@ -1280,13 +1331,19 @@ export class HederaSDKHelper {
      * @private
      */
     private async _mockExecuteAndReceipt(
+        client: Client,
         transaction: Transaction,
         type: string,
         userId: string | null,
         metadata?: any
     ): Promise<TransactionReceipt> {
         await this.virtualTransactionLog(this.mockId, type, userId);
-        return await new MockService(this.mockId).executeAndReceipt(transaction, type);
+        const accountId = client.operatorAccountId?.toString();
+        return await (new MockService()).execute({
+            mockId: this.mockId,
+            type: MockType.EXECUTE_AND_RECEIPT,
+            data: MockUpHelper.getReceipt(type, accountId, transaction)
+        });
     }
 
     /**
@@ -1370,6 +1427,93 @@ export class HederaSDKHelper {
     }
 
     /**
+     * Execute and record
+     * @param transaction
+     * @param type
+     * @param userId
+     * @private
+     */
+    private async _mockExecuteAndRecord(
+        client: Client,
+        transaction: Transaction,
+        type: string,
+        userId: string | null
+    ): Promise<TransactionRecord> {
+        await this.virtualTransactionLog(this.mockId, type, userId);
+        const accountId = client.operatorAccountId?.toString();
+        return await (new MockService()).execute({
+            mockId: this.mockId,
+            type: MockType.EXECUTE_AND_RECORD,
+            data: MockUpHelper.getRecord(type, accountId, transaction)
+        });
+    }
+
+    /**
+     * Execute and record
+     * @param type
+     * @param userId
+     * @private
+     */
+    private async _dryRunExecuteAndRecord(
+        type: string,
+        userId: string | null
+    ): Promise<TransactionRecord> {
+        await this.virtualTransactionLog(this.dryRun, type, userId);
+        return {
+            consensusTimestamp: Timestamp.fromDate(Date.now())
+        } as any
+    }
+
+    /**
+     * Execute and record
+     * @param client
+     * @param transaction
+     * @param type
+     * @param userId
+     * @param metadata
+     * @private
+     */
+    private async _executeAndRecord(
+        client: Client,
+        transaction: Transaction,
+        type: string,
+        userId: string | null,
+        metadata?: any
+    ): Promise<TransactionRecord> {
+        const id = GenerateUUIDv4();
+        try {
+            const account = client.operatorAccountId.toString();
+            await this.transactionStartLog(id, type, userId);
+            let record: TransactionRecord;
+            try {
+                const result = await transaction.execute(client);
+                record = await result.getRecord(client);
+            } catch (error) {
+                const errorMessage =
+                    typeof error === 'string' ? error : error?.message;
+                if (
+                    !errorMessage ||
+                    errorMessage.indexOf(
+                        HederaResponseCode.DUPLICATE_TRANSACTION
+                    ) === -1
+                ) {
+                    throw error;
+                }
+                record = await this.recordQuery(
+                    client,
+                    transaction.transactionId
+                );
+            }
+            await this.transactionEndLog(id, type, userId, transaction, metadata);
+            HederaSDKHelper.transactionResponse(account);
+            return record;
+        } catch (error) {
+            await this.transactionErrorLog(id, type, transaction, error, userId);
+            throw error;
+        }
+    }
+
+    /**
      * Receipt query
      * @param client Client
      * @param transacationId Transaction identifier
@@ -1402,62 +1546,6 @@ export class HederaSDKHelper {
                 return await this.receiptQuery(client, transactionId, count++);
             }
             throw error;
-        }
-    }
-
-    /**
-     * Execute and record
-     * @param client
-     * @param transaction
-     * @param type
-     * @param userId
-     * @param metadata
-     * @private
-     */
-    private async executeAndRecord(
-        client: Client,
-        transaction: Transaction,
-        type: string,
-        userId: string | null,
-        metadata?: any
-    ): Promise<TransactionRecord> {
-        if (this.dryRun) {
-            await this.virtualTransactionLog(this.dryRun, type, userId);
-            return {
-                consensusTimestamp: Timestamp.fromDate(Date.now())
-            } as any
-        } else {
-            const id = GenerateUUIDv4();
-            try {
-                const account = client.operatorAccountId.toString();
-                await this.transactionStartLog(id, type, userId);
-                let record;
-                try {
-                    const result = await transaction.execute(client);
-                    record = await result.getRecord(client);
-                } catch (error) {
-                    const errorMessage =
-                        typeof error === 'string' ? error : error?.message;
-                    if (
-                        !errorMessage ||
-                        errorMessage.indexOf(
-                            HederaResponseCode.DUPLICATE_TRANSACTION
-                        ) === -1
-                    ) {
-                        throw error;
-                    }
-                    record = await this.recordQuery(
-                        client,
-                        transaction.transactionId
-                    );
-                }
-                await this.transactionEndLog(id, type, userId, transaction, metadata);
-                HederaSDKHelper.transactionResponse(account);
-                return record;
-            } catch (error) {
-                await this.transactionErrorLog(id, type, transaction, error, userId);
-                throw error;
-            }
         }
     }
 
@@ -1855,7 +1943,6 @@ export class HederaSDKHelper {
             ...options.config,
             responseType: 'json',
         }
-        console.log('--- 123, ', config);
         let hasNext = true;
         const result = [];
         while (hasNext) {
@@ -2297,7 +2384,13 @@ export class HederaSDKHelper {
         }
 
         if (apiOptions.mockId) {
-            return await (new MockService(apiOptions.mockId)).getApi('HEDERA_ACCOUNT', { accountId });
+            return await (new MockService()).execute({
+                mockId: apiOptions.mockId,
+                type: MockType.GET_ACCOUNT,
+                data: {
+                    accountId
+                }
+            });
         }
 
         const res = await axios.get(
@@ -2408,7 +2501,14 @@ export class HederaSDKHelper {
         apiOptions: IApiOptions
     ): Promise<{ accountId: string }> {
         if (apiOptions.mockId) {
-            const data = await (new MockService(apiOptions.mockId)).getApi('HEDERA_ACCOUNT', { accountId });
+            const data = await (new MockService()).execute({
+                mockId: apiOptions.mockId,
+                type: MockType.GET_ACCOUNT,
+                data: {
+                    accountId
+                }
+            });
+
             if (data?.account) {
                 return { accountId: data.account };
             } else {
