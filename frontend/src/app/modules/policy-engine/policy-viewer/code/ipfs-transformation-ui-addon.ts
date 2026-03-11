@@ -172,19 +172,39 @@ export class IpfsTransformationUIAddonCode {
 
     private isCsvBuffer(buffer: ArrayBuffer): boolean {
         try {
-            const text = new TextDecoder().decode(new Uint8Array(buffer, 0, buffer.byteLength));
-            const lines = text.split('\n').filter(line => line.trim().length > 0);
+            const checkSize = Math.min(64 * 1024, buffer.byteLength);
+            const chunk = new Uint8Array(buffer, 0, checkSize);
             
-            const delimiters = [',', ';', '\r', '\t'];
-            const firstLine = lines[0];
+            // skip UTF-8 BOM
+            let offset = 0;
+            if (chunk[0] === 0xEF && chunk[1] === 0xBB && chunk[2] === 0xBF) {
+                offset = 3;
+            }
+            
+            const text = new TextDecoder().decode(chunk);
+            const lines = text.split(/\r?\n/).slice(0, 5);
+                        
+            const firstLine = lines[0].trim();
+            if (!firstLine) {
+                return false;
+            }
+
+            const delimiters = [',', ';', '\t'];
             
             for (const delimiter of delimiters) {
-                const count = (firstLine.match(new RegExp(`\\${delimiter}`, 'g')) || []).length;
-                if (count > 0) {
-                    const consistent = lines.slice(0, 3).every(line => 
-                        (line.match(new RegExp(`\\${delimiter}`, 'g')) || []).length === count
-                    );
-                    if (consistent) {
+                const delimiterCount = (firstLine.match(new RegExp(`\\${delimiter}`, 'g')) || []).length;
+                
+                if (delimiterCount > 0) {
+                    const isConsistent = lines.slice(1, 4).every(line => {
+                        const lineTrimmed = line.trim();
+                        if (!lineTrimmed) {
+                            return true;
+                        }
+                        const count = (lineTrimmed.match(new RegExp(`\\${delimiter}`, 'g')) || []).length;
+                        return Math.abs(count - delimiterCount) <= 1;
+                    });
+                    
+                    if (isConsistent && !text.match(/<\w+>/)) {
                         return true;
                     }
                 }
