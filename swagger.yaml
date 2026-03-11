@@ -233,6 +233,82 @@ paths:
       summary: Returns user's Hedera account balance.
       tags:
         - accounts
+  /accounts/otp/generate:
+    post:
+      operationId: AccountApi_generateOtp
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      tags:
+        - accounts
+  /accounts/otp/confirm:
+    post:
+      operationId: AccountApi_confirmOtp
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      tags:
+        - accounts
+  /accounts/otp/status:
+    get:
+      operationId: AccountApi_getOtpStatus
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      tags:
+        - accounts
+  /accounts/otp/deactivate:
+    post:
+      operationId: AccountApi_deactivateOtp
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      tags:
+        - accounts
   /analytics/search/policies:
     post:
       description: >-
@@ -18754,9 +18830,12 @@ components:
           type: string
         password:
           type: string
+        otp:
+          type: string
       required:
         - username
         - password
+        - otp
     ChangePasswordDTO:
       type: object
       properties:
