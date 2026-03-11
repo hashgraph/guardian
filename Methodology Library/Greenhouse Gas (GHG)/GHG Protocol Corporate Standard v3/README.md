@@ -33,9 +33,9 @@ Although the GHGP Standard provides useful guidance and requirements for corpora
 
 The **Main Framework** is designed to dynamically map organizational and operational boundaries in a hierarchy of the organization, business entities, and facilities/assets, while tools are designed to capture activity data, select secondary data sources, and calculate GHG emissions. 
 
-![1](https://github.com/Lanka-k/GHG/blob/7f7b61d0d6abde373712a292afbbc92935839b44/Screenshots/1.%20The%20Main%20Framework.png) 
+![1](Screenshots/1.%20The%20Main%20Framework.png)
 
-![2](https://github.com/Lanka-k/GHG/blob/7f7b61d0d6abde373712a292afbbc92935839b44/Screenshots/2.%20Type%20of%20tools.png) 
+![2](Screenshots/2.%20Type%20of%20tools.png) 
 
 ## Need and Use for the GHGP Corporate Standard Policy
 
@@ -57,7 +57,7 @@ Finally, the emissions are tokenized to allow for enhanced tracking, transparenc
 
 ## Policy Workflow
 
-![3](https://github.com/Lanka-k/GHG/blob/7f77e1f94041659443c1c2105a038639f7bba8f1/Screenshots/3.%20Workflow.png)
+![3](Screenshots/3.%20Workflow.png)
 
 ## Policy Guide
 
@@ -178,7 +178,7 @@ This is a required step that enables the assignment of the two main policy roles
 * Organizational Representative
 * Assurance Provider
 
-![4](https://github.com/Lanka-k/GHG/blob/6adf90db00205bd98c2581f47cfa5fa020824f6b/Screenshots/4.%20Roles.png)
+![4](Screenshots/4.%20Roles.png)
 
 For detailed insights on managing methodologies and leveraging the Administrator account as the trusted engine for policy publishing and ecosystem enablement, explore the [Guardian documentation here](https://guardian.hedera.com/guardian/standard-registry).
 
@@ -200,15 +200,15 @@ Follow the screen-by-step guide below to complete these tasks.
 * **Use the dropdowns**: For some sections, just click and pick the right option from the list.
 * **Watch for Red Stars** ($\color{Red}{*}$) : Any field with a red star is required. You can't skip these.
 
-![5](https://github.com/Lanka-k/GHG/blob/6adf90db00205bd98c2581f47cfa5fa020824f6b/Screenshots/5.%20OF%20step%201.png) 
+![5](Screenshots/5.%20OF%20step%201.png) 
 
 * **Follow-up Sections**: Some questions are dynamic. For example, if you select "**Yes**" for the question regarding _sources of Scope 1, 2, or 3 emissions that are excluded from your disclosure_, additional fields will appear. Be sure to fill out these new sections as they become visible.
 
-![6](https://github.com/Lanka-k/GHG/blob/6adf90db00205bd98c2581f47cfa5fa020824f6b/Screenshots/6.%20OF%20step%201.png) 
+![6](Screenshots/6.%20OF%20step%201.png) 
 
 * **Adding Multiple Entries**: In sections that allow more than one answer (like **Unique Identifiers**), you can add different types by clicking the button below the section. For example, click <kbd> <br> + Add Unique identifier(s) <br> </kbd> to create a new rows for each identifier you need to list.
 
-![7](https://github.com/Lanka-k/GHG/blob/6adf90db00205bd98c2581f47cfa5fa020824f6b/Screenshots/7.%20OF%20step%201.png)
+![7](Screenshots/7.%20OF%20step%201.png)
 
 2. Walkthrough of the Organization Profile
 
@@ -236,9 +236,9 @@ Once you are ready, use these buttons to manage your workflow:
 
 💁‍♀️ **Pro-Tip**: If you don't see all the buttons listed above, please **scroll to the right** using the scrollbar at the bottom of the table to reveal all available actions.
 
-![8](https://github.com/Lanka-k/GHG/blob/d6775bbed957a2c103b388271d41108c81a7234f/Screenshots/8.%20OF%20step%201.png) 
+![8](Screenshots/8.%20OF%20step%201.png) 
 
-![9](https://github.com/Lanka-k/GHG/blob/d6775bbed957a2c103b388271d41108c81a7234f/Screenshots/9.%20OF%20step%201.png) 
+![9](Screenshots/9.%20OF%20step%201.png) 
 
 3. Create an Entity
 
@@ -250,7 +250,7 @@ Now, you will create an **Entity Profile** for each part of your organization th
 * **Filling the Form**: Enter all required details for the specific entity you are setting up.
 * **Finalize**: Once you have provided all the information, click the <kbd> <br> Validate & Create <br> </kbd> button to save the profile.
 
-![10](https://github.com/Lanka-k/GHG/blob/bab829fd69d91eb70a25b1feb0ade9c5d3447319/Screenshots/10.%20OF%20step%203.png)
+![10](Screenshots/10.%20OF%20step%203.png)
 
 4. Assigning Facilities and Assets
 
@@ -259,9 +259,9 @@ Once your entities are created, you need to link them to their physical location
 * **Navigate**: Go to the **Organization Entity** section.
 * **Assigning Details**: Start assigning **Facilities or Assets** to the correct entity using <kbd> <br> Create Facility or Asset <br> </kbd>  button.
 
-![11](https://github.com/Lanka-k/GHG/blob/bab829fd69d91eb70a25b1feb0ade9c5d3447319/Screenshots/11.%20OF%20step%204.png)
+![11](Screenshots/11.%20OF%20step%204.png)
 
-![12](https://github.com/Lanka-k/GHG/blob/bab829fd69d91eb70a25b1feb0ade9c5d3447319/Screenshots/12.%20OF%20step%204.png)
+![12](Screenshots/12.%20OF%20step%204.png)
 
 5. Setting Targets
 
@@ -275,31 +275,31 @@ It is generally best practice to set targets in alignment with the _Science Base
   - Scope: Specify which emission scopes apply.
   - Greenhouse Gases: Select the specific gases covered by the goal.
    
-![13](https://github.com/Lanka-k/GHG/blob/0eb3c0c3aaf9cd6dcac0e54b9c63d5d988cb5c61/Screenshots/13.%20OF%20step%205.png)
-![14](https://github.com/Lanka-k/GHG/blob/0eb3c0c3aaf9cd6dcac0e54b9c63d5d988cb5c61/Screenshots/14.%20OF%20step%205.png)
-![15](https://github.com/Lanka-k/GHG/blob/0eb3c0c3aaf9cd6dcac0e54b9c63d5d988cb5c61/Screenshots/15.%20OF%20step%205.png)
+![13](Screenshots/13.%20OF%20step%205.png)
+![14](Screenshots/14.%20OF%20step%205.png)
+![15](Screenshots/15.%20OF%20step%205.png)
 
 6.  Defining GHG Sources
 
 For every **Facility** and **Asset** created, you must identify and add its specific GHG sources.
 * **Action**: Select the Facility or Asset and input all required data for each applicable GHG source using <kbd> <br> Add GHG Source <br> </kbd>  button. 
 
-![16](https://github.com/Lanka-k/GHG/blob/c2586d65a0c006dc19eb8a37fa373879ea4990eb/Screenshots/16.%20OF%20step%206.png)
-![17](https://github.com/Lanka-k/GHG/blob/c2586d65a0c006dc19eb8a37fa373879ea4990eb/Screenshots/17.%20OF%20step%206.png)
+![16](Screenshots/16.%20OF%20step%206.png)
+![17](Screenshots/17.%20OF%20step%206.png)
 
 GHG Sources can also be **attributed to products and services** when applicable to support PCF calculations and scope 3 accounting.
 
-![18](https://github.com/Lanka-k/GHG/blob/c2586d65a0c006dc19eb8a37fa373879ea4990eb/Screenshots/18.%20OF%20step%206.png)
+![18](Screenshots/18.%20OF%20step%206.png)
 
 > ⚠️ Note: Ensure that all relevant Secondary Data Tools (such as the EPA Emission Factors Hub or IPCC GWP values) are selected and added to the source profile.
 >> These tools provide the necessary calculation methodologies and emission factors for the source.
 
-![19](https://github.com/Lanka-k/GHG/blob/d8139517e1b9feddd3b4dc5bcad580ff0b763338/Screenshots/19.%20OF%20step%206.png)
-![20](https://github.com/Lanka-k/GHG/blob/d8139517e1b9feddd3b4dc5bcad580ff0b763338/Screenshots/20.%20OF%20step%206.png)
-![21](https://github.com/Lanka-k/GHG/blob/d8139517e1b9feddd3b4dc5bcad580ff0b763338/Screenshots/21.%20OF%20step%206.png)
-![22](https://github.com/Lanka-k/GHG/blob/d8139517e1b9feddd3b4dc5bcad580ff0b763338/Screenshots/22.%20OF%20step%206.png)
-![23](https://github.com/Lanka-k/GHG/blob/d8139517e1b9feddd3b4dc5bcad580ff0b763338/Screenshots/23.%20OF%20step%206.png)
-![24](https://github.com/Lanka-k/GHG/blob/d8139517e1b9feddd3b4dc5bcad580ff0b763338/Screenshots/24.%20OF%20step%206.png)
+![19](Screenshots/19.%20OF%20step%206.png)
+![20](Screenshots/20.%20OF%20step%206.png)
+![21](Screenshots/21.%20OF%20step%206.png)
+![22](Screenshots/22.%20OF%20step%206.png)
+![23](Screenshots/23.%20OF%20step%206.png)
+![24](Screenshots/24.%20OF%20step%206.png)
 
 7. Inputting Activity Data
 
@@ -310,16 +310,16 @@ Activity data (MRV data) can be added in two ways:\
 	- _Manual Entry_: Information is input directly into the system by the organization.\
 	- _Automated Sourcing_: Data is pulled automatically via APIs or from verified monitoring devices (such as IoT-enabled meters) assigned to the source.
 
-![25](https://github.com/Lanka-k/GHG/blob/5f3bfd083689288111b1dc6a99be57fd812295bc/Screenshots/25.%20OF%20step%207.png)
-![26](https://github.com/Lanka-k/GHG/blob/5f3bfd083689288111b1dc6a99be57fd812295bc/Screenshots/26.%20OF%20step%207.png)
-![27](https://github.com/Lanka-k/GHG/blob/5f3bfd083689288111b1dc6a99be57fd812295bc/Screenshots/27.%20OF%20step%207.png)
-![28](https://github.com/Lanka-k/GHG/blob/5f3bfd083689288111b1dc6a99be57fd812295bc/Screenshots/28.%20OF%20step%207.png)
+![25](Screenshots/25.%20OF%20step%207.png)
+![26](Screenshots/26.%20OF%20step%207.png)
+![27](Screenshots/27.%20OF%20step%207.png)
+![28](Screenshots/28.%20OF%20step%207.png)
 
 **Market-Based Instruments**: During this process, you may allocate contractual instruments such as **Renewable Energy Certificates (RECs)** to the applicable GHG sources.
 
-![29](https://github.com/Lanka-k/GHG/blob/5a8168e3f10e24510af16078d969961614bb60e6/Screenshots/29.%20OF%20step%207.png)
-![30](https://github.com/Lanka-k/GHG/blob/5a8168e3f10e24510af16078d969961614bb60e6/Screenshots/30.%20OF%20step%207.png)
-![31](https://github.com/Lanka-k/GHG/blob/5a8168e3f10e24510af16078d969961614bb60e6/Screenshots/31.%20OF%20step%207.png)
+![29](Screenshots/29.%20OF%20step%207.png)
+![30](Screenshots/30.%20OF%20step%207.png)
+![31](Screenshots/31.%20OF%20step%207.png)
 
 8. Generating the Primary GHGP Report
 
@@ -329,9 +329,9 @@ Once all monitoring and activity data for the reporting period has been entered,
 - **Automatic Population**: The system will automatically pull your previously entered data to populate the key reporting metrics.
 - **Viewing Reports**: Once generated, the finalized documents can be accessed and viewed under the **Primary Reports** section.
 
-![32](https://github.com/Lanka-k/GHG/blob/352b54e5f894fbe3a3cb4248e281cf175c6b7e36/Screenshots/32.%20OF%20step%208.png)
-![33](https://github.com/Lanka-k/GHG/blob/352b54e5f894fbe3a3cb4248e281cf175c6b7e36/Screenshots/33.%20OF%20step%208.png)
-![34](https://github.com/Lanka-k/GHG/blob/24af761d6057f5d8a942706dc1bca2a4313c0366/Screenshots/34.%20OF%20step%208.png)
+![32](Screenshots/32.%20OF%20step%208.png)
+![33](Screenshots/33.%20OF%20step%208.png)
+![34](Screenshots/34.%20OF%20step%208.png)
 
 9. Assigning an Assurance Provider
 
@@ -341,8 +341,8 @@ After the Primary GHGP Report has been validated and created, you can initiate t
 
 > 💡 Note: This step is currently optional.
 
-![35](https://github.com/Lanka-k/GHG/blob/3ece30fea753c20d2cd8c6fe31d61f45ac1f4632/Screenshots/35.%20OF%20step%209.png)
-![36](https://github.com/Lanka-k/GHG/blob/3ece30fea753c20d2cd8c6fe31d61f45ac1f4632/Screenshots/36.%20OF%20step%209.png)
+![35](Screenshots/35.%20OF%20step%209.png)
+![36](Screenshots/36.%20OF%20step%209.png)
 
 10. Assurance Review and Outcomes
 
@@ -352,9 +352,9 @@ The report will result in one of three statuses:
 * **Rejected**: The report is not approved.
 * **Resubmission Requested**: The provider requires corrections or additional information. You will need to update the data and submit the report again for review.
 
-![37](https://github.com/Lanka-k/GHG/blob/2a9487e97a4417523e6b2dd15717336a5bf9cadc/Screenshots/37.%20OF%20step%2010.png)
-![38](https://github.com/Lanka-k/GHG/blob/2a9487e97a4417523e6b2dd15717336a5bf9cadc/Screenshots/38%20OF%20step%2010.png)
-![39](https://github.com/Lanka-k/GHG/blob/2a9487e97a4417523e6b2dd15717336a5bf9cadc/Screenshots/39%20OF%20step%2010.png)
+![37](Screenshots/37.%20OF%20step%2010.png)
+![38](Screenshots/38%20OF%20step%2010.png)
+![39](Screenshots/39%20OF%20step%2010.png)
 
 11. Finalizing Emissions and CETs Generation
 
@@ -363,16 +363,16 @@ Once the organizational emissions have been calculated and the data is finalized
 * **Action**: The Organization Representative reviews the calculated data in GHG Primary reprt to continue with the issuance of Carbon Emissions Tokens (CETs).
 * **Result**: Upon approval by the representative, the system formally issues the CETs, documenting the verified emissions within the registry.
 
-![40](https://github.com/Lanka-k/GHG/blob/f367cd9e92fff816cc66556e45b4f2b6d4afaf52/Screenshots/40%20OF%20step%2011.png)
-![41](https://github.com/Lanka-k/GHG/blob/f367cd9e92fff816cc66556e45b4f2b6d4afaf52/Screenshots/41%20OF%20step%2011.png)
-![42](https://github.com/Lanka-k/GHG/blob/f367cd9e92fff816cc66556e45b4f2b6d4afaf52/Screenshots/42%20OF%20step%2011%20new.png)
+![40](Screenshots/40%20OF%20step%2011.png)
+![41](Screenshots/41%20OF%20step%2011.png)
+![42](Screenshots/42%20OF%20step%2011%20new.png)
 
 12. If applicable, the organization can create and publish digital PCFs.\
 The PCF is based on all emissions attributed to a specific product/service IDs and made relative to the declared unit.
 
-![43](https://github.com/Lanka-k/GHG/blob/a144bf940bf10fd0d764d9caa725b10adaca181c/Screenshots/43%20OF%20step%2012.png)
-![44](https://github.com/Lanka-k/GHG/blob/a144bf940bf10fd0d764d9caa725b10adaca181c/Screenshots/44%20OF%20step%2012.png)
-![45](https://github.com/Lanka-k/GHG/blob/a144bf940bf10fd0d764d9caa725b10adaca181c/Screenshots/45%20OF%20step%2012.png)
+![43](Screenshots/43%20OF%20step%2012.png)
+![44](Screenshots/44%20OF%20step%2012.png)
+![45](Screenshots/45%20OF%20step%2012.png)
 
 
 ### Summary of the Organizational Representative Flow
@@ -397,9 +397,9 @@ When you log into the system for the first time after being assigned, you must e
 * **Mandatory Fields**: Complete all fields marked with a red star ($\color{Red}{*}$).
 * **Account Activation**: Once the form is validated, your account is activated. This allows you to view and manage incoming assurance requests.
 
-![46](https://github.com/Lanka-k/GHG/blob/ff1864a152040058458148f3492b574e03a2439e/Screenshots/46%20AP%20step%201.png)
-![47](https://github.com/Lanka-k/GHG/blob/ff1864a152040058458148f3492b574e03a2439e/Screenshots/47%20AP%20step%201.png)
-![48](https://github.com/Lanka-k/GHG/blob/ff1864a152040058458148f3492b574e03a2439e/Screenshots/48%20AP%20step%201.png)
+![46](Screenshots/46%20AP%20step%201.png)
+![47](Screenshots/47%20AP%20step%201.png)
+![48](Screenshots/48%20AP%20step%201.png)
 
 2. Accessing Assigned Reports
 
@@ -408,7 +408,7 @@ When an organization assigns a **Primary Report** to you, it will within the **O
 * **Navigation**: Go to the **Organization Reports** tab to see a list of reports awaiting your review.
 * **Visibility**: You will only see reports where you have been specifically designated as the Assurance Provider.
 
-![49](https://github.com/Lanka-k/GHG/blob/ff1864a152040058458148f3492b574e03a2439e/Screenshots/49%20AP%20step%202.png)
+![49](Screenshots/49%20AP%20step%202.png)
 
 3. Review Operations
 
@@ -420,7 +420,7 @@ Within the **Organization Reports** section, you have three primary actions avai
 | <kbd> <br> Reject <br> </kbd> | Formally declines the report due to significant inaccuracies. |
 | <kbd> <br> Request Resubmission <br> </kbd> | Sends the report back to the Org Representative for specific corrections. |
 
-![50](https://github.com/Lanka-k/GHG/blob/ff1864a152040058458148f3492b574e03a2439e/Screenshots/50%20AP%20step%203.png)
+![50](Screenshots/50%20AP%20step%203.png)
 
 4. Statement Reports
 
@@ -429,8 +429,8 @@ After completing your review, approving the GHG report, you must document the fo
 * **Action**: Use the <kbd> <br> Create Statement Report <br> </kbd> button.
 * **Purpose**: This serves as the official certification of the verification process, detailing the scope and findings of your audit.
 
-![51](https://github.com/Lanka-k/GHG/blob/ff1864a152040058458148f3492b574e03a2439e/Screenshots/51%20AP%20step%204.png)
-![52](https://github.com/Lanka-k/GHG/blob/ff1864a152040058458148f3492b574e03a2439e/Screenshots/52%20AP%20step%204.png)
+![51](Screenshots/51%20AP%20step%204.png)
+![52](Screenshots/52%20AP%20step%204.png)
 
 5. Viewing Statements
 
@@ -442,7 +442,7 @@ Transparency is key. All historical audit data is preserved for future reference
 > 💡 **Note**: Once a report is "Accepted" and a Statement is issued, the data is locked to maintain the integrity of the verified carbon footprint.
 
 
-![53](https://github.com/Lanka-k/GHG/blob/ff1864a152040058458148f3492b574e03a2439e/Screenshots/53%20AP%20step%205.png)
+![53](Screenshots/53%20AP%20step%205.png)
 
 
 ### Summary of the Assurance Provider Flow
