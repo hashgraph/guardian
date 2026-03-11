@@ -151,9 +151,48 @@ export class IpfsTransformationUIAddonCode {
         
         if (fileType) {
             mimeType = fileType.mime;
+        } else if (this.isTextBuffer(buffer)) {
+            mimeType = this.isCsvBuffer(buffer) ? 'text/csv' : 'text/plain';
         }
         
         return `data:${mimeType};base64,${base64}`;
+    }
+
+    private isTextBuffer(buffer: ArrayBuffer): boolean {
+        const checkSize = Math.min(1024, buffer.byteLength);
+        const chunk = new Uint8Array(buffer, 0, checkSize);
+        for (let i = 0; i < chunk.length; i++) {
+            const byte = chunk[i];
+            if (byte === 0 || (byte < 9 || (byte > 13 && byte < 32)) && byte > 127) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private isCsvBuffer(buffer: ArrayBuffer): boolean {
+        try {
+            const text = new TextDecoder().decode(new Uint8Array(buffer, 0, buffer.byteLength));
+            const lines = text.split('\n').filter(line => line.trim().length > 0);
+            
+            const delimiters = [',', ';', '\r', '\t'];
+            const firstLine = lines[0];
+            
+            for (const delimiter of delimiters) {
+                const count = (firstLine.match(new RegExp(`\\${delimiter}`, 'g')) || []).length;
+                if (count > 0) {
+                    const consistent = lines.slice(0, 3).every(line => 
+                        (line.match(new RegExp(`\\${delimiter}`, 'g')) || []).length === count
+                    );
+                    if (consistent) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch {
+            return false;
+        }
     }
 
     private arrayBufferToBase64(buffer: ArrayBuffer): string {
