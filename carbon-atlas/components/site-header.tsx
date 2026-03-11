@@ -1,0 +1,127 @@
+"use client"
+
+import * as React from "react"
+import { useTheme } from "next-themes"
+import {
+  IconBrandGithub,
+  IconChevronDown,
+  IconMoon,
+  IconSun,
+} from "@tabler/icons-react"
+
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Separator } from "@/components/ui/separator"
+import { SidebarTrigger } from "@/components/ui/sidebar"
+
+const NETWORKS = {
+  testnet: {
+    label: "Testnet",
+    topicUrl: "https://hashscan.io/testnet/topic/1767599197.624837133",
+  },
+  mainnet: {
+    label: "Mainnet",
+    topicUrl: "",
+  },
+} as const
+
+type NetworkId = keyof typeof NETWORKS
+
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+  React.useEffect(() => setMounted(true), [])
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-8 w-8"
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      aria-label="Toggle theme"
+    >
+      {mounted && resolvedTheme === "dark" ? (
+        <IconSun className="size-4" />
+      ) : (
+        <IconMoon className="size-4" />
+      )}
+    </Button>
+  )
+}
+
+function NetworkSelector() {
+  const [network, setNetwork] = React.useState<NetworkId>("testnet")
+
+  function handleChange(value: string) {
+    const id = value as NetworkId
+    setNetwork(id)
+    const url = NETWORKS[id].topicUrl
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer")
+    }
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="hidden sm:flex gap-1.5">
+          <span className="inline-flex size-2 rounded-full bg-primary" />
+          Hedera {NETWORKS[network].label}
+          <IconChevronDown className="size-3.5 opacity-50" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuRadioGroup value={network} onValueChange={handleChange}>
+          <DropdownMenuRadioItem value="testnet">
+            Testnet
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="mainnet" disabled>
+            Mainnet (coming soon)
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+export function SiteHeader() {
+  return (
+    <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+      <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
+        <SidebarTrigger className="-ml-1" />
+        <Separator
+          orientation="vertical"
+          className="mx-2 data-[orientation=vertical]:h-4"
+        />
+        <div className="flex flex-col">
+          <h1 className="text-base font-medium leading-tight">
+            Methodology for Metered & Measured Energy Cooking Devices
+          </h1>
+          <p className="text-xs text-muted-foreground hidden sm:block">
+            Gold Standard MECD 431 v1.2 — ICVCM CCP-approved methodology
+          </p>
+        </div>
+        <div className="ml-auto flex items-center gap-1">
+          <NetworkSelector />
+          <ThemeToggle />
+          <Button variant="ghost" size="icon" asChild className="h-8 w-8">
+            <a
+              href="https://github.com/gautamp8/mecd-indexer"
+              rel="noopener noreferrer"
+              target="_blank"
+              aria-label="GitHub"
+            >
+              <IconBrandGithub className="size-4" />
+            </a>
+          </Button>
+        </div>
+      </div>
+    </header>
+  )
+}
