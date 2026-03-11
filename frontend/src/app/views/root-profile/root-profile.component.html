@@ -54,6 +54,31 @@
                 </div>
             </div>
 
+            <div class="item-header">Security Settings</div>
+            <div class="item">
+                <span>Two-factor authentication</span>
+                <div class="view-document-button otp-status active" *ngIf="is2faEnabled">
+                    <span>Active</span>
+                </div>
+                <div class="view-document-button otp-status disabled" *ngIf="!is2faEnabled">
+                    <span>Disabled</span>
+                </div>
+            </div>
+            <div class="item"><span></span>
+                <span>When you sign in you'll be asked to use the security code provided
+                    by your Authenticator
+                    App.</span>
+            </div>
+            <div class="item"><span></span>
+                <div *ngIf="!is2faEnabled" (click)="generate2fa()" class="view-document-button">
+                    <i class="pi pi-cog"></i>
+                    <span>Set up</span>
+                </div>
+                <div *ngIf="is2faEnabled" (click)="deactivate2fa()" class="view-document-button">
+                    <span>Deactivate</span>
+                </div>
+            </div>
+
 
             <div class="item-header">Hedera</div>
             <div class="item">

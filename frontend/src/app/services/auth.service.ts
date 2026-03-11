@@ -21,12 +21,28 @@ export class AuthService {
         this.refreshTokenSubject = new Subject();
     }
 
-    public login(username: string, password: string): Observable<any> {
-        return this.http.post<string>(`${this.url}/login`, { username, password });
+    public login(username: string, password: string, otp?: string): Observable<any> {
+        return this.http.post<string>(`${this.url}/login`, { username, password, otp });
     }
 
     public changePassword(username: string, oldPassword: string, newPassword: string): Observable<any> {
         return this.http.post<string>(`${this.url}/change-password`, { username, oldPassword, newPassword });
+    }
+
+    public generateOtpSecret(): Observable<any> {
+        return this.http.post<any>(`${this.url}/otp/generate`, {});
+    }
+
+    public confirmOtpSecret(token: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/otp/confirm`, { token });
+    }
+
+    public getOtpStatus(): Observable<any> {
+        return this.http.get<any>(`${this.url}/otp/status`);
+    }
+
+    public deactivateOtp(): Observable<any> {
+        return this.http.post<any>(`${this.url}/otp/deactivate`, {});
     }
 
     public updateAccessToken(): Observable<any> {

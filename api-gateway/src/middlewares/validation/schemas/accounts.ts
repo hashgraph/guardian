@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 import fieldsValidation from '../fields-validation.js'
-import { IsIn, IsNotEmpty, IsString } from 'class-validator';
+import { IsIn, IsNotEmpty, IsString, IsOptional } from 'class-validator';
 import { UserRole } from '@guardian/interfaces';
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -67,6 +67,11 @@ export class LoginUserDTO {
     @IsString()
     @IsNotEmpty()
     password: string;
+
+    @ApiProperty()
+    @IsString()
+    @IsOptional()    
+    otp: string;
 }
 
 export class RegisterUserDTO {

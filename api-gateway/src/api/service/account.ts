@@ -139,9 +139,9 @@ export class AccountApi {
         @Body() body: LoginUserDTO
     ): Promise<AccountsSessionResponseDTO> {
         try {
-            const { username, password } = body;
+            const { username, password, otp } = body;
             const users = new Users();
-            return await users.generateNewToken(username, password);
+            return await users.generateNewToken(username, password, otp);
         } catch (error) {
             await this.logger.warn(error.message, ['API_GATEWAY'], null);
             throw new HttpException(error.message, error.code || HttpStatus.UNAUTHORIZED);
@@ -383,6 +383,90 @@ export class AccountApi {
             return await (new Guardians()).getBalance(user, user.username);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    @Post('otp/generate')
+    @Auth()
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    async generateOtp(@AuthUser() user: IAuthUser,) {
+            const users = new Users();
+        try {
+            const code = await users.otpGenerateSecret(user.id);
+
+            return code
+
+        } catch (error) {
+            await this.logger.error(error.message, ['API_GATEWAY']);
+            throw new HttpException(error.message, error.code || HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @Post('otp/confirm')
+    @Auth()
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    async confirmOtp(
+        @AuthUser() user: IAuthUser,
+        @Body() body,
+    ) {
+            const users = new Users();
+        try {
+            const token = body.token;
+            const result = await users.otpConfirmSecret(user.id, token);
+
+            return result;
+
+        } catch (error) {
+            await this.logger.error(error.message, ['API_GATEWAY']);
+            throw new HttpException(error.message, error.code || HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Get('otp/status')
+    @Auth()
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    async getOtpStatus(
+        @AuthUser() user: IAuthUser,
+    ){
+            const users = new Users();
+        try {            
+            const result = await users.otpGetStatus(user.id);
+
+            return result;
+
+        } catch (error) {
+            await this.logger.error(error.message, ['API_GATEWAY']);
+            throw new HttpException(error.message, error.code || HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Post('otp/deactivate')
+    @Auth()
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    async deactivateOtp(
+        @AuthUser() user: IAuthUser,
+    ){
+            const users = new Users();
+        try {            
+            const result = await users.otpDeactivate(user.id);
+
+            return result;
+
+        } catch (error) {
+            await this.logger.error(error.message, ['API_GATEWAY']);
+            throw new HttpException(error.message, error.code || HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

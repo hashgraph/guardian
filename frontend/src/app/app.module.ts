@@ -9,6 +9,7 @@ import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SchemaHelper } from '@guardian/interfaces';
 import { CheckboxModule } from 'primeng/checkbox';
+import { ClipboardModule } from '@angular/cdk/clipboard';
 //Services
 import { AuthInterceptor, AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
@@ -61,6 +62,10 @@ import { NotificationsComponent } from './views/notifications/notifications.comp
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
 import { UsersManagementDetailComponent } from './views/user-management-detail/user-management-detail.component';
+import { OtpDialogComponent } from './views/login/otp-dialog/otp-dialog.component';
+import { OtpConfigDialogComponent } from './views/login/otp-config-dialog/otp-config-dialog.component';
+import { OtpDisableDialogComponent } from './views/login/otp-disable-dialog/otp-disable-dialog.component';
+import { OtpCodesDialogComponent } from './views/login/otp-codes-dialog/otp-codes-dialog.component';
 //Components
 import { InfoComponent } from './components/info/info/info.component';
 import { BrandingComponent } from './views/branding/branding.component';
@@ -185,7 +190,11 @@ import { TreeTableModule } from 'primeng/treetable'
         RelayerAccountsComponent,
         UsersManagementDetailComponent,
         WorkerTasksComponent,
-        UserKeysDialog
+        UserKeysDialog,
+        OtpDialogComponent,
+        OtpConfigDialogComponent,
+        OtpDisableDialogComponent,
+        OtpCodesDialogComponent
     ],
     exports: [],
     bootstrap: [AppComponent],
@@ -205,7 +214,8 @@ import { TreeTableModule } from 'primeng/treetable'
         ToastrModule.forRoot(),
         QRCodeModule,
         ButtonModule,
-        InputTextModule,
+        InputTextModule,        
+        ClipboardModule,
         SelectButtonModule,
         DropdownModule,
         ButtonModule,

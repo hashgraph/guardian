@@ -1,26 +1,27 @@
-import {Component, OnDestroy, OnInit, AfterViewChecked, QueryList, ViewChildren, ElementRef} from '@angular/core';
-import {Router} from '@angular/router';
-import {AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, Validators,} from '@angular/forms';
-import {AuthService} from '../../services/auth.service';
-import {UserCategory, UserRole} from '@guardian/interfaces';
-import {AuthStateService} from 'src/app/services/auth-state.service';
-import {Observable, Subject, Subscription} from 'rxjs';
-import {noWhitespaceValidator} from 'src/app/validators/no-whitespace-validator';
-import {WebSocketService} from 'src/app/services/web-socket.service';
-import {QrCodeDialogComponent} from 'src/app/components/qr-code-dialog/qr-code-dialog.component';
-import {MeecoVCSubmitDialogComponent} from 'src/app/components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
-import {environment} from 'src/environments/environment';
-import {takeUntil} from 'rxjs/operators';
-import {BrandingService} from '../../services/branding.service';
-import {DialogService, DynamicDialogRef} from 'primeng/dynamicdialog';
+import { Component, OnDestroy, OnInit, AfterViewChecked, QueryList, ViewChildren, ElementRef } from '@angular/core';
+import { Router } from '@angular/router';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, Validators, } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
+import { UserCategory, UserRole } from '@guardian/interfaces';
+import { AuthStateService } from 'src/app/services/auth-state.service';
+import { Observable, Subject, Subscription } from 'rxjs';
+import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
+import { WebSocketService } from 'src/app/services/web-socket.service';
+import { QrCodeDialogComponent } from 'src/app/components/qr-code-dialog/qr-code-dialog.component';
+import { MeecoVCSubmitDialogComponent } from 'src/app/components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
+import { environment } from 'src/environments/environment';
+import { takeUntil } from 'rxjs/operators';
+import { BrandingService } from '../../services/branding.service';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import {
     AccountTypeSelectorDialogComponent
 } from './register-dialogs/account-type-selector-dialog/account-type-selector-dialog.component';
-import {ForgotPasswordDialogComponent} from './forgot-password-dialog/forgot-password-dialog.component';
-import {RegisterDialogComponent} from './register-dialogs/register-dialog/register-dialog.component';
-import {DemoService} from '../../services/demo.service';
-import {ChangePasswordComponent} from './change-password/change-password.component';
+import { ForgotPasswordDialogComponent } from './forgot-password-dialog/forgot-password-dialog.component';
+import { RegisterDialogComponent } from './register-dialogs/register-dialog/register-dialog.component';
+import { DemoService } from '../../services/demo.service';
+import { ChangePasswordComponent } from './change-password/change-password.component';
 import { InformService } from 'src/app/services/inform.service';
+import { OtpDialogComponent } from './otp-dialog/otp-dialog.component';
 
 /**
  * Login page.
@@ -145,10 +146,10 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         }
     }
 
-    private login(login: string, password: string) {
+    private login(login: string, password: string, otp?: string) {
         this.loading = true;
         this.wrongNameOrPassword = false;
-        this.auth.login(login, password)
+        this.auth.login(login, password, otp)
             .subscribe((result) => {
                 this.auth.setRefreshToken(result.refreshToken);
                 this.auth.setUsername(login);
@@ -157,6 +158,18 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                     const home = this.auth.home(result.role);
                     this.router.navigate([home]);
                 });
+
+                if (result.otprequired) {
+                    this.dialogService.open(OtpDialogComponent, {
+                        header: 'Enter Verification Code',
+                        width: '40vw',
+                        closable: false,
+                    }).onClose.subscribe(token => {
+                        if (token) {
+                            this.login(login, password, token);
+                        }
+                    });
+                }
 
                 if (result.weakPassword) {
                     this.informService.shortWarnMessage(
@@ -195,7 +208,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                     return;
                 }
                 this.login(userData.username, userData.password);
-            }, ({error}) => {
+            }, ({ error }) => {
                 this.error = error.message;
                 this.loading = false;
                 this.brandingLoading = false;
@@ -344,7 +357,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                         data: {
                             document: event.vc,
                             presentationRequestId:
-                            event.presentation_request_id,
+                                event.presentation_request_id,
                             submissionId: event.submission_id,
                             userRole: event.role,
                         },
