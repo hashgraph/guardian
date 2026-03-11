@@ -8,7 +8,7 @@ import { HederaDidDocument, MessageAction, MessageMemo, MessageServer, Token as 
 import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyTokenBlock } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
@@ -38,6 +38,27 @@ import { RecordActionStep } from '../record-action-step.js';
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
+        properties: [{
+            name: 'roundMethod',
+            label: 'Round Method',
+            title: 'Round Method',
+            type: PropertyType.Select,
+            items: [
+                {
+                    label: 'Round up',
+                    value: 'ceil'
+                },
+                {
+                    label: 'Round down',
+                    value: 'floor'
+                },
+                {
+                    label: 'Round to nearest',
+                    value: 'round'
+                }
+            ],
+            default: 'round'
+        }],
         defaultEvent: true
     },
     variables: [
@@ -296,7 +317,7 @@ export class MintBlock {
         if (Number.isNaN(amount) || !Number.isFinite(amount) || amount < 0) {
             throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);
         }
-        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
+        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount, ref.options.roundMethod);
 
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref, userId);
