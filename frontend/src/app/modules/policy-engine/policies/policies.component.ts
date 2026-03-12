@@ -631,22 +631,23 @@ export class PoliciesComponent implements OnInit {
                     })
                 ]
             }, 
+            // {
+            //     tooltip: 'Parameters',
+            //     group: false,
+            //     visible: PolicyHelper.isPublishMode(policy) && this.user.POLICIES_POLICY_MANAGE,
+            //     color: 'primary-color',
+            //     buttons: [
+            //         new MenuButton({
+            //             visible: true,
+            //             disabled: false,
+            //             tooltip: 'Policy parameters',
+            //             icon: 'settings',
+            //             color: 'primary-color',
+            //             click: () => this.policyParameters(policy)
+            //         })
+            //     ]
+            // },
             {
-                tooltip: 'Parameters',
-                group: false,
-                visible: PolicyHelper.isPublishMode(policy) && this.user.POLICIES_POLICY_MANAGE,
-                color: 'primary-color',
-                buttons: [
-                    new MenuButton({
-                        visible: true,
-                        disabled: false,
-                        tooltip: 'Policy parameters',
-                        icon: 'settings',
-                        color: 'primary-color',
-                        click: () => this.policyParameters(policy)
-                    })
-                ]
-            },{
                 tooltip: 'Delete',
                 group: false,
                 visible: true,
