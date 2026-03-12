@@ -5027,11 +5027,11 @@ export class PolicyEngineService {
             })
 
         this.channel.getMessages(PolicyEngineEvents.GET_POLICY_PARAMETERS_VALUES,
-            async (msg: { owner: IOwner, userDID: string, policyId: string }) => {
+            async (msg: { owner: IOwner, user: IAuthUser, policyId: string }) => {
                 try {
-                    const { userDID, policyId } = msg;
+                    const { user, policyId } = msg;
                     let result;
-                    const parameters = await DatabaseServer.getPolicyParameters(userDID, policyId);
+                    const parameters = await DatabaseServer.getPolicyParameters(user.did, policyId);
                     if(parameters && parameters.config?.length) {
                         result = parameters.config;
                     }
@@ -5039,6 +5039,11 @@ export class PolicyEngineService {
                         const foundPolicy = await DatabaseServer.getPolicyById(policyId);
                         result = foundPolicy?.editableParametersSettings;
                     }
+                    
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
+                    
+                    result = result.filter((item: PolicyEditableFieldDTO) => this.hasFieldPermission(item, userRole));
 
                     return new MessageResponse(result);
                 } catch (error) {
@@ -5047,5 +5052,23 @@ export class PolicyEngineService {
                 }
             })
         //#endregion
+    }
+
+    public async hasFieldPermission(field: PolicyEditableFieldDTO, userRole: string): Promise<boolean> {
+        if(field) {
+            if (field.visible.includes('ANY_ROLE')) {
+                return true;
+            }
+            if (field.visible.indexOf(userRole) > -1) {
+                return true;
+            }
+            if (field.visible.includes('NO_ROLE') && !userRole && userRole !== 'Administrator') {
+                return true;
+            }
+            if (field.visible.includes('OWNER') && userRole === 'Administrator') {
+                return true;
+            }
+        }
+        return false;
     }
 }

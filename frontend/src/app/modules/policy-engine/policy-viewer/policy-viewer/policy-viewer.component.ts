@@ -71,6 +71,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     private destroy$: Subject<boolean> = new Subject<boolean>();
     public activeTabIndex = 0;
     public disconnected: boolean = false;
+    public editableParameters: any[] = [];
 
     public currentSavepoint: any = null;
     private restoreDialogOpened: boolean = false;
@@ -287,7 +288,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policy = value[1];
                 this.groups = value[2] || [];
                 const count: any = value[3]?.body || {};
-                const editableParameters = value[4];
+                this.editableParameters = value[4];
 
                 this.virtualUsers = [];
                 this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
@@ -327,7 +328,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.newRequestsExist = count.requestsCount > 0;
                 this.newActionsExist = count.actionsCount > 0 || count.delayCount > 0;
 
-                if (this.userRole === 'Administrator' && editableParameters?.length && editableParameters.some((p: any) => p.required && !p.value)) {
+                if (this.editableParameters?.length && this.editableParameters.some((p: any) => p.required && !p.value)) {
                     this.openParametersSettings();
                 }
             }, (e) => {

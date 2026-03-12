@@ -2887,7 +2887,8 @@ export class PolicyApi {
         Permissions.POLICIES_POLICY_UPDATE,
         Permissions.POLICIES_POLICY_TAG,
         Permissions.MODULES_MODULE_UPDATE,
-        Permissions.TOOLS_TOOL_UPDATE
+        Permissions.TOOLS_TOOL_UPDATE,
+        Permissions.POLICIES_POLICY_READ
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -5245,7 +5246,7 @@ export class PolicyApi {
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.getPolicyParametersConfig(new EntityOwner(user), user.did, policyId );
+            return await engineService.getPolicyParametersConfig(new EntityOwner(user), user, policyId );
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

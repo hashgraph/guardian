@@ -1745,9 +1745,9 @@ export class PolicyEngine extends NatsService {
      */
     public async getPolicyParametersConfig(
         owner: IOwner,
-        userDID: string,
+        user: IAuthUser,
         policyId: string,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_PARAMETERS_VALUES, { owner, userDID, policyId });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_PARAMETERS_VALUES, { owner, user, policyId });
     }
 }
