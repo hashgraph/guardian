@@ -18,6 +18,7 @@ export const RevokedStatus = 'Revoked';
 @BasicBlock({
     blockType: 'revocationBlock',
     actionType: LocationType.REMOTE,
+    canMockUp: true,
     about: {
         label: 'Revocation',
         title: `Add 'Revocation' Block`,

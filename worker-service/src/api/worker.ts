@@ -1,8 +1,10 @@
 import {
     MessageBrokerChannel,
     MessageResponse,
+    MockEntityType,
     MockService,
     MockType,
+    MockUpHelper,
     NatsService,
     NotificationHelper,
     PinoLogger,
@@ -337,7 +339,10 @@ export class Worker extends NatsService {
                         cid = await (new MockService()).execute({
                             mockId: task.mockId,
                             type: MockType.ADD_FILE,
-                            data: fileContent
+                            data: {
+                                type: MockEntityType.FILE,
+                                content: MockUpHelper.getBuffet(fileContent)
+                            }
                         });
                     } else if (task.dryRun) {
                         cid = GenerateUUIDv4();
@@ -365,7 +370,10 @@ export class Worker extends NatsService {
                             success = await (new MockService()).execute({
                                 mockId: task.mockId,
                                 type: MockType.DELETE_FILE,
-                                data: cid
+                                data: {
+                                    type: MockEntityType.FILE,
+                                    cid
+                                }
                             });
                         } else if (task.dryRun) {
                             success = true;
@@ -391,7 +399,10 @@ export class Worker extends NatsService {
                             fileContent = await (new MockService()).execute({
                                 mockId: task.mockId,
                                 type: MockType.GET_FILE,
-                                data: task.data.payload.cid
+                                data: {
+                                    type: MockEntityType.FILE,
+                                    cid: task.data.payload.cid
+                                }
                             });
                         } else if (task.dryRun) {
                             throw new Error('Unable to get virtual file');
@@ -503,6 +514,7 @@ export class Worker extends NatsService {
                             mockId: task.mockId,
                             type: MockType.API,
                             data: {
+                                type: MockEntityType.API,
                                 method,
                                 url,
                                 headers,
@@ -1342,6 +1354,7 @@ export class Worker extends NatsService {
             }
             ///////
         } catch (e) {
+            console.debug(e);
             result.error = e.message;
             result.isTimeoutError = e.isTimeoutError;
         } finally {

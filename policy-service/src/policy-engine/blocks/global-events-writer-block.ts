@@ -26,6 +26,7 @@ interface SetDataPayload {
     blockType: 'globalEventsWriterBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMockUp: true,
     about: {
         label: 'Global Events Writer',
         title: 'Publish VC reference to a global Hedera topics',

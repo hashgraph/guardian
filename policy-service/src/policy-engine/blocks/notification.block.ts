@@ -35,6 +35,7 @@ import {
 @BasicBlock({
     blockType: 'notificationBlock',
     actionType: LocationType.LOCAL,
+    canMockUp: false,
     about: {
         label: 'Notification',
         title: `Add 'Notification' Block`,

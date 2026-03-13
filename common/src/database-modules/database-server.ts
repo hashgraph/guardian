@@ -4565,65 +4565,88 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Save Virtual Message
+     * Save MockUp
      * @param dryRun
-     * @param message
+     * @param type
+     * @param data
      *
-     * @virtual
      */
-    public static async saveMockUpFile(dryRun: string, cid: string, content: string): Promise<void> {
+    public static async saveMockUp(
+        dryRun: string,
+        type: string,
+        data: any
+    ): Promise<void> {
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
-            cid,
-            content,
-        }, dryRun, 'MockUpFile', false));
+            ...data,
+            type
+        }, dryRun, 'MockUp', false));
     }
 
     /**
-     * Get Virtual Messages
+     * Get MockUp
      * @param dryRun
-     * @param topicId
+     * @param type
+     * @param filters
      *
-     * @virtual
      */
-    public static async getMockUpFile(dryRun: string, cid: string): Promise<string> {
-        const item = (await new DataBaseHelper(DryRun).findOne({
+    public static async getMockUp(
+        dryRun: string,
+        type: string,
+        filters: any
+    ): Promise<DryRun> {
+        return (await new DataBaseHelper(DryRun).findOne({
+            ...filters,
             dryRunId: dryRun,
-            dryRunClass: 'MockUpFile',
-            cid
+            dryRunClass: 'MockUp',
+            type
         }));
-        if(item) {
-            return item.content;
-        } else {
-            return null;
-        }
     }
 
     /**
-     * Get Virtual Messages
+     * Delete MockUp
      * @param dryRun
-     * @param topicId
+     * @param type
+     * @param filters
      *
-     * @virtual
      */
-    public static async deleteMockUpFile(dryRun: string, cid: string): Promise<void> {
-        const item = (await new DataBaseHelper(DryRun).delete({
+    public static async deleteMockUp(
+        dryRun: string,
+        type: string,
+        filters: any
+    ): Promise<void> {
+        (await new DataBaseHelper(DryRun).delete({
+            ...filters,
             dryRunId: dryRun,
-            dryRunClass: 'MockUpFile',
-            cid
+            dryRunClass: 'MockUp',
+            type
         }));
     }
 
+    /**
+     * Get MockUps
+     * @param dryRun
+     */
+    public static async getMockUps(
+        dryRun: string
+    ): Promise<DryRun[]> {
+        return (await new DataBaseHelper(DryRun).find({
+            dryRunId: dryRun,
+            dryRunClass: 'MockUp',
+        }));
+    }
 
-
-
-
-
-
-
-
-
-
-
+    /**
+     * Delete MockUps
+     * @param dryRun
+     */
+    public static async deleteMockUps(
+        dryRun: string
+    ): Promise<void> {
+        (await new DataBaseHelper(DryRun).delete({
+            dryRunId: dryRun,
+            dryRunClass: 'MockUp'
+        }));
+    }
 
     /**
      * Set Active Group

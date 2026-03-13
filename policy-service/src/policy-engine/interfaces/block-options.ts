@@ -21,6 +21,10 @@ export interface PolicyBlockDecoratorOptions {
      */
     actionType?: LocationType;
     /**
+     * Can Mock Up
+     */
+    canMockUp?: boolean;
+    /**
      * Block about
      */
     about?: BlockAbout;

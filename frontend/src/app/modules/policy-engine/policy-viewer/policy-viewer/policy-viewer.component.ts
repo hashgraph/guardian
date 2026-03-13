@@ -23,6 +23,7 @@ import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
 
 /**
  * Component for choosing a policy and
@@ -75,6 +76,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     private restoreDialogOpened: boolean = false;
     private openedOnLoad = false;
     private forceAdminAfterReload = false;
+
+    public mockTab: string = 'config';
+    public mockConfig: any = {
+        enable: false,
+        blocks: []
+    };
+    public mockIpfs: any[] = [];
+    public mockTopics: any[] = [];
 
     constructor(
         private profileService: ProfileService,
@@ -438,7 +447,28 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     onView(view: string) {
         this.view = view;
         this.columns = this.columnsMap[this.view];
-        if (this.view !== 'policy') {
+        if (this.view === 'mockup') {
+            this.loading = true;
+
+            forkJoin([
+                this.policyEngineService.loadMockupConfig(this.policyInfo.id),
+                this.policyEngineService.loadMockupData(this.policyInfo.id)
+            ]).subscribe(([config, data]) => {
+
+                this.mockConfig = config || {};
+                this.mockIpfs = data?.ipfs || [];
+                this.mockTopics = data?.topics || [];
+
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+
+        } else if (this.view === 'policy') {
+            return;
+        } else {
             this.loading = true;
             this.pageIndex = 0;
             this.pageSize = 10;
@@ -884,5 +914,92 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     });
             }
         });
+    }
+
+    public onMockTab(tab: any) {
+        this.mockTab = tab.index === 0 ? 'config' : 'data';
+    }
+
+    public addMockData(type: string) {
+
+    }
+
+    public onImportMock() {
+        const dialogRef = this.dialogService.open(ImportEntityDialog, {
+            showHeader: false,
+            width: '80%',
+            styleClass: 'guardian-dialog',
+            data: {
+                type: ImportEntityType.MockUp,
+                policyId: this.policyInfo.id
+            }
+        });
+        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
+            if (result) {
+                this.loading = true;
+                this.policyEngineService
+                    .importMockupData(this.policyInfo.id, result.data)
+                    .subscribe((data: any) => {
+                        this.mockIpfs = data?.ipfs || [];
+                        this.mockTopics = data?.topics || [];
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
+    }
+
+    public onExportMock() {
+        this.loading = true;
+        this.policyEngineService
+            .exportMockupData(this.policyInfo.id)
+            .subscribe((fileBuffer: any) => {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-mockup'
+                    })
+                );
+                downloadLink.setAttribute('download', `mockup_${Date.now()}.mockup`);
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                downloadLink.remove();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public enableMockUp() {
+        this.mockConfig.enable = !this.mockConfig.enable;
+        for (const block of this.mockConfig.blocks) {
+            block.enable = this.mockConfig.enable
+        }
+    }
+
+    public enableBlockMockUp(block: any) {
+        block.enable = !block.enable;
+    }
+
+    public onSaveMockConfig() {
+        this.loading = true;
+        this.policyEngineService
+            .saveMockupConfig(this.policyInfo.id, this.mockConfig)
+            .subscribe((config: any) => {
+                this.mockConfig = config || {};
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

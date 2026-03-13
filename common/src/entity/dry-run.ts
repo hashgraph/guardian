@@ -913,6 +913,12 @@ export class DryRun extends BaseEntity {
     content?: string;
 
     /**
+     * Transaction
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    transaction?: any;
+    
+    /**
      * Set defaults
      */
     @BeforeCreate()

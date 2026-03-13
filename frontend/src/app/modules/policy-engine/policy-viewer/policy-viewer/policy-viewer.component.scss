@@ -960,3 +960,127 @@ a.go-back-link svg {
     width: 100%;
     overflow: hidden;
 }
+
+.mockup-tabs-nav {
+    ::ng-deep {
+        .p-tabview .p-tabview-nav {
+            li:first-child {
+                margin-left: 8px !important;
+            }
+        }
+    }
+}
+
+.input-document-edit {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 16px;
+    min-width: 40px;
+
+    button {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+
+.input-document-open {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 0px;
+    min-width: 40px;
+    margin-right: 4px;
+    margin-left: 8px;
+
+    button {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+.add-doc-btn {
+    min-height: 28px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+}
+
+.mockup-actions-buttons-container {
+    height: 40px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: end;
+    gap: 16px;
+
+    .guardian-button {
+        min-width: 105px;
+    }
+}
+
+.mockup-toggle {
+    display: flex;
+    align-items: center;
+
+    input {
+        display: none;
+    }
+
+    .toggleSwitch {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        width: 50px;
+        height: 26px;
+        background-color: #E1E7EF;
+        border-radius: 20px;
+        cursor: pointer;
+        transition-duration: .2s;
+        margin-right: 8px;
+        border: 1px solid #afafaf;
+    }
+
+    .toggleSwitch::after {
+        content: "";
+        position: absolute;
+        height: 10px;
+        width: 10px;
+        left: 5px;
+        background-color: #fff;
+        border-radius: 50%;
+        transition-duration: .2s;
+        box-shadow: 5px 2px 7px rgba(8, 8, 8, 0.26);
+        border: 5px solid #fff;
+    }
+
+    input:checked+.toggleSwitch::after {
+        transform: translateX(100%);
+        transition-duration: .2s;
+        background-color: white;
+    }
+
+    input:checked+.toggleSwitch {
+        background-color: var(--guardian-primary-color, #4169E2);
+        transition-duration: .2s;
+    }
+}
+
+.mockup-config-toggle {
+    margin-top: 16px;
+    height: 32px;
+    display: flex;
+    justify-content: end;
+
+    button {
+         width: 100px;
+    }
+}
+
+.mockup-config-container {
+    padding: 16px;
+}

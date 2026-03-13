@@ -495,6 +495,25 @@ export class BlockTreeGenerator extends NatsService {
                 return new MessageError(error, 500);
             }
         });
+
+        this.getPolicyMessages(PolicyEvents.GET_MOCK_UP_CONFIG, policyId, async (_: any) => {
+            try {
+                const config = PolicyComponentsUtils.GetMockUpConfig(policyId);
+                return new MessageResponse(config);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.SET_MOCK_UP_CONFIG, policyId, async (config: any) => {
+            try {
+                PolicyComponentsUtils.SetMockUpConfig(policyId, config);
+                const result = PolicyComponentsUtils.GetMockUpConfig(policyId);
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
     }
 
     /**

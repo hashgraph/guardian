@@ -17,6 +17,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'messagesReportBlock',
     commonBlock: false,
     actionType: LocationType.LOCAL,
+    canMockUp: true,
     about: {
         label: 'Messages Report',
         title: `Add 'Messages Report' Block`,

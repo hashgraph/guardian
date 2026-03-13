@@ -874,6 +874,62 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Get mockup config
+     * @param policyId
+     * @param owner
+     */
+    public async getMockupConfig(
+        policyId: string,
+        owner: IOwner,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_MOCK_UP_CONFIG, { policyId, owner });
+    }
+
+    /**
+     * Get mockup data
+     * @param policyId
+     * @param owner
+     */
+    public async getMockupData(
+        policyId: string,
+        owner: IOwner,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_MOCK_UP_DATA, { policyId, owner });
+    }
+
+    /**
+     * Get mockup data
+     * @param policyId
+     * @param owner
+     */
+    public async setMockupConfig(
+        policyId: string,
+        owner: IOwner,
+        config: IOwner,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.SET_MOCK_UP_CONFIG, { policyId, owner, config });
+    }
+
+    /**
+     * Load MockUp file for import
+     * @param zip
+     * @param owner
+     */
+    public async importMockup(policyId: string, owner: IOwner, zip: any): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.IMPORT_MOCK_UP_DATA, { zip, policyId, owner });
+    }
+
+    /**
+     * Get MockUp export file
+     * @param policyId
+     * @param owner
+     */
+    public async exportMockup(policyId: string, owner: IOwner) {
+        const file = await this.sendMessage(PolicyEngineEvents.EXPORT_MOCK_UP_DATA, { policyId, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
      * Get policy navigation
      *
      * @param user

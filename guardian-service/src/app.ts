@@ -53,7 +53,6 @@ import { demoAPI } from './api/demo.service.js';
 import { themeAPI } from './api/theme.service.js';
 import { brandingAPI } from './api/branding.service.js';
 import { wizardAPI } from './api/wizard.service.js';
-import { mockAPI } from './api/mock.service.js';
 import { startMetricsServer } from './utils/metrics.js';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -190,7 +189,6 @@ Promise.all([
         await policyLabelsAPI(logger);
         await formulasAPI(logger);
         await externalPoliciesAPI(logger);
-        await mockAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);

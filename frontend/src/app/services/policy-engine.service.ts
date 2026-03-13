@@ -686,4 +686,30 @@ export class PolicyEngineService {
     public reconnect(policyId: string): Observable<any> {
         return this.http.put<any>(`${this.url}/${policyId}/reconnect`, null);
     }
+
+    public loadMockupConfig(policyId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/dry-run/mockup/config`);
+    }
+
+    public loadMockupData(policyId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/dry-run/mockup/data`);
+    }
+
+    public saveMockupConfig(policyId: string, config: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/mockup/config`, config);
+    }
+
+    public importMockupData(policyId: string, arrayBuffer: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/mockup/import`, arrayBuffer, {
+            headers: {
+                'Content-Type': 'binary/octet-stream',
+            },
+        });
+    }
+
+    public exportMockupData(policyId: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${policyId}/dry-run/mockup/export`, {
+            responseType: 'arraybuffer',
+        });
+    }
 }

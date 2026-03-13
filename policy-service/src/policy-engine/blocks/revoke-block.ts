@@ -18,6 +18,7 @@ export const RevokedStatus = 'Revoked';
 @EventBlock({
     blockType: 'revokeBlock',
     actionType: LocationType.REMOTE,
+    canMockUp: true,
     about: {
         label: 'Revoke Document',
         title: `Add 'Revoke' Block`,

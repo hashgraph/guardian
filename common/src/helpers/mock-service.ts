@@ -1,8 +1,9 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { AccountId, Status, Timestamp, TokenId, TopicId, TopicMessageSubmitTransaction, Transaction, TransactionReceipt, TransactionRecord } from '@hiero-ledger/sdk';
+import { AccountId, Status, Timestamp, TokenId, TopicCreateTransaction, TopicId, TopicMessageSubmitTransaction, Transaction, TransactionReceipt, TransactionRecord } from '@hiero-ledger/sdk';
 import { DatabaseServer } from '../database-modules/database-server.js';
 import { Singleton } from '../decorators/singleton.js';
 import { NatsService } from '../mq/index.js';
+import JSZip from 'jszip';
 
 export enum MockType {
     ADD_FILE = 'ADD_FILE',
@@ -18,55 +19,97 @@ export enum MockType {
     API = 'API'
 }
 
+export enum MockEntityType {
+    FILE = 'FILE',
+    TOPIC = 'TOPIC',
+    MESSAGE = 'MESSAGE',
+    TOKEN = 'TOKEN',
+    ACCOUNT = 'ACCOUNT',
+    API = 'API',
+}
+
 export interface AddFileEvent {
     mockId: string;
     type: MockType.ADD_FILE;
-    data: Buffer<ArrayBufferLike>
+    data: {
+        type: MockEntityType.FILE,
+        content: string
+    }
 }
 export interface GetFileEvent {
     mockId: string;
     type: MockType.GET_FILE;
-    data: string
+    data: {
+        type: MockEntityType.FILE,
+        cid: string
+    }
 }
 export interface DeleteFileEvent {
     mockId: string;
     type: MockType.DELETE_FILE;
-    data: string
+    data: {
+        type: MockEntityType.FILE,
+        cid: string
+    }
 }
 export interface ExecuteAndReceiptEvent {
     mockId: string;
     type: MockType.EXECUTE_AND_RECEIPT;
-    data: any
+    data: {
+        type: MockEntityType,
+        transaction: any
+    }
 }
 export interface ExecuteAndRecordEvent {
     mockId: string;
     type: MockType.EXECUTE_AND_RECORD;
-    data: any
+    data: {
+        type: MockEntityType,
+        transaction: any
+    }
 }
 export interface GetTokenEvent {
     mockId: string;
     type: MockType.GET_TOKEN;
-    data: { tokenId: string }
+    data: {
+        type: MockEntityType.TOKEN,
+        tokenId: string
+    }
 }
 export interface GetMessageEvent {
     mockId: string;
     type: MockType.GET_MESSAGE;
-    data: { timeStamp: string } | { topicId: string, index: number }
+    data: {
+        type: MockEntityType.MESSAGE,
+        timeStamp: string
+    } | {
+        type: MockEntityType.MESSAGE,
+        topicId: string,
+        index: number
+    }
 }
 export interface GetMessagesEvent {
     mockId: string;
     type: MockType.GET_MESSAGES;
-    data: { topicId: string, startTimestamp?: string }
+    data: {
+        type: MockEntityType.MESSAGE,
+        topicId: string,
+        startTimestamp?: string
+    }
 }
 export interface GetAccountEvent {
     mockId: string;
     type: MockType.GET_ACCOUNT;
-    data: { accountId: string }
+    data: {
+        type: MockEntityType.ACCOUNT,
+        accountId: string
+    }
 }
 export interface ApiEvent {
     mockId: string;
     type: MockType.API;
     data: {
+        type: MockEntityType.API,
         method: string,
         url: string,
         headers: any,
@@ -76,7 +119,10 @@ export interface ApiEvent {
 export interface CreateTokenEvent {
     mockId: string;
     type: MockType.CREATE_TOKEN;
-    data: any
+    data: {
+        type: MockEntityType.TOKEN,
+        template: any
+    }
 }
 
 export type MockEvent =
@@ -94,20 +140,21 @@ export type MockEvent =
 
 export class MockUpHelper {
     public static async execute(event: MockEvent) {
+        console.debug(event);
         if (event.type === MockType.ADD_FILE) {
-            return await MockUpHelper.addFile(event.mockId, event.data);
+            return await MockUpHelper.addFile(event.mockId, event.data.type, event.data.content);
         }
         if (event.type === MockType.GET_FILE) {
-            return await MockUpHelper.getFile(event.mockId, event.data);
+            return await MockUpHelper.getFile(event.mockId, event.data.type, event.data.cid);
         }
         if (event.type === MockType.DELETE_FILE) {
-            return await MockUpHelper.deleteCid(event.mockId, event.data);
+            return await MockUpHelper.deleteCid(event.mockId, event.data.type, event.data.cid);
         }
         if (event.type === MockType.EXECUTE_AND_RECEIPT) {
-            return await MockUpHelper.executeAndReceipt(event.mockId, event.data);
+            return await MockUpHelper.executeAndReceipt(event.mockId, event.data.type, event.data.transaction);
         }
         if (event.type === MockType.EXECUTE_AND_RECORD) {
-            return await MockUpHelper.executeAndRecord(event.mockId, event.data);
+            return await MockUpHelper.executeAndRecord(event.mockId, event.data.type, event.data.transaction);
         }
         if (event.type === MockType.CREATE_TOKEN) {
             return await MockUpHelper.createToken(event.mockId, event.data);
@@ -130,57 +177,64 @@ export class MockUpHelper {
         throw new Error('Invalid method');
     }
 
-    private static async addFile(mockId: string, fileContent: Buffer<ArrayBufferLike>): Promise<string> {
+    public static getBuffet(content: Buffer<ArrayBufferLike>): string {
+        return content.toString('binary');
+    }
+
+    private static async addFile(
+        mockId: string,
+        type: MockEntityType,
+        fileContent: string
+    ): Promise<string> {
         const cid = GenerateUUIDv4();
-        const body = fileContent.toString('binary');
-        await DatabaseServer.saveMockUpFile(mockId, cid, body);
+        await DatabaseServer.saveMockUp(mockId, type, { cid, content: fileContent });
         return cid;
     }
 
-    private static async getFile(mockId: string, cid: string): Promise<any> {
-        const body = await DatabaseServer.getMockUpFile(mockId, cid);
-        if (body) {
-            return body;
+    private static async getFile(
+        mockId: string,
+        type: MockEntityType,
+        cid: string
+    ): Promise<any> {
+        const row = await DatabaseServer.getMockUp(mockId, type, { cid });
+        if (row && row.content) {
+            return row.content;
         } else {
             throw new Error('Invalid cid');
         }
     }
 
-    private static async deleteCid(mockId: string, cid: string): Promise<boolean> {
-        await DatabaseServer.deleteMockUpFile(mockId, cid);
+    private static async deleteCid(
+        mockId: string,
+        type: MockEntityType,
+        cid: string
+    ): Promise<boolean> {
+        await DatabaseServer.deleteMockUp(mockId, type, { cid });
         return true;
     }
 
     private static async createToken(mockId: string, tokenTemplate: any): Promise<string> {
         const tokenId = new TokenId(Date.now()).toString();
-        console.log('123', tokenTemplate);
+        throw new Error('createToken');
         return tokenId;
     }
 
     private static async executeAndReceipt(
         mockId: string,
+        type: MockEntityType,
         transaction: any
     ): Promise<TransactionReceipt> {
-        console.log('executeAndReceipt', transaction);
-        return {
-            status: Status.Success,
-            topicId: new TopicId(Date.now()),
-            tokenId: new TokenId(Date.now()),
-            accountId: new AccountId(Date.now()),
-            serials: []
-        } as any;
+        await DatabaseServer.saveMockUp(mockId, type, { transaction });
+        return transaction;
     }
 
     private static async executeAndRecord(
         mockId: string,
+        type: MockEntityType,
         transaction: any
     ): Promise<TransactionRecord> {
         try {
-            if (transaction.consensus_timestamp) {
-                transaction.consensusTimestamp = MockUpHelper.stringToTimestamp(transaction.consensus_timestamp);
-            } else {
-                transaction.consensusTimestamp = MockUpHelper.getTimestamp();
-            }
+            await DatabaseServer.saveMockUp(mockId, type, { transaction });
             return transaction;
         } catch (error) {
             console.error(error);
@@ -192,7 +246,7 @@ export class MockUpHelper {
         mockId: string,
         params: { tokenId: string }
     ): Promise<any> {
-        return null;
+        throw new Error('getHederaToken');
     }
 
     private static async getHederaMessage(
@@ -208,7 +262,7 @@ export class MockUpHelper {
         topicId: string;
         message: string;
     }> {
-        return null;
+        throw new Error('getHederaMessage');
     }
 
     private static async getHederaMessages(
@@ -222,7 +276,7 @@ export class MockUpHelper {
         topicId: string;
         message: string;
     }[]> {
-        return null;
+        throw new Error('getHederaMessages');
     }
 
     private static async getHederaAccount(
@@ -233,7 +287,7 @@ export class MockUpHelper {
         balance: string;
         key: string;
     }> {
-        return null;
+        throw new Error('getHederaAccount');
     }
 
     private static async api(mockId: string, config: {
@@ -256,14 +310,35 @@ export class MockUpHelper {
         } else {
             throw new Error('Invalid method');
         }
+        throw new Error('api');
     }
 
+    public static deserializeTransaction(transaction: any): any {
+        transaction.status = Status.Success;
+        if (transaction.consensus_timestamp) {
+            transaction.consensusTimestamp = MockUpHelper.stringToTimestamp(transaction.consensus_timestamp);
+        }
+        if (transaction.topic_id) {
+            transaction.topicId = MockUpHelper.stringToTopicId(transaction.topic_id);
+        }
+        if (transaction.token_id) {
+            transaction.tokenId = MockUpHelper.stringToTokenId(transaction.token_id);
+        }
+        if (transaction.account_id) {
+            transaction.accountId = MockUpHelper.stringToAccountId(transaction.account_id);
+        }
+        return transaction;
+    }
 
     public static getReceipt(
         type: string,
         accountId: string,
         transaction: Transaction
-    ) {
+    ): {
+        type: MockEntityType,
+        transaction: any
+    } {
+        console.debug('getReceipt', type, transaction);
         if (type === 'TokenCreateTransaction') {
 
         }
@@ -304,7 +379,18 @@ export class MockUpHelper {
 
         }
         if (type === 'TopicCreateTransaction') {
-
+            const t = transaction as TopicCreateTransaction;
+            const memo = t.getTopicMemo();
+            const topicId = MockUpHelper.getTopicId();
+            return {
+                type: MockEntityType.TOPIC,
+                transaction: {
+                    id: topicId,
+                    topic_id: topicId,
+                    payer_account_id: accountId,
+                    memo
+                }
+            }
         }
         if (type === 'TopicMessageSubmitTransaction') {
 
@@ -315,13 +401,17 @@ export class MockUpHelper {
         if (type === 'TokenDeleteTransaction') {
 
         }
+        throw new Error('Invalid Type');
     }
 
     public static getRecord(
         type: string,
         accountId: string,
         transaction: Transaction
-    ): any {
+    ): {
+        type: MockEntityType,
+        transaction: any
+    } {
         if (type === 'TokenCreateTransaction') {
 
         }
@@ -371,14 +461,18 @@ export class MockUpHelper {
             const topic_id = t.topicId.toString();
             const message = t.getMessage().toString();
             const base64 = Buffer.from(message, 'utf8').toString('base64');
+
             return {
-                id: consensus_timestamp,
-                consensus_timestamp,
-                topicId: topic_id,
-                topic_id,
-                payer_account_id: accountId,
-                sequence_number: 0,
-                message: base64
+                type: MockEntityType.MESSAGE,
+                transaction: {
+                    id: consensus_timestamp,
+                    consensus_timestamp,
+                    topicId: topic_id,
+                    topic_id,
+                    payer_account_id: accountId,
+                    sequence_number: 0,
+                    message: base64
+                }
             }
         }
         if (type === 'TokenUpdateTransaction') {
@@ -387,6 +481,7 @@ export class MockUpHelper {
         if (type === 'TokenDeleteTransaction') {
 
         }
+        throw new Error('Invalid Type');
     }
 
     private static getTimestamp(): Timestamp {
@@ -406,6 +501,142 @@ export class MockUpHelper {
         const [seconds, nanos] = (timestamp || '').split('.');
         return new Timestamp(Number(seconds), Number(nanos));
     }
+
+    private static getTopicId(): string {
+        return (new TopicId(Date.now())).toString();
+    }
+
+    private static getAccountId(): string {
+        return (new AccountId(Date.now())).toString();
+    }
+
+    private static getTokenId(): string {
+        return (new TokenId(Date.now())).toString();
+    }
+
+    private static stringToTopicId(id: string): TopicId {
+        const i = Number(id.split('.')[2]);
+        return new TopicId(i);
+    }
+
+    private static stringToTokenId(id: string): AccountId {
+        const i = Number(id.split('.')[2]);
+        return new AccountId(i);
+    }
+
+    private static stringToAccountId(id: string): TokenId {
+        const i = Number(id.split('.')[2]);
+        return new TokenId(i);
+    }
+
+    public static async getMockUpData(mockId: string): Promise<any> {
+        const rows = await DatabaseServer.getMockUps(mockId);
+
+        const ipfsMap = new Map<string, any>();
+        const topicMap = new Map<string, any>();
+        for (const row of rows) {
+            if (row.type === MockEntityType.FILE) {
+                ipfsMap.set(row.cid, row.content);
+            } else if (row.type === MockEntityType.TOPIC) {
+                const transaction = row.transaction;
+                const topic = topicMap.get(transaction.topic_id);
+                if (topic) {
+                    transaction.messages = topic.messages;
+                } else {
+                    transaction.messages = [];
+                }
+                topicMap.set(transaction.topic_id, transaction);
+            } else if (row.type === MockEntityType.MESSAGE) {
+                const transaction = row.transaction;
+                const topic = topicMap.get(transaction.topic_id) || {
+                    topic_id: transaction.topic_id
+                };
+                topic.messages = topic.messages || [];
+                topic.messages.push(transaction)
+                topicMap.set(transaction.topic_id, topic);
+            } else if (row.type === MockEntityType.TOKEN) {
+
+            } else if (row.type === MockEntityType.ACCOUNT) {
+
+            } else if (row.type === MockEntityType.API) {
+
+            }
+        }
+
+        const ipfs: any[] = [];
+        for (const [cid, content] of ipfsMap.entries()) {
+            ipfs.push({ cid, content });
+        }
+        const topics: any[] = [];
+        for (const [topicId, topic] of topicMap.entries()) {
+            let messages: any[] = topic.messages;
+            messages = messages.sort((a, b) => a.consensus_timestamp > b.consensus_timestamp ? -1 : 1);
+            for (let index = 0; index < messages.length; index++) {
+                messages[index].sequence_number = index;
+            }
+            delete topic.messages;
+            topics.push({ topicId, topic, messages });
+        }
+
+        return {
+            ipfs,
+            topics
+        }
+    }
+
+    public static async import(mockId: string, zipFile: any): Promise<boolean> {
+        const zip = new JSZip();
+        const content = await zip.loadAsync(zipFile);
+
+        const ipfsString = await content.files['ipfs.json'].async('string');
+        const topicsString = await content.files['topics.json'].async('string');
+
+        const ipfs = ipfsString ? JSON.parse(ipfsString) : null;
+        const topics = topicsString ? JSON.parse(topicsString) : null;
+
+        await DatabaseServer.deleteMockUps(mockId);
+
+        if (ipfs) {
+            for (const file of ipfs) {
+                await DatabaseServer.saveMockUp(mockId, MockEntityType.FILE, {
+                    cid: file.cid,
+                    content: file.content
+                });
+            }
+        }
+        if (topics) {
+            for (const topic of topics) {
+                await DatabaseServer.saveMockUp(mockId, MockEntityType.TOPIC, {
+                    transaction: topic.topic
+                });
+                if (topic.messages) {
+                    for (const message of topic.messages) {
+                        await DatabaseServer.saveMockUp(mockId, MockEntityType.MESSAGE, {
+                            transaction: message
+                        });
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public static async export(mockId: string): Promise<JSZip> {
+        const zip = new JSZip();
+        const DETERMINISTIC_ZIP_DATE = new Date(Date.UTC(1980, 0, 1, 0, 0, 0));
+        const ZIP_FILE_OPTIONS = {
+            createFolders: false,
+            date: DETERMINISTIC_ZIP_DATE,
+            unixPermissions: 0o100644,
+            dosPermissions: 0x20,
+        };
+        const data = await MockUpHelper.getMockUpData(mockId);
+        zip.file('ipfs.json', JSON.stringify(data.ipfs), ZIP_FILE_OPTIONS);
+        zip.file('topics.json', JSON.stringify(data.topics), ZIP_FILE_OPTIONS);
+        return zip;
+    }
+
 }
 
 @Singleton

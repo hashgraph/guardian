@@ -16,6 +16,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
     blockType: 'extractDataBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMockUp: false,
     about: {
         label: 'Extract Data',
         title: `Add 'Extract Data' Block`,

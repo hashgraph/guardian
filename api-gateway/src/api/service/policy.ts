@@ -4598,6 +4598,219 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * Get mockup config
+     */
+    @Get('/:policyId/dry-run/mockup/config')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Get mockup config.',
+        description: 'Get mockup config.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Config',
+        type: Object,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getMockupConfig(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+        try {
+            return await engineService.getMockupConfig(policyId, owner)
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get mockup data
+     */
+    @Get('/:policyId/dry-run/mockup/data')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Get mockup data.',
+        description: 'Get mockup data.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Config',
+        type: Object,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getMockupData(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+        try {
+            return await engineService.getMockupData(policyId, owner)
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get mockup config
+     */
+    @Post('/:policyId/dry-run/mockup/config')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Set mockup config.',
+        description: 'Set mockup config.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Config',
+        type: Object,
+    })
+    @ApiOkResponse({
+        description: 'Config',
+        type: Object,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async setMockupConfig(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+        try {
+            return await engineService.setMockupConfig(policyId, owner, body)
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Import MockUp from a zip file
+     */
+    @Post('/:policyId/dry-run/mockup/import')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Import MockUp from a zip file.',
+        description: 'Import MockUp from a zip file.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'A zip file containing MockUp to be imported.',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Object
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async importMockup(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() zip: any
+    ): Promise<any> {
+        const engineService = new PolicyEngine();
+        if (!zip) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        try {
+            const owner = new EntityOwner(user);
+            return await engineService.importMockup(policyId, owner, zip);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Export MockUp
+     */
+    @Get('/:policyId/dry-run/mockup/export')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Returns a zip file containing MockUp.',
+        description: 'Returns a zip file containing MockUp.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation. Response zip file.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async exportFormula(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Response() res: any
+    ): Promise<any> {
+        const engineService = new PolicyEngine();
+        try {
+            const owner = new EntityOwner(user);
+            const file: any = await engineService.exportMockup(policyId, owner);
+            res.header('Content-disposition', `attachment; filename=mockup_${Date.now()}`);
+            res.header('Content-type', 'application/zip');
+            return res.send(file);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
     //#endregion
 
     //#region Multiple

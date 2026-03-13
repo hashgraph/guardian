@@ -53,7 +53,7 @@ import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'process';
 import { FireblocksHelper } from './fireblocks-helper.js';
-import { Environment, MockService, MockType, MockUpHelper } from '@guardian/common';
+import { Environment, MockEntityType, MockService, MockType, MockUpHelper } from '@guardian/common';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -1077,6 +1077,7 @@ export class HederaSDKHelper {
                 mockId: apiOptions.mockId,
                 type: MockType.GET_TOKEN,
                 data: {
+                    type: MockEntityType.TOKEN,
                     tokenId
                 }
             });
@@ -1112,6 +1113,7 @@ export class HederaSDKHelper {
                 mockId: apiOptions.mockId,
                 type: MockType.GET_MESSAGE,
                 data: {
+                    type: MockEntityType.MESSAGE,
                     timeStamp
                 }
             });
@@ -1156,6 +1158,7 @@ export class HederaSDKHelper {
                 mockId: apiOptions.mockId,
                 type: MockType.GET_MESSAGES,
                 data: {
+                    type: MockEntityType.MESSAGE,
                     topicId, startTimestamp
                 }
             });
@@ -1250,6 +1253,7 @@ export class HederaSDKHelper {
                 mockId: apiOptions.mockId,
                 type: MockType.GET_MESSAGE,
                 data: {
+                    type: MockEntityType.MESSAGE,
                     topicId,
                     index
                 }
@@ -1339,11 +1343,12 @@ export class HederaSDKHelper {
     ): Promise<TransactionReceipt> {
         await this.virtualTransactionLog(this.mockId, type, userId);
         const accountId = client.operatorAccountId?.toString();
-        return await (new MockService()).execute({
+        const receipt = await (new MockService()).execute({
             mockId: this.mockId,
             type: MockType.EXECUTE_AND_RECEIPT,
             data: MockUpHelper.getReceipt(type, accountId, transaction)
         });
+        return MockUpHelper.deserializeTransaction(receipt);
     }
 
     /**
@@ -1441,11 +1446,12 @@ export class HederaSDKHelper {
     ): Promise<TransactionRecord> {
         await this.virtualTransactionLog(this.mockId, type, userId);
         const accountId = client.operatorAccountId?.toString();
-        return await (new MockService()).execute({
+        const record = await (new MockService()).execute({
             mockId: this.mockId,
             type: MockType.EXECUTE_AND_RECORD,
             data: MockUpHelper.getRecord(type, accountId, transaction)
         });
+        return MockUpHelper.deserializeTransaction(record);
     }
 
     /**
@@ -2388,6 +2394,7 @@ export class HederaSDKHelper {
                 mockId: apiOptions.mockId,
                 type: MockType.GET_ACCOUNT,
                 data: {
+                    type: MockEntityType.ACCOUNT,
                     accountId
                 }
             });
@@ -2505,6 +2512,7 @@ export class HederaSDKHelper {
                 mockId: apiOptions.mockId,
                 type: MockType.GET_ACCOUNT,
                 data: {
+                    type: MockEntityType.ACCOUNT,
                     accountId
                 }
             });

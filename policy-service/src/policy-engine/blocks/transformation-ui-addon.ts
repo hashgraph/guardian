@@ -12,6 +12,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
     blockType: 'transformationUIAddon',
     actionType: LocationType.REMOTE,
     commonBlock: false,
+    canMockUp: true,
     about: {
         label: 'Transformation UI Addon',
         title: `Add 'Transformation UI Addon' Block`,

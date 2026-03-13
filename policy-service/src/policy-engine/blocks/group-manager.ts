@@ -18,6 +18,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'groupManagerBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMockUp: true,
     about: {
         label: 'Group Manager',
         title: `Add 'Group Manager' Block`,

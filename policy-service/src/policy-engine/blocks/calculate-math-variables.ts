@@ -15,6 +15,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'calculateMathVariables',
     commonBlock: true,
     actionType: LocationType.LOCAL,
+    canMockUp: false,
     about: {
         label: 'Math Variables',
         title: `Add 'Math' Variables`,

@@ -98,6 +98,7 @@ interface SchemaItem {
     blockType: 'externalTopicBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMockUp: true,
     about: {
         label: 'External Topic',
         title: `Add 'External Topic' Block`,

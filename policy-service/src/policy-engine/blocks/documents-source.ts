@@ -18,6 +18,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'interfaceDocumentsSourceBlock',
     commonBlock: false,
     actionType: LocationType.LOCAL,
+    canMockUp: false,
     about: {
         label: 'Documents',
         title: `Add 'Documents Source' Block`,
