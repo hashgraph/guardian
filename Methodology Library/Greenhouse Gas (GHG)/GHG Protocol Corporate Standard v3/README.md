@@ -25,17 +25,17 @@
 
 ## Introduction
 
-The GHG Protocol Corporate Accounting and Reporting Standard (GHGP Corporate Standard) is the world’s leading standard outlining requirements and guidance for corporate-level and organizational-level GHG emission inventories. As of 2023, approximately 97% of S&P 500 companies responding to the CDP an investor led effort to increase corporate carbon disclosures referenced the used the GHG Protocol to conduct their GHG inventories.[^1] Also, many other GHG-related frameworks and regulations such as the Corporate Sustainability Reporting Directive (CSRD) and the Science Based Targets Initiative (SBTi) point to the Greenhouse Gas Protocol as the default standard for the quantification and accounting of corporate GHG emissions. As future regulations and standards are developed and implemented, they are likely to either prescribe or encourage the use of Greenhouse Gas Protocol standards. 
+The GHG Protocol Corporate Accounting and Reporting Standard (GHGP Corporate Standard) is the world’s leading standard outlining requirements and guidance for corporate-level and organizational-level GHG emission inventories. As of 2023, approximately 97% of S&P 500 companies responding to the CDP an investor led effort to increase corporate carbon disclosures referenced the used the GHG Protocol to conduct their GHG inventories.[^1] Also, many other GHG-related frameworks and regulations such as the Corporate Sustainability Reporting Directive (CSRD) and the Science Based Targets Initiative (SBTi) point to the Greenhouse Gas Protocol as the default standard for the quantification and accounting of corporate GHG emissions. As future regulations and standards are developed and implemented, they are likely to either prescribe or encourage the use of Greenhouse Gas Protocol standards.
 
-The GHGP Guardian Policy mints Carbon Emission Tokens (CETs) in accordance with the GHGP Corporate Standard, including the Scope 2 Guidance, which was later published as an amendment to the GHGP Corporate Standard. The policy and methodologies are designed to calculate emissions based on MRV data that can either be provided manually by the organization or automatically sourced via API from sources such as ERP systems and IoT-enabled meters. 
+The GHGP Guardian Policy mints Carbon Emission Tokens (CETs) in accordance with the GHGP Corporate Standard, including the Scope 2 Guidance, which was later published as an amendment to the GHGP Corporate Standard. The policy and methodologies are designed to calculate emissions based on MRV data that can either be provided manually by the organization or automatically sourced via API from sources such as ERP systems and IoT-enabled meters.
 
-Although the GHGP Standard provides useful guidance and requirements for corporate GHG accounting, specific calculation methods, secondary data sources, and activity data sources may vary considerably based on geographies, industries, data availability, regulations, and business contexts. In addition, many companies will conduct and report their GHG inventories based on the GHGP, but also have to report emissions data through additional frameworks and standards such as the CDP, the CSRD, and emissions trading systems (ETSs). As such, the GHGP policy is designed based on a Main Framework of schemas common to all instances combined with specific tools for the user to choose from which are customized to specific methodological approaches, secondary data sources, and activity data sources, and additional reporting frameworks. This library of tools will continue to build over time to optimize scalability and accommodate an increasing number of business contexts and requirements. 
+Although the GHGP Standard provides useful guidance and requirements for corporate GHG accounting, specific calculation methods, secondary data sources, and activity data sources may vary considerably based on geographies, industries, data availability, regulations, and business contexts. In addition, many companies will conduct and report their GHG inventories based on the GHGP, but also have to report emissions data through additional frameworks and standards such as the CDP, the CSRD, and emissions trading systems (ETSs). As such, the GHGP policy is designed based on a Main Framework of schemas common to all instances combined with specific tools for the user to choose from which are customized to specific methodological approaches, secondary data sources, and activity data sources, and additional reporting frameworks. This library of tools will continue to build over time to optimize scalability and accommodate an increasing number of business contexts and requirements.
 
-The **Main Framework** is designed to dynamically map organizational and operational boundaries in a hierarchy of the organization, business entities, and facilities/assets, while tools are designed to capture activity data, select secondary data sources, and calculate GHG emissions. 
+The **Main Framework** is designed to dynamically map organizational and operational boundaries in a hierarchy of the organization, business entities, and facilities/assets, while tools are designed to capture activity data, select secondary data sources, and calculate GHG emissions.
 
 ![1](Screenshots/1.%20The%20Main%20Framework.png)
 
-![2](Screenshots/2.%20Type%20of%20tools.png) 
+![2](Screenshots/2.%20Type%20of%20tools.png)
 
 ## Need and Use for the GHGP Corporate Standard Policy
 
@@ -45,15 +45,15 @@ The increase in corporate and organizational commitments to measure, disclose, a
 
 Despite a growing interest in measuring, disclosing, and reducing GHG emissions from corporations, regulators, and investors alike, companies are struggling to accurately measure and report emissions. In general, current quantification methodologies are flawed, GHG accounting standards leave significant room for error, access to quality/granular data is low, and there is a prevailing lack of GHG accounting expertise. As a result, corporate GHG inventories and carbon claims come with high margins of error and low levels of trust. According to a Harvard Study, “74% of S&P 500 firms revised emissions data at least once in their Corporate Social Responsibility (CSR) reports from 2010-2020. In a majority of cases, the total emissions reported in previous years was revised upward.”[^4]
 
-The Guardian GHGP Corporate Policy offers a unique technical opportunity for companies to streamline, add robustness, and build trust and transparency into their GHG inventories and carbon claims. The policy allows users to dynamically add entities and assets to organizations and GHG sources to assets to build their inventories in alignment with their specific corporate and operational structures. MRV data can then be sourced by the Guardian automatically (e.g., via API, IoT-enabled devices, etc.) or provided manually depending on the user’s level of digitization. 
+The Guardian GHGP Corporate Policy offers a unique technical opportunity for companies to streamline, add robustness, and build trust and transparency into their GHG inventories and carbon claims. The policy allows users to dynamically add entities and assets to organizations and GHG sources to assets to build their inventories in alignment with their specific corporate and operational structures. MRV data can then be sourced by the Guardian automatically (e.g., via API, IoT-enabled devices, etc.) or provided manually depending on the user’s level of digitization.
 
-The inventory process is further streamlined through a library of tools that automatically calculate and attribute emissions based on a broad-spectrum of data sources and calculation methodologies, with the outputs supporting the generation of digital GHG reports in alignment with GHGP requirements. From the activity data collection to report generation, key data and information are encapsulated in verified credentials, streamlining the processes to support reasonable levels of assurance. 
+The inventory process is further streamlined through a library of tools that automatically calculate and attribute emissions based on a broad-spectrum of data sources and calculation methodologies, with the outputs supporting the generation of digital GHG reports in alignment with GHGP requirements. From the activity data collection to report generation, key data and information are encapsulated in verified credentials, streamlining the processes to support reasonable levels of assurance.
 
 Finally, the emissions are tokenized to allow for enhanced tracking, transparency, accounting, and reporting, with the results and data structured in accordance with GHGP reporting requirements.
 
-## Demo Video 
+## Demo Video
 
-> 🗓️ Coming Soon 
+[GHGP v3 Policy Demo](https://youtu.be/KMvClODQQN8)
 
 ## Policy Workflow
 
@@ -65,11 +65,11 @@ This policy is published to Hedera network and can either be imported via Github
 
 🔥 Latest Version – **GHGP Version 3.0**
 
-### Available Roles 
+### Available Roles
 
 ► **Administrator**
 
-The **Administrator** is responsible for the overall governance of the reporting environment. 
+The **Administrator** is responsible for the overall governance of the reporting environment.
 Key responsibilities include:
 
 * _Policy Management_: Publishing the policy.
@@ -78,7 +78,7 @@ Key responsibilities include:
 
 ►  **Organizational Representative**
 
-The **Organizational Representative** is a designated individual authorized to act on behalf of the organization. 
+The **Organizational Representative** is a designated individual authorized to act on behalf of the organization.
 Key responsibilities include:
 
 * _Data Submission_: Providing all necessary entity, facility, and asset data.
@@ -87,11 +87,11 @@ Key responsibilities include:
 
 * _Reporting_: Generating the Primary GHGP Report and managing the assurance process.
 
->Assurance is optional for this policy as it is (as of this writing) optional under the GHGP Corporate Standard. 
+>Assurance is optional for this policy as it is (as of this writing) optional under the GHGP Corporate Standard.
 
 ► **Assurance Provider**
 
-The **Assurance Provider** is an independent third party responsible for the verification of the organization’s environmental claims. 
+The **Assurance Provider** is an independent third party responsible for the verification of the organization’s environmental claims.
 Key responsibilities include:
 
 * _Audit Performance_: Reviewing critical documentation, emission calculations, MRV data, and GHG inventory reports for accuracy and compliance.
@@ -103,26 +103,26 @@ Key responsibilities include:
 
 ## Important Documents & Schemas
 
-The GHGP (as of this writing) is equipped with the following Main Framework and tool schemas, with the intention of growing the library of tools over time.  
+The GHGP (as of this writing) is equipped with the following Main Framework and tool schemas, with the intention of growing the library of tools over time.
 A roadmap of planned tools for the Tool Library is available in the TODO section below.
 
 ### Main Framework Schemas
 
-* Organizational Profile: The organization inputs key information such as descriptions of organizational and operational boundaries, industry classifications, and GHG accounting approaches. 
-* Entity Profile: Key information on business entities such as subsidiaries, joint ventures, and business units is captured. 
-* Facility/Asset: Information on company assets and facilities. 
-* GHGP Primary Report: Metrics, KPIs, and additional information are aggregated and reported in accordance with the GHG Protocol based on a user defined reporting period.   
-* Target Setting Tool: Organizations can set and provide details on absolute or intensity GHG targets. 
-* Assurance Provider Profile: Captures information in assurance providers upon registration and onboarding. 
+* Organizational Profile: The organization inputs key information such as descriptions of organizational and operational boundaries, industry classifications, and GHG accounting approaches.
+* Entity Profile: Key information on business entities such as subsidiaries, joint ventures, and business units is captured.
+* Facility/Asset: Information on company assets and facilities.
+* GHGP Primary Report: Metrics, KPIs, and additional information are aggregated and reported in accordance with the GHG Protocol based on a user defined reporting period.
+* Target Setting Tool: Organizations can set and provide details on absolute or intensity GHG targets.
+* Assurance Provider Profile: Captures information in assurance providers upon registration and onboarding.
 * Assurance (Statement) Report: Provides the assurance opinion.
 
 > Detailed documentation for the GHGP policy tools is available in the [Methodology Library](https://github.com/hashgraph/guardian/tree/48ef2927cbfe21a30c2fb17377944a39764edcf4/Methodology%20Library/Greenhouse%20Gas%20(GHG)/GHG%20Protocol%20Corporate%20Standard%20v3/Tools).
 
 ### Source Calculation Tools
 
-* Scope 1: Stationary Combustion: Calculates CO2, CH4, N2O, and CO2e emissions from the stationary combustion of fuels. Includes an emission factor unit conversion function to automatically convert emission factors into units compatible with the selected activity data. This tool supports both fuel- and send-based methods. 
-* Scope 2: Purchased Electricity: Calculates CO2, CH4, N2O, and CO2e emissions from the purchase and consumption of electricity. The tool supports both location- and market-based methods and allows users to account for renewable energy certificates (RECs) and other market instruments. 
-* Scope 3, Category 1: Purchased goods and services: Calculates indirect emissions from the purchase of goods and services. The user may select from a database of published supplier specific PCFs, define/input PCF details, or a combination of both.  
+* Scope 1: Stationary Combustion: Calculates CO2, CH4, N2O, and CO2e emissions from the stationary combustion of fuels. Includes an emission factor unit conversion function to automatically convert emission factors into units compatible with the selected activity data. This tool supports both fuel- and send-based methods.
+* Scope 2: Purchased Electricity: Calculates CO2, CH4, N2O, and CO2e emissions from the purchase and consumption of electricity. The tool supports both location- and market-based methods and allows users to account for renewable energy certificates (RECs) and other market instruments.
+* Scope 3, Category 1: Purchased goods and services: Calculates indirect emissions from the purchase of goods and services. The user may select from a database of published supplier specific PCFs, define/input PCF details, or a combination of both.
 
 Within these tools, the user selects secondary data tools that reference GWPs and emission factor databases.
 
@@ -152,10 +152,10 @@ Within these tools, the user selects secondary data tools that reference GWPs an
 
 * Fuel meter data
 * Fuel invoice data
-* Fuel spend data 
+* Fuel spend data
 * Electricity meter data
 * Electricity invoice data
-* Constractual instruments 
+* Constractual instruments
 * ERP Product purchases
 
 
@@ -168,9 +168,9 @@ Within these tools, the user selects secondary data tools that reference GWPs an
 
 ## Token (Carbon Emission)
 
-🟡 Carbon Emission Token (CET) equivalent to **1 metric ton of CO2e emissions**.  
+🟡 Carbon Emission Token (CET) equivalent to **1 metric ton of CO2e emissions**.
 
-## Step by Step 
+## Step by Step
 
 To begin working with this policy, you must first import it into your **Administrator** account.
 
@@ -200,11 +200,11 @@ Follow the screen-by-step guide below to complete these tasks.
 * **Use the dropdowns**: For some sections, just click and pick the right option from the list.
 * **Watch for Red Stars** ($\color{Red}{*}$) : Any field with a red star is required. You can't skip these.
 
-![5](Screenshots/5.%20OF%20step%201.png) 
+![5](Screenshots/5.%20OF%20step%201.png)
 
 * **Follow-up Sections**: Some questions are dynamic. For example, if you select "**Yes**" for the question regarding _sources of Scope 1, 2, or 3 emissions that are excluded from your disclosure_, additional fields will appear. Be sure to fill out these new sections as they become visible.
 
-![6](Screenshots/6.%20OF%20step%201.png) 
+![6](Screenshots/6.%20OF%20step%201.png)
 
 * **Adding Multiple Entries**: In sections that allow more than one answer (like **Unique Identifiers**), you can add different types by clicking the button below the section. For example, click <kbd> <br> + Add Unique identifier(s) <br> </kbd> to create a new rows for each identifier you need to list.
 
@@ -228,17 +228,17 @@ Once you are ready, use these buttons to manage your workflow:
 
 <kbd> <br> Create Primary GHGP Report <br> </kbd>
 
-<kbd> <br> Create Target <br> </kbd>  
+<kbd> <br> Create Target <br> </kbd>
 
-<kbd> <br> View Document <br> </kbd>  
+<kbd> <br> View Document <br> </kbd>
 
 >For every document generated within the policy, you can find the <kbd> <br> View Document <br> </kbd> button. This allows you to inspect both the manually provided data and the automatic calculations performed by the system.
 
 💁‍♀️ **Pro-Tip**: If you don't see all the buttons listed above, please **scroll to the right** using the scrollbar at the bottom of the table to reveal all available actions.
 
-![8](Screenshots/8.%20OF%20step%201.png) 
+![8](Screenshots/8.%20OF%20step%201.png)
 
-![9](Screenshots/9.%20OF%20step%201.png) 
+![9](Screenshots/9.%20OF%20step%201.png)
 
 3. Create an Entity
 
@@ -266,7 +266,7 @@ Once your entities are created, you need to link them to their physical location
 5. Setting Targets
 
 This section is used to input established Greenhouse Gas (GHG) reduction goals into the system.
-It is generally best practice to set targets in alignment with the _Science Based Targets initiative (SBTi)_. 
+It is generally best practice to set targets in alignment with the _Science Based Targets initiative (SBTi)_.
 
 
 - **Action**: Click the <kbd> <br> Create Target <br> </kbd>  button located on the **Organization Profile** screen.
@@ -274,7 +274,7 @@ It is generally best practice to set targets in alignment with the _Science Base
   - Entities: Manually type the specific entity or multiple entities included in the target.
   - Scope: Specify which emission scopes apply.
   - Greenhouse Gases: Select the specific gases covered by the goal.
-   
+
 ![13](Screenshots/13.%20OF%20step%205.png)
 ![14](Screenshots/14.%20OF%20step%205.png)
 ![15](Screenshots/15.%20OF%20step%205.png)
@@ -282,7 +282,7 @@ It is generally best practice to set targets in alignment with the _Science Base
 6.  Defining GHG Sources
 
 For every **Facility** and **Asset** created, you must identify and add its specific GHG sources.
-* **Action**: Select the Facility or Asset and input all required data for each applicable GHG source using <kbd> <br> Add GHG Source <br> </kbd>  button. 
+* **Action**: Select the Facility or Asset and input all required data for each applicable GHG source using <kbd> <br> Add GHG Source <br> </kbd>  button.
 
 ![16](Screenshots/16.%20OF%20step%206.png)
 ![17](Screenshots/17.%20OF%20step%206.png)
@@ -346,7 +346,7 @@ After the Primary GHGP Report has been validated and created, you can initiate t
 
 10. Assurance Review and Outcomes
 
-Once the assurance has been requested, the **Assurance Provider** will review the Primary GHGP Report. 
+Once the assurance has been requested, the **Assurance Provider** will review the Primary GHGP Report.
 The report will result in one of three statuses:
 * **Accepted**: The report is verified and finalized.
 * **Rejected**: The report is not approved.
@@ -385,7 +385,7 @@ The PCF is based on all emissions attributed to a specific product/service IDs a
 * **Define GHG Sources**: Identify emission sources (e.g., electricity, natural gas) for each Facility/Asset. Attribute these to specific products or services where applicable for PCF or Scope 3 accounting.
 * **Input Activity Data**: Provide consumption data (e.g., kWh) for each source. This can be done Manually or Automatically via APIs and IoT-enabled meters.
 * **Allocate Market (Constractual) Instruments**: During data entry, assign instruments like Renewable Energy Certificates (RECs) to the applicable GHG sources.
-* **Generate Primary GHGP Report**: Once all data is input, return to the Organization Profile to click Create Primary GHGP Report. The system will automatically populate the reporting metrics. But your input for other fields is required. 
+* **Generate Primary GHGP Report**: Once all data is input, return to the Organization Profile to click Create Primary GHGP Report. The system will automatically populate the reporting metrics. But your input for other fields is required.
 * **Assurance (Optional)**: If third-party verification is required, assign an Assurance Provider and request a review. The provider may Accept, Reject, or Request Resubmission of the report.
 
 ### Assurance Provider Flow
@@ -455,11 +455,11 @@ Transparency is key. All historical audit data is preserved for future reference
 
 ## Futureproofing (Automated GHG Inventories)
 
-Due to several factors such as lack of expertise, absent third-party assurance, and methodologies that leave significant room for error, corporate GHG inventories are often inaccurate and unreliable. In addition, manually collecting monitoring and activity data each year can be a cumbersome task. By automating and digitizing the collection of monitoring data, GHG quantification calculations, and (optionally) third-party verification of devices, data, and calculations, GHG inventories can be automated and streamlined to enhance trust, transparency, and efficiency.  
+Due to several factors such as lack of expertise, absent third-party assurance, and methodologies that leave significant room for error, corporate GHG inventories are often inaccurate and unreliable. In addition, manually collecting monitoring and activity data each year can be a cumbersome task. By automating and digitizing the collection of monitoring data, GHG quantification calculations, and (optionally) third-party verification of devices, data, and calculations, GHG inventories can be automated and streamlined to enhance trust, transparency, and efficiency.
 
 ## TODO
 
-The GHGP policy is designed to be as dynamic as possible to accommodate the diversity of business contexts, data sources, and methodological approaches that affect companies’ GHG inventories. For example, in addition to the requirements of the GHG Protocol, many companies could be subjected to additional GHG regulations, reporting frameworks, national guidelines, and the corresponding methodology and reporting requirements. Therefore, it is the intention to continuously build a library of calculation, reporting, secondary data, and activity data tools over time. 
+The GHGP policy is designed to be as dynamic as possible to accommodate the diversity of business contexts, data sources, and methodological approaches that affect companies’ GHG inventories. For example, in addition to the requirements of the GHG Protocol, many companies could be subjected to additional GHG regulations, reporting frameworks, national guidelines, and the corresponding methodology and reporting requirements. Therefore, it is the intention to continuously build a library of calculation, reporting, secondary data, and activity data tools over time.
 
 The following tools are planned for future development:
 
@@ -470,7 +470,7 @@ The following tools are planned for future development:
   - [ ] Scope 2 (Electricity, heat, and steam)
   - [ ] Waste disposal
   - [ ] Biological treatment
-  - [ ] Cement production 
+  - [ ] Cement production
 
 - [ ] EU ETS Stationary Combustion
 - [ ] K-ETS Stationary Combustion
@@ -497,14 +497,14 @@ The following tools are planned for future development:
 - [ ] PAS 2060
 - [ ] SEC Climate-Related Disclosure Rules
 
-Where specific use cases may call for calculation approaches, reporting requirements, data sources, etc. that may not be captured by existing tools, guardian community members are encouraged to develop and publish additional tools that support their use case. 
+Where specific use cases may call for calculation approaches, reporting requirements, data sources, etc. that may not be captured by existing tools, guardian community members are encouraged to develop and publish additional tools that support their use case.
 
 ## Technical Development Guide
 *(This section will cover the specifications and methodology for developing custom calculation and reporting tools for GHGP policy)*
 
 > 🗓️ Coming Soon
 
-[^1]: https://ghgprotocol.org/about-us#:~:text=GHG%20Protocol%20supplies%20the%20world's,reporting%20program%20in%20the%20world.&text=In%202023%2C%2097%25%20of%20disclosing,to%20CDP%20using%20GHG%20Protocol. 
-[^2]: https://sciencebasedtargets.org/news/sbti-celebrates-10000-company-validations#:~:text=The%20number%20of%20companies%20with,has%20accelerated%20in%20recent%20years. 
-[^3]: https://getgoodlab.com/resources/supply-chain-emissions/#:~:text=Fostering%20Sustainable%20Supply%20Chain%20Emissions,proactive%20around%20supply%20chain%20emissions.  
-[^4]: https://www.hbs.edu/bigs/harvard-study-74-percent-sp-500-companies-revise-emissions-data?utm_source=chatgpt.com 
+[^1]: https://ghgprotocol.org/about-us#:~:text=GHG%20Protocol%20supplies%20the%20world's,reporting%20program%20in%20the%20world.&text=In%202023%2C%2097%25%20of%20disclosing,to%20CDP%20using%20GHG%20Protocol.
+[^2]: https://sciencebasedtargets.org/news/sbti-celebrates-10000-company-validations#:~:text=The%20number%20of%20companies%20with,has%20accelerated%20in%20recent%20years.
+[^3]: https://getgoodlab.com/resources/supply-chain-emissions/#:~:text=Fostering%20Sustainable%20Supply%20Chain%20Emissions,proactive%20around%20supply%20chain%20emissions.
+[^4]: https://www.hbs.edu/bigs/harvard-study-74-percent-sp-500-companies-revise-emissions-data?utm_source=chatgpt.com
