@@ -199,9 +199,20 @@ export class MintService {
                         userId,
                         interception: null
                     })
-                    .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
-                    )
+                    .catch((error) => {
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId, {
+                            target: targetAccount,
+                            amount: tokenValue,
+                            vpMessageId,
+                            tokenId: token.tokenId,
+                            metadata: vpMessageId,
+                            tokenType: token.tokenType,
+                            decimals: token.decimals,
+                            memo: transactionMemo,
+                            policyId: ref.policyId,
+                            owner: documentOwner.did
+                        });
+                    })
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
                             mintNFT.mintRequestId
@@ -232,9 +243,21 @@ export class MintService {
                         userId,
                         interception: null
                     })
-                    .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
-                    )
+                    .catch((error) => {
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId,
+                            {
+                                target: targetAccount,
+                                amount: tokenValue,
+                                vpMessageId,
+                                tokenId: token.tokenId,
+                                metadata: vpMessageId,
+                                tokenType: token.tokenType,
+                                decimals: token.decimals,
+                                memo: transactionMemo,
+                                policyId: ref.policyId,
+                                owner: documentOwner.did
+                            });
+                    })
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
                             mintFT.mintRequestId
@@ -550,9 +573,21 @@ export class MintService {
                     userId,
                     interception: null
                 })
-                .catch((error) =>
-                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
-                )
+                .catch((error) => {
+                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId,
+                        {
+                            target: targetAccount,
+                            amount: tokenValue,
+                            vpMessageId,
+                            tokenId: token.tokenId,
+                            metadata: vpMessageId,
+                            tokenType: token.tokenType,
+                            decimals: token.decimals,
+                            memo,
+                            policyId,
+                            owner
+                        });
+                })
                 .finally(() => {
                     MintService.activeMintProcesses.delete(
                         mintNFT.mintRequestId
@@ -583,9 +618,21 @@ export class MintService {
                     userId,
                     interception: null
                 })
-                .catch((error) =>
-                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
-                )
+                .catch((error) => {
+                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId,
+                        {
+                            target: targetAccount,
+                            amount: tokenValue,
+                            vpMessageId,
+                            tokenId: token.tokenId,
+                            metadata: vpMessageId,
+                            tokenType: token.tokenType,
+                            decimals: token.decimals,
+                            memo,
+                            policyId,
+                            owner
+                        });
+                })
                 .finally(() => {
                     MintService.activeMintProcesses.delete(
                         mintFT.mintRequestId
@@ -732,8 +779,21 @@ export class MintService {
      * @param message
      * @param ref
      * @param userId
+     * @param metadata
      */
-    public static error(message: string, ref: AnyBlockType, userId: string | null) {
+    public static error(message: string, ref: AnyBlockType, userId: string | null, metadata: {
+        target: string,
+        amount: number,
+        vpMessageId: string,
+        tokenId: string,
+        metadata?: string,
+        tokenType: string,
+        decimals?: string,
+        memo: string,
+        policyId: string,
+        owner: string,
+        error?: string
+    } | null) {
         if (ref) {
             MintService.logger.error(message, [
                 'POLICY_SERVICE',
@@ -744,6 +804,14 @@ export class MintService {
             ], userId);
         } else {
             MintService.logger.error(message, ['POLICY_SERVICE'], userId);
+        }
+
+        if (metadata) {
+            metadata.error = message;
+            new ExternalEventChannel().publishMessage(
+                ExternalMessageEvents.TOKEN_MINT_FAILED,
+                metadata
+            );
         }
     }
 
