@@ -712,4 +712,8 @@ export class PolicyEngineService {
             responseType: 'arraybuffer',
         });
     }
+
+    public updateMockData(policyId: string, data: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/mockup/data`, data);
+    }
 }

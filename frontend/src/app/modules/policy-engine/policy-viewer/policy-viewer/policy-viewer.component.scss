@@ -1077,10 +1077,39 @@ a.go-back-link svg {
     justify-content: end;
 
     button {
-         width: 100px;
+        width: 100px;
     }
 }
 
 .mockup-config-container {
     padding: 16px;
+}
+
+.col-toolbar {
+    justify-content: end;
+}
+
+.dialog-grid-body {
+    background: #fff;
+}
+
+.grid-row-header {
+    font-weight: 600;
+    color: var(--color-grey-black-1);
+    background-color: var(--color-grey-3, #E1E7EF);
+    align-items: center;
+    padding-left: 20px;
+
+    span {
+        font-weight: normal;
+        font-size: 0.85em;
+        color: var(--color-grey-5);
+        margin-left: 16px;
+    }
+}
+
+.col-auto {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
