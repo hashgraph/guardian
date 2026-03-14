@@ -50,6 +50,7 @@ export enum PolicyEngineEvents {
     GET_VIRTUAL_DOCUMENTS = 'policy-engine-event-get-virtual-documents',
     GET_MOCK_UP_CONFIG = 'policy-engine-event-get-mockup-config',
     GET_MOCK_UP_DATA = 'policy-engine-event-get-mockup-data',
+    SET_MOCK_UP_DATA = 'policy-engine-event-set-mockup-data',
     SET_MOCK_UP_CONFIG = 'policy-engine-event-set-mockup-config',
     IMPORT_MOCK_UP_DATA = 'policy-engine-event-import-mockup-data',
     EXPORT_MOCK_UP_DATA = 'policy-engine-event-export-mockup-data',

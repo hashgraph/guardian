@@ -2617,6 +2617,26 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_MOCK_UP_DATA,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                data: any
+            }) => {
+                try {
+                    const { policyId, owner, data } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+                    const result = await MockUpHelper.setMockUpData(policyId, data);
+                    return new MessageResponse(result);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.IMPORT_MOCK_UP_DATA,
             async (msg: {
                 policyId: string,

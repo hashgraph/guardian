@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { AccountId, Status, Timestamp, TokenId, TopicCreateTransaction, TopicId, TopicMessageSubmitTransaction, Transaction, TransactionReceipt, TransactionRecord } from '@hiero-ledger/sdk';
+import { AccountCreateTransaction, AccountId, Status, Timestamp, TokenCreateTransaction, TokenId, TopicCreateTransaction, TopicId, TopicMessageSubmitTransaction, Transaction, TransactionReceipt, TransactionRecord } from '@hiero-ledger/sdk';
 import { DatabaseServer } from '../database-modules/database-server.js';
 import { Singleton } from '../decorators/singleton.js';
 import { NatsService } from '../mq/index.js';
@@ -224,8 +224,17 @@ export class MockUpHelper {
         type: MockEntityType,
         transaction: any
     ): Promise<TransactionReceipt> {
-        await DatabaseServer.saveMockUp(mockId, type, { transaction });
-        return transaction;
+        try {
+            if (type) {
+                await DatabaseServer.saveMockUp(mockId, type, { transaction });
+            }
+            return transaction;
+        } catch (error) {
+            console.error(error);
+            return {
+                status: Status.Success
+            } as any;
+        }
     }
 
     private static async executeAndRecord(
@@ -234,11 +243,15 @@ export class MockUpHelper {
         transaction: any
     ): Promise<TransactionRecord> {
         try {
-            await DatabaseServer.saveMockUp(mockId, type, { transaction });
+            if (type) {
+                await DatabaseServer.saveMockUp(mockId, type, { transaction });
+            }
             return transaction;
         } catch (error) {
             console.error(error);
-            return { consensusTimestamp: MockUpHelper.getTimestamp() } as any;
+            return {
+                consensusTimestamp: MockUpHelper.getTimestamp()
+            } as any;
         }
     }
 
@@ -340,26 +353,57 @@ export class MockUpHelper {
     } {
         console.debug('getReceipt', type, transaction);
         if (type === 'TokenCreateTransaction') {
-
+            const token_id = MockUpHelper.getTokenId();
+            return {
+                type: MockEntityType.TOKEN,
+                transaction: {
+                    id: token_id,
+                    token_id,
+                }
+            }
         }
-        if (type === 'TokenAssociateTransaction') {
 
+
+        if (type === 'TokenAssociateTransaction') {
+            return {
+                type: null,
+                transaction: {}
+            };
         }
         if (type === 'TokenDissociateTransaction') {
-
+            return {
+                type: null,
+                transaction: {}
+            };
         }
         if (type === 'TokenFreezeTransaction') {
-
+            return {
+                type: null,
+                transaction: {}
+            };
         }
         if (type === 'TokenUnfreezeTransaction') {
-
+            return {
+                type: null,
+                transaction: {}
+            };
         }
         if (type === 'TokenGrantKycTransaction') {
-
+            return {
+                type: null,
+                transaction: {}
+            };
         }
         if (type === 'TokenRevokeKycTransaction') {
-
+            return {
+                type: null,
+                transaction: {}
+            };
         }
+
+
+
+
         if (type === 'TokenMintTransaction') {
 
         }
@@ -375,8 +419,19 @@ export class MockUpHelper {
         if (type === 'NFTTransferTransaction') {
 
         }
-        if (type === 'AccountCreateTransaction') {
 
+
+
+
+        if (type === 'AccountCreateTransaction') {
+            const account_id = MockUpHelper.getAccountId();
+            return {
+                type: MockEntityType.ACCOUNT,
+                transaction: {
+                    id: account_id,
+                    account_id
+                }
+            }
         }
         if (type === 'TopicCreateTransaction') {
             const t = transaction as TopicCreateTransaction;
@@ -392,15 +447,6 @@ export class MockUpHelper {
                 }
             }
         }
-        if (type === 'TopicMessageSubmitTransaction') {
-
-        }
-        if (type === 'TokenUpdateTransaction') {
-
-        }
-        if (type === 'TokenDeleteTransaction') {
-
-        }
         throw new Error('Invalid Type');
     }
 
@@ -412,48 +458,6 @@ export class MockUpHelper {
         type: MockEntityType,
         transaction: any
     } {
-        if (type === 'TokenCreateTransaction') {
-
-        }
-        if (type === 'TokenAssociateTransaction') {
-
-        }
-        if (type === 'TokenDissociateTransaction') {
-
-        }
-        if (type === 'TokenFreezeTransaction') {
-
-        }
-        if (type === 'TokenUnfreezeTransaction') {
-
-        }
-        if (type === 'TokenGrantKycTransaction') {
-
-        }
-        if (type === 'TokenRevokeKycTransaction') {
-
-        }
-        if (type === 'TokenMintTransaction') {
-
-        }
-        if (type === 'TokenMintNFTTransaction') {
-
-        }
-        if (type === 'TokenWipeTransaction') {
-
-        }
-        if (type === 'TransferTransaction') {
-
-        }
-        if (type === 'NFTTransferTransaction') {
-
-        }
-        if (type === 'AccountCreateTransaction') {
-
-        }
-        if (type === 'TopicCreateTransaction') {
-
-        }
         if (type === 'TopicMessageSubmitTransaction') {
             const t = transaction as TopicMessageSubmitTransaction;
             const timestamp = MockUpHelper.getTimestamp();
@@ -474,12 +478,6 @@ export class MockUpHelper {
                     message: base64
                 }
             }
-        }
-        if (type === 'TokenUpdateTransaction') {
-
-        }
-        if (type === 'TokenDeleteTransaction') {
-
         }
         throw new Error('Invalid Type');
     }
@@ -594,30 +592,9 @@ export class MockUpHelper {
         const ipfs = ipfsString ? JSON.parse(ipfsString) : null;
         const topics = topicsString ? JSON.parse(topicsString) : null;
 
-        await DatabaseServer.deleteMockUps(mockId);
+        // await DatabaseServer.deleteMockUps(mockId);
 
-        if (ipfs) {
-            for (const file of ipfs) {
-                await DatabaseServer.saveMockUp(mockId, MockEntityType.FILE, {
-                    cid: file.cid,
-                    content: file.content
-                });
-            }
-        }
-        if (topics) {
-            for (const topic of topics) {
-                await DatabaseServer.saveMockUp(mockId, MockEntityType.TOPIC, {
-                    transaction: topic.topic
-                });
-                if (topic.messages) {
-                    for (const message of topic.messages) {
-                        await DatabaseServer.saveMockUp(mockId, MockEntityType.MESSAGE, {
-                            transaction: message
-                        });
-                    }
-                }
-            }
-        }
+        await MockUpHelper._setMockUpData(mockId, { ipfs, topics });
 
         return true;
     }
@@ -637,6 +614,41 @@ export class MockUpHelper {
         return zip;
     }
 
+    public static async setMockUpData(mockId: string, data: any): Promise<any> {
+        await DatabaseServer.deleteMockUps(mockId);
+        await MockUpHelper._setMockUpData(mockId, data);
+        return await MockUpHelper.getMockUpData(mockId);
+    }
+
+    private static async _setMockUpData(mockId: string, data: {
+        ipfs: any[],
+        topics: any[]
+    }) {
+        if (Array.isArray(data.ipfs)) {
+            for (const file of data.ipfs) {
+                await DatabaseServer.saveMockUp(mockId, MockEntityType.FILE, {
+                    cid: file.cid,
+                    content: file.content
+                });
+            }
+        }
+        if (Array.isArray(data.topics)) {
+            for (const topic of data.topics) {
+                await DatabaseServer.saveMockUp(mockId, MockEntityType.TOPIC, {
+                    transaction: topic.topic
+                });
+                if (topic.messages) {
+                    for (let i = 0; i < topic.messages.length; i++) {
+                        const message = topic.messages[i];
+                        message.sequence_number = i;
+                        await DatabaseServer.saveMockUp(mockId, MockEntityType.MESSAGE, {
+                            transaction: message
+                        });
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Singleton

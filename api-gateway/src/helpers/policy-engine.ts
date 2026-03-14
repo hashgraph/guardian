@@ -901,14 +901,30 @@ export class PolicyEngine extends NatsService {
      * Get mockup data
      * @param policyId
      * @param owner
+     * @param config
      */
     public async setMockupConfig(
         policyId: string,
         owner: IOwner,
-        config: IOwner,
+        config: any,
     ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.SET_MOCK_UP_CONFIG, { policyId, owner, config });
     }
+
+    /**
+     * Update mockup data
+     * @param policyId
+     * @param owner
+     * @param data
+     */
+    public async updateMockData(
+        policyId: string,
+        owner: IOwner,
+        data: any,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.SET_MOCK_UP_DATA, { policyId, owner, data });
+    }
+
 
     /**
      * Load MockUp file for import

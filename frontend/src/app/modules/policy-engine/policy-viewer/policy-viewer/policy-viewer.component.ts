@@ -994,10 +994,26 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         this.mockIpfs[index] = newItem;
                     }
                 } else if (type === 'MESSAGE') {
-                    const topic = this.mockTopics.find((t) => t.topicId === newItem.topicId);
-                    if (topic) {
-                        const index = topic.messages.indexOf(item);
-                        topic.messages[index] = newItem;
+                    const oldTopic = this.mockTopics.find((t) => t.topicId === item.topicId);
+                    if (oldTopic) {
+                        if (item.topicId === newItem.topicId) {
+                            const index = oldTopic.messages.indexOf(item);
+                            oldTopic.messages[index] = newItem;
+                        } else {
+                             oldTopic.messages = oldTopic.messages.filter((e: any) => e !== item);
+                            let newTopic = this.mockTopics.find((t) => t.topicId === newItem.topicId);
+                            if (!newTopic) {
+                                newTopic = {
+                                    topicId: newItem.topicId,
+                                    topic: {
+                                        topic_id: newItem.topicId
+                                    },
+                                    messages: []
+                                }
+                                this.mockTopics.push(newTopic);
+                            }
+                            newTopic.messages.push(newItem);
+                        }
                     }
                 } else if (type === 'TOKEN') {
                 } else if (type === 'ACCOUNT') {
@@ -1086,6 +1102,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             ipfs: this.mockIpfs,
             topics: this.mockTopics
         }
+        this.loading = true;
         this.policyEngineService
             .updateMockData(this.policyInfo.id, data)
             .subscribe((data: any) => {

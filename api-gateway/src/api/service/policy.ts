@@ -4679,7 +4679,52 @@ export class PolicyApi {
     }
 
     /**
-     * Get mockup config
+     * Update mockup data
+     */
+    @Post('/:policyId/dry-run/mockup/data')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Set mockup data.',
+        description: 'Set mockup data.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Data',
+        type: Object,
+    })
+    @ApiOkResponse({
+        description: 'Data',
+        type: Object,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async updateMockData(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+        try {
+            return await engineService.updateMockData(policyId, owner, body)
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Update mockup config
      */
     @Post('/:policyId/dry-run/mockup/config')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)

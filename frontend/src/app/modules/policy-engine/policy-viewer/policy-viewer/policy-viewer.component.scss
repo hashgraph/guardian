@@ -1094,11 +1094,11 @@ a.go-back-link svg {
 }
 
 .grid-row-header {
-    font-weight: 600;
-    color: var(--color-grey-black-1);
-    background-color: var(--color-grey-3, #E1E7EF);
-    align-items: center;
-    padding-left: 20px;
+    font-weight: 600 !important;
+    color: var(--color-grey-black-1) !important;
+    background-color: var(--color-grey-3, #E1E7EF) !important;
+    align-items: center !important;
+    padding-left: 20px !important;
 
     span {
         font-weight: normal;
