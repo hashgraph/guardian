@@ -1,6 +1,6 @@
 export enum Examples {
     DB_ID = '69aeb71ef8c5b278e3bab4e5',
-    MESSAGE_ID = '0000000000.000000001',
+    MESSAGE_ID = '1773670900.819264517',
     UUID = '9db028d2-03ad-4d49-a178-cf4b67f8c147',
     ACCOUNT_ID = '0.0.6046379',
     DATE = '2026-03-03T17:25:53.312Z',

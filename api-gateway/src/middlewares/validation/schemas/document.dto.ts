@@ -1,48 +1,67 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
-import { Examples } from '../examples.js';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { Examples, ObjectExamples } from '../examples.js';
 import { PolicyDTO } from './policies.dto.js';
 
 export class ProofDTO {
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        example: ObjectExamples.VC_DOCUMENT_1.document.proof.type
+    })
     type: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        example: ObjectExamples.VC_DOCUMENT_1.document.proof.created
+    })
     created: Date;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        example: ObjectExamples.VC_DOCUMENT_1.document.proof.verificationMethod
+    })
     verificationMethod: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        example: ObjectExamples.VC_DOCUMENT_1.document.proof.proofPurpose
+    })
     proofPurpose: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        example: ObjectExamples.VC_DOCUMENT_1.document.proof.jws
+    })
     jws: string;
 }
 
 export class VcDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.UUID,
         nullable: true
     })
     id?: string;
 
     @ApiProperty({
-        type: 'string',
-        isArray: true
+        type: String,
+        isArray: true,
+        example: ObjectExamples.VC_DOCUMENT_1.document['@context']
     })
     '@context': string[];
 
     @ApiProperty({
-        type: 'string',
-        isArray: true
+        type: String,
+        isArray: true,
+        example: ObjectExamples.VC_DOCUMENT_1.document.type
     })
     type: string[];
 
     @ApiProperty({
         type: 'object',
         additionalProperties: true,
-        isArray: true
+        isArray: true,
+        example: ObjectExamples.VC_DOCUMENT_1.document.credentialSubject
     })
     credentialSubject: any | any[];
 
@@ -50,32 +69,40 @@ export class VcDTO {
         oneOf: [
             { type: 'string' },
             { type: 'object', additionalProperties: true }
-        ]
+        ],
+        example: ObjectExamples.VC_DOCUMENT_1.document.issuer
     })
     issuer: any | string;
 
-    @ApiProperty({ type: 'string', required: true })
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: ObjectExamples.VC_DOCUMENT_1.document.issuanceDate
+    })
     issuanceDate: string;
 
-    @ApiProperty({ type: () => ProofDTO, nullable: true })
+    @ApiProperty({
+        type: () => ProofDTO,
+        nullable: true,        
+    })
     proof?: ProofDTO;
 }
 
 export class VpDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
         isArray: true
     })
     '@context': string[];
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.UUID
     })
     id: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         isArray: true
     })
     type: string[];
@@ -96,31 +123,31 @@ export class VpDTO {
 @ApiExtraModels(VpDTO)
 export class VpDocumentDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DB_ID
     })
     id?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DB_ID
     })
     policyId?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: 'hash'
     })
     hash?: string;
 
     @ApiProperty({
-        type: 'number',
+        type: Number,
         example: 0
     })
     signature?: number;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         enum: [
             'NEW',
             'ISSUE',
@@ -134,31 +161,31 @@ export class VpDocumentDTO {
     status?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: 'Block tag'
     })
     tag?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: 'Document type'
     })
     type?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DATE
     })
     createDate?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DATE
     })
     updateDate?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DID
     })
     owner?: string;
@@ -172,31 +199,31 @@ export class VpDocumentDTO {
 @ApiExtraModels(VcDTO)
 export class VcDocumentDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DB_ID
     })
     id?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DB_ID
     })
     policyId?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: 'hash'
     })
     hash?: string;
 
     @ApiProperty({
-        type: 'number',
+        type: Number,
         example: 0
     })
     signature?: number;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         enum: [
             'NEW',
             'ISSUE',
@@ -210,37 +237,67 @@ export class VcDocumentDTO {
     status?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: 'Block tag'
     })
     tag?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: 'Document type'
     })
     type?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DATE
     })
     createDate?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DATE
     })
     updateDate?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DID
     })
     owner?: string;
 
     @ApiProperty({
-        type: () => VpDTO,
+        type: String,
+        example: 'ISSUE',
+        required: false
+    })
+    hederaStatus?: string;
+
+    @ApiProperty({
+        type: 'object',
+        additionalProperties: true,
+        example: {
+            status: 'NEW'
+        }
+    })
+    option?: any;
+
+    @ApiProperty({
+        type: String,
+        example: Examples.ACCOUNT_ID,
+        required: false
+    })
+    topicId?: string;
+
+    @ApiProperty({
+        type: String,
+        example: Examples.MESSAGE_ID,
+        required: false
+    })
+    messageId?: string;
+
+    @ApiProperty({
+        type: () => VcDTO,
     })
     document?: VcDTO;
 }
@@ -258,17 +315,37 @@ export class ExternalDocumentDTO {
 }
 
 export class AggregatedDTOItem {
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.DID
+    })
     did: string;
 
-    @ApiProperty()
-    hederaAccountId: string;
 
     @ApiProperty()
     vcDocument: VcDocumentDTO;
 
-    @ApiProperty()
-    policies: PolicyDTO;
+    @ApiProperty({
+        type: () => PolicyDTO,
+        isArray: true
+    })
+    policies: PolicyDTO[];
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.USER_NAME_SR_1
+    })
+    @IsString()
+    username: string;
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.ACCOUNT_ID
+    })
+    hederaAccountId: string;
 }
 
 export type AggregatedDTO = AggregatedDTOItem[]

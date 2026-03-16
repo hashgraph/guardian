@@ -3,6 +3,7 @@ import fieldsValidation from '../fields-validation.js'
 import { Examples, ObjectExamples } from '../examples.js';
 import {
     IsArray,
+    IsBoolean,
     IsIn,
     IsNotEmpty,
     IsOptional,
@@ -39,8 +40,10 @@ export class PermissionGroupResponseDTO {
     roleName: string;
 
     @ApiProperty({
+        type: String,
         nullable: true,
-        required: false
+        required: false,
+        example: Examples.DID
     })
     @IsOptional()
     owner: string | null;
@@ -52,6 +55,7 @@ export class AccountsResponseDTO {
         required: true,
         example: Examples.DB_ID
     })
+    @IsString()
     id: string;
 
     @ApiProperty({
@@ -94,10 +98,11 @@ export class AccountsResponseDTO {
 
     @ApiProperty({
         type: String,
-        required: true,
+        required: false,
         example: 'local'
     })
     @IsString()
+    @IsOptional()
     location?: string;
 }
 
@@ -141,7 +146,7 @@ export class AccountsLoginResponseDTO {
         required: false,
         example: false
     })
-    @IsString()
+    @IsBoolean()
     @IsOptional()
     weakPassword?: boolean;
 }
@@ -213,13 +218,12 @@ export class AccountsSessionResponseDTO {
 
     @ApiProperty({
         type: String,
-        required: true,
+        required: false,
         example: 'local'
     })
     @IsString()
     location?: string;
 }
-
 
 export class ChangePasswordDTO {
     @ApiProperty({
@@ -408,7 +412,7 @@ export class BalanceResponseDTO {
         example: '833.88244301 ℏ'
     })
     @IsString()
-    balance: number;
+    balance: string;
 
     @ApiProperty({
         type: String,
@@ -417,7 +421,10 @@ export class BalanceResponseDTO {
     })
     unit: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: StandardRegistryAccountDTO,
+        required: true
+    })
     user: StandardRegistryAccountDTO;
 }
 

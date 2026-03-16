@@ -53,13 +53,15 @@ export class UnprocessableEntityErrorDTO {
     statusCode: number;
 
     @ApiProperty({
-        type: String,
+        oneOf: [
+            { type: 'string' },
+            { type: 'array', items: { type: 'string' } }
+        ],
         required: true,
         example: 'Error message'
     })
-    @IsString()
     @Expose()
-    message: string;
+    message: string | string[];
 
     @ApiProperty({
         type: String,
@@ -109,6 +111,15 @@ export class ForbiddenErrorDTO  {
     @IsString()
     @Expose()
     message: string;
+
+    @ApiProperty({
+        type: String,
+        required: false,
+        example: 'Forbidden'
+    })
+    @IsString()
+    @Expose()
+    error?: string;
 }
 
 export class ConflictErrorDTO  {
