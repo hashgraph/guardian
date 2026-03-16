@@ -42,6 +42,7 @@ export enum PolicyEngineEvents {
     GET_BLOCK_PARENTS = 'policy-engine-event-get-block-parents',
     BLOCK_ABOUT = 'policy-engine-event-block-about',
     GET_VIRTUAL_USERS = 'policy-engine-event-get-virtual-users',
+    GET_VIRTUAL_USER = 'policy-engine-event-get-virtual-user',
     CREATE_VIRTUAL_USER = 'policy-engine-event-create-virtual-user',
     SET_VIRTUAL_USER = 'policy-engine-event-login-virtual-user',
     RESTART_DRY_RUN = 'policy-engine-event-restart-dry-run',
