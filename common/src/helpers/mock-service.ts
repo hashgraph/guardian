@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { AccountCreateTransaction, AccountId, Status, Timestamp, TokenCreateTransaction, TokenId, TopicCreateTransaction, TopicId, TopicMessageSubmitTransaction, Transaction, TransactionReceipt, TransactionRecord } from '@hiero-ledger/sdk';
+import { AccountId, Status, Timestamp, TokenCreateTransaction, TokenId, TokenType, TopicCreateTransaction, TopicId, TopicMessageSubmitTransaction, Transaction, TransactionReceipt, TransactionRecord } from '@hiero-ledger/sdk';
 import { DatabaseServer } from '../database-modules/database-server.js';
 import { Singleton } from '../decorators/singleton.js';
 import { NatsService } from '../mq/index.js';
@@ -11,7 +11,6 @@ export enum MockType {
     DELETE_FILE = 'DELETE_FILE',
     EXECUTE_AND_RECEIPT = 'EXECUTE_AND_RECEIPT',
     EXECUTE_AND_RECORD = 'EXECUTE_AND_RECORD',
-    CREATE_TOKEN = 'CREATE_TOKEN',
     GET_TOKEN = 'GET_TOKEN',
     GET_MESSAGE = 'GET_MESSAGE',
     GET_MESSAGES = 'GET_MESSAGES',
@@ -116,14 +115,6 @@ export interface ApiEvent {
         data: any
     }
 }
-export interface CreateTokenEvent {
-    mockId: string;
-    type: MockType.CREATE_TOKEN;
-    data: {
-        type: MockEntityType.TOKEN,
-        template: any
-    }
-}
 
 export type MockEvent =
     AddFileEvent |
@@ -132,7 +123,6 @@ export type MockEvent =
     ExecuteAndReceiptEvent |
     GetTokenEvent |
     ExecuteAndRecordEvent |
-    CreateTokenEvent |
     GetMessageEvent |
     GetMessagesEvent |
     GetAccountEvent |
@@ -156,9 +146,6 @@ export class MockUpHelper {
         if (event.type === MockType.EXECUTE_AND_RECORD) {
             return await MockUpHelper.executeAndRecord(event.mockId, event.data.type, event.data.transaction);
         }
-        if (event.type === MockType.CREATE_TOKEN) {
-            return await MockUpHelper.createToken(event.mockId, event.data);
-        }
         if (event.type === MockType.GET_TOKEN) {
             return await MockUpHelper.getHederaToken(event.mockId, event.data);
         }
@@ -167,9 +154,6 @@ export class MockUpHelper {
         }
         if (event.type === MockType.GET_MESSAGES) {
             return await MockUpHelper.getHederaMessages(event.mockId, event.data);
-        }
-        if (event.type === MockType.GET_ACCOUNT) {
-            return await MockUpHelper.getHederaAccount(event.mockId, event.data);
         }
         if (event.type === MockType.API) {
             return await MockUpHelper.api(event.mockId, event.data);
@@ -213,12 +197,6 @@ export class MockUpHelper {
         return true;
     }
 
-    private static async createToken(mockId: string, tokenTemplate: any): Promise<string> {
-        const tokenId = new TokenId(Date.now()).toString();
-        throw new Error('createToken');
-        return tokenId;
-    }
-
     private static async executeAndReceipt(
         mockId: string,
         type: MockEntityType,
@@ -259,14 +237,19 @@ export class MockUpHelper {
         mockId: string,
         params: { tokenId: string }
     ): Promise<any> {
-        throw new Error('getHederaToken');
+        const row = await DatabaseServer.getMockUp(mockId, MockEntityType.TOKEN, {
+            'transaction.token_id': params?.tokenId
+        });
+        if (row && row.transaction) {
+            return row.transaction;
+        } else {
+            throw new Error('Token not found');
+        }
     }
 
     private static async getHederaMessage(
         mockId: string,
-        params:
-            { timeStamp: string } |
-            { topicId: string, index: number }
+        params: any //{ timeStamp: string } | { topicId: string, index: number }
     ): Promise<{
         id: string;
         consensus_timestamp: string;
@@ -275,7 +258,26 @@ export class MockUpHelper {
         topicId: string;
         message: string;
     }> {
-        throw new Error('getHederaMessage');
+        if (params.timeStamp) {
+            const row = await DatabaseServer.getMockUp(mockId, MockEntityType.MESSAGE, {
+                'transaction.consensus_timestamp': params.timeStamp
+            });
+            if (row && row.transaction) {
+                return row.transaction;
+            } else {
+                throw new Error('Message not found');
+            }
+        } else if (params.topicId) {
+            const rows = await DatabaseServer.getMockUps(mockId, MockEntityType.MESSAGE, {
+                'transaction.topic_id': params.topicId
+            });
+            const row = rows[params.index || 0];
+            if (row && row.transaction) {
+                return row.transaction;
+            } else {
+                throw new Error('Message not found');
+            }
+        }
     }
 
     private static async getHederaMessages(
@@ -289,41 +291,40 @@ export class MockUpHelper {
         topicId: string;
         message: string;
     }[]> {
-        throw new Error('getHederaMessages');
+        if (params.startTimestamp) {
+            const rows = await DatabaseServer.getMockUps(mockId, MockEntityType.MESSAGE, {
+                'transaction.topic_id': params.topicId,
+                'transaction.consensus_timestamp': { $gte: params.startTimestamp }
+            });
+            return rows.map((row) => row.transaction);
+        } else {
+            const rows = await DatabaseServer.getMockUps(mockId, MockEntityType.MESSAGE, {
+                'transaction.topic_id': params.topicId
+            });
+            return rows.map((row) => row.transaction);
+        }
     }
 
-    private static async getHederaAccount(
-        mockId: string,
-        params: { accountId: string }
-    ): Promise<{
-        account: string;
-        balance: string;
-        key: string;
-    }> {
-        throw new Error('getHederaAccount');
-    }
-
-    private static async api(mockId: string, config: {
+    private static async api(mockId: string, request: {
         method: string,
         url: string,
         headers: any,
         data: any
     }): Promise<any> {
-        const method = config.method;
-        if (method === 'GET') {
+        const row = await DatabaseServer.getMockUp(mockId, MockEntityType.API, {
+            'request.url': request.url,
+            'request.method': request.method,
+        });
 
-        } else if (method === 'POST') {
-
-        } else if (method === 'PUT') {
-
-        } else if (method === 'PATCH') {
-
-        } else if (method === 'DELETE') {
-
-        } else {
-            throw new Error('Invalid method');
+        if (!row) {
+            throw new Error('Response not found');
         }
-        throw new Error('api');
+
+        if (row.request.responseType === 'JSON') {
+            return JSON.parse(row.response);
+        } else {
+            return row.response;
+        }
     }
 
     public static deserializeTransaction(transaction: any): any {
@@ -351,18 +352,38 @@ export class MockUpHelper {
         type: MockEntityType,
         transaction: any
     } {
-        console.debug('getReceipt', type, transaction);
         if (type === 'TokenCreateTransaction') {
+            const t = transaction as TokenCreateTransaction;
             const token_id = MockUpHelper.getTokenId();
+
+            const treasury_account_id = t.treasuryAccountId?.toString();
+            const name = t.tokenName;
+            const symbol = t.tokenSymbol;
+            const type = t.tokenType === TokenType.FungibleCommon ? 'FUNGIBLE_COMMON' : 'NON_FUNGIBLE_UNIQUE';
+            const decimals = t.decimals.toInt();
+            const admin_key = !!t.adminKey;
+            const supply_key = !!t.supplyKey;
+            const freeze_key = !!t.freezeKey;
+            const kyc_key = !!t.kycKey;
+            const wipe_key = !!t.wipeKey;
             return {
                 type: MockEntityType.TOKEN,
                 transaction: {
                     id: token_id,
                     token_id,
+                    treasury_account_id,
+                    name,
+                    symbol,
+                    type,
+                    decimals,
+                    admin_key,
+                    supply_key,
+                    freeze_key,
+                    kyc_key,
+                    wipe_key
                 }
             }
         }
-
 
         if (type === 'TokenAssociateTransaction') {
             return {
@@ -400,10 +421,6 @@ export class MockUpHelper {
                 transaction: {}
             };
         }
-
-
-
-
         if (type === 'TokenMintTransaction') {
 
         }
@@ -419,10 +436,6 @@ export class MockUpHelper {
         if (type === 'NFTTransferTransaction') {
 
         }
-
-
-
-
         if (type === 'AccountCreateTransaction') {
             const account_id = MockUpHelper.getAccountId();
             return {
@@ -532,6 +545,9 @@ export class MockUpHelper {
 
         const ipfsMap = new Map<string, any>();
         const topicMap = new Map<string, any>();
+        const tokenMap = new Map<string, any>();
+        const apiMap = new Map<string, any>();
+
         for (const row of rows) {
             if (row.type === MockEntityType.FILE) {
                 ipfsMap.set(row.cid, row.content);
@@ -553,11 +569,15 @@ export class MockUpHelper {
                 topic.messages.push(transaction)
                 topicMap.set(transaction.topic_id, topic);
             } else if (row.type === MockEntityType.TOKEN) {
-
+                const transaction = row.transaction;
+                tokenMap.set(transaction.token_id, row.transaction);
             } else if (row.type === MockEntityType.ACCOUNT) {
-
+                return null;
             } else if (row.type === MockEntityType.API) {
-
+                const request = row.request;
+                const response = row.response;
+                const id = `${request.method}|${request.url}`;
+                apiMap.set(id, { request, response });
             }
         }
 
@@ -576,9 +596,21 @@ export class MockUpHelper {
             topics.push({ topicId, topic, messages });
         }
 
+        const tokens: any[] = [];
+        for (const transaction of tokenMap.values()) {
+            tokens.push(transaction);
+        }
+
+        const api: any[] = [];
+        for (const config of apiMap.values()) {
+            api.push(config);
+        }
+
         return {
             ipfs,
-            topics
+            topics,
+            tokens,
+            api
         }
     }
 
@@ -588,13 +620,17 @@ export class MockUpHelper {
 
         const ipfsString = await content.files['ipfs.json'].async('string');
         const topicsString = await content.files['topics.json'].async('string');
+        const tokensString = await content.files['tokens.json'].async('string');
+        const apiString = await content.files['api.json'].async('string');
 
         const ipfs = ipfsString ? JSON.parse(ipfsString) : null;
         const topics = topicsString ? JSON.parse(topicsString) : null;
+        const tokens = tokensString ? JSON.parse(tokensString) : null;
+        const api = apiString ? JSON.parse(apiString) : null;
 
         // await DatabaseServer.deleteMockUps(mockId);
 
-        await MockUpHelper._setMockUpData(mockId, { ipfs, topics });
+        await MockUpHelper._setMockUpData(mockId, { ipfs, topics, tokens, api });
 
         return true;
     }
@@ -611,6 +647,8 @@ export class MockUpHelper {
         const data = await MockUpHelper.getMockUpData(mockId);
         zip.file('ipfs.json', JSON.stringify(data.ipfs), ZIP_FILE_OPTIONS);
         zip.file('topics.json', JSON.stringify(data.topics), ZIP_FILE_OPTIONS);
+        zip.file('tokens.json', JSON.stringify(data.tokens), ZIP_FILE_OPTIONS);
+        zip.file('api.json', JSON.stringify(data.api), ZIP_FILE_OPTIONS);
         return zip;
     }
 
@@ -622,7 +660,9 @@ export class MockUpHelper {
 
     private static async _setMockUpData(mockId: string, data: {
         ipfs: any[],
-        topics: any[]
+        topics: any[],
+        tokens: any[],
+        api: any[]
     }) {
         if (Array.isArray(data.ipfs)) {
             for (const file of data.ipfs) {
@@ -646,6 +686,21 @@ export class MockUpHelper {
                         });
                     }
                 }
+            }
+        }
+        if (Array.isArray(data.tokens)) {
+            for (const token of data.tokens) {
+                await DatabaseServer.saveMockUp(mockId, MockEntityType.TOKEN, {
+                    transaction: token
+                });
+            }
+        }
+        if (Array.isArray(data.api)) {
+            for (const api of data.api) {
+                await DatabaseServer.saveMockUp(mockId, MockEntityType.API, {
+                    request: api.request,
+                    response: api.response
+                });
             }
         }
     }

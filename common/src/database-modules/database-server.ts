@@ -4627,12 +4627,24 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param dryRun
      */
     public static async getMockUps(
-        dryRun: string
+        dryRun: string,
+        type?: string,
+        filters?: any
     ): Promise<DryRun[]> {
-        return (await new DataBaseHelper(DryRun).find({
+        let query: any = {
             dryRunId: dryRun,
             dryRunClass: 'MockUp',
-        }));
+        }
+        if (type) {
+            query.type = type
+        }
+        if (filters) {
+            query = {
+                ...query,
+                ...filters
+            }
+        }
+        return (await new DataBaseHelper(DryRun).find(query));
     }
 
     /**

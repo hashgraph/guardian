@@ -11,6 +11,7 @@ import {
     LargePayloadContainer,
     MessageBrokerChannel,
     MessageServer,
+    MockService,
     mongoForLoggingInitialization,
     NotificationService,
     OldSecretManager,
@@ -88,6 +89,7 @@ Promise.all([
     JwtServicesValidator.setServiceName(jwtServiceName);
 
     await new OldSecretManager().setConnection(cn).init();
+    await new MockService().setConnection(cn).init();
 
     const policyConfig = await DatabaseServer.getPolicyById(policyId);
 

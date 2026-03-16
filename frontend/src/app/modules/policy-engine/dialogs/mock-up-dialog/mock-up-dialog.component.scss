@@ -39,6 +39,14 @@ form {
 
 .dialog-body {
     height: 300px;
+
+    &[item-type="TOKEN"] {
+        height: 600px;
+    }
+
+    &[item-type="API"] {
+        height: 400px;
+    }
 }
 
 .action-buttons {

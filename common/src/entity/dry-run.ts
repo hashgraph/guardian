@@ -917,6 +917,18 @@ export class DryRun extends BaseEntity {
      */
     @Property({ nullable: true, type: 'unknown' })
     transaction?: any;
+
+    /**
+     * Request
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    request?: any;
+
+    /**
+     * Response
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    response?: any;
     
     /**
      * Set defaults

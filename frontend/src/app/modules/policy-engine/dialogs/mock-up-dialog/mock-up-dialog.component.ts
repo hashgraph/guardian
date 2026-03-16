@@ -13,6 +13,39 @@ export class MockUpDialog {
     public title: string;
     public action: string;
     public type: 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
+    public tokenTypes = [{
+        name: 'Fungible',
+        value: 'FUNGIBLE_COMMON'
+    }, {
+        name: 'Non-Fungible',
+        value: 'NON_FUNGIBLE_UNIQUE'
+    }];
+    public apiTypes = [{
+        name: 'GET',
+        value: 'GET'
+    }, {
+        name: 'POST',
+        value: 'POST'
+    }, {
+        name: 'PUT',
+        value: 'PUT'
+    }, {
+        name: 'PATCH',
+        value: 'PATCH'
+    }, {
+        name: 'DELETE',
+        value: 'DELETE'
+    }];
+    public responseTypes = [{
+        name: 'NONE',
+        value: 'NONE'
+    }, {
+        name: 'JSON',
+        value: 'JSON'
+    }, {
+        name: 'TEXT',
+        value: 'TEXT'
+    }];
 
     constructor(
         public ref: DynamicDialogRef,
@@ -38,14 +71,23 @@ export class MockUpDialog {
         } else if (this.type === 'TOKEN') {
             this.dataForm = new FormGroup({
                 tokenId: new FormControl<string>('', Validators.required),
-            });
-        } else if (this.type === 'ACCOUNT') {
-            this.dataForm = new FormGroup({
-                accountId: new FormControl<string>('', Validators.required),
+                treasuryId: new FormControl<string>('', Validators.required),
+                name: new FormControl<string>('', Validators.required),
+                symbol: new FormControl<string>('', Validators.required),
+                type: new FormControl<string>('', Validators.required),
+                decimals: new FormControl<string>('', Validators.required),
+                adminKey: new FormControl<boolean>(false, Validators.required),
+                supplyKey: new FormControl<boolean>(false, Validators.required),
+                freezeKey: new FormControl<boolean>(false, Validators.required),
+                kycKey: new FormControl<boolean>(false, Validators.required),
+                wipeKey: new FormControl<boolean>(false, Validators.required),
             });
         } else if (this.type === 'API') {
             this.dataForm = new FormGroup({
+                method: new FormControl<string>('', Validators.required),
                 url: new FormControl<string>('', Validators.required),
+                responseType: new FormControl<string>('', Validators.required),
+                response: new FormControl<string>(''),
             });
         } else {
             this.dataForm = new FormGroup({});
@@ -53,7 +95,7 @@ export class MockUpDialog {
         }
 
         if (this.config.data?.item) {
-            this.dataForm.setValue(this.config.data.item)
+            this.dataForm.setValue(this.config.data.item);
         }
     }
 

@@ -25,7 +25,7 @@ import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/a
 import { MockUpDialog } from '../../dialogs/mock-up-dialog/mock-up-dialog.component';
 
 type MockUpItemType = 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
-const MockUpTabs = ['IPFS', 'Topics', 'Tokens', 'Accounts', 'API'];
+const MockUpTabs = ['IPFS', 'Topics', 'Tokens', 'API'];
 
 /**
  * Component for choosing a policy and
@@ -86,6 +86,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     };
     public mockIpfs: any[] = [];
     public mockTopics: any[] = [];
+    public mockTokens: any[] = [];
+    public mockApi: any[] = [];
+
 
     constructor(
         private profileService: ProfileService,
@@ -460,6 +463,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.mockConfig = config || {};
                 this.mockIpfs = data?.ipfs || [];
                 this.mockTopics = data?.topics || [];
+                this.mockTokens = data?.tokens || [];
+                this.mockApi = data?.api || [];
+
                 this.updateMockUpGrid();
 
                 setTimeout(() => {
@@ -936,11 +942,28 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 message: atob(item.message)
             }
         } else if (type === 'TOKEN') {
-            return;
+            return {
+                tokenId: item.token_id,
+                treasuryId: item.treasury_account_id,
+                name: item.name,
+                symbol: item.symbol,
+                type: item.type,
+                decimals: item.decimals,
+                adminKey: item.admin_key,
+                supplyKey: item.supply_key,
+                freezeKey: item.freeze_key,
+                kycKey: item.kyc_key,
+                wipeKey: item.wipe_key
+            }
         } else if (type === 'ACCOUNT') {
             return;
         } else if (type === 'API') {
-            return;
+            return {
+                method: item.request?.method,
+                url: item.request?.url,
+                responseType: item.request?.responseType,
+                response: item.response
+            };
         } else {
             return;
         }
@@ -963,11 +986,31 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 message: btoa(item.message)
             }
         } else if (type === 'TOKEN') {
-            return;
+            return {
+                id: item.tokenId,
+                token_id: item.tokenId,
+                treasury_account_id: item.treasuryId,
+                name: item.name,
+                symbol: item.symbol,
+                type: item.type,
+                decimals: item.decimals,
+                admin_key: item.adminKey,
+                supply_key: item.supplyKey,
+                freeze_key: item.freezeKey,
+                kyc_key: item.kycKey,
+                wipe_key: item.wipeKey,
+            }
         } else if (type === 'ACCOUNT') {
             return;
         } else if (type === 'API') {
-            return;
+            return {
+                request: {
+                    method: item.method,
+                    url: item.url,
+                    responseType: item.responseType
+                },
+                response: item.response
+            };
         } else {
             return;
         }
@@ -1000,7 +1043,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                             const index = oldTopic.messages.indexOf(item);
                             oldTopic.messages[index] = newItem;
                         } else {
-                             oldTopic.messages = oldTopic.messages.filter((e: any) => e !== item);
+                            oldTopic.messages = oldTopic.messages.filter((e: any) => e !== item);
                             let newTopic = this.mockTopics.find((t) => t.topicId === newItem.topicId);
                             if (!newTopic) {
                                 newTopic = {
@@ -1016,8 +1059,16 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         }
                     }
                 } else if (type === 'TOKEN') {
+                    const index = this.mockTokens.indexOf(item);
+                    if (index !== -1) {
+                        this.mockTokens[index] = newItem;
+                    }
                 } else if (type === 'ACCOUNT') {
                 } else if (type === 'API') {
+                    const index = this.mockApi.indexOf(item);
+                    if (index !== -1) {
+                        this.mockApi[index] = newItem;
+                    }
                 }
                 this.updateMockData();
             }
@@ -1051,8 +1102,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         topic.messages = topic.messages.filter((e: any) => e !== item);
                     }
                 } else if (type === 'TOKEN') {
+                    this.mockTokens = this.mockTokens.filter((e) => e !== item);
                 } else if (type === 'ACCOUNT') {
                 } else if (type === 'API') {
+                    this.mockApi = this.mockApi.filter((e) => e !== item);
                 }
                 this.updateMockData();
             }
@@ -1089,8 +1142,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     }
                     topic.messages.push(newItem);
                 } else if (type === 'TOKEN') {
+                    this.mockTokens.push(newItem);
                 } else if (type === 'ACCOUNT') {
                 } else if (type === 'API') {
+                    this.mockApi.push(newItem);
                 }
                 this.updateMockData();
             }
@@ -1100,7 +1155,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     private updateMockData() {
         const data = {
             ipfs: this.mockIpfs,
-            topics: this.mockTopics
+            topics: this.mockTopics,
+            tokens: this.mockTokens,
+            api: this.mockApi,
         }
         this.loading = true;
         this.policyEngineService
@@ -1108,6 +1165,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             .subscribe((data: any) => {
                 this.mockIpfs = data?.ipfs || [];
                 this.mockTopics = data?.topics || [];
+                this.mockTokens = data?.tokens || [];
+                this.mockApi = data?.api || [];
                 this.updateMockUpGrid();
                 setTimeout(() => {
                     this.loading = false;
@@ -1135,6 +1194,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     .subscribe((data: any) => {
                         this.mockIpfs = data?.ipfs || [];
                         this.mockTopics = data?.topics || [];
+                        this.mockTokens = data?.tokens || [];
+                        this.mockApi = data?.api || [];
                         this.updateMockUpGrid();
                         setTimeout(() => {
                             this.loading = false;

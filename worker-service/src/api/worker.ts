@@ -538,9 +538,6 @@ export class Worker extends NatsService {
                     const { operatorId, operatorKey } = task.data.clientOptions;
                     const { dryRun, mockId } = task;
                     const userId = task.data.payload?.userId;
-
-                    console.log('task', task)
-
                     const signOptions: ISignOptions = task.data.signOptions;
                     client = new HederaSDKHelper(operatorId, operatorKey, dryRun, mockId, networkOptions);
                     const { topicId, buffer, submitKey, memo } = task.data;

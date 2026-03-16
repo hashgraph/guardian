@@ -738,14 +738,22 @@ export class PolicyUtils {
         const adminId = user.hederaAccountId;
 
         if (ref.mockId) {
-            tokenId = await (new MockService()).execute({
-                mockId: ref.mockId,
-                type: MockType.CREATE_TOKEN,
+            const workers = new Workers();
+            const hederaAccountKey = await user.loadHederaKey(ref, userId);
+            const createdToken = await workers.addRetryableTask({
+                type: WorkerTaskType.CREATE_TOKEN,
                 data: {
-                    type: MockEntityType.TOKEN,
-                    template: tokenTemplate
+                    operatorId: user.hederaAccountId,
+                    operatorKey: hederaAccountKey,
+                    payload: { userId },
+                    ...tokenTemplate
                 }
+            }, {
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
+            tokenId = createdToken.tokenId;
         } else if (ref.dryRun) {
             tokenId = new TokenId(Date.now()).toString();
         } else {
