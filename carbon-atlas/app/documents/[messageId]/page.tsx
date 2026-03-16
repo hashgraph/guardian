@@ -12,6 +12,7 @@ import { useVcDocument } from "@/hooks/useVcDocument"
 import { ENTITY_TYPE_CONFIG } from "@/lib/utils/trust-chain"
 import { formatTimestamp } from "@/lib/utils/format"
 import type { EntityType } from "@/lib/types/indexer"
+import { CopyableId } from "@/components/shared/CopyableId"
 
 export default function DocumentDetailPage() {
   const params = useParams<{ messageId: string }>()
@@ -19,7 +20,7 @@ export default function DocumentDetailPage() {
 
   const { data: vcDetail, isLoading, error } = useVcDocument(vcId)
 
-  const entityType = vcDetail?.item.options?.entityType as EntityType | undefined
+  const entityType = vcDetail?.item?.options?.entityType as EntityType | undefined
   const config = entityType ? ENTITY_TYPE_CONFIG[entityType] : null
 
   return (
@@ -30,7 +31,7 @@ export default function DocumentDetailPage() {
             <IconArrowLeft className="size-4 mr-1" />
             Back
           </Button>
-          {vcDetail && (
+          {vcDetail?.item?.consensusTimestamp && (
             <HederaProofBadge
               consensusTimestamp={vcDetail.item.consensusTimestamp}
             />
@@ -42,13 +43,18 @@ export default function DocumentDetailPage() {
             {config?.label ?? "VC Document"}
           </h2>
           <p className="text-muted-foreground text-sm mt-1">
-            {vcDetail
-              ? `${entityType} · ${formatTimestamp(vcDetail.item.consensusTimestamp)}`
+            {vcDetail?.item
+              ? `${entityType ?? "unknown"} · ${formatTimestamp(vcDetail.item.consensusTimestamp)}`
               : ""}
           </p>
-          <p className="font-mono text-xs text-muted-foreground mt-1 break-all">
-            {vcId}
-          </p>
+          <div className="mt-1">
+            <CopyableId value={vcId} className="break-all" />
+          </div>
+          {vcDetail?.item?.options?.issuer && (
+            <div className="mt-1">
+              <CopyableId label="Issuer" value={vcDetail.item.options.issuer} className="break-all" />
+            </div>
+          )}
         </div>
 
         {isLoading && (
@@ -60,7 +66,7 @@ export default function DocumentDetailPage() {
         {error && (
           <p className="text-sm text-destructive">Error: {error.message}</p>
         )}
-        {vcDetail && <VCRenderer vcDetail={vcDetail} />}
+        {vcDetail?.item && <VCRenderer vcDetail={vcDetail} />}
       </div>
     </DashboardLayout>
   )

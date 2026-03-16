@@ -25,7 +25,7 @@ export default function VerifyPage() {
         <div>
           <h2 className="text-2xl font-semibold">Verify Document</h2>
           <p className="text-muted-foreground text-sm mt-1">
-            Paste a VC document ID to jump directly to its trust chain or detail view
+            Look up any VC document by its Hedera consensus timestamp
           </p>
         </div>
 
@@ -33,13 +33,13 @@ export default function VerifyPage() {
           <CardHeader>
             <CardTitle>Look up a VC</CardTitle>
             <CardDescription>
-              Enter the MongoDB document ID of any VC in this policy
+              Enter the Hedera consensus timestamp (e.g. 1767600748.312578844) of any VC in this policy
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="flex gap-2">
               <Input
-                placeholder="e.g. 695b6ae9..."
+                placeholder="e.g. 1767600748.312578844"
                 value={vcId}
                 onChange={(e) => setVcId(e.target.value)}
                 className="font-mono"

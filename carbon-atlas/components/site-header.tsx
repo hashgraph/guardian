@@ -112,7 +112,7 @@ export function SiteHeader() {
           <ThemeToggle />
           <Button variant="ghost" size="icon" asChild className="h-8 w-8">
             <a
-              href="https://github.com/gautamp8/mecd-indexer"
+              href="https://github.com/hashgraph/guardian"
               rel="noopener noreferrer"
               target="_blank"
               aria-label="GitHub"

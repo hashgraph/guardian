@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getIndexerToken, invalidateTokens } from "@/lib/api/auth"
 
 const BASE_URL = process.env.INDEXER_API_URL!
-const TOKEN = process.env.INDEXER_API_TOKEN!
+
+async function fetchUpstream(upstreamUrl: string, token: string) {
+  return fetch(upstreamUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    next: { revalidate: 600 },  // 10 min server-side cache
+  })
+}
 
 export async function GET(
   request: NextRequest,
@@ -14,13 +24,15 @@ export async function GET(
   const searchParams = request.nextUrl.searchParams.toString()
   const upstreamUrl = `${BASE_URL}/${pathStr}${searchParams ? `?${searchParams}` : ""}`
 
-  const res = await fetch(upstreamUrl, {
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    next: { revalidate: 600 },  // 10 min server-side cache
-  })
+  const token = await getIndexerToken()
+  let res = await fetchUpstream(upstreamUrl, token)
+
+  // On 401, invalidate cached token and retry once with a fresh token
+  if (res.status === 401) {
+    invalidateTokens()
+    const freshToken = await getIndexerToken()
+    res = await fetchUpstream(upstreamUrl, freshToken)
+  }
 
   const data = await res.json()
 

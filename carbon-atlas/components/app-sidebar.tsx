@@ -7,10 +7,8 @@ import {
   IconChartBar,
   IconDashboard,
   IconExternalLink,
-  IconMail,
   IconList,
   IconSearch,
-  IconServer,
   IconSitemap,
 } from "@tabler/icons-react"
 
@@ -43,14 +41,13 @@ const data = {
     {
       title: "Guardian",
       url: "https://github.com/hashgraph/guardian",
-      icon: IconServer,
+      icon: IconExternalLink,
     },
     {
       title: "Hedera Policy",
-      url: "https://indexer.guardianservice.app/policies/1767599197.624837133",
+      url: "https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/metered-energy-cooking-device-mecd-methodology",
       icon: IconExternalLink,
     },
-    { title: "Contact", url: "mailto:gautam@carbonmarketshq.com", icon: IconMail },
   ],
 }
 
@@ -58,10 +55,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
   React.useEffect(() => setMounted(true), [])
-
-  const logo = mounted && resolvedTheme === "dark"
-    ? "/logo-dark.png"
-    : "/logo-light.png"
 
   const cmhqLogo = mounted && resolvedTheme === "dark"
     ? "/cmhq-logo-dark.png"
@@ -77,7 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="/dashboard">
-                <Image src={logo} alt="MECD" width={20} height={20} className="!size-5" />
+                <Image src="/hedera-logo.png" alt="Hedera" width={20} height={20} className="!size-5 rounded-full" />
                 <span className="text-base font-semibold">MECD Indexer</span>
               </a>
             </SidebarMenuButton>

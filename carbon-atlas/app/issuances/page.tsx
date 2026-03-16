@@ -3,9 +3,9 @@
 import * as React from "react"
 import Link from "next/link"
 import {
+  IconArrowRight,
   IconChevronLeft,
   IconChevronRight,
-  IconExternalLink,
   IconLoader,
 } from "@tabler/icons-react"
 import { Badge } from "@/components/ui/badge"
@@ -20,8 +20,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { usePolicyVcDocuments } from "@/hooks/usePolicyVcDocuments"
-import { formatTimestamp, shortenDid } from "@/lib/utils/format"
+import { formatTimestamp } from "@/lib/utils/format"
 import { HederaProofBadge } from "@/components/shared/HederaProofBadge"
+import { CopyableId } from "@/components/shared/CopyableId"
 
 export default function IssuancesPage() {
   const [pageIndex, setPageIndex] = React.useState(0)
@@ -42,7 +43,7 @@ export default function IssuancesPage() {
           <div>
             <h2 className="text-2xl font-semibold">Issuances</h2>
             <p className="text-muted-foreground text-sm mt-1">
-              Verified monitoring reports — each represents a carbon credit issuance
+              Approved monitoring reports — each represents a carbon credit issuance
               {data ? ` (${data.total} total)` : ""}
             </p>
           </div>
@@ -66,7 +67,7 @@ export default function IssuancesPage() {
                 <TableHeader className="bg-muted sticky top-0">
                   <TableRow>
                     <TableHead>Date</TableHead>
-                    <TableHead>Document ID</TableHead>
+                    <TableHead>Consensus Timestamp</TableHead>
                     <TableHead>Issuer</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Hedera</TableHead>
@@ -82,15 +83,19 @@ export default function IssuancesPage() {
                       <TableCell className="font-mono text-xs text-muted-foreground max-w-[160px] truncate">
                         {item.consensusTimestamp}
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {shortenDid(item.options?.issuer)}
+                      <TableCell className="max-w-[240px]">
+                        {item.options?.issuer ? (
+                          <CopyableId value={item.options.issuer} />
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className="text-green-700 border-green-300 bg-green-50 text-xs"
+                          className="text-green-700 border-green-300 bg-green-50 text-xs capitalize"
                         >
-                          {item.options?.documentStatus ?? "Verified"}
+                          {(item.options?.documentStatus ?? "Approved").charAt(0).toUpperCase() + (item.options?.documentStatus ?? "Approved").slice(1).toLowerCase()}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -101,8 +106,8 @@ export default function IssuancesPage() {
                       <TableCell>
                         <Button variant="ghost" size="sm" asChild>
                           <Link href={`/issuances/${item.consensusTimestamp}`}>
-                            <IconExternalLink className="size-3 mr-1" />
                             Trust Chain
+                            <IconArrowRight className="size-3 ml-1" />
                           </Link>
                         </Button>
                       </TableCell>
@@ -112,30 +117,32 @@ export default function IssuancesPage() {
               </Table>
             </div>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">
-                Page {pageIndex + 1} of {totalPages || "…"}
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
-                  disabled={pageIndex === 0}
-                >
-                  <IconChevronLeft className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPageIndex((p) => p + 1)}
-                  disabled={pageIndex + 1 >= totalPages}
-                >
-                  <IconChevronRight className="size-4" />
-                </Button>
+            {/* Pagination — hidden when only one page */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  Page {pageIndex + 1} of {totalPages}
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
+                    disabled={pageIndex === 0}
+                  >
+                    <IconChevronLeft className="size-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPageIndex((p) => p + 1)}
+                    disabled={pageIndex + 1 >= totalPages}
+                  >
+                    <IconChevronRight className="size-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

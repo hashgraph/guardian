@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FieldGrid } from "@/components/shared/FieldDisplay"
+import { formatRawVc } from "@/lib/utils/format"
 
 interface GenericVCViewProps {
   credentialSubject: Record<string, unknown>
@@ -29,8 +30,8 @@ export function GenericVCView({ credentialSubject, rawDocuments }: GenericVCView
       </TabsContent>
       {rawDocuments && (
         <TabsContent value="raw" className="pt-4">
-          <pre className="text-xs bg-muted rounded-lg p-4 overflow-auto max-h-96 whitespace-pre-wrap">
-            {rawDocuments[0] ?? "No document"}
+          <pre className="text-xs bg-muted rounded-lg p-4 overflow-auto max-h-96">
+            {rawDocuments[0] ? formatRawVc(rawDocuments[0]) : "No document"}
           </pre>
         </TabsContent>
       )}

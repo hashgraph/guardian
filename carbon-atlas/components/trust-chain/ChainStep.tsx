@@ -7,12 +7,11 @@ import {
   IconLoader,
 } from "@tabler/icons-react"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { HederaProofBadge } from "@/components/shared/HederaProofBadge"
 import { VCRenderer } from "@/components/vc-views/VCRenderer"
 import { useVcDocument } from "@/hooks/useVcDocument"
 import type { ChainNode } from "@/lib/utils/trust-chain"
-import { formatTimestamp } from "@/lib/utils/format"
+import { formatTimestampFull } from "@/lib/utils/format"
 import { cn } from "@/lib/utils"
 
 const colorMap: Record<string, string> = {
@@ -29,15 +28,14 @@ const colorMap: Record<string, string> = {
 
 interface ChainStepProps {
   node: ChainNode
-  index: number
-  total: number
+  stepNumber: number
+  isLast: boolean
 }
 
-export function ChainStep({ node, index, total }: ChainStepProps) {
+export function ChainStep({ node, stepNumber, isLast }: ChainStepProps) {
   const [expanded, setExpanded] = React.useState(false)
   const [fetched, setFetched] = React.useState(false)
 
-  // Use consensusTimestamp — that's what the indexer API expects as path param
   const { data: vcDetail, isLoading } = useVcDocument(
     fetched ? node.vc.consensusTimestamp : undefined
   )
@@ -49,25 +47,25 @@ export function ChainStep({ node, index, total }: ChainStepProps) {
 
   const badgeClass =
     colorMap[node.config.color] ?? "border-slate-300 bg-slate-50 text-slate-800"
-  const isLast = index === total - 1
 
   return (
     <div className="flex gap-3">
-      {/* Vertical connector line */}
+      {/* Numbered step circle + connector line */}
       <div className="flex flex-col items-center">
         <div
           className={cn(
-            "size-3 rounded-full border-2 mt-1 shrink-0",
-            `border-${node.config.color}-500 bg-${node.config.color}-100`
+            "size-6 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center text-[10px] font-semibold",
+            `border-${node.config.color}-500 bg-${node.config.color}-100 text-${node.config.color}-700`
           )}
-        />
+        >
+          {stepNumber}
+        </div>
         {!isLast && <div className="w-0.5 flex-1 bg-border mt-1" />}
       </div>
 
       {/* Content */}
       <div className="flex-1 pb-4">
         <div className="rounded-lg border overflow-hidden">
-          {/* Step header */}
           <button
             onClick={handleExpand}
             className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left"
@@ -75,8 +73,8 @@ export function ChainStep({ node, index, total }: ChainStepProps) {
             <Badge variant="outline" className={cn("text-xs shrink-0", badgeClass)}>
               {node.config.label}
             </Badge>
-            <span className="text-xs text-muted-foreground flex-1 truncate font-mono">
-              {node.vc.consensusTimestamp}
+            <span className="text-xs text-muted-foreground flex-1 truncate">
+              {formatTimestampFull(node.vc.consensusTimestamp)}
             </span>
             <HederaProofBadge
               consensusTimestamp={node.vc.consensusTimestamp}
@@ -89,7 +87,7 @@ export function ChainStep({ node, index, total }: ChainStepProps) {
             )}
           </button>
 
-          {/* Expanded content */}
+          {/* Expanded VC detail */}
           {expanded && (
             <div className="border-t px-4 py-4">
               {isLoading ? (
@@ -100,7 +98,15 @@ export function ChainStep({ node, index, total }: ChainStepProps) {
               ) : vcDetail ? (
                 <VCRenderer vcDetail={vcDetail} />
               ) : (
-                <p className="text-sm text-muted-foreground">Failed to load VC detail.</p>
+                <div className="rounded-lg border border-dashed p-4 text-center">
+                  <p className="text-sm font-medium">Document not found</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    The VC document for this step could not be loaded from the indexer.
+                  </p>
+                  <p className="font-mono text-xs text-muted-foreground mt-2">
+                    {node.vc.consensusTimestamp}
+                  </p>
+                </div>
               )}
             </div>
           )}

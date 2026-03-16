@@ -2,7 +2,7 @@ import * as React from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { FieldGrid } from "@/components/shared/FieldDisplay"
-import { formatTCO2e } from "@/lib/utils/format"
+import { formatTCO2e, formatRawVc } from "@/lib/utils/format"
 
 interface ProjectViewProps {
   cs: Record<string, unknown>
@@ -30,7 +30,7 @@ interface Assumption {
 }
 
 export function ProjectView({ cs, entityType, rawDocuments }: ProjectViewProps) {
-  const status = entityType === "approved_project" ? "Validated" : "Draft"
+  const status = entityType === "approved_project" ? "Validated" : "New"
 
   const projectName = get(cs, "project_details.field0") as string | undefined
   const country = get(cs, "project_details.field12") as string | undefined
@@ -179,8 +179,8 @@ export function ProjectView({ cs, entityType, rawDocuments }: ProjectViewProps) 
 
       {rawDocuments && (
         <TabsContent value="raw" className="pt-4">
-          <pre className="text-xs bg-muted rounded-lg p-4 overflow-auto max-h-96 whitespace-pre-wrap">
-            {rawDocuments[0]}
+          <pre className="text-xs bg-muted rounded-lg p-4 overflow-auto max-h-96">
+            {formatRawVc(rawDocuments[0])}
           </pre>
         </TabsContent>
       )}

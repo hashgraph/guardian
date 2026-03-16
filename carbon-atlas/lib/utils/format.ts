@@ -42,6 +42,15 @@ export function shortenDid(did: string | undefined): string {
   return `${did.slice(0, 16)}…${did.slice(-8)}`
 }
 
+/** Pretty-print a raw VC JSON string. */
+export function formatRawVc(raw: string): string {
+  try {
+    return JSON.stringify(JSON.parse(raw), null, 2)
+  } catch {
+    return raw
+  }
+}
+
 /** Format a numeric kWh value. */
 export function formatKWh(value: number | undefined | null): string {
   if (value === undefined || value === null) return "—"

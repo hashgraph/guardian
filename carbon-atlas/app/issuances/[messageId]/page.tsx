@@ -11,6 +11,7 @@ import { HederaProofBadge } from "@/components/shared/HederaProofBadge"
 import { useVcDocument } from "@/hooks/useVcDocument"
 import { formatTimestamp } from "@/lib/utils/format"
 import { ProjectDeveloperBadge } from "@/components/shared/ProjectDeveloperBadge"
+import { CopyableId } from "@/components/shared/CopyableId"
 
 export default function IssuanceDetailPage() {
   const params = useParams<{ messageId: string }>()
@@ -44,9 +45,14 @@ export default function IssuanceDetailPage() {
                 ? ` · ${formatTimestamp(vcDetail.item.consensusTimestamp)}`
                 : ""}
             </p>
-            <p className="font-mono text-xs text-muted-foreground mt-1 break-all">
-              {vcId}
-            </p>
+            <div className="mt-1">
+              <CopyableId value={vcId} className="break-all" />
+            </div>
+            {vcDetail?.item?.options?.issuer && (
+              <div className="mt-1">
+                <CopyableId label="Issuer" value={vcDetail.item.options.issuer} className="break-all" />
+              </div>
+            )}
           </div>
           <ProjectDeveloperBadge className="hidden sm:flex" />
         </div>

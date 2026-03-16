@@ -5,6 +5,7 @@ import {
   formatTCO2e,
   shortenDid,
   formatKWh,
+  formatRawVc,
 } from "@/lib/utils/format"
 
 describe("formatTimestamp", () => {
@@ -78,5 +79,27 @@ describe("formatKWh", () => {
 
   it("returns dash for undefined", () => {
     expect(formatKWh(undefined)).toBe("—")
+  })
+})
+
+describe("formatRawVc", () => {
+  it("pretty-prints valid JSON string", () => {
+    const input = '{"key":"value","nested":{"a":1}}'
+    const result = formatRawVc(input)
+    expect(result).toContain("  ")       // has indentation
+    expect(result).toContain('"key": "value"')
+    expect(JSON.parse(result)).toEqual(JSON.parse(input))
+  })
+
+  it("returns original string for invalid JSON", () => {
+    const input = "not valid json {{{"
+    expect(formatRawVc(input)).toBe(input)
+  })
+
+  it("handles JSON array", () => {
+    const input = '[{"a":1},{"b":2}]'
+    const result = formatRawVc(input)
+    expect(result).toContain("  ")
+    expect(JSON.parse(result)).toEqual([{ a: 1 }, { b: 2 }])
   })
 })

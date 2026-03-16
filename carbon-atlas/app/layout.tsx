@@ -19,10 +19,7 @@ export const metadata: Metadata = {
   description:
     "Public dashboard for Gold Standard MECD 431 — Metered & Measured Energy Cooking Devices carbon credit issuances on Hedera Guardian",
   icons: {
-    icon: [
-      { url: "/logo-light.png", media: "(prefers-color-scheme: light)" },
-      { url: "/logo-dark.png", media: "(prefers-color-scheme: dark)" },
-    ],
+    icon: "/hedera-logo.png",
   },
 }
 

@@ -24,9 +24,9 @@ export function ProjectDeveloperBadge({ className }: { className?: string }) {
         <Image
           src={logo}
           alt="ATEC Global"
-          width={80}
-          height={20}
-          className="h-5 w-auto"
+          width={200}
+          height={200}
+          className="h-20 w-auto"
         />
       </a>
     </div>

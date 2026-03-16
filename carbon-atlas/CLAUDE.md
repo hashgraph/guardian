@@ -15,7 +15,7 @@ Guardian Indexer API
       → React components
 ```
 
-- **Auth proxy:** `app/api/proxy/[...path]/route.ts` injects a Bearer JWT server-side so the token never reaches the client bundle.
+- **Auth proxy:** `app/api/proxy/[...path]/route.ts` injects a Bearer JWT server-side so the token never reaches the client bundle. Token lifecycle is managed by `lib/api/auth.ts` which handles the MGS SSO chain (login → access-token → sso/generate) and auto-refreshes before expiry.
 - **Caching:** TanStack Query with 15 min staleTime, 1 hr gcTime. All policy VCs are fetched once and filtered client-side.
 - **Theming:** `next-themes` with system default, dark/light toggle in header.
 
@@ -23,7 +23,8 @@ Guardian Indexer API
 
 | File | Purpose |
 |---|---|
-| `app/api/proxy/[...path]/route.ts` | Auth proxy — injects Bearer token server-side |
+| `app/api/proxy/[...path]/route.ts` | Auth proxy — injects Bearer token server-side, retries on 401 |
+| `lib/api/auth.ts` | Server-side token manager — auto login/refresh via MGS SSO chain |
 | `lib/api/vc-documents.ts` | API client — getVcDocuments, getAllPolicyVcs, parseCredentialSubject |
 | `lib/utils/trust-chain.ts` | buildChain(), ENTITY_TYPE_CONFIG, getProjectDevelopers |
 | `hooks/usePolicyVcDocuments.ts` | TanStack Query hooks with client-side filtering/pagination |
@@ -59,7 +60,9 @@ npm run build                 # Type-check + production build
 
 ### Environment Variables
 
-See `.env.example` for the full list. The `INDEXER_API_TOKEN` is a Bearer JWT for the Guardian Indexer API — must be set server-side only.
+See `.env.example` for the full list. Auth supports two modes:
+- **Auto-auth (recommended):** Set `GUARDIAN_API_URL`, `GUARDIAN_EMAIL`, `GUARDIAN_PASSWORD` (and optionally `GUARDIAN_USER_ID`). Tokens are managed automatically.
+- **Static token:** Set `INDEXER_API_TOKEN` to skip auto-auth. Must be manually rotated when it expires (~14 days).
 
 ## Testing
 

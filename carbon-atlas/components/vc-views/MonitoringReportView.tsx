@@ -2,7 +2,7 @@ import * as React from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FieldGrid } from "@/components/shared/FieldDisplay"
-import { formatTCO2e } from "@/lib/utils/format"
+import { formatTCO2e, formatRawVc } from "@/lib/utils/format"
 
 interface MonitoringReportViewProps {
   cs: Record<string, unknown>
@@ -178,8 +178,8 @@ export function MonitoringReportView({ cs, rawDocuments }: MonitoringReportViewP
 
       {rawDocuments && (
         <TabsContent value="raw" className="pt-4">
-          <pre className="text-xs bg-muted rounded-lg p-4 overflow-auto max-h-96 whitespace-pre-wrap">
-            {rawDocuments[0]}
+          <pre className="text-xs bg-muted rounded-lg p-4 overflow-auto max-h-96">
+            {formatRawVc(rawDocuments[0])}
           </pre>
         </TabsContent>
       )}

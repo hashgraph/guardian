@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DeviceDataTable } from "@/components/shared/DeviceDataTable"
+import { formatRawVc } from "@/lib/utils/format"
 import type { DeviceRecord } from "@/lib/types/indexer"
 
 interface DeviceDataViewProps {
@@ -30,11 +31,8 @@ export function DeviceDataView({ credentialSubject, rawDocuments }: DeviceDataVi
 
       {rawDocuments && (
         <TabsContent value="raw" className="pt-4">
-          <pre className="text-xs bg-muted rounded-lg p-4 overflow-auto max-h-96 whitespace-pre-wrap">
-            {rawDocuments[0]?.slice(0, 5000)}…
-            {"\n(truncated for display — full record has "}
-            {devices.length}
-            {" device rows)"}
+          <pre className="text-xs bg-muted rounded-lg p-4 overflow-auto max-h-96">
+            {formatRawVc(rawDocuments[0])}
           </pre>
         </TabsContent>
       )}
