@@ -609,9 +609,9 @@ paths:
               example:
                 - username: Installer
                   parent: >-
-                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   did: >-
-                    did:hedera:testnet:4Rh3aC5jNAzPJwwNtsy95Ava954Thyjk41gREjynY2D9_0.0.8145348
+                    did:hedera:testnet:EthnLQfQnh8x6vKyegyekhy72oSAok6cH59pfVssKLDw_0.0.8200599
                 - username: Installer2
         '401':
           description: Unauthorized request.
@@ -657,7 +657,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StandardRegistryAccountDTO'
+                type: array
+                items:
+                  $ref: '#/components/schemas/StandardRegistryAccountDTO'
               example:
                 - username: StandardRegistry
                   did: >-
@@ -1129,7 +1131,7 @@ paths:
                     - type: id
                       value: 69aeb71ef8c5b278e3bab4e5
                     - type: message
-                      value: '0000000000.000000001'
+                      value: '1773670900.819264517'
                     - type: file
                       value:
                         id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
@@ -1602,7 +1604,7 @@ paths:
                     - type: id
                       value: 69aeb71ef8c5b278e3bab4e5
                     - type: message
-                      value: '0000000000.000000001'
+                      value: '1773670900.819264517'
                     - type: file
                       value:
                         id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
@@ -8569,7 +8571,7 @@ paths:
           in: path
           description: Tool message ID
           schema:
-            example: '0000000000.000000001'
+            example: '1773670900.819264517'
             type: string
       responses:
         '200':
@@ -10382,7 +10384,7 @@ paths:
                 owner: >-
                   did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                 topicId: 0.0.6046379
-                messageId: '0000000000.000000001'
+                messageId: '1773670900.819264517'
                 codeVersion: 1.0.0
                 createDate: '2026-03-03T17:25:53.312Z'
                 version: 1.0.0
@@ -10539,7 +10541,7 @@ paths:
                 owner: >-
                   did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                 topicId: 0.0.6046379
-                messageId: '0000000000.000000001'
+                messageId: '1773670900.819264517'
                 codeVersion: 1.0.0
                 createDate: '2026-03-03T17:25:53.312Z'
                 version: 1.0.0
@@ -10687,7 +10689,7 @@ paths:
                 owner: >-
                   did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                 topicId: 0.0.6046379
-                messageId: '0000000000.000000001'
+                messageId: '1773670900.819264517'
                 codeVersion: 1.0.0
                 createDate: '2026-03-03T17:25:53.312Z'
                 version: 1.0.0
@@ -10839,7 +10841,7 @@ paths:
                     owner: >-
                       did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                     topicId: 0.0.6046379
-                    messageId: '0000000000.000000001'
+                    messageId: '1773670900.819264517'
                     codeVersion: 1.0.0
                     createDate: '2026-03-03T17:25:53.312Z'
                     version: 1.0.0
@@ -11067,7 +11069,7 @@ paths:
                     owner: >-
                       did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                     topicId: 0.0.6046379
-                    messageId: '0000000000.000000001'
+                    messageId: '1773670900.819264517'
                     codeVersion: 1.0.0
                     createDate: '2026-03-03T17:25:53.312Z'
                     version: 1.0.0
@@ -11520,7 +11522,7 @@ paths:
                   owner: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   topicId: 0.0.6046379
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
                   codeVersion: 1.0.0
                   createDate: '2026-03-03T17:25:53.312Z'
                   version: 1.0.0
@@ -14133,7 +14135,7 @@ paths:
                   owner: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   topicId: 0.0.6046379
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
                   codeVersion: 1.0.0
                   createDate: '2026-03-03T17:25:53.312Z'
                   version: 1.0.0
@@ -14208,7 +14210,7 @@ paths:
                       property: string
                       contains: string
                       severity: warning
-                messageId: '0000000000.000000001'
+                messageId: '1773670900.819264517'
                 schemas:
                   - {}
                 tags:
@@ -14840,7 +14842,7 @@ paths:
                   owner: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   topicId: 0.0.6046379
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
                   codeVersion: 1.0.0
                   createDate: '2026-03-03T17:25:53.312Z'
                   version: 1.0.0
@@ -14915,7 +14917,7 @@ paths:
                       property: string
                       contains: string
                       severity: warning
-                messageId: '0000000000.000000001'
+                messageId: '1773670900.819264517'
                 schemas:
                   - {}
                 tags:
@@ -18491,7 +18493,7 @@ paths:
             examples:
               Message:
                 value:
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
       responses:
         '200':
           description: Successful operation.
@@ -18576,7 +18578,7 @@ paths:
             examples:
               Message:
                 value:
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
       responses:
         '202':
           description: Successful operation.
@@ -18806,7 +18808,7 @@ paths:
             examples:
               Message:
                 value:
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
       responses:
         '201':
           description: Successful operation.
@@ -18908,7 +18910,7 @@ paths:
             examples:
               Message:
                 value:
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
       responses:
         '202':
           description: Successful operation.
@@ -20638,13 +20640,13 @@ paths:
               Single:
                 value:
                   entity: PolicyDocument
-                  target: '0000000000.000000001'
+                  target: '1773670900.819264517'
               Multiple:
                 value:
                   entity: PolicyDocument
                   targets:
-                    - '0000000000.000000001'
-                    - '0000000000.000000001'
+                    - '1773670900.819264517'
+                    - '1773670900.819264517'
       responses:
         '200':
           description: Created tag.
@@ -20791,7 +20793,7 @@ paths:
               Single:
                 value:
                   entity: PolicyDocument
-                  target: '0000000000.000000001'
+                  target: '1773670900.819264517'
       responses:
         '200':
           description: Successful operation.
@@ -24325,7 +24327,7 @@ paths:
                   owner: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   topicId: 0.0.6046379
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
                   codeVersion: 1.0.0
                   createDate: '2026-03-03T17:25:53.312Z'
                   version: 1.0.0
@@ -26746,7 +26748,7 @@ paths:
                 owner: >-
                   did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                 topicId: 0.0.6046379
-                messageId: '0000000000.000000001'
+                messageId: '1773670900.819264517'
                 codeVersion: 1.0.0
                 createDate: '2026-03-03T17:25:53.312Z'
                 version: 1.0.0
@@ -26987,7 +26989,7 @@ paths:
                 owner: >-
                   did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                 topicId: 0.0.6046379
-                messageId: '0000000000.000000001'
+                messageId: '1773670900.819264517'
                 codeVersion: 1.0.0
                 createDate: '2026-03-03T17:25:53.312Z'
                 version: 1.0.0
@@ -27603,7 +27605,7 @@ paths:
                   owner: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   topicId: 0.0.6046379
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
                   codeVersion: 1.0.0
                   createDate: '2026-03-03T17:25:53.312Z'
                   version: 1.0.0
@@ -27690,7 +27692,7 @@ paths:
                     version: 1.0.0
                     owner: >-
                       did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
-                    messageId: '0000000000.000000001'
+                    messageId: '1773670900.819264517'
                     category: POLICY
                     documentURL: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
                     contextURL: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -27708,7 +27710,7 @@ paths:
                   version: 1.0.0
                   owner: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
                   category: POLICY
                   documentURL: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
                   contextURL: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -27988,7 +27990,7 @@ paths:
                   messageId: f3b2a9c1e4d5678901234567
                   target: string
                   relationships:
-                    - '0000000000.000000001'
+                    - '1773670900.819264517'
                   document: {}
         '401':
           description: Unauthorized request.
@@ -28992,7 +28994,7 @@ paths:
                   owner: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   topicId: 0.0.6046379
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
                   codeVersion: 1.0.0
                   createDate: '2026-03-03T17:25:53.312Z'
                   version: 1.0.0
@@ -29079,7 +29081,7 @@ paths:
                     version: 1.0.0
                     owner: >-
                       did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
-                    messageId: '0000000000.000000001'
+                    messageId: '1773670900.819264517'
                     category: POLICY
                     documentURL: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
                     contextURL: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -29851,7 +29853,7 @@ paths:
                   owner: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   topicId: 0.0.6046379
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
                   codeVersion: 1.0.0
                   createDate: '2026-03-03T17:25:53.312Z'
                   version: 1.0.0
@@ -29938,7 +29940,7 @@ paths:
                     version: 1.0.0
                     owner: >-
                       did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
-                    messageId: '0000000000.000000001'
+                    messageId: '1773670900.819264517'
                     category: POLICY
                     documentURL: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
                     contextURL: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -29953,7 +29955,7 @@ paths:
                       did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                     owner: >-
                       did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
-                    messageId: '0000000000.000000001'
+                    messageId: '1773670900.819264517'
                     policyId: 69aeb71ef8c5b278e3bab4e5
                     policyTopicId: 0.0.6046379
                     policyInstanceTopicId: 0.0.6046379
@@ -30686,7 +30688,7 @@ paths:
                   owner: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   topicId: 0.0.6046379
-                messageId: '0000000000.000000001'
+                messageId: '1773670900.819264517'
                 schemas: []
                 tags: []
                 moduleTopicId: 0.0.6046379
@@ -30813,7 +30815,7 @@ paths:
           in: path
           description: Policy message id
           schema:
-            example: '0000000000.000000001'
+            example: '1773670900.819264517'
             type: string
       responses:
         '202':
@@ -30884,7 +30886,7 @@ paths:
           in: path
           description: Policy message id
           schema:
-            example: '0000000000.000000001'
+            example: '1773670900.819264517'
             type: string
       responses:
         '202':
@@ -30955,7 +30957,7 @@ paths:
           in: path
           description: Policy message id
           schema:
-            example: '0000000000.000000001'
+            example: '1773670900.819264517'
             type: string
       responses:
         '200':
@@ -31023,7 +31025,7 @@ paths:
           in: path
           description: Policy message id
           schema:
-            example: '0000000000.000000001'
+            example: '1773670900.819264517'
             type: string
       responses:
         '200':
@@ -31093,7 +31095,7 @@ paths:
           in: path
           description: Policy message id
           schema:
-            example: '0000000000.000000001'
+            example: '1773670900.819264517'
             type: string
         - name: full
           required: false
@@ -31159,7 +31161,7 @@ paths:
           in: path
           description: Policy message id
           schema:
-            example: '0000000000.000000001'
+            example: '1773670900.819264517'
             type: string
       responses:
         '200':
@@ -31318,7 +31320,7 @@ paths:
           in: path
           description: Policy message id
           schema:
-            example: '0000000000.000000001'
+            example: '1773670900.819264517'
             type: string
       requestBody:
         required: true
@@ -31401,7 +31403,7 @@ paths:
           in: path
           description: Policy message id
           schema:
-            example: '0000000000.000000001'
+            example: '1773670900.819264517'
             type: string
       requestBody:
         required: true
@@ -31484,7 +31486,7 @@ paths:
           in: path
           description: Action Identifier
           schema:
-            example: '0000000000.000000001'
+            example: '1773670900.819264517'
             type: string
       requestBody:
         required: true
@@ -31567,7 +31569,7 @@ paths:
           in: path
           description: Action Identifier
           schema:
-            example: '0000000000.000000001'
+            example: '1773670900.819264517'
             type: string
       requestBody:
         required: true
@@ -31711,7 +31713,7 @@ paths:
           in: query
           description: Start Message Id
           schema:
-            example: '0000000000.000000001'
+            example: '1773670900.819264517'
             type: string
       responses:
         '200':
@@ -32337,7 +32339,7 @@ paths:
                   owner: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   topicId: 0.0.6046379
-                  messageId: '0000000000.000000001'
+                  messageId: '1773670900.819264517'
                   codeVersion: 1.0.0
                   createDate: '2026-03-03T17:25:53.312Z'
                   version: 1.0.0
@@ -32424,7 +32426,7 @@ paths:
                     version: 1.0.0
                     owner: >-
                       did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
-                    messageId: '0000000000.000000001'
+                    messageId: '1773670900.819264517'
                     category: POLICY
                     documentURL: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
                     contextURL: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -32442,7 +32444,7 @@ paths:
                     version: 1.0.0
                     owner: >-
                       did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
-                    messageId: '0000000000.000000001'
+                    messageId: '1773670900.819264517'
                     category: POLICY
                     documentURL: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
                     contextURL: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -33087,7 +33089,7 @@ paths:
                   messageId: f3b2a9c1e4d5678901234567
                   target: string
                   relationships:
-                    - '0000000000.000000001'
+                    - '1773670900.819264517'
                   document: {}
         '401':
           description: Unauthorized request.
@@ -33625,7 +33627,7 @@ paths:
                   field: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
                   fieldName: Field name
                   relationships:
-                    - '0000000000.000000001'
+                    - '1773670900.819264517'
                   relationshipIds:
                     - 69aeb71ef8c5b278e3bab4e5
                   privacy: public
@@ -35457,6 +35459,8 @@ components:
         owner:
           type: string
           nullable: true
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
       required:
         - uuid
         - roleId
@@ -35603,7 +35607,6 @@ components:
         - username
         - role
         - permissions
-        - location
     InternalServerErrorDTO:
       type: object
       properties:
@@ -35616,6 +35619,26 @@ components:
       required:
         - statusCode
         - message
+    RegisterUserDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          example: NewStandardRegistry
+        password:
+          type: string
+          example: StrongPassword3#
+        password_confirmation:
+          type: string
+          example: StrongPassword3#
+        role:
+          type: string
+          example: STANDARD_REGISTRY
+      required:
+        - username
+        - password
+        - password_confirmation
+        - role
     AccountsResponseDTO:
       type: object
       properties:
@@ -35750,42 +35773,6 @@ components:
         - id
         - username
         - role
-        - location
-    UnprocessableEntityErrorDTO:
-      type: object
-      properties:
-        statusCode:
-          type: number
-          example: 422
-        message:
-          type: string
-          example: Error message
-        error:
-          type: string
-          example: Unprocessable Entity
-      required:
-        - statusCode
-        - message
-    RegisterUserDTO:
-      type: object
-      properties:
-        username:
-          type: string
-          example: NewStandardRegistry
-        password:
-          type: string
-          example: StrongPassword3#
-        password_confirmation:
-          type: string
-          example: StrongPassword3#
-        role:
-          type: string
-          example: STANDARD_REGISTRY
-      required:
-        - username
-        - password
-        - password_confirmation
-        - role
     ConflictErrorDTO:
       type: object
       properties:
@@ -35798,6 +35785,37 @@ components:
       required:
         - statusCode
         - message
+    UnprocessableEntityErrorDTO:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 422
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          example: Error message
+        error:
+          type: string
+          example: Unprocessable Entity
+      required:
+        - statusCode
+        - message
+    LoginUserDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          example: StandardRegistry
+        password:
+          type: string
+          example: test
+      required:
+        - username
+        - password
     AccountsLoginResponseDTO:
       type: object
       properties:
@@ -35835,18 +35853,6 @@ components:
       required:
         - statusCode
         - message
-    LoginUserDTO:
-      type: object
-      properties:
-        username:
-          type: string
-          example: StandardRegistry
-        password:
-          type: string
-          example: test
-      required:
-        - username
-        - password
     ChangePasswordDTO:
       type: object
       properties:
@@ -35872,6 +35878,9 @@ components:
         message:
           type: string
           example: Forbidden resource
+        error:
+          type: string
+          example: Forbidden
       required:
         - statusCode
         - message
@@ -35928,15 +35937,21 @@ components:
       properties:
         type:
           type: string
+          example: Ed25519Signature2018
         created:
-          format: date-time
           type: string
+          example: '2026-03-13T09:26:55Z'
         verificationMethod:
           type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599#did-root-key
         proofPurpose:
           type: string
+          example: assertionMethod
         jws:
           type: string
+          example: >-
+            eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..Uc6RaUnv_zC4xc9j3mBqdd8Ew3z6lZITofdoJUYpxDot-fZhQEtiDjPAj5Au6UwApAfTnXy_el-uv5iOdzOyCg
       required:
         - type
         - created
@@ -35951,15 +35966,30 @@ components:
           example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
           nullable: true
         '@context':
+          example:
+            - https://www.w3.org/2018/credentials/v1
+            - ipfs://bafkreihj7gclc4qgem27tre5je6a3t7tpdrk4li6oamdl6bnflwnoyfs5i
           type: array
           items:
             type: string
         type:
+          example:
+            - VerifiableCredential
           type: array
           items:
             type: string
         credentialSubject:
           additionalProperties: true
+          example:
+            - OrganizationName: Organization name
+              Website: https://google.com
+              Tags: Tag
+              '@context':
+                - >-
+                  ipfs://bafkreihj7gclc4qgem27tre5je6a3t7tpdrk4li6oamdl6bnflwnoyfs5i
+              id: >-
+                did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+              type: StandardRegistry
           type: array
           items:
             type: object
@@ -35968,8 +35998,11 @@ components:
             - type: string
             - type: object
               additionalProperties: true
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         issuanceDate:
           type: string
+          example: '2026-03-13T09:26:55.502Z'
         proof:
           nullable: true
           allOf:
@@ -35981,33 +36014,6 @@ components:
         - credentialSubject
         - issuer
         - issuanceDate
-        - proof
-    VpDTO:
-      type: object
-      properties:
-        '@context':
-          type: array
-          items:
-            type: string
-        id:
-          type: string
-          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
-        type:
-          type: array
-          items:
-            type: string
-        verifiableCredential:
-          additionalProperties: true
-          type: array
-          items:
-            type: object
-        proof:
-          $ref: '#/components/schemas/ProofDTO'
-      required:
-        - '@context'
-        - id
-        - type
-        - verifiableCredential
         - proof
     VcDocumentDTO:
       type: object
@@ -36050,8 +36056,22 @@ components:
           type: string
           example: >-
             did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        hederaStatus:
+          type: string
+          example: ISSUE
+        option:
+          type: object
+          additionalProperties: true
+          example:
+            status: NEW
+        topicId:
+          type: string
+          example: 0.0.6046379
+        messageId:
+          type: string
+          example: '1773670900.819264517'
         document:
-          $ref: '#/components/schemas/VpDTO'
+          $ref: '#/components/schemas/VcDTO'
       required:
         - id
         - policyId
@@ -36063,6 +36083,7 @@ components:
         - createDate
         - updateDate
         - owner
+        - option
         - document
     PolicyTestDTO:
       type: object
@@ -36129,6 +36150,26 @@ components:
         - progress
         - resultId
         - result
+    PolicyToolDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Tool 33
+        version:
+          type: string
+          nullable: true
+          example: 1.0.0
+        topicId:
+          type: string
+          example: 0.0.6046379
+        messageId:
+          type: string
+          example: '1773670900.819264517'
+      required:
+        - name
+        - topicId
+        - messageId
     IgnoreRuleDTO:
       type: object
       properties:
@@ -36193,12 +36234,19 @@ components:
         topicId:
           type: string
           example: 0.0.6046379
+        instanceTopicId:
+          type: string
+          example: 0.0.6046379
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         codeVersion:
           type: string
           example: 1.0.0
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyToolDTO'
         createDate:
           type: string
           example: '2026-03-03T17:25:53.312Z'
@@ -36222,6 +36270,7 @@ components:
         userGroup:
           type: object
           additionalProperties: true
+          nullable: true
           example:
             uuid: 9db028d2-03ad-4d49-a178-cf4b67f8c147
             role: Installer
@@ -36324,8 +36373,10 @@ components:
         - creator
         - owner
         - topicId
+        - instanceTopicId
         - messageId
         - codeVersion
+        - tools
         - createDate
         - version
         - config
@@ -36346,17 +36397,26 @@ components:
       properties:
         did:
           type: string
-        hederaAccountId:
-          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         vcDocument:
           $ref: '#/components/schemas/VcDocumentDTO'
         policies:
-          $ref: '#/components/schemas/PolicyDTO'
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyDTO'
+        username:
+          type: string
+          example: StandardRegistry
+        hederaAccountId:
+          type: string
+          example: 0.0.6046379
       required:
         - did
-        - hederaAccountId
         - vcDocument
         - policies
+        - username
+        - hederaAccountId
     BalanceResponseDTO:
       type: object
       properties:
@@ -36438,7 +36498,7 @@ components:
           example: 0.0.6046379
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         uuid:
           type: string
           example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
@@ -36594,7 +36654,7 @@ components:
             - type: id
               value: 69aeb71ef8c5b278e3bab4e5
             - type: message
-              value: '0000000000.000000001'
+              value: '1773670900.819264517'
             - type: file
               value:
                 id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
@@ -36742,7 +36802,7 @@ components:
               value: 69aeb71ef8c5b278e3bab4e5
             - type: policy-message
               value: 9db028d2-03ad-4d49-a178-cf4b67f8c147
-              policy: '0000000000.000000001'
+              policy: '1773670900.819264517'
             - type: policy-file
               value: 9db028d2-03ad-4d49-a178-cf4b67f8c147
               policy:
@@ -37457,7 +37517,7 @@ components:
             did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         category:
           type: string
           enum:
@@ -37658,7 +37718,7 @@ components:
           example: 0.0.6046379
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         codeVersion:
           type: string
           example: 1.0.0
@@ -37990,7 +38050,7 @@ components:
         messageId:
           type: string
           description: Policy Message ID
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         owner:
           type: string
           description: Key owner
@@ -38017,7 +38077,7 @@ components:
         messageId:
           type: string
           description: Policy Message ID
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         key:
           type: string
           description: New key
@@ -38288,7 +38348,7 @@ components:
           $ref: '#/components/schemas/PolicyDTO'
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         schemas:
           additionalProperties: true
           type: array
@@ -38473,7 +38533,7 @@ components:
       properties:
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
       required:
         - messageId
     ExportSchemaDTO:
@@ -38497,7 +38557,7 @@ components:
             did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
       required:
         - id
         - name
@@ -38618,7 +38678,7 @@ components:
           example: 0.0.6046379
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         policyId:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
@@ -38627,7 +38687,7 @@ components:
           example: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         target:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         localTarget:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
@@ -38674,15 +38734,15 @@ components:
           example: PolicyDocument
         target:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         targets:
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
           type: array
           items:
             type: string
         linkedItems:
           example:
-            - '0000000000.000000001'
+            - '1773670900.819264517'
           type: array
           items:
             type: string
@@ -38706,7 +38766,7 @@ components:
           example: PolicyDocument
         target:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         refreshDate:
           type: string
           example: '2026-03-03T17:25:53.312Z'
@@ -38995,6 +39055,33 @@ components:
         - uuid
         - name
         - rules
+    VpDTO:
+      type: object
+      properties:
+        '@context':
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+        type:
+          type: array
+          items:
+            type: string
+        verifiableCredential:
+          additionalProperties: true
+          type: array
+          items:
+            type: object
+        proof:
+          $ref: '#/components/schemas/ProofDTO'
+      required:
+        - '@context'
+        - id
+        - type
+        - verifiableCredential
+        - proof
     VpDocumentDTO:
       type: object
       properties:
@@ -39795,7 +39882,7 @@ components:
           example: 0.0.6046379
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         policyId:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
@@ -39863,13 +39950,13 @@ components:
             did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         target:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         relationships:
           example:
-            - '0000000000.000000001'
+            - '1773670900.819264517'
           type: array
           items:
             type: string
@@ -39996,7 +40083,7 @@ components:
             did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         policyId:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
@@ -40097,7 +40184,7 @@ components:
         messageId:
           type: string
           description: Policy message id
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         policyTag:
           type: string
           description: Policy tag
@@ -40148,11 +40235,11 @@ components:
         messageId:
           type: string
           description: Action message id
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         startMessageId:
           type: string
           description: Action start message id
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         status:
           type: string
           description: Action status
@@ -40205,7 +40292,7 @@ components:
         policyMessageId:
           type: string
           description: Policy message id
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         loaded:
           type: boolean
           description: File is loaded
@@ -40278,7 +40365,7 @@ components:
           example: 0.0.6046379
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         policyId:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
@@ -40377,13 +40464,13 @@ components:
             did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         target:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         relationships:
           example:
-            - '0000000000.000000001'
+            - '1773670900.819264517'
           type: array
           items:
             type: string
@@ -40430,7 +40517,7 @@ components:
           example: Description
         value:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
       required:
         - label
         - value
@@ -40456,16 +40543,16 @@ components:
           example: 69aeb71ef8c5b278e3bab4e5
         target:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         targetId:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         parent:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         hash:
           type: string
         name:
@@ -40479,7 +40566,7 @@ components:
           example: Field name
         relationships:
           example:
-            - '0000000000.000000001'
+            - '1773670900.819264517'
           type: array
           items:
             type: string
@@ -40531,7 +40618,7 @@ components:
           example: Field name
         parent:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         privacy:
           type: string
           enum:
@@ -40549,7 +40636,7 @@ components:
             type: string
         relationships:
           example:
-            - '0000000000.000000001'
+            - '1773670900.819264517'
           type: array
           items:
             type: string
@@ -40584,19 +40671,19 @@ components:
           example: 0.0.6046379
         target:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         targetId:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
         discussionMessageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         discussionId:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
         messageId:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         timestamp:
           type: string
           example: 1759493933458
