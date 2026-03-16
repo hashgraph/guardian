@@ -51,14 +51,14 @@ export function SectionCards() {
         <CardHeader>
           <CardDescription className="flex items-center gap-1.5">
             <IconLeaf className="size-4 text-green-600" />
-            Emission Reductions
+            Projected Emission Reductions
           </CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {isLoading ? loadingEl : totalERy !== null ? formatERy(totalERy) : "—"}
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="text-muted-foreground">Total tCO₂e from verified issuances</div>
+          <div className="text-muted-foreground">Total tCO₂e (including partial issuances)</div>
         </CardFooter>
       </Card>
 
@@ -73,7 +73,7 @@ export function SectionCards() {
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="text-muted-foreground">Validated project VCs on Hedera</div>
+          <div className="text-muted-foreground">Validated projects on Hedera</div>
         </CardFooter>
       </Card>
 

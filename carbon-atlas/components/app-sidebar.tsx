@@ -45,7 +45,7 @@ const data = {
     },
     {
       title: "Hedera Policy",
-      url: "https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/metered-energy-cooking-device-mecd-methodology",
+      url: "https://guardian.hedera.com/guardian/demo-guide/carbon-offsets/goldstandard-metered-energy-cooking",
       icon: IconExternalLink,
     },
   ],
@@ -71,7 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="/dashboard">
                 <Image src="/hedera-logo.png" alt="Hedera" width={20} height={20} className="!size-5 rounded-full" />
-                <span className="text-base font-semibold">MECD Indexer</span>
+                <span className="text-base font-semibold">Carbon Atlas</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

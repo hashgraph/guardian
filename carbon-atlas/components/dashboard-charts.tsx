@@ -20,7 +20,7 @@ import { useDashboardStats, type IssuanceDataPoint } from "@/hooks/useDashboardS
 
 const chartConfig = {
   ery: {
-    label: "Emission Reductions (tCO₂e)",
+    label: "Projected Emission Reductions (tCO₂e)",
     color: "var(--chart-1)",
   },
 } satisfies ChartConfig
@@ -84,8 +84,8 @@ function IssuanceChart({ data }: { data: IssuanceDataPoint[] }) {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Emission Reductions Over Time</CardTitle>
-        <CardDescription>tCO₂e issued per year from verified monitoring reports</CardDescription>
+        <CardTitle>Projected Emission Reductions Over Time</CardTitle>
+        <CardDescription>tCO₂e per year from approved monitoring reports (partial issuances)</CardDescription>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <ChartContainer

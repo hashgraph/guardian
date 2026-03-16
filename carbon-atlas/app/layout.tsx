@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "MECD Indexer",
+  title: "Carbon Atlas",
   description:
     "Public dashboard for Gold Standard MECD 431 — Metered & Measured Energy Cooking Devices carbon credit issuances on Hedera Guardian",
   icons: {
