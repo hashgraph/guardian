@@ -586,8 +586,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
                 const pipeline = [
-                    {$match: filter},
-                    {$group: {_id: '$topicId', count: {$sum: 1}}}
+                    { $match: filter },
+                    { $group: { _id: '$topicId', count: { $sum: 1 } } }
                 ] as unknown[];
                 const countByTopic = await new DataBaseHelper(SchemaCollection).aggregate(pipeline) as unknown[] as { _id: string, count: number }[];
                 items.forEach((item) => {
@@ -619,6 +619,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 toolId?: string,
                 topicId?: string,
                 search?: string
+                searchOptions?: string[]
             },
             owner: IOwner,
         }) => {
@@ -708,27 +709,63 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 //search
                 if (options.search) {
                     let search = options.search.toLowerCase();
-                    let global = false;
-                    if (search.startsWith('@')) {
-                        global = true;
+                    if (search.startsWith('@') || search.startsWith('#')) {
                         search = search.substring(1);
+                    }
+                    const searchOptions = options.searchOptions || ['uuid', 'name', 'description', 'references', 'fields'];
+                    const fields = ['_id'];
+                    if (searchOptions.includes('uuid')) {
+                        fields.push('iri');
+                    }
+                    if (searchOptions.includes('name')) {
+                        fields.push('name');
+                    }
+                    if (searchOptions.includes('description')) {
+                        fields.push('description');
+                    }
+                    if (searchOptions.includes('references') || searchOptions.includes('fields')) {
+                        fields.push('documentFileId');
                     }
                     let schemas = await DatabaseServer.getSchemas(filter, {
                         orderBy: { createDate: 'DESC' },
                         limit: 10000,
                         offset: 0,
-                        fields: ['_id', 'documentFileId']
+                        fields
                     });
                     schemas = schemas.filter((s) => {
-                        if (s.document) {
-                            if (!global) {
-                                delete s.document.$defs;
+                        if (searchOptions.includes('uuid')) {
+                            if (s.iri && s.iri.toLowerCase().includes(search)) {
+                                return true;
                             }
-                            const text = JSON.stringify(s.document).toLowerCase();
-                            return text.indexOf(search) > -1;
-                        } else {
-                            return false;
                         }
+                        if (searchOptions.includes('name')) {
+                            if (s.name && s.name.toLowerCase().includes(search)) {
+                                return true;
+                            }
+                        }
+                        if (searchOptions.includes('description')) {
+                            if (s.description && s.description.toLowerCase().includes(search)) {
+                                return true;
+                            }
+                        }
+                        if (searchOptions.includes('references')) {
+                            if (s.document?.$defs) {
+                                const text = JSON.stringify(s.document.$defs).toLowerCase();
+                                if (text.includes(search)) {
+                                    return true;
+                                }
+                            }
+                        }
+                        if (searchOptions.includes('fields')) {
+                            if (s.document) {
+                                delete s.document.$defs;
+                                const text = JSON.stringify(s.document).toLowerCase();
+                                if (text.includes(search)) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
                     })
                     const ids = schemas.map((s) => s._id);
                     filter._id = { $in: ids };
@@ -736,8 +773,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
                 const pipeline = [
-                    {$match: filter},
-                    {$group: {_id: '$topicId', count: {$sum: 1}}}
+                    { $match: filter },
+                    { $group: { _id: '$topicId', count: { $sum: 1 } } }
                 ] as unknown[];
                 const countByTopic = await new DataBaseHelper(SchemaCollection).aggregate(pipeline) as unknown[] as { _id: string, count: number }[];
                 items.forEach((item) => {
