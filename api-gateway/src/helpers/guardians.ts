@@ -701,6 +701,24 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Get schema tree in PlantUML format
+     * @param id Id
+     * @param owner Owner
+     * @returns PlantUML string
+     */
+    public async getSchemaTreePlantUML(
+        id: string,
+        owner: IOwner,
+        includeFields: boolean = true,
+        includeFormulas: boolean = false,
+        includeDependencies: boolean = false
+    ): Promise<string> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_TREE_PLANTUML, {
+            id, owner, includeFields, includeFormulas, includeDependencies
+        });
+    }
+
+    /**
      * Import schema
      *
      * @param {string[]} messageIds - schema uuid

@@ -493,6 +493,355 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
+     * Return schema tree in PlantUML format
+     *
+     * @param {Object} [msg] - payload
+     *
+     * @returns {string} - PlantUML code
+     */
+    ApiResponse(MessageAPI.GET_SCHEMA_TREE_PLANTUML,
+        async (msg: {
+            id: string,
+            owner: IOwner,
+            includeFields?: boolean,
+            includeFormulas?: boolean,
+            includeDependencies?: boolean
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load schema parameter');
+                }
+
+                const { id, owner, includeFields = true, includeFormulas = false, includeDependencies = false } = msg;
+                if (!id) {
+                    return new MessageError('Invalid schema id');
+                }
+                if (!owner) {
+                    return new MessageError('Invalid schema owner');
+                }
+
+                const schema = await DatabaseServer.getSchemaById(id);
+                if (!schema || (schema.owner && schema.owner !== owner.owner)) {
+                    return new MessageError('Schema is not found');
+                }
+
+                const classes: string[] = [];
+                const refLinks: string[] = [];
+                const formulaPackages: string[] = [];
+                const formulaLinks: string[] = [];
+                const visitedIRIs = new Set<string>();
+                const iriToAlias = new Map<string, string>();
+
+                const sanitizeAlias = (name: string): string => {
+                    return name.replace(/[^a-zA-Z0-9_]/g, '_');
+                };
+
+                const sanitizeFieldName = (name: string): string => {
+                    return name.replace(/\./g, '_');
+                };
+
+                const buildSchemaClass = (schemaDoc: any, alias: string): string => {
+                    let classBlock = `class "${schemaDoc.name}" as ${alias} <<schema>> {\n`;
+                    if (includeFields) {
+                        const schemaObj = new Schema(schemaDoc);
+                        const fields = schemaObj.fields.filter(
+                            (f: any) => f.type !== '#GeoJSON' && f.type !== '#SentinelHUB' && f.type !== null
+                        );
+                        for (const field of fields) {
+                            const desc = (field.description || '').replace(/[\r\n]+/g, ' ').trim();
+                            const fieldName = sanitizeFieldName(field.name);
+                            classBlock += `  {field} ${fieldName} (${desc})\n`;
+                        }
+                    }
+                    classBlock += '}';
+                    return classBlock;
+                };
+
+                const resolveSchemaAlias = async (iri: string, addMissing: boolean): Promise<string | null> => {
+                    let alias = iriToAlias.get(iri);
+                    if (!alias && addMissing) {
+                        const linkedSchema = await DatabaseServer.getSchema({ iri });
+                        if (linkedSchema) {
+                            alias = sanitizeAlias(linkedSchema.name);
+                            iriToAlias.set(iri, alias);
+                            classes.push(buildSchemaClass(linkedSchema, alias));
+                        }
+                    }
+                    return alias || null;
+                };
+
+                const resolveFieldPath = async (
+                    schemaIri: string, fieldPath: string, addMissing: boolean
+                ): Promise<{ alias: string, field: string } | null> => {
+                    const parts = fieldPath.split('.');
+                    if (parts.length === 1) {
+                        const alias = await resolveSchemaAlias(schemaIri, addMissing);
+                        return alias ? { alias, field: sanitizeFieldName(parts[0]) } : null;
+                    }
+                    let currentIri = schemaIri;
+                    for (let i = 0; i < parts.length - 1; i++) {
+                        const schemaDoc = await DatabaseServer.getSchema({ iri: currentIri });
+                        if (!schemaDoc) {
+                            return null;
+                        }
+                        const schemaObj = new Schema(schemaDoc);
+                        const refField = schemaObj.fields.find(
+                            (f: any) => f.name === parts[i] && f.isRef
+                        );
+                        if (!refField) {
+                            return null;
+                        }
+                        currentIri = refField.type;
+                    }
+                    const alias = await resolveSchemaAlias(currentIri, addMissing);
+                    return alias ? { alias, field: sanitizeFieldName(parts[parts.length - 1]) } : null;
+                };
+
+                const buildPlantUML = async (schemaDoc: any): Promise<void> => {
+                    const iri = schemaDoc.iri || '';
+                    if (visitedIRIs.has(iri)) {
+                        return;
+                    }
+                    visitedIRIs.add(iri);
+
+                    const alias = sanitizeAlias(schemaDoc.name);
+                    iriToAlias.set(iri, alias);
+                    classes.push(buildSchemaClass(schemaDoc, alias));
+
+                    const schemaObj = new Schema(schemaDoc);
+                    const refFields = schemaObj.fields.filter(
+                        (f: any) => f.isRef && f.type !== '#GeoJSON' && f.type !== '#SentinelHUB'
+                    );
+                    for (const field of refFields) {
+                        const childSchema = await DatabaseServer.getSchema({ iri: field.type });
+                        if (childSchema) {
+                            const childAlias = sanitizeAlias(childSchema.name);
+                            refLinks.push(
+                                `${alias}::${sanitizeFieldName(field.name)} --> ${childAlias}`
+                            );
+                            await buildPlantUML(childSchema);
+                        }
+                    }
+                };
+
+                await buildPlantUML(schema);
+
+                if (includeFormulas) {
+                    const topicId = schema.topicId;
+                    if (topicId) {
+                        const policies = await DatabaseServer.getPolicies({ topicId } as any);
+                        const allFormulas: any[] = [];
+                        const formulaByUuid = new Map<string, any>();
+
+                        for (const policy of policies) {
+                            const formulas = await DatabaseServer.getFormulas({ policyId: policy.id } as any);
+                            for (const f of formulas) {
+                                allFormulas.push(f);
+                                if (f.uuid) {
+                                    formulaByUuid.set(f.uuid, f);
+                                }
+                            }
+                        }
+
+                        const formulaReferencesSchema = (f: any): boolean => {
+                            const items = f.config?.formulas || [];
+                            return items.some((item: any) =>
+                                item.link && item.link.type === 'schema' && iriToAlias.has(item.link.entityId)
+                            );
+                        };
+
+                        const directFormulaUuids = new Set<string>();
+                        const relevantFormulaUuids = new Set<string>();
+                        for (const f of allFormulas) {
+                            if (formulaReferencesSchema(f)) {
+                                directFormulaUuids.add(f.uuid);
+                                relevantFormulaUuids.add(f.uuid);
+                            }
+                        }
+
+                        if (includeDependencies) {
+                            let changed = true;
+                            while (changed) {
+                                changed = false;
+                                for (const f of allFormulas) {
+                                    if (relevantFormulaUuids.has(f.uuid)) {
+                                        const items = f.config?.formulas || [];
+                                        for (const item of items) {
+                                            if (item.link && item.link.type === 'formula' && !relevantFormulaUuids.has(item.link.entityId)) {
+                                                const dep = formulaByUuid.get(item.link.entityId);
+                                                if (dep) {
+                                                    relevantFormulaUuids.add(dep.uuid);
+                                                    changed = true;
+                                                }
+                                            }
+                                        }
+                                        continue;
+                                    }
+                                    const items = f.config?.formulas || [];
+                                    const linksToRelevant = items.some((item: any) =>
+                                        item.link && item.link.type === 'formula' && relevantFormulaUuids.has(item.link.entityId)
+                                    );
+                                    if (linksToRelevant) {
+                                        relevantFormulaUuids.add(f.uuid);
+                                        changed = true;
+                                    }
+                                }
+                            }
+                        }
+
+                        const filteredFormulas = allFormulas.filter((f: any) => relevantFormulaUuids.has(f.uuid));
+
+                        const resolveFormulaLink = (link: any): string | null => {
+                            if (!link || link.type !== 'formula') {
+                                return null;
+                            }
+                            const targetFormula = formulaByUuid.get(link.entityId);
+                            if (!targetFormula) {
+                                return null;
+                            }
+                            const targetItems = targetFormula.config?.formulas || [];
+                            const targetItem = targetItems.find((i: any) => i.uuid === link.item);
+                            if (targetItem) {
+                                return sanitizeAlias(`${targetFormula.name}_${targetItem.name}`);
+                            }
+                            return null;
+                        };
+
+                        for (const formula of filteredFormulas) {
+                            const isDirect = directFormulaUuids.has(formula.uuid);
+                            const items = formula.config?.formulas || [];
+                            const itemMap = new Map<string, any>();
+                            for (const item of items) {
+                                itemMap.set(item.uuid, item);
+                            }
+
+                            const packageLines: string[] = [];
+
+                            for (const item of items) {
+                                const compAlias = sanitizeAlias(`${formula.name}_${item.name}`);
+                                const stereotype = item.type || 'unknown';
+                                const desc = (item.description || '').replace(/[\r\n]+/g, ' ').trim();
+                                const val = item.value != null && item.value !== '' ? String(item.value).replace(/[\r\n]+/g, ' ').trim() : '';
+
+                                packageLines.push(`  class "${item.name}" as ${compAlias} <<${stereotype}>> {`);
+                                packageLines.push(`    description : ${desc || 'Empty'}`);
+                                if (item.type === 'constant') {
+                                    packageLines.push(`    value : ${val || 'Empty'}`);
+                                } else if (item.type === 'formula') {
+                                    packageLines.push(`    formula : ${val || 'Empty'}`);
+                                } else if (item.type === 'text') {
+                                    packageLines.push(`    text : ${val || 'Empty'}`);
+                                }
+                                packageLines.push('  }');
+
+                                if (item.type === 'formula' && val) {
+                                    packageLines.push(`  note right of ${compAlias} : <latex>${val}</latex>`);
+                                }
+
+                                const isInput = item.type === 'variable';
+                                if (item.link && item.link.type === 'schema') {
+                                    const resolved = await resolveFieldPath(item.link.entityId, item.link.item, isDirect);
+                                    if (resolved) {
+                                        if (isInput) {
+                                            formulaLinks.push(
+                                                `${resolved.alias}::${resolved.field} --> ${compAlias}`
+                                            );
+                                        } else {
+                                            formulaLinks.push(
+                                                `${compAlias} --> ${resolved.alias}::${resolved.field}`
+                                            );
+                                        }
+                                    }
+                                } else if (item.link && item.link.type === 'formula') {
+                                    const targetAlias = resolveFormulaLink(item.link);
+                                    if (targetAlias) {
+                                        if (isInput) {
+                                            formulaLinks.push(
+                                                `${targetAlias} --> ${compAlias}`
+                                            );
+                                        } else {
+                                            formulaLinks.push(
+                                                `${compAlias} --> ${targetAlias}`
+                                            );
+                                        }
+                                    }
+                                }
+
+                                if (item.relationships && item.relationships.length) {
+                                    for (const relUuid of item.relationships) {
+                                        const relItem = itemMap.get(relUuid);
+                                        if (relItem) {
+                                            const relAlias = sanitizeAlias(`${formula.name}_${relItem.name}`);
+                                            formulaLinks.push(
+                                                `${relAlias} --> ${compAlias}`
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (packageLines.length > 0) {
+                                formulaPackages.push(`package "Formula: ${formula.name}" {`);
+                                formulaPackages.push(...packageLines);
+                                formulaPackages.push('}');
+                            }
+                        }
+                    }
+                }
+
+                const skinparam = [
+                    'hide empty members',
+                    'hide circle',
+                    '',
+                    'skinparam class {',
+                    '  BackgroundColor<<schema>> #F9FAFC',
+                    '  BorderColor<<schema>> #4A90D9',
+                    '  BackgroundColor<<constant>> #e1e7fa',
+                    '  BorderColor<<constant>> #8893b8',
+                    '  BackgroundColor<<variable>> #fff6e3',
+                    '  BorderColor<<variable>> #c4a84e',
+                    '  BackgroundColor<<formula>> #fbd9ef',
+                    '  BorderColor<<formula>> #c47aa3',
+                    '  BackgroundColor<<text>> #d7f5e2',
+                    '  BorderColor<<text>> #6db87e',
+                    '}',
+                ];
+
+                const lines: string[] = [
+                    '@startuml Schema Tree: ' + schema.name,
+                    `' Uncomment the next line to hide classes not linked to formulas`,
+                    `' remove @unlinked`,
+                    `' Guardian Schema Tree Export`,
+                    `' Schema: ${schema.name}`,
+                    `' IRI: ${schema.iri || ''}`,
+                    `' Generated: ${new Date().toISOString()}`,
+                    `' Options: fields=${includeFields}, formulas=${includeFormulas}, dependencies=${includeDependencies}`,
+                    '',
+                    ...skinparam,
+                    '',
+                    ...classes,
+                    '',
+                    ...refLinks,
+                ];
+
+                if (formulaPackages.length > 0) {
+                    lines.push('');
+                    lines.push(...formulaPackages);
+                    lines.push('');
+                    lines.push(...formulaLinks);
+                }
+
+                lines.push('');
+                lines.push('@enduml');
+
+                return new MessageResponse(lines.join('\n'));
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
      * Return schemas
      *
      * @param {Object} [payload] - filters
