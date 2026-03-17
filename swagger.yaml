@@ -62,11 +62,29 @@ paths:
               $ref: '#/components/schemas/LoginUserDTO'
       responses:
         '200':
-          description: Successful operation.
+          description: ''
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountsSessionResponseDTO'
+                oneOf:
+                  - $ref: '#/components/schemas/LoginSuccessResponseDTO'
+                  - $ref: '#/components/schemas/LoginOTPRequiredResponseDTO'
+              examples:
+                success:
+                  summary: Successful response
+                  value:
+                    did: >-
+                      #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+                    refreshToken: >-
+                      eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImIxM2E0NTkyLWU2YjQtNDg0OS1hMTkxLTAxOWVkODNkYzM5ZCIsIm5hbWUiOiJTdGFuZGFyZFJlZ2lzdHJ5IiwiZXhwaXJlQXQiOjE4MDUyODI4NjU3MDEsImlhdCI6MTc3Mzc0Njg2NX0.BsKje1bza0NEKKTAHFMRfwa3H-H-eRu7-KEDHKTftljXE3eQNmYCf_ftaPpw3DdsfsavBcEDfs5UQwlyeMsaTJPehEx_gl697rGQx6b8objGkqfFL2A7nWetMbWtxFFsIrbxs4mqHy1LM_4VVJuiXsH2DYQZkxOmw4HdyUshjE84
+                    role: STANDARD_REGISTRY
+                    username: StandardRegistry
+                    weakPassword: false
+                otpRequired:
+                  summary: OTP required
+                  value:
+                    success: false
+                    otprequired: true
         '500':
           description: Internal server error.
           content:
@@ -23813,3 +23831,41 @@ components:
         - '@context'
         - id
         - type
+    LoginOTPRequiredResponseDTO:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        otprequired:
+          type: boolean
+          example: true
+      required:
+        - success
+        - otprequired
+    LoginSuccessResponseDTO:
+      type: object
+      properties:
+        did:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        refreshToken:
+          type: string
+          example: >-
+            eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImIxM2E0NTkyLWU2YjQtNDg0OS1hMTkxLTAxOWVkODNkYzM5ZCIsIm5hbWUiOiJTdGFuZGFyZFJlZ2lzdHJ5IiwiZXhwaXJlQXQiOjE4MDUyODI4NjU3MDEsImlhdCI6MTc3Mzc0Njg2NX0.BsKje1bza0NEKKTAHFMRfwa3H-H-eRu7-KEDHKTftljXE3eQNmYCf_ftaPpw3DdsfsavBcEDfs5UQwlyeMsaTJPehEx_gl697rGQx6b8objGkqfFL2A7nWetMbWtxFFsIrbxs4mqHy1LM_4VVJuiXsH2DYQZkxOmw4HdyUshjE84
+        role:
+          type: string
+          example: STANDARD_REGISTRY
+        username:
+          type: string
+          example: StandardRegistry
+        weakPassword:
+          type: string
+          example: false
+      required:
+        - did
+        - refreshToken
+        - role
+        - username
+        - weakPassword
