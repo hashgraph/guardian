@@ -268,10 +268,18 @@ paths:
       parameters: []
       requestBody:
         required: true
+        description: Register payload.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/RegisterUserDTO'
+            examples:
+              registerBody:
+                value:
+                  username: StandardRegistry
+                  password: StrongPassword3#
+                  password_confirmation: StrongPassword3#
+                  role: STANDARD_REGISTRY
       responses:
         '201':
           description: Successful operation.
@@ -436,10 +444,16 @@ paths:
       parameters: []
       requestBody:
         required: true
+        description: Login payload.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/LoginUserDTO'
+            examples:
+              loginBody:
+                value:
+                  username: StandardRegistry
+                  password: test
       responses:
         '200':
           description: Successful operation.
@@ -499,6 +513,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ChangePasswordDTO'
+            examples:
+              changePasswordBody:
+                value:
+                  username: StandardRegistry
+                  oldPassword: test
+                  newPassword: AnotherStrongPassword3#
       responses:
         '200':
           description: Successful operation.
@@ -568,6 +588,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AccessTokenRequestDTO'
+            examples:
+              accessTokenBody:
+                value:
+                  refreshToken: >-
+                    eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYwNmY2MzIyLTk2NGYtNGIwMC05ZjgwLTljM2Y1OTdjYTYyYSIsIm5hbWUiOiJTdGFuZGFyZFJlZ2lzdHJ5IiwiZXhwaXJlQXQiOjE4MDQ3MDAzOTczMzgsImlhdCI6MTc3MzE2NDM5N30.ODc0_ktbl5xPRn4Ub1Kuj-xrjlho2_oyohucLdgMUqFGrI2SD_T3A96OaV2cKx7NQwsxc-QFBpBnrGSriJ9qPUcDm9rYmQYSqwpRJT0uSuL7xwu4TiPlVzghCd5xlLTw_uA6uJR7CG7HrDphPQI6zMGSxKXcn2S9xIZ6z5uBuWU
       responses:
         '200':
           description: Successful operation.
