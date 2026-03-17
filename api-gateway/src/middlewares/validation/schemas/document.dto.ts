@@ -1,5 +1,5 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 import { Examples, ObjectExamples } from '../examples.js';
 import { PolicyDTO } from './policies.dto.js';
 
@@ -83,7 +83,7 @@ export class VcDTO {
 
     @ApiProperty({
         type: () => ProofDTO,
-        nullable: true,        
+        nullable: true
     })
     proof?: ProofDTO;
 }
@@ -321,7 +321,6 @@ export class AggregatedDTOItem {
         example: Examples.DID
     })
     did: string;
-
 
     @ApiProperty()
     vcDocument: VcDocumentDTO;

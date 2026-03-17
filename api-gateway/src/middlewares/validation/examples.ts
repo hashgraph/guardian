@@ -16,7 +16,6 @@ export enum Examples {
     USER_NAME_SR_2 = 'Verra'
 }
 
-
 const PERMISSIONS_SR = [
     'ACCOUNTS_STANDARD_REGISTRY_READ',
     'DEMO_KEY_CREATE',
@@ -124,7 +123,6 @@ const PERMISSIONS_SR = [
     'POLICIES_EXTERNAL_POLICY_DELETE',
     'LOG_LOG_READ',
     'LOG_SYSTEM_READ']
-
 
 export const ObjectExamples = {
     PERMISSION_SR: PERMISSIONS_SR,
