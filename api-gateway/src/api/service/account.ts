@@ -3,7 +3,26 @@ import { Permissions, PolicyStatus, SchemaEntity, UserRole } from '@guardian/int
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
-import { AccessTokenRequestDTO, AccessTokenResponseDTO, AccountsLoginResponseDTO, AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, ChangePasswordDTO, ConflictErrorDTO, Examples, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO, StandardRegistryAccountDTO, UnauthorizedErrorDTO, UnprocessableEntityErrorDTO, ObjectExamples, UserAccountDTO } from '#middlewares';
+import {
+    AccessTokenRequestDTO,
+    AccessTokenResponseDTO,
+    AccountsLoginResponseDTO,
+    AccountsResponseDTO,
+    AccountsSessionResponseDTO,
+    AggregatedDTOItem,
+    BalanceResponseDTO,
+    ChangePasswordDTO,
+    ConflictErrorDTO,
+    Examples,
+    InternalServerErrorDTO,
+    LoginUserDTO,
+    RegisterUserDTO,
+    StandardRegistryAccountDTO,
+    UnauthorizedErrorDTO,
+    UnprocessableEntityErrorDTO,
+    ObjectExamples,
+    UserAccountDTO
+} from '#middlewares';
 import { Auth, AuthUser, checkPermission } from '#auth';
 import { EntityOwner, Guardians, InternalException, PolicyEngine, UseCache, Users } from '#helpers';
 import { PolicyListResponse } from '../../entities/policy';
