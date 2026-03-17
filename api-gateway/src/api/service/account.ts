@@ -98,6 +98,21 @@ export class AccountApi {
         summary: 'Registers a new user account.',
         description: 'Object that contain username, password and role fields.',
     })
+    @ApiBody({
+        description: 'Register payload.',
+        required: true,
+        type: RegisterUserDTO,
+        examples: {
+            registerBody: {
+                value: {
+                    username: Examples.USER_NAME_SR_1,
+                    password: 'StrongPassword3#',
+                    password_confirmation: 'StrongPassword3#',
+                    role: Examples.USER_ROLE_SR
+                }
+            }
+        }
+    })
     @ApiCreatedResponse({
         description: 'Successful operation.',
         type: AccountsResponseDTO,
@@ -176,6 +191,19 @@ export class AccountApi {
     @ApiOperation({
         summary: 'Logs user into the system.',
     })
+    @ApiBody({
+        description: 'Login payload.',
+        required: true,
+        type: LoginUserDTO,
+        examples: {
+            loginBody: {
+                value: {
+                    username: Examples.USER_NAME_SR_1,
+                    password: 'test'
+                }
+            }
+        }
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: AccountsLoginResponseDTO,
@@ -236,7 +264,16 @@ export class AccountApi {
     })
     @ApiBody({
         description: 'User credentials.',
-        type: ChangePasswordDTO
+        type: ChangePasswordDTO,
+        examples: {
+            changePasswordBody: {
+                value: {
+                    username: Examples.USER_NAME_SR_1,
+                    oldPassword: 'test',
+                    newPassword: 'AnotherStrongPassword3#'
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -289,6 +326,13 @@ export class AccountApi {
     @ApiBody({
         description: 'Object that contains a refresh token.',
         type: AccessTokenRequestDTO,
+        examples: {
+            accessTokenBody: {
+                value: {
+                    refreshToken: Examples.REFRESH_TOKEN
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
