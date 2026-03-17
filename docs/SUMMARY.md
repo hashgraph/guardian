@@ -341,6 +341,7 @@
       * [Dry Run Mode using APIs](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/README.md)
         * [Running Policy without making any changes](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/running-policy-without-making-any-changes.md)
         * [Returning all Virtual Users](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/returning-all-virtual-users.md)
+        * [Returning Virtual User by DID](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/returning-virtual-user-by-did.md)
         * [Creating Virtual Account](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/creating-virtual-account.md)
         * [Logging Virtual User](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/logging-virtual-user.md)
         * [Restarting the execution of Policy](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/restarting-the-execution-of-policy.md)

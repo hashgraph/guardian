@@ -1,12 +1,16 @@
-# Creating Virtual Account
+# Returning Virtual User by DID
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/dry-run/user" summary="Create a new virtual account" %}
+{% swagger method="get" path="" baseUrl="/policies/{policyId}/dry-run/user/{did}" summary="Returns a virtual user by DID" %}
 {% swagger-description %}
-Create a new virtual account. Only users with the Standard Registry role are allowed to make the request
+Returns a virtual user by DID. Only users with the Standard Registry role are allowed to make the request
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyId" type="String" required="true" %}
 Policy ID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="did" type="String" required="true" %}
+Virtual User DID
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
