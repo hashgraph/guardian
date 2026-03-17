@@ -8,4 +8,11 @@ export enum Examples {
     COLOR = '#000000',
     DID = '#did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001',
     HASH = 'GcDE9NsPJc7oCZvSVJySCZHxTxvjc3ZAMgtKozP1r1Eh',
+    OTPName = 'OS Guardian',
+    USER_NAME_SR_1 = 'StandardRegistry',
+    OTPSecret = 'AAA0AA0A0A00A000',
+    OTPAuthURL = 'otpauth://totp/OS%20Guardian:StandardRegistry?issuer=OS+Guardian&period=30&secret=XXX0XX0X0X00X000',
+    OTPAlgo = 'sha1',
+    Number = 111,
+    OTPCode = '111111',
 }

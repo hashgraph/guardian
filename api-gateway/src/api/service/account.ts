@@ -3,7 +3,7 @@ import { Permissions, PolicyStatus, SchemaEntity, UserRole } from '@guardian/int
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, ChangePasswordDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO } from '#middlewares';
+import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, ChangePasswordDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO, GenerateOPTResponseDTO, EmptyResponseDTO, OTPConfirmDTO, OTPConfirmResponseDTO, OTPStatusResponseDTO } from '#middlewares';
 import { Auth, AuthUser, checkPermission } from '#auth';
 import { EntityOwner, Guardians, InternalException, PolicyEngine, UseCache, Users } from '#helpers';
 import { PolicyListResponse } from '../../entities/policy';
@@ -386,14 +386,26 @@ export class AccountApi {
         }
     }
 
+    /**
+     * Generate a OTP secret for 2FA setup
+     */
     @Post('otp/generate')
     @Auth()
+    @ApiOperation({
+        summary: 'Generate a OTP secret for 2FA setup.',
+        description: 'Generate a OTP secret for 2FA setup.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: GenerateOPTResponseDTO,
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @HttpCode(HttpStatus.CREATED)
     async generateOtp(@AuthUser() user: IAuthUser,) {
-            const users = new Users();
+        const users = new Users();
         try {
             const code = await users.otpGenerateSecret(user.id);
 
@@ -404,18 +416,35 @@ export class AccountApi {
             throw new HttpException(error.message, error.code || HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
+    /**
+     * Confirm OTP setup
+     */
     @Post('otp/confirm')
     @Auth()
+    @ApiOperation({
+        summary: 'Confirm OTP setup.',
+        description: 'Confirm OTP setup by OTP token.',
+    })
+    @ApiBody({
+        description: 'Configuration.',
+        type: OTPConfirmDTO,
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: OTPConfirmResponseDTO,
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @HttpCode(HttpStatus.CREATED)
     async confirmOtp(
         @AuthUser() user: IAuthUser,
-        @Body() body,
+        @Body() body: OTPConfirmDTO
     ) {
-            const users = new Users();
+        const users = new Users();
         try {
             const token = body.token;
             const result = await users.otpConfirmSecret(user.id, token);
@@ -428,17 +457,29 @@ export class AccountApi {
         }
     }
 
+    /**
+     * Get OTP status
+     */
     @Get('otp/status')
     @Auth()
+    @ApiOperation({
+        summary: 'Get OTP status.',
+        description: 'Get OTP status for current user.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: OTPStatusResponseDTO
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @HttpCode(HttpStatus.OK)
     async getOtpStatus(
         @AuthUser() user: IAuthUser,
-    ){
-            const users = new Users();
-        try {            
+    ) {
+        const users = new Users();
+        try {
             const result = await users.otpGetStatus(user.id);
 
             return result;
@@ -449,17 +490,29 @@ export class AccountApi {
         }
     }
 
+    /**
+     * Deactivate 2FA
+     */
     @Post('otp/deactivate')
     @Auth()
+    @ApiOperation({
+        summary: 'Deactivate 2FA.',
+        description: 'Deactivate 2FA.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: EmptyResponseDTO,
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @HttpCode(HttpStatus.CREATED)
     async deactivateOtp(
         @AuthUser() user: IAuthUser,
-    ){
-            const users = new Users();
-        try {            
+    ) {
+        const users = new Users();
+        try {
             const result = await users.otpDeactivate(user.id);
 
             return result;

@@ -151,14 +151,6 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.wrongNameOrPassword = false;
         this.auth.login(login, password, otp)
             .subscribe((result) => {
-                this.auth.setRefreshToken(result.refreshToken);
-                this.auth.setUsername(login);
-                this.auth.updateAccessToken().subscribe(_result => {
-                    this.authState.updateState(true);
-                    const home = this.auth.home(result.role);
-                    this.router.navigate([home]);
-                });
-
                 if (result.otprequired) {
                     this.dialogService.open(OtpDialogComponent, {
                         header: 'Enter Verification Code',
@@ -168,6 +160,18 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                         if (token) {
                             this.login(login, password, token);
                         }
+                        else {
+                            this.loading = false;
+                        }
+                    });
+                }
+                else {
+                    this.auth.setRefreshToken(result.refreshToken);
+                    this.auth.setUsername(login);
+                    this.auth.updateAccessToken().subscribe(_result => {
+                        this.authState.updateState(true);
+                        const home = this.auth.home(result.role);
+                        this.router.navigate([home]);
                     });
                 }
 
@@ -177,6 +181,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                         'Weak Password',
                     );
                 }
+
             }, (error) => {
                 this.loading = false;
                 this.errorMessage = error.message;
