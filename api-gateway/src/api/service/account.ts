@@ -2,8 +2,8 @@ import { IAuthUser, NotificationHelper, PinoLogger } from '@guardian/common';
 import { Permissions, PolicyStatus, SchemaEntity, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, ChangePasswordDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO, GenerateOPTResponseDTO, EmptyResponseDTO, OTPConfirmDTO, OTPConfirmResponseDTO, OTPStatusResponseDTO } from '#middlewares';
+import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, ChangePasswordDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO, GenerateOPTResponseDTO, EmptyResponseDTO, LoginSuccessResponseDTO, LoginOTPRequiredResponseDTO, OTPConfirmDTO, OTPConfirmResponseDTO, ObjectExamples, OTPStatusResponseDTO } from '#middlewares';
 import { Auth, AuthUser, checkPermission } from '#auth';
 import { EntityOwner, Guardians, InternalException, PolicyEngine, UseCache, Users } from '#helpers';
 import { PolicyListResponse } from '../../entities/policy';
@@ -126,8 +126,22 @@ export class AccountApi {
         summary: 'Logs user into the system.',
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        type: AccountsSessionResponseDTO
+        schema: {
+            oneOf: [
+                { $ref: getSchemaPath(LoginSuccessResponseDTO) },
+                { $ref: getSchemaPath(LoginOTPRequiredResponseDTO) }
+            ]
+        },
+        examples: {
+            success: {
+                summary: 'Successful response',
+                value: ObjectExamples.LOGIN_SUCCESSFUL
+            },
+            otpRequired: {
+                summary: 'OTP required',
+                value: ObjectExamples.OTP_REQUIRED_RESPONSE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',

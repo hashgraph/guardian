@@ -7,8 +7,8 @@ import { BaseEntity } from '@guardian/common';
 @Entity()
 export class OtpSecret extends BaseEntity {
     /**
-    * User Id
-    */
+     * User Id
+     */
     @Property({ nullable: true })
     userId: string;
 

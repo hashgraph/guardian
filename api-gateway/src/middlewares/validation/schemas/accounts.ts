@@ -41,6 +41,66 @@ export class AccountsSessionResponseDTO {
     accessToken: string
 }
 
+export class LoginSuccessResponseDTO {
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.DID
+    })
+    @IsString()
+    did: string;
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.TOKEN
+    })
+    @IsString()
+    refreshToken: string;
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.ROLE_SR
+    })
+    @IsString()
+    role: string
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.USER_NAME_SR_1
+    })
+    @IsString()
+    username: string
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: false
+    })
+    @IsString()
+    weakPassword: string
+}
+
+export class LoginOTPRequiredResponseDTO {
+    @ApiProperty({
+        type: Boolean,
+        required: true,
+        example: false
+    })
+    @IsBoolean()
+    success: boolean;
+
+    @ApiProperty({
+        type: Boolean,
+        required: true,
+        example: true
+    })
+    @IsBoolean()
+    otprequired: boolean;
+}
+
 export class ChangePasswordDTO {
     @ApiProperty()
     @IsString()
@@ -148,7 +208,7 @@ export class OTPConfigDTO {
     @ApiProperty({
         type: String,
         required: true,
-        example: Examples.OTPAlgo
+        example: Examples.OTP_ALGO
     })
     @IsString()
     algo: string;
@@ -156,7 +216,7 @@ export class OTPConfigDTO {
     @ApiProperty({
         type: Number,
         required: true,
-        example: Examples.Number
+        example: Examples.NUMBER
     })
     @IsNumber()
     digits: number;
@@ -164,7 +224,7 @@ export class OTPConfigDTO {
     @ApiProperty({
         type: Number,
         required: true,
-        example: Examples.Number
+        example: Examples.NUMBER
     })
     @IsNumber()
     period: number;
@@ -172,7 +232,7 @@ export class OTPConfigDTO {
     @ApiProperty({
         type: Number,
         required: true,
-        example: Examples.Number
+        example: Examples.NUMBER
     })
     @IsNumber()
     secretSize: number;
@@ -182,7 +242,7 @@ export class GenerateOPTResponseDTO {
     @ApiProperty({
         type: String,
         required: true,
-        example: Examples.OTPName
+        example: Examples.OTP_NAME
     })
     @IsString()
     issuer: string;
@@ -198,7 +258,7 @@ export class GenerateOPTResponseDTO {
     @ApiProperty({
         type: String,
         required: true,
-        example: Examples.OTPSecret
+        example: Examples.OTP_SECRET
     })
     @IsString()
     secret: string;
@@ -206,7 +266,7 @@ export class GenerateOPTResponseDTO {
     @ApiProperty({
         type: String,
         required: true,
-        example: Examples.OTPAuthURL
+        example: Examples.OTP_AUTH_URL
     })
     @IsString()
     url: string;
@@ -223,7 +283,7 @@ export class OTPConfirmDTO {
     @ApiProperty({
         type: String,
         required: true,
-        example: Examples.OTPCode
+        example: Examples.OTP_CODE
     })
     @IsString()
     token: string;
@@ -261,7 +321,6 @@ export class OTPStatusResponseDTO {
 
 export class EmptyResponseDTO {
 }
-
 
 export const registerSchema = () => {
     const { username, password, password_confirmation, role } = fieldsValidation

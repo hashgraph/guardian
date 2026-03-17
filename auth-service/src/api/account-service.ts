@@ -551,8 +551,9 @@ export class AccountService extends NatsService {
                 const { userId } = msg;
 
                 const user = await new DataBaseHelper(User).findOne({ id: userId });
-                if (!user)
+                if (!user) {
                     return new MessageError('Invalid user');
+                }
 
                 const key = await OtpHelper.generateNewSecretFor(user);
 
@@ -569,29 +570,31 @@ export class AccountService extends NatsService {
                 const { userId, token } = msg;
 
                 const user = await new DataBaseHelper(User).findOne({ id: userId });
-                if (!user)
+                if (!user) {
                     return new MessageError('Invalid user');
+                }
                 const result = await OtpHelper.confirmNewSecret(user, token);
                 if (result) {
                     const codes = await OtpHelper.generateBackupCodes(user);
                     return new MessageResponse({ success: true, backupCodes: codes });
                 }
-                else
+                else {
                     return new MessageResponse({ success: false });
+                }
             } catch (error) {
                 await logger.error(error, ['AUTH_SERVICE', 'OTP_GENERATE_SECRET']);
                 return new MessageError(error);
             }
         });
 
-
         this.getMessages<any, any>(AuthEvents.OTP_GET_STATUS, async (msg) => {
             try {
                 const { userId } = msg;
 
                 const user = await new DataBaseHelper(User).findOne({ id: userId });
-                if (!user)
+                if (!user) {
                     return new MessageError('Invalid user');
+                }
                 const result = await OtpHelper.isConfiguredFor(user);
 
                 return new MessageResponse({ enabled: result });
@@ -606,8 +609,9 @@ export class AccountService extends NatsService {
                 const { userId } = msg;
 
                 const user = await new DataBaseHelper(User).findOne({ id: userId });
-                if (!user)
+                if (!user) {
                     return new MessageError('Invalid user');
+                }
                 const result = await OtpHelper.deactivate(user);
 
                 return new MessageResponse({ enabled: result });
