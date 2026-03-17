@@ -235,9 +235,16 @@ paths:
         - accounts
   /accounts/otp/generate:
     post:
+      description: Generate a OTP secret for 2FA setup.
       operationId: AccountApi_generateOtp
       parameters: []
       responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateOPTResponseDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -250,13 +257,28 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
+      summary: Generate a OTP secret for 2FA setup.
       tags:
         - accounts
   /accounts/otp/confirm:
     post:
+      description: Confirm OTP setup by OTP token.
       operationId: AccountApi_confirmOtp
       parameters: []
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPConfirmDTO'
       responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OTPConfirmResponseDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -269,13 +291,21 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
+      summary: Confirm OTP setup.
       tags:
         - accounts
   /accounts/otp/status:
     get:
+      description: Get OTP status for current user.
       operationId: AccountApi_getOtpStatus
       parameters: []
       responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OTPStatusResponseDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -288,13 +318,21 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
+      summary: Get OTP status.
       tags:
         - accounts
   /accounts/otp/deactivate:
     post:
+      description: Deactivate 2FA.
       operationId: AccountApi_deactivateOtp
       parameters: []
       responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponseDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -307,6 +345,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
+      summary: Deactivate 2FA.
       tags:
         - accounts
   /analytics/search/policies:
@@ -19306,6 +19345,93 @@ components:
         - balance
         - unit
         - user
+    OTPConfigDTO:
+      type: object
+      properties:
+        algo:
+          type: string
+          example: sha1
+        digits:
+          type: number
+          example: 111
+        period:
+          type: number
+          example: 111
+        secretSize:
+          type: number
+          example: 111
+      required:
+        - algo
+        - digits
+        - period
+        - secretSize
+    GenerateOPTResponseDTO:
+      type: object
+      properties:
+        issuer:
+          type: string
+          example: OS Guardian
+        user:
+          type: string
+          example: StandardRegistry
+        secret:
+          type: string
+          example: AAA0AA0A0A00A000
+        url:
+          type: string
+          example: >-
+            otpauth://totp/OS%20Guardian:StandardRegistry?issuer=OS+Guardian&period=30&secret=XXX0XX0X0X00X000
+        config:
+          $ref: '#/components/schemas/OTPConfigDTO'
+      required:
+        - issuer
+        - user
+        - secret
+        - url
+        - config
+    OTPConfirmDTO:
+      type: object
+      properties:
+        token:
+          type: string
+          example: '111111'
+      required:
+        - token
+    OTPConfirmResponseDTO:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        backupCodes:
+          example:
+            - '000000'
+            - '111111'
+            - '222222'
+            - '333333'
+            - '444444'
+            - '555555'
+            - '666666'
+            - '777777'
+            - '888888'
+            - '999999'
+          type: array
+          items:
+            type: string
+      required:
+        - success
+        - backupCodes
+    OTPStatusResponseDTO:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          example: true
+      required:
+        - enabled
+    EmptyResponseDTO:
+      type: object
+      properties: {}
     FilterSearchPoliciesDTO:
       type: object
       properties:
