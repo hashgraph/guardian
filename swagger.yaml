@@ -1043,6 +1043,24 @@ paths:
               Filter:
                 value:
                   policyId: 69aeb71ef8c5b278e3bab4e5
+              GlobalWithFilters:
+                value:
+                  threshold: 0
+                  type: Global
+                  owner: >-
+                    did:hedera:testnet:6RM7qg4qcK68ciX3DtSMXYU7jVuvf9qvVL4ciQmTX2j8_0.0.4230990
+                  minTokensCount: 5
+                  minVcCount: 13
+                  minVpCount: 1
+                  toolMessageIds:
+                    - '1741365085.279118931'
+              LocalWithPolicyAndTool:
+                value:
+                  threshold: 0
+                  policyId: 69b9719c3ac44dc8f6b5096a
+                  type: Local
+                  toolMessageIds:
+                    - '1726593517.484578000'
       responses:
         '200':
           description: Successful operation.
@@ -1050,41 +1068,158 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SearchPoliciesDTO'
-              example:
-                target:
-                  type: Local
-                  id: f3b2a9c1e4d5678901234567
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  name: Policy name
-                  description: Policy description
-                  version: 1.0.0
-                  status: string
-                  owner: string
-                  tags:
-                    - {}
-                  vcCount: 0
-                  vpCount: 0
-                  tokensCount: 0
-                  rate: 0
-                result:
-                  - type: Local
-                    id: f3b2a9c1e4d5678901234567
-                    topicId: f3b2a9c1e4d5678901234567
-                    messageId: f3b2a9c1e4d5678901234567
-                    uuid: f3b2a9c1e4d5678901234567
-                    name: Policy name
-                    description: Policy description
-                    version: 1.0.0
-                    status: string
-                    owner: string
-                    tags:
-                      - {}
-                    vcCount: 0
-                    vpCount: 0
-                    tokensCount: 0
-                    rate: 0
+              examples:
+                WithPolicyId:
+                  summary: Response for request with policyId
+                  value:
+                    target:
+                      type: Local
+                      id: 69b7cd37a48bb15eb7afb308
+                      topicId: 0.0.8245828
+                      messageId: '1773653426.428090343'
+                      uuid: 9d948508-4cc4-49f3-9c1e-c9fb9976c602
+                      name: Remote Work GHG Policy
+                      description: Remote_Work_GHG_Policy
+                      version: '1'
+                      status: PUBLISH
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                      vcCount: 1
+                      vpCount: 0
+                      tokensCount: 0
+                      rate: 100
+                      tags: []
+                    result:
+                      - type: Local
+                        id: 69b7da996d2f71c7a55b1fa3
+                        topicId: 0.0.8246509
+                        messageId: '1773662571.607239000'
+                        uuid: df23e461-c3ba-48d5-9bf6-db1f96a2f2b7
+                        name: CDM AMS-III.AR Policy
+                        description: >-
+                          Substituting fossil fuel-based lighting with LED/CFL
+                          lighting systems
+                        version: '1'
+                        status: PUBLISH
+                        owner: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                        vcCount: 1
+                        vpCount: 0
+                        tokensCount: 0
+                        rate: 9
+                        tags: []
+                      - type: Local
+                        id: 69b9727c3ac44dc8f6b50a8b
+                        topicId: 0.0.8264658
+                        messageId: '1773763808.323660342'
+                        uuid: e8e70f1c-fc6f-48cd-a0f1-6de39f6efb02
+                        name: CDM AMS-II.G Policy
+                        description: >-
+                          Energy efficiency measures in thermal applications of
+                          non-renewable biomass
+                        version: '1'
+                        status: PUBLISH
+                        owner: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                        vcCount: 1
+                        vpCount: 0
+                        tokensCount: 0
+                        rate: 9
+                        tags: []
+                      - type: Local
+                        id: 69b9719c3ac44dc8f6b5096a
+                        topicId: 0.0.8264592
+                        messageId: '1773761007.292762801'
+                        uuid: a57b4e28-2b81-4d43-83a6-8c85d7983b0f
+                        name: CDM AMS-III.BB
+                        description: CDM AMS-III.BB. policy
+                        version: '1'
+                        status: PUBLISH
+                        owner: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                        vcCount: 1
+                        vpCount: 0
+                        tokensCount: 0
+                        rate: 8
+                        tags: []
+                GlobalWithFilters:
+                  summary: Global search response with filters
+                  value:
+                    target: null
+                    result:
+                      - type: Global
+                        topicId: 0.0.4230993
+                        messageId: '1713278598.610141122'
+                        uuid: c4db13c6-7c04-490a-881a-e41cfdb435d0
+                        name: CDM AMS-III.AR Policy
+                        description: >-
+                          Substituting fossil fuel-based lighting with LED/CFL
+                          lighting systems
+                        version: '1'
+                        status: PUBLISH
+                        owner: >-
+                          did:hedera:testnet:6RM7qg4qcK68ciX3DtSMXYU7jVuvf9qvVL4ciQmTX2j8_0.0.4230990
+                        vcCount: 22
+                        vpCount: 4
+                        tokensCount: 6030
+                        tags: []
+                LocalWithPolicyAndTool:
+                  summary: Local response with target and tools filter
+                  value:
+                    target:
+                      type: Local
+                      id: 69b9719c3ac44dc8f6b5096a
+                      topicId: 0.0.8264592
+                      messageId: '1773761007.292762801'
+                      uuid: a57b4e28-2b81-4d43-83a6-8c85d7983b0f
+                      name: CDM AMS-III.BB
+                      description: CDM AMS-III.BB. policy
+                      version: '1'
+                      status: PUBLISH
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                      vcCount: 1
+                      vpCount: 0
+                      tokensCount: 0
+                      rate: 100
+                      tags: []
+                    result:
+                      - type: Local
+                        id: 69b7da996d2f71c7a55b1fa3
+                        topicId: 0.0.8246509
+                        messageId: '1773662571.607239000'
+                        uuid: df23e461-c3ba-48d5-9bf6-db1f96a2f2b7
+                        name: CDM AMS-III.AR Policy
+                        description: >-
+                          Substituting fossil fuel-based lighting with LED/CFL
+                          lighting systems
+                        version: '1'
+                        status: PUBLISH
+                        owner: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                        vcCount: 1
+                        vpCount: 0
+                        tokensCount: 0
+                        rate: 63
+                        tags: []
+                      - type: Local
+                        id: 69b9727c3ac44dc8f6b50a8b
+                        topicId: 0.0.8264658
+                        messageId: '1773763808.323660342'
+                        uuid: e8e70f1c-fc6f-48cd-a0f1-6de39f6efb02
+                        name: CDM AMS-II.G Policy
+                        description: >-
+                          Energy efficiency measures in thermal applications of
+                          non-renewable biomass
+                        version: '1'
+                        status: PUBLISH
+                        owner: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                        vcCount: 1
+                        vpCount: 0
+                        tokensCount: 0
+                        rate: 63
+                        tags: []
         '401':
           description: Unauthorized request.
           content:
@@ -1111,7 +1246,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -1133,24 +1268,7 @@ paths:
             schema:
               $ref: '#/components/schemas/FilterPoliciesDTO'
             examples:
-              Filter1:
-                value:
-                  policyId1: 69aeb71ef8c5b278e3bab4e5
-                  policyId2: 69aeb71ef8c5b278e3bab4e5
-                  eventsLvl: '0'
-                  propLvl: '0'
-                  childrenLvl: '0'
-                  idLvl: '0'
-              Filter2:
-                value:
-                  policyIds:
-                    - 69aeb71ef8c5b278e3bab4e5
-                    - 69aeb71ef8c5b278e3bab4e5
-                  eventsLvl: '0'
-                  propLvl: '0'
-                  childrenLvl: '0'
-                  idLvl: '0'
-              Filter3:
+              MixedSources:
                 value:
                   policies:
                     - type: id
@@ -1161,7 +1279,24 @@ paths:
                       value:
                         id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
                         name: File Name
-                        value: base64...
+                        value: base65...
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
+              DatabaseOnly:
+                value:
+                  policyIds:
+                    - 69aeb71ef8c5b278e3bab4e5
+                    - 69b8115f3dc0fa022156fb89
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
+              Legacy:
+                value:
+                  policyId1: 69aeb71ef8c5b278e3bab4e5
+                  policyId2: 69b8115f3dc0fa022156fb89
                   eventsLvl: '0'
                   propLvl: '0'
                   childrenLvl: '0'
@@ -1172,16 +1307,61 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ComparePoliciesDTO'
-              example:
-                blocks: {}
-                groups: {}
-                left: {}
-                right: {}
-                roles: {}
-                tokens: {}
-                topics: {}
-                total: {}
+                oneOf:
+                  - $ref: '#/components/schemas/ComparePoliciesDTO'
+                  - $ref: '#/components/schemas/ComparePoliciesMultiDTO'
+              examples:
+                SingleCompare:
+                  summary: Compare two policies
+                  value:
+                    left: {}
+                    right: {}
+                    total: 24
+                    blocks:
+                      columns: []
+                      report: []
+                    roles:
+                      columns: []
+                      report: []
+                    groups:
+                      columns: []
+                      report: []
+                    topics:
+                      columns: []
+                      report: []
+                    tokens:
+                      columns: []
+                      report: []
+                    tools:
+                      columns: []
+                      report: []
+                MultiCompare:
+                  summary: Compare one policy with many
+                  value:
+                    size: 3
+                    left: {}
+                    rights: []
+                    totals:
+                      - 60
+                      - 99
+                    blocks:
+                      columns: []
+                      report: []
+                    roles:
+                      columns: []
+                      report: []
+                    groups:
+                      columns: []
+                      report: []
+                    topics:
+                      columns: []
+                      report: []
+                    tokens:
+                      columns: []
+                      report: []
+                    tools:
+                      columns: []
+                      report: []
         '401':
           description: Unauthorized request.
           content:
@@ -1208,7 +1388,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -1231,10 +1411,18 @@ paths:
             type: string
       requestBody:
         required: true
+        description: Filters.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FilterPoliciesDTO'
+              $ref: '#/components/schemas/CompareOriginalPolicyFilterDTO'
+            examples:
+              OriginalPolicyFilter:
+                value:
+                  eventsLvl: '1'
+                  propLvl: '1'
+                  childrenLvl: '0'
+                  idLvl: '0'
       responses:
         '200':
           description: Successful operation.
@@ -1243,14 +1431,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/ComparePoliciesDTO'
               example:
-                blocks: {}
-                groups: {}
                 left: {}
                 right: {}
-                roles: {}
-                tokens: {}
-                topics: {}
-                total: {}
+                total: 24
+                blocks:
+                  columns: []
+                  report: []
+                roles:
+                  columns: []
+                  report: []
+                groups:
+                  columns: []
+                  report: []
+                topics:
+                  columns: []
+                  report: []
+                tokens:
+                  columns: []
+                  report: []
+                tools:
+                  columns: []
+                  report: []
         '401':
           description: Unauthorized request.
           content:
@@ -1277,7 +1478,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -1301,11 +1502,12 @@ paths:
             examples:
               Filter:
                 value:
-                  moduleId1: 69aeb71ef8c5b278e3bab4e5
-                  moduleId2: 69aeb71ef8c5b278e3bab4e5
-                  propLvl: '0'
-                  childrenLvl: '0'
+                  eventsLvl: '2'
+                  propLvl: '2'
+                  childrenLvl: '2'
                   idLvl: '0'
+                  moduleId1: 69baa4cf63637d350db5b59c
+                  moduleId2: 69baa4b563637d350db5b594
       responses:
         '200':
           description: Successful operation.
@@ -1314,13 +1516,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompareModulesDTO'
               example:
-                blocks: {}
-                left: {}
-                right: {}
-                inputEvents: {}
-                outputEvents: {}
-                variables: {}
-                total: {}
+                left:
+                  id: 69baa4cf63637d350db5b59c
+                  name: Module_1
+                  description: Description
+                right:
+                  id: 69baa4b563637d350db5b594
+                  name: Module_2
+                  description: ''
+                total: 22
+                blocks:
+                  columns: []
+                  report: []
+                inputEvents:
+                  columns: []
+                  report: []
+                outputEvents:
+                  columns: []
+                  report: []
+                variables:
+                  columns: []
+                  report: []
         '401':
           description: Unauthorized request.
           content:
@@ -1355,7 +1571,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -1375,12 +1591,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FilterSchemasDTO'
+              oneOf:
+                - $ref: '#/components/schemas/CompareSchemasByIdsRequestDTO'
+                - $ref: '#/components/schemas/CompareSchemasByListRequestDTO'
             examples:
-              Filter:
+              BySchemaIds:
                 value:
                   schemaId1: 69aeb71ef8c5b278e3bab4e5
-                  schemaId2: 69aeb71ef8c5b278e3bab4e5
+                  schemaId2: 69b8115f3dc0fa022156fb89
+                  idLvl: '0'
+              BySchemaList:
+                value:
+                  schemas:
+                    - type: id
+                      value: 69aeb71ef8c5b278e3bab4e5
+                    - type: id
+                      value: 69b8115f3dc0fa022156fb89
                   idLvl: '0'
       responses:
         '200':
@@ -1390,10 +1616,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompareSchemasDTO'
               example:
-                fields: {}
-                left: {}
-                right: {}
-                total: {}
+                left:
+                  id: 69aeb71ef8c5b278e3bab4e5
+                  name: Schema_1
+                  description: Description_1
+                  uuid: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                  topicId: 0.0.6046379
+                  version: 1.0.0
+                  iri: '#20e0202f-bbf6-441e-97e8-b2c9af9a3a4d&1.0.0'
+                  policy: CDM AMS-II.J Policy
+                right:
+                  id: 69b8115f3dc0fa022156fb89
+                  name: Schema_2
+                  description: Description_2
+                  uuid: 3ec235e9-fffc-42ff-b1c3-f3ba712b8a5b
+                  topicId: 0.0.8264622
+                  version: 1.0.0
+                  iri: '#e998578c-ef14-4c4b-96a8-3158c5a0f9ab&1.0.0'
+                  policy: VM0042 V2.1
+                total: 44
+                fields:
+                  columns: []
+                  report: []
         '401':
           description: Unauthorized request.
           content:
@@ -1420,7 +1664,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -1440,29 +1684,84 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FilterDocumentsDTO'
+              oneOf:
+                - $ref: '#/components/schemas/CompareDocumentsByIdsRequestDTO'
+                - $ref: '#/components/schemas/CompareDocumentsByListRequestDTO'
             examples:
-              Filter1:
+              ByDocumentIds:
                 value:
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
                   documentId1: 69aeb71ef8c5b278e3bab4e5
-                  documentId2: 69aeb71ef8c5b278e3bab4e5
-              Filter2:
+                  documentId2: 69b8115f3dc0fa022156fb89
+              ByDocumentList:
                 value:
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
                   documentIds:
                     - 69aeb71ef8c5b278e3bab4e5
-                    - 69aeb71ef8c5b278e3bab4e5
+                    - 69b8115f3dc0fa022156fb89
+                    - 69b7da996d2f71c7a55b1fa3
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CompareDocumentsDTO'
-              example:
-                documents: {}
-                left: {}
-                right: {}
-                total: {}
+                oneOf:
+                  - $ref: '#/components/schemas/CompareDocumentsDTO'
+                  - $ref: '#/components/schemas/CompareDocumentsMultiDTO'
+              examples:
+                SingleCompare:
+                  summary: Compare two documents
+                  value:
+                    left:
+                      id: 69aeb71ef8c5b278e3bab4e5
+                      type: VerifiableCredential
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                      policy: 69b9727c3ac44dc8f6b50a8b
+                    right:
+                      id: 69b8115f3dc0fa022156fb89
+                      type: VerifiableCredential
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                      policy: 69b7da996d2f71c7a55b1fa3
+                    total: 68
+                    documents:
+                      columns: []
+                      report: []
+                MultiCompare:
+                  summary: Compare one document with many
+                  value:
+                    size: 3
+                    left:
+                      id: 69aeb71ef8c5b278e3bab4e5
+                      type: VerifiableCredential
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                      policy: 69b9727c3ac44dc8f6b50a8b
+                    rights:
+                      - id: 69b8115f3dc0fa022156fb89
+                        type: VerifiableCredential
+                        owner: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                        policy: 69b7da996d2f71c7a55b1fa3
+                      - id: 69b7da996d2f71c7a55b1fa3
+                        type: VerifiableCredential
+                        owner: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                        policy: 69afeab013b23cf457db9720
+                    totals:
+                      - 68
+                      - 51
+                    documents:
+                      columns: []
+                      report: []
         '401':
           description: Unauthorized request.
           content:
@@ -1497,7 +1796,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -1517,32 +1816,102 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FilterToolsDTO'
+              oneOf:
+                - $ref: '#/components/schemas/CompareToolsByIdsRequestDTO'
+                - $ref: '#/components/schemas/CompareToolsByListRequestDTO'
             examples:
-              Filter1:
+              ByToolIds:
                 value:
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
                   toolId1: 69aeb71ef8c5b278e3bab4e5
-                  toolId2: 69aeb71ef8c5b278e3bab4e5
-              Filter2:
+                  toolId2: 69b8115f3dc0fa022156fb89
+              ByToolList:
                 value:
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
                   toolIds:
                     - 69aeb71ef8c5b278e3bab4e5
-                    - 69aeb71ef8c5b278e3bab4e5
+                    - 69b8115f3dc0fa022156fb89
+                    - 69b7da996d2f71c7a55b1fa3
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CompareToolsDTO'
-              example:
-                blocks: {}
-                left: {}
-                right: {}
-                inputEvents: {}
-                outputEvents: {}
-                variables: {}
-                total: {}
+                oneOf:
+                  - $ref: '#/components/schemas/CompareToolsDTO'
+                  - $ref: '#/components/schemas/CompareToolsMultiDTO'
+              examples:
+                SingleCompare:
+                  summary: Compare two tools
+                  value:
+                    left:
+                      id: 69b9727a3ac44dc8f6b50a44
+                      name: Tool 30
+                      description: ''
+                      hash: 4r7i6SXuDxDrk8dkwomzgkfFp8FqMuWSCsuWqZhhYLZ4
+                      messageId: '1707417996.173398196'
+                    right:
+                      id: 69b7da936d2f71c7a55b1e99
+                      name: Tool 21
+                      description: ''
+                      hash: 71ZWDSX2cUPsye4AuMUqXUhgk1XBDnpi4Ky1mtjYqYom
+                      messageId: '1706873385.455822873'
+                    total: 74
+                    blocks:
+                      columns: []
+                      report: []
+                    inputEvents:
+                      columns: []
+                      report: []
+                    outputEvents:
+                      columns: []
+                      report: []
+                    variables:
+                      columns: []
+                      report: []
+                MultiCompare:
+                  summary: Compare one tool with many
+                  value:
+                    size: 3
+                    left:
+                      id: 69b9727a3ac44dc8f6b50a44
+                      name: Tool 30
+                      description: ''
+                      hash: 4r7i6SXuDxDrk8dkwomzgkfFp8FqMuWSCsuWqZhhYLZ4
+                      messageId: '1707417996.173398196'
+                    rights:
+                      - id: 69b7da936d2f71c7a55b1e99
+                        name: Tool 21
+                        description: ''
+                        hash: 71ZWDSX2cUPsye4AuMUqXUhgk1XBDnpi4Ky1mtjYqYom
+                        messageId: '1706873385.455822873'
+                      - id: 69b7da8d6d2f71c7a55b1e67
+                        name: Tool 33
+                        description: ''
+                        hash: Ceo5z8VkMbYWAcgjhesqGXHzJ9Z6aEdEEGWA4Jq4XE2i
+                        messageId: '1726593517.484578000'
+                    totals:
+                      - 74
+                      - 52
+                    blocks:
+                      columns: []
+                      report: []
+                    inputEvents:
+                      columns: []
+                      report: []
+                    outputEvents:
+                      columns: []
+                      report: []
+                    variables:
+                      columns: []
+                      report: []
         '401':
           description: Unauthorized request.
           content:
@@ -1577,7 +1946,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -1609,7 +1978,7 @@ paths:
               Filter1:
                 value:
                   policyId1: 69aeb71ef8c5b278e3bab4e5
-                  policyId2: 69aeb71ef8c5b278e3bab4e5
+                  policyId2: 69b8115f3dc0fa022156fb89
                   eventsLvl: '0'
                   propLvl: '0'
                   childrenLvl: '0'
@@ -1618,7 +1987,7 @@ paths:
                 value:
                   policyIds:
                     - 69aeb71ef8c5b278e3bab4e5
-                    - 69aeb71ef8c5b278e3bab4e5
+                    - 69b8115f3dc0fa022156fb89
                   eventsLvl: '0'
                   propLvl: '0'
                   childrenLvl: '0'
@@ -1634,7 +2003,7 @@ paths:
                       value:
                         id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
                         name: File Name
-                        value: base64...
+                        value: base66...
                   eventsLvl: '0'
                   propLvl: '0'
                   childrenLvl: '0'
@@ -1672,7 +2041,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -1704,7 +2073,7 @@ paths:
               Filter:
                 value:
                   moduleId1: 69aeb71ef8c5b278e3bab4e5
-                  moduleId2: 69aeb71ef8c5b278e3bab4e5
+                  moduleId2: 69b8115f3dc0fa022156fb89
                   propLvl: '0'
                   childrenLvl: '0'
                   idLvl: '0'
@@ -1749,7 +2118,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -1781,7 +2150,7 @@ paths:
               Filter:
                 value:
                   schemaId1: 69aeb71ef8c5b278e3bab4e5
-                  schemaId2: 69aeb71ef8c5b278e3bab4e5
+                  schemaId2: 69b8115f3dc0fa022156fb89
                   idLvl: '0'
       responses:
         '200':
@@ -1816,7 +2185,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -1848,12 +2217,12 @@ paths:
               Filter1:
                 value:
                   documentId1: 69aeb71ef8c5b278e3bab4e5
-                  documentId2: 69aeb71ef8c5b278e3bab4e5
+                  documentId2: 69b8115f3dc0fa022156fb89
               Filter2:
                 value:
                   documentIds:
                     - 69aeb71ef8c5b278e3bab4e5
-                    - 69aeb71ef8c5b278e3bab4e5
+                    - 69b8115f3dc0fa022156fb89
       responses:
         '200':
           description: Successful operation.
@@ -1895,7 +2264,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -1927,12 +2296,12 @@ paths:
               Filter1:
                 value:
                   toolId1: 69aeb71ef8c5b278e3bab4e5
-                  toolId2: 69aeb71ef8c5b278e3bab4e5
+                  toolId2: 69b8115f3dc0fa022156fb89
               Filter2:
                 value:
                   toolIds:
                     - 69aeb71ef8c5b278e3bab4e5
-                    - 69aeb71ef8c5b278e3bab4e5
+                    - 69b8115f3dc0fa022156fb89
       responses:
         '200':
           description: Successful operation.
@@ -1974,7 +2343,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -2053,7 +2422,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -2098,7 +2467,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -36574,14 +36943,337 @@ components:
       type: object
       properties:
         target:
-          $ref: '#/components/schemas/SearchPolicyDTO'
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SearchPolicyDTO'
         result:
           type: array
           items:
             $ref: '#/components/schemas/SearchPolicyDTO'
       required:
-        - target
         - result
+    ComparePoliciesItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        name:
+          type: string
+          example: Test_Policy_2
+        description:
+          type: string
+          example: ''
+        instanceTopicId:
+          type: string
+          nullable: true
+          example: 0.0.8264622
+        version:
+          type: string
+          example: '1'
+        type:
+          type: string
+          example: id
+      required:
+        - id
+        - name
+        - description
+        - type
+    ComparePoliciesColumnDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: left_name
+        label:
+          type: string
+          example: Name
+        type:
+          type: string
+          example: string
+        display:
+          type: string
+          example: Rate
+      required:
+        - name
+        - label
+        - type
+    ComparePoliciesPropertyValueDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: onErrorAction
+        lvl:
+          type: number
+          example: 1
+        path:
+          type: string
+          example: onErrorAction
+        type:
+          type: string
+          example: property
+        value:
+          type: object
+          description: Arbitrary property value
+      required:
+        - name
+        - lvl
+        - path
+        - type
+        - value
+    ComparePoliciesBlockSideDTO:
+      type: object
+      properties:
+        index:
+          type: number
+          example: 1
+        blockType:
+          type: string
+          example: interfaceContainerBlock
+        tag:
+          type: string
+          example: Block_1
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesPropertyValueDTO'
+        events:
+          description: Block events payloads
+          type: array
+          items:
+            type: object
+      required:
+        - index
+        - blockType
+        - tag
+        - properties
+        - events
+    ComparePoliciesRateEntryDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          example: FULL
+        totalRate:
+          type: number
+          example: 100
+        items:
+          description: Pair of compared values, can include null
+          type: array
+          items:
+            type: object
+        name:
+          type: string
+          example: type
+        path:
+          type: string
+          example: uiMetaData.type
+        lvl:
+          type: number
+          example: 2
+      required:
+        - type
+        - totalRate
+        - items
+    ComparePoliciesBlocksReportRowDTO:
+      type: object
+      properties:
+        lvl:
+          type: number
+          example: 1
+        type:
+          type: string
+          example: PARTLY
+        block_type:
+          type: string
+          example: interfaceContainerBlock
+        left_index:
+          type: number
+          example: 1
+        left_type:
+          type: string
+          example: interfaceContainerBlock
+        left_tag:
+          type: string
+          example: Block_1
+        right_index:
+          type: number
+          example: 1
+        right_type:
+          type: string
+          example: interfaceContainerBlock
+        right_tag:
+          type: string
+          example: Block_1
+        index_rate:
+          type: string
+          example: 100%
+        permission_rate:
+          type: string
+          example: 100%
+        prop_rate:
+          type: string
+          example: 83%
+        event_rate:
+          type: string
+          example: 70%
+        artifacts_rate:
+          type: string
+          example: 100%
+        total_rate:
+          type: string
+          example: 80%
+        left:
+          $ref: '#/components/schemas/ComparePoliciesBlockSideDTO'
+        right:
+          $ref: '#/components/schemas/ComparePoliciesBlockSideDTO'
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesRateEntryDTO'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesRateEntryDTO'
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesRateEntryDTO'
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesRateEntryDTO'
+        size:
+          type: number
+          description: Present in merged multi-compare report rows
+    ComparePoliciesBlocksSectionDTO:
+      type: object
+      properties:
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesColumnDTO'
+        report:
+          description: Rows may include additional dynamic fields in multi-compare mode
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesBlocksReportRowDTO'
+      required:
+        - columns
+        - report
+    ComparePoliciesPropsReportRowDTO:
+      type: object
+      properties:
+        left_name:
+          type: string
+          example: Owner
+        right_name:
+          type: string
+          example: Owner
+        total_rate:
+          type: string
+          example: 100%
+        left:
+          type: object
+        right:
+          type: object
+        type:
+          type: string
+          example: FULL
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesRateEntryDTO'
+        size:
+          type: number
+          description: Present in merged multi-compare report rows
+    ComparePoliciesPropsSectionDTO:
+      type: object
+      properties:
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesColumnDTO'
+        report:
+          description: Rows may include additional dynamic fields in multi-compare mode
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesPropsReportRowDTO'
+      required:
+        - columns
+        - report
+    ComparePoliciesDTO:
+      type: object
+      properties:
+        left:
+          $ref: '#/components/schemas/ComparePoliciesItemDTO'
+        right:
+          $ref: '#/components/schemas/ComparePoliciesItemDTO'
+        total:
+          type: number
+          example: 66
+        blocks:
+          $ref: '#/components/schemas/ComparePoliciesBlocksSectionDTO'
+        roles:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+        groups:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+        topics:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+        tokens:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+        tools:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+      required:
+        - left
+        - right
+        - total
+        - blocks
+        - roles
+        - groups
+        - topics
+        - tokens
+        - tools
+    ComparePoliciesMultiDTO:
+      type: object
+      properties:
+        size:
+          type: number
+          example: 3
+        left:
+          $ref: '#/components/schemas/ComparePoliciesItemDTO'
+        rights:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesItemDTO'
+        totals:
+          type: array
+          items:
+            type: object
+        blocks:
+          $ref: '#/components/schemas/ComparePoliciesBlocksSectionDTO'
+        roles:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+        groups:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+        topics:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+        tokens:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+        tools:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+      required:
+        - size
+        - left
+        - rights
+        - totals
+        - blocks
+        - roles
+        - groups
+        - topics
+        - tokens
+        - tools
     CompareFileDTO:
       type: object
       properties:
@@ -36630,47 +37322,63 @@ components:
         idLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
             - type: number
-          enum:
-            - 0
-            - 1
+              enum:
+                - 0
+                - 1
           example: 0
         eventsLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
             - type: number
-          enum:
-            - 0
-            - 1
+              enum:
+                - 0
+                - 1
+                - 2
           example: 0
         propLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
             - type: number
-          enum:
-            - 0
-            - 1
-            - 2
+              enum:
+                - 0
+                - 1
+                - 2
           example: 0
         childrenLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
             - type: number
-          enum:
-            - 0
-            - 1
-            - 2
+              enum:
+                - 0
+                - 1
+                - 2
           example: 0
         policyId1:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
         policyId2:
           type: string
-          example: 69aeb71ef8c5b278e3bab4e5
+          example: 69b8115f3dc0fa022156fb89
         policyIds:
           example:
             - 69aeb71ef8c5b278e3bab4e5
-            - 69aeb71ef8c5b278e3bab4e5
+            - 69b8115f3dc0fa022156fb89
           type: array
           items:
             type: string
@@ -36688,105 +37396,200 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FilterPolicyDTO'
-    ComparePoliciesDTO:
+    CompareOriginalPolicyFilterDTO:
       type: object
       properties:
-        blocks:
-          type: object
-        groups:
-          type: object
-        left:
-          type: object
-        right:
-          type: object
-        roles:
-          type: object
-        tokens:
-          type: object
-        topics:
-          type: object
-        total:
-          type: object
-      required:
-        - blocks
-        - groups
-        - left
-        - right
-        - roles
-        - tokens
-        - topics
-        - total
+        idLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+            - type: number
+              enum:
+                - 0
+                - 1
+          example: 0
+        eventsLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        propLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        childrenLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
     FilterModulesDTO:
       type: object
       properties:
         idLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
             - type: number
-          enum:
-            - 0
-            - 1
+              enum:
+                - 0
+                - 1
           example: 0
         eventsLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
             - type: number
-          enum:
-            - 0
-            - 1
+              enum:
+                - 0
+                - 1
+                - 2
           example: 0
         propLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
             - type: number
-          enum:
-            - 0
-            - 1
-            - 2
+              enum:
+                - 0
+                - 1
+                - 2
           example: 0
         childrenLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
             - type: number
-          enum:
-            - 0
-            - 1
-            - 2
+              enum:
+                - 0
+                - 1
+                - 2
           example: 0
         moduleId1:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
         moduleId2:
           type: string
-          example: 69aeb71ef8c5b278e3bab4e5
+          example: 69b8115f3dc0fa022156fb89
       required:
         - moduleId1
         - moduleId2
+    CompareModulesItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        name:
+          type: string
+          example: Module_1
+        description:
+          type: string
+          example: Some specific module for test purposes
+      required:
+        - id
+        - name
+        - description
+    CompareModulesSectionDTO:
+      type: object
+      properties:
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesColumnDTO'
+        report:
+          type: array
+          items:
+            type: object
+      required:
+        - columns
+        - report
     CompareModulesDTO:
       type: object
       properties:
-        blocks:
-          type: object
         left:
-          type: object
+          $ref: '#/components/schemas/CompareModulesItemDTO'
         right:
-          type: object
-        inputEvents:
-          type: object
-        outputEvents:
-          type: object
-        variables:
-          type: object
+          $ref: '#/components/schemas/CompareModulesItemDTO'
         total:
-          type: object
+          type: number
+          example: 22
+        blocks:
+          $ref: '#/components/schemas/CompareModulesSectionDTO'
+        inputEvents:
+          $ref: '#/components/schemas/CompareModulesSectionDTO'
+        outputEvents:
+          $ref: '#/components/schemas/CompareModulesSectionDTO'
+        variables:
+          $ref: '#/components/schemas/CompareModulesSectionDTO'
       required:
-        - blocks
         - left
         - right
+        - total
+        - blocks
         - inputEvents
         - outputEvents
         - variables
-        - total
+    CompareSchemasByIdsRequestDTO:
+      type: object
+      properties:
+        schemaId1:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        schemaId2:
+          type: string
+          example: 69b8115f3dc0fa022156fb89
+        idLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+            - type: number
+              enum:
+                - 0
+                - 1
+          example: '0'
+      required:
+        - schemaId1
+        - schemaId2
     FilterSchemaDTO:
       type: object
       properties:
@@ -36812,6 +37615,505 @@ components:
       required:
         - type
         - value
+    CompareSchemasByListRequestDTO:
+      type: object
+      properties:
+        schemas:
+          example:
+            - type: id
+              value: 69aeb71ef8c5b278e3bab4e5
+            - type: id
+              value: 69b8115f3dc0fa022156fb89
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterSchemaDTO'
+        idLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+            - type: number
+              enum:
+                - 0
+                - 1
+          example: '0'
+      required:
+        - schemas
+    CompareSchemasItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        name:
+          type: string
+          example: Schema name
+        description:
+          type: string
+          example: Schema description
+        uuid:
+          type: string
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+        topicId:
+          type: string
+          nullable: true
+          example: 0.0.8264622
+        version:
+          type: string
+          example: '1'
+        iri:
+          type: string
+          example: schema:iri
+        policy:
+          type: object
+      required:
+        - id
+        - name
+        - description
+        - uuid
+        - version
+        - iri
+    CompareSchemasSectionDTO:
+      type: object
+      properties:
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesColumnDTO'
+        report:
+          type: array
+          items:
+            type: object
+      required:
+        - columns
+        - report
+    CompareSchemasDTO:
+      type: object
+      properties:
+        left:
+          $ref: '#/components/schemas/CompareSchemasItemDTO'
+        right:
+          $ref: '#/components/schemas/CompareSchemasItemDTO'
+        total:
+          type: number
+          example: 44
+        fields:
+          $ref: '#/components/schemas/CompareSchemasSectionDTO'
+      required:
+        - left
+        - right
+        - total
+        - fields
+    CompareDocumentsByIdsRequestDTO:
+      type: object
+      properties:
+        idLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+            - type: number
+              enum:
+                - 0
+                - 1
+          example: 0
+        eventsLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        propLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        childrenLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        documentId1:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        documentId2:
+          type: string
+          example: 69b8115f3dc0fa022156fb89
+      required:
+        - documentId1
+        - documentId2
+    CompareDocumentsByListRequestDTO:
+      type: object
+      properties:
+        idLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+            - type: number
+              enum:
+                - 0
+                - 1
+          example: 0
+        eventsLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        propLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        childrenLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        documentIds:
+          example:
+            - 69aeb71ef8c5b278e3bab4e5
+            - 69b8115f3dc0fa022156fb89
+            - 69b7da996d2f71c7a55b1fa3
+          type: array
+          items:
+            type: string
+      required:
+        - documentIds
+    CompareDocumentItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        type:
+          type: string
+          example: VerifiableCredential
+        owner:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        policy:
+          type: string
+          nullable: true
+          example: Policy A
+      required:
+        - id
+        - type
+        - owner
+    CompareDocumentsSectionDTO:
+      type: object
+      properties:
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparePoliciesColumnDTO'
+        report:
+          type: array
+          items:
+            type: object
+      required:
+        - columns
+        - report
+    CompareDocumentsDTO:
+      type: object
+      properties:
+        left:
+          $ref: '#/components/schemas/CompareDocumentItemDTO'
+        right:
+          $ref: '#/components/schemas/CompareDocumentItemDTO'
+        total:
+          type: number
+          example: 68
+        documents:
+          $ref: '#/components/schemas/CompareDocumentsSectionDTO'
+      required:
+        - left
+        - right
+        - total
+        - documents
+    CompareDocumentsMultiDTO:
+      type: object
+      properties:
+        size:
+          type: number
+          example: 3
+        left:
+          $ref: '#/components/schemas/CompareDocumentItemDTO'
+        rights:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompareDocumentItemDTO'
+        totals:
+          type: array
+          items:
+            type: number
+        documents:
+          $ref: '#/components/schemas/CompareDocumentsSectionDTO'
+      required:
+        - size
+        - left
+        - rights
+        - totals
+        - documents
+    CompareToolsByIdsRequestDTO:
+      type: object
+      properties:
+        idLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+            - type: number
+              enum:
+                - 0
+                - 1
+          example: 0
+        eventsLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        propLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        childrenLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        toolId1:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        toolId2:
+          type: string
+          example: 69b8115f3dc0fa022156fb89
+      required:
+        - toolId1
+        - toolId2
+    CompareToolsByListRequestDTO:
+      type: object
+      properties:
+        idLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+            - type: number
+              enum:
+                - 0
+                - 1
+          example: 0
+        eventsLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        propLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        childrenLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        toolIds:
+          example:
+            - 69aeb71ef8c5b278e3bab4e5
+            - 69b8115f3dc0fa022156fb89
+            - 69b7da996d2f71c7a55b1fa3
+          type: array
+          items:
+            type: string
+      required:
+        - toolIds
+    CompareToolItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        name:
+          type: string
+          example: Tool 30
+        description:
+          type: string
+          nullable: true
+          example: Description
+        hash:
+          type: string
+          nullable: true
+          example: 4r7i6SXuDxDrk8dkwomzgkfFp8FqMuWSCsuWqZhhYLZ4
+        messageId:
+          type: string
+          nullable: true
+          example: '1773670900.819264517'
+      required:
+        - id
+        - name
+    CompareToolsDTO:
+      type: object
+      properties:
+        left:
+          $ref: '#/components/schemas/CompareToolItemDTO'
+        right:
+          $ref: '#/components/schemas/CompareToolItemDTO'
+        total:
+          type: number
+          example: 74
+        blocks:
+          $ref: '#/components/schemas/ComparePoliciesBlocksSectionDTO'
+        inputEvents:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+        outputEvents:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+        variables:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+      required:
+        - left
+        - right
+        - total
+        - blocks
+        - inputEvents
+        - outputEvents
+        - variables
+    CompareToolsMultiDTO:
+      type: object
+      properties:
+        size:
+          type: number
+          example: 3
+        left:
+          $ref: '#/components/schemas/CompareToolItemDTO'
+        rights:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompareToolItemDTO'
+        totals:
+          type: array
+          items:
+            type: number
+        blocks:
+          $ref: '#/components/schemas/ComparePoliciesBlocksSectionDTO'
+        inputEvents:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+        outputEvents:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+        variables:
+          $ref: '#/components/schemas/ComparePoliciesPropsSectionDTO'
+      required:
+        - size
+        - left
+        - rights
+        - totals
+        - blocks
+        - inputEvents
+        - outputEvents
+        - variables
     FilterSchemasDTO:
       type: object
       properties:
@@ -36820,7 +38122,7 @@ components:
           example: 69aeb71ef8c5b278e3bab4e5
         schemaId2:
           type: string
-          example: 69aeb71ef8c5b278e3bab4e5
+          example: 69b8115f3dc0fa022156fb89
         schemas:
           example:
             - type: id
@@ -36840,168 +38142,146 @@ components:
         idLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
             - type: number
-          enum:
-            - 0
-            - 1
+              enum:
+                - 0
+                - 1
           example: 0
-    CompareSchemasDTO:
-      type: object
-      properties:
-        fields:
-          type: object
-        left:
-          type: object
-        right:
-          type: object
-        total:
-          type: object
-      required:
-        - fields
-        - left
-        - right
-        - total
     FilterDocumentsDTO:
       type: object
       properties:
         idLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
             - type: number
-          enum:
-            - 0
-            - 1
+              enum:
+                - 0
+                - 1
           example: 0
         eventsLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
             - type: number
-          enum:
-            - 0
-            - 1
+              enum:
+                - 0
+                - 1
+                - 2
           example: 0
         propLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
             - type: number
-          enum:
-            - 0
-            - 1
-            - 2
+              enum:
+                - 0
+                - 1
+                - 2
           example: 0
         childrenLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
             - type: number
-          enum:
-            - 0
-            - 1
-            - 2
+              enum:
+                - 0
+                - 1
+                - 2
           example: 0
         documentId1:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
         documentId2:
           type: string
-          example: 69aeb71ef8c5b278e3bab4e5
+          example: 69b8115f3dc0fa022156fb89
         documentIds:
           example:
             - 69aeb71ef8c5b278e3bab4e5
-            - 69aeb71ef8c5b278e3bab4e5
+            - 69b8115f3dc0fa022156fb89
           type: array
           items:
             type: string
-    CompareDocumentsDTO:
-      type: object
-      properties:
-        documents:
-          type: object
-        left:
-          type: object
-        right:
-          type: object
-        total:
-          type: object
-      required:
-        - documents
-        - left
-        - right
-        - total
     FilterToolsDTO:
       type: object
       properties:
         idLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
             - type: number
-          enum:
-            - 0
-            - 1
+              enum:
+                - 0
+                - 1
           example: 0
         eventsLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
             - type: number
-          enum:
-            - 0
-            - 1
+              enum:
+                - 0
+                - 1
+                - 2
           example: 0
         propLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
             - type: number
-          enum:
-            - 0
-            - 1
-            - 2
+              enum:
+                - 0
+                - 1
+                - 2
           example: 0
         childrenLvl:
           oneOf:
             - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
             - type: number
-          enum:
-            - 0
-            - 1
-            - 2
+              enum:
+                - 0
+                - 1
+                - 2
           example: 0
         toolId1:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
         toolId2:
           type: string
-          example: 69aeb71ef8c5b278e3bab4e5
+          example: 69b8115f3dc0fa022156fb89
         toolIds:
           example:
             - 69aeb71ef8c5b278e3bab4e5
-            - 69aeb71ef8c5b278e3bab4e5
+            - 69b8115f3dc0fa022156fb89
           type: array
           items:
             type: string
-    CompareToolsDTO:
-      type: object
-      properties:
-        blocks:
-          type: object
-        left:
-          type: object
-        right:
-          type: object
-        inputEvents:
-          type: object
-        outputEvents:
-          type: object
-        variables:
-          type: object
-        total:
-          type: object
-      required:
-        - blocks
-        - left
-        - right
-        - inputEvents
-        - outputEvents
-        - variables
-        - total
     FilterSearchBlocksDTO:
       type: object
       properties:
