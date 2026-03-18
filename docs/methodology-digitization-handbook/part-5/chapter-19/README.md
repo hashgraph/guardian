@@ -67,7 +67,7 @@ There are 4 types of items available in order to compose a formula:
     - `Link (Output)` which indicates the field in the document schema where the text should be shown.
     - `Relationships` field where you can select all the variables, constants and formulas that are related.
 
-Using the combination of the above 4 items, a Formula Linked Definitions can be generated which will explain the code/calculations that happen in the CustomLogicBlock. The best approach is to go from bottom to top i.e. create all the small formulas and variables/constants it is related to and then work you way up to create the final formula that represents the Main Formula of the methodology. A formula item can be used inside another formula which will create a heirarchy for the end users to track how each component is being calculated.
+Using the combination of the above 4 items, a Formula Linked Definitions can be generated which will explain the code/calculations that happen in the CustomLogicBlock. The best approach is to go from bottom to top i.e. create all the small formulas and variables/constants it is related to and then work you way up to create the final formula that represents the Main Formula of the methodology. A formula item can be used inside another formula which will create a hierarchy for the end users to track how each component is being calculated.
 
 Once you have published the policy with the FLDs set up, 'fx' button will appear next to the fields for which the formulas were added in the FLDs and once clicked on the button you will hierarchy of the formulas and the variables involved and how it led to the calculated value. (Image attached in `Viewing Formula Linked Definitions` section)
 

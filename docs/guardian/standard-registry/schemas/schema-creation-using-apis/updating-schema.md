@@ -17,7 +17,7 @@ Updates the schema matching the id in the request body. Only users with the Stan
 | <mark style="color:red;">\*</mark> | schema | Object that contains a valid schema including the id of the schema that is to be update |
 
 {% tabs %}
-{% tab title="200: OK Succesful Operation" %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     content:

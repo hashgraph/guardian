@@ -15,7 +15,7 @@ Schema ID
 Object that contains a valid schema including the id of the schema that is to be update
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Succesful Operation" %}
+{% swagger-response status="200: OK" description="Successful Operation" %}
 ```javascript
 {
     content:

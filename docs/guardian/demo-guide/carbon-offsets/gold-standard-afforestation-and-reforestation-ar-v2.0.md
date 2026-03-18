@@ -12,7 +12,7 @@ description: Policy developed by Envision Blockchain
 
 ## **Policy Description**:
 
-The Gold Standard Afforestation and Reforestation (AR) methodology is a set of guidelines and procedures developed by The Gold Standard Foundation for quantifying and verifying greenhouse gas (GHG) emissions reductions resulting from afforestation and reforestation projects. The methodology provides a standardized framework for calculating the carbon sequestration potential of these types of projects, taking into account removals from both aboveground and belowground tree biomass, and also quantifies emissions from biomass burning for site preparation and the use of nitrogen fertilizer.
+The Gold Standard Afforestation and Reforestation (AR) methodology is a set of guidelines and procedures developed by The Gold Standard Foundation for quantifying and verifying greenhouse gas (GHG) emissions reductions resulting from afforestation and reforestation projects. The methodology provides a standardized framework for calculating the carbon sequestration potential of these types of projects, taking into account removals from both above ground and belowground tree biomass, and also quantifies emissions from biomass burning for site preparation and the use of nitrogen fertilizer.
 
 The AR methodology sets out requirements for project design, implementation, and monitoring. It outlines the steps necessary to establish a baseline for GHG emissions and carbon sequestration potential, and to assess the project's impact on local biodiversity. The methodology also includes provisions for addressing potential leakage and permanence risks, which can impact the long-term effectiveness of the project in sequestering carbon.
 

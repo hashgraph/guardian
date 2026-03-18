@@ -24,7 +24,7 @@ Here are the following steps to Integrate external policies as data sources:
 <figure><img src="../../../.gitbook/assets/image (16) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
-**Note:** Documents between the policies are synchronized automatically. Additionally, it can also be synched by clicking on sync button as shown below:
+**Note:** Documents between the policies are synchronized automatically. Additionally, it can also be synced by clicking on sync button as shown below:
 {% endhint %}
 
 <figure><img src="../../../.gitbook/assets/image (34) (1) (2).png" alt=""><figcaption></figcaption></figure>
