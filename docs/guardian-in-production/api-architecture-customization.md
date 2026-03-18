@@ -154,7 +154,7 @@ app.listen(port, () => {
 
 ```
 
-After that, we can apply a bunch of improvements such us middlewares or even packages to increase the security. In this case some packages are recommended:
+After that, we can apply a bunch of improvements such as middlewares or even packages to increase the security. In this case some packages are recommended:
 
 **Helmet**: Helmet is a middleware package that adds various HTTP headers to your responses to increase security. These headers can help to protect against various attacks, such as cross-site scripting (XSS), clickjacking, and cross-site request forgery (CSRF).
 
@@ -167,7 +167,7 @@ After that, we can apply a bunch of improvements such us middlewares or even pac
 ## 3. Dead letter/Retries
 
 \
-For some kinds of events due to their own criticality, it would be interesting to contain a recovery or a mechanism to rerun specific payloads, such as dead-letter resources to handle unsubscribed events or even to handle subscriptions that could not run properly. Many applications contain this kind of solution such us Google Pub/Sub, AWS SQS, and so on.
+For some kinds of events due to their own criticality, it would be interesting to contain a recovery or a mechanism to rerun specific payloads, such as dead-letter resources to handle unsubscribed events or even to handle subscriptions that could not run properly. Many applications contain this kind of solution such as Google Pub/Sub, AWS SQS, and so on.
 
 Recently we face a situation that leads some events in NATS to cause the TIMEOUT. In this situation, if we were in Production, we won’t be able to trigger these events again and all the messages would be lost.
 

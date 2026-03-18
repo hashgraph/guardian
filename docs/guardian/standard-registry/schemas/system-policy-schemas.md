@@ -55,6 +55,6 @@ To create module schema, we need to click on Create New button:
 
 ### Using schemas:
 
-Select module schema in “BaseSchema” fileld in module variables section
+Select module schema in “BaseSchema” field in module variables section
 
 <figure><img src="../../../.gitbook/assets/image (226).png" alt=""><figcaption></figcaption></figure>
