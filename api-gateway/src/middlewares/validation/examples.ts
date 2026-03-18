@@ -1,5 +1,7 @@
 export enum Examples {
     DB_ID = '69aeb71ef8c5b278e3bab4e5',
+    DB_ID_2 = '69b8115f3dc0fa022156fb89',
+    DB_ID_3 = '69b7da996d2f71c7a55b1fa3',
     MESSAGE_ID = '1773670900.819264517',
     UUID = '9db028d2-03ad-4d49-a178-cf4b67f8c147',
     ACCOUNT_ID = '0.0.6046379',
@@ -375,6 +377,393 @@ export const ObjectExamples = {
         userGroup: null,
         tests: [],
         id: '69b41005b23f3b6a77d125ed'
+    },
+
+    SEARCH_POLICIES_REQUEST_GLOBAL_WITH_FILTERS: {
+        threshold: 0,
+        type: 'Global',
+        owner: 'did:hedera:testnet:6RM7qg4qcK68ciX3DtSMXYU7jVuvf9qvVL4ciQmTX2j8_0.0.4230990',
+        minTokensCount: 5,
+        minVcCount: 13,
+        minVpCount: 1,
+        toolMessageIds: [
+            '1741365085.279118931'
+        ]
+    },
+
+    SEARCH_POLICIES_REQUEST_LOCAL_WITH_POLICY_AND_TOOL: {
+        threshold: 0,
+        policyId: '69b9719c3ac44dc8f6b5096a',
+        type: 'Local',
+        toolMessageIds: [
+            '1726593517.484578000'
+        ]
+    },
+
+    SEARCH_POLICIES_RESPONSE_WITH_POLICY_ID: {
+        target: {
+            type: 'Local',
+            id: '69b7cd37a48bb15eb7afb308',
+            topicId: '0.0.8245828',
+            messageId: '1773653426.428090343',
+            uuid: '9d948508-4cc4-49f3-9c1e-c9fb9976c602',
+            name: 'Remote Work GHG Policy',
+            description: 'Remote_Work_GHG_Policy',
+            version: '1',
+            status: 'PUBLISH',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+            vcCount: 1,
+            vpCount: 0,
+            tokensCount: 0,
+            rate: 100,
+            tags: []
+        },
+        result: [
+            {
+                type: 'Local',
+                id: '69b7da996d2f71c7a55b1fa3',
+                topicId: '0.0.8246509',
+                messageId: '1773662571.607239000',
+                uuid: 'df23e461-c3ba-48d5-9bf6-db1f96a2f2b7',
+                name: 'CDM AMS-III.AR Policy',
+                description: 'Substituting fossil fuel-based lighting with LED/CFL lighting systems',
+                version: '1',
+                status: 'PUBLISH',
+                owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+                vcCount: 1,
+                vpCount: 0,
+                tokensCount: 0,
+                rate: 9,
+                tags: []
+            },
+            {
+                type: 'Local',
+                id: '69b9727c3ac44dc8f6b50a8b',
+                topicId: '0.0.8264658',
+                messageId: '1773763808.323660342',
+                uuid: 'e8e70f1c-fc6f-48cd-a0f1-6de39f6efb02',
+                name: 'CDM AMS-II.G Policy',
+                description: 'Energy efficiency measures in thermal applications of non-renewable biomass',
+                version: '1',
+                status: 'PUBLISH',
+                owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+                vcCount: 1,
+                vpCount: 0,
+                tokensCount: 0,
+                rate: 9,
+                tags: []
+            },
+            {
+                type: 'Local',
+                id: '69b9719c3ac44dc8f6b5096a',
+                topicId: '0.0.8264592',
+                messageId: '1773761007.292762801',
+                uuid: 'a57b4e28-2b81-4d43-83a6-8c85d7983b0f',
+                name: 'CDM AMS-III.BB',
+                description: 'CDM AMS-III.BB. policy',
+                version: '1',
+                status: 'PUBLISH',
+                owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+                vcCount: 1,
+                vpCount: 0,
+                tokensCount: 0,
+                rate: 8,
+                tags: []
+            }
+        ]
+    },
+
+    SEARCH_POLICIES_RESPONSE_GLOBAL_WITH_FILTERS: {
+        target: null,
+        result: [
+            {
+                type: 'Global',
+                topicId: '0.0.4230993',
+                messageId: '1713278598.610141122',
+                uuid: 'c4db13c6-7c04-490a-881a-e41cfdb435d0',
+                name: 'CDM AMS-III.AR Policy',
+                description: 'Substituting fossil fuel-based lighting with LED/CFL lighting systems',
+                version: '1',
+                status: 'PUBLISH',
+                owner: 'did:hedera:testnet:6RM7qg4qcK68ciX3DtSMXYU7jVuvf9qvVL4ciQmTX2j8_0.0.4230990',
+                vcCount: 22,
+                vpCount: 4,
+                tokensCount: 6030,
+                tags: []
+            }
+        ]
+    },
+
+    SEARCH_POLICIES_RESPONSE_LOCAL_WITH_POLICY_AND_TOOL: {
+        target: {
+            type: 'Local',
+            id: '69b9719c3ac44dc8f6b5096a',
+            topicId: '0.0.8264592',
+            messageId: '1773761007.292762801',
+            uuid: 'a57b4e28-2b81-4d43-83a6-8c85d7983b0f',
+            name: 'CDM AMS-III.BB',
+            description: 'CDM AMS-III.BB. policy',
+            version: '1',
+            status: 'PUBLISH',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+            vcCount: 1,
+            vpCount: 0,
+            tokensCount: 0,
+            rate: 100,
+            tags: []
+        },
+        result: [
+            {
+                type: 'Local',
+                id: '69b7da996d2f71c7a55b1fa3',
+                topicId: '0.0.8246509',
+                messageId: '1773662571.607239000',
+                uuid: 'df23e461-c3ba-48d5-9bf6-db1f96a2f2b7',
+                name: 'CDM AMS-III.AR Policy',
+                description: 'Substituting fossil fuel-based lighting with LED/CFL lighting systems',
+                version: '1',
+                status: 'PUBLISH',
+                owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+                vcCount: 1,
+                vpCount: 0,
+                tokensCount: 0,
+                rate: 63,
+                tags: []
+            },
+            {
+                type: 'Local',
+                id: '69b9727c3ac44dc8f6b50a8b',
+                topicId: '0.0.8264658',
+                messageId: '1773763808.323660342',
+                uuid: 'e8e70f1c-fc6f-48cd-a0f1-6de39f6efb02',
+                name: 'CDM AMS-II.G Policy',
+                description: 'Energy efficiency measures in thermal applications of non-renewable biomass',
+                version: '1',
+                status: 'PUBLISH',
+                owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+                vcCount: 1,
+                vpCount: 0,
+                tokensCount: 0,
+                rate: 63,
+                tags: []
+            }
+        ]
+    },
+
+    COMPARE_POLICIES_RESPONSE_SINGLE: {
+        left: {},
+        right: {},
+        total: 24,
+        blocks: { columns: [], report: [] },
+        roles: { columns: [], report: [] },
+        groups: { columns: [], report: [] },
+        topics: { columns: [], report: [] },
+        tokens: { columns: [], report: [] },
+        tools: { columns: [], report: [] }
+    },
+
+    COMPARE_POLICIES_RESPONSE_MULTI: {
+        size: 3,
+        left: {},
+        rights: [],
+        totals: [60, 99],
+        blocks: { columns: [], report: [] },
+        roles: { columns: [], report: [] },
+        groups: { columns: [], report: [] },
+        topics: { columns: [], report: [] },
+        tokens: { columns: [], report: [] },
+        tools: { columns: [], report: [] }
+    },
+
+    COMPARE_MODULES_REQUEST: {
+        eventsLvl: '2',
+        propLvl: '2',
+        childrenLvl: '2',
+        idLvl: '0',
+        moduleId1: '69baa4cf63637d350db5b59c',
+        moduleId2: '69baa4b563637d350db5b594'
+    },
+
+    COMPARE_MODULES_RESPONSE: {
+        left: {
+            id: '69baa4cf63637d350db5b59c',
+            name: 'Module_1',
+            description: 'Description'
+        },
+        right: {
+            id: '69baa4b563637d350db5b594',
+            name: 'Module_2',
+            description: ''
+        },
+        total: 22,
+        blocks: { columns: [], report: [] },
+        inputEvents: { columns: [], report: [] },
+        outputEvents: { columns: [], report: [] },
+        variables: { columns: [], report: [] }
+    },
+
+    COMPARE_SCHEMAS_RESPONSE: {
+        left: {
+            id: Examples.DB_ID,
+            name: 'Schema_1',
+            description: 'Description_1',
+            uuid: Examples.UUID,
+            topicId: Examples.ACCOUNT_ID,
+            version: '1.0.0',
+            iri: '#20e0202f-bbf6-441e-97e8-b2c9af9a3a4d&1.0.0',
+            policy: 'CDM AMS-II.J Policy'
+        },
+        right: {
+            id: Examples.DB_ID_2,
+            name: 'Schema_2',
+            description: 'Description_2',
+            uuid: '3ec235e9-fffc-42ff-b1c3-f3ba712b8a5b',
+            topicId: '0.0.8264622',
+            version: '1.0.0',
+            iri: '#e998578c-ef14-4c4b-96a8-3158c5a0f9ab&1.0.0',
+            policy: 'VM0042 V2.1'
+        },
+        total: 44,
+        fields: { columns: [], report: [] }
+    },
+
+    COMPARE_TOOLS_REQUEST_BY_IDS: {
+        eventsLvl: '0',
+        propLvl: '0',
+        childrenLvl: '0',
+        idLvl: '0',
+        toolId1: Examples.DB_ID,
+        toolId2: Examples.DB_ID_2
+    },
+
+    COMPARE_TOOLS_REQUEST_BY_LIST: {
+        eventsLvl: '0',
+        propLvl: '0',
+        childrenLvl: '0',
+        idLvl: '0',
+        toolIds: [
+            Examples.DB_ID,
+            Examples.DB_ID_2,
+            Examples.DB_ID_3
+        ]
+    },
+
+    COMPARE_TOOLS_RESPONSE_SINGLE: {
+        left: {
+            id: '69b9727a3ac44dc8f6b50a44',
+            name: 'Tool 30',
+            description: '',
+            hash: '4r7i6SXuDxDrk8dkwomzgkfFp8FqMuWSCsuWqZhhYLZ4',
+            messageId: '1707417996.173398196'
+        },
+        right: {
+            id: '69b7da936d2f71c7a55b1e99',
+            name: 'Tool 21',
+            description: '',
+            hash: '71ZWDSX2cUPsye4AuMUqXUhgk1XBDnpi4Ky1mtjYqYom',
+            messageId: '1706873385.455822873'
+        },
+        total: 74,
+        blocks: { columns: [], report: [] },
+        inputEvents: { columns: [], report: [] },
+        outputEvents: { columns: [], report: [] },
+        variables: { columns: [], report: [] }
+    },
+
+    COMPARE_TOOLS_RESPONSE_MULTI: {
+        size: 3,
+        left: {
+            id: '69b9727a3ac44dc8f6b50a44',
+            name: 'Tool 30',
+            description: '',
+            hash: '4r7i6SXuDxDrk8dkwomzgkfFp8FqMuWSCsuWqZhhYLZ4',
+            messageId: '1707417996.173398196'
+        },
+        rights: [
+            {
+                id: '69b7da936d2f71c7a55b1e99',
+                name: 'Tool 21',
+                description: '',
+                hash: '71ZWDSX2cUPsye4AuMUqXUhgk1XBDnpi4Ky1mtjYqYom',
+                messageId: '1706873385.455822873'
+            },
+            {
+                id: '69b7da8d6d2f71c7a55b1e67',
+                name: 'Tool 33',
+                description: '',
+                hash: 'Ceo5z8VkMbYWAcgjhesqGXHzJ9Z6aEdEEGWA4Jq4XE2i',
+                messageId: '1726593517.484578000'
+            }
+        ],
+        totals: [74, 52],
+        blocks: { columns: [], report: [] },
+        inputEvents: { columns: [], report: [] },
+        outputEvents: { columns: [], report: [] },
+        variables: { columns: [], report: [] }
+    },
+
+    COMPARE_DOCUMENTS_REQUEST_BY_IDS: {
+        eventsLvl: '0',
+        propLvl: '0',
+        childrenLvl: '0',
+        idLvl: '0',
+        documentId1: Examples.DB_ID,
+        documentId2: Examples.DB_ID_2
+    },
+
+    COMPARE_DOCUMENTS_REQUEST_BY_LIST: {
+        eventsLvl: '0',
+        propLvl: '0',
+        childrenLvl: '0',
+        idLvl: '0',
+        documentIds: [
+            Examples.DB_ID,
+            Examples.DB_ID_2,
+            Examples.DB_ID_3
+        ]
+    },
+
+    COMPARE_DOCUMENTS_RESPONSE_SINGLE: {
+        left: {
+            id: Examples.DB_ID,
+            type: 'VerifiableCredential',
+            owner: Examples.DID,
+            policy: '69b9727c3ac44dc8f6b50a8b'
+        },
+        right: {
+            id: Examples.DB_ID_2,
+            type: 'VerifiableCredential',
+            owner: Examples.DID,
+            policy: '69b7da996d2f71c7a55b1fa3'
+        },
+        total: 68,
+        documents: { columns: [], report: [] }
+    },
+
+    COMPARE_DOCUMENTS_RESPONSE_MULTI: {
+        size: 3,
+        left: {
+            id: Examples.DB_ID,
+            type: 'VerifiableCredential',
+            owner: Examples.DID,
+            policy: '69b9727c3ac44dc8f6b50a8b'
+        },
+        rights: [
+            {
+                id: Examples.DB_ID_2,
+                type: 'VerifiableCredential',
+                owner: Examples.DID,
+                policy: '69b7da996d2f71c7a55b1fa3'
+            },
+            {
+                id: Examples.DB_ID_3,
+                type: 'VerifiableCredential',
+                owner: Examples.DID,
+                policy: '69afeab013b23cf457db9720'
+            }
+        ],
+        totals: [68, 51],
+        documents: { columns: [], report: [] }
     }
 
 }
