@@ -74,7 +74,10 @@ async function execute() {
         'cartopy',
         'astropy',
         'statsmodels',
-        'networkx'
+        'networkx',
+        'scikit-learn',
+        'xarray',
+        'geopandas'
     ];
 
     for (const lib of libs) {
