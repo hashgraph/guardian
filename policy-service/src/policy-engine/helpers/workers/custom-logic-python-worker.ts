@@ -63,7 +63,6 @@ async function execute() {
         'scipy',
         'sympy',
         'pandas',
-        'pint',
         'cftime',
         'astropy',
         'statsmodels',
@@ -85,6 +84,7 @@ async function execute() {
 import sys
 import os
 import importlib
+import builtins
 
 def _blocked(*args, **kwargs):
     raise PermissionError("This operation is restricted in this sandbox")
@@ -106,30 +106,50 @@ for attr in ['system', 'popen', 'execl', 'execle', 'execlp', 'execv', 'execve',
     if hasattr(os, attr):
         setattr(os, attr, _blocked)
 
-# 3. Block subprocess dangerous functions
+# 3. Clear os.environ to prevent leaking secrets (keep HOME for library compatibility)
+_keep_keys = {'HOME', 'PATH'}
+for key in list(os.environ.keys()):
+    if key not in _keep_keys:
+        del os.environ[key]
+
+# 4. Block subprocess dangerous functions
 import subprocess as _subprocess
 for attr in ['run', 'call', 'check_call', 'check_output', 'Popen', 'getoutput', 'getstatusoutput']:
     if hasattr(_subprocess, attr):
         setattr(_subprocess, attr, _blocked)
 
-# 4. Install import hook to prevent bypassing module restrictions
-_blocked_modules = {'js', 'pyodide.http'}
+# 5. Block importlib.reload to prevent undoing patches
+import importlib as _importlib
+_importlib.reload = _blocked
+
+# 6. Install import hook to prevent bypassing module restrictions
+_blocked_modules = {'js', 'pyodide.http', 'cffi', '_posixsubprocess'}
 
 class _SandboxImportBlocker:
     def find_module(self, fullname, path=None):
-        if fullname in _blocked_modules or fullname.startswith(('js.', 'pyodide.http.')):
+        if fullname in _blocked_modules or fullname.startswith(('js.', 'pyodide.http.', 'cffi.')):
             return self
         return None
     def load_module(self, fullname):
         raise ImportError(f"Import of {fullname} is restricted in this sandbox")
 
 sys.meta_path.insert(0, _SandboxImportBlocker())
+
+# 7. Guard builtins.__import__ against bypass (closure hides _original_import from __globals__)
+def _make_guarded_import():
+    _orig = builtins.__import__
+    def _guarded_import(name, *args, **kwargs):
+        if name in _blocked_modules or any(name.startswith(prefix + '.') for prefix in ('js', 'pyodide.http', 'cffi')):
+            raise ImportError(f"Import of {name} is restricted in this sandbox")
+        return _orig(name, *args, **kwargs)
+    return _guarded_import
+builtins.__import__ = _make_guarded_import()
 `);
 
     try {
         await pyodide.runPythonAsync(execFunc);
     } catch (error) {
-        console.log('Failed to run python script:', error);
+        console.error('Failed to run python script:', error);
         parentPort?.postMessage({ error: error.message, final: true });
     }
 }

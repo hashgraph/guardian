@@ -172,6 +172,19 @@ export class CustomLogicBlock {
         actionStatus: RecordActionStep
     ): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
+            let settled = false;
+            const safeResolve = (value: any) => {
+                if (!settled) {
+                    settled = true;
+                    resolve(value);
+                }
+            };
+            const safeReject = (err: any) => {
+                if (!settled) {
+                    settled = true;
+                    reject(err);
+                }
+            };
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
                 let documents: IPolicyDocument[];
@@ -200,7 +213,7 @@ export class CustomLogicBlock {
                                 //
                             }
 
-                            resolve(null);
+                            safeResolve(null);
                         }
                         return;
                     }
@@ -227,7 +240,7 @@ export class CustomLogicBlock {
                                 //
                             }
 
-                            resolve(items);
+                            safeResolve(items);
                         }
                         return;
                     } else {
@@ -239,7 +252,7 @@ export class CustomLogicBlock {
                             } catch {
                                 //
                             }
-                            resolve(item);
+                            safeResolve(item);
                         }
                         return;
                     }
@@ -275,37 +288,90 @@ export class CustomLogicBlock {
 
                 const expression = ref.options.expression || '';
                 if (ref.options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
-                    const worker = new Worker(
-                        path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-python-worker.js'),
-                        {
-                            workerData: {
-                                execFunc: `${execCode}${expression}`,
-                                user,
-                                artifacts,
-                                documents: context.documents,
-                                sources: context.sources,
-                                tablesPack
-                            },
-                        });
-                    worker.on('error', (error) => {
-                        reject(error);
-                    });
-                    worker.on('message', async (data) => {
-                        if (data?.error) {
-                            reject(new Error(data.error));
-                            return;
-                        }
+                    const pythonWorkerData = {
+                        execFunc: `${execCode}${expression}`,
+                        user,
+                        artifacts,
+                        documents: context.documents,
+                        sources: context.sources,
+                        tablesPack
+                    };
+
+                    const pythonTimeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS || '120000', 10);
+
+                    if (process.env.PYTHON_SANDBOX_MODE === 'docker') {
+                        const { runPythonInDocker } = await import('../helpers/workers/custom-logic-python-docker-worker.js');
                         try {
-                            if (data?.type === 'done') {
-                                await done(data.result, data.final);
-                            }
-                            if (data?.type === 'debug') {
-                                ref.debug(data.message);
+                            let doneWithFinalCalled = false;
+                            let doneCalled = false;
+                            await runPythonInDocker(pythonWorkerData, {
+                                onDone: async (result, final) => {
+                                    doneCalled = true;
+                                    await done(result, final);
+                                    if (final) {
+                                        doneWithFinalCalled = true;
+                                    }
+                                },
+                                onDebug: (result) => {
+                                    ref.debug(result);
+                                }
+                            });
+                            if (!doneWithFinalCalled) {
+                                try { disposeTables(); } catch { /* */ }
+                                if (doneCalled) {
+                                    // done() was called with final=false but never final=true
+                                    ref.error('Python script called done() without final=true');
+                                }
+                                safeResolve(null);
                             }
                         } catch (error) {
-                            reject(error);
+                            try { disposeTables(); } catch { /* */ }
+                            safeReject(error);
                         }
-                    });
+                    } else {
+                        const worker = new Worker(
+                            path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-python-worker.js'),
+                            { workerData: pythonWorkerData });
+
+                        // Timeout for Pyodide worker
+                        const workerTimer = setTimeout(() => {
+                            worker.terminate();
+                            safeReject(new Error('Python sandbox execution timed out'));
+                        }, pythonTimeoutMs);
+
+                        worker.on('exit', (code) => {
+                            clearTimeout(workerTimer);
+                            try { disposeTables(); } catch { /* */ }
+                            if (code !== 0 && code !== null) {
+                                safeReject(new Error(`Python worker exited with code ${code}`));
+                            } else {
+                                safeResolve(null);
+                            }
+                        });
+                        worker.on('error', (error) => {
+                            clearTimeout(workerTimer);
+                            try { disposeTables(); } catch { /* */ }
+                            safeReject(error);
+                        });
+                        worker.on('message', async (data) => {
+                            if (data?.error) {
+                                clearTimeout(workerTimer);
+                                safeReject(new Error(data.error));
+                                return;
+                            }
+                            try {
+                                if (data?.type === 'done') {
+                                    await done(data.result, data.final);
+                                }
+                                if (data?.type === 'debug') {
+                                    ref.debug(data.result);
+                                }
+                            } catch (error) {
+                                clearTimeout(workerTimer);
+                                safeReject(error);
+                            }
+                        });
+                    }
                 } else {
                     const worker = new Worker(
                         path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-worker.js'),
@@ -336,7 +402,7 @@ export class CustomLogicBlock {
                     });
                 }
             } catch (error) {
-                reject(error);
+                safeReject(error);
             }
         });
     }
