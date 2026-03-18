@@ -43,7 +43,7 @@ async function execute() {
     const { execFunc, user, documents, artifacts, sources, tablesPack } = workerData;
 
     pyodide.setStdout({ batched: console.log });
-    pyodide.setStderr({ batched: console.error })
+    pyodide.setStderr({ batched: console.error });
 
     pyodide.globals.set('user', user);
     pyodide.globals.set('documents', documents);
@@ -64,14 +64,7 @@ async function execute() {
         'sympy',
         'pandas',
         'pint',
-        'duckdb',
-        'sqlalchemy',
         'cftime',
-        'matplotlib',
-        'seaborn',
-        'bokeh',
-        'altair',
-        'cartopy',
         'astropy',
         'statsmodels',
         'networkx',
@@ -87,6 +80,51 @@ async function execute() {
             console.error(`Failed to install python lib: ${lib}`, e);
         }
     }
+
+    await pyodide.runPythonAsync(`
+import sys
+import os
+import importlib
+
+def _blocked(*args, **kwargs):
+    raise PermissionError("This operation is restricted in this sandbox")
+
+# 1. Replace js module with restricted stub
+class _RestrictedModule:
+    def __init__(self, name):
+        self._name = name
+    def __getattr__(self, attr):
+        raise ImportError(f"Access to {self._name}.{attr} is restricted in this sandbox")
+
+sys.modules['js'] = _RestrictedModule('js')
+sys.modules['pyodide.http'] = _RestrictedModule('pyodide.http')
+
+# 2. Block dangerous os functions
+for attr in ['system', 'popen', 'execl', 'execle', 'execlp', 'execv', 'execve',
+             'execvp', 'execvpe', 'spawnl', 'spawnle', 'spawnlp', 'spawnv',
+             'spawnve', 'spawnvp', 'spawnvpe']:
+    if hasattr(os, attr):
+        setattr(os, attr, _blocked)
+
+# 3. Block subprocess dangerous functions
+import subprocess as _subprocess
+for attr in ['run', 'call', 'check_call', 'check_output', 'Popen', 'getoutput', 'getstatusoutput']:
+    if hasattr(_subprocess, attr):
+        setattr(_subprocess, attr, _blocked)
+
+# 4. Install import hook to prevent bypassing module restrictions
+_blocked_modules = {'js', 'pyodide.http'}
+
+class _SandboxImportBlocker:
+    def find_module(self, fullname, path=None):
+        if fullname in _blocked_modules or fullname.startswith(('js.', 'pyodide.http.')):
+            return self
+        return None
+    def load_module(self, fullname):
+        raise ImportError(f"Import of {fullname} is restricted in this sandbox")
+
+sys.meta_path.insert(0, _SandboxImportBlocker())
+`);
 
     try {
         await pyodide.runPythonAsync(execFunc);
