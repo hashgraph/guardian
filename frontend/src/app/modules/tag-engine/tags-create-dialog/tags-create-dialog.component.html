@@ -71,6 +71,9 @@
     </div>
     <div class="dialog-footer">
         <button (click)="onAddArtifact(schema)" *ngIf="!schema" class="button secondary" label="Add Document"
+                [disabled]="!schemas || schemas.length === 0"
+                [pTooltip]="(!schemas || schemas.length === 0) ? 'Create a published document schema first' : ''"
+                tooltipStyleClass="guardian-tooltip"
                 pButton style="margin-right: auto;"></button>
         <button (click)="onNoClick()" class="button secondary" label="Cancel" pButton></button>
         <button (click)="onCreate()" [disabled]="disabled" [label]="'Create'" class="button" pButton></button>
