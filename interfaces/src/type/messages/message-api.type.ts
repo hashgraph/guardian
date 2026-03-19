@@ -314,6 +314,7 @@ export enum MessageAPI {
 export enum ExternalMessageEvents {
     TOKEN_MINTED = 'external-events.token_minted',
     TOKEN_MINT_COMPLETE = 'external-events.token_mint_complete',
+    TOKEN_FAILED = 'external-events.token_failed',
     ERROR_LOG = 'external-events.error_logs',
     BLOCK_EVENTS = 'external-events.block_event',
     IPFS_ADDED_FILE = 'external-events.ipfs_added_file',

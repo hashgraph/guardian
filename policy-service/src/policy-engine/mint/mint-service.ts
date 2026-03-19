@@ -200,7 +200,10 @@ export class MintService {
                         interception: null
                     })
                     .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId, {
+                            tokenId: token.tokenId,
+                            tokenType: token.tokenType,
+                        })
                     )
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
@@ -233,7 +236,10 @@ export class MintService {
                         interception: null
                     })
                     .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId, {
+                            tokenId: token.tokenId,
+                            tokenType: token.tokenType,
+                        })
                     )
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
@@ -551,7 +557,10 @@ export class MintService {
                     interception: null
                 })
                 .catch((error) =>
-                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
+                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId, {
+                        tokenId: token.tokenId,
+                        tokenType: token.tokenType,
+                    })
                 )
                 .finally(() => {
                     MintService.activeMintProcesses.delete(
@@ -584,7 +593,10 @@ export class MintService {
                     interception: null
                 })
                 .catch((error) =>
-                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
+                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId, {
+                        tokenId: token.tokenId,
+                        tokenType: token.tokenType,
+                    })
                 )
                 .finally(() => {
                     MintService.activeMintProcesses.delete(
@@ -733,7 +745,7 @@ export class MintService {
      * @param ref
      * @param userId
      */
-    public static error(message: string, ref: AnyBlockType, userId: string | null) {
+    public static error(message: string, ref: AnyBlockType | null, userId: string | null, data?: { tokenId?: string; tokenType?: string; [key: string]: any }) {
         if (ref) {
             MintService.logger.error(message, [
                 'POLICY_SERVICE',
@@ -744,6 +756,16 @@ export class MintService {
             ], userId);
         } else {
             MintService.logger.error(message, ['POLICY_SERVICE'], userId);
+        }
+
+        if (data) {
+            new ExternalEventChannel().publishMessage(
+                ExternalMessageEvents.TOKEN_FAILED,
+                {
+                    error: message,
+                    ...data,
+                }
+            );
         }
     }
 
