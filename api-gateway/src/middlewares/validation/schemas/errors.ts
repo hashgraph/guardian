@@ -141,3 +141,34 @@ export class ConflictErrorDTO  {
     @Expose()
     message: string;
 }
+
+export class BadRequestErrorDTO {
+    @ApiProperty({
+        type: Number,
+        required: true,
+        example: 400
+    })
+    @IsNumber()
+    @Expose()
+    statusCode: number;
+
+    @ApiProperty({
+        oneOf: [
+            { type: 'string' },
+            { type: 'array', items: { type: 'string' } }
+        ],
+        required: true,
+        example: 'Error message'
+    })
+    @Expose()
+    message: string | string[];
+
+    @ApiProperty({
+        type: String,
+        required: false,
+        example: 'Bad Request'
+    })
+    @IsString()
+    @Expose()
+    error?: string;
+}

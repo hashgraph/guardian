@@ -195,6 +195,51 @@ export const ObjectExamples = {
         }
     ],
 
+    ARTIFACTS_UPLOAD_RESPONSE_LIST: [
+        {
+            createDate: '2026-03-19T14:43:45.250Z',
+            updateDate: '2026-03-19T14:43:45.250Z',
+            uuid: 'd5fc05d5-efc8-4b00-80d7-020374361452',
+            policyId: '69ba978163637d350db5b56f',
+            name: '1_profile_preset',
+            type: 'JSON',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+            extention: 'json',
+            category: 'policy',
+            _id: '69bc0ba1f6b2fa8ae50f2ec9',
+            id: '69bc0ba1f6b2fa8ae50f2ec9'
+        }
+    ],
+
+    ARTIFACTS_UPLOAD_RESPONSE_LIST_MULTI: [
+        {
+            createDate: '2026-03-16T09:31:27.902Z',
+            updateDate: '2026-03-16T09:31:28.042Z',
+            uuid: 'dcc46b7b-3bb8-4a60-8e5b-f7b17ae76d1e',
+            policyId: '69b7cdefa48bb15eb7afb3e7',
+            name: 'region_emission_factors',
+            type: 'JSON',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+            extention: 'json',
+            category: 'policy',
+            _id: '69b7cdefa48bb15eb7afb3e5',
+            id: '69b7cdefa48bb15eb7afb3e5'
+        },
+        {
+            createDate: '2026-03-16T09:31:27.898Z',
+            updateDate: '2026-03-16T09:31:28.042Z',
+            uuid: 'ba6f7bc5-0f91-46a5-a681-1658f93a1b68',
+            policyId: '69b7cdefa48bb15eb7afb3e7',
+            name: 'country_emission_factors',
+            type: 'JSON',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+            extention: 'json',
+            category: 'policy',
+            _id: '69b7cdefa48bb15eb7afb3e3',
+            id: '69b7cdefa48bb15eb7afb3e3'
+        }
+    ],
+
     VC_DOCUMENT_1: {
         createDate: '2026-03-13T09:26:55.610Z',
         updateDate: '2026-03-13T09:27:09.653Z',

@@ -4,6 +4,22 @@ import { Examples } from '../examples.js';
 export class UpsertFileResponseDTO {
     @ApiProperty({ description: 'File identifier', example: '67b8f31d2a26f8be2a9f0be9' })
     fileId: string;
+
+    @ApiProperty({ description: 'Saved file name', example: 'file' })
+    filename: string;
+
+    @ApiProperty({ description: 'Saved file content type', example: 'application/json' })
+    contentType: string;
+}
+
+export class UploadArtifactsDTO {
+    @ApiProperty({
+        type: 'string',
+        format: 'binary',
+        isArray: true,
+        description: 'Artifact files'
+    })
+    artifacts: any[];
 }
 
 export class ArtifactDTOItem {
