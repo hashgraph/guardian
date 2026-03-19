@@ -197,6 +197,29 @@ export class PolicyUtils {
     }
 
     /**
+     * Apply rounding strategy to a number
+     * @param value - The value to round
+     * @param strategy - 'nearest' (default), 'floor', or 'ceiling'
+     * @returns Rounded integer
+     */
+    public static applyRounding(value: number, strategy?: string): number {
+        if (!Number.isFinite(value) || value < 0) {
+            return value;
+        }
+        switch (strategy) {
+            case 'floor':
+                return Math.floor(value);
+            case 'ceiling':
+                return Math.ceil(value);
+            case 'nearest':
+            default:
+                // Round half down: values <= x.5 round down, > x.5 round up
+                const fractional = value - Math.floor(value);
+                return fractional <= 0.5 ? Math.floor(value) : Math.ceil(value);
+        }
+    }
+
+    /**
      * Split chunk
      * @param array
      * @param chunk

@@ -296,7 +296,7 @@ export class MintBlock {
         if (Number.isNaN(amount) || !Number.isFinite(amount) || amount < 0) {
             throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);
         }
-        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
+        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, PolicyUtils.applyRounding(amount, ref.options.roundingStrategy));
 
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref, userId);

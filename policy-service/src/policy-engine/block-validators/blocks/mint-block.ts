@@ -51,6 +51,11 @@ export class MintBlock {
             if (ref.options.accountType === 'custom-value' && !/^\d+\.\d+\.\d+$/.test(ref.options.accountIdValue)) {
                 validator.addError('Option "accountIdValue" has invalid hedera account value');
             }
+
+            const validRoundingStrategies = ['nearest', 'floor', 'ceiling'];
+            if (ref.options.roundingStrategy !== undefined && validRoundingStrategies.indexOf(ref.options.roundingStrategy) === -1) {
+                validator.addError('Option "roundingStrategy" must be one of ' + validRoundingStrategies.join(', '));
+            }
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);
         }

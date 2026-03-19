@@ -32,6 +32,12 @@ export class MintConfigComponent implements OnInit {
         {label: 'Custom Account Value', value: 'custom-value'}
     ];
 
+    public roundingStrategyOptions = [
+        {label: 'Nearest (default)', value: 'nearest'},
+        {label: 'Floor', value: 'floor'},
+        {label: 'Ceiling', value: 'ceiling'}
+    ];
+
     constructor() {
     }
 
