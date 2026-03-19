@@ -1381,6 +1381,15 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+        '422':
+          description: Unprocessable entity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
+              example:
+                statusCode: 422
+                message: Invalid parameters
         '500':
           description: Internal server error.
           content:
@@ -1561,9 +1570,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                message:
+                  - moduleId2 must be a string
+                error: Unprocessable Entity
+                statusCode: 422
         '500':
           description: Internal server error.
           content:
@@ -1657,6 +1669,17 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+        '422':
+          description: Unprocessable entity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
+              example:
+                message:
+                  - schemaId2 must be a string
+                error: Unprocessable Entity
+                statusCode: 422
         '500':
           description: Internal server error.
           content:
@@ -1786,9 +1809,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid parameters
         '500':
           description: Internal server error.
           content:
@@ -1936,9 +1960,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid parameters
         '500':
           description: Internal server error.
           content:
@@ -1975,24 +2000,7 @@ paths:
             schema:
               $ref: '#/components/schemas/FilterPoliciesDTO'
             examples:
-              Filter1:
-                value:
-                  policyId1: 69aeb71ef8c5b278e3bab4e5
-                  policyId2: 69b8115f3dc0fa022156fb89
-                  eventsLvl: '0'
-                  propLvl: '0'
-                  childrenLvl: '0'
-                  idLvl: '0'
-              Filter2:
-                value:
-                  policyIds:
-                    - 69aeb71ef8c5b278e3bab4e5
-                    - 69b8115f3dc0fa022156fb89
-                  eventsLvl: '0'
-                  propLvl: '0'
-                  childrenLvl: '0'
-                  idLvl: '0'
-              Filter3:
+              MixedSources:
                 value:
                   policies:
                     - type: id
@@ -2003,7 +2011,24 @@ paths:
                       value:
                         id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
                         name: File Name
-                        value: base66...
+                        value: base65...
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
+              DatabaseOnly:
+                value:
+                  policyIds:
+                    - 69aeb71ef8c5b278e3bab4e5
+                    - 69b8115f3dc0fa022156fb89
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
+              Legacy:
+                value:
+                  policyId1: 69aeb71ef8c5b278e3bab4e5
+                  policyId2: 69b8115f3dc0fa022156fb89
                   eventsLvl: '0'
                   propLvl: '0'
                   childrenLvl: '0'
@@ -2012,9 +2037,65 @@ paths:
         '200':
           description: Successful operation.
           content:
-            application/json:
+            text/csv:
               schema:
                 type: string
+              example: >-
+                data:text/csv;charset=utf-8;"Policy 1"
+
+                "Policy ID","Policy Name","Policy Description","Policy
+                Topic","Policy Version"
+
+                "69b98f573ac44dc8f6b50b66","Test_Policy_2","","",""
+
+
+                "Policy 2"
+
+                "Policy ID","Policy Name","Policy Description","Policy
+                Topic","Policy Version"
+
+                "69b98d6a3ac44dc8f6b50b03","Test_Policy_1","","",""
+
+
+                "Policy Roles"
+
+                "Name","Name","Total Rate"
+
+
+                "Policy Groups"
+
+                "Name","Name","Total Rate"
+
+
+                "Policy Topics"
+
+                "Name","Name","Total Rate"
+
+
+                "Policy Tokens"
+
+                "Name","Name","Total Rate"
+
+
+                "Policy Tools"
+
+                "Name","Name","Total Rate"
+
+
+                "Policy Blocks"
+
+                "Offset","Index","Type","Tag","Index","Type","Tag","Index
+                Rate","Permission Rate","Prop Rate","Event Rate","Artifact
+                Rate","Total Rate"
+
+                "1","1","interfaceContainerBlock","","1","interfaceContainerBlock","","100%","100%","80%","100%","100%","95%"
+
+                "2","1","interfaceContainerBlock","Block_1","1","interfaceContainerBlock","Block_1","100%","100%","83%","0%","100%","70%"
+
+                "2","","","","2","interfaceContainerBlock","Block_2","-","-","-","-","-","-"
+
+
+                "Total","66%"
         '401':
           description: Unauthorized request.
           content:
@@ -2034,6 +2115,15 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+        '422':
+          description: Unprocessable entity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
+              example:
+                statusCode: 422
+                message: Invalid parameters
         '500':
           description: Internal server error.
           content:
@@ -2072,18 +2162,70 @@ paths:
             examples:
               Filter:
                 value:
-                  moduleId1: 69aeb71ef8c5b278e3bab4e5
-                  moduleId2: 69b8115f3dc0fa022156fb89
-                  propLvl: '0'
-                  childrenLvl: '0'
+                  eventsLvl: '2'
+                  propLvl: '2'
+                  childrenLvl: '2'
                   idLvl: '0'
+                  moduleId1: 69baa4cf63637d350db5b59c
+                  moduleId2: 69baa4b563637d350db5b594
       responses:
         '200':
           description: Successful operation.
           content:
-            application/json:
+            text/csv:
               schema:
                 type: string
+              example: >-
+                data:text/csv;charset=utf-8;"Module 1"
+
+                "Module ID","Module Name","Module Description"
+
+                "69baa4cf63637d350db5b59c","Module_1","Some specific module for
+                test purposes"
+
+
+                "Module 2"
+
+                "Module ID","Module Name","Module Description"
+
+                "69baa4b563637d350db5b594","test",""
+
+
+                "Module Input Events"
+
+                "Name","Name","Total Rate"
+
+
+                "Module Output Events"
+
+                "Name","Name","Total Rate"
+
+                "","VC","-"
+
+
+                "Module Variables"
+
+                "Name","Name","Total Rate"
+
+                "","schema","-"
+
+
+                "Module Blocks"
+
+                "Offset","Index","Type","Tag","Index","Type","Tag","Index
+                Rate","Permission Rate","Prop Rate","Event Rate","Artifact
+                Rate","Total Rate"
+
+                "1","1","module","Module","1","module","Module","100%","100%","20%","100%","100%","80%"
+
+                "2","1","interfaceContainerBlock","Block_1","","","","-","-","-","-","-","-"
+
+                "2","","","","1","requestVcDocumentBlock","Block_1","-","-","-","-","-","-"
+
+                "2","","","","2","sendToGuardianBlock","Block_2","-","-","-","-","-","-"
+
+
+                "Total","22%"
         '401':
           description: Unauthorized request.
           content:
@@ -2108,9 +2250,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                message:
+                  - moduleId2 must be a string
+                error: Unprocessable Entity
+                statusCode: 422
         '500':
           description: Internal server error.
           content:
@@ -2145,20 +2290,62 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FilterSchemasDTO'
+              oneOf:
+                - $ref: '#/components/schemas/CompareSchemasByIdsRequestDTO'
+                - $ref: '#/components/schemas/CompareSchemasByListRequestDTO'
             examples:
-              Filter:
+              BySchemaIds:
                 value:
                   schemaId1: 69aeb71ef8c5b278e3bab4e5
                   schemaId2: 69b8115f3dc0fa022156fb89
+                  idLvl: '0'
+              BySchemaList:
+                value:
+                  schemas:
+                    - type: id
+                      value: 69aeb71ef8c5b278e3bab4e5
+                    - type: id
+                      value: 69b8115f3dc0fa022156fb89
                   idLvl: '0'
       responses:
         '200':
           description: Successful operation.
           content:
-            application/json:
+            text/csv:
               schema:
                 type: string
+              example: >-
+                data:text/csv;charset=utf-8;"Schema 1"
+
+                "Schema ID","Schema Name","Schema Description","Schema
+                Topic","Schema Version"
+
+                "#99b759f6-462d-4d85-97bf-afeb2eedae3d","Date
+                Range","","0.0.8275392","1.0.0"
+
+
+                "Schema 2"
+
+                "Schema ID","Schema Name","Schema Description","Schema
+                Topic","Schema Version"
+
+                "#32281127-d22c-4997-8821-50b33b3dbf81&1.0.0","Date
+                Range","","0.0.8264592","1.0.0"
+
+
+                "Schema Fields"
+
+                "Offset","Index","Field Name","Index","Field Name","Index
+                Rate","Prop Rate","Total Rate"
+
+                "1","-1","id","-1","id","100%","100%","100%"
+
+                "1","0","field0","0","field0","100%","88%","88%"
+
+                "1","1","field1","1","field1","100%","88%","88%"
+
+
+                "Total","92%"
         '401':
           description: Unauthorized request.
           content:
@@ -2178,6 +2365,17 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+        '422':
+          description: Unprocessable entity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
+              example:
+                message:
+                  - schemaId2 must be a string
+                error: Unprocessable Entity
+                statusCode: 422
         '500':
           description: Internal server error.
           content:
@@ -2212,24 +2410,118 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FilterDocumentsDTO'
+              oneOf:
+                - $ref: '#/components/schemas/CompareDocumentsByIdsRequestDTO'
+                - $ref: '#/components/schemas/CompareDocumentsByListRequestDTO'
             examples:
-              Filter1:
+              ByDocumentIds:
                 value:
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
                   documentId1: 69aeb71ef8c5b278e3bab4e5
                   documentId2: 69b8115f3dc0fa022156fb89
-              Filter2:
+              ByDocumentList:
                 value:
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
                   documentIds:
                     - 69aeb71ef8c5b278e3bab4e5
                     - 69b8115f3dc0fa022156fb89
+                    - 69b7da996d2f71c7a55b1fa3
       responses:
         '200':
           description: Successful operation.
           content:
-            application/json:
+            text/csv:
               schema:
                 type: string
+              examples:
+                SingleCompare:
+                  summary: Compare two documents (CSV export)
+                  value: >-
+                    data:text/csv;charset=utf-8;"Document 1"
+
+                    "Document ID","Document Type","Document Owner","Policy"
+
+                    "69bade1834a0e18a5386cb9c","VC","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","69b9727c3ac44dc8f6b50a8b"
+
+
+                    "Document 2"
+
+                    "Document ID","Document Type","Document Owner","Policy"
+
+                    "69badb212b76af3f7f759084","VC","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","69b7da996d2f71c7a55b1fa3"
+
+
+                    "Data"
+
+                    "Offset","ID","Message","Type","Schema","Owner","ID","Message","Type","Schema","Owner","Document
+                    Rate","Options Rate","Total Rate"
+
+                    "1","69bade1834a0e18a5386cb9c","1773854231.595894000","VC","PP","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","69badb212b76af3f7f759084","1773853471.698871273","VC","PP","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","95%","100%","97%"
+
+                    "2","69baddfe34a0e18a5386cb8b","1773854204.523907802","VC","PP","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","69badb092b76af3f7f759073","1773853447.748138817","VC","PP","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","95%","100%","97%"
+
+
+                    "Total","97%"
+                MultiCompare:
+                  summary: Compare one document with many (CSV export)
+                  value: >-
+                    data:text/csv;charset=utf-8;"Document 1"
+
+                    "Document ID","Document Type","Document Owner","Policy"
+
+                    "69bade1834a0e18a5386cb9c","VC","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","69b9727c3ac44dc8f6b50a8b"
+
+
+                    "Document 2"
+
+                    "Document ID","Document Type","Document Owner","Policy"
+
+                    "69badb212b76af3f7f759084","VC","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","69b7da996d2f71c7a55b1fa3"
+
+
+                    "Data"
+
+                    "Offset","ID","Message","Type","Schema","Owner","ID","Message","Type","Schema","Owner","Document
+                    Rate","Options Rate","Total Rate"
+
+                    "1","69bade1834a0e18a5386cb9c","1773854231.595894000","VC","PP","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","69badb212b76af3f7f759084","1773853471.698871273","VC","PP","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","95%","100%","97%"
+
+                    "2","69baddfe34a0e18a5386cb8b","1773854204.523907802","VC","PP","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","69badb092b76af3f7f759073","1773853447.748138817","VC","PP","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","95%","100%","97%"
+
+
+                    "Total","97%"
+
+
+                    "Document 3"
+
+                    "Document ID","Document Type","Document Owner","Policy"
+
+                    "69b007bd9b241eae6a867179","VC","did:hedera:testnet:4Rh3aC5jNAzPJwwNtsy95Ava954Thyjk41gREjynY2D9_0.0.8145348","69afeab013b23cf457db9720"
+
+
+                    "Data"
+
+                    "Offset","ID","Message","Type","Schema","Owner","ID","Message","Type","Schema","Owner","Document
+                    Rate","Options Rate","Total Rate"
+
+                    "1","69bade1834a0e18a5386cb9c","1773854231.595894000","VC","PP","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","69b007bd9b241eae6a867179","1773143996.887383182","VC","I-REC
+                    Registrant & Participant
+                    App","did:hedera:testnet:4Rh3aC5jNAzPJwwNtsy95Ava954Thyjk41gREjynY2D9_0.0.8145348","84%","0%","42%"
+
+                    "2","69baddfe34a0e18a5386cb8b","1773854204.523907802","VC","PP","did:hedera:testnet:4FmP2iynDzSgmCLGec9xSWYEvda3MW6oSPxZPz11zSLZ_0.0.8145348","","","","","","-","-","-"
+
+                    "2","","","","","","69b007a59b241eae6a867166","1773143971.227034000","VC","I-REC
+                    Registrant & Participant
+                    App","did:hedera:testnet:4Rh3aC5jNAzPJwwNtsy95Ava954Thyjk41gREjynY2D9_0.0.8145348","-","-","-"
+
+
+                    "Total","14%"
         '401':
           description: Unauthorized request.
           content:
@@ -2254,9 +2546,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid parameters
         '500':
           description: Internal server error.
           content:
@@ -2291,24 +2584,212 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FilterToolsDTO'
+              oneOf:
+                - $ref: '#/components/schemas/CompareToolsByIdsRequestDTO'
+                - $ref: '#/components/schemas/CompareToolsByListRequestDTO'
             examples:
-              Filter1:
+              ByToolIds:
                 value:
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
                   toolId1: 69aeb71ef8c5b278e3bab4e5
                   toolId2: 69b8115f3dc0fa022156fb89
-              Filter2:
+              ByToolList:
                 value:
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
                   toolIds:
                     - 69aeb71ef8c5b278e3bab4e5
                     - 69b8115f3dc0fa022156fb89
+                    - 69b7da996d2f71c7a55b1fa3
       responses:
         '200':
           description: Successful operation.
           content:
-            application/json:
+            text/csv:
               schema:
                 type: string
+              examples:
+                SingleCompare:
+                  summary: Compare two tools (CSV export)
+                  value: >-
+                    data:text/csv;charset=utf-8;"Tool 1"
+
+                    "Tool ID","Tool Name","Tool Description","Tool Hash","Tool
+                    Message"
+
+                    "69b9727a3ac44dc8f6b50a44","Tool
+                    30","","4r7i6SXuDxDrk8dkwomzgkfFp8FqMuWSCsuWqZhhYLZ4","1707417996.173398196"
+
+
+                    "Tool 2"
+
+                    "Tool ID","Tool Name","Tool Description","Tool Hash","Tool
+                    Message"
+
+                    "69b7da936d2f71c7a55b1e99","Tool
+                    21","","71ZWDSX2cUPsye4AuMUqXUhgk1XBDnpi4Ky1mtjYqYom","1706873385.455822873"
+
+
+                    "Tool Input Events"
+
+                    "Name","Name","Total Rate"
+
+                    "input_tool_30","","-"
+
+                    "","input_tool_21","-"
+
+
+                    "Tool Output Events"
+
+                    "Name","Name","Total Rate"
+
+                    "output_tool_30","","-"
+
+                    "","output_tool_21","-"
+
+
+                    "Tool Variables"
+
+                    "Name","Name","Total Rate"
+
+                    "Role","Role","100%"
+
+
+                    "Tool Blocks"
+
+                    "Offset","Index","Type","Tag","Index","Type","Tag","Index
+                    Rate","Permission Rate","Prop Rate","Event Rate","Artifact
+                    Rate","Total Rate"
+
+                    "1","1","tool","Tool","1","tool","Tool","100%","100%","81%","0%","100%","70%"
+
+                    "2","1","extractDataBlock","get_tool_30","1","extractDataBlock","get_tool_21","100%","100%","60%","100%","100%","90%"
+
+                    "2","2","customLogicBlock","calc_tool_30","","","","-","-","-","-","-","-"
+
+                    "2","3","extractDataBlock","set_tool_30","2","extractDataBlock","set_tool_21","0%","100%","60%","0%","100%","65%"
+
+
+                    "Total","35%"
+                MultiCompare:
+                  summary: Compare one tool with many (CSV export)
+                  value: >-
+                    data:text/csv;charset=utf-8;"Tool 1"
+
+                    "Tool ID","Tool Name","Tool Description","Tool Hash","Tool
+                    Message"
+
+                    "69b9727a3ac44dc8f6b50a44","Tool
+                    30","","4r7i6SXuDxDrk8dkwomzgkfFp8FqMuWSCsuWqZhhYLZ4","1707417996.173398196"
+
+
+                    "Tool 2"
+
+                    "Tool ID","Tool Name","Tool Description","Tool Hash","Tool
+                    Message"
+
+                    "69b7da936d2f71c7a55b1e99","Tool
+                    21","","71ZWDSX2cUPsye4AuMUqXUhgk1XBDnpi4Ky1mtjYqYom","1706873385.455822873"
+
+
+                    "Tool Input Events"
+
+                    "Name","Name","Total Rate"
+
+                    "input_tool_30","","-"
+
+                    "","input_tool_21","-"
+
+
+                    "Tool Output Events"
+
+                    "Name","Name","Total Rate"
+
+                    "output_tool_30","","-"
+
+                    "","output_tool_21","-"
+
+
+                    "Tool Variables"
+
+                    "Name","Name","Total Rate"
+
+                    "Role","Role","100%"
+
+
+                    "Tool Blocks"
+
+                    "Offset","Index","Type","Tag","Index","Type","Tag","Index
+                    Rate","Permission Rate","Prop Rate","Event Rate","Artifact
+                    Rate","Total Rate"
+
+                    "1","1","tool","Tool","1","tool","Tool","100%","100%","81%","0%","100%","70%"
+
+                    "2","1","extractDataBlock","get_tool_30","1","extractDataBlock","get_tool_21","100%","100%","60%","100%","100%","90%"
+
+                    "2","2","customLogicBlock","calc_tool_30","","","","-","-","-","-","-","-"
+
+                    "2","3","extractDataBlock","set_tool_30","2","extractDataBlock","set_tool_21","0%","100%","60%","0%","100%","65%"
+
+
+                    "Total","35%"
+
+
+                    "Tool 3"
+
+                    "Tool ID","Tool Name","Tool Description","Tool Hash","Tool
+                    Message"
+
+                    "69b7da8d6d2f71c7a55b1e67","Tool
+                    33","","Ceo5z8VkMbYWAcgjhesqGXHzJ9Z6aEdEEGWA4Jq4XE2i","1726593517.484578000"
+
+
+                    "Tool Input Events"
+
+                    "Name","Name","Total Rate"
+
+                    "input_tool_30","","-"
+
+                    "","input_tool_33","-"
+
+
+                    "Tool Output Events"
+
+                    "Name","Name","Total Rate"
+
+                    "output_tool_30","","-"
+
+                    "","output_tool_33","-"
+
+
+                    "Tool Variables"
+
+                    "Name","Name","Total Rate"
+
+                    "Role","Role","100%"
+
+
+                    "Tool Blocks"
+
+                    "Offset","Index","Type","Tag","Index","Type","Tag","Index
+                    Rate","Permission Rate","Prop Rate","Event Rate","Artifact
+                    Rate","Total Rate"
+
+                    "1","1","tool","Tool","1","tool","Tool","100%","100%","81%","0%","100%","70%"
+
+                    "2","1","extractDataBlock","get_tool_30","1","extractDataBlock","get_tool_33","100%","100%","60%","100%","100%","90%"
+
+                    "2","2","customLogicBlock","calc_tool_30","2","customLogicBlock","calc_tool_33","100%","100%","66%","100%","100%","91%"
+
+                    "2","3","extractDataBlock","set_tool_30","3","extractDataBlock","set_tool_33","100%","100%","60%","0%","100%","65%"
+
+
+                    "Total","41%"
         '401':
           description: Unauthorized request.
           content:
@@ -2333,9 +2814,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid parameters
         '500':
           description: Internal server error.
           content:
@@ -2365,10 +2847,39 @@ paths:
             schema:
               $ref: '#/components/schemas/FilterSearchBlocksDTO'
             examples:
-              Filter:
+              Compact:
+                summary: Compact request example
                 value:
-                  uuid: ''
-                  config: {}
+                  id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                  config:
+                    id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                    blockType: interfaceContainerBlock
+                    uiMetaData:
+                      type: blank
+                    permissions:
+                      - ANY_ROLE
+                    defaultActive: true
+                    onErrorAction: no-action
+                    tag: ''
+                    children:
+                      - id: e9c0d9ee-fc29-4372-89e0-0a7e08516699
+                        blockType: policyRolesBlock
+                        defaultActive: true
+                        uiMetaData:
+                          title: Roles
+                          description: Choose Roles
+                        roles:
+                          - Project Participant
+                          - VVB
+                        permissions:
+                          - NO_ROLE
+                        onErrorAction: no-action
+                        tag: Choose_Roles1
+                        children: []
+                        events: []
+                        artifacts: []
+                    events: []
+                    artifacts: []
       responses:
         '200':
           description: Successful operation.
@@ -2379,15 +2890,55 @@ paths:
                 items:
                   $ref: '#/components/schemas/SearchBlocksDTO'
               example:
-                - name: string
-                  description: string
-                  version: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  hash: QmExampleHash
+                - name: CDM AMS-III.AR Policy
+                  description: >-
+                    Substituting fossil fuel-based lighting with LED/CFL
+                    lighting systems
+                  version: '1'
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                  topicId: 0.0.6046379
+                  messageId: '1773670900.819264517'
+                  hash: 12099
                   chains:
-                    - {}
+                    - hash: 12099
+                      target:
+                        id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                        tag: pp_grid_sr
+                        blockType: interfaceDocumentsSourceBlock
+                        config:
+                          id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                          blockType: interfaceDocumentsSourceBlock
+                          tag: pp_grid_sr
+                        path:
+                          - 0
+                          - 1
+                          - 0
+                          - 0
+                      pairs:
+                        - hash: 100
+                          source:
+                            id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                            tag: header
+                            blockType: interfaceContainerBlock
+                            config:
+                              id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                              blockType: interfaceContainerBlock
+                              tag: header
+                            path:
+                              - 0
+                              - 1
+                          filter:
+                            id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                            tag: header
+                            blockType: interfaceContainerBlock
+                            config:
+                              id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                              blockType: interfaceContainerBlock
+                              tag: header
+                            path:
+                              - 0
+                              - 1
         '401':
           description: Unauthorized request.
           content:
@@ -2412,9 +2963,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                message:
+                  - id must be a string
+                error: Unprocessable Entity
+                statusCode: 422
         '500':
           description: Internal server error.
           content:
@@ -38114,174 +38668,6 @@ components:
         - inputEvents
         - outputEvents
         - variables
-    FilterSchemasDTO:
-      type: object
-      properties:
-        schemaId1:
-          type: string
-          example: 69aeb71ef8c5b278e3bab4e5
-        schemaId2:
-          type: string
-          example: 69b8115f3dc0fa022156fb89
-        schemas:
-          example:
-            - type: id
-              value: 69aeb71ef8c5b278e3bab4e5
-            - type: policy-message
-              value: 9db028d2-03ad-4d49-a178-cf4b67f8c147
-              policy: '1773670900.819264517'
-            - type: policy-file
-              value: 9db028d2-03ad-4d49-a178-cf4b67f8c147
-              policy:
-                id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
-                name: File Name
-                value: base64...
-          type: array
-          items:
-            $ref: '#/components/schemas/FilterSchemaDTO'
-        idLvl:
-          oneOf:
-            - type: string
-              enum:
-                - '0'
-                - '1'
-            - type: number
-              enum:
-                - 0
-                - 1
-          example: 0
-    FilterDocumentsDTO:
-      type: object
-      properties:
-        idLvl:
-          oneOf:
-            - type: string
-              enum:
-                - '0'
-                - '1'
-            - type: number
-              enum:
-                - 0
-                - 1
-          example: 0
-        eventsLvl:
-          oneOf:
-            - type: string
-              enum:
-                - '0'
-                - '1'
-                - '2'
-            - type: number
-              enum:
-                - 0
-                - 1
-                - 2
-          example: 0
-        propLvl:
-          oneOf:
-            - type: string
-              enum:
-                - '0'
-                - '1'
-                - '2'
-            - type: number
-              enum:
-                - 0
-                - 1
-                - 2
-          example: 0
-        childrenLvl:
-          oneOf:
-            - type: string
-              enum:
-                - '0'
-                - '1'
-                - '2'
-            - type: number
-              enum:
-                - 0
-                - 1
-                - 2
-          example: 0
-        documentId1:
-          type: string
-          example: 69aeb71ef8c5b278e3bab4e5
-        documentId2:
-          type: string
-          example: 69b8115f3dc0fa022156fb89
-        documentIds:
-          example:
-            - 69aeb71ef8c5b278e3bab4e5
-            - 69b8115f3dc0fa022156fb89
-          type: array
-          items:
-            type: string
-    FilterToolsDTO:
-      type: object
-      properties:
-        idLvl:
-          oneOf:
-            - type: string
-              enum:
-                - '0'
-                - '1'
-            - type: number
-              enum:
-                - 0
-                - 1
-          example: 0
-        eventsLvl:
-          oneOf:
-            - type: string
-              enum:
-                - '0'
-                - '1'
-                - '2'
-            - type: number
-              enum:
-                - 0
-                - 1
-                - 2
-          example: 0
-        propLvl:
-          oneOf:
-            - type: string
-              enum:
-                - '0'
-                - '1'
-                - '2'
-            - type: number
-              enum:
-                - 0
-                - 1
-                - 2
-          example: 0
-        childrenLvl:
-          oneOf:
-            - type: string
-              enum:
-                - '0'
-                - '1'
-                - '2'
-            - type: number
-              enum:
-                - 0
-                - 1
-                - 2
-          example: 0
-        toolId1:
-          type: string
-          example: 69aeb71ef8c5b278e3bab4e5
-        toolId2:
-          type: string
-          example: 69b8115f3dc0fa022156fb89
-        toolIds:
-          example:
-            - 69aeb71ef8c5b278e3bab4e5
-            - 69b8115f3dc0fa022156fb89
-          type: array
-          items:
-            type: string
     FilterSearchBlocksDTO:
       type: object
       properties:
@@ -38290,29 +38676,195 @@ components:
           example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
         config:
           type: object
-          additionalProperties: {}
+          description: >-
+            Root block config to search for similar blocks in published
+            policies.
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+              example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+            blockType:
+              type: string
+              example: interfaceContainerBlock
+            uiMetaData:
+              type: object
+              additionalProperties: true
+              example:
+                type: blank
+            permissions:
+              type: array
+              items:
+                type: string
+              example:
+                - ANY_ROLE
+            defaultActive:
+              type: boolean
+              example: true
+            onErrorAction:
+              type: string
+              example: no-action
+            tag:
+              type: string
+              example: ''
+            children:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+              example:
+                - id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                  blockType: policyRolesBlock
+                  defaultActive: true
+                  uiMetaData:
+                    title: Roles
+                    description: Choose Roles
+                  roles:
+                    - Project Participant
+                    - VVB
+                  permissions:
+                    - NO_ROLE
+                  onErrorAction: no-action
+                  tag: Choose_Roles1
+                  children: []
+                  events: []
+                  artifacts: []
+            events:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+              example: []
+            artifacts:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+              example: []
+          example:
+            id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+            blockType: interfaceContainerBlock
+            uiMetaData:
+              type: blank
+            permissions:
+              - ANY_ROLE
+            defaultActive: true
+            onErrorAction: no-action
+            tag: ''
+            children:
+              - id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                blockType: policyRolesBlock
+                defaultActive: true
+                uiMetaData:
+                  title: Roles
+                  description: Choose Roles
+                roles:
+                  - Project Participant
+                  - VVB
+                permissions:
+                  - NO_ROLE
+                onErrorAction: no-action
+                tag: Choose_Roles1
+                children: []
+                events: []
+                artifacts: []
+            events: []
+            artifacts: []
       required:
         - id
         - config
+    SearchBlocksNodeDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+        tag:
+          type: string
+          example: pp_grid_sr
+        blockType:
+          type: string
+          example: interfaceDocumentsSourceBlock
+        config:
+          type: object
+          description: Original block config (free-form object)
+          additionalProperties: true
+        path:
+          example:
+            - 0
+            - 1
+            - 0
+            - 0
+          type: array
+          items:
+            type: number
+      required:
+        - id
+        - tag
+        - blockType
+        - config
+        - path
+    SearchBlocksPairDTO:
+      type: object
+      properties:
+        hash:
+          type: number
+          example: 100
+        source:
+          $ref: '#/components/schemas/SearchBlocksNodeDTO'
+        filter:
+          $ref: '#/components/schemas/SearchBlocksNodeDTO'
+      required:
+        - hash
+        - source
+        - filter
+    SearchBlocksChainDTO:
+      type: object
+      properties:
+        hash:
+          type: number
+          example: 12099
+        target:
+          $ref: '#/components/schemas/SearchBlocksNodeDTO'
+        pairs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchBlocksPairDTO'
+      required:
+        - hash
+        - target
+        - pairs
     SearchBlocksDTO:
       type: object
       properties:
         name:
           type: string
+          example: CDM AMS-III.AR Policy
         description:
           type: string
+          example: >-
+            Substituting fossil fuel-based lighting with LED/CFL lighting
+            systems
         version:
           type: string
+          example: '1'
         owner:
           type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         topicId:
           type: string
+          example: 0.0.6046379
         messageId:
           type: string
+          example: '1773670900.819264517'
         hash:
-          type: string
+          type: number
+          example: 12099
         chains:
-          type: object
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchBlocksChainDTO'
       required:
         - name
         - description
@@ -40722,6 +41274,72 @@ components:
         - title
         - companyName
         - sectoralScope
+    FilterDocumentsDTO:
+      type: object
+      properties:
+        idLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+            - type: number
+              enum:
+                - 0
+                - 1
+          example: 0
+        eventsLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        propLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        childrenLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        documentId1:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        documentId2:
+          type: string
+          example: 69b8115f3dc0fa022156fb89
+        documentIds:
+          example:
+            - 69aeb71ef8c5b278e3bab4e5
+            - 69b8115f3dc0fa022156fb89
+          type: array
+          items:
+            type: string
     CompareDocumentsV2DTO:
       type: object
       properties:
@@ -42177,3 +42795,105 @@ components:
         - '@context'
         - id
         - type
+    FilterSchemasDTO:
+      type: object
+      properties:
+        schemaId1:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        schemaId2:
+          type: string
+          example: 69b8115f3dc0fa022156fb89
+        schemas:
+          example:
+            - type: id
+              value: 69aeb71ef8c5b278e3bab4e5
+            - type: policy-message
+              value: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+              policy: '1773670900.819264517'
+            - type: policy-file
+              value: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+              policy:
+                id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                name: File Name
+                value: base64...
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterSchemaDTO'
+        idLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+            - type: number
+              enum:
+                - 0
+                - 1
+          example: 0
+    FilterToolsDTO:
+      type: object
+      properties:
+        idLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+            - type: number
+              enum:
+                - 0
+                - 1
+          example: 0
+        eventsLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        propLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        childrenLvl:
+          oneOf:
+            - type: string
+              enum:
+                - '0'
+                - '1'
+                - '2'
+            - type: number
+              enum:
+                - 0
+                - 1
+                - 2
+          example: 0
+        toolId1:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        toolId2:
+          type: string
+          example: 69b8115f3dc0fa022156fb89
+        toolIds:
+          example:
+            - 69aeb71ef8c5b278e3bab4e5
+            - 69b8115f3dc0fa022156fb89
+          type: array
+          items:
+            type: string
