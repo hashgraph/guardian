@@ -166,6 +166,35 @@ export const ObjectExamples = {
         location: 'local'
     },
 
+    ARTIFACTS_RESPONSE_LIST: [
+        {
+            createDate: '2026-03-16T09:31:27.902Z',
+            updateDate: '2026-03-16T09:31:28.042Z',
+            uuid: 'dcc46b7b-3bb8-4a60-8e5b-f7b17ae76d1e',
+            policyId: '69b7cdefa48bb15eb7afb3e7',
+            name: 'region_emission_factors',
+            type: 'JSON',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+            extention: 'json',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+            _id: '69b7cdefa48bb15eb7afb3e5',
+            id: '69b7cdefa48bb15eb7afb3e5'
+        },
+        {
+            createDate: '2026-03-16T09:31:27.898Z',
+            updateDate: '2026-03-16T09:31:28.042Z',
+            uuid: 'ba6f7bc5-0f91-46a5-a681-1658f93a1b68',
+            policyId: '69b7cdefa48bb15eb7afb3e7',
+            name: 'country_emission_factors',
+            type: 'JSON',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+            extention: 'json',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
+            _id: '69b7cdefa48bb15eb7afb3e3',
+            id: '69b7cdefa48bb15eb7afb3e3'
+        }
+    ],
+
     VC_DOCUMENT_1: {
         createDate: '2026-03-13T09:26:55.610Z',
         updateDate: '2026-03-13T09:27:09.653Z',

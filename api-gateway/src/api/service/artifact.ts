@@ -19,7 +19,7 @@ import { ApiBadRequestResponse, ApiBody, ApiConsumes, ApiCreatedResponse, ApiExt
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey, FilenameSanitizer } from '#helpers';
-import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem, UpsertFileResponseDTO } from '#middlewares';
+import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem, UpsertFileResponseDTO, ObjectExamples } from '#middlewares';
 import { ARTIFACT_REQUIRED_PROPS, PREFIXES } from '#constants'
 import { FastifyReply } from 'fastify';
 
@@ -88,7 +88,7 @@ export class ArtifactApi {
         isArray: true,
         headers: pageHeader,
         type: ArtifactDTOItem,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'string', uuid: 'f3b2a9c1e4d5678901234567', extention: 'string', type: 'string' }]
+        example: ObjectExamples.ARTIFACTS_RESPONSE_LIST
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -199,7 +199,7 @@ export class ArtifactApi {
         isArray: true,
         headers: pageHeader,
         type: ArtifactDTOItem,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'string', uuid: 'f3b2a9c1e4d5678901234567', extention: 'string', type: 'string' }]
+        example: ObjectExamples.ARTIFACTS_RESPONSE_LIST
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
