@@ -3146,7 +3146,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -3167,17 +3167,28 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Form data with artifacts.
+        description: |-
+          Form data with artifacts.
+
+          Default:
+          - artifacts: [&lt;binary file&gt;]
+
+          Modified:
+          - artifacts: [&lt;binary file 1&gt;, &lt;binary file 2&gt;]
         content:
           multipart/form-data:
             schema:
-              type: array
-              items:
-                type: object
-                properties:
+              $ref: '#/components/schemas/UploadArtifactsDTO'
+            examples:
+              uploadArtifactsBody:
+                value:
                   artifacts:
-                    type: string
-                    format: binary
+                    - <binary file>
+              Modified:
+                value:
+                  artifacts:
+                    - <binary file 1>
+                    - <binary file 2>
       responses:
         '201':
           description: Artifacts uploaded successfully.
@@ -3187,20 +3198,58 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ArtifactDTOItem'
-              example:
-                - id: f3b2a9c1e4d5678901234567
-                  name: string
-                  uuid: f3b2a9c1e4d5678901234567
-                  extention: string
-                  type: string
+              examples:
+                SingleUpload:
+                  summary: One uploaded artifact
+                  value:
+                    - createDate: '2026-03-19T14:43:45.250Z'
+                      updateDate: '2026-03-19T14:43:45.250Z'
+                      uuid: d5fc05d5-efc8-4b00-80d7-020374361452
+                      policyId: 69ba978163637d350db5b56f
+                      name: 1_profile_preset
+                      type: JSON
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                      extention: json
+                      category: policy
+                      _id: 69bc0ba1f6b2fa8ae50f2ec9
+                      id: 69bc0ba1f6b2fa8ae50f2ec9
+                MultiUpload:
+                  summary: Multiple uploaded artifacts
+                  value:
+                    - createDate: '2026-03-16T09:31:27.902Z'
+                      updateDate: '2026-03-16T09:31:28.042Z'
+                      uuid: dcc46b7b-3bb8-4a60-8e5b-f7b17ae76d1e
+                      policyId: 69b7cdefa48bb15eb7afb3e7
+                      name: region_emission_factors
+                      type: JSON
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                      extention: json
+                      category: policy
+                      _id: 69b7cdefa48bb15eb7afb3e5
+                      id: 69b7cdefa48bb15eb7afb3e5
+                    - createDate: '2026-03-16T09:31:27.898Z'
+                      updateDate: '2026-03-16T09:31:28.042Z'
+                      uuid: ba6f7bc5-0f91-46a5-a681-1658f93a1b68
+                      policyId: 69b7cdefa48bb15eb7afb3e7
+                      name: country_emission_factors
+                      type: JSON
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                      extention: json
+                      category: policy
+                      _id: 69b7cdefa48bb15eb7afb3e3
+                      id: 69b7cdefa48bb15eb7afb3e3
         '400':
           description: Bad request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/BadRequestErrorDTO'
               example:
-                result: ok
+                statusCode: 400
+                message: The request should be a form-data
         '401':
           description: Unauthorized request.
           content:
@@ -3220,6 +3269,15 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+        '422':
+          description: Unprocessable entity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
+              example:
+                statusCode: 422
+                message: There is no appropriate policy
         '500':
           description: Internal server error.
           content:
@@ -3227,7 +3285,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -3279,7 +3337,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -3299,19 +3357,17 @@ paths:
             example: 69aeb71ef8c5b278e3bab4e5
             type: string
       responses:
-        '200':
+        '201':
           description: Successful operation. Returns file content.
           content:
-            text/csv:
+            application/octet-stream:
               schema:
                 type: string
                 format: binary
-              example:
-                result: ok
         '401':
           description: Unauthorized request.
           content:
-            text/csv:
+            application/octet-stream:
               schema:
                 $ref: '#/components/schemas/UnauthorizedErrorDTO'
               example:
@@ -3320,7 +3376,7 @@ paths:
         '403':
           description: Forbidden
           content:
-            text/csv:
+            application/octet-stream:
               schema:
                 $ref: '#/components/schemas/ForbiddenErrorDTO'
               example:
@@ -3330,11 +3386,11 @@ paths:
         '500':
           description: Internal server error.
           content:
-            text/csv:
+            application/octet-stream:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -3359,6 +3415,14 @@ paths:
             application/json:
               schema:
                 type: boolean
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorDTO'
+              example:
+                message: fileId is required
         '401':
           description: Unauthorized request.
           content:
@@ -3385,7 +3449,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -3410,6 +3474,7 @@ paths:
                 fileId:
                   type: string
                   description: Existing file _id to overwrite (optional)
+                  example: 69aeb71ef8c5b278e3bab4e5
       responses:
         '201':
           description: File uploaded successfully.
@@ -3418,15 +3483,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/UpsertFileResponseDTO'
               example:
-                fileId: 67b8f31d2a26f8be2a9f0be9
+                fileId: 69bc1d9df6b2fa8ae50f2edc
+                filename: file
+                contentType: application/json
         '400':
           description: Bad request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/BadRequestErrorDTO'
               example:
-                result: ok
+                statusCode: 400
+                message: The request should be a form-data
         '401':
           description: Unauthorized request.
           content:
@@ -3446,6 +3514,15 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+        '422':
+          description: Unprocessable entity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
+              example:
+                statusCode: 422
+                message: There are no files to upload.
         '500':
           description: Internal server error.
           content:
@@ -3453,7 +3530,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -38949,6 +39026,36 @@ components:
         - owner
         - extention
         - id
+    UploadArtifactsDTO:
+      type: object
+      properties:
+        artifacts:
+          description: Artifact files
+          type: array
+          items:
+            type: string
+            format: binary
+      required:
+        - artifacts
+    BadRequestErrorDTO:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 400
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          example: Error message
+        error:
+          type: string
+          example: Bad Request
+      required:
+        - statusCode
+        - message
     UpsertFileResponseDTO:
       type: object
       properties:
@@ -38956,8 +39063,18 @@ components:
           type: string
           description: File identifier
           example: 67b8f31d2a26f8be2a9f0be9
+        filename:
+          type: string
+          description: Saved file name
+          example: file
+        contentType:
+          type: string
+          description: Saved file content type
+          example: application/json
       required:
         - fileId
+        - filename
+        - contentType
     ContractDTO:
       type: object
       properties:
