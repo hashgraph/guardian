@@ -3094,11 +3094,32 @@ paths:
                 items:
                   $ref: '#/components/schemas/ArtifactDTOItem'
               example:
-                - id: f3b2a9c1e4d5678901234567
-                  name: string
-                  uuid: f3b2a9c1e4d5678901234567
-                  extention: string
-                  type: string
+                - createDate: '2026-03-16T09:31:27.902Z'
+                  updateDate: '2026-03-16T09:31:28.042Z'
+                  uuid: dcc46b7b-3bb8-4a60-8e5b-f7b17ae76d1e
+                  policyId: 69b7cdefa48bb15eb7afb3e7
+                  name: region_emission_factors
+                  type: JSON
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                  extention: json
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                  _id: 69b7cdefa48bb15eb7afb3e5
+                  id: 69b7cdefa48bb15eb7afb3e5
+                - createDate: '2026-03-16T09:31:27.898Z'
+                  updateDate: '2026-03-16T09:31:28.042Z'
+                  uuid: ba6f7bc5-0f91-46a5-a681-1658f93a1b68
+                  policyId: 69b7cdefa48bb15eb7afb3e7
+                  name: country_emission_factors
+                  type: JSON
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                  extention: json
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
+                  _id: 69b7cdefa48bb15eb7afb3e3
+                  id: 69b7cdefa48bb15eb7afb3e3
         '401':
           description: Unauthorized request.
           content:
@@ -38877,22 +38898,57 @@ components:
     ArtifactDTOItem:
       type: object
       properties:
-        id:
+        createDate:
           type: string
-        name:
+          example: '2026-03-19T11:23:34.247Z'
+        updateDate:
           type: string
+          example: '2026-03-19T11:23:34.247Z'
         uuid:
           type: string
-        extention:
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+        policyId:
           type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        name:
+          type: string
+          example: country_emission_factors
         type:
           type: string
+          enum:
+            - JSON
+            - Executable Code
+          example: JSON
+        owner:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        extention:
+          type: string
+          example: json
+        category:
+          type: string
+          enum:
+            - policy
+            - tool
+          example: policy
+        creator:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        id:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
       required:
-        - id
-        - name
+        - createDate
+        - updateDate
         - uuid
-        - extention
+        - policyId
+        - name
         - type
+        - owner
+        - extention
+        - id
     UpsertFileResponseDTO:
       type: object
       properties:
