@@ -1,9 +1,12 @@
+import * as CsvExamples from './csv-examples.js';
+
 export enum Examples {
     DB_ID = '69aeb71ef8c5b278e3bab4e5',
     DB_ID_2 = '69b8115f3dc0fa022156fb89',
     DB_ID_3 = '69b7da996d2f71c7a55b1fa3',
     MESSAGE_ID = '1773670900.819264517',
     UUID = '9db028d2-03ad-4d49-a178-cf4b67f8c147',
+    UUID_2 = 'e9c0d9ee-fc29-4372-89e0-0a7e08516699',
     ACCOUNT_ID = '0.0.6046379',
     DATE = '2026-03-03T17:25:53.312Z',
     IPFS = 'ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
@@ -400,6 +403,96 @@ export const ObjectExamples = {
         ]
     },
 
+    SEARCH_BLOCKS_REQUEST_COMPACT: {
+        id: Examples.UUID,
+        config: {
+            id: Examples.UUID,
+            blockType: 'interfaceContainerBlock',
+            uiMetaData: {
+                type: 'blank'
+            },
+            permissions: ['ANY_ROLE'],
+            defaultActive: true,
+            onErrorAction: 'no-action',
+            tag: '',
+            children: [
+                {
+                    id: Examples.UUID_2,
+                    blockType: 'policyRolesBlock',
+                    defaultActive: true,
+                    uiMetaData: {
+                        title: 'Roles',
+                        description: 'Choose Roles'
+                    },
+                    roles: ['Project Participant', 'VVB'],
+                    permissions: ['NO_ROLE'],
+                    onErrorAction: 'no-action',
+                    tag: 'Choose_Roles1',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                }
+            ],
+            events: [],
+            artifacts: []
+        }
+    },
+
+    SEARCH_BLOCKS_RESPONSE_COMPACT: [
+        {
+            name: 'CDM AMS-III.AR Policy',
+            description: 'Substituting fossil fuel-based lighting with LED/CFL lighting systems',
+            version: '1',
+            owner: Examples.DID,
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
+            hash: 12099,
+            chains: [
+                {
+                    hash: 12099,
+                    target: {
+                        id: Examples.UUID,
+                        tag: 'pp_grid_sr',
+                        blockType: 'interfaceDocumentsSourceBlock',
+                        config: {
+                            id: Examples.UUID,
+                            blockType: 'interfaceDocumentsSourceBlock',
+                            tag: 'pp_grid_sr'
+                        },
+                        path: [0, 1, 0, 0]
+                    },
+                    pairs: [
+                        {
+                            hash: 100,
+                            source: {
+                                id: Examples.UUID,
+                                tag: 'header',
+                                blockType: 'interfaceContainerBlock',
+                                config: {
+                                    id: Examples.UUID,
+                                    blockType: 'interfaceContainerBlock',
+                                    tag: 'header'
+                                },
+                                path: [0, 1]
+                            },
+                            filter: {
+                                id: Examples.UUID,
+                                tag: 'header',
+                                blockType: 'interfaceContainerBlock',
+                                config: {
+                                    id: Examples.UUID,
+                                    blockType: 'interfaceContainerBlock',
+                                    tag: 'header'
+                                },
+                                path: [0, 1]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+
     SEARCH_POLICIES_RESPONSE_WITH_POLICY_ID: {
         target: {
             type: 'Local',
@@ -764,6 +857,14 @@ export const ObjectExamples = {
         ],
         totals: [68, 51],
         documents: { columns: [], report: [] }
-    }
+    },
+
+    COMPARE_POLICIES_EXPORT_CSV_RESPONSE: CsvExamples.COMPARE_POLICIES_EXPORT_CSV_RESPONSE,
+    COMPARE_MODULES_EXPORT_CSV_RESPONSE: CsvExamples.COMPARE_MODULES_EXPORT_CSV_RESPONSE,
+    COMPARE_SCHEMAS_EXPORT_CSV_RESPONSE: CsvExamples.COMPARE_SCHEMAS_EXPORT_CSV_RESPONSE,
+    COMPARE_TOOLS_EXPORT_CSV_RESPONSE_SINGLE: CsvExamples.COMPARE_TOOLS_EXPORT_CSV_RESPONSE_SINGLE,
+    COMPARE_TOOLS_EXPORT_CSV_RESPONSE_MULTI: CsvExamples.COMPARE_TOOLS_EXPORT_CSV_RESPONSE_MULTI,
+    COMPARE_DOCUMENTS_EXPORT_CSV_RESPONSE_SINGLE: CsvExamples.COMPARE_DOCUMENTS_EXPORT_CSV_RESPONSE_SINGLE,
+    COMPARE_DOCUMENTS_EXPORT_CSV_RESPONSE_MULTI: CsvExamples.COMPARE_DOCUMENTS_EXPORT_CSV_RESPONSE_MULTI
 
 }

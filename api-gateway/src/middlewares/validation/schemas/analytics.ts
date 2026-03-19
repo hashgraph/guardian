@@ -11,38 +11,151 @@ import { Type } from 'class-transformer';
 import { Examples } from '../examples.js';
 
 export class SearchBlocksDTO {
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        example: 'CDM AMS-III.AR Policy'
+    })
     @IsString()
     name: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        example: 'Substituting fossil fuel-based lighting with LED/CFL lighting systems'
+    })
     @IsString()
     description: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        example: '1'
+    })
     @IsString()
     version: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        example: Examples.DID
+    })
     @IsString()
     owner: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        example: Examples.ACCOUNT_ID
+    })
     @IsString()
     topicId: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        example: Examples.MESSAGE_ID
+    })
     @IsString()
     messageId: string;
 
-    @ApiProperty()
-    @IsString()
-    hash: string;
+    @ApiProperty({
+        type: Number,
+        example: 12099
+    })
+    @IsNumber()
+    hash: number;
 
-    @ApiProperty({ type: () => Object })
+    @ApiProperty({
+        type: () => SearchBlocksChainDTO,
+        isArray: true
+    })
     @IsArray()
-    @Type(() => Object)
-    chains: any[];
+    @ValidateNested({ each: true })
+    @Type(() => SearchBlocksChainDTO)
+    chains: SearchBlocksChainDTO[];
+}
+
+export class SearchBlocksNodeDTO {
+    @ApiProperty({
+        type: String,
+        example: Examples.UUID
+    })
+    @IsString()
+    id: string;
+
+    @ApiProperty({
+        type: String,
+        example: 'pp_grid_sr'
+    })
+    @IsString()
+    tag: string;
+
+    @ApiProperty({
+        type: String,
+        example: 'interfaceDocumentsSourceBlock'
+    })
+    @IsString()
+    blockType: string;
+
+    @ApiProperty({
+        type: Object,
+        description: 'Original block config (free-form object)',
+        additionalProperties: true
+    })
+    @IsObject()
+    config: Record<string, any>;
+
+    @ApiProperty({
+        type: Number,
+        isArray: true,
+        example: [0, 1, 0, 0]
+    })
+    @IsArray()
+    @IsNumber({}, { each: true })
+    path: number[];
+}
+
+export class SearchBlocksPairDTO {
+    @ApiProperty({
+        type: Number,
+        example: 100
+    })
+    @IsNumber()
+    hash: number;
+
+    @ApiProperty({
+        type: () => SearchBlocksNodeDTO
+    })
+    @ValidateNested()
+    @Type(() => SearchBlocksNodeDTO)
+    source: SearchBlocksNodeDTO;
+
+    @ApiProperty({
+        type: () => SearchBlocksNodeDTO
+    })
+    @ValidateNested()
+    @Type(() => SearchBlocksNodeDTO)
+    filter: SearchBlocksNodeDTO;
+}
+
+export class SearchBlocksChainDTO {
+    @ApiProperty({
+        type: Number,
+        example: 12099
+    })
+    @IsNumber()
+    hash: number;
+
+    @ApiProperty({
+        type: () => SearchBlocksNodeDTO
+    })
+    @ValidateNested()
+    @Type(() => SearchBlocksNodeDTO)
+    target: SearchBlocksNodeDTO;
+
+    @ApiProperty({
+        type: () => SearchBlocksPairDTO,
+        isArray: true
+    })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => SearchBlocksPairDTO)
+    pairs: SearchBlocksPairDTO[];
 }
 
 export class ComparePoliciesItemDTO {

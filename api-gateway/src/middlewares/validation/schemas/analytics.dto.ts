@@ -607,10 +607,119 @@ export class FilterSearchBlocksDTO {
 
     @ApiProperty({
         type: 'object',
-        additionalProperties: {}
+        description: 'Root block config to search for similar blocks in published policies.',
+        additionalProperties: true,
+        properties: {
+            id: {
+                type: 'string',
+                example: Examples.UUID
+            },
+            blockType: {
+                type: 'string',
+                example: 'interfaceContainerBlock'
+            },
+            uiMetaData: {
+                type: 'object',
+                additionalProperties: true,
+                example: {
+                    type: 'blank'
+                }
+            },
+            permissions: {
+                type: 'array',
+                items: {
+                    type: 'string'
+                },
+                example: ['ANY_ROLE']
+            },
+            defaultActive: {
+                type: 'boolean',
+                example: true
+            },
+            onErrorAction: {
+                type: 'string',
+                example: 'no-action'
+            },
+            tag: {
+                type: 'string',
+                example: ''
+            },
+            children: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    additionalProperties: true
+                },
+                example: [
+                    {
+                        id: Examples.UUID,
+                        blockType: 'policyRolesBlock',
+                        defaultActive: true,
+                        uiMetaData: {
+                            title: 'Roles',
+                            description: 'Choose Roles'
+                        },
+                        roles: ['Project Participant', 'VVB'],
+                        permissions: ['NO_ROLE'],
+                        onErrorAction: 'no-action',
+                        tag: 'Choose_Roles1',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    }
+                ]
+            },
+            events: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    additionalProperties: true
+                },
+                example: []
+            },
+            artifacts: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    additionalProperties: true
+                },
+                example: []
+            }
+        },
+        example: {
+            id: Examples.UUID,
+            blockType: 'interfaceContainerBlock',
+            uiMetaData: {
+                type: 'blank'
+            },
+            permissions: ['ANY_ROLE'],
+            defaultActive: true,
+            onErrorAction: 'no-action',
+            tag: '',
+            children: [
+                {
+                    id: Examples.UUID,
+                    blockType: 'policyRolesBlock',
+                    defaultActive: true,
+                    uiMetaData: {
+                        title: 'Roles',
+                        description: 'Choose Roles'
+                    },
+                    roles: ['Project Participant', 'VVB'],
+                    permissions: ['NO_ROLE'],
+                    onErrorAction: 'no-action',
+                    tag: 'Choose_Roles1',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                }
+            ],
+            events: [],
+            artifacts: []
+        }
     })
     @IsObject()
-    config: any;
+    config: Record<string, any>;
 }
 
 export class SearchPolicyDTO {
