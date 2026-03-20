@@ -3581,21 +3581,46 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ContractDTO'
-              example:
-                - id: f3b2a9c1e4d5678901234567
-                  contractId: f3b2a9c1e4d5678901234567
-                  description: string
-                  owner: string
-                  permissions: 0
-                  topicId: f3b2a9c1e4d5678901234567
-                  type: string
-                  syncRequestsDate: string
-                  syncPoolsDate: string
-                  lastSyncEventTimeStamp: string
-                  wipeContractIds:
-                    - string
-                  wipeTokenIds:
-                    - eyJhbGciOi...
+              examples:
+                WIPE:
+                  summary: Contracts list filtered by `type=WIPE`
+                  value:
+                    - createDate: '2026-03-20T08:24:09.121Z'
+                      updateDate: '2026-03-20T09:08:01.905Z'
+                      contractId: 0.0.8300131
+                      description: Wipe contract description
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                      permissions: 7
+                      topicId: 0.0.8300126
+                      type: WIPE
+                      lastSyncEventTimeStamp: '1773997659.461000723'
+                      wipeContractIds: []
+                      syncDisabled: false
+                      version: 1.0.1
+                      wipeTokenIds: []
+                      _id: 69bd0429fdc2fd0bb2f9e95b
+                      id: 69bd0429fdc2fd0bb2f9e95b
+                RETIRE:
+                  summary: Contracts list filtered by `type=RETIRE`
+                  value:
+                    - createDate: '2026-03-20T08:26:36.292Z'
+                      updateDate: '2026-03-20T08:55:03.162Z'
+                      contractId: 0.0.8300155
+                      description: Retire Contract description
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                      permissions: 3
+                      topicId: 0.0.8300142
+                      type: RETIRE
+                      lastSyncEventTimeStamp: '1773996847.377859483'
+                      wipeContractIds: []
+                      syncDisabled: false
+                      version: 1.0.1
+                      wipeTokenIds:
+                        - 0.0.8300593
+                      _id: 69bd04bcfdc2fd0bb2f9e971
+                      id: 69bd04bcfdc2fd0bb2f9e971
         '401':
           description: Unauthorized request.
           content:
@@ -3622,7 +3647,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -3641,6 +3666,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ContractConfigDTO'
+            examples:
+              createContractBodyRetire:
+                value:
+                  type: RETIRE
+                  description: Retire contract description
+              createContractBodyWipe:
+                value:
+                  type: WIPE
+                  description: Wipe contract description
       responses:
         '201':
           description: Created contract.
@@ -3648,21 +3682,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ContractDTO'
-              example:
-                id: f3b2a9c1e4d5678901234567
-                contractId: f3b2a9c1e4d5678901234567
-                description: string
-                owner: string
-                permissions: 0
-                topicId: f3b2a9c1e4d5678901234567
-                type: string
-                syncRequestsDate: string
-                syncPoolsDate: string
-                lastSyncEventTimeStamp: string
-                wipeContractIds:
-                  - string
-                wipeTokenIds:
-                  - eyJhbGciOi...
+              examples:
+                RETIRE:
+                  summary: Created RETIRE contract
+                  value:
+                    createDate: '2026-03-20T09:30:28.129Z'
+                    updateDate: '2026-03-20T09:30:28.129Z'
+                    contractId: 0.0.8301737
+                    description: Retire contract description
+                    owner: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                    permissions: 3
+                    topicId: 0.0.8301715
+                    type: RETIRE
+                    wipeContractIds: []
+                    syncDisabled: false
+                    version: 1.0.1
+                    wipeTokenIds: []
+                    _id: 69bd13b4fdc2fd0bb2f9eccc
+                    id: 69bd13b4fdc2fd0bb2f9eccc
+                WIPE:
+                  summary: Created WIPE contract
+                  value:
+                    createDate: '2026-03-20T09:31:11.101Z'
+                    updateDate: '2026-03-20T09:31:11.101Z'
+                    contractId: 0.0.8301741
+                    description: Wipe contract description
+                    owner: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                    permissions: 7
+                    topicId: 0.0.8301716
+                    type: WIPE
+                    wipeContractIds: []
+                    syncDisabled: false
+                    version: 1.0.1
+                    wipeTokenIds: []
+                    _id: 69bd13df2a7b53526de3826b
+                    id: 69bd13df2a7b53526de3826b
         '401':
           description: Unauthorized request.
           content:
@@ -3689,7 +3745,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -3710,6 +3766,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ImportContractDTO'
+            examples:
+              importContractBody:
+                value:
+                  contractId: 0.0.8301737
+                  description: Imported contract
       responses:
         '200':
           description: Imported contract.
@@ -3717,21 +3778,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ContractDTO'
-              example:
-                id: f3b2a9c1e4d5678901234567
-                contractId: f3b2a9c1e4d5678901234567
-                description: string
-                owner: string
-                permissions: 0
-                topicId: f3b2a9c1e4d5678901234567
-                type: string
-                syncRequestsDate: string
-                syncPoolsDate: string
-                lastSyncEventTimeStamp: string
-                wipeContractIds:
-                  - string
-                wipeTokenIds:
-                  - eyJhbGciOi...
+              examples:
+                RETIRE:
+                  summary: Imported RETIRE contract
+                  value:
+                    createDate: '2026-03-20T09:30:28.129Z'
+                    updateDate: '2026-03-20T09:30:28.129Z'
+                    contractId: 0.0.8301737
+                    description: Imported contract
+                    owner: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                    permissions: 3
+                    topicId: 0.0.8301715
+                    type: RETIRE
+                    lastSyncEventTimeStamp: '1773997659.461000723'
+                    wipeContractIds: []
+                    syncDisabled: false
+                    version: 1.0.1
+                    wipeTokenIds: []
+                    _id: 69bd13b4fdc2fd0bb2f9eccc
+                    id: 69bd13b4fdc2fd0bb2f9eccc
+                WIPE:
+                  summary: Imported WIPE contract
+                  value:
+                    createDate: '2026-03-20T09:31:11.101Z'
+                    updateDate: '2026-03-20T09:31:11.101Z'
+                    contractId: 0.0.8301741
+                    description: Imported contract
+                    owner: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                    permissions: 7
+                    topicId: 0.0.8301716
+                    type: WIPE
+                    lastSyncEventTimeStamp: '1773997659.461000723'
+                    wipeContractIds: []
+                    syncDisabled: false
+                    version: 1.0.1
+                    wipeTokenIds: []
+                    _id: 69bd13df2a7b53526de3826b
+                    id: 69bd13df2a7b53526de3826b
         '401':
           description: Unauthorized request.
           content:
@@ -3758,7 +3843,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -3812,7 +3897,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -3866,7 +3951,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -3918,10 +4003,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/WiperRequestDTO'
               example:
-                - id: f3b2a9c1e4d5678901234567
-                  contractId: f3b2a9c1e4d5678901234567
-                  user: string
-                  token: eyJhbGciOi...
+                - createDate: '2026-03-20T12:55:01.614Z'
+                  updateDate: '2026-03-20T12:55:01.614Z'
+                  contractId: 0.0.8300131
+                  user: 0.0.8300155
+                  token: 0.0.8305077
+                  id: 69bd43a55b864fe37954a8bb
         '401':
           description: Unauthorized request.
           content:
@@ -3948,7 +4035,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -3965,7 +4052,7 @@ paths:
         - name: contractId
           required: true
           in: path
-          description: Contract identifier
+          description: Wipe Contract Identifier
           schema:
             example: 652745597a7b53526de37c05
             type: string
@@ -4002,7 +4089,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4019,7 +4106,7 @@ paths:
         - name: contractId
           required: true
           in: path
-          description: Contract identifier
+          description: Wipe Contract Identifier
           schema:
             example: 652745597a7b53526de37c05
             type: string
@@ -4056,7 +4143,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4110,7 +4197,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4171,7 +4258,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4188,7 +4275,7 @@ paths:
         - name: contractId
           required: true
           in: path
-          description: Contract identifier
+          description: Wipe Contract Identifier
           schema:
             example: 652745597a7b53526de37c05
             type: string
@@ -4225,7 +4312,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4249,7 +4336,7 @@ paths:
         - name: hederaId
           required: true
           in: path
-          description: Hedera identifier
+          description: Hedera account identifier
           schema:
             example: 0.0.1
             type: string
@@ -4286,7 +4373,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4310,7 +4397,7 @@ paths:
         - name: hederaId
           required: true
           in: path
-          description: Hedera identifier
+          description: Hedera account identifier
           schema:
             example: 0.0.1
             type: string
@@ -4347,7 +4434,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4370,7 +4457,7 @@ paths:
         - name: hederaId
           required: true
           in: path
-          description: Hedera identifier
+          description: Hedera account identifier
           schema:
             example: 0.0.1
             type: string
@@ -4407,7 +4494,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4431,7 +4518,7 @@ paths:
         - name: hederaId
           required: true
           in: path
-          description: Hedera identifier
+          description: Hedera account identifier
           schema:
             example: 0.0.1
             type: string
@@ -4468,7 +4555,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4491,7 +4578,7 @@ paths:
         - name: hederaId
           required: true
           in: path
-          description: Hedera identifier
+          description: Hedera account identifier
           schema:
             example: 0.0.1
             type: string
@@ -4528,7 +4615,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4538,21 +4625,22 @@ paths:
   /contracts/wipe/{contractId}/wiper/{hederaId}:
     post:
       description: >-
-        Add wipe contract wiper. Only users with the Standard Registry role are
-        allowed to make the request.
+        Add wipe contract wiper. For Wipe contracts v1.0.0 only. For v1.0.1+ use
+        the endpoint with tokenId. Only users with the Standard Registry role
+        are allowed to make the request.
       operationId: ContractsApi_wipeAddWiper
       parameters:
         - name: contractId
           required: true
           in: path
-          description: Contract identifier
+          description: Wipe Contract Identifier
           schema:
             example: 652745597a7b53526de37c05
             type: string
         - name: hederaId
           required: true
           in: path
-          description: Hedera identifier
+          description: Hedera account identifier
           schema:
             example: 0.0.1
             type: string
@@ -4589,7 +4677,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4598,21 +4686,22 @@ paths:
         - contracts
     delete:
       description: >-
-        Remove wipe contract wiper. Only users with the Standard Registry role
-        are allowed to make the request.
+        Remove wipe contract wiper. For Wipe contracts v1.0.0 only. For v1.0.1+
+        use the endpoint with tokenId. Only users with the Standard Registry
+        role are allowed to make the request.
       operationId: ContractsApi_wipeRemoveWiper
       parameters:
         - name: contractId
           required: true
           in: path
-          description: Contract identifier
+          description: Wipe Contract Identifier
           schema:
             example: 652745597a7b53526de37c05
             type: string
         - name: hederaId
           required: true
           in: path
-          description: Hedera identifier
+          description: Hedera account identifier
           schema:
             example: 0.0.1
             type: string
@@ -4649,7 +4738,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4659,21 +4748,22 @@ paths:
   /contracts/wipe/{contractId}/wiper/{hederaId}/{tokenId}:
     post:
       description: >-
-        Add wipe contract wiper for specific token. Only users with the Standard
-        Registry role are allowed to make the request.
+        Add wipe contract wiper for specific token. For Wipe contracts v1.0.1+
+        only. Only users with the Standard Registry role are allowed to make the
+        request.
       operationId: ContractsApi_wipeAddWiperWithToken
       parameters:
         - name: contractId
           required: true
           in: path
-          description: Contract identifier
+          description: Wipe Contract Identifier
           schema:
             example: 652745597a7b53526de37c05
             type: string
         - name: hederaId
           required: true
           in: path
-          description: Hedera identifier
+          description: Hedera account identifier
           schema:
             example: 0.0.1
             type: string
@@ -4717,7 +4807,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4726,28 +4816,29 @@ paths:
         - contracts
     delete:
       description: >-
-        Remove wipe contract wiper for specific token. Only users with the
-        Standard Registry role are allowed to make the request.
+        Remove wipe contract wiper for specific token. For Wipe contracts
+        v1.0.1+ only. Only users with the Standard Registry role are allowed to
+        make the request.
       operationId: ContractsApi_wipeRemoveWiperWithToken
       parameters:
         - name: contractId
           required: true
           in: path
-          description: Contract identifier
+          description: Wipe Contract Identifier
           schema:
             example: 652745597a7b53526de37c05
             type: string
         - name: hederaId
           required: true
           in: path
-          description: Hedera identifier
+          description: Hedera account identifier
           schema:
             example: 0.0.1
             type: string
         - name: tokenId
           required: true
           in: path
-          description: Token identifier
+          description: Token identifier. The token the wiper was allowed to wipe.
           schema:
             example: 0.0.1
             type: string
@@ -4784,7 +4875,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4807,13 +4898,11 @@ paths:
             type: string
       responses:
         '200':
-          description: Sync date.
+          description: Sync date in ISO 8601 format. The timestamp when pools were synced.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Date'
-              example:
-                result: ok
+                type: string
         '401':
           description: Unauthorized request.
           content:
@@ -4840,7 +4929,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4921,7 +5010,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -4938,12 +5027,12 @@ paths:
           in: query
           description: Contract identifier
           schema:
-            example: 0.0.1
+            example: 0.0.6046379
             type: string
         - name: tokens
           required: true
           in: query
-          description: Tokens
+          description: Comma-separated token IDs. No spaces between tokens.
           schema:
             example: 0.0.1,0.0.2,0.0.3
             type: string
@@ -4978,12 +5067,43 @@ paths:
                 items:
                   $ref: '#/components/schemas/RetirePoolDTO'
               example:
-                - id: f3b2a9c1e4d5678901234567
-                  contractId: f3b2a9c1e4d5678901234567
+                - createDate: '2026-03-20T17:58:51.312Z'
+                  updateDate: '2026-03-20T18:00:01.342Z'
+                  contractId: 0.0.8308132
+                  tokens:
+                    - token: 0.0.8308700
+                      count: 1
+                      type: non-fungible
+                      tokenSymbol: TT
+                      decimals: '0'
+                      contract: 0.0.8308101
+                    - token: 0.0.8308712
+                      count: 3
+                      type: non-fungible
+                      tokenSymbol: DD
+                      decimals: '0'
+                      contract: 0.0.8308101
                   tokenIds:
-                    - eyJhbGciOi...
+                    - 0.0.8308700
+                    - 0.0.8308712
                   immediately: true
-                  enabled: string
+                  enabled: false
+                  id: 69bd8adb90fe6f912cbb0d05
+                - createDate: '2026-03-20T17:14:31.038Z'
+                  updateDate: '2026-03-20T18:00:01.342Z'
+                  contractId: 0.0.8308132
+                  tokens:
+                    - token: 0.0.8308361
+                      count: 3
+                      type: fungible
+                      tokenSymbol: CER
+                      decimals: '0'
+                      contract: 0.0.8308101
+                  tokenIds:
+                    - 0.0.8308361
+                  immediately: false
+                  enabled: true
+                  id: 69bd80773090533214e7380e
         '401':
           description: Unauthorized request.
           content:
@@ -5010,7 +5130,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -5064,7 +5184,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -5118,7 +5238,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -5144,20 +5264,16 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RetirePoolTokenDTO'
+            examples:
+              setRetirePoolBody:
+                value:
+                  tokens:
+                    - token: 0.0.8300593
+                      count: 1
+                  immediately: true
       responses:
         '200':
           description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RetirePoolDTO'
-              example:
-                id: f3b2a9c1e4d5678901234567
-                contractId: f3b2a9c1e4d5678901234567
-                tokenIds:
-                  - eyJhbGciOi...
-                immediately: true
-                enabled: string
         '401':
           description: Unauthorized request.
           content:
@@ -5184,7 +5300,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -5238,7 +5354,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -5292,7 +5408,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -5318,14 +5434,45 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/RetireRequestTokenDTO'
+                oneOf:
+                  - $ref: '#/components/schemas/RetireRequestTokenFTDTO'
+                  - $ref: '#/components/schemas/RetireRequestTokenNFTDTO'
+            examples:
+              retireTokensBodyFT:
+                summary: Fungible token retirement request
+                value:
+                  - token: 0.0.8300593
+                    count: 3
+                    serials: []
+              retireTokensBodyNFT:
+                summary: Non-fungible token retirement request
+                value:
+                  - token: 0.0.8300593
+                    count: 0
+                    serials:
+                      - 1
+                      - 2
+                      - 4
       responses:
         '200':
-          description: Successful operation.
+          description: >-
+            Successful operation. Returns retire pool `immediately` flag: `true`
+            — tokens are retired right away; `false` — retirement requires
+            approval.
           content:
             application/json:
               schema:
                 type: boolean
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorDTO'
+              example:
+                message: Request body must be an array
+                error: Bad Request
+                statusCode: 400
         '401':
           description: Unauthorized request.
           content:
@@ -5352,7 +5499,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -5406,7 +5553,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -5415,7 +5562,9 @@ paths:
         - contracts
   /contracts/retire/requests/{requestId}/cancel:
     delete:
-      description: Cancel retire contract request.
+      description: >-
+        Cancel retire contract request. Intended for regular users (not Standard
+        Registry) to cancel their own retire request.
       operationId: ContractsApi_cancelRetireRequest
       parameters:
         - name: requestId
@@ -5458,7 +5607,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -5482,7 +5631,7 @@ paths:
         - name: hederaId
           required: true
           in: path
-          description: Hedera identifier
+          description: Hedera account identifier
           schema:
             example: 0.0.1
             type: string
@@ -5519,7 +5668,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -5542,7 +5691,7 @@ paths:
         - name: hederaId
           required: true
           in: path
-          description: Hedera identifier
+          description: Hedera account identifier
           schema:
             example: 0.0.1
             type: string
@@ -5579,7 +5728,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -5620,9 +5769,106 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  $ref: '#/components/schemas/RetireVcDocumentDTO'
               example:
-                - {}
+                - createDate: '2026-03-20T18:36:53.698Z'
+                  updateDate: '2026-03-20T18:36:53.698Z'
+                  hash: 88chLeeXjKUXa13dNeEJz2tNehsjo3HQGUX5QH3kmY6b
+                  hederaStatus: NEW
+                  signature: 0
+                  type: RETIRE
+                  option:
+                    status: NEW
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                  document:
+                    id: urn:uuid:93328f13-cac2-49a8-9c30-fb52842093dd
+                    type:
+                      - VerifiableCredential
+                    issuer: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                    issuanceDate: '2026-03-20T18:36:34.285Z'
+                    '@context':
+                      - https://www.w3.org/2018/credentials/v1
+                      - >-
+                        ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64
+                    credentialSubject:
+                      - user: 0.0.6057669
+                        contractId: 0.0.8308132
+                        tokens:
+                          - tokenId: 0.0.8308164
+                            count: 0
+                            serials:
+                              - 2
+                              - 3
+                              - 4
+                              - 10
+                        '@context':
+                          - >-
+                            ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64
+                        id: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                        type: Retire
+                    proof:
+                      type: Ed25519Signature2018
+                      created: '2026-03-20T18:36:34Z'
+                      verificationMethod: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835#did-root-key
+                      proofPurpose: assertionMethod
+                      jws: >-
+                        eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..f71046hE9geZXL7uPc5EIc2YsNGMWsRakFwN_iMht4O6njdQZPtKckkQ6H9P1pZBaRz-_yaAy-gmfO-I3LJDBw
+                  documentFileId: 69bd93c590fe6f912cbb0d36
+                  documentFields:
+                    - credentialSubject.0.user
+                  tableFileIds: []
+                  id: 69bd93c590fe6f912cbb0d38
+                - createDate: '2026-03-20T10:44:47.623Z'
+                  updateDate: '2026-03-20T10:44:47.623Z'
+                  hash: 7Sj7GyTA7TocoZGfVczb9jSfGhitHKZ133G7pny4nFTV
+                  hederaStatus: NEW
+                  signature: 0
+                  type: RETIRE
+                  option:
+                    status: NEW
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                  document:
+                    id: urn:uuid:2e122bba-2f7e-4f46-9ea6-2d790e300caa
+                    type:
+                      - VerifiableCredential
+                    issuer: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                    issuanceDate: '2026-03-20T10:44:31.703Z'
+                    '@context':
+                      - https://www.w3.org/2018/credentials/v1
+                      - >-
+                        ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64
+                    credentialSubject:
+                      - user: 0.0.6057669
+                        contractId: 0.0.8300155
+                        tokens:
+                          - tokenId: 0.0.8302213
+                            count: 6
+                            serials: []
+                        '@context':
+                          - >-
+                            ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64
+                        id: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                        type: Retire
+                    proof:
+                      type: Ed25519Signature2018
+                      created: '2026-03-20T10:44:31Z'
+                      verificationMethod: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835#did-root-key
+                      proofPurpose: assertionMethod
+                      jws: >-
+                        eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..FHaguzWfQoSo2t9SEcAAlJUHNgjtI8_Op189piqVWj_w
+                  documentFileId: 69bd251f5b864fe37954a6f9
+                  documentFields:
+                    - credentialSubject.0.user
+                  tableFileIds: []
+                  id: 69bd251f5b864fe37954a6fb
         '401':
           description: Unauthorized request.
           content:
@@ -5649,7 +5895,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -5666,7 +5912,7 @@ paths:
           in: query
           description: The topic id of contract
           schema:
-            example: 0.0.0000000
+            example: 0.0.4641052
             type: string
       responses:
         '200':
@@ -5681,9 +5927,81 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  $ref: '#/components/schemas/RetireVcIndexerDocumentDTO'
               example:
-                - {}
+                - id: 66ee387945ab8bf9448f45e2
+                  lastUpdate: 0
+                  topicId: 0.0.4641052
+                  consensusTimestamp: '1722418989.344504535'
+                  owner: 0.0.1416
+                  uuid: 8494b750-eed6-4d13-82a1-5cc1a644ffae
+                  status: ISSUE
+                  type: VC-Document
+                  action: create-vc-document
+                  lang: en-US
+                  responseType: str
+                  options:
+                    issuer: >-
+                      did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363
+                    relationships: null
+                    documentStatus: null
+                    encodedData: false
+                  analytics:
+                    textSearch: >-
+                      0.0.4641052|0.0.1416|1722418989.344504535|8494b750-eed6-4d13-82a1-5cc1a644ffae|ISSUE|VC-Document|en-US||did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363|0.0.4437864|0.0.4641053|[object
+                      Object]|ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64|did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363|Retire|Retire
+                    schemaId: '1743436678.828522000'
+                    schemaName: Retire
+                  analyticsUpdate: 1773995161141
+                  coordUpdate: 1756843304325
+                  files:
+                    - >-
+                      bafkreihwnas7c7ji53iolrjkjuqevqdg2j6je2supras5vghzjq5ccnyai
+                  documents:
+                    - id: urn:uuid:e7c97bd5-39a3-4f98-b642-b20ec4f81aaf
+                      type:
+                        - VerifiableCredential
+                      issuer: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363
+                      issuanceDate: '2024-07-31T09:43:02.117Z'
+                      '@context':
+                        - https://www.w3.org/2018/credentials/v1
+                        - >-
+                          ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64
+                      credentialSubject:
+                        - user: 0.0.4437864
+                          contractId: 0.0.4641053
+                          tokens:
+                            - tokenId: 0.0.4641082
+                              count: 0
+                              serials:
+                                - 23
+                                - 22
+                                - 21
+                                - 20
+                                - 19
+                              type: Token
+                              '@context':
+                                - >-
+                                  ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64
+                          '@context':
+                            - >-
+                              ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64
+                          id: >-
+                            did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363
+                          type: Retire
+                      proof:
+                        type: Ed25519Signature2018
+                        created: '2024-07-31T09:43:02Z'
+                        verificationMethod: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363#did-root-key
+                        proofPurpose: assertionMethod
+                        jws: >-
+                          eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..DGYzJmYogDgbByIERm8cnb_zOJsAKWLg79hW2bkp2mleb57VRaEjm8bOwj9AizlSD4zQzhmXXux7L_nhRO0yCQ
+                  topics: []
+                  tokens: []
+                  sequenceNumber: 3
+                  loaded: true
         '401':
           description: Unauthorized request.
           content:
@@ -5710,7 +6028,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -39078,59 +39396,102 @@ components:
     ContractDTO:
       type: object
       properties:
+        createDate:
+          type: string
+          format: date-time
+          description: Record creation time (from persistence layer).
+          example: '2026-03-03T17:25:53.312Z'
+        updateDate:
+          type: string
+          format: date-time
+          description: Record last update time (from persistence layer).
+          example: '2026-03-03T17:25:53.312Z'
         id:
           type: string
+          example: 69aeb71ef8c5b278e3bab4e5
         contractId:
           type: string
+          example: 0.0.6046379
         description:
           type: string
+          example: Contract description
         owner:
           type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         permissions:
           type: number
+          description: >-
+            Bitmask of caller roles (values are additive): 1 = Owner, 2 = Admin,
+            4 = Manager (WIPE only), 8 = Wiper (WIPE v1.0.0 only). E.g. 3 =
+            Owner+Admin (RETIRE), 7 = Owner+Admin+Manager (WIPE).
+          example: 7
         topicId:
           type: string
+          example: 0.0.6046379
         type:
           type: string
           enum:
             - WIPE
             - RETIRE
-        syncRequestsDate:
-          format: date-time
-          type: string
+          example: WIPE
         syncPoolsDate:
           format: date-time
           type: string
+          description: Last sync of retire pools (may be absent).
+          example: '2026-03-03T17:25:53.312Z'
         lastSyncEventTimeStamp:
           type: string
+          description: >-
+            Hedera consensus timestamp string from last processed contract
+            event.
+          example: '1773997659.461000723'
+        syncDisabled:
+          type: boolean
+          description: When true, automatic sync is disabled for this contract.
+          example: false
+        version:
+          type: string
+          description: Deployed contract ABI / behavior version.
+          example: 1.0.1
         wipeContractIds:
+          description: >-
+            Legacy: linked WIPE contract Hedera ids (contract-level wiper).
+            Often empty for `version` 1.0.1+; see `wipeTokenIds` instead.
+          example: []
           type: array
           items:
             type: string
         wipeTokenIds:
+          description: >-
+            Token-level wiper allowlist (Hedera token ids). Typical for RETIRE
+            contracts with `version` 1.0.1+; usually empty for WIPE contracts.
+          example:
+            - 0.0.8300593
           type: array
           items:
             type: string
       required:
+        - createDate
+        - updateDate
         - id
         - contractId
-        - description
         - owner
         - permissions
         - topicId
         - type
-        - syncRequestsDate
-        - syncPoolsDate
-        - lastSyncEventTimeStamp
-        - wipeContractIds
-        - wipeTokenIds
     ContractConfigDTO:
       type: object
       properties:
         type:
           type: string
+          enum:
+            - WIPE
+            - RETIRE
+          example: WIPE
         description:
           type: string
+          example: Contract description
       required:
         - type
         - description
@@ -39140,7 +39501,7 @@ components:
         contractId:
           type: string
           description: Hedera contract identifier
-          example: 0.0.1
+          example: 0.0.6046379
         description:
           type: string
           description: Contract description
@@ -39149,19 +39510,36 @@ components:
     WiperRequestDTO:
       type: object
       properties:
-        id:
+        createDate:
           type: string
+          format: date-time
+          description: Record creation time.
+          example: '2026-03-03T17:25:53.312Z'
+        updateDate:
+          type: string
+          format: date-time
+          description: Record last update time.
+          example: '2026-03-03T17:25:53.312Z'
         contractId:
           type: string
+          example: 0.0.6046379
         user:
           type: string
+          description: Hedera account id of the requester.
+          example: 0.0.6046379
         token:
           type: string
+          description: Hedera token id.
+          example: 0.0.6046379
+        id:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
       required:
-        - id
+        - createDate
+        - updateDate
         - contractId
         - user
-        - token
+        - id
     RetireRequestDTO:
       type: object
       properties:
@@ -39206,12 +39584,17 @@ components:
         - contractId
         - tokenIds
         - user
-    Date:
-      type: object
-      properties: {}
     RetirePoolDTO:
       type: object
       properties:
+        createDate:
+          type: string
+          format: date-time
+          description: Record creation time.
+        updateDate:
+          type: string
+          format: date-time
+          description: Record last update time.
         id:
           type: string
         contractId:
@@ -39228,26 +39611,35 @@ components:
           properties:
             token:
               type: string
+              description: Hedera token id.
             contract:
               type: string
+              description: Wipe contract id.
             count:
               type: number
+              description: Token count in pool.
             decimals:
               type: number
+              description: Token decimals.
             type:
+              type: string
               enum:
                 - non-fungible
                 - fungible
             tokenSymbol:
               type: string
+              description: Token symbol.
         tokenIds:
+          description: Token ids in pool.
           type: array
           items:
             type: string
         immediately:
           type: boolean
+          description: Retire immediately without approval.
         enabled:
           type: boolean
+          description: Pool is enabled.
       required:
         - id
         - contractId
@@ -39264,21 +39656,336 @@ components:
       required:
         - token
         - count
-    RetireRequestTokenDTO:
+    RetireRequestTokenFTDTO:
       type: object
       properties:
         token:
           type: string
+          example: 0.0.8300593
         count:
           type: number
+          example: 1
         serials:
+          description: Use empty array for FT retire request.
+          example: []
           type: array
           items:
-            type: string
+            type: number
       required:
         - token
         - count
         - serials
+    RetireRequestTokenNFTDTO:
+      type: object
+      properties:
+        token:
+          type: string
+          example: 0.0.8300593
+        count:
+          type: number
+          description: Required; use `0` for NFT retire request.
+          example: 0
+        serials:
+          description: NFT serial numbers to retire.
+          example:
+            - 1
+          type: array
+          items:
+            type: number
+      required:
+        - token
+        - count
+        - serials
+    RetireVcTokenDTO:
+      type: object
+      properties:
+        tokenId:
+          type: string
+          description: Hedera token id
+          example: 0.0.8308164
+        count:
+          type: number
+          description: 'For FT: amount. For NFT: 0'
+          example: 3
+        serials:
+          description: 'For NFT: serial numbers. For FT: empty'
+          example:
+            - 2
+            - 3
+            - 4
+            - 10
+          type: array
+          items:
+            type: number
+      required:
+        - tokenId
+        - count
+        - serials
+    RetireCredentialSubjectDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Subject DID
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        user:
+          type: string
+          description: User Hedera account id
+          example: 0.0.6057669
+        contractId:
+          type: string
+          description: Retire contract id
+          example: 0.0.8308132
+        tokens:
+          description: Retired tokens
+          type: array
+          items:
+            $ref: '#/components/schemas/RetireVcTokenDTO'
+        type:
+          type: string
+          example: Retire
+      required:
+        - id
+        - user
+        - contractId
+        - tokens
+        - type
+    RetireVcProofDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          example: Ed25519Signature2018
+        created:
+          type: string
+          example: '2026-03-20T18:36:34Z'
+        verificationMethod:
+          type: string
+          example: did:hedera:testnet:..._0.0.8299835#did-root-key
+        proofPurpose:
+          type: string
+          example: assertionMethod
+        jws:
+          type: string
+          example: >-
+            eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..f71046hE9geZXL7uPc5EIc2YsNGMWsRakFwN_iMht4O6njdQZPtKckkQ6H9P1pZBaRz-_yaAy-gmfO-I3LJDBw
+      required:
+        - type
+        - created
+        - verificationMethod
+        - proofPurpose
+        - jws
+    RetireVcDocumentBodyDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: urn:uuid:93328f13-cac2-49a8-9c30-fb52842093dd
+        type:
+          example:
+            - VerifiableCredential
+          type: array
+          items:
+            type: string
+        issuer:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        issuanceDate:
+          type: string
+          example: '2026-03-20T18:36:34.285Z'
+        credentialSubject:
+          description: Credential subjects
+          type: array
+          items:
+            $ref: '#/components/schemas/RetireCredentialSubjectDTO'
+        proof:
+          $ref: '#/components/schemas/RetireVcProofDTO'
+      required:
+        - id
+        - type
+        - issuer
+        - issuanceDate
+        - credentialSubject
+        - proof
+    RetireVcDocumentDTO:
+      type: object
+      properties:
+        createDate:
+          type: string
+          format: date-time
+          example: '2026-03-20T18:36:53.698Z'
+        updateDate:
+          type: string
+          format: date-time
+          example: '2026-03-20T18:36:53.698Z'
+        hash:
+          type: string
+          example: 88chLeeXjKUXa13dNeEJz2tNehsjo3HQGUX5QH3kmY6b
+        hederaStatus:
+          type: string
+          example: NEW
+          description: Hedera document status
+        signature:
+          type: number
+          example: 0
+        type:
+          type: string
+          example: RETIRE
+        option:
+          type: object
+          example:
+            status: NEW
+        owner:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        document:
+          description: >-
+            VerifiableCredential with credentialSubject (user, contractId,
+            tokens)
+          allOf:
+            - $ref: '#/components/schemas/RetireVcDocumentBodyDTO'
+        documentFileId:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        documentFields:
+          example:
+            - credentialSubject.0.user
+          type: array
+          items:
+            type: string
+        tableFileIds:
+          example: []
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+      required:
+        - createDate
+        - updateDate
+        - hash
+        - hederaStatus
+        - signature
+        - type
+        - option
+        - owner
+        - document
+        - documentFileId
+        - documentFields
+        - tableFileIds
+        - id
+    RetireVcIndexerDocumentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 66ee387945ab8bf9448f45e2
+        lastUpdate:
+          type: number
+          example: 0
+        topicId:
+          type: string
+          description: Contract topic id
+          example: 0.0.4641052
+        consensusTimestamp:
+          type: string
+          example: '1722418989.344504535'
+        owner:
+          type: string
+          example: 0.0.1416
+        uuid:
+          type: string
+          example: 8494b750-eed6-4d13-82a1-5cc1a644ffae
+        status:
+          type: string
+          example: ISSUE
+        type:
+          type: string
+          example: VC-Document
+        action:
+          type: string
+          example: create-vc-document
+        lang:
+          type: string
+          example: en-US
+        responseType:
+          type: string
+          example: str
+        options:
+          type: object
+          example:
+            issuer: >-
+              did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363
+            relationships: null
+            documentStatus: null
+            encodedData: false
+        analytics:
+          type: object
+          example:
+            textSearch: 0.0.4641052|0.0.1416|1722418989.344504535|...
+            schemaId: '1743436678.828522000'
+            schemaName: Retire
+        analyticsUpdate:
+          type: number
+          example: 1773995161141
+        coordUpdate:
+          type: number
+          example: 1756843304325
+        files:
+          example:
+            - bafkreihwnas7c7ji53iolrjkjuqevqdg2j6je2supras5vghzjq5ccnyai
+          type: array
+          items:
+            type: string
+        documents:
+          description: >-
+            Retire VC documents with credentialSubject (user, contractId,
+            tokens)
+          type: array
+          items:
+            $ref: '#/components/schemas/RetireVcDocumentBodyDTO'
+        topics:
+          example: []
+          type: array
+          items:
+            type: string
+        tokens:
+          example: []
+          type: array
+          items:
+            type: string
+        sequenceNumber:
+          type: number
+          example: 3
+        loaded:
+          type: boolean
+          example: true
+      required:
+        - id
+        - lastUpdate
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - type
+        - action
+        - lang
+        - responseType
+        - options
+        - analytics
+        - analyticsUpdate
+        - coordUpdate
+        - files
+        - documents
+        - topics
+        - tokens
+        - sequenceNumber
+        - loaded
     RegisteredUsersDTO:
       type: object
       properties:
@@ -43070,3 +43777,22 @@ components:
           type: array
           items:
             type: string
+    RetireRequestTokenDTO:
+      type: object
+      properties:
+        token:
+          type: string
+        count:
+          type: number
+          description: 'For FT: amount to retire. For NFT: keep `0`.'
+          example: 1
+        serials:
+          description: 'For NFT: serial numbers to retire. For FT: use empty array.'
+          example: []
+          type: array
+          items:
+            type: string
+      required:
+        - token
+        - count
+        - serials
