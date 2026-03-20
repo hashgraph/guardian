@@ -3060,11 +3060,9 @@ export async function contractAPI(
                 });
             }
             if (Array.isArray(tokens) && tokens.length > 0) {
-                filters.$and.push(
-                    ...tokens.map((token) => ({
-                        tokenIds: token,
-                    }))
-                );
+                filters.$and.push({
+                    tokenIds: { $in: tokens },
+                });
             }
 
             return new MessageResponse(
