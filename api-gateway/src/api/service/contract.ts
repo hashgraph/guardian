@@ -17,7 +17,25 @@ import {
     ValidationPipe
 } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, getSchemaPath } from '@nestjs/swagger';
-import { ContractConfigDTO, ContractDTO, Examples, ImportContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, RetireRequestTokenFTDTO, RetireRequestTokenNFTDTO, RetireVcDocumentDTO, RetireVcDocumentBodyDTO, RetireCredentialSubjectDTO, RetireVcProofDTO, RetireVcIndexerDocumentDTO, WiperRequestDTO, InternalServerErrorDTO, BadRequestErrorDTO, ObjectExamples, pageHeader } from '#middlewares';
+import {
+    ContractConfigDTO,
+    ContractDTO,
+    Examples,
+    ImportContractDTO,
+    RetirePoolDTO,
+    RetirePoolTokenDTO,
+    RetireRequestDTO,
+    RetireRequestTokenDTO,
+    RetireRequestTokenFTDTO,
+    RetireRequestTokenNFTDTO,
+    RetireVcDocumentDTO,
+    RetireVcIndexerDocumentDTO,
+    WiperRequestDTO,
+    InternalServerErrorDTO,
+    BadRequestErrorDTO,
+    ObjectExamples,
+    pageHeader
+} from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { Guardians, UseCache, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
 
