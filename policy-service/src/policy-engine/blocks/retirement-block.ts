@@ -7,7 +7,7 @@ import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument,
 import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
@@ -35,6 +35,27 @@ import { RecordActionStep } from '../record-action-step.js';
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
+        properties: [{
+            name: 'roundMethod',
+            label: 'Round Method',
+            title: 'Round Method',
+            type: PropertyType.Select,
+            items: [
+                {
+                    label: 'Round up',
+                    value: 'ceil'
+                },
+                {
+                    label: 'Round down',
+                    value: 'floor'
+                },
+                {
+                    label: 'Round to nearest',
+                    value: 'round'
+                }
+            ],
+            default: 'round'
+        }],
         defaultEvent: true
     },
     variables: [
@@ -194,8 +215,9 @@ export class RetirementBlock {
             if (!hasRule) {
                 throw new Error('For FUNGIBLE tokens, Rule is required');
             }
+
             const amount = PolicyUtils.aggregate(options.rule, documents);
-            [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
+            [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount, options.roundMethod);
         }
 
         const wipeVC = await this.createWipeVC(policyOwnerDidDocument, token, tokenAmount, ref, serialNumbers, actionStatus?.id);

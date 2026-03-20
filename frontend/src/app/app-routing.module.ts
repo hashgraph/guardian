@@ -132,8 +132,20 @@ const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: 'task/:id', component: AsyncProgressComponent },
     { path: 'notifications', component: NotificationsComponent },
-    { path: 'worker-tasks', component: WorkerTasksComponent },
-
+    { 
+        path: 'worker-tasks',
+        component: WorkerTasksComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.WORKER_TASKS_READ
+            ]
+        }
+    },
     {
         path: 'user-profile',
         component: UserProfileComponent,

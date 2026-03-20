@@ -93,4 +93,8 @@ export class TagCreateDialog {
         }
         return true;
     }
+
+    get noSchemas(): boolean {
+        return !this.schemas?.length;
+    }
 }

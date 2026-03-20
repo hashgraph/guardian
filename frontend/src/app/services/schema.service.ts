@@ -104,6 +104,7 @@ export class SchemaService {
         category?: SchemaCategory,
         topicId?: string,
         search?: string,
+        searchOptions?: string[],
         pageIndex?: number,
         pageSize?: number | string,
     }): Observable<HttpResponse<ISchema[]>> {

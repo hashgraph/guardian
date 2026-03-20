@@ -60,6 +60,7 @@ import { WipeConfigComponent } from '../policy-configuration/blocks/tokens/wipe-
 import { MathConfigComponent } from '../policy-configuration/blocks/calculate/math-config/math-config.component';
 import { GlobalEventsReaderBlockComponent } from '../policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component';
 import { GlobalEventsWriterBlockComponent } from "../policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
+import { IpfsTransformationUIAddonCode } from '../policy-viewer/code/ipfs-transformation-ui-addon';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -888,6 +889,16 @@ const TransformationUIAddon: IBlockSetting = {
     code: TransformationUIAddonCode,
 }
 
+const IpfsTransformationUIAddon: IBlockSetting = {
+    type: BlockType.IpfsTransformationUIAddon,
+    icon: BlockIcons[BlockType.IpfsTransformationUIAddon],
+    group: BlockGroup.Main,
+    header: BlockHeaders.Addons,
+    factory: null,
+    property: null,
+    code: IpfsTransformationUIAddonCode,
+}
+
 export default [
     Container,
     Step,
@@ -944,5 +955,6 @@ export default [
     TransformationButtonBlock,
     IntegrationButtonBlock,
     HttpRequestUIAddon,
-    TransformationUIAddon
+    TransformationUIAddon,
+    IpfsTransformationUIAddon
 ];

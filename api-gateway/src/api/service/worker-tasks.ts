@@ -3,6 +3,7 @@ import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOpera
 import { Auth, AuthUser } from '#auth';
 import { Examples, InternalServerErrorDTO, pageHeader, WorkersTasksDTO } from '#middlewares';
 import { IAuthUser } from '@guardian/common';
+import { Permissions } from '@guardian/interfaces';
 import { Guardians, parseInteger } from '#helpers';
 
 @Controller('worker-tasks')
@@ -12,7 +13,7 @@ export class WorkerTasksController {
      * Get all notifications
      */
     @Get('/')
-    @Auth()
+    @Auth(Permissions.WORKER_TASKS_READ)
     @ApiOperation({
         summary: 'Get all worker tasks',
         description: 'Returns all worker tasks.',
@@ -62,7 +63,7 @@ export class WorkerTasksController {
         res.header('X-Total-Count', count).send(tasks);
     }
 
-    @Auth()
+    @Auth(Permissions.WORKER_TASKS_EXECUTE)
     @ApiOperation({
         summary: 'Restart task',
         description: 'Restart task'
@@ -85,7 +86,7 @@ export class WorkerTasksController {
         await guardians.restartTask(body.taskId, user.id.toString());
     }
 
-    @Auth()
+    @Auth(Permissions.WORKER_TASKS_DELETE)
     @ApiOperation({
         summary: 'Delete task',
         description: 'Delete task'

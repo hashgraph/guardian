@@ -62,6 +62,7 @@ import { HttpRequestUIAddon } from './blocks/http-request-ui-addon.js';
 import { TransformationUIAddon } from './blocks/transformation-ui-addon.js';
 import {GlobalEventsWriterBlock} from './blocks/global-events-writer-block.js';
 import {GlobalEventsReaderBlock} from './blocks/global-events-reader-block.js';
+import { IpfsTransformationUIAddon } from './blocks/ipfs-transformation-ui-addon.js';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -121,6 +122,7 @@ export const validators = [
     TransformationUIAddon,
     GlobalEventsWriterBlock,
     GlobalEventsReaderBlock,
+    IpfsTransformationUIAddon
 ];
 
 /**

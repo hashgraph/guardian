@@ -417,6 +417,14 @@ export class SchemaApi {
         required: false,
         example: 'text'
     })
+    @ApiQuery({
+        name: 'searchOptions',
+        type: String,
+        description: 'Search Options',
+        required: false,
+        isArray: true,
+        example: 'name'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -440,6 +448,7 @@ export class SchemaApi {
         @Query('toolId') toolId: string,
         @Query('topicId') topicId: string,
         @Query('search') search: string,
+        @Query('searchOptions') searchOptions: string[] | string,
         @Response() res: any
     ): Promise<SchemaDTO[]> {
         try {
@@ -467,6 +476,13 @@ export class SchemaApi {
             }
             if (search) {
                 options.search = search;
+            }
+            if (searchOptions) {
+                if (Array.isArray(searchOptions)) {
+                    options.searchOptions = searchOptions;
+                } else if (typeof searchOptions === 'string') {
+                    options.searchOptions = searchOptions.split(',');
+                }
             }
             options.fields = Object.values(SCHEMA_REQUIRED_PROPS)
 

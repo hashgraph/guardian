@@ -68,12 +68,14 @@
                         <td class="col-ACTION">
                             <div class="operations-container">
                                 <button 
+                                    *ngIf="user.WORKER_TASKS_EXECUTE"
                                     (click)="restartTask(task)" 
                                     [disabled]="!(task.isError && task.isRetryableTask)"
                                     class="p-button-raised p-button-rounded p-button-text" 
                                     icon="pi pi-undo"
                                     pButton type="button"></button>
                                 <button 
+                                    *ngIf="user.WORKER_TASKS_DELETE"
                                     (click)="deleteTask(task)" 
                                     [disabled]="!task.isError" 
                                     class="p-button-raised p-button-rounded p-button-text" 
