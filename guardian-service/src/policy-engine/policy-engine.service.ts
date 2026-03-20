@@ -5039,10 +5039,10 @@ export class PolicyEngineService {
                         const foundPolicy = await DatabaseServer.getPolicyById(policyId);
                         result = foundPolicy?.editableParametersSettings;
                     }
-                    
+
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
-                    
+
                     result = result.filter((item: PolicyEditableFieldDTO) => this.hasFieldPermission(item, userRole));
 
                     return new MessageResponse(result);
