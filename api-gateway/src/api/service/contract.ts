@@ -16,8 +16,8 @@ import {
     Version,
     ValidationPipe
 } from '@nestjs/common';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, } from '@nestjs/swagger';
-import { ContractConfigDTO, ContractDTO, ImportContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
+import { ApiBadRequestResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, getSchemaPath } from '@nestjs/swagger';
+import { ContractConfigDTO, ContractDTO, Examples, ImportContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, RetireRequestTokenFTDTO, RetireRequestTokenNFTDTO, RetireVcDocumentDTO, RetireVcDocumentBodyDTO, RetireCredentialSubjectDTO, RetireVcProofDTO, RetireVcIndexerDocumentDTO, WiperRequestDTO, InternalServerErrorDTO, BadRequestErrorDTO, ObjectExamples, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { Guardians, UseCache, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
 
@@ -69,14 +69,22 @@ export class ContractsApi {
         isArray: true,
         headers: pageHeader,
         type: ContractDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', description: 'string', owner: 'string', permissions: 0, topicId: 'f3b2a9c1e4d5678901234567', type: 'string', syncRequestsDate: 'string', syncPoolsDate: 'string', lastSyncEventTimeStamp: 'string', wipeContractIds: ['string'], wipeTokenIds: ['eyJhbGciOi...'] }]
+        examples: {
+            WIPE: {
+                summary: 'Contracts list filtered by `type=WIPE`',
+                value: ObjectExamples.CONTRACTS_LIST_RESPONSE_WIPE
+            },
+            RETIRE: {
+                summary: 'Contracts list filtered by `type=RETIRE`',
+                value: ObjectExamples.CONTRACTS_LIST_RESPONSE_RETIRE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     @UseCache()
     async getContracts(
@@ -115,18 +123,34 @@ export class ContractsApi {
     })
     @ApiBody({
         type: ContractConfigDTO,
+        examples: {
+            createContractBodyRetire: {
+                value: ObjectExamples.CONTRACTS_CREATE_REQUEST_RETIRE
+            },
+            createContractBodyWipe: {
+                value: ObjectExamples.CONTRACTS_CREATE_REQUEST_WIPE
+            }
+        }
     })
     @ApiCreatedResponse({
         description: 'Created contract.',
         type: ContractDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', description: 'string', owner: 'string', permissions: 0, topicId: 'f3b2a9c1e4d5678901234567', type: 'string', syncRequestsDate: 'string', syncPoolsDate: 'string', lastSyncEventTimeStamp: 'string', wipeContractIds: ['string'], wipeTokenIds: ['eyJhbGciOi...'] }
+        examples: {
+            RETIRE: {
+                summary: 'Created RETIRE contract',
+                value: ObjectExamples.CONTRACTS_CREATE_RESPONSE_RETIRE
+            },
+            WIPE: {
+                summary: 'Created WIPE contract',
+                value: ObjectExamples.CONTRACTS_CREATE_RESPONSE_WIPE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async createContract(
         @AuthUser() user: IAuthUser,
@@ -160,18 +184,34 @@ export class ContractsApi {
     })
     @ApiBody({
         type: ContractConfigDTO,
+        examples: {
+            createContractBodyRetire: {
+                value: ObjectExamples.CONTRACTS_CREATE_REQUEST_RETIRE
+            },
+            createContractBodyWipe: {
+                value: ObjectExamples.CONTRACTS_CREATE_REQUEST_WIPE
+            }
+        }
     })
     @ApiCreatedResponse({
         description: 'Created contract.',
         type: ContractDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', description: 'string', owner: 'string', permissions: 0, topicId: 'f3b2a9c1e4d5678901234567', type: 'string', syncRequestsDate: 'string', syncPoolsDate: 'string', lastSyncEventTimeStamp: 'string', wipeContractIds: ['string'], wipeTokenIds: ['eyJhbGciOi...'] }
+        examples: {
+            RETIRE: {
+                summary: 'Created RETIRE contract',
+                value: ObjectExamples.CONTRACTS_CREATE_RESPONSE_RETIRE
+            },
+            WIPE: {
+                summary: 'Created WIPE contract',
+                value: ObjectExamples.CONTRACTS_CREATE_RESPONSE_WIPE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     @Version('2')
     async createContractV2(
@@ -207,18 +247,31 @@ export class ContractsApi {
     @ApiBody({
         description: 'Contract import configuration.',
         type: ImportContractDTO,
+        examples: {
+            importContractBody: {
+                value: ObjectExamples.CONTRACTS_IMPORT_REQUEST
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Imported contract.',
         type: ContractDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', description: 'string', owner: 'string', permissions: 0, topicId: 'f3b2a9c1e4d5678901234567', type: 'string', syncRequestsDate: 'string', syncPoolsDate: 'string', lastSyncEventTimeStamp: 'string', wipeContractIds: ['string'], wipeTokenIds: ['eyJhbGciOi...'] }
+        examples: {
+            RETIRE: {
+                summary: 'Imported RETIRE contract',
+                value: ObjectExamples.CONTRACTS_IMPORT_RESPONSE_RETIRE
+            },
+            WIPE: {
+                summary: 'Imported WIPE contract',
+                value: ObjectExamples.CONTRACTS_IMPORT_RESPONSE_WIPE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ImportContractDTO, ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async importContract(
         @AuthUser() user: IAuthUser,
@@ -261,9 +314,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async contractPermissions(
         @AuthUser() user: IAuthUser,
@@ -305,9 +357,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async removeContract(
         @AuthUser() user: IAuthUser,
@@ -360,14 +411,13 @@ export class ContractsApi {
         isArray: true,
         headers: pageHeader,
         type: WiperRequestDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', user: 'string', token: 'eyJhbGciOi...' }]
+        example: ObjectExamples.WIPER_REQUESTS_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(WiperRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getWipeRequests(
         @AuthUser() user: IAuthUser,
@@ -407,7 +457,7 @@ export class ContractsApi {
         name: 'contractId',
         type: String,
         required: true,
-        description: 'Contract identifier',
+        description: 'Wipe Contract Identifier',
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -418,9 +468,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async enableWipeRequests(
         @AuthUser() user: IAuthUser,
@@ -451,7 +500,7 @@ export class ContractsApi {
         name: 'contractId',
         type: String,
         required: true,
-        description: 'Contract identifier',
+        description: 'Wipe Contract Identifier',
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -462,9 +511,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async disableWipeRequests(
         @AuthUser() user: IAuthUser,
@@ -506,9 +554,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async approveWipeRequest(
         @AuthUser() user: IAuthUser,
@@ -557,9 +604,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async rejectWipeRequest(
         @AuthUser() user: IAuthUser,
@@ -594,7 +640,7 @@ export class ContractsApi {
     @ApiParam({
         name: 'contractId',
         type: String,
-        description: 'Contract identifier',
+        description: 'Wipe Contract Identifier',
         required: true,
         example: '652745597a7b53526de37c05',
     })
@@ -606,9 +652,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async clearWipeRequests(
         @AuthUser() user: IAuthUser,
@@ -644,7 +689,7 @@ export class ContractsApi {
     })
     @ApiParam({
         name: 'hederaId',
-        description: 'Hedera identifier',
+        description: 'Hedera account identifier',
         type: String,
         required: true,
         example: '0.0.1',
@@ -657,9 +702,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async clearWipeRequestsWithHederaId(
         @AuthUser() user: IAuthUser,
@@ -696,7 +740,7 @@ export class ContractsApi {
     })
     @ApiParam({
         name: 'hederaId',
-        description: 'Hedera identifier',
+        description: 'Hedera account identifier',
         type: String,
         required: true,
         example: '0.0.1',
@@ -709,9 +753,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async wipeAddAdmin(
         @AuthUser() user: IAuthUser,
@@ -749,7 +792,7 @@ export class ContractsApi {
     @ApiParam({
         name: 'hederaId',
         type: String,
-        description: 'Hedera identifier',
+        description: 'Hedera account identifier',
         required: true,
         example: '0.0.1',
     })
@@ -761,9 +804,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async wipeRemoveAdmin(
         @AuthUser() user: IAuthUser,
@@ -801,7 +843,7 @@ export class ContractsApi {
     @ApiParam({
         name: 'hederaId',
         type: String,
-        description: 'Hedera identifier',
+        description: 'Hedera account identifier',
         required: true,
         example: '0.0.1',
     })
@@ -813,9 +855,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async wipeAddManager(
         @AuthUser() user: IAuthUser,
@@ -853,7 +894,7 @@ export class ContractsApi {
     @ApiParam({
         name: 'hederaId',
         type: String,
-        description: 'Hedera identifier',
+        description: 'Hedera account identifier',
         required: true,
         example: '0.0.1',
     })
@@ -865,9 +906,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async wipeRemoveManager(
         @AuthUser() user: IAuthUser,
@@ -893,19 +933,19 @@ export class ContractsApi {
     )
     @ApiOperation({
         summary: 'Add wipe wiper.',
-        description: 'Add wipe contract wiper. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Add wipe contract wiper. For Wipe contracts v1.0.0 only. For v1.0.1+ use the endpoint with tokenId. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
         type: String,
-        description: 'Contract identifier',
+        description: 'Wipe Contract Identifier',
         required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiParam({
         name: 'hederaId',
         type: String,
-        description: 'Hedera identifier',
+        description: 'Hedera account identifier',
         required: true,
         example: '0.0.1',
     })
@@ -917,9 +957,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async wipeAddWiper(
         @AuthUser() user: IAuthUser,
@@ -945,19 +984,19 @@ export class ContractsApi {
     )
     @ApiOperation({
         summary: 'Add wipe wiper for token.',
-        description: 'Add wipe contract wiper for specific token. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Add wipe contract wiper for specific token. For Wipe contracts v1.0.1+ only. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
         type: String,
-        description: 'Contract identifier',
+        description: 'Wipe Contract Identifier',
         required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiParam({
         name: 'hederaId',
         type: String,
-        description: 'Hedera identifier',
+        description: 'Hedera account identifier',
         required: true,
         example: '0.0.1',
     })
@@ -976,9 +1015,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async wipeAddWiperWithToken(
         @AuthUser() user: IAuthUser,
@@ -1005,19 +1043,19 @@ export class ContractsApi {
     )
     @ApiOperation({
         summary: 'Remove wipe wiper.',
-        description: 'Remove wipe contract wiper. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Remove wipe contract wiper. For Wipe contracts v1.0.0 only. For v1.0.1+ use the endpoint with tokenId. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
         type: String,
-        description: 'Contract identifier',
+        description: 'Wipe Contract Identifier',
         required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiParam({
         name: 'hederaId',
         type: String,
-        description: 'Hedera identifier',
+        description: 'Hedera account identifier',
         required: true,
         example: '0.0.1',
     })
@@ -1029,9 +1067,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async wipeRemoveWiper(
         @AuthUser() user: IAuthUser,
@@ -1057,26 +1094,26 @@ export class ContractsApi {
     )
     @ApiOperation({
         summary: 'Remove wipe wiper for token.',
-        description: 'Remove wipe contract wiper for specific token. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Remove wipe contract wiper for specific token. For Wipe contracts v1.0.1+ only. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
         type: String,
-        description: 'Contract identifier',
+        description: 'Wipe Contract Identifier',
         required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiParam({
         name: 'hederaId',
         type: String,
-        description: 'Hedera identifier',
+        description: 'Hedera account identifier',
         required: true,
         example: '0.0.1',
     })
     @ApiParam({
         name: 'tokenId',
         type: String,
-        description: 'Token identifier',
+        description: 'Token identifier. The token the wiper was allowed to wipe.',
         required: true,
         example: '0.0.1',
     })
@@ -1088,9 +1125,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async wipeRemoveWiperWithToken(
         @AuthUser() user: IAuthUser,
@@ -1130,16 +1166,15 @@ export class ContractsApi {
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
-        description: 'Sync date.',
-        type: Date,
-        example: { result: 'ok' }
+        description: 'Sync date in ISO 8601 format. The timestamp when pools were synced.',
+        type: String,
+        example: '2026-03-20T16:45:30.000Z'
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async retireSyncPools(
         @AuthUser() user: IAuthUser,
@@ -1197,9 +1232,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRetireRequests(
         @AuthUser() user: IAuthUser,
@@ -1253,12 +1287,12 @@ export class ContractsApi {
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
-        example: '0.0.1',
+        example: Examples.ACCOUNT_ID,
     })
     @ApiQuery({
         name: 'tokens',
         type: String,
-        description: 'Tokens',
+        description: 'Comma-separated token IDs. No spaces between tokens.',
         example: '0.0.1,0.0.2,0.0.3',
     })
     @ApiOkResponse({
@@ -1266,14 +1300,13 @@ export class ContractsApi {
         isArray: true,
         headers: pageHeader,
         type: RetirePoolDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', tokenIds: ['eyJhbGciOi...'], immediately: true, enabled: 'string' }]
+        example: ObjectExamples.RETIRE_POOLS_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRetirePools(
         @AuthUser() user: IAuthUser,
@@ -1326,9 +1359,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async clearRetireRequests(
         @AuthUser() user: IAuthUser,
@@ -1371,9 +1403,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async clearRetirePools(
         @AuthUser() user: IAuthUser,
@@ -1403,6 +1434,11 @@ export class ContractsApi {
     })
     @ApiBody({
         type: RetirePoolTokenDTO,
+        examples: {
+            setRetirePoolBody: {
+                value: ObjectExamples.CONTRACTS_SET_RETIRE_POOL_REQUEST
+            }
+        }
     })
     @ApiParam({
         name: 'contractId',
@@ -1413,15 +1449,12 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: RetirePoolDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', tokenIds: ['eyJhbGciOi...'], immediately: true, enabled: 'string' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(RetirePoolDTO, RetirePoolTokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async setRetirePool(
         @AuthUser() user: IAuthUser,
@@ -1465,9 +1498,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async unsetRetirePool(
         @AuthUser() user: IAuthUser,
@@ -1510,9 +1542,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async unsetRetireRequest(
         @AuthUser() user: IAuthUser,
@@ -1542,7 +1573,25 @@ export class ContractsApi {
         description: 'Retire tokens.',
     })
     @ApiBody({
-        type:[RetireRequestTokenDTO],
+        schema: {
+            type: 'array',
+            items: {
+                oneOf: [
+                    { $ref: getSchemaPath(RetireRequestTokenFTDTO) },
+                    { $ref: getSchemaPath(RetireRequestTokenNFTDTO) }
+                ]
+            }
+        },
+        examples: {
+            retireTokensBodyFT: {
+                summary: 'Fungible token retirement request',
+                value: ObjectExamples.CONTRACTS_RETIRE_TOKENS_REQUEST_FT
+            },
+            retireTokensBodyNFT: {
+                summary: 'Non-fungible token retirement request',
+                value: ObjectExamples.CONTRACTS_RETIRE_TOKENS_REQUEST_NFT
+            }
+        }
     })
     @ApiParam({
         name: 'poolId',
@@ -1552,16 +1601,35 @@ export class ContractsApi {
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description:
+            'Successful operation. Returns retire pool `immediately` flag: `true` — tokens are retired right away; `false` — retirement requires approval.',
         type: Boolean,
-        example: true
+        examples: {
+            retireRequestWithApproval: {
+                summary: 'Retire request with approval',
+                value: false
+            },
+            retireRequestWithoutApproval: {
+                summary: 'Retire request without approval',
+                value: true
+            }
+        }
+    })
+    @ApiBadRequestResponse({
+        description: 'Bad request.',
+        type: BadRequestErrorDTO,
+        example: {
+            message: 'Request body must be an array',
+            error: 'Bad Request',
+            statusCode: 400
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(RetireRequestTokenDTO, InternalServerErrorDTO)
+    @ApiExtraModels(RetireRequestTokenFTDTO, RetireRequestTokenNFTDTO)
     @HttpCode(HttpStatus.OK)
     async retire(
         @AuthUser() user: IAuthUser,
@@ -1610,9 +1678,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async approveRetire(
         @AuthUser() user: IAuthUser,
@@ -1630,6 +1697,7 @@ export class ContractsApi {
 
     /**
      * Cancel retire request.
+     * Allows a regular user (not Standard Registry) to cancel their own retire request.
      */
     @Delete('/retire/requests/:requestId/cancel')
     @Auth(
@@ -1639,7 +1707,8 @@ export class ContractsApi {
     )
     @ApiOperation({
         summary: 'Cancel retire request.',
-        description: 'Cancel retire contract request.',
+        description:
+            'Cancel retire contract request. Intended for regular users (not Standard Registry) to cancel their own retire request.',
     })
     @ApiParam({
         name: 'requestId',
@@ -1656,9 +1725,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async cancelRetireRequest(
         @AuthUser() user: IAuthUser,
@@ -1696,7 +1764,7 @@ export class ContractsApi {
     @ApiParam({
         name: 'hederaId',
         type: String,
-        description: 'Hedera identifier',
+        description: 'Hedera account identifier',
         required: true,
         example: '0.0.1',
     })
@@ -1708,9 +1776,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async retireAddAdmin(
         @AuthUser() user: IAuthUser,
@@ -1749,7 +1816,7 @@ export class ContractsApi {
     @ApiParam({
         name: 'hederaId',
         type: String,
-        description: 'Hedera identifier',
+        description: 'Hedera account identifier',
         required: true,
         example: '0.0.1',
     })
@@ -1761,9 +1828,8 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async retireRemoveAdmin(
         @AuthUser() user: IAuthUser,
@@ -1810,20 +1876,14 @@ export class ContractsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        schema: {
-            type: 'array',
-            items: {
-                type: 'object'
-            }
-        },
-        example: [{}]
+        type: RetireVcDocumentDTO,
+        example: ObjectExamples.RETIRE_VCS_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRetireVCs(
         @AuthUser() user: IAuthUser,
@@ -1859,26 +1919,20 @@ export class ContractsApi {
         type: String,
         description: 'The topic id of contract',
         required: true,
-        example: '0.0.0000000',
+        example: '0.0.4641052',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        schema: {
-            type: 'array',
-            items: {
-                type: 'object'
-            }
-        },
-        example: [{}]
+        type: RetireVcIndexerDocumentDTO,
+        example: ObjectExamples.RETIRE_VCS_INDEXER_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRetireVCsFromIndexer(
         @AuthUser() user: IAuthUser,

@@ -132,7 +132,365 @@ const PERMISSIONS_SR = [
 export const ObjectExamples = {
     PERMISSION_SR: PERMISSIONS_SR,
 
-    SESSION_RESPONSE_WITH_ID: {
+    CONTRACTS_LIST_RESPONSE_WIPE: [
+        {
+            createDate: '2026-03-20T08:24:09.121Z',
+            updateDate: '2026-03-20T09:08:01.905Z',
+            contractId: '0.0.8300131',
+            description: 'Wipe contract description',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            permissions: 7,
+            topicId: '0.0.8300126',
+            type: 'WIPE',
+            lastSyncEventTimeStamp: '1773997659.461000723',
+            wipeContractIds: [],
+            syncDisabled: false,
+            version: '1.0.1',
+            wipeTokenIds: [],
+            _id: '69bd0429fdc2fd0bb2f9e95b',
+            id: '69bd0429fdc2fd0bb2f9e95b'
+        }
+    ],
+
+    CONTRACTS_LIST_RESPONSE_RETIRE: [
+        {
+            createDate: '2026-03-20T08:26:36.292Z',
+            updateDate: '2026-03-20T08:55:03.162Z',
+            contractId: '0.0.8300155',
+            description: 'Retire Contract description',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            permissions: 3,
+            topicId: '0.0.8300142',
+            type: 'RETIRE',
+            lastSyncEventTimeStamp: '1773996847.377859483',
+            wipeContractIds: [],
+            syncDisabled: false,
+            version: '1.0.1',
+            wipeTokenIds: ['0.0.8300593'],
+            _id: '69bd04bcfdc2fd0bb2f9e971',
+            id: '69bd04bcfdc2fd0bb2f9e971'
+        }
+    ],
+
+    CONTRACTS_CREATE_RESPONSE_RETIRE: {
+        createDate: '2026-03-20T09:30:28.129Z',
+        updateDate: '2026-03-20T09:30:28.129Z',
+        contractId: '0.0.8301737',
+        description: 'Retire contract description',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        permissions: 3,
+        topicId: '0.0.8301715',
+        type: 'RETIRE',
+        wipeContractIds: [],
+        syncDisabled: false,
+        version: '1.0.1',
+        wipeTokenIds: [],
+        _id: '69bd13b4fdc2fd0bb2f9eccc',
+        id: '69bd13b4fdc2fd0bb2f9eccc'
+    },
+
+    CONTRACTS_CREATE_RESPONSE_WIPE: {
+        createDate: '2026-03-20T09:31:11.101Z',
+        updateDate: '2026-03-20T09:31:11.101Z',
+        contractId: '0.0.8301741',
+        description: 'Wipe contract description',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        permissions: 7,
+        topicId: '0.0.8301716',
+        type: 'WIPE',
+        wipeContractIds: [],
+        syncDisabled: false,
+        version: '1.0.1',
+        wipeTokenIds: [],
+        _id: '69bd13df2a7b53526de3826b',
+        id: '69bd13df2a7b53526de3826b'
+    },
+
+    CONTRACTS_CREATE_REQUEST_RETIRE: {
+        type: 'RETIRE',
+        description: 'Retire contract description'
+    },
+
+    CONTRACTS_CREATE_REQUEST_WIPE: {
+        type: 'WIPE',
+        description: 'Wipe contract description'
+    },
+
+    CONTRACTS_IMPORT_REQUEST: {
+        contractId: '0.0.8301737',
+        description: 'Imported contract'
+    },
+
+    CONTRACTS_IMPORT_RESPONSE_RETIRE: {
+        createDate: '2026-03-20T09:30:28.129Z',
+        updateDate: '2026-03-20T09:30:28.129Z',
+        contractId: '0.0.8301737',
+        description: 'Imported contract',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        permissions: 3,
+        topicId: '0.0.8301715',
+        type: 'RETIRE',
+        lastSyncEventTimeStamp: '1773997659.461000723',
+        wipeContractIds: [],
+        syncDisabled: false,
+        version: '1.0.1',
+        wipeTokenIds: [],
+        _id: '69bd13b4fdc2fd0bb2f9eccc',
+        id: '69bd13b4fdc2fd0bb2f9eccc'
+    },
+
+    CONTRACTS_IMPORT_RESPONSE_WIPE: {
+        createDate: '2026-03-20T09:31:11.101Z',
+        updateDate: '2026-03-20T09:31:11.101Z',
+        contractId: '0.0.8301741',
+        description: 'Imported contract',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        permissions: 7,
+        topicId: '0.0.8301716',
+        type: 'WIPE',
+        lastSyncEventTimeStamp: '1773997659.461000723',
+        wipeContractIds: [],
+        syncDisabled: false,
+        version: '1.0.1',
+        wipeTokenIds: [],
+        _id: '69bd13df2a7b53526de3826b',
+        id: '69bd13df2a7b53526de3826b'
+    },
+
+    WIPER_REQUESTS_RESPONSE: [
+        {
+            createDate: '2026-03-20T12:55:01.614Z',
+            updateDate: '2026-03-20T12:55:01.614Z',
+            contractId: '0.0.8300131',
+            user: '0.0.8300155',
+            token: '0.0.8305077',
+            id: '69bd43a55b864fe37954a8bb'
+        }
+    ],
+
+    CONTRACTS_SET_RETIRE_POOL_REQUEST: {
+        tokens: [
+            {
+                token: '0.0.8300593',
+                count: 1
+            }
+        ],
+        immediately: true
+    },
+
+    RETIRE_POOLS_RESPONSE: [
+        {
+            createDate: '2026-03-20T17:58:51.312Z',
+            updateDate: '2026-03-20T18:00:01.342Z',
+            contractId: '0.0.8308132',
+            tokens: [
+                {
+                    token: '0.0.8308700',
+                    count: 1,
+                    type: 'non-fungible',
+                    tokenSymbol: 'TT',
+                    decimals: '0',
+                    contract: '0.0.8308101'
+                },
+                {
+                    token: '0.0.8308712',
+                    count: 3,
+                    type: 'non-fungible',
+                    tokenSymbol: 'DD',
+                    decimals: '0',
+                    contract: '0.0.8308101'
+                }
+            ],
+            tokenIds: ['0.0.8308700', '0.0.8308712'],
+            immediately: true,
+            enabled: false,
+            id: '69bd8adb90fe6f912cbb0d05'
+        },
+        {
+            createDate: '2026-03-20T17:14:31.038Z',
+            updateDate: '2026-03-20T18:00:01.342Z',
+            contractId: '0.0.8308132',
+            tokens: [
+                {
+                    token: '0.0.8308361',
+                    count: 3,
+                    type: 'fungible',
+                    tokenSymbol: 'CER',
+                    decimals: '0',
+                    contract: '0.0.8308101'
+                }
+            ],
+            tokenIds: ['0.0.8308361'],
+            immediately: false,
+            enabled: true,
+            id: '69bd80773090533214e7380e'
+        }
+    ],
+
+    CONTRACTS_RETIRE_TOKENS_REQUEST_FT: [
+        {
+            token: '0.0.8300593',
+            count: 3,
+            serials: []
+        }
+    ],
+
+    CONTRACTS_RETIRE_TOKENS_REQUEST_NFT: [
+        {
+            token: '0.0.8300593',
+            count: 0,
+            serials: [1, 2, 4]
+        }
+    ],
+
+    RETIRE_VCS_INDEXER_RESPONSE: [
+        {
+            id: '66ee387945ab8bf9448f45e2',
+            lastUpdate: 0,
+            topicId: '0.0.4641052',
+            consensusTimestamp: '1722418989.344504535',
+            owner: '0.0.1416',
+            uuid: '8494b750-eed6-4d13-82a1-5cc1a644ffae',
+            status: 'ISSUE',
+            type: 'VC-Document',
+            action: 'create-vc-document',
+            lang: 'en-US',
+            responseType: 'str',
+            options: {
+                issuer: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363',
+                relationships: null,
+                documentStatus: null,
+                encodedData: false
+            },
+            analytics: {
+                textSearch: '0.0.4641052|0.0.1416|1722418989.344504535|8494b750-eed6-4d13-82a1-5cc1a644ffae|ISSUE|VC-Document|en-US||did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363|0.0.4437864|0.0.4641053|[object Object]|ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64|did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363|Retire|Retire',
+                schemaId: '1743436678.828522000',
+                schemaName: 'Retire'
+            },
+            analyticsUpdate: 1773995161141,
+            coordUpdate: 1756843304325,
+            files: ['bafkreihwnas7c7ji53iolrjkjuqevqdg2j6je2supras5vghzjq5ccnyai'],
+            documents: [
+                {
+                    id: 'urn:uuid:e7c97bd5-39a3-4f98-b642-b20ec4f81aaf',
+                    type: ['VerifiableCredential'],
+                    issuer: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363',
+                    issuanceDate: '2024-07-31T09:43:02.117Z',
+                    '@context': ['https://www.w3.org/2018/credentials/v1', 'ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64'],
+                    credentialSubject: [
+                        {
+                            user: '0.0.4437864',
+                            contractId: '0.0.4641053',
+                            tokens: [
+                                {
+                                    tokenId: '0.0.4641082',
+                                    count: 0,
+                                    serials: [23, 22, 21, 20, 19],
+                                    type: 'Token',
+                                    '@context': ['ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64']
+                                }
+                            ],
+                            '@context': ['ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64'],
+                            id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363',
+                            type: 'Retire'
+                        }
+                    ],
+                    proof: {
+                        type: 'Ed25519Signature2018',
+                        created: '2024-07-31T09:43:02Z',
+                        verificationMethod: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.4640363#did-root-key',
+                        proofPurpose: 'assertionMethod',
+                        jws: 'eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..DGYzJmYogDgbByIERm8cnb_zOJsAKWLg79hW2bkp2mleb57VRaEjm8bOwj9AizlSD4zQzhmXXux7L_nhRO0yCQ'
+                    }
+                }
+            ],
+            topics: [],
+            tokens: [],
+            sequenceNumber: 3,
+            loaded: true
+        }
+    ],
+
+    RETIRE_VCS_RESPONSE: [
+        {
+            createDate: '2026-03-20T18:36:53.698Z',
+            updateDate: '2026-03-20T18:36:53.698Z',
+            hash: '88chLeeXjKUXa13dNeEJz2tNehsjo3HQGUX5QH3kmY6b',
+            hederaStatus: 'NEW',
+            signature: 0,
+            type: 'RETIRE',
+            option: { status: 'NEW' },
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            document: {
+                id: 'urn:uuid:93328f13-cac2-49a8-9c30-fb52842093dd',
+                type: ['VerifiableCredential'],
+                issuer: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+                issuanceDate: '2026-03-20T18:36:34.285Z',
+                '@context': ['https://www.w3.org/2018/credentials/v1', 'ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64'],
+                credentialSubject: [
+                    {
+                        user: '0.0.6057669',
+                        contractId: '0.0.8308132',
+                        tokens: [{ tokenId: '0.0.8308164', count: 0, serials: [2, 3, 4, 10] }],
+                        '@context': ['ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64'],
+                        id: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+                        type: 'Retire'
+                    }
+                ],
+                proof: {
+                    type: 'Ed25519Signature2018',
+                    created: '2026-03-20T18:36:34Z',
+                    verificationMethod: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835#did-root-key',
+                    proofPurpose: 'assertionMethod',
+                    jws: 'eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..f71046hE9geZXL7uPc5EIc2YsNGMWsRakFwN_iMht4O6njdQZPtKckkQ6H9P1pZBaRz-_yaAy-gmfO-I3LJDBw'
+                }
+            },
+            documentFileId: '69bd93c590fe6f912cbb0d36',
+            documentFields: ['credentialSubject.0.user'],
+            tableFileIds: [],
+            id: '69bd93c590fe6f912cbb0d38'
+        },
+        {
+            createDate: '2026-03-20T10:44:47.623Z',
+            updateDate: '2026-03-20T10:44:47.623Z',
+            hash: '7Sj7GyTA7TocoZGfVczb9jSfGhitHKZ133G7pny4nFTV',
+            hederaStatus: 'NEW',
+            signature: 0,
+            type: 'RETIRE',
+            option: { status: 'NEW' },
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            document: {
+                id: 'urn:uuid:2e122bba-2f7e-4f46-9ea6-2d790e300caa',
+                type: ['VerifiableCredential'],
+                issuer: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+                issuanceDate: '2026-03-20T10:44:31.703Z',
+                '@context': ['https://www.w3.org/2018/credentials/v1', 'ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64'],
+                credentialSubject: [
+                    {
+                        user: '0.0.6057669',
+                        contractId: '0.0.8300155',
+                        tokens: [{ tokenId: '0.0.8302213', count: 6, serials: [] }],
+                        '@context': ['ipfs://bafkreifsj2y32io54zolo4ltcjzu45rg4ejqogpkmbkhb3llzig6dpjf64'],
+                        id: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+                        type: 'Retire'
+                    }
+                ],
+                proof: {
+                    type: 'Ed25519Signature2018',
+                    created: '2026-03-20T10:44:31Z',
+                    verificationMethod: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835#did-root-key',
+                    proofPurpose: 'assertionMethod',
+                    jws: 'eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..FHaguzWfQoSo2t9SEcAAlJUHNgjtI8_Op189piqVWj_w'
+                }
+            },
+            documentFileId: '69bd251f5b864fe37954a6f9',
+            documentFields: ['credentialSubject.0.user'],
+            tableFileIds: [],
+            id: '69bd251f5b864fe37954a6fb'
+        }
+    ],
+
+     SESSION_RESPONSE_WITH_ID: {
         id: Examples.DB_ID,
         username: Examples.USER_NAME_SR_1,
         did: Examples.DID,
