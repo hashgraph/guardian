@@ -403,6 +403,12 @@ form {
 
 *[disabled-dropdown="true"] {
     pointer-events: none !important;
+
+    &::ng-deep {
+        .p-dropdown-trigger {
+            display: none !important;
+        }
+    }
 }
 
 .rmv-condition-btn {
@@ -419,17 +425,18 @@ form {
 }
 
 .if-mode-dropdown {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 1rem;
-  height: unset;
-  margin-bottom: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    height: unset;
+    margin-bottom: 1.5rem;
 
-  &::before, &::after {
-    content: "";
-    border-top: 2px dashed #A6B3BF;
-  }
+    &::before,
+    &::after {
+        content: "";
+        border-top: 2px dashed #A6B3BF;
+    }
 }
 
 .if-text-mode {

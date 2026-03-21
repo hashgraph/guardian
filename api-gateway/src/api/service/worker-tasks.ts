@@ -3,6 +3,7 @@ import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse,
 import { Auth, AuthUser } from '#auth';
 import { Examples, InternalServerErrorDTO, pageHeader, WorkersTasksDTO } from '#middlewares';
 import { IAuthUser } from '@guardian/common';
+import { Permissions } from '@guardian/interfaces';
 import { Guardians, parseInteger } from '#helpers';
 
 @Controller('worker-tasks')
@@ -12,7 +13,7 @@ export class WorkerTasksController {
      * Get all worker tasks
      */
     @Get('/')
-    @Auth()
+    @Auth(Permissions.WORKER_TASKS_READ)
     @ApiOperation({
         summary: 'Get all worker tasks',
         description: 'Returns all worker tasks.',
@@ -65,7 +66,7 @@ export class WorkerTasksController {
     }
 
     @Post('restart')
-    @Auth()
+    @Auth(Permissions.WORKER_TASKS_EXECUTE)
     @ApiOperation({
         summary: 'Restart task',
         description: 'Restart task.',
@@ -109,7 +110,7 @@ export class WorkerTasksController {
     }
 
     @Delete('delete/:taskId')
-    @Auth()
+    @Auth(Permissions.WORKER_TASKS_DELETE)
     @ApiOperation({
         summary: 'Delete task',
         description: 'Delete task.',

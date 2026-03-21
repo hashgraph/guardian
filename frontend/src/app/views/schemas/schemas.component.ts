@@ -130,6 +130,16 @@ export class SchemaConfigComponent implements OnInit {
         { label: 'System Schemas', value: SchemaType.System }
     ];
     public textSearch: any;
+    public textSearchOptionsValue: string[] = [
+        'uuid', 'name', 'description', 'references', 'fields'
+    ];
+    public textSearchOptions: { label: string; value: string }[] = [
+        { label: 'UUID', value: 'uuid' },
+        { label: 'Name', value: 'name' },
+        { label: 'Description', value: 'description' },
+        { label: 'References', value: 'references' },
+        { label: 'Fields', value: 'fields' },
+    ];
 
     public element: any = {};
 
@@ -493,14 +503,7 @@ export class SchemaConfigComponent implements OnInit {
 
                 this.policyNameByTopic = {};
                 this.policyIdByTopic = {};
-                this.allPolicies = [{
-                    name: 'All Policies',
-                    topicId: null
-                },
-                {
-                    name: 'No Binding',
-                    topicId: SchemaConfigComponent.NOT_BINDED
-                }];
+                this.allPolicies = [];
                 for (const policy of policies) {
                     if (policy.topicId) {
                         this.policyIdByTopic[policy.topicId] = policy.id;
@@ -623,6 +626,7 @@ export class SchemaConfigComponent implements OnInit {
                     category,
                     topicId: this.currentTopic || '',
                     search: this.textSearch,
+                    searchOptions: this.textSearchOptionsValue,
                     pageIndex: this.pageIndex,
                     pageSize: this.pageSize
                 });
@@ -1120,6 +1124,7 @@ export class SchemaConfigComponent implements OnInit {
                 schemaType: this.type,
                 topicId: this.currentTopic,
                 policies: this.policies,
+                allPolicies: this.allPolicies,
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,
@@ -1197,6 +1202,7 @@ export class SchemaConfigComponent implements OnInit {
                 schemaType: this.type,
                 topicId: this.currentTopic,
                 policies: this.policies,
+                allPolicies: this.allPolicies,
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,
@@ -1278,6 +1284,7 @@ export class SchemaConfigComponent implements OnInit {
                 topicId: this.currentTopic,
                 schemaType: this.type,
                 policies: this.policies,
+                allPolicies: this.allPolicies,
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,
@@ -1309,6 +1316,7 @@ export class SchemaConfigComponent implements OnInit {
                 topicId: this.currentTopic,
                 schemaType: this.type,
                 policies: this.policies,
+                allPolicies: this.allPolicies,
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,

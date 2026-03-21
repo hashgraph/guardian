@@ -18742,6 +18742,15 @@ paths:
           schema:
             example: text
             type: string
+        - name: searchOptions
+          required: false
+          in: query
+          description: Search Options
+          schema:
+            example: name
+            type: array
+            items:
+              type: string
       responses:
         '200':
           description: Successful operation.
@@ -42407,6 +42416,9 @@ components:
             - SCHEMAS_RULE_EXECUTE
             - FORMULAS_FORMULA_READ
             - FORMULAS_FORMULA_CREATE
+            - WORKER_TASKS_READ
+            - WORKER_TASKS_EXECUTE
+            - WORKER_TASKS_DELETE
             - ACCESS_POLICY_ALL
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
@@ -42491,6 +42503,9 @@ components:
             - SCHEMAS_RULE_EXECUTE
             - FORMULAS_FORMULA_READ
             - FORMULAS_FORMULA_CREATE
+            - WORKER_TASKS_READ
+            - WORKER_TASKS_EXECUTE
+            - WORKER_TASKS_DELETE
             - ACCESS_POLICY_ALL
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
@@ -42524,6 +42539,7 @@ components:
             - DELEGATION
             - STATISTICS
             - FORMULAS
+            - WORKER_TASKS
           example: ANALYTIC
         entity:
           type: string
@@ -42566,6 +42582,7 @@ components:
             - LABEL
             - FORMULA
             - EXTERNAL_POLICY
+            - WORKER_TASK
           example: POLICY
         action:
           type: string

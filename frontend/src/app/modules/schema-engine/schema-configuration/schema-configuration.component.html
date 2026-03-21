@@ -16,11 +16,25 @@
             <div *ngIf="isPolicy" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="policy">* Policy</label>
                 <p-dropdown
+                    *ngIf="isNewSchema"
                     class="guardian-dropdown"
                     panelStyleClass="guardian-dropdown-panel width-825"
                     (onChange)="onFilter($event)"
                     [options]="policies"
-                    [attr.disabled-dropdown]="!isNewSchema"
+                    appendTo="body"
+                    formControlName="topicId"
+                    id="policy"
+                    optionLabel="name"
+                    optionValue="topicId"
+                    placeholder="Policy"
+                ></p-dropdown>
+                <p-dropdown
+                    *ngIf="!isNewSchema"
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel width-825"
+                    (onChange)="onFilter($event)"
+                    [options]="allPolicies"
+                    [attr.disabled-dropdown]="true"
                     appendTo="body"
                     formControlName="topicId"
                     id="policy"
