@@ -1073,7 +1073,7 @@ export class HederaSDKHelper {
         apiOptions: IApiOptions
     ): Promise<any> {
         if (apiOptions.mockId) {
-            return await (new MockService()).execute({
+            const mockData = await (new MockService()).execute({
                 mockId: apiOptions.mockId,
                 type: MockType.GET_TOKEN,
                 data: {
@@ -1081,6 +1081,9 @@ export class HederaSDKHelper {
                     tokenId
                 }
             });
+            if (mockData) {
+                return mockData;
+            }
         }
         const res = await axios.get(
             `${Environment.HEDERA_TOKENS_API}/${tokenId}`,
@@ -1109,7 +1112,7 @@ export class HederaSDKHelper {
         message: string;
     }> {
         if (apiOptions.mockId) {
-            return await (new MockService()).execute({
+            const mockData = await (new MockService()).execute({
                 mockId: apiOptions.mockId,
                 type: MockType.GET_MESSAGE,
                 data: {
@@ -1117,7 +1120,18 @@ export class HederaSDKHelper {
                     timeStamp
                 }
             });
+            if (mockData) {
+                const buffer = Buffer.from(mockData.message, 'base64').toString();
+                return {
+                    id: mockData.consensus_timestamp,
+                    payer_account_id: mockData.payer_account_id,
+                    sequence_number: mockData.sequence_number,
+                    topicId: mockData.topic_id,
+                    message: buffer
+                }
+            }
         }
+
         const res = await axios.get(
             `${Environment.HEDERA_MESSAGE_API}/${timeStamp}`,
             { responseType: 'json' }
@@ -1154,7 +1168,7 @@ export class HederaSDKHelper {
         message: string;
     }[]> {
         if (apiOptions.mockId) {
-            return await (new MockService()).execute({
+            const mockData = await (new MockService()).execute({
                 mockId: apiOptions.mockId,
                 type: MockType.GET_MESSAGES,
                 data: {
@@ -1162,6 +1176,20 @@ export class HederaSDKHelper {
                     topicId, startTimestamp
                 }
             });
+            if (mockData) {
+                const result = [];
+                for (const item of mockData) {
+                    const buffer = Buffer.from(item.message, 'base64').toString();
+                    result.push({
+                        id: item.consensus_timestamp,
+                        payer_account_id: item.payer_account_id,
+                        sequence_number: item.sequence_number,
+                        topicId: item.topic_id,
+                        message: buffer
+                    });
+                }
+                return result;
+            }
         }
 
         let goNext = true;
@@ -1249,7 +1277,7 @@ export class HederaSDKHelper {
         message: string;
     }> {
         if (apiOptions.mockId) {
-            return await (new MockService()).execute({
+            const mockData = await (new MockService()).execute({
                 mockId: apiOptions.mockId,
                 type: MockType.GET_MESSAGE,
                 data: {
@@ -1258,6 +1286,16 @@ export class HederaSDKHelper {
                     index
                 }
             });
+            if (mockData) {
+                const buffer = Buffer.from(mockData.message, 'base64').toString();
+                return {
+                    id: mockData.consensus_timestamp,
+                    payer_account_id: mockData.payer_account_id,
+                    sequence_number: mockData.sequence_number,
+                    topicId: mockData.topic_id,
+                    message: buffer
+                }
+            }
         }
 
         const url = `${Environment.HEDERA_TOPIC_API}/${topicId}/messages/${index}`;
@@ -2390,7 +2428,7 @@ export class HederaSDKHelper {
         }
 
         if (apiOptions.mockId) {
-            return await (new MockService()).execute({
+            const mockData = await (new MockService()).execute({
                 mockId: apiOptions.mockId,
                 type: MockType.GET_ACCOUNT,
                 data: {
@@ -2398,6 +2436,9 @@ export class HederaSDKHelper {
                     accountId
                 }
             });
+            if (mockData) {
+                return mockData;
+            }
         }
 
         const res = await axios.get(
@@ -2508,7 +2549,7 @@ export class HederaSDKHelper {
         apiOptions: IApiOptions
     ): Promise<{ accountId: string }> {
         if (apiOptions.mockId) {
-            const data = await (new MockService()).execute({
+            const mockData = await (new MockService()).execute({
                 mockId: apiOptions.mockId,
                 type: MockType.GET_ACCOUNT,
                 data: {
@@ -2516,11 +2557,12 @@ export class HederaSDKHelper {
                     accountId
                 }
             });
-
-            if (data?.account) {
-                return { accountId: data.account };
-            } else {
-                return { accountId };
+            if (mockData) {
+                if (mockData?.account) {
+                    return { accountId: mockData.account };
+                } else {
+                    return { accountId };
+                }
             }
         }
 
@@ -2535,5 +2577,4 @@ export class HederaSDKHelper {
             return { accountId };
         }
     }
-
 }

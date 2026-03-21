@@ -97,8 +97,8 @@ export class PolicyEngineService {
         return this.http.put<any>(`${this.url}/${policyId}/publish`, options);
     }
 
-    public dryRun(policyId: string): Observable<any> {
-        return this.http.put<any>(`${this.url}/${policyId}/dry-run`, null);
+    public dryRun(policyId: string, options: { enableMockUp: boolean }): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/dry-run`, options);
     }
 
     public discontinue(policyId: string, details: { date?: Date }): Observable<any> {

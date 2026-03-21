@@ -227,8 +227,9 @@ export class PolicyEngine extends NatsService {
     public async dryRunPolicy(
         policyId: string,
         owner: IOwner,
+        enableMockUp:boolean
     ): Promise<PoliciesValidationDTO> {
-        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_POLICIES, { policyId, owner });
+        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_POLICIES, { policyId, owner, enableMockUp });
     }
 
     /**

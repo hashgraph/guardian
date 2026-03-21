@@ -1317,9 +1317,13 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_POLICIES,
-            async (msg: { policyId: string, owner: IOwner }): Promise<IMessageResponse<any>> => {
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                enableMockUp: boolean
+            }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { policyId, owner } = msg;
+                    const { policyId, owner, enableMockUp } = msg;
 
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'publish');
@@ -1349,8 +1353,8 @@ export class PolicyEngineService {
                     const errors = await this.policyEngine.validateModel(policyId, true);
                     const isValid = !errors.blocks.some(block => !block.isValid);
                     if (isValid) {
-                        await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger);
-                        await this.policyEngine.generateModel(model.id.toString());
+                        await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger, enableMockUp);
+                        await this.policyEngine.generateModel(model.id.toString(), enableMockUp);
                     }
 
                     const savepointsCount = await DatabaseServer.getSavepointsCount(policyId);

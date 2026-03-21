@@ -46,7 +46,8 @@ const {
     policyId,
     policyServiceName,
     skipRegistration,
-    policyOwnerId
+    policyOwnerId,
+    enableMockUp
 } = JSON.parse(process.env.POLICY_START_OPTIONS);
 
 process.env.SERVICE_CHANNEL = policyServiceName;
@@ -154,7 +155,14 @@ Promise.all([
     const generator = new BlockTreeGenerator();
     const policyValidator = new PolicyValidator(policyConfig);
 
-    const policyModel = await generator.generate(policyConfig, skipRegistration, policyValidator, logger, policyOwnerId);
+    const policyModel = await generator.generate(
+        policyConfig, 
+        skipRegistration, 
+        policyValidator, 
+        logger, 
+        policyOwnerId,
+        enableMockUp
+    );
     if ((policyModel as { type: 'error', message: string }).type === 'error') {
         await generator.publish(PolicyEvents.POLICY_READY, {
             policyId: policyId.toString(),

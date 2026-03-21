@@ -404,6 +404,9 @@ export class Worker extends NatsService {
                                     cid: task.data.payload.cid
                                 }
                             });
+                            if (!fileContent) {
+                                fileContent = await this.ipfsClient.getFile(task.data.payload.cid);
+                            }
                         } else if (task.dryRun) {
                             throw new Error('Unable to get virtual file');
                         } else {
@@ -1351,7 +1354,6 @@ export class Worker extends NatsService {
             }
             ///////
         } catch (e) {
-            console.debug(e);
             result.error = e.message;
             result.isTimeoutError = e.isTimeoutError;
         } finally {

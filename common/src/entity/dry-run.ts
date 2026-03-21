@@ -907,12 +907,6 @@ export class DryRun extends BaseEntity {
     cid?: string;
 
     /**
-     * CID
-     */
-    @Property({ nullable: true, type: 'unknown' })
-    content?: string;
-
-    /**
      * Transaction
      */
     @Property({ nullable: true, type: 'unknown' })

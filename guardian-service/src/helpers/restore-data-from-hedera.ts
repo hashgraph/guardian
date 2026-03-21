@@ -663,7 +663,7 @@ export class RestoreDataFromHedera {
                     hederaAccountKey
                 );
 
-                await new PolicyEngine(logger).generateModel(r.id.toString());
+                await new PolicyEngine(logger).generateModel(r.id.toString(), false);
                 // await new BlockTreeGenerator().generate(r.id.toString());
             }
         } catch (e) {

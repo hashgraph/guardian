@@ -1900,10 +1900,6 @@ export class PolicyComponentsUtils {
         return true;
     }
 
-    /**
-     * Unregister blocks
-     * @param policyId
-     */
     public static GetMockUpConfig(policyId: string) {
         if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
             throw new Error('The policy does not exist');
@@ -1926,10 +1922,6 @@ export class PolicyComponentsUtils {
         return { enable, blocks };
     }
 
-    /**
-     * Unregister blocks
-     * @param policyId
-     */
     public static SetMockUpConfig(policyId: string, config: any) {
         if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
             throw new Error('The policy does not exist');
@@ -1955,5 +1947,23 @@ export class PolicyComponentsUtils {
         }
         instance.enableMockUp = enable;
         return true;
+    }
+
+    public static MockUpAll(policyId: string) {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        const instance = PolicyComponentsUtils.PolicyById.get(policyId)
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component.canMockUp) {
+                component.enableMockUp = true;
+                if (component.policyInstance) {
+                    (component.policyInstance as any).enableMockUp = true;
+                }
+            }
+        }
+        instance.enableMockUp = true;
     }
 }

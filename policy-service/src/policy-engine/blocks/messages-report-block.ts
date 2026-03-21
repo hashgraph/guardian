@@ -74,6 +74,7 @@ export class MessagesReportBlock {
             await ref.setShortCache<string>(this.USER_REPORT_STATUS, 'FINISHED', user);
             this.updateStatus(ref, 'FINISHED', user);
         } catch (error) {
+            console.error(error);
             await ref.setShortCache<string>(this.USER_REPORT_STATUS, 'FAILED', user);
             ref.error(`Create Report: ${PolicyUtils.getErrorMessage(error)}`);
             this.updateStatus(ref, 'FAILED', user);

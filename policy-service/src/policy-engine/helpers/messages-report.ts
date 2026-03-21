@@ -125,6 +125,7 @@ export class MessagesReport {
                 dryRun: ref.dryRun,
                 mockId: ref.mockId
             });
+
         if (!message) {
             return;
         }
@@ -202,6 +203,7 @@ export class MessagesReport {
             dryRun: ref.dryRun,
             mockId: ref.mockId,
         });
+
         if (!message) {
             return;
         }

@@ -630,7 +630,8 @@ export class BlockTreeGenerator extends NatsService {
         skipRegistration: boolean,
         policyValidator: PolicyValidator,
         logger: PinoLogger,
-        policyOwnerId: string | null
+        policyOwnerId: string | null,
+        enableMockUp: boolean
     ): Promise<IPolicyBlock | { type: 'error', message: string }> {
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
@@ -668,6 +669,10 @@ export class BlockTreeGenerator extends NatsService {
             await this.initPolicyRestore(policyId, rootInstance, policy, policyOwnerId);
 
             await PolicyComponentsUtils.RegisterNavigation(policyId, policy.policyNavigation);
+
+            if(enableMockUp) {
+                PolicyComponentsUtils.MockUpAll(policyId);
+            }
 
             return rootInstance;
         } catch (error) {

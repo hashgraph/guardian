@@ -28,6 +28,11 @@ export interface IPolicyStartOptions {
      * Policy owner id
      */
     policyOwnerId: string;
+
+    /**
+     * Enable MockUp
+     */
+    enableMockUp: boolean;
 }
 
 /**
@@ -301,6 +306,7 @@ export class PolicyContainer extends NatsService {
             policyServiceName,
             skipRegistration,
             policyOwnerId,
+            enableMockUp
         } = instance.options;
 
         const childEnvironment = Object.assign(process.env, {
@@ -308,7 +314,8 @@ export class PolicyContainer extends NatsService {
                 policyId,
                 policyServiceName,
                 skipRegistration,
-                policyOwnerId
+                policyOwnerId,
+                enableMockUp
             }),
         });
 

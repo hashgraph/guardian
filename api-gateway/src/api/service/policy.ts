@@ -1155,6 +1155,10 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiBody({
+        description: 'Options.',
+        type: Object,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PoliciesValidationDTO
@@ -1168,11 +1172,13 @@ export class PolicyApi {
     async dryRunPolicy(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
+        @Body() body: any,
         @Req() req
     ): Promise<PoliciesValidationDTO> {
         try {
             const engineService = new PolicyEngine();
-            const result = await engineService.dryRunPolicy(policyId, new EntityOwner(user));
+            const enableMockUp = !!body.enableMockUp;
+            const result = await engineService.dryRunPolicy(policyId, new EntityOwner(user), enableMockUp);
             result.policies = await getOldResult(user);
 
             const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];

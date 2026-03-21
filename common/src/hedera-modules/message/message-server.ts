@@ -197,9 +197,9 @@ export class MessageServer {
         message = await this.sendHedera(message, options);
         notifier.completeStep(STEP_SEND_MESSAGES);
 
-        // if (this.dryRun) {
-        //     await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
-        // }
+        if (this.dryRun && !options.mockId) {
+            await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
+        }
 
         notifier.complete();
         return message;
@@ -304,40 +304,25 @@ export class MessageServer {
     private async addFile(file: Buffer, options: MessageOptions) {
         const notifier = options?.notifier || NewNotifier.empty();
 
-        // if (this.dryRun) {
-        //     const id = GenerateUUIDv4();
-        //     const result = {
-        //         cid: id,
-        //         url: IPFS.IPFS_PROTOCOL + id
-        //     }
-        //     await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
-        //     return result
-        // } else {
-        //     // <-- Steps
-        //     const STEP_SEND_FILE = 'Send file';
-        //     // Steps -->
-
-        //     const step = notifier.addStep(STEP_SEND_FILE);
-        //     step.start();
-        //     const result = await IPFS.addFile(file, options);
-        //     step.complete();
-        //     return result;
-        // }
-
-        // <-- Steps
-        const STEP_SEND_FILE = 'Send file';
-        // Steps -->
-
-        const step = notifier.addStep(STEP_SEND_FILE);
-        step.start();
-        const result = await IPFS.addFile(file, options);
-        step.complete();
-
-        if (this.dryRun) {
+        if (this.dryRun && !options.mockId) {
+            const id = GenerateUUIDv4();
+            const result = {
+                cid: id,
+                url: IPFS.IPFS_PROTOCOL + id
+            }
             await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
-        }
+            return result
+        } else {
+            // <-- Steps
+            const STEP_SEND_FILE = 'Send file';
+            // Steps -->
 
-        return result;
+            const step = notifier.addStep(STEP_SEND_FILE);
+            step.start();
+            const result = await IPFS.addFile(file, options);
+            step.complete();
+            return result;
+        }
     }
 
     /**
@@ -846,7 +831,7 @@ export class MessageServer {
             if (!messageId || typeof messageId !== 'string') {
                 return null;
             }
-            if (dryRun) {
+            if (dryRun && !options.mockId) {
                 return await MessageServer.getDryRunTopicMessage<T>(dryRun, messageId, type, userId);
             } else {
                 let message = await MessageServer.getTopicMessage<T>(messageId, type, options);
@@ -879,21 +864,15 @@ export class MessageServer {
             if (!messageId || typeof messageId !== 'string') {
                 return null;
             }
-            // if (this.dryRun) {
-            //     return await this.getDryRunTopicMessage<T>(messageId, type, userId);
-            // } else {
-            //     let message = await this.getTopicMessage<T>(messageId, type, options);
-            //     if (loadIPFS) {
-            //         message = await this.loadIPFS(message, options);
-            //     }
-            //     return message as T;
-            // }
-
-            let message = await this.getTopicMessage<T>(messageId, type, options);
-            if (loadIPFS) {
-                message = await this.loadIPFS(message, options);
+            if (this.dryRun && !options.mockId) {
+                return await this.getDryRunTopicMessage<T>(messageId, type, userId);
+            } else {
+                let message = await this.getTopicMessage<T>(messageId, type, options);
+                if (loadIPFS) {
+                    message = await this.loadIPFS(message, options);
+                }
+                return message as T;
             }
-            return message as T;
         } catch (error) {
             return null;
         }
@@ -1045,7 +1024,7 @@ export class MessageServer {
      * @param action
      */
     public static async getMessages<T extends Message>(options: LoadMessagesOptions): Promise<T[]> {
-        if (options.dryRun) {
+        if (options.dryRun && !options.mockId) {
             return await MessageServer.getDryRunMessages(options) as T[];
         } else {
             return await MessageServer.getTopicMessages(options) as T[];
@@ -1158,14 +1137,12 @@ export class MessageServer {
      * @param options
      */
     public async getMessages<T extends Message>(options: LoadMessagesOptions): Promise<T[]> {
-        // if (this.dryRun) {
-        //     options.dryRun = this.dryRun;
-        //     return await this.getDryRunMessages(options) as T[];
-        // } else {
-        //     return await this.getTopicMessages(options) as T[];
-        // }
-
-        return await this.getTopicMessages(options) as T[];
+        if (this.dryRun && !options.mockId) {
+            options.dryRun = this.dryRun;
+            return await this.getDryRunMessages(options) as T[];
+        } else {
+            return await this.getTopicMessages(options) as T[];
+        }
     }
 
     /**
