@@ -962,6 +962,8 @@ a.go-back-link svg {
 }
 
 .mockup-tabs-nav {
+    margin-bottom: 16px;
+
     ::ng-deep {
         .p-tabview .p-tabview-nav {
             li:first-child {
@@ -969,6 +971,11 @@ a.go-back-link svg {
             }
         }
     }
+}
+
+.mockup-grid-container {
+    height: calc(100vh - 380px);
+    overflow: auto;
 }
 
 .input-document-edit {
@@ -1099,6 +1106,22 @@ a.go-back-link svg {
     background-color: var(--color-grey-3, #E1E7EF) !important;
     align-items: center !important;
     padding-left: 20px !important;
+    border-top: 1px solid var(--color-grey-4, #b0b5ba) !important;
+
+    .guardian-collapse {
+        width: 24px !important;
+        padding: 0 !important;
+        margin-right: 8px !important;
+    }
+
+    &:first {
+        border-top: none !important;
+    }
+
+
+    &:first-child {
+        border-top: none !important;
+    }
 
     span {
         font-weight: normal;

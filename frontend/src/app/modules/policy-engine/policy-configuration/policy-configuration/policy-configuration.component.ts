@@ -1224,29 +1224,47 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private dryRunPolicy() {
-        this.loading = true;
-        this.policyEngineService
-            .dryRun(this.policyId, {
-                enableMockUp: true
-            })
-            .pipe(takeUntil(this._destroy$))
-            .subscribe((data: any) => {
-                const { policies, isValid, errors } = data;
-                if (isValid) {
-                    this.clearState();
-                    this.loadData();
-                } else {
-                    this.setErrors(errors, 'policy');
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Enable MockUp',
+                text: `You want to enable saving mock data?`,
+                buttons: [{
+                    name: 'Disable',
+                    class: 'secondary'
+                }, {
+                    name: 'Enable',
+                    class: 'primary'
+                }]
+            },
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
+            this.loading = true;
+            this.policyEngineService
+                .dryRun(this.policyId, {
+                    enableMockUp: result === 'Enable'
+                })
+                .pipe(takeUntil(this._destroy$))
+                .subscribe((data: any) => {
+                    const { policies, isValid, errors } = data;
+                    if (isValid) {
+                        this.clearState();
+                        this.loadData();
+                    } else {
+                        this.setErrors(errors, 'policy');
 
-                    this.emptyWarningsStates()
-                    this.emptyInfosStates()
+                        this.emptyWarningsStates()
+                        this.emptyInfosStates()
 
+                        this.loading = false;
+                    }
+                }, (e) => {
+                    console.error(e.error);
                     this.loading = false;
-                }
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+                });
+        });
     }
 
     private updatePolicyTemplate(policy: any) {

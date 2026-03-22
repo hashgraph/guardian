@@ -2547,9 +2547,7 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>('MOCK_EVENT_EXECUTE',
             async (event: MockEvent) => {
                 try {
-                    console.log('--- event', event)
                     const result = await MockUpHelper.execute(event);
-                    console.log('--- TEST', result)
                     return new MessageResponse(result);
                 } catch (error) {
                     return new MessageError(error);

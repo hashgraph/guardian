@@ -88,6 +88,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public mockTopics: any[] = [];
     public mockTokens: any[] = [];
     public mockApi: any[] = [];
+    public expandGrid: any = {};
 
 
     constructor(
