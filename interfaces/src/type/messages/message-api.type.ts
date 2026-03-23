@@ -307,6 +307,11 @@ export enum MessageAPI {
     DELETE_FILE = 'DELETE_FILE',
 
     GET_RELAYER_ACCOUNT_RELATIONSHIPS = 'GET_RELAYER_ACCOUNT_RELATIONSHIPS',
+
+    // Credential CRUD (guardian-service) — scope passed as parameter
+    SET_CREDENTIAL = 'SET_CREDENTIAL',
+    GET_CREDENTIALS = 'GET_CREDENTIALS',
+    DELETE_CREDENTIAL = 'DELETE_CREDENTIAL',
 }
 
 /**

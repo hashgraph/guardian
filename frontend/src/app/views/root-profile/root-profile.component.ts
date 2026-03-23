@@ -91,9 +91,9 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     private subscriptions = new Subscription()
     public isRestore = false;
 
-    public tab: 'general' | 'relayerAccounts' = 'general';
+    public tab: 'general' | 'relayerAccounts' | 'credentials' = 'general';
     public tabIndex = 0;
-    public tabs: ['general', 'relayerAccounts'] = ['general', 'relayerAccounts'];
+    public tabs: ['general', 'relayerAccounts', 'credentials'] = ['general', 'relayerAccounts', 'credentials'];
 
     public relayerAccountPage: any[];
     public relayerAccountCount: number;

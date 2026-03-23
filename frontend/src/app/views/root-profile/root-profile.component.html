@@ -38,6 +38,11 @@
                     <div class="tabview-label">Relayer Accounts</div>
                 </ng-template>
             </p-tabPanel>
+            <p-tabPanel [selected]="tab === 'credentials'">
+                <ng-template pTemplate="header">
+                    <div class="tabview-label">Credentials</div>
+                </ng-template>
+            </p-tabPanel>
         </p-tabView>
     </div>
     <ng-container *ngIf="tab === 'general'">
@@ -253,6 +258,10 @@
                 </div>
             </ng-template>
         </div>
+    </ng-container>
+
+    <ng-container *ngIf="tab === 'credentials'">
+        <app-credentials-panel role="sr"></app-credentials-panel>
     </ng-container>
 </ng-template>
 

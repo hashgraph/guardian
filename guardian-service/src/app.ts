@@ -1,4 +1,5 @@
 import { configAPI } from './api/config.service.js';
+import { credentialAPI } from './api/credential.service.js';
 import { documentsAPI } from './api/documents.service.js';
 import { profileAPI } from './api/profile.service.js';
 import { schemaAPI } from './api/schema.service.js';
@@ -189,6 +190,7 @@ Promise.all([
         await policyLabelsAPI(logger);
         await formulasAPI(logger);
         await externalPoliciesAPI(logger);
+        await credentialAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);
