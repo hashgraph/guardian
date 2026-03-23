@@ -6046,14 +6046,38 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegisteredUsersDTO'
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegisteredUserDTO'
               example:
-                username: alice
-                did: did:hedera:testnet:abc123
-                parent: string
-                role: STANDARD_REGISTRY
-                policyRoles:
-                  - string
+                - did: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                  username: StandardRegistry
+                  role: STANDARD_REGISTRY
+                  policyRoles: []
+                - parent: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                  did: >-
+                    did:hedera:testnet:4Rh3aC5jNAzPJwwNtsy95Ava954Thyjk41gREjynY2D9_0.0.8299835
+                  username: Installer
+                  role: USER
+                  policyRoles:
+                    - name: CDM AMS-III.AR Policy
+                      version: 1.0.0
+                      role: Project Participant
+                    - name: CDM AMS-III.BB Policy
+                      version: 1.0.5
+                      role: Project Participant
+                - parent: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                  did: >-
+                    did:hedera:testnet:3asJKFx6RVPRJi1qQNuRs26yuqJ7211mWJ5hrxNkmZqA_0.0.8299835
+                  username: VVB
+                  role: USER
+                  policyRoles:
+                    - name: CDM AMS-III.AR Policy
+                      version: 1.0.0
+                      role: VVB
         '500':
           description: Internal server error.
           content:
@@ -6061,7 +6085,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       summary: Returns list of registered users.
       tags:
@@ -6077,8 +6101,11 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                example: DEMO-KEY-8F3A2C
+                $ref: '#/components/schemas/DemoKeyResponseDTO'
+              example:
+                id: 0.0.8340839
+                key: >-
+                  302e020100300506032b657004220420f6168da5cd88b85151e9735252419f0768b87b1a800f7e3b7908d15fa1f358a2
         '401':
           description: Unauthorized request.
           content:
@@ -6105,7 +6132,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -6123,10 +6150,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskDTO'
+                $ref: '#/components/schemas/DemoTaskResponseDTO'
               example:
-                taskId: f3b2a9c1e4d5678901234567
-                expectation: 0
+                taskId: 405f156b-fad1-4f88-9b30-925dbeea1e39
+                expectation: 3
+                action: Create random key
+                userId: 69bcfd91c98df6ceb05e8a79
         '401':
           description: Unauthorized request.
           content:
@@ -6153,7 +6182,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -39995,41 +40024,89 @@ components:
         - tokens
         - sequenceNumber
         - loaded
-    RegisteredUsersDTO:
+    PolicyRoleDTO:
       type: object
       properties:
-        username:
+        name:
           type: string
-        did:
+          example: CDM AMS-III.AR Policy
+        version:
           type: string
-        parent:
-          type: string
+          example: 1.0.0
         role:
           type: string
+          example: Project Participant
+      required:
+        - name
+        - version
+        - role
+    RegisteredUserDTO:
+      type: object
+      properties:
+        did:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        username:
+          type: string
+          example: StandardRegistry
+        role:
+          type: string
+          example: STANDARD_REGISTRY
         policyRoles:
+          default: []
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/PolicyRoleDTO'
+        parent:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+          description: Parent DID for child users
       required:
-        - username
         - did
-        - parent
+        - username
         - role
         - policyRoles
-    TaskDTO:
+    DemoKeyResponseDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 0.0.6046379
+          description: Demo account ID
+        key:
+          type: string
+          example: >-
+            302e020100300506032b657004220420f6168da5cd88b85151e9735252419f0768b87b1a800f7e3b7908d15fa1f358a2
+          description: Demo account private key
+      required:
+        - id
+        - key
+    DemoTaskResponseDTO:
       type: object
       properties:
         taskId:
           type: string
-          description: Task Id
           example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+          description: Task ID
         expectation:
           type: number
+          example: 3
           description: Expected count of task phases
-          example: 0
+        action:
+          type: string
+          example: Create random key
+          description: Task action
+        userId:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+          description: User ID
       required:
         - taskId
         - expectation
+        - action
+        - userId
     ExternalDocumentDTO:
       type: object
       properties:
@@ -40490,6 +40567,20 @@ components:
         - createDate
         - config
         - version
+    TaskDTO:
+      type: object
+      properties:
+        taskId:
+          type: string
+          description: Task Id
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+        expectation:
+          type: number
+          description: Expected count of task phases
+          example: 0
+      required:
+        - taskId
+        - expectation
     ToolValidationDTO:
       type: object
       properties:
