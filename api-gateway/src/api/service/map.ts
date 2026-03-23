@@ -15,18 +15,18 @@ export class MapApi {
     @Get('/sh')
     @Auth()
     @ApiOperation({
-        summary: 'Get sentinel API key.',
+        summary: 'Get sentinel API key from Guardian service environment settings (.env.guardian).',
         description: 'Return sentinel API key.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: String,
-        example: 'string'
+        example: '46e0a5e4-6a27-46a6-adcc-a4608a4513e4'
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
