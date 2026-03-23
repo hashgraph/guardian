@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
+import Link from "next/link"
 import {
   Map,
   MapControlContainer,
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/card"
 import type { LatLngExpression } from "leaflet"
 import { useDashboardStats } from "@/hooks/useDashboardStats"
+import { useAllPolicyVcs } from "@/hooks/usePolicyVcDocuments"
 
 // Known project deployment locations with approximate coordinates
 // These are derived from PDD host country fields in the Guardian VC data
@@ -54,6 +56,10 @@ function PulsingDot({ count }: { count: number | null }) {
 
 export function DeviceMap() {
   const { totalDevices, isLoading } = useDashboardStats()
+  const { data: mrvReports } = useAllPolicyVcs("daily_mrv_report")
+
+  // Get latest MRV report timestamp for the "View devices" link
+  const latestMrvTs = mrvReports?.[0]?.consensusTimestamp
 
   const locations = useMemo(
     () =>
@@ -67,10 +73,22 @@ export function DeviceMap() {
   return (
     <Card className="@container/card overflow-hidden">
       <CardHeader>
-        <CardTitle>Device Locations</CardTitle>
-        <CardDescription>
-          Active dMRV cooking devices by deployment region
-        </CardDescription>
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle>Device Locations</CardTitle>
+            <CardDescription>
+              Active dMRV cooking devices by deployment region
+            </CardDescription>
+          </div>
+          {latestMrvTs && (
+            <Link
+              href={`/verify?ts=${encodeURIComponent(latestMrvTs)}`}
+              className="text-xs text-primary hover:underline whitespace-nowrap"
+            >
+              View all devices &rarr;
+            </Link>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         <div className="h-[300px] w-full">

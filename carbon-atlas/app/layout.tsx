@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Carbon Atlas",
   description:
-    "Traceable record of verified emission reductions under Gold Standard MECD 431 — Metered & Measured Energy Cooking Devices, anchored on Hedera via Guardian",
+    "Traceable record of verified emission reductions under Gold Standard MECD v1.2 — Metered & Measured Energy Cooking Devices, anchored on Hedera via Guardian",
   icons: {
     icon: "/hedera-logo.png",
   },

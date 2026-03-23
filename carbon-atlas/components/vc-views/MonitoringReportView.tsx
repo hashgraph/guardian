@@ -125,7 +125,7 @@ export function MonitoringReportView({ cs, rawDocuments }: MonitoringReportViewP
     <Tabs defaultValue="overview">
       <TabsList>
         <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="assumptions">Key Assumptions</TabsTrigger>
+        <TabsTrigger value="assumptions">Key Parameters</TabsTrigger>
         <TabsTrigger value="detail">All Fields</TabsTrigger>
         {rawDocuments && <TabsTrigger value="raw">Raw VC</TabsTrigger>}
       </TabsList>
@@ -168,7 +168,7 @@ export function MonitoringReportView({ cs, rawDocuments }: MonitoringReportViewP
 
       <TabsContent value="assumptions" className="pt-4 space-y-3">
         <p className="text-sm text-muted-foreground mb-2">
-          Key parameters and assumptions used in the MECD emission reduction calculation. These values are defined by the Gold Standard MECD 431 methodology and verified by the VVB.
+          Key parameters and assumptions used in the MECD emission reduction calculation. These values are defined by the Gold Standard MECD v1.2 methodology and verified by the VVB.
         </p>
         <div className="space-y-3">
           {shownAssumptions.map((a) => (

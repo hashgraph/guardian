@@ -2,7 +2,9 @@ import * as React from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { FieldGrid } from "@/components/shared/FieldDisplay"
+import { Map, MapTileLayer, MapMarker } from "@/components/ui/map"
 import { formatTCO2e, formatRawVc } from "@/lib/utils/format"
+import type { LatLngExpression } from "leaflet"
 
 interface ProjectViewProps {
   cs: Record<string, unknown>
@@ -32,6 +34,37 @@ function getPrimaryFuelParam(cs: Record<string, unknown>, field: string): unknow
   return sorted[0]?.[field]
 }
 
+/** Extract [lat, lng] from field6 GeoJSON or field4/field5 degree strings */
+function parseCoordinates(cs: Record<string, unknown>): LatLngExpression | null {
+  // Try field6 GeoJSON: { type: "Point", coordinates: [lat, lng] }
+  const field6 = get(cs, "project_details.field6") as Record<string, unknown> | undefined
+  if (field6 && Array.isArray(field6.coordinates) && field6.coordinates.length >= 2) {
+    const [lat, lng] = field6.coordinates.map(Number)
+    if (!isNaN(lat) && !isNaN(lng)) return [lat, lng]
+  }
+  // Fallback: parse field4 ("23.685° N") and field5 ("90.3563° E")
+  const field4 = get(cs, "project_details.field4") as string | undefined
+  const field5 = get(cs, "project_details.field5") as string | undefined
+  if (field4 && field5) {
+    const latMatch = field4.match(/([\d.]+)/)
+    const lngMatch = field5.match(/([\d.]+)/)
+    if (latMatch && lngMatch) {
+      const lat = parseFloat(latMatch[1]) * (field4.includes("S") ? -1 : 1)
+      const lng = parseFloat(lngMatch[1]) * (field5.includes("W") ? -1 : 1)
+      if (!isNaN(lat) && !isNaN(lng)) return [lat, lng]
+    }
+  }
+  return null
+}
+
+/** Extract host country from geographical boundary description (field24) */
+function parseHostCountry(cs: Record<string, unknown>): string | null {
+  const text = get(cs, "project_details.field24") as string | undefined
+  if (!text) return null
+  const match = text.match(/located in ([A-Z][a-zA-Z\s]+?)(?:[,.])/)?.[1]
+  return match?.trim() ?? null
+}
+
 interface Assumption {
   label: string
   value: string
@@ -45,7 +78,10 @@ export function ProjectView({ cs, entityType, rawDocuments }: ProjectViewProps) 
   const projectName = typeof rawProjectName === "string" ? rawProjectName
     : typeof rawProjectName === "object" && rawProjectName !== null ? (rawProjectName as Record<string, unknown>).name as string ?? JSON.stringify(rawProjectName)
     : rawProjectName != null ? String(rawProjectName) : undefined
-  const country = get(cs, "project_details.field12") as string | undefined
+  const orgCountry = get(cs, "project_details.field12") as string | undefined
+  const hostCountry = parseHostCountry(cs)
+  const country = hostCountry ?? orgCountry
+  const coordinates = parseCoordinates(cs)
   const methodology = get(cs, "project_details.field19") as string | undefined
   const rawCrediting = get(cs, "project_details.field28")
   const creditingFrom = typeof rawCrediting === "object" && rawCrediting !== null
@@ -163,23 +199,37 @@ export function ProjectView({ cs, entityType, rawDocuments }: ProjectViewProps) 
     <Tabs defaultValue="key">
       <TabsList>
         <TabsTrigger value="key">Key Info</TabsTrigger>
+        <TabsTrigger value="assumptions">Key Parameters</TabsTrigger>
         <TabsTrigger value="emissions">Emission Params</TabsTrigger>
-        <TabsTrigger value="assumptions">Key Assumptions</TabsTrigger>
         {description && <TabsTrigger value="description">Description</TabsTrigger>}
         {rawDocuments && <TabsTrigger value="raw">Raw VC</TabsTrigger>}
       </TabsList>
 
-      <TabsContent value="key" className="pt-4">
+      <TabsContent value="key" className="pt-4 space-y-4">
         <FieldGrid fields={keyFields} cols={2} />
-      </TabsContent>
-
-      <TabsContent value="emissions" className="pt-4">
-        <FieldGrid fields={emissionFields} cols={2} />
+        {coordinates && (
+          <div className="rounded-lg border overflow-hidden">
+            <div className="h-[200px] w-full">
+              <Map
+                center={coordinates}
+                zoom={7}
+                className="h-full w-full !min-h-0"
+                scrollWheelZoom={false}
+              >
+                <MapTileLayer />
+                <MapMarker position={coordinates} />
+              </Map>
+            </div>
+            <div className="px-3 py-2 bg-muted/50 text-xs text-muted-foreground">
+              Project Location · {Array.isArray(coordinates) ? `${coordinates[0]}°N, ${coordinates[1]}°E` : ""}
+            </div>
+          </div>
+        )}
       </TabsContent>
 
       <TabsContent value="assumptions" className="pt-4 space-y-3">
         <p className="text-sm text-muted-foreground mb-2">
-          Key parameters and assumptions from the Project Design Document. These values are defined by the Gold Standard MECD 431 methodology and validated by the VVB before the crediting period begins.
+          Key parameters and assumptions from the Project Design Document. These values are defined by the Gold Standard MECD v1.2 methodology and validated by the VVB before the crediting period begins.
         </p>
         <div className="space-y-3">
           {shownAssumptions.map((a) => (
@@ -192,6 +242,10 @@ export function ProjectView({ cs, entityType, rawDocuments }: ProjectViewProps) 
             </div>
           ))}
         </div>
+      </TabsContent>
+
+      <TabsContent value="emissions" className="pt-4">
+        <FieldGrid fields={emissionFields} cols={2} />
       </TabsContent>
 
       {description && (

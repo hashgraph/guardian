@@ -84,7 +84,7 @@ export function SiteHeader() {
             Methodology for Metered & Measured Energy Cooking Devices
           </h1>
           <p className="text-xs text-muted-foreground hidden sm:block">
-            Gold Standard MECD 431 v1.2 — ICVCM CCP-approved methodology
+            Gold Standard MECD v1.2 — ICVCM CCP-approved methodology
           </p>
         </div>
         <div className="ml-auto flex items-center gap-1">
