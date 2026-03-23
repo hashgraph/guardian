@@ -524,6 +524,46 @@ export const ObjectExamples = {
         location: 'local'
     },
 
+    PUSH_RANDOM_KEY_RESPONSE: {
+        taskId: '405f156b-fad1-4f88-9b30-925dbeea1e39',
+        expectation: 3,
+        action: 'Create random key',
+        userId: '69bcfd91c98df6ceb05e8a79'
+    },
+
+    DEMO_KEY_RESPONSE: {
+        id: '0.0.8340839',
+        key: '302e020100300506032b657004220420f6168da5cd88b85151e9735252419f0768b87b1a800f7e3b7908d15fa1f358a2'
+    },
+
+    REGISTERED_USERS_RESPONSE: [
+        {
+            did: Examples.DID,
+            username: Examples.USER_NAME_SR_1,
+            role: Examples.USER_ROLE_SR,
+            policyRoles: []
+        },
+        {
+            parent: Examples.DID,
+            did: 'did:hedera:testnet:4Rh3aC5jNAzPJwwNtsy95Ava954Thyjk41gREjynY2D9_0.0.8299835',
+            username: 'Installer',
+            role: 'USER',
+            policyRoles: [
+                { name: 'CDM AMS-III.AR Policy', version: '1.0.0', role: 'Project Participant' },
+                { name: 'CDM AMS-III.BB Policy', version: '1.0.5', role: 'Project Participant' }
+            ]
+        },
+        {
+            parent: Examples.DID,
+            did: 'did:hedera:testnet:3asJKFx6RVPRJi1qQNuRs26yuqJ7211mWJ5hrxNkmZqA_0.0.8299835',
+            username: 'VVB',
+            role: 'USER',
+            policyRoles: [
+                { name: 'CDM AMS-III.AR Policy', version: '1.0.0', role: 'VVB' }
+            ]
+        }
+    ],
+
     ARTIFACTS_RESPONSE_LIST: [
         {
             createDate: '2026-03-16T09:31:27.902Z',

@@ -2,9 +2,9 @@ import { PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Permissions, TaskAction } from '@guardian/interfaces';
-import { InternalServerErrorDTO, RegisteredUsersDTO, TaskDTO } from '#middlewares';
+import { DemoKeyResponseDTO, DemoTaskResponseDTO, InternalServerErrorDTO, ObjectExamples, PolicyRoleDTO, RegisteredUserDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
-import { Guardians, InternalException, NewTask, ServiceError, TaskManager, Users } from '#helpers';
+import { Guardians, InternalException, ServiceError, TaskManager, Users } from '#helpers';
 
 @Controller('demo')
 @ApiTags('demo')
@@ -22,17 +22,17 @@ export class DemoApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: RegisteredUsersDTO,
-        example: { username: 'alice', did: 'did:hedera:testnet:abc123', parent: 'string', role: 'STANDARD_REGISTRY', policyRoles: ['string'] }
+        type: [RegisteredUserDTO],
+        example: ObjectExamples.REGISTERED_USERS_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(RegisteredUsersDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyRoleDTO)
     @HttpCode(HttpStatus.OK)
-    async registeredUsers(): Promise<RegisteredUsersDTO> {
+    async registeredUsers(): Promise<RegisteredUserDTO[]> {
         const users = new Users();
         const guardians = new Guardians();
         try {
@@ -46,7 +46,7 @@ export class DemoApi {
                 }
             }
 
-            return demoUsers
+            return demoUsers;
         } catch (error) {
             await InternalException(error, this.logger, null);
         }
@@ -68,21 +68,18 @@ export class DemoApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'string',
-            example: 'DEMO-KEY-8F3A2C'
-        }
+        type: DemoKeyResponseDTO,
+        example: ObjectExamples.DEMO_KEY_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async randomKey(
         @AuthUser() user: any
-    ): Promise<any> {
+    ): Promise<DemoKeyResponseDTO> {
         try {
             const guardians = new Guardians();
             const role = user?.role;
@@ -129,19 +126,18 @@ export class DemoApi {
     })
     @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        type: DemoTaskResponseDTO,
+        example: ObjectExamples.PUSH_RANDOM_KEY_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async pushRandomKey(
         @AuthUser() user: any
-    ): Promise<NewTask> {
+    ): Promise<DemoTaskResponseDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CREATE_RANDOM_KEY, user?.id);
         RunFunctionAsync<ServiceError>(async () => {
