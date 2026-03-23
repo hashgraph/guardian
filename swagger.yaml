@@ -36645,7 +36645,7 @@ paths:
           in: query
           description: Status
           schema:
-            example: NEW
+            example: COMPLETE
             type: string
       responses:
         '200':
@@ -36662,15 +36662,15 @@ paths:
                 items:
                   $ref: '#/components/schemas/WorkersTasksDTO'
               example:
-                - createDate: string
+                - createDate: '2026-03-03T17:25:53.312Z'
                   done: true
-                  id: f3b2a9c1e4d5678901234567
+                  id: null
                   isRetryableTask: true
-                  processedTime: string
+                  processedTime: '2026-03-03T17:25:53.312Z'
                   sent: true
-                  taskId: f3b2a9c1e4d5678901234567
-                  type: string
-                  updateDate: string
+                  taskId: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                  type: send-hedera
+                  updateDate: '2026-03-03T17:25:53.312Z'
         '401':
           description: Unauthorized request.
           content:
@@ -36697,7 +36697,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -36758,7 +36758,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -36812,7 +36812,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -43730,22 +43730,31 @@ components:
       properties:
         createDate:
           type: string
+          example: '2026-03-03T17:25:53.312Z'
         done:
           type: boolean
+          example: true
         id:
           type: string
+          example: null
         isRetryableTask:
           type: boolean
+          example: true
         processedTime:
           type: string
+          example: '2026-03-03T17:25:53.312Z'
         sent:
           type: boolean
+          example: true
         taskId:
           type: string
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
         type:
           type: string
+          example: send-hedera
         updateDate:
           type: string
+          example: '2026-03-03T17:25:53.312Z'
       required:
         - createDate
         - done
