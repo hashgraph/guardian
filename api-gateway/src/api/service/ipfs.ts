@@ -14,7 +14,7 @@ import {
 import { ApiBadRequestResponse, ApiBody, ApiConsumes, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
 import { Auth, AuthUser } from '#auth';
-import { Examples, InternalServerErrorDTO, NotFoundErrorDTO, BadRequestErrorDTO, UnprocessableEntityErrorDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO, NotFoundErrorDTO, BadRequestErrorDTO } from '#middlewares';
 import { CacheService, getCacheKey, Guardians, InternalException, UseCache } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { CACHE, PREFIXES } from '#constants';
