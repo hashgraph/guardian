@@ -6361,14 +6361,14 @@ paths:
         - external
   /ipfs/file:
     post:
-      description: Add file from ipfs.
+      description: Add file to IPFS.
       operationId: IpfsApi_postFile
       parameters: []
       requestBody:
         required: true
         description: Binary data.
         content:
-          application/json:
+          binary/octet-stream:
             schema:
               type: string
               format: binary
@@ -6379,14 +6379,13 @@ paths:
             application/json:
               schema:
                 type: string
+                example: bafkreibes2bxau2me5o75cxny5mj23ckztpcumoskewz73z52cpankttnm
         '400':
           description: Bad request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-              example:
-                result: ok
+                $ref: '#/components/schemas/BadRequestErrorDTO'
         '401':
           description: Unauthorized request.
           content:
@@ -6407,13 +6406,14 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Body content in request is empty.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Body content in request is empty
         '500':
           description: Internal server error.
           content:
@@ -6421,23 +6421,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Add file from ipfs.
+      summary: Add file to IPFS.
       tags:
         - ipfs
   /ipfs/file/direct:
     post:
-      description: Add file to ipfs directly.
+      description: Add file to IPFS directly.
       operationId: IpfsApi_postFileDirect
       parameters: []
       requestBody:
-        required: true
+        required: false
         description: Binary data.
         content:
-          application/json:
+          binary/octet-stream:
             schema:
               type: string
               format: binary
@@ -6448,14 +6448,13 @@ paths:
             application/json:
               schema:
                 type: string
+                example: bafkreibes2bxau2me5o75cxny5mj23ckztpcumoskewz73z52cpankttnm
         '400':
           description: Bad request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-              example:
-                result: ok
+                $ref: '#/components/schemas/BadRequestErrorDTO'
         '401':
           description: Unauthorized request.
           content:
@@ -6476,13 +6475,14 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Body content in request is empty.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Body content in request is empty
         '500':
           description: Internal server error.
           content:
@@ -6490,16 +6490,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Add file to ipfs directly.
+      summary: Add file to IPFS directly.
       tags:
         - ipfs
   /ipfs/file/dry-run/{policyId}:
     post:
-      description: Add file from ipfs for dry run mode.
+      description: Add file to local IPFS simulation for dry run mode.
       operationId: IpfsApi_postFileDryRun
       parameters:
         - name: policyId
@@ -6513,7 +6513,7 @@ paths:
         required: true
         description: Binary data.
         content:
-          application/json:
+          binary/octet-stream:
             schema:
               type: string
               format: binary
@@ -6524,6 +6524,7 @@ paths:
             application/json:
               schema:
                 type: string
+                example: 69c115c3892ada2bac183377
         '401':
           description: Unauthorized request.
           content:
@@ -6544,13 +6545,14 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Body content in request is empty.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Body content in request is empty
         '500':
           description: Internal server error.
           content:
@@ -6558,16 +6560,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Add file from ipfs for dry run mode.
+      summary: Add file to local IPFS simulation for dry run mode.
       tags:
         - ipfs
   /ipfs/file/{cid}:
     get:
-      description: Get file from ipfs.
+      description: Get file from IPFS.
       operationId: IpfsApi_getFile
       parameters:
         - name: cid
@@ -6575,18 +6577,16 @@ paths:
           in: path
           description: File cid
           schema:
-            example: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+            example: bafkreibes2bxau2me5o75cxny5mj23ckztpcumoskewz73z52cpankttnm
             type: string
       responses:
         '200':
-          description: Successful operation.
+          description: Successful operation. Returns file content.
           content:
             application/octet-stream:
               schema:
                 type: string
                 format: binary
-              example:
-                result: ok
         '401':
           description: Unauthorized request.
           content:
@@ -6607,13 +6607,14 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '404':
-          description: Resource not found.
+          description: File is not found.
           content:
             application/octet-stream:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/NotFoundErrorDTO'
               example:
-                result: ok
+                statusCode: 404
+                message: File is not found
         '500':
           description: Internal server error.
           content:
@@ -6621,15 +6622,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Get file from ipfs.
+      summary: Get file from IPFS.
       tags:
         - ipfs
     delete:
-      description: Remove file from ipfs.
+      description: Remove file from IPFS.
       operationId: IpfsApi_deleteFile
       parameters:
         - name: cid
@@ -6673,16 +6674,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Remove file from ipfs.
+      summary: Remove file from IPFS.
       tags:
         - ipfs
   /ipfs/file/{cid}/dry-run:
     get:
-      description: Get file from ipfs for dry run mode.
+      description: Get file from local IPFS simulation for dry-run mode
       operationId: IpfsApi_getFileDryRun
       parameters:
         - name: cid
@@ -6690,18 +6691,16 @@ paths:
           in: path
           description: File cid
           schema:
-            example: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+            example: 69c116d7892ada2bac1833a6
             type: string
       responses:
         '200':
-          description: Successful operation.
+          description: Successful operation. Returns file content.
           content:
             application/octet-stream:
               schema:
                 type: string
                 format: binary
-              example:
-                result: ok
         '401':
           description: Unauthorized request.
           content:
@@ -6722,13 +6721,14 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '404':
-          description: Resource not found.
+          description: File is not found.
           content:
             application/octet-stream:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/NotFoundErrorDTO'
               example:
-                result: ok
+                statusCode: 404
+                message: File is not found
         '500':
           description: Internal server error.
           content:
@@ -6736,11 +6736,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Get file from ipfs for dry run mode.
+      summary: Get file from local IPFS simulation for dry-run mode
       tags:
         - ipfs
   /logs:
@@ -40157,6 +40157,18 @@ components:
         - response
         - result
         - steps
+    NotFoundErrorDTO:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 404
+        message:
+          type: string
+          example: Error message
+      required:
+        - statusCode
+        - message
     LogFilterDTO:
       type: object
       properties:
