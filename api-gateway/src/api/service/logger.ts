@@ -3,7 +3,7 @@ import { ApiTags, ApiBody, ApiOperation, ApiOkResponse, ApiInternalServerErrorRe
 import { IPageParameters, MessageAPI, Permissions } from '@guardian/interfaces';
 import { ClientProxy, NatsRecordBuilder } from '@nestjs/microservices';
 import {Auth, AuthUser} from '#auth';
-import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO, SeqUrlResponseDTO } from '#middlewares';
+import { InternalServerErrorDTO, LogFilterDTO, LogItemDTO, LogResultDTO, ObjectExamples, SeqUrlResponseDTO } from '#middlewares';
 import {UseCache, InternalException, UsersService} from '#helpers';
 import axios from 'axios';
 import {IAuthUser, JwtServicesValidator, PinoLogger} from '@guardian/common';
@@ -113,19 +113,24 @@ export class LoggerApi {
     @ApiBody({
         description: 'Filters.',
         required: true,
-        type: LogFilterDTO
+        type: LogFilterDTO,
+        examples: {
+            filterExample: {
+                value: ObjectExamples.LOG_FILTER_REQUEST
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: LogResultDTO,
-        example: { totalCount: 0, logs: [{}] }
+        example: ObjectExamples.LOG_RESULT_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(LogFilterDTO, LogResultDTO, InternalServerErrorDTO)
+    @ApiExtraModels(LogItemDTO)
     @HttpCode(HttpStatus.OK)
     async getLogs(
         @AuthUser() user: IAuthUser,
@@ -185,7 +190,7 @@ export class LoggerApi {
     )
     @ApiOperation({
         summary: 'Return a list of attributes.',
-        description: 'Return a list of attributes. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Return a list of attributes. Only users with the Standard Registry role are allowed to make the request. Response is limited to 20 items.',
     })
     @ApiQuery({
         name: 'name',
@@ -203,21 +208,19 @@ export class LoggerApi {
         example: ['WORKER']
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Maximum 20 attribute values.',
         schema: {
             type: 'array',
-            items: {
-                type: 'string'
-            },
-            example: ['WORKER', 'POLICY', 'SCHEMA']
+            items: { type: 'string' },
+            maxItems: 20,
+            example: ObjectExamples.LOG_ATTRIBUTES_RESPONSE
         }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getAttributes(
@@ -260,9 +263,8 @@ export class LoggerApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SeqUrlResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getSeqUrl(): Promise<{ seq_url: string | null }> {
         const isSeqTransport = process.env.TRANSPORTS.includes('SEQ');

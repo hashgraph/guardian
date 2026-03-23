@@ -1337,6 +1337,52 @@ export const ObjectExamples = {
     COMPARE_TOOLS_EXPORT_CSV_RESPONSE_SINGLE: CsvExamples.COMPARE_TOOLS_EXPORT_CSV_RESPONSE_SINGLE,
     COMPARE_TOOLS_EXPORT_CSV_RESPONSE_MULTI: CsvExamples.COMPARE_TOOLS_EXPORT_CSV_RESPONSE_MULTI,
     COMPARE_DOCUMENTS_EXPORT_CSV_RESPONSE_SINGLE: CsvExamples.COMPARE_DOCUMENTS_EXPORT_CSV_RESPONSE_SINGLE,
-    COMPARE_DOCUMENTS_EXPORT_CSV_RESPONSE_MULTI: CsvExamples.COMPARE_DOCUMENTS_EXPORT_CSV_RESPONSE_MULTI
+    COMPARE_DOCUMENTS_EXPORT_CSV_RESPONSE_MULTI: CsvExamples.COMPARE_DOCUMENTS_EXPORT_CSV_RESPONSE_MULTI,
 
+    LOG_FILTER_REQUEST: {
+        type: 'WARN',
+        startDate: '2026-03-19T12:56:24.000Z',
+        endDate: '2026-03-21T12:56:24.000Z',
+        attributes: [
+            'a3be3319-3558-4b69-bb69-de6e107dcf01',
+            'txid: 0.0.6046379@1774020526.908989078; payer sigs: 1; total sigs: 1; message size: 600; memo size: 31; '
+        ],
+        message: 'TRANSACTION',
+        pageSize: 10,
+        pageIndex: 0,
+        sortDirection: 'desc'
+    },
+
+    LOG_ATTRIBUTES_RESPONSE: [
+        '12142637-892d-4b1f-a046-eedff9e2a793',
+        '2026-03-20T08:26:37.248Z',
+        '2026-03-20T08:32:37.371Z',
+        'a3be3319-3558-4b69-bb69-de6e107dcf01',
+        'txid: 0.0.6046379@1774017194.587930740; payer sigs: 1; admin keys: 1; KYC keys: 1; wipe keys: 1; pause keys: 0; supply keys: 1; freeze keys: 1; token name size: 2; token symbol size: 2; token memo size: 11; memo size: 0; ',
+        'txid: 0.0.6046379@1774020526.908989078; payer sigs: 1; total sigs: 1; message size: 600; memo size: 31; '
+    ],
+
+    LOG_RESULT_RESPONSE: {
+        totalCount: 1,
+        logs: [
+            {
+                message: 'TopicMessageSubmitTransaction',
+                type: 'INFO',
+                datetime: '2026-03-20T15:28:53.883Z',
+                attributes: [
+                    'TRANSACTION',
+                    'COMPLETION',
+                    '2026-03-20T15:28:53.883Z',
+                    '_',
+                    'TopicMessageSubmitTransaction',
+                    '9c409646-6de6-4e0a-a5b8-5010de7ded08',
+                    '0.0.6046379',
+                    'testnet',
+                    'txid: 0.0.6046379@1774020526.908989078; payer sigs: 1; total sigs: 1; message size: 600; memo size: 31; '
+                ],
+                userId: null,
+                id: '69bd67b53090533214e731f1'
+            }
+        ]
+    }
 }
