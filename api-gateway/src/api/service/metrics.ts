@@ -1,6 +1,7 @@
 import client from 'prom-client';
 import { Controller, Get, HttpCode, HttpStatus, Response } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiProduces } from '@nestjs/swagger';
+import { InternalServerErrorDTO } from '#middlewares';
 
 @Controller('metrics')
 @ApiTags('metrics')
@@ -20,7 +21,8 @@ export class MetricsApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        example: { result: 'ok' }
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
     async getMetrics(@Response() res) {
