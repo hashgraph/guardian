@@ -1,3 +1,5 @@
+import { PYTHON_PACKAGES } from './python-packages.js';
+
 /**
  * Pre-cache Pyodide packages at startup so Worker Threads
  * don't need to download them on first execution.
@@ -18,11 +20,7 @@ export async function warmupPyodideCache(): Promise<void> {
         await pyodide.loadPackage('micropip');
         const micropip = pyodide.pyimport('micropip');
 
-        const libs = [
-            'numpy', 'scipy', 'sympy', 'pandas', 'pint', 'cftime',
-            'astropy', 'statsmodels', 'networkx', 'scikit-learn',
-            'xarray', 'geopandas'
-        ];
+        const libs: string[] = PYTHON_PACKAGES;
 
         for (const lib of libs) {
             try {

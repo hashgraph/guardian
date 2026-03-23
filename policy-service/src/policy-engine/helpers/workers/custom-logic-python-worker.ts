@@ -1,6 +1,7 @@
 import { workerData, parentPort } from 'node:worker_threads';
 import { loadPyodide } from 'pyodide'
 import { buildTableHelper } from '../table-field-core.js';
+import { PYTHON_PACKAGES } from './python-packages.js';
 
 /**
  * Execute function
@@ -58,20 +59,7 @@ async function execute() {
     await pyodide.loadPackage('micropip');
     const micropip = pyodide.pyimport('micropip');
 
-    const libs = [
-        'numpy',
-        'scipy',
-        'sympy',
-        'pandas',
-        'pint',
-        'cftime',
-        'astropy',
-        'statsmodels',
-        'networkx',
-        'scikit-learn',
-        'xarray',
-        'geopandas'
-    ];
+    const libs: string[] = PYTHON_PACKAGES;
 
     for (const lib of libs) {
         try {
@@ -119,24 +107,30 @@ for attr in ['run', 'call', 'check_call', 'check_output', 'Popen', 'getoutput', 
     if hasattr(_subprocess, attr):
         setattr(_subprocess, attr, _blocked)
 
-# 5. Block importlib.reload to prevent undoing patches
+# 5. Block socket networking functions
+import socket as _socket
+for attr in ['socket', 'create_connection', 'create_server', 'getaddrinfo', 'gethostbyname', 'gethostbyaddr']:
+    if hasattr(_socket, attr):
+        setattr(_socket, attr, _blocked)
+
+# 6. Block importlib.reload to prevent undoing patches
 import importlib as _importlib
 _importlib.reload = _blocked
 
-# 6. Install import hook to prevent bypassing module restrictions
+# 7. Install import hook to prevent bypassing module restrictions (PEP 451)
+from importlib.abc import MetaPathFinder
+
 _blocked_modules = {'js', 'pyodide.http', 'cffi', '_posixsubprocess'}
 
-class _SandboxImportBlocker:
-    def find_module(self, fullname, path=None):
+class _SandboxImportBlocker(MetaPathFinder):
+    def find_spec(self, fullname, path, target=None):
         if fullname in _blocked_modules or fullname.startswith(('js.', 'pyodide.http.', 'cffi.')):
-            return self
+            raise ImportError(f"Import of {fullname} is restricted in this sandbox")
         return None
-    def load_module(self, fullname):
-        raise ImportError(f"Import of {fullname} is restricted in this sandbox")
 
 sys.meta_path.insert(0, _SandboxImportBlocker())
 
-# 7. Guard builtins.__import__ against bypass (closure hides _original_import from __globals__)
+# 8. Guard builtins.__import__ against bypass (closure hides _original_import from __globals__)
 def _make_guarded_import():
     _orig = builtins.__import__
     def _guarded_import(name, *args, **kwargs):

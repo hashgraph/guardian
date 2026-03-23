@@ -302,26 +302,20 @@ export class CustomLogicBlock {
                     if (process.env.PYTHON_SANDBOX_MODE === 'docker') {
                         const { runPythonInDocker } = await import('../helpers/workers/custom-logic-python-docker-worker.js');
                         try {
-                            let doneWithFinalCalled = false;
-                            let doneCalled = false;
+                            const pendingDones: Promise<void>[] = [];
                             await runPythonInDocker(pythonWorkerData, {
-                                onDone: async (result, final) => {
-                                    doneCalled = true;
-                                    await done(result, final);
-                                    if (final) {
-                                        doneWithFinalCalled = true;
-                                    }
+                                onDone: (result, final) => {
+                                    pendingDones.push(done(result, final));
                                 },
                                 onDebug: (result) => {
                                     ref.debug(result);
                                 }
                             });
-                            if (!doneWithFinalCalled) {
+                            // Wait for all done() calls to complete before resolving
+                            if (pendingDones.length > 0) {
+                                await Promise.all(pendingDones);
+                            } else {
                                 try { disposeTables(); } catch { /* */ }
-                                if (doneCalled) {
-                                    // done() was called with final=false but never final=true
-                                    ref.error('Python script called done() without final=true');
-                                }
                                 safeResolve(null);
                             }
                         } catch (error) {
@@ -333,15 +327,22 @@ export class CustomLogicBlock {
                             path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-python-worker.js'),
                             { workerData: pythonWorkerData });
 
+                        const pendingDones: Promise<void>[] = [];
+
                         // Timeout for Pyodide worker
                         const workerTimer = setTimeout(() => {
                             worker.terminate();
                             safeReject(new Error('Python sandbox execution timed out'));
                         }, pythonTimeoutMs);
 
-                        worker.on('exit', (code) => {
+                        worker.on('exit', async (code) => {
                             clearTimeout(workerTimer);
-                            try { disposeTables(); } catch { /* */ }
+                            // Wait for all pending done() calls to finish
+                            if (pendingDones.length > 0) {
+                                try { await Promise.all(pendingDones); } catch { /* already handled */ }
+                            } else {
+                                try { disposeTables(); } catch { /* */ }
+                            }
                             if (code !== 0 && code !== null) {
                                 safeReject(new Error(`Python worker exited with code ${code}`));
                             } else {
@@ -353,7 +354,7 @@ export class CustomLogicBlock {
                             try { disposeTables(); } catch { /* */ }
                             safeReject(error);
                         });
-                        worker.on('message', async (data) => {
+                        worker.on('message', (data) => {
                             if (data?.error) {
                                 clearTimeout(workerTimer);
                                 safeReject(new Error(data.error));
@@ -361,7 +362,7 @@ export class CustomLogicBlock {
                             }
                             try {
                                 if (data?.type === 'done') {
-                                    await done(data.result, data.final);
+                                    pendingDones.push(done(data.result, data.final));
                                 }
                                 if (data?.type === 'debug') {
                                     ref.debug(data.result);

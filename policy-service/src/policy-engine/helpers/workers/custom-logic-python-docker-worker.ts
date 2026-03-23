@@ -11,7 +11,7 @@ interface WorkerData {
 }
 
 interface DockerCallbacks {
-    onDone: (result: any, final: boolean) => void;
+    onDone: (result: any, final: boolean) => Promise<void> | void;
     onDebug: (result: any) => void;
 }
 

@@ -1,22 +1,21 @@
-FROM node:20-alpine
+FROM python:3.12.10-slim
 
 WORKDIR /sandbox
 
-# Install pyodide
-RUN npm init -y && npm pkg set type=module && npm install --ignore-scripts --package-lock pyodide@0.26.4
+# Install system dependencies for geospatial libraries
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gdal-bin libgdal-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy entrypoint and warmup scripts
-COPY entrypoint.mjs ./
-COPY warmup.mjs ./
+# Install Python packages (pinned to major.minor for reproducibility)
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-install all Python packages (caches wheels in node_modules)
-RUN node warmup.mjs
+# Copy entrypoint
+COPY entrypoint.py ./
 
-# Remove warmup script (not needed at runtime)
-RUN rm warmup.mjs
-
-# Create non-root user and fix permissions on cached packages
-RUN adduser -D -u 1001 sandbox && chown -R sandbox:sandbox /sandbox
+# Create non-root user and fix permissions
+RUN adduser --disabled-password --uid 1001 sandbox && chown -R sandbox:sandbox /sandbox
 USER sandbox
 
-ENTRYPOINT ["node", "entrypoint.mjs"]
+ENTRYPOINT ["python3", "entrypoint.py"]
