@@ -37,21 +37,30 @@ export class WorkerTasksController {
         type: String,
         description: 'Status',
         required: false,
-        example: 'NEW'
+        example: 'COMPLETE'
     })
     @ApiOkResponse({
         description: 'Successful operation. Returns worker tasks and count.',
         isArray: true,
         headers: pageHeader,
         type: WorkersTasksDTO,
-        example: [{ createDate: 'string', done: true, id: 'f3b2a9c1e4d5678901234567', isRetryableTask: true, processedTime: 'string', sent: true, taskId: 'f3b2a9c1e4d5678901234567', type: 'string', updateDate: 'string' }]
+        example: [{
+            createDate: Examples.DATE,
+            done: true,
+            id: null,
+            isRetryableTask: true,
+            processedTime: Examples.DATE,
+            sent: true,
+            taskId: Examples.UUID,
+            type: 'send-hedera',
+            updateDate: Examples.DATE
+        }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(WorkersTasksDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getAllWorkerTasks(
         @AuthUser() user: IAuthUser,
@@ -97,7 +106,7 @@ export class WorkerTasksController {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -133,7 +142,7 @@ export class WorkerTasksController {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

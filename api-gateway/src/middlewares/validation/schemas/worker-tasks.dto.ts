@@ -1,40 +1,77 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsString, } from 'class-validator';
+import { Examples } from '../examples.js';
 
-export class WorkersTasksDTO{
-    @ApiProperty()
+export class WorkersTasksDTO {
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.DATE
+    })
     @IsString()
     createDate: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: Boolean,
+        required: true,
+        example: true
+    })
     @IsBoolean()
     done: boolean;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: null
+    })
     @IsString()
     id: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: Boolean,
+        required: true,
+        example: true
+    })
     @IsBoolean()
     isRetryableTask: boolean;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.DATE
+    })
     @IsString()
     processedTime: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: Boolean,
+        required: true,
+        example: true
+    })
     @IsBoolean()
     sent: boolean;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.UUID
+    })
     @IsString()
     taskId: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: 'send-hedera'
+    })
     @IsString()
     type: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.DATE
+    })
     @IsString()
     updateDate: string;
 }
