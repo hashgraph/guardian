@@ -294,13 +294,14 @@ tr.detailed-row {
             rgba(0, 0, 0, 0)) 1 100%;
 }
 
+//MGS: !important is used to override global styles
 .timeline-header-title {
     color: var(--color-grey-black-2);
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 30px;
+    font-family: Inter, sans-serif !important;
+    font-size: 14px !important;
+    font-style: normal !important;
+    font-weight: 500 !important;
+    line-height: 30px !important;
 }
 
 .has-history-row {
