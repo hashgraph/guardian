@@ -43,8 +43,10 @@ export async function GET(
   return NextResponse.json(data, {
     status: res.status,
     headers: {
-      // 10 min fresh, serve stale for up to 1 hr while revalidating
-      "Cache-Control": "s-maxage=600, stale-while-revalidate=3600",
+      // Only cache successful responses; never cache errors
+      "Cache-Control": res.ok
+        ? "s-maxage=600, stale-while-revalidate=3600"
+        : "no-store",
     },
   })
 }

@@ -13,5 +13,6 @@ export function useVcDocument(id: string | undefined) {
     queryFn: () => getVcDocument(id!, network),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
+    retry: false,
   })
 }

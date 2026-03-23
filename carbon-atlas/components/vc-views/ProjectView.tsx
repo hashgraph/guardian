@@ -32,11 +32,19 @@ interface Assumption {
 export function ProjectView({ cs, entityType, rawDocuments }: ProjectViewProps) {
   const status = entityType === "approved_project" ? "Validated" : "New"
 
-  const projectName = get(cs, "project_details.field0") as string | undefined
+  const rawProjectName = get(cs, "project_details.field0")
+  const projectName = typeof rawProjectName === "string" ? rawProjectName
+    : typeof rawProjectName === "object" && rawProjectName !== null ? (rawProjectName as Record<string, unknown>).name as string ?? JSON.stringify(rawProjectName)
+    : rawProjectName != null ? String(rawProjectName) : undefined
   const country = get(cs, "project_details.field12") as string | undefined
   const methodology = get(cs, "project_details.field19") as string | undefined
-  const creditingFrom = get(cs, "project_details.field28.from") as string | undefined
-  const creditingTo = get(cs, "project_details.field28.to") as string | undefined
+  const rawCrediting = get(cs, "project_details.field28")
+  const creditingFrom = typeof rawCrediting === "object" && rawCrediting !== null
+    ? (rawCrediting as Record<string, unknown>).from as string | undefined
+    : undefined
+  const creditingTo = typeof rawCrediting === "object" && rawCrediting !== null
+    ? (rawCrediting as Record<string, unknown>).to as string | undefined
+    : undefined
   const caseType = cs.baseline_emission_case as string | undefined
   const ER_y = get(cs, "emission_reduction.ER_y") as number | undefined
   const BE_y = get(cs, "case2.BE_y") ?? get(cs, "case1.BE_y")
@@ -44,7 +52,10 @@ export function ProjectView({ cs, entityType, rawDocuments }: ProjectViewProps) 
   const LE_y = get(cs, "leakage_emission.LE_y")
   const EFb_input = get(cs, "case2.EFb_input") ?? get(cs, "case1.EFb_input")
   const projectTech = get(cs, "baseline_emission_tech.project_technology") as string | undefined
-  const description = get(cs, "project_details.field7") as string | undefined
+  const rawDescription = get(cs, "project_details.field7")
+  const description = typeof rawDescription === "string" ? rawDescription
+    : typeof rawDescription === "object" && rawDescription !== null ? undefined
+    : rawDescription != null ? String(rawDescription) : undefined
 
   // Additional methodology parameters
   const fNRB = get(cs, "case2.fNRB") ?? get(cs, "case1.fNRB") ?? get(cs, "fNRB")
