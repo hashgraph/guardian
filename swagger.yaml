@@ -7025,8 +7025,11 @@ paths:
           description: Internal server error.
           content:
             text/plain:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                result: ok
+                statusCode: 500
+                message: Error message
       summary: Return Prometheus metrics.
       tags:
         - metrics
