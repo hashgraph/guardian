@@ -22,6 +22,14 @@ function fmt(val: unknown, unit?: string): string {
   return unit ? `${s} ${unit}` : s
 }
 
+/** Extract primary fuel params from baseline_emission_case_common_values array (mainnet structure) */
+function getPrimaryFuelParam(cs: Record<string, unknown>, field: string): unknown {
+  const cv = get(cs, "case2.baseline_emission_case_common_values") ?? get(cs, "case1.baseline_emission_case_common_values")
+  if (!Array.isArray(cv) || cv.length === 0) return undefined
+  const sorted = [...cv].sort((a, b) => (b.proportion_of_cooking_fuel ?? 0) - (a.proportion_of_cooking_fuel ?? 0))
+  return sorted[0]?.[field]
+}
+
 interface Assumption {
   label: string
   value: string
@@ -41,11 +49,14 @@ export function MonitoringReportView({ cs, rawDocuments }: MonitoringReportViewP
   const numDevices = get(cs, "project_emission_electricity.total_usage.number_of_devices")
   const egPdY = get(cs, "case2.EGp_d_y") ?? get(cs, "project_emission_electricity.total_usage.eg_p_d_y")
 
-  // Key methodology parameters
+  // Key methodology parameters (with fallback to per-fuel common values on mainnet)
   const EFb = get(cs, "case2.EFb_input") ?? get(cs, "case1.EFb_input")
   const fNRB = get(cs, "case2.fNRB") ?? get(cs, "case1.fNRB") ?? get(cs, "fNRB")
+    ?? getPrimaryFuelParam(cs, "nonRenewabilityStatusWoodyBiomass_fNRBi_y")
   const NCVb = get(cs, "case2.NCV_b") ?? get(cs, "case1.NCV_b") ?? get(cs, "NCV_b")
+    ?? getPrimaryFuelParam(cs, "netCalorificValueTJPerTonne_NCVb_fuel")
   const EF_CO2 = get(cs, "case2.EF_CO2") ?? get(cs, "case1.EF_CO2") ?? get(cs, "EF_CO2")
+    ?? getPrimaryFuelParam(cs, "co2EmissionFactorTco2PerTJ_EFb_fuel")
   const leakageRate = get(cs, "leakage_emission.leakage_rate") ?? get(cs, "leakage_rate")
 
   const emissionFields = [

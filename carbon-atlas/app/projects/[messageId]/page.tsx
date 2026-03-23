@@ -9,17 +9,29 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import { VCRenderer } from "@/components/vc-views/VCRenderer"
 import { HederaProofBadge } from "@/components/shared/HederaProofBadge"
 import { useVcDocument } from "@/hooks/useVcDocument"
+import { useAllPolicyVcs } from "@/hooks/usePolicyVcDocuments"
 import { ENTITY_TYPE_CONFIG } from "@/lib/utils/trust-chain"
 import { formatTimestamp } from "@/lib/utils/format"
 import { ProjectDeveloperBadge } from "@/components/shared/ProjectDeveloperBadge"
 import { CopyableId } from "@/components/shared/CopyableId"
+import type { EntityType } from "@/lib/types/indexer"
 
 export default function ProjectDetailPage() {
   const params = useParams<{ messageId: string }>()
   const vcId = params.messageId
   const { data: vcDetail, isLoading, error } = useVcDocument(vcId)
+  const { data: allVcs } = useAllPolicyVcs()
 
-  const entityType = vcDetail?.item?.options?.entityType
+  // Look up entityType from the normalized policy VCs list (works on mainnet
+  // where individual VC detail responses don't have options.entityType)
+  const entityType = React.useMemo(() => {
+    const fromDetail = vcDetail?.item?.options?.entityType as EntityType | undefined
+    if (fromDetail) return fromDetail
+    if (!allVcs) return undefined
+    const match = allVcs.find((vc) => vc.consensusTimestamp === vcId)
+    return match?.options?.entityType
+  }, [vcDetail, allVcs, vcId])
+
   const config = entityType ? ENTITY_TYPE_CONFIG[entityType] : null
 
   return (
@@ -70,7 +82,7 @@ export default function ProjectDetailPage() {
         {error && (
           <p className="text-sm text-destructive">Error: {error.message}</p>
         )}
-        {vcDetail && <VCRenderer vcDetail={vcDetail} />}
+        {vcDetail && <VCRenderer vcDetail={vcDetail} entityTypeOverride={entityType} />}
       </div>
     </DashboardLayout>
   )

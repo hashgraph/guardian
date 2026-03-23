@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { HederaProofBadge } from "@/components/shared/HederaProofBadge"
 import { VCRenderer } from "@/components/vc-views/VCRenderer"
 import { useVcDocument } from "@/hooks/useVcDocument"
+import { parseCredentialSubject } from "@/lib/api/vc-documents"
 import type { ChainNode } from "@/lib/utils/trust-chain"
 import { formatTimestampFull } from "@/lib/utils/format"
 import { cn } from "@/lib/utils"
@@ -26,6 +27,34 @@ const colorMap: Record<string, string> = {
   slate: "border-slate-300 bg-slate-50 text-slate-800",
 }
 
+/** Entity types that benefit from pre-fetching to show document dates in collapsed view */
+const PRE_FETCH_ENTITY_TYPES = new Set(["verification_report", "validation_report"])
+
+function get(obj: Record<string, unknown>, path: string): unknown {
+  return path.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], obj)
+}
+
+/** Extract a human-readable subtitle from the VC credential subject based on entity type */
+function extractSubtitle(entityType: string, cs: Record<string, unknown>): string | null {
+  if (entityType === "verification_report") {
+    const version = get(cs, "vvb_vr_key_project_information.verificationReportVersion") as string | undefined
+    const date = get(cs, "vvb_vr_key_project_information.verificationReportCompletionDate") as string | undefined
+    const parts: string[] = []
+    if (version) parts.push(`v${version}`)
+    if (date) parts.push(`Completed ${date}`)
+    return parts.length > 0 ? parts.join(" · ") : null
+  }
+  if (entityType === "validation_report") {
+    const title = cs.projectTitle as string | undefined
+    const gsId = cs.gsid ?? cs.gs_id
+    const parts: string[] = []
+    if (title) parts.push(title)
+    if (gsId != null) parts.push(`GS${gsId}`)
+    return parts.length > 0 ? parts.join(" · ") : null
+  }
+  return null
+}
+
 interface ChainStepProps {
   node: ChainNode
   stepNumber: number
@@ -34,11 +63,21 @@ interface ChainStepProps {
 
 export function ChainStep({ node, stepNumber, isLast }: ChainStepProps) {
   const [expanded, setExpanded] = React.useState(false)
-  const [fetched, setFetched] = React.useState(false)
+
+  // Pre-fetch for certain entity types to show document dates in collapsed view
+  const shouldPreFetch = PRE_FETCH_ENTITY_TYPES.has(node.entityType)
+  const [fetched, setFetched] = React.useState(shouldPreFetch)
 
   const { data: vcDetail, isLoading } = useVcDocument(
     fetched ? node.vc.consensusTimestamp : undefined
   )
+
+  const subtitle = React.useMemo(() => {
+    if (!vcDetail) return null
+    const cs = parseCredentialSubject<Record<string, unknown>>(vcDetail)
+    if (!cs) return null
+    return extractSubtitle(node.entityType, cs)
+  }, [vcDetail, node.entityType])
 
   function handleExpand() {
     if (!expanded && !fetched) setFetched(true)
@@ -74,7 +113,7 @@ export function ChainStep({ node, stepNumber, isLast }: ChainStepProps) {
               {node.config.label}
             </Badge>
             <span className="text-xs text-muted-foreground flex-1 truncate">
-              {formatTimestampFull(node.vc.consensusTimestamp)}
+              {subtitle ?? formatTimestampFull(node.vc.consensusTimestamp)}
             </span>
             <HederaProofBadge
               consensusTimestamp={node.vc.consensusTimestamp}
