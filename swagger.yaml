@@ -6999,11 +6999,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Get sentinel API key.
+      summary: >-
+        Get sentinel API key from Guardian service environment settings
+        (.env.guardian).
       tags:
         - map
   /metrics:
