@@ -287,7 +287,7 @@ The Data mapping document describes the model for the data migration. The docume
 * **Data reduction and filtering** (splitting to several collections).
 * **Data views:** to allow the maintenance of DAO contracts during Data reduction.
 
-The canvas Itself provides the framework in which the data belongs. Overmore the document should:
+The canvas Itself provides the framework in which the data belongs. Furthermore, the document should:
 
 * Map every data to User Functionality (Rest API) that involves that data.
 * Map every data to message data flows to realize the functionality.
@@ -338,7 +338,7 @@ The following information is contained in the table:
 
 Architects recommend the use of “separation of concerns”: strong internal cohesion in each microservice and loose coupling microservices should be grouped according to their problem domain.
 
-Architects need to have a strong understanding of the relation between impacted use cases and backend data flows in a way to always map use case modification in backend microservices upgrading and know how data modification impacts interservices messages between consumer and produced services and their APIs.
+Architects need to have a strong understanding of the relation between impacted use cases and backend data flows in a way to always map use case modification in backend microservices upgrading and know how data modification impacts inter-service messages between consumer and produced services and their APIs.
 
 A service here has the sole authority over its data and exposes operations to other services.
 

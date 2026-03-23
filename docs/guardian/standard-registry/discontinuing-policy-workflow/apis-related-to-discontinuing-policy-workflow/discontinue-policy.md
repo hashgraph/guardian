@@ -2,7 +2,7 @@
 
 {% swagger method="put" path="" baseUrl="/policies/{policyId}/discontinue" summary="Discontinue policy." %}
 {% swagger-description %}
-Discontunue policy. Only users with the Standard Registry role are allowed to make the request.
+Discontinue policy. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyId" type="String" required="true" %}

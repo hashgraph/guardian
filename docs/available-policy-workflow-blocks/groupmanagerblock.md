@@ -9,7 +9,7 @@ This block allows to manage group membership, add and remove users from the grou
 | tag              | Unique name for the logic block.                                                  | groupManagerBlock                                                                           |        |
 | permissions      | Which entity has rights to interact at this part of the workflow.                 | NoRole                                                                                      |        |
 | defaultActive    | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                                                                       |        |
-| On errors        | Called if the system error has occurs in the Block                                | <ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul>              |        |
+| On errors        | Called if the system error occurs in the Block                                | <ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul>              |        |
 | Stop Propagation | End processing here, don't pass control to the next block.                        | Checked or unchecked.                                                                       |        |
 | Can Invite       | specifies who can create invites                                                  | <p>· Group Owner – only the creator of the group</p><p>· All – all members of the group</p> |        |
 | Can Delete       | specifies who can remove users from the group                                     | <p>· Group Owner – only the creator of the group</p><p>. All – all members of the group</p> |        |

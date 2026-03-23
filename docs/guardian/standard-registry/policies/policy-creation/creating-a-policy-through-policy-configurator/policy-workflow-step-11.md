@@ -83,7 +83,7 @@ To do that, we click on the “sensors\_grid” button, and then click on “Bin
                     "dialogClass": "",
                     //"dialogType" - currently only json type is supported.
                     "dialogType": "json"
-                    // additionally specifying a "bindBlock" field would result in the display of the linked block in side the dialog.
+                    // additionally specifying a "bindBlock" field would result in the display of the linked block inside the dialog.
                   },
                   {
                     "name": "document.id",

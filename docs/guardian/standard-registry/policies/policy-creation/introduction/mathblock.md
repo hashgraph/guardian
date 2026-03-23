@@ -39,7 +39,7 @@ This section provides UI to defined formulas using standard mathematical notatio
 
 <figure><img src="../../../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-**2.1 Formula defintion**
+**2.1 Formula definition**
 
 To define a formula, complete the following steps:
 

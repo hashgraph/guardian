@@ -61,7 +61,7 @@ Schema JSON definition contains the following editable fields
    2. **title** – field title
    3. **description** – schema description (visible to the user)
    4. **required** – field visibility/type (Auto Calculate, Hidden, Required, None)
-   5. **type** – field value tipe (Number, String, Enum, …) or the sub-schema reference (#be764ef6-…)
+   5. **type** – field value type (Number, String, Enum, …) or the sub-schema reference (#be764ef6-…)
    6. **isArray** – boolean field (true\false) determining whether the field is an array
    7. **property** – optional field mapping onto the corresponding property from dMRV framework ([https://interworkalliance.github.io/TokenTaxonomyFramework/dmrv/spec/](https://interworkalliance.github.io/TokenTaxonomyFramework/dmrv/spec/))
    8. **private** – if the field is private (only relevant for ‘selective disclosure’ EVCs)

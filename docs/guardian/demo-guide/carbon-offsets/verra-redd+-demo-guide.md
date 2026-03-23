@@ -94,7 +94,7 @@ After creating the group, we will see the New Project button. When we click on t
 <figure><img src="../../../.gitbook/assets/3_16.png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
-Note: If there are more than one VVB, we need atleast 70% consensus to get the finalized decision on the Project to proceed.
+Note: If there are more than one VVB, we need at least 70% consensus to get the finalized decision on the Project to proceed.
 {% endhint %}
 
 16\. Once the Project is validated, we log out as VVB and login as Project Proponent. Monitoring Report details should be added by clicking on Add Report

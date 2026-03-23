@@ -1,7 +1,7 @@
 
-### Indipendent services images
+### Independent services images
 ###### \#1604 
-The dockerized services images needs to be indipendent from the environment that describes the context in wich the images itself are running.
+The dockerized services images needs to be independent from the environment that describes the context in which the images itself are running.
 
 In each service loading .env files at build time by means of dockerfiles, forces rebuilding the docker image for changes to be applied to the environment. 
 
