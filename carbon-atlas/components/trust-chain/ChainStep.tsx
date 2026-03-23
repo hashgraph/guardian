@@ -96,7 +96,7 @@ export function ChainStep({ node, stepNumber, isLast }: ChainStepProps) {
                   Loading VC detail…
                 </div>
               ) : vcDetail ? (
-                <VCRenderer vcDetail={vcDetail} />
+                <VCRenderer vcDetail={vcDetail} entityTypeOverride={node.entityType} />
               ) : (
                 <div className="rounded-lg border border-dashed p-4 text-center">
                   <p className="text-sm font-medium">Document not found</p>

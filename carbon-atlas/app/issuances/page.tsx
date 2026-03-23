@@ -43,7 +43,7 @@ export default function IssuancesPage() {
           <div>
             <h2 className="text-2xl font-semibold">Issuances</h2>
             <p className="text-muted-foreground text-sm mt-1">
-              Approved monitoring reports — each represents a carbon credit issuance
+              Approved monitoring reports — each represents a verified emission reduction with a complete audit trail on Hedera
               {data ? ` (${data.total} total)` : ""}
             </p>
           </div>

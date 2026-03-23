@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import { useQueries } from "@tanstack/react-query"
 import { useAllPolicyVcs } from "./usePolicyVcDocuments"
 import { getVcDocument, parseCredentialSubject } from "@/lib/api/vc-documents"
+import { useNetwork } from "@/providers/NetworkProvider"
 
 /** Safely traverse nested path like "emission_reduction.ER_y" */
 function get(obj: Record<string, unknown>, path: string): unknown {
@@ -41,6 +42,7 @@ export interface IssuanceDataPoint {
 }
 
 export function useDashboardStats() {
+  const { network } = useNetwork()
   const { data: approvedReports, isLoading: loadingAR } = useAllPolicyVcs("approved_report")
   const { data: projects, isLoading: loadingProj } = useAllPolicyVcs("approved_project")
   const { data: mrvReports, isLoading: loadingMRV } = useAllPolicyVcs("daily_mrv_report")
@@ -48,9 +50,10 @@ export function useDashboardStats() {
   // Fetch detail for each approved_report to get ER_y and device count
   const detailQueries = useQueries({
     queries: (approvedReports ?? []).map((vc) => ({
-      queryKey: ["vc-document", vc.consensusTimestamp],
-      queryFn: () => getVcDocument(vc.consensusTimestamp),
+      queryKey: ["vc-document", network, vc.consensusTimestamp],
+      queryFn: () => getVcDocument(vc.consensusTimestamp, network),
       staleTime: 15 * 60 * 1000,
+      retry: false,
       enabled: !!approvedReports,
     })),
   })
@@ -58,9 +61,10 @@ export function useDashboardStats() {
   // Fetch detail for MRV reports as fallback for device count
   const mrvDetailQueries = useQueries({
     queries: (mrvReports ?? []).map((vc) => ({
-      queryKey: ["vc-document", vc.consensusTimestamp],
-      queryFn: () => getVcDocument(vc.consensusTimestamp),
+      queryKey: ["vc-document", network, vc.consensusTimestamp],
+      queryFn: () => getVcDocument(vc.consensusTimestamp, network),
       staleTime: 15 * 60 * 1000,
+      retry: false,
       enabled: !!mrvReports,
     })),
   })
@@ -151,6 +155,6 @@ export function useDashboardStats() {
     totalERy: reportData?.totalERy ?? null,
     totalDevices,
     chartData,
-    isLoading: loadingAR || loadingProj || loadingMRV || loadingDetails || loadingMrvDetails,
+    isLoading: loadingAR || loadingProj || loadingMRV || loadingDetails,
   }
 }

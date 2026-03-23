@@ -1,11 +1,14 @@
 /**
  * Thin wrapper that routes all API calls through our auth proxy
  * so the bearer token never appears in client bundles.
+ *
+ * The `network` param is forwarded as `_network` so the proxy can
+ * route to the correct indexer endpoint (mainnet vs testnet).
  */
 export async function fetchProxy<T>(
   path: string,
   params?: Record<string, string | number | undefined>,
-  options?: RequestInit
+  network: string = "mainnet"
 ): Promise<T> {
   const searchParams = new URLSearchParams()
   if (params) {
@@ -13,12 +16,12 @@ export async function fetchProxy<T>(
       if (v !== undefined) searchParams.set(k, String(v))
     }
   }
+  searchParams.set("_network", network)
 
   const qs = searchParams.toString()
   const url = `/api/proxy/${path}${qs ? `?${qs}` : ""}`
 
   const res = await fetch(url, {
-    ...options,
     next: { revalidate: 60 },
   } as RequestInit)
 

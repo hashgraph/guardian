@@ -11,10 +11,12 @@ import { GenericVCView } from "./GenericVCView"
 
 interface VCRendererProps {
   vcDetail: VCDetail
+  /** Override entityType (used when the VC detail response lacks it, e.g. mainnet) */
+  entityTypeOverride?: EntityType
 }
 
-export function VCRenderer({ vcDetail }: VCRendererProps) {
-  const entityType = vcDetail.item.options?.entityType as EntityType
+export function VCRenderer({ vcDetail, entityTypeOverride }: VCRendererProps) {
+  const entityType = entityTypeOverride ?? vcDetail.item.options?.entityType as EntityType
   const cs = parseCredentialSubject<Record<string, unknown>>(vcDetail)
   const rawDocs = vcDetail.item.documents
 

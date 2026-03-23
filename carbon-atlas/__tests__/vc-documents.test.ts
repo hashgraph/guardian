@@ -4,8 +4,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 const mockFetch = vi.fn()
 vi.stubGlobal("fetch", mockFetch)
 
-import { getAllPolicyVcs, parseCredentialSubject } from "@/lib/api/vc-documents"
+import { getAllPolicyVcs, parseCredentialSubject, type NetworkParams } from "@/lib/api/vc-documents"
 import type { VCDetail, VCListItem } from "@/lib/types/indexer"
+
+const testOpts: NetworkParams = {
+  policyId: "1767599197.624837133",
+  network: "testnet",
+}
 
 function makeListItem(
   consensusTimestamp: string,
@@ -54,7 +59,7 @@ describe("getAllPolicyVcs", () => {
       }),
     })
 
-    const result = await getAllPolicyVcs()
+    const result = await getAllPolicyVcs(undefined, testOpts)
     expect(result).toHaveLength(5)
     expect(mockFetch).toHaveBeenCalledTimes(1)
   })
@@ -70,7 +75,7 @@ describe("getAllPolicyVcs", () => {
       }),
     })
 
-    const result = await getAllPolicyVcs("approved_report")
+    const result = await getAllPolicyVcs("approved_report", testOpts)
     expect(result).toHaveLength(2)
     expect(result.every((v) => v.options.entityType === "approved_report")).toBe(true)
   })
@@ -86,7 +91,7 @@ describe("getAllPolicyVcs", () => {
       }),
     })
 
-    const result = await getAllPolicyVcs("validation_report")
+    const result = await getAllPolicyVcs("validation_report", testOpts)
     expect(result).toHaveLength(0)
   })
 
@@ -109,7 +114,7 @@ describe("getAllPolicyVcs", () => {
         json: async () => ({ items: page2, total: 150, pageIndex: 1, pageSize: 100 }),
       })
 
-    const result = await getAllPolicyVcs()
+    const result = await getAllPolicyVcs(undefined, testOpts)
     expect(result).toHaveLength(150)
     expect(mockFetch).toHaveBeenCalledTimes(2)
   })

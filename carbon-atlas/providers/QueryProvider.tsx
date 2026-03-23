@@ -8,7 +8,7 @@ function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // Carbon credit data rarely changes — keep fresh for 10 min, cache for 1 hr
+        // Emission reduction data rarely changes — keep fresh for 10 min, cache for 1 hr
         staleTime: 10 * 60 * 1000,
         gcTime: 60 * 60 * 1000,
         retry: 1,

@@ -16,7 +16,6 @@ import { CopyableId } from "@/components/shared/CopyableId"
 export default function IssuanceDetailPage() {
   const params = useParams<{ messageId: string }>()
   const vcId = params.messageId
-
   const { data: vcDetail, isLoading, error } = useVcDocument(vcId)
 
   return (
@@ -29,7 +28,7 @@ export default function IssuanceDetailPage() {
               Issuances
             </Link>
           </Button>
-          {vcDetail && (
+          {vcDetail?.item && (
             <HederaProofBadge
               consensusTimestamp={vcDetail.item.consensusTimestamp}
             />
@@ -41,7 +40,7 @@ export default function IssuanceDetailPage() {
             <h2 className="text-2xl font-semibold">Trust Chain</h2>
             <p className="text-muted-foreground text-sm mt-1">
               Verifiable audit trail from approved monitoring report through to project origin
-              {vcDetail
+              {vcDetail?.item
                 ? ` · ${formatTimestamp(vcDetail.item.consensusTimestamp)}`
                 : ""}
             </p>

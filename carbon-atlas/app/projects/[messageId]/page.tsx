@@ -17,10 +17,9 @@ import { CopyableId } from "@/components/shared/CopyableId"
 export default function ProjectDetailPage() {
   const params = useParams<{ messageId: string }>()
   const vcId = params.messageId
-
   const { data: vcDetail, isLoading, error } = useVcDocument(vcId)
 
-  const entityType = vcDetail?.item.options?.entityType
+  const entityType = vcDetail?.item?.options?.entityType
   const config = entityType ? ENTITY_TYPE_CONFIG[entityType] : null
 
   return (
@@ -33,7 +32,7 @@ export default function ProjectDetailPage() {
               Projects
             </Link>
           </Button>
-          {vcDetail && (
+          {vcDetail?.item && (
             <HederaProofBadge
               consensusTimestamp={vcDetail.item.consensusTimestamp}
             />
@@ -46,7 +45,7 @@ export default function ProjectDetailPage() {
               {config?.label ?? "Project Document"}
             </h2>
             <p className="text-muted-foreground text-sm mt-1">
-              {vcDetail
+              {vcDetail?.item
                 ? formatTimestamp(vcDetail.item.consensusTimestamp)
                 : ""}
             </p>

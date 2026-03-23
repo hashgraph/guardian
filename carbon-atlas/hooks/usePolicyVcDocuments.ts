@@ -3,17 +3,24 @@
 import { useQuery } from "@tanstack/react-query"
 import { getAllPolicyVcs } from "@/lib/api/vc-documents"
 import type { EntityType, PolicyVcListResponse, VCListItem } from "@/lib/types/indexer"
+import { useNetwork } from "@/providers/NetworkProvider"
 
 /**
  * Fetch all policy VCs of a given entity type (client-side filtered) and cache
- * them. This is the base hook — getAllPolicyVcs handles pagination transparently.
+ * them. Query keys include network so each network has its own cache.
  */
 export function useAllPolicyVcs(entityType?: EntityType) {
+  const { network, activePolicy } = useNetwork()
+
   return useQuery<VCListItem[], Error>({
-    queryKey: ["vc-documents-all", entityType],
-    queryFn: () => getAllPolicyVcs(entityType),
-    staleTime: 15 * 60 * 1000,  // 15 min
-    gcTime: 60 * 60 * 1000,     // keep in memory for 1 hr
+    queryKey: ["vc-documents-all", network, entityType],
+    queryFn: () =>
+      getAllPolicyVcs(entityType, {
+        policyId: activePolicy.policyHederaId,
+        network,
+      }),
+    staleTime: 15 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   })
 }
 

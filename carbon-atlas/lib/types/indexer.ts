@@ -9,6 +9,7 @@ export type EntityType =
   | "project"
   | "approved_vvb"
   | "vvb"
+  | "mint_token"
 
 export interface VCListItem {
   id: string

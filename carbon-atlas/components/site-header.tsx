@@ -19,19 +19,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-
-const NETWORKS = {
-  testnet: {
-    label: "Testnet",
-    topicUrl: "https://hashscan.io/testnet/topic/1767599197.624837133",
-  },
-  mainnet: {
-    label: "Mainnet",
-    topicUrl: "",
-  },
-} as const
-
-type NetworkId = keyof typeof NETWORKS
+import { useNetwork } from "@/providers/NetworkProvider"
+import type { NetworkId } from "@/lib/config/networks"
 
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
@@ -56,33 +45,24 @@ function ThemeToggle() {
 }
 
 function NetworkSelector() {
-  const [network, setNetwork] = React.useState<NetworkId>("testnet")
-
-  function handleChange(value: string) {
-    const id = value as NetworkId
-    setNetwork(id)
-    const url = NETWORKS[id].topicUrl
-    if (url) {
-      window.open(url, "_blank", "noopener,noreferrer")
-    }
-  }
+  const { network, setNetwork } = useNetwork()
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="hidden sm:flex gap-1.5">
-          <span className="inline-flex size-2 rounded-full bg-primary" />
-          Hedera {NETWORKS[network].label}
+          <span className={`inline-flex size-2 rounded-full ${network === "mainnet" ? "bg-green-500" : "bg-amber-500"}`} />
+          Hedera {network === "mainnet" ? "Mainnet" : "Testnet"}
           <IconChevronDown className="size-3.5 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuRadioGroup value={network} onValueChange={handleChange}>
+        <DropdownMenuRadioGroup value={network} onValueChange={(v) => setNetwork(v as NetworkId)}>
+          <DropdownMenuRadioItem value="mainnet">
+            Mainnet
+          </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="testnet">
             Testnet
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="mainnet" disabled>
-            Mainnet (coming soon)
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

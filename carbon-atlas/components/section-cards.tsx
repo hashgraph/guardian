@@ -43,7 +43,7 @@ export function SectionCards() {
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="text-muted-foreground">Approved monitoring reports on Hedera</div>
+          <div className="text-muted-foreground">Verified emission reductions recorded on Hedera</div>
         </CardFooter>
       </Card>
 

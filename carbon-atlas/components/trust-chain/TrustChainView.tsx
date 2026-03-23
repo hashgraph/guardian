@@ -1,11 +1,21 @@
 "use client"
 
 import * as React from "react"
-import { IconClock, IconLoader, IconUserCheck } from "@tabler/icons-react"
+import {
+  IconCheck,
+  IconClock,
+  IconExternalLink,
+  IconLoader,
+  IconUserCheck,
+} from "@tabler/icons-react"
 import { Badge } from "@/components/ui/badge"
 import { ChainStep } from "./ChainStep"
 import { useAllPolicyVcs } from "@/hooks/usePolicyVcDocuments"
+import { useVcDocument } from "@/hooks/useVcDocument"
 import { buildChain } from "@/lib/utils/trust-chain"
+import { parseCredentialSubject } from "@/lib/api/vc-documents"
+import { useNetwork } from "@/providers/NetworkProvider"
+import { hederaTokenUrl } from "@/lib/utils/hedera"
 
 interface TrustChainViewProps {
   rootVcId: string
@@ -29,8 +39,8 @@ function VVBChip({ label }: { label: string }) {
   )
 }
 
-/** Ghost step for a pending lifecycle event (e.g. Token Minting) */
-function GhostStep({ stepNumber }: { stepNumber: number }) {
+/** Pending "Credits Issued" step — shown when minting hasn't happened yet */
+function CreditsIssuedPending({ stepNumber }: { stepNumber: number }) {
   return (
     <div className="flex gap-3">
       <div className="flex flex-col items-center">
@@ -43,7 +53,7 @@ function GhostStep({ stepNumber }: { stepNumber: number }) {
         <div className="rounded-lg border border-dashed overflow-hidden opacity-60">
           <div className="flex items-center gap-3 px-4 py-3">
             <Badge variant="outline" className="text-xs border-dashed text-muted-foreground">
-              Token Minting
+              Credits Issued
             </Badge>
             <span className="text-xs text-muted-foreground flex-1">
               Pending — will occur after verification is approved
@@ -56,13 +66,93 @@ function GhostStep({ stepNumber }: { stepNumber: number }) {
   )
 }
 
+/** Completed "Credits Issued" step — shows ER amount and links to token */
+function CreditsIssuedCompleted({
+  stepNumber,
+  ery,
+  tokenId,
+  tokenUrl,
+}: {
+  stepNumber: number
+  ery: number | null
+  tokenId: string
+  tokenUrl: string
+}) {
+  return (
+    <div className="flex gap-3">
+      <div className="flex flex-col items-center">
+        <div className="size-6 rounded-full border-2 border-green-500 bg-green-100 text-green-700 mt-0.5 shrink-0 flex items-center justify-center">
+          <IconCheck className="size-3.5" />
+        </div>
+        <div className="w-0.5 flex-1 bg-border mt-1" />
+      </div>
+      <div className="flex-1 pb-4">
+        <div className="rounded-lg border border-green-200 bg-green-50/50 dark:bg-green-950/20 dark:border-green-900 overflow-hidden">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <Badge variant="outline" className="text-xs border-green-300 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300">
+              Credits Issued
+            </Badge>
+            <span className="text-xs text-muted-foreground flex-1">
+              {ery !== null ? `${ery.toLocaleString("en-US")} tCO₂e` : "Verified"}
+            </span>
+            <a
+              href={tokenUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0"
+            >
+              <Badge
+                variant="outline"
+                className="gap-1 text-xs font-normal hover:bg-muted cursor-pointer"
+              >
+                Token {tokenId}
+                <IconExternalLink className="size-3" />
+              </Badge>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function TrustChainView({ rootVcId }: TrustChainViewProps) {
   const { data: allVcs, isLoading, error } = useAllPolicyVcs()
+  const { data: rootDetail } = useVcDocument(rootVcId)
+  const { network, activePolicy } = useNetwork()
 
   const chain = React.useMemo(() => {
     if (!allVcs) return []
     return buildChain(allVcs, rootVcId)
   }, [allVcs, rootVcId])
+
+  // Extract ER_y from the root VC if it's an approved_report
+  const rootEntityType = React.useMemo(() => {
+    if (!allVcs) return undefined
+    const root = allVcs.find((vc) => vc.consensusTimestamp === rootVcId)
+    return root?.options?.entityType
+  }, [allVcs, rootVcId])
+
+  const ery = React.useMemo(() => {
+    if (!rootDetail) return null
+    const cs = parseCredentialSubject<Record<string, unknown>>(rootDetail)
+    if (!cs) return null
+    const val = (cs as Record<string, unknown>)?.emission_reduction
+    if (val && typeof val === "object" && "ER_y" in (val as Record<string, unknown>)) {
+      const n = (val as Record<string, unknown>).ER_y
+      return typeof n === "number" ? n : null
+    }
+    return null
+  }, [rootDetail])
+
+  // Credits are issued if root is approved_report OR if a mint_token VC exists in the policy
+  const hasMintToken = React.useMemo(() => {
+    if (!allVcs) return false
+    return allVcs.some((vc) => vc.options?.entityType === "mint_token")
+  }, [allVcs])
+
+  const creditsIssued = rootEntityType === "approved_report" || hasMintToken
+  const tokenUrl = hederaTokenUrl(activePolicy.tokenId, network)
 
   if (isLoading) {
     return (
@@ -89,7 +179,6 @@ export function TrustChainView({ rootVcId }: TrustChainViewProps) {
     )
   }
 
-  // Total step count includes the ghost "Token Minting" node
   const totalSteps = chain.length + 1
 
   return (
@@ -98,18 +187,30 @@ export function TrustChainView({ rootVcId }: TrustChainViewProps) {
         {totalSteps} steps in lifecycle · Newest first (top) to oldest (bottom) · Click any step to expand VC details
       </p>
 
-      {/* Ghost: Token Minting (pending) */}
-      <GhostStep stepNumber={totalSteps} />
+      {creditsIssued ? (
+        <CreditsIssuedCompleted
+          stepNumber={totalSteps}
+          ery={ery}
+          tokenId={activePolicy.tokenId}
+          tokenUrl={tokenUrl}
+        />
+      ) : (
+        <CreditsIssuedPending stepNumber={totalSteps} />
+      )}
 
       {chain.map((node, i) => {
-        // Step number counts down from totalSteps-1 (first real node) to 1 (oldest)
         const stepNumber = totalSteps - 1 - i
         const isLast = i === chain.length - 1
 
         return (
           <React.Fragment key={node.vc.consensusTimestamp}>
+            {node.entityType === "verification_report" && (
+              <VVBChip label="MR Approved" />
+            )}
+            {node.entityType === "validation_report" && (
+              <VVBChip label="Project Validated" />
+            )}
             <ChainStep node={node} stepNumber={stepNumber} isLast={isLast} />
-            {/* VVB assignment annotation — shown below the report (older in time) */}
             {node.entityType === "verification_report" && (
               <VVBChip label="VVB Assigned for Verification" />
             )}

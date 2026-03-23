@@ -49,8 +49,8 @@ describe("buildChain", () => {
   it("traverses from approved_report root through relationships", () => {
     const chain = buildChain(allVcs, "1767600748.312578844")
     expect(chain.length).toBeGreaterThan(0)
-    // Root should be the approved_report (lowest order = first)
-    expect(chain[0].entityType).toBe("approved_report")
+    // First chain node should be verification_report (lowest order in lifecycle)
+    expect(chain[0].entityType).toBe("verification_report")
   })
 
   it("includes lifecycle entity types in chain", () => {
@@ -60,9 +60,15 @@ describe("buildChain", () => {
     expect(types).toContain("daily_mrv_report")
     expect(types).toContain("verification_report")
     expect(types).toContain("validation_report")
-    expect(types).toContain("approved_project")
     expect(types).toContain("project_form")
     expect(types).toContain("project")
+  })
+
+  it("excludes approved_report and approved_project from chain (shown as chips)", () => {
+    const chain = buildChain(allVcs, "1767600748.312578844")
+    const types = chain.map((n) => n.entityType)
+    expect(types).not.toContain("approved_report")
+    expect(types).not.toContain("approved_project")
   })
 
   it("excludes VVB administrative entity types from chain", () => {
@@ -72,9 +78,9 @@ describe("buildChain", () => {
     expect(types).not.toContain("approved_vvb")
   })
 
-  it("returns exactly 8 lifecycle nodes for the full MECD chain", () => {
+  it("returns exactly 6 lifecycle nodes for the full MECD chain", () => {
     const chain = buildChain(allVcs, "1767600748.312578844")
-    expect(chain).toHaveLength(8)
+    expect(chain).toHaveLength(6)
   })
 
   it("sorts nodes by lifecycle order (newest first)", () => {
@@ -144,11 +150,11 @@ describe("getProjectDevelopers", () => {
 })
 
 describe("ENTITY_TYPE_CONFIG", () => {
-  it("covers all 10 entity types", () => {
+  it("covers all 11 entity types", () => {
     const expected = [
       "approved_report", "verification_report", "report", "daily_mrv_report",
       "approved_project", "validation_report", "project_form", "project",
-      "approved_vvb", "vvb",
+      "approved_vvb", "vvb", "mint_token",
     ]
     for (const et of expected) {
       expect(ENTITY_TYPE_CONFIG[et as keyof typeof ENTITY_TYPE_CONFIG]).toBeDefined()

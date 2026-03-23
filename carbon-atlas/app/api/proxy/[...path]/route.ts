@@ -20,9 +20,13 @@ export async function GET(
   const { path } = await params
   const pathStr = path.join("/")
 
-  // Forward all query params
-  const searchParams = request.nextUrl.searchParams.toString()
-  const upstreamUrl = `${BASE_URL}/${pathStr}${searchParams ? `?${searchParams}` : ""}`
+  // Extract _network param and strip it from forwarded query
+  const searchParams = new URLSearchParams(request.nextUrl.searchParams)
+  const network = searchParams.get("_network") || "mainnet"
+  searchParams.delete("_network")
+  const qs = searchParams.toString()
+
+  const upstreamUrl = `${BASE_URL}/${network}/${pathStr}${qs ? `?${qs}` : ""}`
 
   const token = await getIndexerToken()
   let res = await fetchUpstream(upstreamUrl, token)

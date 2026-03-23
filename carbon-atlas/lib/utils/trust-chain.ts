@@ -66,7 +66,14 @@ export const ENTITY_TYPE_CONFIG: Record<EntityType, EntityTypeConfig> = {
     icon: "file-text",
     summaryFields: ["name", "country", "case_type"],
   },
-  // Administrative — not shown as chain nodes, but kept for VCRenderer routing
+  // Administrative / special — not shown as chain nodes
+  mint_token: {
+    label: "Credits Issued",
+    color: "green",
+    order: -1,
+    icon: "coin",
+    summaryFields: [],
+  },
   approved_vvb: {
     label: "Approved VVB",
     color: "teal",
@@ -91,11 +98,9 @@ const LIFECYCLE_ENTITY_TYPES = new Set<EntityType>([
   "project_form",
   "project",
   "validation_report",
-  "approved_project",
   "daily_mrv_report",
   "report",
   "verification_report",
-  "approved_report",
 ])
 
 export interface ChainNode {
@@ -170,12 +175,16 @@ export function buildChain(allVcs: VCListItem[], rootTs: string): ChainNode[] {
     }
   }
 
-  // Phase 3: Include verification_report VCs from same policy that
-  // weren't reached (they may only reference the policy root topic).
+  // Phase 3: Include verification_report and validation_report VCs from
+  // same policy that weren't reached (they may only reference the policy
+  // root topic, not any VC in the chain).
   if (root.options?.entityType === "approved_report") {
     for (const vc of allVcs) {
       if (visited.has(vc.consensusTimestamp)) continue
-      if (vc.options?.entityType === "verification_report") {
+      if (
+        vc.options?.entityType === "verification_report" ||
+        vc.options?.entityType === "validation_report"
+      ) {
         visited.add(vc.consensusTimestamp)
         allRelated.push(vc)
       }
