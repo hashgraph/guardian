@@ -63,6 +63,7 @@ async function execute() {
         'scipy',
         'sympy',
         'pandas',
+        'pint',
         'cftime',
         'astropy',
         'statsmodels',
@@ -76,7 +77,7 @@ async function execute() {
         try {
             await micropip.install(lib);
         } catch (e) {
-            console.error(`Failed to install python lib: ${lib}`, e);
+            console.error(`Failed to install python lib: ${lib}:`, e?.message || e);
         }
     }
 

@@ -196,6 +196,17 @@ async function execute() {
         sendMessage({ type: 'stderr', message: `Warning: failed to load packages: ${failedPackages.join(', ')}` });
     }
 
+    // Install packages not in Pyodide's built-in index (cached from warmup)
+    const micropip = pyodide.pyimport('micropip');
+    const MICROPIP_PACKAGES = ['pint'];
+    for (const pkg of MICROPIP_PACKAGES) {
+        try {
+            await micropip.install(pkg);
+        } catch (e) {
+            process.stderr.write(`Failed to install ${pkg} via micropip: ${e.message}\n`);
+        }
+    }
+
     // Defense-in-depth: apply Python-level restrictions even inside Docker container
     await pyodide.runPythonAsync(`
 import sys

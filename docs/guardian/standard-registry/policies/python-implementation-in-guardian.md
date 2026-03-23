@@ -69,23 +69,87 @@ This field helps track the Guardian system version that was used to generate or 
 * Python execution is subject to the limitations and security constraints defined in Guardian's runtime.
 {% endhint %}
 
-### 4. Supported Python Libraries and its Versions
+### 4. Supported Python Libraries
 
-| Library Name | Version |
-| :----------: | :-----: |
-|     numpy    |  1.26.4 |
-|     scipy    |  1.12.0 |
-|     sympy    |   1.12  |
-|    pandas    |  2.2.0  |
-|     pint     |  0.25.1 |
-|    duckdb    |  1.0.0  |
-|  sqlalchemy  |  2.0.29 |
-|    cftime    |  1.6.3  |
-|  matplotlib  |  3.5.2  |
-|    seaborn   |  0.13.2 |
-|     bokeh    |  3.4.1  |
-|    altair    |  5.3.0  |
-|    cartopy   |  0.23.0 |
-|    astropy   |  6.0.1  |
-|  statsmodels |  0.14.2 |
-|   networkx   |   3.3   |
+#### Installed Libraries
+
+| Library Name | Import Name | Purpose |
+| :----------: | :---------: | :------ |
+| numpy | `numpy` | Numerical computation, arrays, linear algebra |
+| scipy | `scipy` | Scientific computation, optimization, statistics |
+| sympy | `sympy` | Symbolic mathematics, equation solving, calculus |
+| pandas | `pandas` | Data processing, DataFrames, analysis |
+| cftime | `cftime` | Climate/forecast date handling |
+| astropy | `astropy` | Astronomy computations, unit conversions |
+| statsmodels | `statsmodels` | Statistical modeling, OLS regression |
+| networkx | `networkx` | Graph/network computation, shortest paths |
+| pint | `pint` | Physical unit conversions and arithmetic |
+| scikit-learn | `sklearn` | Machine learning, classification, clustering |
+| xarray | `xarray` | Labeled multi-dimensional arrays |
+| geopandas | `geopandas` | Geospatial DataFrames, spatial operations |
+
+#### Python Built-in Modules (always available)
+
+| Module | Purpose |
+| :----: | :------ |
+| `calendar` | Calendar rendering, weekday calculations |
+| `datetime` | Date/time types and arithmetic |
+| `collections` | OrderedDict, Counter, defaultdict, namedtuple |
+| `math` | Basic math functions (sin, log, sqrt, pi) |
+| `copy` | Deep/shallow copy of objects |
+
+#### Available as Transitive Dependencies (no explicit install needed)
+
+| Library | Import Name | Purpose | Installed via |
+| :-----: | :---------: | :------ | :------------ |
+| python-dateutil | `dateutil` | Smart date parsing, relative deltas | pandas |
+| six | `six` | Python 2/3 compatibility | pandas → python-dateutil |
+| matplotlib | `matplotlib` | Data visualization | networkx (transitive) |
+
+#### Removed Libraries (Issue #5505)
+
+The following libraries were removed as part of sandbox hardening. They are unnecessary for computation — their data processing features are covered by pandas, and they were designed to work with external resources (databases, networks, web servers) that are not available in the sandbox.
+
+| Library | Reason for Removal |
+| :-----: | :----------------- |
+| duckdb | SQL database engine; covered by pandas |
+| sqlalchemy | SQL toolkit/ORM; covered by pandas |
+| bokeh | Visualization; unnecessary for computation |
+| altair | Visualization; unnecessary for computation |
+| cartopy | Map visualization; unnecessary for computation |
+| seaborn | Visualization; unnecessary for computation |
+
+#### Unavailable Libraries (Pyodide/WASM limitation)
+
+| Library | Why Unavailable | Workaround |
+| :-----: | :-------------- | :--------- |
+| rasterio | Depends on GDAL (C/C++ library not compiled to WASM) | Pre-process raster data outside the block, pass as input |
+| rioxarray | Depends on rasterio | Same as above |
+
+### 5. Sandbox Security
+
+Python code in custom logic blocks runs in a sandboxed environment. The following restrictions are enforced:
+
+#### Blocked Operations
+
+| Operation | Blocked? | Details |
+| :-------- | :------: | :----- |
+| Network requests (fetch, HTTP) | ✅ | JS bridge and pyodide.http blocked |
+| Host file system access | ✅ | WASM virtual FS only; Docker mode: --read-only, no mounts |
+| os.system, os.popen | ✅ | All process execution functions replaced |
+| subprocess.run, Popen | ✅ | All subprocess functions replaced |
+| os.environ (secrets) | ✅ | Cleared on startup (only HOME/PATH kept) |
+| importlib.reload | ✅ | Blocked to prevent undoing patches |
+
+#### Execution Modes
+
+| Mode | Env Var | Description |
+| :--: | :------ | :---------- |
+| Pyodide (default) | `PYTHON_SANDBOX_MODE=pyodide` | Runs in WASM via Node.js Worker Thread. Python-level sandbox restrictions. |
+| Docker (experimental) | `PYTHON_SANDBOX_MODE=docker` | Runs in ephemeral Docker container with --network=none, --cap-drop=ALL, --read-only, non-root user. Defense-in-depth: Python-level restrictions also applied inside container. |
+
+{% hint style="info" %}
+* Docker mode requires building the sandbox image: `docker buildx build -t guardian/python-sandbox:latest policy-service/docker/python-sandbox`
+* Set `PYTHON_SANDBOX_MODE=docker` in the policy-service environment configuration
+* Docker mode provides stronger isolation (OS-level) but has higher startup latency
+{% endhint %}
