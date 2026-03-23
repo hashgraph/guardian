@@ -145,7 +145,8 @@ export class HttpRequestUIAddon {
             readonly: (
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
-            )
+            ),
+            mockId: ref.mockId
         };
     }
 }

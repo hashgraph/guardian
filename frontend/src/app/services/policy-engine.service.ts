@@ -716,4 +716,25 @@ export class PolicyEngineService {
     public updateMockData(policyId: string, data: any): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/dry-run/mockup/data`, data);
     }
+
+    public mockApiRequest(
+        policyId: string,
+        config: {
+            type: string,
+            url: string,
+            body: any,
+            headers: any
+        }
+    ): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/mockup/request/api`, config);
+    }
+
+    public mockIpfsRequest(
+        policyId: string,
+        cid: string
+    ): Observable<ArrayBuffer> {
+        return this.http.post(`${this.url}/${policyId}/dry-run/mockup/request/ipfs`, { cid }, {
+            responseType: 'arraybuffer',
+        });
+    }
 }

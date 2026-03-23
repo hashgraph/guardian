@@ -54,6 +54,7 @@ export enum PolicyEngineEvents {
     SET_MOCK_UP_CONFIG = 'policy-engine-event-set-mockup-config',
     IMPORT_MOCK_UP_DATA = 'policy-engine-event-import-mockup-data',
     EXPORT_MOCK_UP_DATA = 'policy-engine-event-export-mockup-data',
+    MOCK_UP_REQUEST = 'policy-engine-event-mockup-request',
     DELETE_POLICY_ASYNC = 'policy-engine-event-delete-policy-async',
     DELETE_POLICIES_ASYNC = 'policy-engine-event-delete-policies-async',
     GET_INVITE = 'policy-engine-event-get-invite',

@@ -320,6 +320,7 @@ export class MockUpHelper {
         headers: any,
         data: any
     }): Promise<any> {
+        request.method = request.method?.toUpperCase();
         const row = await DatabaseServer.getMockUp(mockId, MockEntityType.API, {
             'request.url': request.url,
             'request.method': request.method,
@@ -606,6 +607,7 @@ export class MockUpHelper {
             } else if (row.type === MockEntityType.API) {
                 const request = row.request;
                 const response = row.response;
+                request.method = request.method?.toUpperCase();
                 const id = `${request.method}|${request.url}`;
                 apiMap.set(id, { request, response });
             }
@@ -748,6 +750,7 @@ export class MockUpHelper {
         }
         if (Array.isArray(data.api)) {
             for (const api of data.api) {
+                api.request.method = api.request.method?.toUpperCase();
                 await DatabaseServer.saveMockUp(mockId, MockEntityType.API, {
                     request: api.request,
                     response: api.response

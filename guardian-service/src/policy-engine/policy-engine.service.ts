@@ -21,7 +21,9 @@ import {
     MessageType,
     MigrationFailedItem,
     MigrationRun,
+    MockEntityType,
     MockEvent,
+    MockType,
     MockUpHelper,
     NatsService,
     NewNotifier,
@@ -2685,6 +2687,51 @@ export class PolicyEngineService {
                         platform: 'UNIX',
                     });
                     return new BinaryMessageResponse(file);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.MOCK_UP_REQUEST,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                type: MockType,
+                config: any,
+            }) => {
+                try {
+                    const { policyId, owner, type, config } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+                    if (type === MockType.GET_FILE) {
+                        const result = await MockUpHelper.execute({
+                            mockId: policyId,
+                            type: MockType.GET_FILE,
+                            data: {
+                                type: MockEntityType.FILE,
+                                cid: config?.cid
+                            }
+                        });
+                        return new MessageResponse(result);
+                    } else if (type === MockType.API) {
+                        const result = await MockUpHelper.execute({
+                            mockId: policyId,
+                            type: MockType.API,
+                            data: {
+                                type: MockEntityType.API,
+                                method: config.type,
+                                url: config.url,
+                                headers: config.headers,
+                                data: config.body,
+                            }
+                        });
+                        return new MessageResponse(result);
+                    } else {
+                        return new MessageResponse(null);
+                    }
                 } catch (error) {
                     return new MessageError(error);
                 }

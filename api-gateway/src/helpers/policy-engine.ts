@@ -1,5 +1,5 @@
 import { BasePolicyDTO, ExportMessageDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
-import { IAuthUser, NatsService } from '@guardian/common';
+import { IAuthUser, MockType, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
 import { NewTask } from './task-manager.js';
@@ -227,7 +227,7 @@ export class PolicyEngine extends NatsService {
     public async dryRunPolicy(
         policyId: string,
         owner: IOwner,
-        enableMockUp:boolean
+        enableMockUp: boolean
     ): Promise<PoliciesValidationDTO> {
         return await this.sendMessage(PolicyEngineEvents.DRY_RUN_POLICIES, { policyId, owner, enableMockUp });
     }
@@ -926,7 +926,6 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.SET_MOCK_UP_DATA, { policyId, owner, data });
     }
 
-
     /**
      * Load MockUp file for import
      * @param zip
@@ -944,6 +943,21 @@ export class PolicyEngine extends NatsService {
     public async exportMockup(policyId: string, owner: IOwner) {
         const file = await this.sendMessage(PolicyEngineEvents.EXPORT_MOCK_UP_DATA, { policyId, owner }) as any;
         return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Mock Request
+     * @param policyId
+     * @param owner
+     * @param config
+     */
+    public async mockRequest(
+        policyId: string,
+        owner: IOwner,
+        type: MockType,
+        config: any,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.MOCK_UP_REQUEST, { policyId, owner, type, config });
     }
 
     /**
