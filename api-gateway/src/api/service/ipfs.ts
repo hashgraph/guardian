@@ -11,10 +11,10 @@ import {
     Req,
     StreamableFile
 } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBody, ApiConsumes, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
 import { Auth, AuthUser } from '#auth';
-import { Examples, InternalServerErrorDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO, NotFoundErrorDTO, BadRequestErrorDTO, UnprocessableEntityErrorDTO } from '#middlewares';
 import { CacheService, getCacheKey, Guardians, InternalException, UseCache } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { CACHE, PREFIXES } from '#constants';
@@ -36,9 +36,10 @@ export class IpfsApi {
         // UserRole.AUDITOR
     )
     @ApiOperation({
-        summary: 'Add file from ipfs.',
-        description: 'Add file from ipfs.',
+        summary: 'Add file to IPFS.',
+        description: 'Add file to IPFS.',
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
         description: 'Binary data.',
         required: true,
@@ -46,15 +47,24 @@ export class IpfsApi {
     })
     @ApiCreatedResponse({
         description: 'File added successfully.',
-        type: String,
-        example: 'string'
+        schema: {
+            type: 'string',
+            example: 'bafkreibes2bxau2me5o75cxny5mj23ckztpcumoskewz73z52cpankttnm'
+        }
     })
-    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiBadRequestResponse({ description: 'Bad request.', type: BadRequestErrorDTO })
+    @ApiUnprocessableEntityResponse({
+        description: 'Body content in request is empty.',
+        type: InternalServerErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Body content in request is empty'
+        }
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -95,25 +105,35 @@ export class IpfsApi {
         Permissions.POLICIES_POLICY_MANAGE,
     )
     @ApiOperation({
-        summary: 'Add file to ipfs directly.',
-        description: 'Add file to ipfs directly.',
+        summary: 'Add file to IPFS directly.',
+        description: 'Add file to IPFS directly.',
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
         description: 'Binary data.',
-        required: true,
+        required: false,
         schema: { type: 'string', format: 'binary' },
     })
     @ApiCreatedResponse({
         description: 'File added successfully.',
-        type: String,
-        example: 'string'
+        schema: {
+            type: 'string',
+            example: 'bafkreibes2bxau2me5o75cxny5mj23ckztpcumoskewz73z52cpankttnm'
+        }
     })
-    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiBadRequestResponse({ description: 'Bad request.', type: BadRequestErrorDTO })
+    @ApiUnprocessableEntityResponse({
+        description: 'Body content in request is empty.',
+        type: InternalServerErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Body content in request is empty'
+        }
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -156,8 +176,8 @@ export class IpfsApi {
         // UserRole.AUDITOR
     )
     @ApiOperation({
-        summary: 'Add file from ipfs for dry run mode.',
-        description: 'Add file from ipfs for dry run mode.',
+        summary: 'Add file to local IPFS simulation for dry run mode.',
+        description: 'Add file to local IPFS simulation for dry run mode.',
     })
     @ApiParam({
         name: 'policyId',
@@ -166,6 +186,7 @@ export class IpfsApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
         description: 'Binary data.',
         required: true,
@@ -173,14 +194,23 @@ export class IpfsApi {
     })
     @ApiCreatedResponse({
         description: 'File added successfully.',
-        type: String,
-        example: 'string'
+        schema: {
+            type: 'string',
+            example: '69c115c3892ada2bac183377'
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({
+        description: 'Body content in request is empty.',
+        type: InternalServerErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Body content in request is empty'
+        }
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -221,32 +251,42 @@ export class IpfsApi {
         // UserRole.AUDITOR
     )
     @ApiOperation({
-        summary: 'Get file from ipfs.',
-        description: 'Get file from ipfs.',
+        summary: 'Get file from IPFS.',
+        description: 'Get file from IPFS.',
     })
     @ApiParam({
         name: 'cid',
         type: String,
         description: 'File cid',
         required: true,
-        example: Examples.IPFS
+        example: 'bafkreibes2bxau2me5o75cxny5mj23ckztpcumoskewz73z52cpankttnm'
     })
     @ApiProduces('application/octet-stream')
     @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            type: 'string',
-            format: 'binary'
-        },
-        example: { result: 'ok' }
+        description: 'Successful operation. Returns file content.',
+        content: {
+            'application/octet-stream': {
+                schema: {
+                    type: 'string',
+                    format: 'binary'
+                }
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({
+        description: 'File is not found.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'File is not found'
+        }
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(InternalServerErrorDTO, NotFoundErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
     async getFile(
@@ -276,32 +316,42 @@ export class IpfsApi {
         // UserRole.AUDITOR
     )
     @ApiOperation({
-        summary: 'Get file from ipfs for dry run mode.',
-        description: 'Get file from ipfs for dry run mode.',
+        summary: 'Get file from local IPFS simulation for dry-run mode',
+        description: 'Get file from local IPFS simulation for dry-run mode',
     })
     @ApiParam({
         name: 'cid',
         type: String,
         description: 'File cid',
         required: true,
-        example: Examples.IPFS
+        example: '69c116d7892ada2bac1833a6'
     })
     @ApiProduces('application/octet-stream')
     @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            type: 'string',
-            format: 'binary'
-        },
-        example: { result: 'ok' }
+        description: 'Successful operation. Returns file content.',
+        content: {
+            'application/octet-stream': {
+                schema: {
+                    type: 'string',
+                    format: 'binary'
+                }
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({
+        description: 'File is not found.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'File is not found'
+        }
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(InternalServerErrorDTO, NotFoundErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
     async getFileDryRun(
@@ -326,8 +376,8 @@ export class IpfsApi {
         Permissions.POLICIES_POLICY_MANAGE
     )
     @ApiOperation({
-        summary: 'Remove file from ipfs.',
-        description: 'Remove file from ipfs.',
+        summary: 'Remove file from IPFS.',
+        description: 'Remove file from IPFS.',
     })
     @ApiParam({
         name: 'cid',
@@ -346,7 +396,7 @@ export class IpfsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

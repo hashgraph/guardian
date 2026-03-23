@@ -142,6 +142,26 @@ export class ConflictErrorDTO  {
     message: string;
 }
 
+export class NotFoundErrorDTO {
+    @ApiProperty({
+        type: Number,
+        required: true,
+        example: 404
+    })
+    @IsNumber()
+    @Expose()
+    statusCode: number;
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: 'Error message'
+    })
+    @IsString()
+    @Expose()
+    message: string;
+}
+
 export class BadRequestErrorDTO {
     @ApiProperty({
         type: Number,
