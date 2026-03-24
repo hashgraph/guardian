@@ -25,7 +25,7 @@ A new dropdown setting has been added to the Custom Logic block in the Policy Ed
 
 #### Use Case
 
-Choose "Python" when you want to leverage Python’s expressive syntax and advanced computation libraries for policy logic.
+Choose "Python" when you want to leverage Python's expressive syntax and advanced computation libraries for policy logic.
 
 ### 2. Python Scripting Support
 
@@ -73,20 +73,33 @@ This field helps track the Guardian system version that was used to generate or 
 
 #### Installed Libraries
 
+| Library Name | Import Name | Version |
+| :----------: | :---------: | :-----: |
+| numpy | `numpy` | 1.26.4 |
+| scipy | `scipy` | 1.12.0 |
+| sympy | `sympy` | 1.12 |
+| pandas | `pandas` | 2.2.0 |
+| pint | `pint` | 0.25.3 |
+| cftime | `cftime` | 1.6.3 |
+| astropy | `astropy` | 6.0.1 |
+| statsmodels | `statsmodels` | 0.14.2 |
+| networkx | `networkx` | 3.3 |
+| scikit-learn | `sklearn` | 1.4.2 |
+| xarray | `xarray` | 2024.3.0 |
+| geopandas | `geopandas` | 0.14.3 |
+
+{% hint style="info" %}
+Library versions listed are for the default Pyodide mode. Docker mode may have newer versions as it uses native CPython with pip.
+{% endhint %}
+
+#### Docker-Only Libraries
+
+These libraries require native C/C++ dependencies (GDAL) and are only available in Docker mode:
+
 | Library Name | Import Name | Purpose |
 | :----------: | :---------: | :------ |
-| numpy | `numpy` | Numerical computation, arrays, linear algebra |
-| scipy | `scipy` | Scientific computation, optimization, statistics |
-| sympy | `sympy` | Symbolic mathematics, equation solving, calculus |
-| pandas | `pandas` | Data processing, DataFrames, analysis |
-| cftime | `cftime` | Climate/forecast date handling |
-| astropy | `astropy` | Astronomy computations, unit conversions |
-| statsmodels | `statsmodels` | Statistical modeling, OLS regression |
-| networkx | `networkx` | Graph/network computation, shortest paths |
-| pint | `pint` | Physical unit conversions and arithmetic |
-| scikit-learn | `sklearn` | Machine learning, classification, clustering |
-| xarray | `xarray` | Labeled multi-dimensional arrays |
-| geopandas | `geopandas` | Geospatial DataFrames, spatial operations |
+| rasterio | `rasterio` | Read/write raster geospatial data (GeoTIFF, satellite imagery) |
+| rioxarray | `rioxarray` | Bridge between xarray and rasterio — CRS management, reprojection |
 
 #### Python Built-in Modules (always available)
 
@@ -119,37 +132,108 @@ The following libraries were removed as part of sandbox hardening. They are unne
 | cartopy | Map visualization; unnecessary for computation |
 | seaborn | Visualization; unnecessary for computation |
 
-#### Unavailable Libraries (Pyodide/WASM limitation)
+### 5. Execution Modes
 
-| Library | Why Unavailable | Workaround |
-| :-----: | :-------------- | :--------- |
-| rasterio | Depends on GDAL (C/C++ library not compiled to WASM) | Pre-process raster data outside the block, pass as input |
-| rioxarray | Depends on rasterio | Same as above |
+Guardian supports two execution modes for Python custom logic blocks, controlled by the `PYTHON_SANDBOX_MODE` environment variable.
 
-### 5. Sandbox Security
+#### Pyodide Mode (default)
+
+The default mode runs Python code using Pyodide (CPython compiled to WebAssembly) inside a Node.js Worker Thread.
+
+* **No additional infrastructure required** — works out of the box
+* **Startup:** packages are pre-cached at policy-service startup for faster execution
+* **Limitation:** some C-extension packages (rasterio, rioxarray) are unavailable in WASM
+
+**Configuration:** No env var needed (default), or explicitly set `PYTHON_SANDBOX_MODE=pyodide`
+
+#### Docker Mode (experimental)
+
+Runs Python code in an ephemeral Docker container using native CPython 3.12. Provides OS-level isolation.
+
+**Container security flags:**
+
+| Flag | Purpose |
+| :--- | :------ |
+| `--network=none` | All network access blocked |
+| `--cap-drop=ALL` | No Linux capabilities |
+| `--security-opt=no-new-privileges` | Prevent privilege escalation |
+| `--read-only` | Read-only root filesystem |
+| `--user=1001:1001` | Non-root execution |
+| `--log-driver=none` | No container log storage |
+| `--pull=never` | Never pull untrusted images |
+| `--tmpfs /tmp` | Writable scratch space (noexec, destroyed on exit) |
+
+**Setup:**
+
+1. Build the sandbox image:
+```bash
+docker buildx build -t guardian/python-sandbox:latest policy-service/docker/python-sandbox
+```
+Or via docker-compose:
+```bash
+docker compose -f docker-compose-build.yml build python-sandbox
+```
+
+2. Set the environment variable in policy-service configuration:
+```
+PYTHON_SANDBOX_MODE=docker
+```
+
+3. Ensure the policy-service container has Docker socket access (for docker-compose deployments, this is configured in `docker-compose-build.yml`).
+
+{% hint style="warning" %}
+Docker mode requires the Docker daemon to be available. The policy-service needs access to the Docker socket to spawn sandbox containers. For production deployments, consider using a Docker API proxy to restrict operations to sandbox container management only.
+{% endhint %}
+
+### 6. Sandbox Security
 
 Python code in custom logic blocks runs in a sandboxed environment. The following restrictions are enforced:
 
-#### Blocked Operations
+#### Pyodide Mode Restrictions
 
-| Operation | Blocked? | Details |
-| :-------- | :------: | :----- |
-| Network requests (fetch, HTTP) | ✅ | JS bridge and pyodide.http blocked |
-| Host file system access | ✅ | WASM virtual FS only; Docker mode: --read-only, no mounts |
-| os.system, os.popen | ✅ | All process execution functions replaced |
-| subprocess.run, Popen | ✅ | All subprocess functions replaced |
-| os.environ (secrets) | ✅ | Cleared on startup (only HOME/PATH kept) |
-| importlib.reload | ✅ | Blocked to prevent undoing patches |
+| Restriction | Details |
+| :---------- | :----- |
+| JavaScript bridge (`from js import ...`) | Blocked via module stub + import hook |
+| `pyodide.http` network access | Blocked via module stub + import hook |
+| `os.system`, `os.popen`, `os.exec*`, `os.spawn*` | All replaced with blocked function |
+| `subprocess.run`, `subprocess.Popen` | All execution functions replaced |
+| `socket.socket`, `socket.connect` | All networking functions replaced |
+| `os.environ` (secrets) | Cleared on startup (only HOME/PATH kept) |
+| `importlib.reload` | Blocked to prevent undoing patches |
+| `builtins.__import__` | Guarded via closure to prevent bypass |
+| Execution timeout | Configurable via `PYTHON_SANDBOX_TIMEOUT_MS` (default 120s) |
 
-#### Execution Modes
+#### Docker Mode Restrictions
 
-| Mode | Env Var | Description |
-| :--: | :------ | :---------- |
-| Pyodide (default) | `PYTHON_SANDBOX_MODE=pyodide` | Runs in WASM via Node.js Worker Thread. Python-level sandbox restrictions. |
-| Docker (experimental) | `PYTHON_SANDBOX_MODE=docker` | Runs in ephemeral Docker container with --network=none, --cap-drop=ALL, --read-only, non-root user. Defense-in-depth: Python-level restrictions also applied inside container. |
+All restrictions above are provided by Docker container isolation:
+
+* **Network:** `--network=none` blocks all connections (verified: HTTP requests fail)
+* **File system:** `--read-only` + no host mounts — container sees only its own minimal filesystem
+* **Processes:** commands run inside isolated container only, destroyed after execution
+* **Environment:** `os.environ` cleared before user code runs
+* **Resources:** container destroyed with `--rm` after each execution
+
+#### Vulnerability Comparison
+
+| Attack Vector | Pyodide Mode | Docker Mode |
+| :------------ | :----------- | :---------- |
+| Network requests | Blocked (Python-level) | Blocked (OS-level `--network=none`) |
+| Host filesystem access | Blocked (WASM virtual FS) | Blocked (`--read-only`, no mounts) |
+| Process execution | Blocked (functions replaced) | Runs inside isolated container |
+| `os.environ` secrets | Cleared | Cleared + container has own env |
+| `ctypes` C function calls | Not blocked (needed by pandas, harmless in WASM) | Runs inside isolated container |
+| Python introspection bypass | Possible (known limitation) | Irrelevant — container is isolated |
+| Memory/CPU exhaustion | Timeout only | Timeout + container destroyed |
 
 {% hint style="info" %}
-* Docker mode requires building the sandbox image: `docker buildx build -t guardian/python-sandbox:latest policy-service/docker/python-sandbox`
-* Set `PYTHON_SANDBOX_MODE=docker` in the policy-service environment configuration
-* Docker mode provides stronger isolation (OS-level) but has higher startup latency
+* **Pyodide mode** is suitable when users are trusted or semi-trusted. It blocks common attack vectors but is vulnerable to sophisticated Python introspection attacks.
+* **Docker mode** is suitable for untrusted code. OS-level isolation makes Python-level bypasses irrelevant — the container has no network, no host access, and is destroyed after execution.
 {% endhint %}
+
+### 7. Configuration Reference
+
+| Environment Variable | Default | Description |
+| :------------------- | :------ | :---------- |
+| `PYTHON_SANDBOX_MODE` | `pyodide` | Execution mode: `pyodide` (default) or `docker` |
+| `PYTHON_SANDBOX_TIMEOUT_MS` | `120000` | Execution timeout in milliseconds (both modes) |
+| `PYTHON_SANDBOX_IMAGE` | `guardian/python-sandbox:latest` | Docker sandbox image name (Docker mode only) |

@@ -95,13 +95,7 @@ for attr in ['system', 'popen', 'execl', 'execle', 'execlp', 'execv', 'execve',
     if hasattr(os, attr):
         setattr(os, attr, _blocked)
 
-# 3. Clear os.environ to prevent leaking secrets (keep HOME for library compatibility)
-_keep_keys = {'HOME', 'PATH'}
-for key in list(os.environ.keys()):
-    if key not in _keep_keys:
-        del os.environ[key]
-
-# 4. Block subprocess dangerous functions
+# 3. Block subprocess dangerous functions
 import subprocess as _subprocess
 for attr in ['run', 'call', 'check_call', 'check_output', 'Popen', 'getoutput', 'getstatusoutput']:
     if hasattr(_subprocess, attr):
@@ -139,6 +133,12 @@ def _make_guarded_import():
         return _orig(name, *args, **kwargs)
     return _guarded_import
 builtins.__import__ = _make_guarded_import()
+
+# 9. Clear os.environ last (after all library imports that may set their own vars)
+_keep_keys = {'HOME', 'PATH'}
+for key in list(os.environ.keys()):
+    if key not in _keep_keys:
+        del os.environ[key]
 `);
 
     try {
