@@ -42,7 +42,8 @@ export class SettingsApi {
         example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SettingsDTO, InternalServerErrorDTO)
-    @HttpCode(HttpStatus.NO_CONTENT)
+    //@HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.CREATED)
     async updateSettings(
         @AuthUser() user: IAuthUser,
         @Body() body: SettingsDTO
