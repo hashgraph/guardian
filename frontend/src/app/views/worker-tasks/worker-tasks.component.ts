@@ -1,9 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { WorkerTasksService } from '../../services/worker-tasks.service';
-import { forkJoin } from 'rxjs';
-import { ProfileService } from 'src/app/services/profile.service';
-import { UserPermissions } from '@guardian/interfaces';
 
 /**
  * Notifications
@@ -15,7 +12,6 @@ import { UserPermissions } from '@guardian/interfaces';
 })
 export class WorkerTasksComponent implements OnInit {
     public loading: boolean = true;
-    public user: UserPermissions = new UserPermissions();
     public workerTasks: any[] = [];
     public workerTasksCount: any;
     public workerTasksColumns: string[] = ['type', 'operations'];
@@ -41,7 +37,6 @@ export class WorkerTasksComponent implements OnInit {
 
     constructor(
         private tasksService: WorkerTasksService,
-        private profileService: ProfileService,
     ) {
         this.pageIndex = 0;
         this.pageSize = 10;
@@ -53,16 +48,13 @@ export class WorkerTasksComponent implements OnInit {
 
     private loadWorkerTasks() {
         this.loading = true;
-        forkJoin([
-            this.profileService.getProfile(),
-            this.tasksService.all(
-                this.pageIndex,
-                this.pageSize,
-                this.currentStatus
-            )
-        ]).subscribe(
-            ([profile, notificationsResponse]) => {
-                this.user = new UserPermissions(profile)
+        const request = this.tasksService.all(
+            this.pageIndex,
+            this.pageSize,
+            this.currentStatus
+        );
+        request.subscribe(
+            (notificationsResponse: HttpResponse<any[]>) => {
                 this.workerTasks = notificationsResponse.body || [];
                 this.workerTasksCount =
                     notificationsResponse.headers.get('X-Total-Count') ||

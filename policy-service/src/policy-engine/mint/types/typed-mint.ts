@@ -437,6 +437,6 @@ export abstract class TypedMint {
      * @param userId
      */
     protected error(error: any, userId: string | null) {
-        MintService.error(PolicyUtils.getErrorMessage(error), this._ref, userId, null);
+        MintService.error(PolicyUtils.getErrorMessage(error), this._ref, userId);
     }
 }

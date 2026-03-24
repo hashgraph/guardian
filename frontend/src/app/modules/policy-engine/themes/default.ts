@@ -93,7 +93,6 @@ export const defaultTheme = {
                 'dataTransformationAddon',
                 'transformationUIAddon',
                 'httpRequestUIAddon',
-                'ipfsTransformationUIAddon',
             ]
         }
     ],

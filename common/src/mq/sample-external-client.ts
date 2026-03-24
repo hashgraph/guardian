@@ -113,7 +113,6 @@ const decrypt = (encrypted: Buffer) => {
     //     console.log('Response file content: ', res.body)
     // });
     subscribeEvent(ExternalMessageEvents.TOKEN_MINTED, null);
-    subscribeEvent(ExternalMessageEvents.TOKEN_MINT_FAILED, null);
     subscribeEvent(ExternalMessageEvents.ERROR_LOG, null);
     subscribeEvent(ExternalMessageEvents.BLOCK_EVENTS, null);
 

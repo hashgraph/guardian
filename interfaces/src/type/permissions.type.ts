@@ -26,7 +26,6 @@ export enum PermissionCategories {
     DELEGATION = 'DELEGATION',
     STATISTICS = 'STATISTICS',
     FORMULAS = 'FORMULAS',
-    WORKER_TASKS = 'WORKER_TASKS',
 }
 
 /**
@@ -71,7 +70,6 @@ export enum PermissionEntities {
     LABEL = 'LABEL',
     FORMULA = 'FORMULA',
     EXTERNAL_POLICY = 'EXTERNAL_POLICY',
-    WORKER_TASK = 'WORKER_TASK'
 }
 
 /**
@@ -247,11 +245,7 @@ export enum Permissions {
     SCHEMAS_RULE_EXECUTE = 'SCHEMAS_RULE_EXECUTE',
     //FORMULAS
     FORMULAS_FORMULA_CREATE = 'FORMULAS_FORMULA_CREATE',
-    FORMULAS_FORMULA_READ = 'FORMULAS_FORMULA_READ',
-    //WORKER_TASKS
-    WORKER_TASKS_READ = 'WORKER_TASKS_READ',
-    WORKER_TASKS_EXECUTE = 'WORKER_TASKS_EXECUTE',
-    WORKER_TASKS_DELETE = 'WORKER_TASKS_DELETE'
+    FORMULAS_FORMULA_READ = 'FORMULAS_FORMULA_READ'
 }
 
 /**
@@ -1303,35 +1297,6 @@ export const PermissionsArray: {
                 Permissions.FORMULAS_FORMULA_READ
             ]
         },
-
-        //WORKERS TASKS
-        {
-            name: Permissions.WORKER_TASKS_READ,
-            category: PermissionCategories.WORKER_TASKS,
-            entity: PermissionEntities.WORKER_TASK,
-            action: PermissionActions.READ,
-            disabled: false
-        },
-        {
-            name: Permissions.WORKER_TASKS_EXECUTE,
-            category: PermissionCategories.WORKER_TASKS,
-            entity: PermissionEntities.WORKER_TASK,
-            action: PermissionActions.EXECUTE,
-            disabled: false,
-            dependOn: [
-                Permissions.WORKER_TASKS_READ
-            ]
-        },
-        {
-            name: Permissions.WORKER_TASKS_DELETE,
-            category: PermissionCategories.WORKER_TASKS,
-            entity: PermissionEntities.WORKER_TASK,
-            action: PermissionActions.DELETE,
-            disabled: false,
-            dependOn: [
-                Permissions.WORKER_TASKS_READ
-            ]
-        },
         //ACCESS
         {
             name: Permissions.ACCESS_POLICY_ALL,
@@ -1476,9 +1441,6 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.SCHEMAS_RULE_EXECUTE,
     Permissions.FORMULAS_FORMULA_CREATE,
     Permissions.FORMULAS_FORMULA_READ,
-    Permissions.WORKER_TASKS_READ,
-    Permissions.WORKER_TASKS_EXECUTE,
-    Permissions.WORKER_TASKS_DELETE,
 
     Permissions.POLICIES_EXTERNAL_POLICY_READ,
     Permissions.POLICIES_EXTERNAL_POLICY_CREATE,

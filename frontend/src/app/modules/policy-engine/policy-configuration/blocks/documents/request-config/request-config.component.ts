@@ -77,6 +77,9 @@ export class RequestConfigComponent implements OnInit {
         this.properties.uiMetaData = this.properties.uiMetaData || {};
         this.properties.uiMetaData.type = this.properties.uiMetaData.type || 'page';
         this.properties.presetFields = this.properties.presetFields || [];
+        if (this.properties.enableAdditionalData === undefined) {
+            this.properties.enableAdditionalData = false;
+        }
 
         this.schemas = this.moduleVariables?.schemas || [];
 

@@ -60,6 +60,5 @@ BlockIcons[BlockType.HttpRequestUIAddon] = 'globe';
 BlockIcons[BlockType.TransformationUIAddon] = 'chart-bar';
 BlockIcons[BlockType.GlobalEventsReaderBlock] = 'cloud-download';
 BlockIcons[BlockType.GlobalEventsWriterBlock] = 'cloud-upload';
-BlockIcons[BlockType.IpfsTransformationUIAddon] = 'file-edit';
 
 export default BlockIcons;

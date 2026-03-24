@@ -190,6 +190,49 @@ form {
     }
 }
 
+.evidence-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+
+    .evidence-entry {
+        display: flex;
+        align-items: flex-start;
+        padding: 8px 12px;
+        background: #F3F6FB;
+        border: 1px solid #E1E7EF;
+        border-radius: 6px;
+    }
+
+    .evidence-entry-message,
+    .evidence-entry-file {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-family: Inter;
+        font-size: 13px;
+        line-height: 18px;
+        color: #23252E;
+        word-break: break-word;
+
+        svg-icon {
+            flex-shrink: 0;
+            position: relative;
+            top: 1px;
+        }
+
+        a {
+            color: #4169E1;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
 *[readonly] {
     opacity: 0.6 !important;
     cursor: not-allowed !important;
