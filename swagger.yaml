@@ -786,7 +786,6 @@ paths:
                           eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..Uc6RaUnv_zC4xc9j3mBqdd8Ew3z6lZITofdoJUYpxDot-fZhQEtiDjPAj5Au6UwApAfTnXy_el-uv5iOdzOyCg
                     documentFileId: 69b3d86d0b1c848021821bf9
                     tableFileIds: []
-                    _id: 69b3d85f0b1c848021821bf2
                     id: 69b3d85f0b1c848021821bf2
                   policies:
                     - createDate: '2026-03-13T13:32:08.119Z'
@@ -825,7 +824,6 @@ paths:
                           version: null
                           topicId: 0.0.2182119
                           messageId: '1706867833.676387003'
-                      _id: 69b411d8b23f3b6a77d12742
                       userRoles:
                         - Administrator
                       userGroups: []
@@ -871,7 +869,6 @@ paths:
                           version: null
                           topicId: 0.0.2175383
                           messageId: '1706867530.884259218'
-                      _id: 69b41005b23f3b6a77d125ed
                       userRoles:
                         - Administrator
                       userGroups: []
@@ -929,7 +926,6 @@ paths:
                           eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..9eDfxnIaEfkx17NwOsVJK6JrWu4zXgz1tYPhE5g-O1zlFaWO3a6KLv0UtrgHcob-yDFx4k9avcJJmFN3aowSCg
                     documentFileId: 69b41277b23f3b6a77d127a5
                     tableFileIds: []
-                    _id: 69b41269b23f3b6a77d1279e
                     id: 69b41269b23f3b6a77d1279e
                   policies: []
                   username: Verra
@@ -3105,7 +3101,6 @@ paths:
                   extention: json
                   creator: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
-                  _id: 69b7cdefa48bb15eb7afb3e5
                   id: 69b7cdefa48bb15eb7afb3e5
                 - createDate: '2026-03-16T09:31:27.898Z'
                   updateDate: '2026-03-16T09:31:28.042Z'
@@ -3118,7 +3113,6 @@ paths:
                   extention: json
                   creator: >-
                     did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
-                  _id: 69b7cdefa48bb15eb7afb3e3
                   id: 69b7cdefa48bb15eb7afb3e3
         '401':
           description: Unauthorized request.
@@ -3212,7 +3206,6 @@ paths:
                         did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
                       extention: json
                       category: policy
-                      _id: 69bc0ba1f6b2fa8ae50f2ec9
                       id: 69bc0ba1f6b2fa8ae50f2ec9
                 MultiUpload:
                   summary: Multiple uploaded artifacts
@@ -3227,7 +3220,6 @@ paths:
                         did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
                       extention: json
                       category: policy
-                      _id: 69b7cdefa48bb15eb7afb3e5
                       id: 69b7cdefa48bb15eb7afb3e5
                     - createDate: '2026-03-16T09:31:27.898Z'
                       updateDate: '2026-03-16T09:31:28.042Z'
@@ -3239,7 +3231,6 @@ paths:
                         did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348
                       extention: json
                       category: policy
-                      _id: 69b7cdefa48bb15eb7afb3e3
                       id: 69b7cdefa48bb15eb7afb3e3
         '400':
           description: Bad request.
@@ -3599,7 +3590,6 @@ paths:
                       syncDisabled: false
                       version: 1.0.1
                       wipeTokenIds: []
-                      _id: 69bd0429fdc2fd0bb2f9e95b
                       id: 69bd0429fdc2fd0bb2f9e95b
                 RETIRE:
                   summary: Contracts list filtered by `type=RETIRE`
@@ -3619,7 +3609,6 @@ paths:
                       version: 1.0.1
                       wipeTokenIds:
                         - 0.0.8300593
-                      _id: 69bd04bcfdc2fd0bb2f9e971
                       id: 69bd04bcfdc2fd0bb2f9e971
         '401':
           description: Unauthorized request.
@@ -3699,7 +3688,6 @@ paths:
                     syncDisabled: false
                     version: 1.0.1
                     wipeTokenIds: []
-                    _id: 69bd13b4fdc2fd0bb2f9eccc
                     id: 69bd13b4fdc2fd0bb2f9eccc
                 WIPE:
                   summary: Created WIPE contract
@@ -3717,7 +3705,6 @@ paths:
                     syncDisabled: false
                     version: 1.0.1
                     wipeTokenIds: []
-                    _id: 69bd13df2a7b53526de3826b
                     id: 69bd13df2a7b53526de3826b
         '401':
           description: Unauthorized request.
@@ -3796,7 +3783,6 @@ paths:
                     syncDisabled: false
                     version: 1.0.1
                     wipeTokenIds: []
-                    _id: 69bd13b4fdc2fd0bb2f9eccc
                     id: 69bd13b4fdc2fd0bb2f9eccc
                 WIPE:
                   summary: Imported WIPE contract
@@ -3815,7 +3801,6 @@ paths:
                     syncDisabled: false
                     version: 1.0.1
                     wipeTokenIds: []
-                    _id: 69bd13df2a7b53526de3826b
                     id: 69bd13df2a7b53526de3826b
         '401':
           description: Unauthorized request.
@@ -8233,17 +8218,30 @@ paths:
   /tools:
     post:
       description: >-
-        Creates a new tool. Only users with the Standard Registry role are
-        allowed to make the request.
+        Creates a new tool. Waits for completion and returns the created tool.
+        Only users with the Standard Registry role are allowed to make the
+        request.
       operationId: ToolsApi_createNewTool
       parameters: []
       requestBody:
         required: true
-        description: Policy configuration.
+        description: >-
+          Tool configuration. Only config with blockType: "tool" is required.
+          Other fields (name, description) are optional. Fields like id, uuid,
+          creator, owner are set by the server.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ToolDTO'
+              $ref: '#/components/schemas/CreateToolDTO'
+            examples:
+              create:
+                summary: Minimal create
+                value:
+                  name: Test Tool New
+                  description: This is test description
+                  config:
+                    id: 47c1f826-88ef-46a0-b3b7-e9038108f97c
+                    blockType: tool
       responses:
         '201':
           description: Successful operation.
@@ -8252,23 +8250,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                uuid: f3b2a9c1e4d5678901234567
-                name: Tool name
-                description: Description
-                status: NEW
-                creator: string
-                owner: string
-                topicId: f3b2a9c1e4d5678901234567
-                messageId: f3b2a9c1e4d5678901234567
-                codeVersion: 1.0.0
-                createDate: string
+                id: 69c17209fb66de861cc9de3a
+                createDate: '2026-03-23T17:02:01.093Z'
+                updateDate: '2026-03-23T17:02:01.093Z'
+                uuid: 0e2a0907-18a4-41cf-bd93-dbd5b1ad5f98
+                name: Test Tool New
+                description: This is test description
+                configFileId: 69c17209fb66de861cc9de3b
+                status: DRAFT
+                creator: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                owner: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                topicId: 0.0.8346869
+                codeVersion: 1.5.1
+                tools: []
                 config:
-                  id: f3b2a9c1e4d5678901234567
-                  blockType: string
-                  blocks:
-                    - {}
-                version: 1.0.0
+                  id: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+                  blockType: tool
+                  permissions: []
+                  children: []
+                  events: []
+                  artifacts: []
+                  variables: []
+                  inputEvents: []
+                  outputEvents: []
+                  innerEvents: []
         '401':
           description: Unauthorized request.
           content:
@@ -8289,13 +8296,14 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Invalid tool config (missing config or config.blockType !== "tool").
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid tool config
         '500':
           description: Internal server error.
           content:
@@ -8303,17 +8311,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Creates a new tool.
+      summary: Creates a new tool (sync).
       tags:
         - tools
     get:
       description: >-
-        Returns all tools. Only users with the Standard Registry role are
-        allowed to make the request.
+        Returns all tools. Add Api-Version: 2 header to use search and tag
+        filters. Only users with the Standard Registry role are allowed to make
+        the request.
       operationId: ToolsApi_getToolsV2
       parameters:
         - name: pageIndex
@@ -8346,9 +8355,17 @@ paths:
           schema:
             example: text
             type: string
+        - name: Api-Version
+          in: header
+          description: Use "2" for this endpoint (supports search, tag)
+          required: true
+          schema:
+            type: string
       responses:
         '200':
-          description: Successful operation.
+          description: >-
+            Successful operation. Example shows V2 response format (no uuid, no
+            hash).
           headers:
             X-Total-Count:
               schema:
@@ -8359,25 +8376,37 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ToolDTO'
+                  $ref: '#/components/schemas/ToolListV2ItemDTO'
               example:
-                - id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  name: Tool name
-                  description: Description
-                  status: NEW
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: 1.0.0
-                  createDate: string
-                  config:
-                    id: f3b2a9c1e4d5678901234567
-                    blockType: string
-                    blocks:
-                      - {}
-                  version: 1.0.0
+                - name: Tool 06_new_edited
+                  description: ''
+                  status: DRAFT
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                  topicId: 0.0.8345573
+                  id: 69c156a4fb66de861cc9dd8a
+                - name: Tool 16
+                  description: ''
+                  status: PUBLISHED
+                  creator: >-
+                    did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+                  owner: >-
+                    did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+                  topicId: 0.0.4496134
+                  messageId: '1720000738.873798003'
+                  id: 69c1502ffb66de861cc9dcef
+                - name: Tool 06
+                  description: ''
+                  status: PUBLISHED
+                  creator: >-
+                    did:hedera:testnet:9pZJ9UokYbTyeb7ZWUrLWWLxFmuF3UAcLbjhwge8d3hp_0.0.2172755
+                  owner: >-
+                    did:hedera:testnet:9pZJ9UokYbTyeb7ZWUrLWWLxFmuF3UAcLbjhwge8d3hp_0.0.2172755
+                  topicId: 0.0.2657406
+                  messageId: '1707068762.886477003'
+                  id: 69c1501cfb66de861cc9dc26
         '401':
           description: Unauthorized request.
           content:
@@ -8404,7 +8433,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -8414,17 +8443,29 @@ paths:
   /tools/push:
     post:
       description: >-
-        Creates a new tool. Only users with the Standard Registry role are
-        allowed to make the request.
+        Creates a new tool asynchronously. Returns task ID for progress
+        tracking. Only users with the Standard Registry role are allowed to make
+        the request.
       operationId: ToolsApi_createNewToolAsync
       parameters: []
       requestBody:
         required: true
-        description: Policy configuration.
+        description: >-
+          Tool configuration. Only config with blockType: "tool" is required.
+          Other fields (name, description) are optional.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ToolDTO'
+              $ref: '#/components/schemas/CreateToolDTO'
+            examples:
+              create:
+                summary: Minimal create
+                value:
+                  name: Test Tool New
+                  description: This is test description
+                  config:
+                    id: 47c1f826-88ef-46a0-b3b7-e9038108f97c
+                    blockType: tool
       responses:
         '202':
           description: Successful operation.
@@ -8433,8 +8474,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
               example:
-                taskId: f3b2a9c1e4d5678901234567
-                expectation: 0
+                taskId: c2a271c0-4b6a-4893-8dd9-f23c936a747e
+                expectation: 8
+                action: Create tool
+                userId: 69bcfd90c98df6ceb05e8a78
         '401':
           description: Unauthorized request.
           content:
@@ -8455,13 +8498,14 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Invalid tool config (missing config or config.blockType !== "tool").
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid tool config
         '500':
           description: Internal server error.
           content:
@@ -8469,11 +8513,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Creates a new tool.
+      summary: Creates a new tool (async).
       tags:
         - tools
   /tools/{id}:
@@ -8515,13 +8559,16 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: >-
+            Invalid id (empty, "undefined", "null", or tool not found/not
+            owned/published).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid id
         '500':
           description: Internal server error.
           content:
@@ -8529,7 +8576,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -8559,23 +8606,118 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                uuid: f3b2a9c1e4d5678901234567
-                name: Tool name
-                description: Description
-                status: NEW
-                creator: string
-                owner: string
-                topicId: f3b2a9c1e4d5678901234567
-                messageId: f3b2a9c1e4d5678901234567
-                codeVersion: 1.0.0
-                createDate: string
+                id: 69c1502ffb66de861cc9dcef
+                createDate: '2026-03-23T14:37:35.376Z'
+                updateDate: '2026-03-23T14:37:35.376Z'
+                hash: 8j5UAc8s38X2qRaePqzCBj1rMuM9SXwkE3GcfXSJ7SaN
+                uuid: 7d56aec4-5db3-46d3-9f3f-236fc33e0772
+                name: Tool 16
+                description: ''
+                configFileId: 69c1502ffb66de861cc9dcf0
+                status: PUBLISHED
+                creator: >-
+                  did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+                owner: >-
+                  did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+                topicId: 0.0.4496134
+                messageId: '1720000738.873798003'
+                codeVersion: 1.5.1
+                tagsTopicId: 0.0.4496152
+                contentFileId: 69c1500afb66de861cc9dbca
+                tools:
+                  - name: Tool 01
+                    version: null
+                    topicId: 0.0.3418896
+                    messageId: '1707834520.925981198'
+                  - name: Tool 12
+                    version: null
+                    topicId: 0.0.3625013
+                    messageId: '1709106946.913157840'
+                  - name: Tool 03
+                    version: null
+                    topicId: 0.0.2182119
+                    messageId: '1706867833.676387003'
                 config:
-                  id: f3b2a9c1e4d5678901234567
-                  blockType: string
-                  blocks:
-                    - {}
-                version: 1.0.0
+                  id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                  blockType: tool
+                  permissions: []
+                  tag: Tool
+                  children:
+                    - id: 0988b533-bbe2-4cf9-9f43-c041764e163b
+                      blockType: tool
+                      defaultActive: true
+                      hash: FE2TVGaYbHkzT5xox71zRGowBh9uz7p1QZEmDd1BZbco
+                      messageId: '1719310223.735760003'
+                      permissions:
+                        - Role
+                      onErrorAction: no-action
+                      tag: Tool_14
+                      children: []
+                      events:
+                        - target: Tool_1
+                          source: Tool_14
+                          input: input_tool_01
+                          output: output_tool_14
+                          actor: ''
+                          disabled: false
+                      artifacts: []
+                      variables:
+                        - name: Role
+                          description: ''
+                          type: Role
+                      inputEvents:
+                        - name: input_tool_14
+                          description: ''
+                      outputEvents:
+                        - name: output_tool_14
+                          description: ''
+                      innerEvents: []
+                    - id: 52974f49-497d-403b-9616-829da32590fe
+                      blockType: customLogicBlock
+                      defaultActive: false
+                      permissions:
+                        - Role
+                      onErrorAction: no-action
+                      uiMetaData: {}
+                      expression: |-
+                        function calc_tool_16(document) {
+                            document.C14 = document.tool_01?.field2?.field1 === 'Yes' ? 'Yes' : 'No';
+                            // ... [calculation logic continues, hundreds of lines] ...
+                            return document;
+                        }
+                        calc();
+                      documentSigner: ''
+                      idType: UUID
+                      outputSchema: '#7e8f0766-996d-4715-b501-3abf55efa3ac&1.0.0'
+                      unsigned: true
+                      tag: calc_tool_16
+                      children: []
+                      events: []
+                      artifacts: []
+                  events:
+                    - target: Tool_14
+                      source: Tool
+                      input: input_tool_14
+                      output: input_tool_16
+                      actor: ''
+                      disabled: false
+                  variables:
+                    - name: Role
+                      description: ''
+                      type: Role
+                  inputEvents:
+                    - name: input_tool_16
+                      description: ''
+                  outputEvents:
+                    - name: output_tool_16
+                      description: ''
+                  innerEvents:
+                    - target: Tool_14
+                      source: Tool
+                      input: input_tool_14
+                      output: input_tool_16
+                      actor: ''
+                      disabled: false
         '401':
           description: Unauthorized request.
           content:
@@ -8596,13 +8738,16 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: >-
+            Invalid id (empty, "undefined", "null", or tool not found/not
+            owned).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid id
         '500':
           description: Internal server error.
           content:
@@ -8610,7 +8755,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -8632,11 +8777,29 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Tool configuration.
+        description: >-
+          Tool configuration. Must include config with blockType: "tool". name
+          and description are updatable.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ToolDTO'
+            examples:
+              update:
+                summary: Update tool example
+                value:
+                  name: Updated Tool Name
+                  description: Updated Tool Description
+                  config:
+                    id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                    blockType: tool
+                    permissions: []
+                    tag: Tool
+                    children: []
+                    events: []
+                    variables: []
+                    inputEvents: []
+                    outputEvents: []
       responses:
         '201':
           description: Successful operation.
@@ -8645,23 +8808,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                uuid: f3b2a9c1e4d5678901234567
-                name: Tool name
-                description: Description
-                status: NEW
-                creator: string
-                owner: string
-                topicId: f3b2a9c1e4d5678901234567
-                messageId: f3b2a9c1e4d5678901234567
-                codeVersion: 1.0.0
-                createDate: string
+                id: 69c168d8fb66de861cc9dda8
+                createDate: '2026-03-23T16:22:48.808Z'
+                updateDate: '2026-03-23T18:35:33.333Z'
+                uuid: 56af783a-eddc-4969-a6a7-894694f0a3c0
+                name: Updated Tool Name
+                description: Updated Tool Description
+                configFileId: 69c187f5fb66de861cc9de5a
+                status: DRAFT
+                creator: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                owner: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                topicId: 0.0.8346214
+                codeVersion: 1.5.1
+                tools: []
                 config:
-                  id: f3b2a9c1e4d5678901234567
-                  blockType: string
-                  blocks:
-                    - {}
-                version: 1.0.0
+                  id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                  blockType: tool
+                  permissions: []
+                  tag: Tool
+                  children: []
+                  events: []
+                  variables: []
+                  inputEvents: []
+                  outputEvents: []
+                  artifacts: []
+                  innerEvents: []
         '401':
           description: Unauthorized request.
           content:
@@ -8682,13 +8855,16 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: >-
+            Invalid id or invalid tool config (missing config or
+            config.blockType !== "tool").
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid tool config
         '500':
           description: Internal server error.
           content:
@@ -8696,7 +8872,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -8721,54 +8897,305 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Tool version.
+        description: 'Tool version for publish. Required: toolVersion (e.g. "1.0.0").'
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ToolVersionDTO'
+            examples:
+              publish:
+                summary: Publish tool example
+                value:
+                  toolVersion: 1.0.0
       responses:
         '200':
-          description: Successful operation.
+          description: >-
+            Publish result (HTTP 200). If isValid is true, the tool was
+            published. If isValid is false, the tool stays DRAFT and was not
+            published — see errors.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ToolValidationDTO'
-              example:
-                tool:
-                  id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  name: Tool name
-                  description: Description
-                  status: NEW
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: 1.0.0
-                  createDate: string
-                  config:
-                    id: f3b2a9c1e4d5678901234567
-                    blockType: string
-                    blocks:
-                      - {}
-                  version: 1.0.0
-                results:
-                  blocks:
-                    - id: f3b2a9c1e4d5678901234567
-                      name: string
-                      errors:
-                        - {}
-                      warnings:
-                        - {}
-                      infos:
-                        - {}
+                $ref: '#/components/schemas/ToolPublishResponseDTO'
+              examples:
+                success:
+                  summary: Validation passed — tool published
+                  value:
+                    tool:
+                      createDate: '2026-03-24T07:32:07.366Z'
+                      updateDate: '2026-03-24T07:53:40.891Z'
+                      hash: 62zo1ujESm1SehDeQoUK4o7um73qiwqf7fQ8YNan1NGE
+                      uuid: 01188757-acb8-42f3-af19-700ba073b66f
+                      name: Tool 06_1774337527363
+                      description: ''
+                      version: 1.0.0
+                      configFileId: 69c243047a442bf5c32d604f
+                      status: PUBLISHED
+                      creator: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                      topicId: 0.0.8356129
+                      messageId: '1774338819.468936917'
+                      codeVersion: 1.5.1
+                      tagsTopicId: 0.0.8356229
+                      tools: []
+                      contentFileId: 69c242f77a442bf5c32d6047
+                      id: 69c23df77a442bf5c32d5ffe
+                      config:
+                        id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                        blockType: tool
+                        permissions: []
+                        tag: Tool
+                        children:
+                          - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                            blockType: extractDataBlock
+                            defaultActive: false
+                            permissions:
+                              - Role
+                            onErrorAction: no-action
+                            action: get
+                            schema: '#d22a8d47-cfde-468d-b8e7-e87cbaea52f5&1.0.0'
+                            tag: get_tool_06
+                            children: []
+                            events: []
+                            artifacts: []
+                          - id: 52974f49-497d-403b-9616-829da32590fe
+                            blockType: customLogicBlock
+                            defaultActive: false
+                            permissions:
+                              - Role
+                            onErrorAction: no-action
+                            uiMetaData: {}
+                            expression: |-
+                              function calc_tool_16(document) {
+                                  document.C14 = document.tool_01?.field2?.field1 === 'Yes' ? 'Yes' : 'No';
+                                  // ... [calculation logic continues, hundreds of lines] ...
+                                  return document;
+                              }
+                              calc();
+                            documentSigner: ''
+                            idType: UUID
+                            outputSchema: '#d22a8d47-cfde-468d-b8e7-e87cbaea52f5&1.0.0'
+                            unsigned: true
+                            tag: calc_tool_06
+                            children: []
+                            events: []
+                            artifacts: []
+                          - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                            blockType: extractDataBlock
+                            defaultActive: false
+                            permissions:
+                              - Role
+                            onErrorAction: no-action
+                            action: set
+                            schema: '#d22a8d47-cfde-468d-b8e7-e87cbaea52f5&1.0.0'
+                            tag: set_tool_06
+                            children: []
+                            events:
+                              - target: Tool
+                                source: set_tool_06
+                                input: output_tool_06
+                                output: RunEvent
+                                actor: ''
+                                disabled: false
+                            artifacts: []
+                        events:
+                          - target: get_tool_06
+                            source: Tool
+                            input: RunEvent
+                            output: input_tool_06
+                            actor: ''
+                            disabled: false
+                        artifacts: []
+                        variables:
+                          - name: Role
+                            description: ''
+                            type: Role
+                        inputEvents:
+                          - name: input_tool_06
+                            description: ''
+                        outputEvents:
+                          - name: output_tool_06
+                            description: ''
+                        innerEvents:
+                          - target: get_tool_06
+                            source: Tool
+                            input: RunEvent
+                            output: input_tool_06
+                            actor: ''
+                            disabled: false
+                    isValid: true
+                    errors:
+                      errors: []
+                      blocks:
+                        - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                          name: extractDataBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 52974f49-497d-403b-9616-829da32590fe
+                          name: customLogicBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                          name: extractDataBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                      tools: []
+                      id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
                       isValid: true
-                  errors:
-                    - string
-                  warnings:
-                    - string
-                  infos:
-                    - string
+                validationFailed:
+                  summary: Validation failed — publish not started
+                  value:
+                    tool:
+                      createDate: '2026-03-24T07:32:07.366Z'
+                      updateDate: '2026-03-24T07:53:40.891Z'
+                      uuid: 01188757-acb8-42f3-af19-700ba073b66f
+                      name: Tool 06_1774337527363
+                      description: ''
+                      configFileId: 69c243047a442bf5c32d604f
+                      status: DRAFT
+                      creator: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                      topicId: 0.0.8356129
+                      codeVersion: 1.5.1
+                      tools: []
+                      id: 69c23df77a442bf5c32d5ffe
+                      config:
+                        id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                        blockType: tool
+                        permissions: []
+                        tag: Tool
+                        children:
+                          - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                            blockType: extractDataBlock
+                            defaultActive: false
+                            permissions:
+                              - Role
+                            onErrorAction: no-action
+                            action: get
+                            schema: '#d22a8d47-cfde-468d-b8e7-e87cbaea52f5&1.0.0'
+                            tag: get_tool_06
+                            children: []
+                            events: []
+                            artifacts: []
+                          - id: 2e2e1d55-853b-4d07-9a68-793ea88d28c9
+                            blockType: createTokenBlock
+                            tag: Block_1
+                            children: []
+                            events: []
+                            artifacts: []
+                          - id: 52974f49-497d-403b-9616-829da32590fe
+                            blockType: customLogicBlock
+                            defaultActive: false
+                            permissions:
+                              - Role
+                            onErrorAction: no-action
+                            uiMetaData: {}
+                            expression: |-
+                              function calc_tool_16(document) {
+                                  document.C14 = document.tool_01?.field2?.field1 === 'Yes' ? 'Yes' : 'No';
+                                  // ... [calculation logic continues, hundreds of lines] ...
+                                  return document;
+                              }
+                              calc();
+                            documentSigner: ''
+                            idType: UUID
+                            outputSchema: '#d22a8d47-cfde-468d-b8e7-e87cbaea52f5&1.0.0'
+                            unsigned: true
+                            tag: calc_tool_06
+                            children: []
+                            events: []
+                            artifacts: []
+                          - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                            blockType: extractDataBlock
+                            defaultActive: false
+                            permissions:
+                              - Role
+                            onErrorAction: no-action
+                            action: set
+                            schema: '#d22a8d47-cfde-468d-b8e7-e87cbaea52f5&1.0.0'
+                            tag: set_tool_06
+                            children: []
+                            events:
+                              - target: Tool
+                                source: set_tool_06
+                                input: output_tool_06
+                                output: RunEvent
+                                actor: ''
+                                disabled: false
+                            artifacts: []
+                        events:
+                          - target: get_tool_06
+                            source: Tool
+                            input: RunEvent
+                            output: input_tool_06
+                            actor: ''
+                            disabled: false
+                        artifacts: []
+                        variables:
+                          - name: Role
+                            description: ''
+                            type: Role
+                        inputEvents:
+                          - name: input_tool_06
+                            description: ''
+                        outputEvents:
+                          - name: output_tool_06
+                            description: ''
+                        innerEvents:
+                          - target: get_tool_06
+                            source: Tool
+                            input: RunEvent
+                            output: input_tool_06
+                            actor: ''
+                            disabled: false
+                    isValid: false
+                    errors:
+                      errors: []
+                      blocks:
+                        - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                          name: extractDataBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 2e2e1d55-853b-4d07-9a68-793ea88d28c9
+                          name: createTokenBlock
+                          errors:
+                            - Template can not be empty
+                            - Token "undefined" does not exist
+                          warnings: []
+                          infos: []
+                          isValid: false
+                        - id: 52974f49-497d-403b-9616-829da32590fe
+                          name: customLogicBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                          name: extractDataBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                          name: tool
+                          errors:
+                            - Tool is invalid
+                          isValid: false
+                      tools: []
+                      id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                      isValid: false
         '401':
           description: Unauthorized request.
           content:
@@ -8789,13 +9216,16 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Request validation failed (e.g. missing or invalid toolVersion).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                message:
+                  - toolVersion must be a string
+                error: Unprocessable Entity
+                statusCode: 422
         '500':
           description: Internal server error.
           content:
@@ -8803,7 +9233,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -8828,11 +9258,16 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Tool version.
+        description: 'Tool version for publish. Required: toolVersion (e.g. "1.0.0").'
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ToolVersionDTO'
+            examples:
+              publish:
+                summary: Publish tool example
+                value:
+                  toolVersion: 1.0.0
       responses:
         '200':
           description: Successful operation.
@@ -8841,8 +9276,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
               example:
-                taskId: f3b2a9c1e4d5678901234567
-                expectation: 0
+                taskId: 02b66111-15f1-4834-8e31-4227f058efa0
+                expectation: 2
+                action: Publish tool
+                userId: 69bcfd90c98df6ceb05e8a78
         '401':
           description: Unauthorized request.
           content:
@@ -8863,13 +9300,16 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Request validation failed (e.g. missing or invalid toolVersion).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                message:
+                  - toolVersion must be a string
+                error: Unprocessable Entity
+                statusCode: 422
         '500':
           description: Internal server error.
           content:
@@ -8877,7 +9317,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -8887,9 +9327,10 @@ paths:
   /tools/{id}/dry-run:
     put:
       description: >-
-        Run policy without making any persistent changes or executing
-        transaction. Only users with the Standard Registry role are allowed to
-        make the request.
+        Validates the tool config; when valid, dry run starts (tool state
+        updated server-side). Returns isValid and errors (no full tool body).
+        Only users with the Standard Registry role are allowed to make the
+        request.
       operationId: ToolsApi_dryRunPolicy
       parameters:
         - name: id
@@ -8901,47 +9342,84 @@ paths:
             type: string
       responses:
         '200':
-          description: Successful operation.
+          description: >-
+            Validation result (HTTP 200). Dry run started when isValid is true;
+            dry run not started when isValid is false (see errors.blocks and
+            nested messages).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ToolValidationDTO'
-              example:
-                tool:
-                  id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  name: Tool name
-                  description: Description
-                  status: NEW
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: 1.0.0
-                  createDate: string
-                  config:
-                    id: f3b2a9c1e4d5678901234567
-                    blockType: string
-                    blocks:
-                      - {}
-                  version: 1.0.0
-                results:
-                  blocks:
-                    - id: f3b2a9c1e4d5678901234567
-                      name: string
-                      errors:
-                        - {}
-                      warnings:
-                        - {}
-                      infos:
-                        - {}
+                $ref: '#/components/schemas/ToolDryRunResponseDTO'
+              examples:
+                success:
+                  summary: Validation passed — dry run started
+                  value:
+                    isValid: true
+                    errors:
+                      errors: []
+                      blocks:
+                        - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                          name: extractDataBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 52974f49-497d-403b-9616-829da32590fe
+                          name: customLogicBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                          name: extractDataBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                      tools: []
+                      id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
                       isValid: true
-                  errors:
-                    - string
-                  warnings:
-                    - string
-                  infos:
-                    - string
+                validationFailed:
+                  summary: Validation failed — dry run not started
+                  value:
+                    isValid: false
+                    errors:
+                      errors: []
+                      blocks:
+                        - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                          name: extractDataBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 8a317e5a-b462-4334-a6ea-263ca527f39a
+                          name: createTokenBlock
+                          errors:
+                            - Template can not be empty
+                            - Token "undefined" does not exist
+                          warnings: []
+                          infos: []
+                          isValid: false
+                        - id: 52974f49-497d-403b-9616-829da32590fe
+                          name: customLogicBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                          name: extractDataBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                          name: tool
+                          errors:
+                            - Tool is invalid
+                          isValid: false
+                      tools: []
+                      id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                      isValid: false
         '401':
           description: Unauthorized request.
           content:
@@ -8962,13 +9440,15 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Invalid id (empty or missing path segment).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                message: Invalid id
+                error: Unprocessable Entity
+                statusCode: 422
         '500':
           description: Internal server error.
           content:
@@ -8976,18 +9456,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Dry Run policy.
+      summary: Dry run tool.
       tags:
         - tools
   /tools/{id}/draft:
     put:
       description: >-
-        Return policy to editing. Only users with the Standard Registry role are
-        allowed to make the request.
+        Sets the tool to DRAFT when allowed (not already DRAFT, not PUBLISHED,
+        config present, not referenced by a policy in dry run). Response body is
+        JSON `true`. Only users with the Standard Registry role are allowed to
+        make the request.
       operationId: ToolsApi_draftPolicy
       parameters:
         - name: id
@@ -8999,47 +9481,11 @@ paths:
             type: string
       responses:
         '200':
-          description: Successful operation.
+          description: Successful operation. Response body is the JSON boolean `true`.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ToolValidationDTO'
-              example:
-                tool:
-                  id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  name: Tool name
-                  description: Description
-                  status: NEW
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: 1.0.0
-                  createDate: string
-                  config:
-                    id: f3b2a9c1e4d5678901234567
-                    blockType: string
-                    blocks:
-                      - {}
-                  version: 1.0.0
-                results:
-                  blocks:
-                    - id: f3b2a9c1e4d5678901234567
-                      name: string
-                      errors:
-                        - {}
-                      warnings:
-                        - {}
-                      infos:
-                        - {}
-                      isValid: true
-                  errors:
-                    - string
-                  warnings:
-                    - string
-                  infos:
-                    - string
+                type: boolean
         '401':
           description: Unauthorized request.
           content:
@@ -9060,13 +9506,15 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Invalid id (empty or missing path segment).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                message: Invalid id
+                error: Unprocessable Entity
+                statusCode: 422
         '500':
           description: Internal server error.
           content:
@@ -9074,11 +9522,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Return policy to editing.
+      summary: Return tool to draft (editing).
       tags:
         - tools
   /tools/validate:
@@ -9090,54 +9538,505 @@ paths:
       parameters: []
       requestBody:
         required: true
-        description: Tool configuration.
+        description: >-
+          Full tool document (same shape as GET /tools/:id).
+          `customLogicBlock.expression` in examples uses a short placeholder;
+          production tools use longer scripts.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ToolDTO'
+            examples:
+              valid:
+                summary: Valid DRAFT tool — validation passes
+                value:
+                  id: 69c245a07a442bf5c32d60a9
+                  uuid: b03154fa-6c33-4b3a-ba14-6a24df47f5ec
+                  name: Tool 06_1774339488650
+                  description: ''
+                  status: DRAFT
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                  topicId: 0.0.8356269
+                  messageId: null
+                  codeVersion: 1.5.1
+                  createDate: '2026-03-24T08:04:48.653Z'
+                  version: null
+                  config:
+                    id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                    blockType: tool
+                    permissions: []
+                    tag: Tool
+                    children:
+                      - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                        blockType: extractDataBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        action: get
+                        schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9'
+                        tag: get_tool_06
+                        children: []
+                        events: []
+                        artifacts: []
+                      - id: 52974f49-497d-403b-9616-829da32590fe
+                        blockType: customLogicBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        uiMetaData: {}
+                        expression: |-
+                          function calc_tool_16(document) {
+                              document.C14 = document.tool_01?.field2?.field1 === 'Yes' ? 'Yes' : 'No';
+                              // ... [calculation logic continues, hundreds of lines] ...
+                              return document;
+                          }
+                          calc();
+                        documentSigner: ''
+                        idType: UUID
+                        outputSchema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9'
+                        unsigned: true
+                        tag: calc_tool_06
+                        children: []
+                        events: []
+                        artifacts: []
+                      - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                        blockType: extractDataBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        action: set
+                        schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9'
+                        tag: set_tool_06
+                        children: []
+                        events:
+                          - target: Tool
+                            source: set_tool_06
+                            input: output_tool_06
+                            output: RunEvent
+                            actor: ''
+                            disabled: false
+                        artifacts: []
+                    events:
+                      - target: get_tool_06
+                        source: Tool
+                        input: RunEvent
+                        output: input_tool_06
+                        actor: ''
+                        disabled: false
+                    artifacts: []
+                    variables:
+                      - name: Role
+                        description: ''
+                        type: Role
+                    inputEvents:
+                      - name: input_tool_06
+                        description: ''
+                    outputEvents:
+                      - name: output_tool_06
+                        description: ''
+                    innerEvents:
+                      - target: get_tool_06
+                        source: Tool
+                        input: RunEvent
+                        output: input_tool_06
+                        actor: ''
+                        disabled: false
+              invalid:
+                summary: Invalid — createTokenBlock fails (empty template / token)
+                value:
+                  id: 69c245a07a442bf5c32d60a9
+                  uuid: b03154fa-6c33-4b3a-ba14-6a24df47f5ec
+                  name: Tool 06_1774339488650
+                  description: ''
+                  status: DRAFT
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                  topicId: 0.0.8356269
+                  messageId: null
+                  codeVersion: 1.5.1
+                  createDate: '2026-03-24T08:04:48.653Z'
+                  version: null
+                  config:
+                    id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                    blockType: tool
+                    permissions: []
+                    tag: Tool
+                    children:
+                      - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                        blockType: extractDataBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        action: get
+                        schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9'
+                        tag: get_tool_06
+                        children: []
+                        events: []
+                        artifacts: []
+                      - id: 68a86a37-e1b9-4c93-8892-624645bfd467
+                        blockType: createTokenBlock
+                        defaultActive: true
+                        permissions: []
+                        tag: Block_1
+                        children: []
+                        events: []
+                        artifacts: []
+                      - id: 52974f49-497d-403b-9616-829da32590fe
+                        blockType: customLogicBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        uiMetaData: {}
+                        expression: |-
+                          function calc_tool_16(document) {
+                              document.C14 = document.tool_01?.field2?.field1 === 'Yes' ? 'Yes' : 'No';
+                              // ... [calculation logic continues, hundreds of lines] ...
+                              return document;
+                          }
+                          calc();
+                        documentSigner: ''
+                        idType: UUID
+                        outputSchema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9'
+                        unsigned: true
+                        tag: calc_tool_06
+                        children: []
+                        events: []
+                        artifacts: []
+                      - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                        blockType: extractDataBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        action: set
+                        schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9'
+                        tag: set_tool_06
+                        children: []
+                        events:
+                          - target: Tool
+                            source: set_tool_06
+                            input: output_tool_06
+                            output: RunEvent
+                            actor: ''
+                            disabled: false
+                        artifacts: []
+                    events:
+                      - target: get_tool_06
+                        source: Tool
+                        input: RunEvent
+                        output: input_tool_06
+                        actor: ''
+                        disabled: false
+                    artifacts: []
+                    variables:
+                      - name: Role
+                        description: ''
+                        type: Role
+                    inputEvents:
+                      - name: input_tool_06
+                        description: ''
+                    outputEvents:
+                      - name: output_tool_06
+                        description: ''
+                    innerEvents:
+                      - target: get_tool_06
+                        source: Tool
+                        input: RunEvent
+                        output: input_tool_06
+                        actor: ''
+                        disabled: false
       responses:
         '200':
-          description: Validation result.
+          description: >-
+            Validation outcome (HTTP 200). `results` is ValidationErrors-style
+            output (blocks, tools, common errors, aggregate isValid). `tool`
+            echoes the submitted tool.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ToolValidationDTO'
-              example:
-                tool:
-                  id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  name: Tool name
-                  description: Description
-                  status: NEW
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: 1.0.0
-                  createDate: string
-                  config:
-                    id: f3b2a9c1e4d5678901234567
-                    blockType: string
-                    blocks:
-                      - {}
-                  version: 1.0.0
-                results:
-                  blocks:
-                    - id: f3b2a9c1e4d5678901234567
-                      name: string
-                      errors:
-                        - {}
-                      warnings:
-                        - {}
-                      infos:
-                        - {}
+              examples:
+                valid:
+                  summary: All blocks valid
+                  value:
+                    results:
+                      errors: []
+                      blocks:
+                        - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                          name: extractDataBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 52974f49-497d-403b-9616-829da32590fe
+                          name: customLogicBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                          name: extractDataBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                      tools: []
+                      id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
                       isValid: true
-                  errors:
-                    - string
-                  warnings:
-                    - string
-                  infos:
-                    - string
+                    tool:
+                      id: 69c245a07a442bf5c32d60a9
+                      uuid: b03154fa-6c33-4b3a-ba14-6a24df47f5ec
+                      name: Tool 06_1774339488650
+                      description: ''
+                      status: DRAFT
+                      creator: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                      topicId: 0.0.8356269
+                      messageId: null
+                      codeVersion: 1.5.1
+                      createDate: '2026-03-24T08:04:48.653Z'
+                      version: null
+                      config:
+                        id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                        blockType: tool
+                        permissions: []
+                        tag: Tool
+                        children:
+                          - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                            blockType: extractDataBlock
+                            defaultActive: false
+                            permissions:
+                              - Role
+                            onErrorAction: no-action
+                            action: get
+                            schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9'
+                            tag: get_tool_06
+                            children: []
+                            events: []
+                            artifacts: []
+                          - id: 52974f49-497d-403b-9616-829da32590fe
+                            blockType: customLogicBlock
+                            defaultActive: false
+                            permissions:
+                              - Role
+                            onErrorAction: no-action
+                            uiMetaData: {}
+                            expression: |-
+                              function calc_tool_16(document) {
+                                  document.C14 = document.tool_01?.field2?.field1 === 'Yes' ? 'Yes' : 'No';
+                                  // ... [calculation logic continues, hundreds of lines] ...
+                                  return document;
+                              }
+                              calc();
+                            documentSigner: ''
+                            idType: UUID
+                            outputSchema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9'
+                            unsigned: true
+                            tag: calc_tool_06
+                            children: []
+                            events: []
+                            artifacts: []
+                          - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                            blockType: extractDataBlock
+                            defaultActive: false
+                            permissions:
+                              - Role
+                            onErrorAction: no-action
+                            action: set
+                            schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9'
+                            tag: set_tool_06
+                            children: []
+                            events:
+                              - target: Tool
+                                source: set_tool_06
+                                input: output_tool_06
+                                output: RunEvent
+                                actor: ''
+                                disabled: false
+                            artifacts: []
+                        events:
+                          - target: get_tool_06
+                            source: Tool
+                            input: RunEvent
+                            output: input_tool_06
+                            actor: ''
+                            disabled: false
+                        artifacts: []
+                        variables:
+                          - name: Role
+                            description: ''
+                            type: Role
+                        inputEvents:
+                          - name: input_tool_06
+                            description: ''
+                        outputEvents:
+                          - name: output_tool_06
+                            description: ''
+                        innerEvents:
+                          - target: get_tool_06
+                            source: Tool
+                            input: RunEvent
+                            output: input_tool_06
+                            actor: ''
+                            disabled: false
+                invalid:
+                  summary: createTokenBlock + tool-level aggregate invalid
+                  value:
+                    results:
+                      errors: []
+                      blocks:
+                        - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                          name: extractDataBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 68a86a37-e1b9-4c93-8892-624645bfd467
+                          name: createTokenBlock
+                          errors:
+                            - Template can not be empty
+                            - Token "undefined" does not exist
+                          warnings: []
+                          infos: []
+                          isValid: false
+                        - id: 52974f49-497d-403b-9616-829da32590fe
+                          name: customLogicBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                          name: extractDataBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                          name: tool
+                          errors:
+                            - Tool is invalid
+                          isValid: false
+                      tools: []
+                      id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                      isValid: false
+                    tool:
+                      id: 69c245a07a442bf5c32d60a9
+                      uuid: b03154fa-6c33-4b3a-ba14-6a24df47f5ec
+                      name: Tool 06_1774339488650
+                      description: ''
+                      status: DRAFT
+                      creator: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                      topicId: 0.0.8356269
+                      messageId: null
+                      codeVersion: 1.5.1
+                      createDate: '2026-03-24T08:04:48.653Z'
+                      version: null
+                      config:
+                        id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                        blockType: tool
+                        permissions: []
+                        tag: Tool
+                        children:
+                          - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                            blockType: extractDataBlock
+                            defaultActive: false
+                            permissions:
+                              - Role
+                            onErrorAction: no-action
+                            action: get
+                            schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9'
+                            tag: get_tool_06
+                            children: []
+                            events: []
+                            artifacts: []
+                          - id: 68a86a37-e1b9-4c93-8892-624645bfd467
+                            blockType: createTokenBlock
+                            defaultActive: true
+                            permissions: []
+                            tag: Block_1
+                            children: []
+                            events: []
+                            artifacts: []
+                          - id: 52974f49-497d-403b-9616-829da32590fe
+                            blockType: customLogicBlock
+                            defaultActive: false
+                            permissions:
+                              - Role
+                            onErrorAction: no-action
+                            uiMetaData: {}
+                            expression: |-
+                              function calc_tool_16(document) {
+                                  document.C14 = document.tool_01?.field2?.field1 === 'Yes' ? 'Yes' : 'No';
+                                  // ... [calculation logic continues, hundreds of lines] ...
+                                  return document;
+                              }
+                              calc();
+                            documentSigner: ''
+                            idType: UUID
+                            outputSchema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9'
+                            unsigned: true
+                            tag: calc_tool_06
+                            children: []
+                            events: []
+                            artifacts: []
+                          - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                            blockType: extractDataBlock
+                            defaultActive: false
+                            permissions:
+                              - Role
+                            onErrorAction: no-action
+                            action: set
+                            schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9'
+                            tag: set_tool_06
+                            children: []
+                            events:
+                              - target: Tool
+                                source: set_tool_06
+                                input: output_tool_06
+                                output: RunEvent
+                                actor: ''
+                                disabled: false
+                            artifacts: []
+                        events:
+                          - target: get_tool_06
+                            source: Tool
+                            input: RunEvent
+                            output: input_tool_06
+                            actor: ''
+                            disabled: false
+                        artifacts: []
+                        variables:
+                          - name: Role
+                            description: ''
+                            type: Role
+                        inputEvents:
+                          - name: input_tool_06
+                            description: ''
+                        outputEvents:
+                          - name: output_tool_06
+                            description: ''
+                        innerEvents:
+                          - target: get_tool_06
+                            source: Tool
+                            input: RunEvent
+                            output: input_tool_06
+                            actor: ''
+                            disabled: false
         '401':
           description: Unauthorized request.
           content:
@@ -9164,7 +10063,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -9188,14 +10087,14 @@ paths:
             type: string
       responses:
         '200':
-          description: Successful operation. Response zip file.
+          description: >-
+            Binary ZIP archive (`Content-Type: application/zip`,
+            `Content-Disposition: attachment`). Not JSON.
           content:
             application/zip:
               schema:
                 type: string
                 format: binary
-              example:
-                result: ok
         '401':
           description: Unauthorized request.
           content:
@@ -9216,13 +10115,15 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Invalid id (empty or missing path segment).
           content:
             application/zip:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                message: Invalid id
+                error: Unprocessable Entity
+                statusCode: 422
         '500':
           description: Internal server error.
           content:
@@ -9230,7 +10131,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -9242,8 +10143,9 @@ paths:
   /tools/{id}/export/message:
     get:
       description: >-
-        Returns the Hedera message ID for the specified tool published onto
-        IPFS. Only users with the Standard Registry role are allowed to make the
+        Returns id, uuid, name, description, messageId, owner. `messageId` is
+        set when the tool is published to the topic; for DRAFT / dry-run it is
+        null. Only users with the Standard Registry role are allowed to make the
         request.
       operationId: ToolsApi_toolExportMessage
       parameters:
@@ -9256,17 +10158,32 @@ paths:
             type: string
       responses:
         '200':
-          description: Successful operation.
+          description: Tool export metadata (JSON).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExportMessageDTO'
-              example:
-                uuid: f3b2a9c1e4d5678901234567
-                name: string
-                description: string
-                messageId: f3b2a9c1e4d5678901234567
-                owner: string
+                $ref: '#/components/schemas/ToolExportMessageDTO'
+              examples:
+                published:
+                  summary: Published tool — messageId present
+                  value:
+                    id: 69c1502ffb66de861cc9dcef
+                    uuid: 7d56aec4-5db3-46d3-9f3f-236fc33e0772
+                    name: Tool 16
+                    description: ''
+                    messageId: '1720000738.873798003'
+                    owner: >-
+                      did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+                draft:
+                  summary: DRAFT / dry-run — messageId null
+                  value:
+                    id: 69c245a07a442bf5c32d60a9
+                    uuid: b03154fa-6c33-4b3a-ba14-6a24df47f5ec
+                    name: Tool 06_1774339488650
+                    description: ''
+                    messageId: null
+                    owner: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
         '401':
           description: Unauthorized request.
           content:
@@ -9287,13 +10204,15 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Invalid id (empty or missing path segment).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                message: Invalid id
+                error: Unprocessable Entity
+                statusCode: 422
         '500':
           description: Internal server error.
           content:
@@ -9301,76 +10220,211 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Return Heder message ID for the specified published tool.
+      summary: Return tool identity and Hedera message id for export.
       tags:
         - tools
   /tools/import/message/preview:
     post:
       description: >-
-        Imports new tool and all associated artifacts from IPFS into the local
-        DB. Only users with the Standard Registry role are allowed to make the
-        request.
+        Loads the tool ZIP from IPFS via `messageId`, parses `tool.json`,
+        `schemas/*`, `tags/*`, `tools/*`, then adds `messageId` and
+        `toolTopicId` from the message. Does not persist to the DB. Only users
+        with the Standard Registry role are allowed to make the request.
       operationId: ToolsApi_toolImportMessagePreview
       parameters: []
       requestBody:
         required: true
-        description: Message.
+        description: Hedera topic message id (`messageId`).
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ImportMessageDTO'
+            examples:
+              byMessageId:
+                summary: Preview by Hedera message id
+                value:
+                  messageId: '1726593517.484578000'
       responses:
         '200':
-          description: Tool preview.
+          description: >-
+            Parsed archive components plus message metadata. `schemas` entries
+            are full schema records in production; the example lists all
+            metadata fields with `document` and `context` as empty objects
+            (omitted payload).
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ToolPreviewDTO'
               example:
                 tool:
-                  id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  name: Tool name
-                  description: Description
-                  status: NEW
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: 1.0.0
-                  createDate: string
+                  name: Tool 33
+                  description: ''
+                  creator: >-
+                    did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                  owner: >-
+                    did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                  codeVersion: 1.5.1
+                  tagsTopicId: 0.0.4865958
+                  tools: []
                   config:
-                    id: f3b2a9c1e4d5678901234567
-                    blockType: string
-                    blocks:
-                      - {}
-                  version: 1.0.0
+                    id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                    blockType: tool
+                    permissions: []
+                    tag: Tool
+                    children:
+                      - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                        blockType: extractDataBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        action: get
+                        schema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0'
+                        tag: get_tool_33
+                        children: []
+                        events: []
+                        artifacts: []
+                      - id: 52974f49-497d-403b-9616-829da32590fe
+                        blockType: customLogicBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        uiMetaData: {}
+                        expression: |-
+                          function calc_tool_16(document) {
+                              document.C14 = document.tool_01?.field2?.field1 === 'Yes' ? 'Yes' : 'No';
+                              // ... [calculation logic continues, hundreds of lines] ...
+                              return document;
+                          }
+                          calc();
+                        documentSigner: ''
+                        idType: UUID
+                        outputSchema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0'
+                        unsigned: true
+                        tag: calc_tool_33
+                        children: []
+                        events: []
+                        artifacts: []
+                      - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                        blockType: extractDataBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        action: set
+                        schema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0'
+                        tag: set_tool_33
+                        children: []
+                        events:
+                          - target: Tool
+                            source: set_tool_33
+                            input: output_tool_33
+                            output: RunEvent
+                            actor: ''
+                            disabled: false
+                        artifacts: []
+                    events:
+                      - target: get_tool_33
+                        source: Tool
+                        input: RunEvent
+                        output: input_tool_33
+                        actor: ''
+                        disabled: false
+                    artifacts: []
+                    variables:
+                      - name: Role
+                        description: ''
+                        type: Role
+                    inputEvents:
+                      - name: input_tool_33
+                        description: ''
+                    outputEvents:
+                      - name: output_tool_33
+                        description: ''
+                    innerEvents:
+                      - target: get_tool_33
+                        source: Tool
+                        input: RunEvent
+                        output: input_tool_33
+                        actor: ''
+                        disabled: false
+                tags: []
                 schemas:
-                  - {}
-                tags:
-                  - {}
-                tools:
-                  - id: f3b2a9c1e4d5678901234567
-                    uuid: f3b2a9c1e4d5678901234567
-                    name: Tool name
-                    description: Description
-                    status: NEW
-                    creator: string
-                    owner: string
-                    topicId: f3b2a9c1e4d5678901234567
-                    messageId: f3b2a9c1e4d5678901234567
-                    codeVersion: 1.0.0
-                    createDate: string
-                    config:
-                      id: f3b2a9c1e4d5678901234567
-                      blockType: string
-                      blocks:
-                        - {}
+                  - id: 66e9b98854cf4ebe299cb399
+                    createDate: '2024-09-17T17:17:00.224Z'
+                    updateDate: '2024-09-17T17:18:28.695Z'
+                    uuid: 073bdaf5-68d1-4bfd-9290-2c4f40a98034
+                    hash: ''
+                    name: Tool 33
+                    description: ''
+                    entity: VC
+                    documentFileId: 66e9b9e454cf4ebe299cb3c9
+                    contextFileId: 66e9b9e454cf4ebe299cb3cb
                     version: 1.0.0
+                    sourceVersion: ''
+                    creator: >-
+                      did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                    owner: >-
+                      did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                    topicId: 0.0.4865949
+                    messageId: '1726593505.353812000'
+                    documentURL: >-
+                      ipfs://bafkreiflnxkizsxsmtyiraojvykwj7s4y3i3twsytelw6egboutawr7xta
+                    contextURL: >-
+                      ipfs://bafkreic4mekxeq3p5es7bacfdswkae3rxlmka5hirtlnxmr63ukdn7l6ki
+                    iri: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0'
+                    system: false
+                    active: false
+                    category: TOOL
+                    codeVersion: 1.1.0
+                    defs:
+                      - '#64d676db-cd55-41f7-87ed-71d8e7a582dc&1.0.0'
+                    errors: []
+                    document: {}
+                    context: {}
+                  - id: 66e9b98c54cf4ebe299cb3a2
+                    createDate: '2024-09-17T17:17:03.328Z'
+                    updateDate: '2024-09-17T17:18:21.063Z'
+                    uuid: 64d676db-cd55-41f7-87ed-71d8e7a582dc
+                    hash: ''
+                    name: >-
+                      Tool 33. Carbon dioxide emission factor for diesel
+                      generating system used for offgrid power generation
+                      purposes | Carbon dioxide emission factor for kerosene
+                      used for lighting applications
+                    description: ''
+                    entity: VC
+                    documentFileId: 66e9b9dd54cf4ebe299cb3bb
+                    contextFileId: 66e9b9dd54cf4ebe299cb3bd
+                    version: 1.0.0
+                    sourceVersion: ''
+                    creator: >-
+                      did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                    owner: >-
+                      did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                    topicId: 0.0.4865949
+                    messageId: '1726593498.351403305'
+                    documentURL: >-
+                      ipfs://bafkreifkfy6ft5bpoudp2oruy5zfwicfycrikcx473vgm7tm7kau6x4raq
+                    contextURL: >-
+                      ipfs://bafkreifxxqtc4nku6x5y7bu2przweee2flnbhskij35igfhc2xnb5fwutq
+                    iri: '#64d676db-cd55-41f7-87ed-71d8e7a582dc&1.0.0'
+                    system: false
+                    active: false
+                    category: TOOL
+                    codeVersion: 1.1.0
+                    defs: []
+                    errors: []
+                    document: {}
+                    context: {}
+                tools: []
+                messageId: '1726593517.484578000'
+                toolTopicId: 0.0.4865949
         '401':
           description: Unauthorized request.
           content:
@@ -9391,13 +10445,17 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: >-
+            Missing or empty `messageId` in the body (gateway throws before
+            calling guardian), or global request validation failure.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                message: Message ID in body is empty
+                error: Unprocessable Entity
+                statusCode: 422
         '500':
           description: Internal server error.
           content:
@@ -9405,11 +10463,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Imports new tool from IPFS.
+      summary: Preview tool package from a Hedera message (IPFS ZIP).
       tags:
         - tools
   /tools/import/message:
@@ -9427,31 +10485,123 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ImportMessageDTO'
+            examples:
+              byMessageId:
+                summary: Import by Hedera message id
+                value:
+                  messageId: '1726593517.484578000'
       responses:
         '201':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ToolDTO'
+                $ref: '#/components/schemas/ToolImportResponseDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                uuid: f3b2a9c1e4d5678901234567
-                name: Tool name
-                description: Description
-                status: NEW
-                creator: string
-                owner: string
-                topicId: f3b2a9c1e4d5678901234567
-                messageId: f3b2a9c1e4d5678901234567
-                codeVersion: 1.0.0
-                createDate: string
-                config:
-                  id: f3b2a9c1e4d5678901234567
-                  blockType: string
-                  blocks:
-                    - {}
-                version: 1.0.0
+                tool:
+                  createDate: '2026-03-24T13:31:34.959Z'
+                  updateDate: '2026-03-24T13:31:34.959Z'
+                  hash: Ceo5z8VkMbYWAcgjhesqGXHzJ9Z6aEdEEGWA4Jq4XE2i
+                  uuid: 8772ca4b-4efe-4517-93ae-6c63a4281257
+                  name: Tool 33
+                  description: ''
+                  configFileId: 69c292367a442bf5c32d6157
+                  status: PUBLISHED
+                  creator: >-
+                    did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                  owner: >-
+                    did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                  topicId: 0.0.4865949
+                  messageId: '1726593517.484578000'
+                  codeVersion: 1.5.1
+                  tagsTopicId: 0.0.4865958
+                  tools: []
+                  contentFileId: 69c292367a442bf5c32d6154
+                  id: 69c292367a442bf5c32d6156
+                  config:
+                    id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                    blockType: tool
+                    permissions: []
+                    tag: Tool
+                    children:
+                      - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                        blockType: extractDataBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        action: get
+                        schema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0'
+                        tag: get_tool_33
+                        children: []
+                        events: []
+                        artifacts: []
+                      - id: 52974f49-497d-403b-9616-829da32590fe
+                        blockType: customLogicBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        uiMetaData: {}
+                        expression: |-
+                          function calc_tool_16(document) {
+                              document.C14 = document.tool_01?.field2?.field1 === 'Yes' ? 'Yes' : 'No';
+                              // ... [calculation logic continues, hundreds of lines] ...
+                              return document;
+                          }
+                          calc();
+                        documentSigner: ''
+                        idType: UUID
+                        outputSchema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0'
+                        unsigned: true
+                        tag: calc_tool_33
+                        children: []
+                        events: []
+                        artifacts: []
+                      - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                        blockType: extractDataBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        action: set
+                        schema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0'
+                        tag: set_tool_33
+                        children: []
+                        events:
+                          - target: Tool
+                            source: set_tool_33
+                            input: output_tool_33
+                            output: RunEvent
+                            actor: ''
+                            disabled: false
+                        artifacts: []
+                    events:
+                      - target: get_tool_33
+                        source: Tool
+                        input: RunEvent
+                        output: input_tool_33
+                        actor: ''
+                        disabled: false
+                    artifacts: []
+                    variables:
+                      - name: Role
+                        description: ''
+                        type: Role
+                    inputEvents:
+                      - name: input_tool_33
+                        description: ''
+                    outputEvents:
+                      - name: output_tool_33
+                        description: ''
+                    innerEvents:
+                      - target: get_tool_33
+                        source: Tool
+                        input: RunEvent
+                        output: input_tool_33
+                        actor: ''
+                        disabled: false
+                errors: []
         '401':
           description: Unauthorized request.
           content:
@@ -9476,9 +10626,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Message ID in body is empty
         '500':
           description: Internal server error.
           content:
@@ -9486,7 +10637,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -9496,66 +10647,195 @@ paths:
   /tools/import/file/preview:
     post:
       description: >-
-        Imports new tool and all associated artifacts, such as schemas and VCs,
-        from the provided zip file into the local DB. Only users with the
-        Standard Registry role are allowed to make the request.
+        Parses the uploaded tool archive (`*.tool`, ZIP format; `tool.json`,
+        `schemas/*`, `tags/*`, `tools/*`) without persisting. Shape matches
+        message preview; `messageId` / `toolTopicId` may be absent when not
+        sourced from a Hedera message. Only users with the Standard Registry
+        role are allowed to make the request.
       operationId: ToolsApi_toolImportFilePreview
       parameters: []
       requestBody:
         required: true
-        description: File.
+        description: Tool archive (`*.tool`, ZIP format) as raw binary request body.
         content:
-          application/json:
+          binary/octet-stream:
             schema:
               type: string
+              format: binary
       responses:
         '200':
-          description: Module preview.
+          description: >-
+            Parsed archive components. Same structure as `POST
+            /tools/import/message/preview`; the example matches that response
+            shape (`document` / `context` empty in `schemas`).
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ToolPreviewDTO'
               example:
                 tool:
-                  id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  name: Tool name
-                  description: Description
-                  status: NEW
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: 1.0.0
-                  createDate: string
+                  name: Tool 33
+                  description: ''
+                  creator: >-
+                    did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                  owner: >-
+                    did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                  codeVersion: 1.5.1
+                  tagsTopicId: 0.0.4865958
+                  tools: []
                   config:
-                    id: f3b2a9c1e4d5678901234567
-                    blockType: string
-                    blocks:
-                      - {}
-                  version: 1.0.0
+                    id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                    blockType: tool
+                    permissions: []
+                    tag: Tool
+                    children:
+                      - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                        blockType: extractDataBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        action: get
+                        schema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0'
+                        tag: get_tool_33
+                        children: []
+                        events: []
+                        artifacts: []
+                      - id: 52974f49-497d-403b-9616-829da32590fe
+                        blockType: customLogicBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        uiMetaData: {}
+                        expression: |-
+                          function calc_tool_16(document) {
+                              document.C14 = document.tool_01?.field2?.field1 === 'Yes' ? 'Yes' : 'No';
+                              // ... [calculation logic continues, hundreds of lines] ...
+                              return document;
+                          }
+                          calc();
+                        documentSigner: ''
+                        idType: UUID
+                        outputSchema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0'
+                        unsigned: true
+                        tag: calc_tool_33
+                        children: []
+                        events: []
+                        artifacts: []
+                      - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                        blockType: extractDataBlock
+                        defaultActive: false
+                        permissions:
+                          - Role
+                        onErrorAction: no-action
+                        action: set
+                        schema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0'
+                        tag: set_tool_33
+                        children: []
+                        events:
+                          - target: Tool
+                            source: set_tool_33
+                            input: output_tool_33
+                            output: RunEvent
+                            actor: ''
+                            disabled: false
+                        artifacts: []
+                    events:
+                      - target: get_tool_33
+                        source: Tool
+                        input: RunEvent
+                        output: input_tool_33
+                        actor: ''
+                        disabled: false
+                    artifacts: []
+                    variables:
+                      - name: Role
+                        description: ''
+                        type: Role
+                    inputEvents:
+                      - name: input_tool_33
+                        description: ''
+                    outputEvents:
+                      - name: output_tool_33
+                        description: ''
+                    innerEvents:
+                      - target: get_tool_33
+                        source: Tool
+                        input: RunEvent
+                        output: input_tool_33
+                        actor: ''
+                        disabled: false
+                tags: []
                 schemas:
-                  - {}
-                tags:
-                  - {}
-                tools:
-                  - id: f3b2a9c1e4d5678901234567
-                    uuid: f3b2a9c1e4d5678901234567
-                    name: Tool name
-                    description: Description
-                    status: NEW
-                    creator: string
-                    owner: string
-                    topicId: f3b2a9c1e4d5678901234567
-                    messageId: f3b2a9c1e4d5678901234567
-                    codeVersion: 1.0.0
-                    createDate: string
-                    config:
-                      id: f3b2a9c1e4d5678901234567
-                      blockType: string
-                      blocks:
-                        - {}
+                  - id: 66e9b98854cf4ebe299cb399
+                    createDate: '2024-09-17T17:17:00.224Z'
+                    updateDate: '2024-09-17T17:18:28.695Z'
+                    uuid: 073bdaf5-68d1-4bfd-9290-2c4f40a98034
+                    hash: ''
+                    name: Tool 33
+                    description: ''
+                    entity: VC
+                    documentFileId: 66e9b9e454cf4ebe299cb3c9
+                    contextFileId: 66e9b9e454cf4ebe299cb3cb
                     version: 1.0.0
+                    sourceVersion: ''
+                    creator: >-
+                      did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                    owner: >-
+                      did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                    topicId: 0.0.4865949
+                    messageId: '1726593505.353812000'
+                    documentURL: >-
+                      ipfs://bafkreiflnxkizsxsmtyiraojvykwj7s4y3i3twsytelw6egboutawr7xta
+                    contextURL: >-
+                      ipfs://bafkreic4mekxeq3p5es7bacfdswkae3rxlmka5hirtlnxmr63ukdn7l6ki
+                    iri: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0'
+                    system: false
+                    active: false
+                    category: TOOL
+                    codeVersion: 1.1.0
+                    defs:
+                      - '#64d676db-cd55-41f7-87ed-71d8e7a582dc&1.0.0'
+                    errors: []
+                    document: {}
+                    context: {}
+                  - id: 66e9b98c54cf4ebe299cb3a2
+                    createDate: '2024-09-17T17:17:03.328Z'
+                    updateDate: '2024-09-17T17:18:21.063Z'
+                    uuid: 64d676db-cd55-41f7-87ed-71d8e7a582dc
+                    hash: ''
+                    name: >-
+                      Tool 33. Carbon dioxide emission factor for diesel
+                      generating system used for offgrid power generation
+                      purposes | Carbon dioxide emission factor for kerosene
+                      used for lighting applications
+                    description: ''
+                    entity: VC
+                    documentFileId: 66e9b9dd54cf4ebe299cb3bb
+                    contextFileId: 66e9b9dd54cf4ebe299cb3bd
+                    version: 1.0.0
+                    sourceVersion: ''
+                    creator: >-
+                      did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                    owner: >-
+                      did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597
+                    topicId: 0.0.4865949
+                    messageId: '1726593498.351403305'
+                    documentURL: >-
+                      ipfs://bafkreifkfy6ft5bpoudp2oruy5zfwicfycrikcx473vgm7tm7kau6x4raq
+                    contextURL: >-
+                      ipfs://bafkreifxxqtc4nku6x5y7bu2przweee2flnbhskij35igfhc2xnb5fwutq
+                    iri: '#64d676db-cd55-41f7-87ed-71d8e7a582dc&1.0.0'
+                    system: false
+                    active: false
+                    category: TOOL
+                    codeVersion: 1.1.0
+                    defs: []
+                    errors: []
+                    document: {}
+                    context: {}
+                tools: []
         '401':
           description: Unauthorized request.
           content:
@@ -9582,28 +10862,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Imports new tool from a zip file.
+      summary: Preview tool package from an uploaded *.tool file.
       tags:
         - tools
   /tools/import/file:
     post:
       description: >-
         Imports new tool and all associated artifacts, such as schemas and VCs,
-        from the provided zip file into the local DB. Only users with the
-        Standard Registry role are allowed to make the request.
+        from the provided `*.tool` file (ZIP format) into the local DB. Only
+        users with the Standard Registry role are allowed to make the request.
       operationId: ToolsApi_toolImportFile
       parameters: []
       requestBody:
         required: true
-        description: File.
+        description: Tool archive (`*.tool`, ZIP format) as raw binary request body.
         content:
-          application/json:
+          binary/octet-stream:
             schema:
               type: string
+              format: binary
       responses:
         '201':
           description: Successful operation.
@@ -9612,23 +10893,104 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                uuid: f3b2a9c1e4d5678901234567
-                name: Tool name
-                description: Description
-                status: NEW
-                creator: string
-                owner: string
-                topicId: f3b2a9c1e4d5678901234567
-                messageId: f3b2a9c1e4d5678901234567
-                codeVersion: 1.0.0
-                createDate: string
+                createDate: '2026-03-24T13:53:21.329Z'
+                updateDate: '2026-03-24T13:53:21.329Z'
+                uuid: 6ae44173-e280-406b-bb64-5588bc539be3
+                name: Tool 33_1774360401319
+                description: ''
+                configFileId: 69c297517a442bf5c32d617f
+                status: DRAFT
+                creator: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                owner: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                topicId: 0.0.8359424
+                codeVersion: 1.5.1
+                tools: []
+                id: 69c297517a442bf5c32d617e
                 config:
-                  id: f3b2a9c1e4d5678901234567
-                  blockType: string
-                  blocks:
-                    - {}
-                version: 1.0.0
+                  id: ee7c7a73-96b0-464e-9ad9-13198b0fadf5
+                  blockType: tool
+                  permissions: []
+                  tag: Tool
+                  children:
+                    - id: b7984eab-893a-497f-ba73-3e6d4c0b7ce0
+                      blockType: extractDataBlock
+                      defaultActive: false
+                      permissions:
+                        - Role
+                      onErrorAction: no-action
+                      action: get
+                      schema: '#02527932-b2ba-4f0d-be2a-563a8ab21889'
+                      tag: get_tool_33
+                      children: []
+                      events: []
+                      artifacts: []
+                    - id: 52974f49-497d-403b-9616-829da32590fe
+                      blockType: customLogicBlock
+                      defaultActive: false
+                      permissions:
+                        - Role
+                      onErrorAction: no-action
+                      uiMetaData: {}
+                      expression: |-
+                        function calc_tool_16(document) {
+                            document.C14 = document.tool_01?.field2?.field1 === 'Yes' ? 'Yes' : 'No';
+                            // ... [calculation logic continues, hundreds of lines] ...
+                            return document;
+                        }
+                        calc();
+                      documentSigner: ''
+                      idType: UUID
+                      outputSchema: '#02527932-b2ba-4f0d-be2a-563a8ab21889'
+                      unsigned: true
+                      tag: calc_tool_33
+                      children: []
+                      events: []
+                      artifacts: []
+                    - id: 16f57f36-48db-4989-adb1-ddb276fc23f1
+                      blockType: extractDataBlock
+                      defaultActive: false
+                      permissions:
+                        - Role
+                      onErrorAction: no-action
+                      action: set
+                      schema: '#02527932-b2ba-4f0d-be2a-563a8ab21889'
+                      tag: set_tool_33
+                      children: []
+                      events:
+                        - target: Tool
+                          source: set_tool_33
+                          input: output_tool_33
+                          output: RunEvent
+                          actor: ''
+                          disabled: false
+                      artifacts: []
+                  events:
+                    - target: get_tool_33
+                      source: Tool
+                      input: RunEvent
+                      output: input_tool_33
+                      actor: ''
+                      disabled: false
+                  artifacts: []
+                  variables:
+                    - name: Role
+                      description: ''
+                      type: Role
+                  inputEvents:
+                    - name: input_tool_33
+                      description: ''
+                  outputEvents:
+                    - name: output_tool_33
+                      description: ''
+                  innerEvents:
+                    - target: get_tool_33
+                      source: Tool
+                      input: RunEvent
+                      output: input_tool_33
+                      actor: ''
+                      disabled: false
         '401':
           description: Unauthorized request.
           content:
@@ -9655,35 +11017,45 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Imports new tool from a zip file.
+      summary: Imports new tool from a *.tool file.
       tags:
         - tools
   /tools/import/file-metadata:
     post:
       description: >-
         Imports new tool and all associated artifacts, such as schemas and VCs,
-        from the provided zip file into the local DB. Only users with the
-        Standard Registry role are allowed to make the request.
+        from the provided `*.tool` file (ZIP format) into the local DB. Only
+        users with the Standard Registry role are allowed to make the request.
       operationId: ToolsApi_toolImportFileWithMetadata
       parameters: []
       requestBody:
         required: true
-        description: Form data with tool file and metadata.
+        description: >-
+          Multipart form data with a tool archive (`*.tool`, ZIP format) and
+          optional metadata JSON file.
         content:
           multipart/form-data:
             schema:
               type: object
+              required:
+                - file
               properties:
                 file:
                   type: string
                   format: binary
+                  description: Tool archive (`*.tool`, ZIP format).
                 metadata:
                   type: string
                   format: binary
+                  nullable: true
+                  description: >-
+                    Optional JSON file (for example `metadata.json`) with
+                    content like `{ "tools": { "1706867530.884259218":
+                    "1774367941.594676930" } }`.
       responses:
         '201':
           description: Successful operation.
@@ -9692,23 +11064,134 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                uuid: f3b2a9c1e4d5678901234567
-                name: Tool name
-                description: Description
-                status: NEW
-                creator: string
-                owner: string
-                topicId: f3b2a9c1e4d5678901234567
-                messageId: f3b2a9c1e4d5678901234567
-                codeVersion: 1.0.0
-                createDate: string
+                createDate: '2026-03-24T17:11:34.719Z'
+                updateDate: '2026-03-24T17:11:34.719Z'
+                uuid: 1c04677c-0c6f-4abf-a10b-5f1a34a4efb1
+                name: Tool 05
+                description: ''
+                configFileId: 69c2c5c693723d9b1b38c359
+                status: DRAFT
+                creator: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8360865
+                owner: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8360865
+                topicId: 0.0.8360888
+                codeVersion: 1.5.1
+                tools: []
+                id: 69c2c5c693723d9b1b38c358
                 config:
-                  id: f3b2a9c1e4d5678901234567
-                  blockType: string
-                  blocks:
-                    - {}
-                version: 1.0.0
+                  id: 8f3c6675-16ee-4680-ab1f-58c0f619ab82
+                  blockType: tool
+                  permissions: []
+                  tag: Tool
+                  children:
+                    - id: 816f0414-286d-4d2d-ade1-6ce7768fa171
+                      blockType: tool
+                      defaultActive: true
+                      hash: FYwXXAw2pumRVekHJbVpVrtqUGPvNGjMnNsrcZ6gagiS
+                      messageId: '1706867530.884259218'
+                      permissions:
+                        - Role
+                      onErrorAction: no-action
+                      Role: Role
+                      tag: tool_07
+                      children: []
+                      events:
+                        - target: get_tool_05
+                          source: tool_07
+                          input: RunEvent
+                          output: output_tool_07
+                          actor: ''
+                          disabled: false
+                      artifacts: []
+                      variables:
+                        - name: Role
+                          description: ''
+                          type: Role
+                      inputEvents:
+                        - name: input_tool_07
+                          description: ''
+                      outputEvents:
+                        - name: output_tool_07
+                          description: ''
+                      innerEvents: []
+                    - id: 5119c09c-804c-4eea-9b26-7a9eb90a8394
+                      blockType: extractDataBlock
+                      defaultActive: false
+                      permissions:
+                        - Role
+                      onErrorAction: no-action
+                      action: get
+                      schema: '#433e11e5-918d-43c1-ad05-063c9ac12d67'
+                      tag: get_tool_05
+                      children: []
+                      events: []
+                      artifacts: []
+                    - id: 88cc53c2-83db-4d21-93a8-0e0cdc25ce3b
+                      blockType: customLogicBlock
+                      defaultActive: false
+                      permissions:
+                        - Role
+                      onErrorAction: no-action
+                      uiMetaData: {}
+                      expression: |-
+                        function calc_tool_16(document) {
+                            document.C14 = document.tool_01?.field2?.field1 === 'Yes' ? 'Yes' : 'No';
+                            // ... [calculation logic continues, hundreds of lines] ...
+                            return document;
+                        }
+                        calc();
+                      documentSigner: ''
+                      idType: UUID
+                      outputSchema: '#433e11e5-918d-43c1-ad05-063c9ac12d67'
+                      unsigned: true
+                      tag: calc_tool_05
+                      children: []
+                      events: []
+                      artifacts: []
+                    - id: 61fa5298-d71f-41e3-8d6c-df0c94052edf
+                      blockType: extractDataBlock
+                      defaultActive: false
+                      permissions:
+                        - Role
+                      onErrorAction: no-action
+                      action: set
+                      schema: '#433e11e5-918d-43c1-ad05-063c9ac12d67'
+                      tag: set_tool_05
+                      children: []
+                      events:
+                        - target: Tool
+                          source: set_tool_05
+                          input: output_tool_05
+                          output: RunEvent
+                          actor: ''
+                          disabled: false
+                      artifacts: []
+                  events:
+                    - target: tool_07
+                      source: Tool
+                      input: input_tool_07
+                      output: input_tool_05
+                      actor: ''
+                      disabled: false
+                  artifacts: []
+                  variables:
+                    - name: Role
+                      description: ''
+                      type: Role
+                  inputEvents:
+                    - name: input_tool_05
+                      description: ''
+                  outputEvents:
+                    - name: output_tool_05
+                      description: ''
+                  innerEvents:
+                    - target: tool_07
+                      source: Tool
+                      input: input_tool_07
+                      output: input_tool_05
+                      actor: ''
+                      disabled: false
         '401':
           description: Unauthorized request.
           content:
@@ -9735,38 +11218,63 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Imports new tool from a zip file.
+      summary: Imports new tool from a *.tool file.
       tags:
         - tools
   /tools/push/import/file:
     post:
       description: >-
         Imports new tool and all associated artifacts, such as schemas and VCs,
-        from the provided zip file into the local DB. Only users with the
-        Standard Registry role are allowed to make the request.
+        from the provided `*.tool` file (ZIP format) into the local DB. Only
+        users with the Standard Registry role are allowed to make the request.
       operationId: ToolsApi_toolImportFileAsync
       parameters: []
       requestBody:
         required: true
-        description: A zip file containing tool config.
+        description: Tool archive (`*.tool`, ZIP format) as raw binary request body.
         content:
-          application/json:
+          binary/octet-stream:
             schema:
               type: string
+              format: binary
       responses:
         '202':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskDTO'
+                type: object
+                required:
+                  - taskId
+                  - expectation
+                  - action
+                  - userId
+                properties:
+                  taskId:
+                    type: string
+                    description: Task Id
+                    example: 4c4bb402-197a-4682-a5eb-ff52e7542f28
+                  expectation:
+                    type: number
+                    description: Expected count of task phases
+                    example: 9
+                  action:
+                    type: string
+                    description: Task action
+                    example: Import tool file
+                  userId:
+                    type: string
+                    description: User Id
+                    example: 69bcfd90c98df6ceb05e8a78
               example:
-                taskId: f3b2a9c1e4d5678901234567
-                expectation: 0
+                taskId: 4c4bb402-197a-4682-a5eb-ff52e7542f28
+                expectation: 9
+                action: Import tool file
+                userId: 69bcfd90c98df6ceb05e8a78
         '401':
           description: Unauthorized request.
           content:
@@ -9793,45 +11301,79 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Imports new tool from a zip file.
+      summary: Imports new tool from a *.tool file.
       tags:
         - tools
   /tools/push/import/file-metadata:
     post:
       description: >-
         Imports new tool and all associated artifacts, such as schemas and VCs,
-        from the provided zip file into the local DB. Only users with the
-        Standard Registry role are allowed to make the request.
+        from the provided `*.tool` file (ZIP format) into the local DB. Only
+        users with the Standard Registry role are allowed to make the request.
       operationId: ToolsApi_toolImportFileWithMetadataAsync
       parameters: []
       requestBody:
         required: true
-        description: Form data with tool file and metadata.
+        description: >-
+          Multipart form data with a tool archive (`*.tool`, ZIP format) and
+          optional metadata JSON file.
         content:
           multipart/form-data:
             schema:
               type: object
+              required:
+                - file
               properties:
                 file:
                   type: string
                   format: binary
+                  description: Tool archive (`*.tool`, ZIP format).
                 metadata:
                   type: string
                   format: binary
+                  nullable: true
+                  description: >-
+                    Optional JSON file (for example `metadata.json`) with
+                    content like `{ "tools": { "1706867530.884259218":
+                    "1774367941.594676930" } }`.
       responses:
         '202':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskDTO'
+                type: object
+                required:
+                  - taskId
+                  - expectation
+                  - action
+                  - userId
+                properties:
+                  taskId:
+                    type: string
+                    description: Task Id
+                    example: e2869118-935c-4f13-bbed-e7868b058606
+                  expectation:
+                    type: number
+                    description: Expected count of task phases
+                    example: 9
+                  action:
+                    type: string
+                    description: Task action
+                    example: Import tool file
+                  userId:
+                    type: string
+                    description: User Id
+                    example: 69b806bbd51470fcd6ea9ba3
               example:
-                taskId: f3b2a9c1e4d5678901234567
-                expectation: 0
+                taskId: e2869118-935c-4f13-bbed-e7868b058606
+                expectation: 9
+                action: Import tool file
+                userId: 69b806bbd51470fcd6ea9ba3
         '401':
           description: Unauthorized request.
           content:
@@ -9858,11 +11400,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Imports new tool from a zip file.
+      summary: Imports new tool from a *.tool file.
       tags:
         - tools
   /tools/push/import/message:
@@ -9880,16 +11422,45 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ImportMessageDTO'
+            examples:
+              byMessageId:
+                summary: Import by Hedera message id
+                value:
+                  messageId: '1726593517.484578000'
       responses:
         '202':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskDTO'
+                type: object
+                required:
+                  - taskId
+                  - expectation
+                  - action
+                  - userId
+                properties:
+                  taskId:
+                    type: string
+                    description: Task Id
+                    example: 4c4bb402-197a-4682-a5eb-ff52e7542f28
+                  expectation:
+                    type: number
+                    description: Expected count of task phases
+                    example: 11
+                  action:
+                    type: string
+                    description: Task action
+                    example: Import tool message
+                  userId:
+                    type: string
+                    description: User Id
+                    example: 69bcfd90c98df6ceb05e8a78
               example:
-                taskId: f3b2a9c1e4d5678901234567
-                expectation: 0
+                taskId: 4c4bb402-197a-4682-a5eb-ff52e7542f28
+                expectation: 11
+                action: Import tool message
+                userId: 69bcfd90c98df6ceb05e8a78
         '401':
           description: Unauthorized request.
           content:
@@ -9914,9 +11485,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Message ID in body is empty
         '500':
           description: Internal server error.
           content:
@@ -9924,7 +11496,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -9940,31 +11512,278 @@ paths:
       parameters: []
       responses:
         '200':
-          description: Modules.
+          description: Tools menu.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ToolDTO'
+                  $ref: '#/components/schemas/ToolMenuItemDTO'
               example:
-                - id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  name: Tool name
-                  description: Description
-                  status: NEW
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: 1.0.0
-                  createDate: string
+                - hash: 81PmVismGTVZGSStCGGcAuAqXi3V6JJzu8MKoHT7djQz
+                  name: Tool 07_modified
+                  description: ''
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835
+                  topicId: 0.0.8360425
+                  messageId: '1774367941.594676930'
+                  tools: []
                   config:
-                    id: f3b2a9c1e4d5678901234567
-                    blockType: string
-                    blocks:
-                      - {}
-                  version: 1.0.0
+                    inputEvents:
+                      - name: input_tool_07
+                        description: ''
+                    outputEvents:
+                      - name: output_tool_07
+                        description: ''
+                    variables:
+                      - name: Role
+                        description: ''
+                        type: Role
+                  schemas:
+                    - id: 69c2b4947a442bf5c32d6c8c
+                      name: Tool 07
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#31f4f114-95e6-4d3a-b0c0-8888b2ea11f7&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6c91
+                      name: Build Margin
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#012635cb-a876-4041-b8fe-2b5297cc86c6&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6c96
+                      name: Fuel Type
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#e6f79971-c19a-4317-be13-e39410f72773&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6c9b
+                      name: Average OM (Option A1)
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#dfdd825f-7c91-45c2-9a43-12d21da69022&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6ca0
+                      name: Average OM (Option A2)
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#3758fbe8-b3c2-4dac-aefd-57ddfe02e718&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6ca5
+                      name: Average OM (Option A3)
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#14dae990-fa84-4b98-8e11-f62c0a1a8a24&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6caa
+                      name: >-
+                        (Average OM, Simple Adj OM) Power units serving the grid
+                        in specified year
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#c6e1b179-7c88-4260-9afa-1d3b4be46a3d&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6caf
+                      name: >-
+                        Calculation based on average efficiency and electricity 
+                        generation of each plant
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#41f1e5ad-8398-47ed-826e-118a8b6d4b47&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6cb4
+                      name: >-
+                        Calculation based on total fuel consumption and
+                        electricity  generation of the system
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#c47928b5-4cef-405f-85a6-461b5d899bdb&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6cb9
+                      name: Average OM, Simple OM
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#267aabfe-573c-4027-b93f-f627428d2d5e&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6cbe
+                      name: Dispatch Data OM
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#ec4d478c-5b67-4f96-9467-af8aaba9e382&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6cc3
+                      name: Lambda Approach 2
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#7cb46d6d-86e2-4c3c-b7a2-98ad30e0b031&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6cc8
+                      name: Lambda Approach 1
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#63fa3154-e12d-4809-ab4e-d5f4e4a42b47&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6ccd
+                      name: Simple Adj OM
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#76ee38e8-cfcb-4d87-b5aa-69e3f83ef661&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6cd2
+                      name: >-
+                        Do you have annual aggregated data from the grid on
+                        power generation, fuel type and fuel consumption?
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#6039ed67-a1ff-49dd-af60-ae9f89898128&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4947a442bf5c32d6cd7
+                      name: Is the LASL more than one third of the HASL?
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#63f27fe2-b840-40a7-b9c9-7405497aed7f&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4957a442bf5c32d6cdc
+                      name: Are hourly loads of the grid in MW available?
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#d59ab516-2731-44f0-a7bd-7a0c8678acc3&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4957a442bf5c32d6ce1
+                      name: >-
+                        Is the average load by LCMR less than the average LASL
+                        over three years?
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#8f354fab-04f8-470a-8872-d19645a22120&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4957a442bf5c32d6ce6
+                      name: Is LCMR share less than 50% in recent 5 years?
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#c8c2f95b-e95c-4375-8c84-7dcbca057ccc&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4957a442bf5c32d6ceb
+                      name: Combined Margin
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#99e9128b-daab-4c58-ab10-bc025ee5de5a&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4957a442bf5c32d6cf0
+                      name: Weighted average CM
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#36c4dde5-2940-4d44-9203-0f8b64a7abc9&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4957a442bf5c32d6cf5
+                      name: Simplified CM
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#3e3e976d-bfb7-42d7-b4e7-bf77cbfebe02&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4957a442bf5c32d6cfa
+                      name: Simplified CM for Isolated Grid System
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#18b5b956-0e33-40e9-b7d6-f91c0b3b96da&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4957a442bf5c32d6cff
+                      name: >-
+                        For multiple power plants, choose the option that best
+                        fits your project
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#4e9cf1f2-0de5-4f1a-b670-7902cb6d0fe0&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4957a442bf5c32d6d04
+                      name: Power Unit
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#29b50d9d-5bae-424c-b5ea-628e9da9b2a7&1.0.0'
+                      category: POLICY
+                    - id: 69c2b4957a442bf5c32d6d09
+                      name: >-
+                        Combined Margin. Is grid located in LDC/SIDs/URC or an
+                        isolated system.
+                      description: ''
+                      topicId: 0.0.8360425
+                      iri: '#26f3d4d2-f2a4-45c9-9706-9be055ddafc3&1.0.0'
+                      category: POLICY
+                  id: 69c2d0af34d008dac2664405
+                - hash: HPD7E8x2xyqDAXeMaRc9uAG4nMArdxuYSFYVKg9W18x8
+                  name: Tool 05
+                  description: ''
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  topicId: 0.0.8361167
+                  messageId: '1774375293.192012846'
+                  tools:
+                    - name: Tool 07_modified
+                      version: '7'
+                      topicId: 0.0.8360425
+                      messageId: '1774367941.594676930'
+                  config:
+                    inputEvents:
+                      - name: input_tool_05
+                        description: ''
+                    outputEvents:
+                      - name: output_tool_05
+                        description: ''
+                    variables:
+                      - name: Role
+                        description: ''
+                        type: Role
+                  schemas:
+                    - id: 69c2d0b134d008dac266448c
+                      name: Tool 05
+                      description: ''
+                      topicId: 0.0.8361167
+                      iri: '#b2c91711-693c-4fd8-aed8-68ff83c0ded6&1.0.0'
+                      category: POLICY
+                    - id: 69c2d0b134d008dac2664491
+                      name: Tool 05 Scenario C
+                      description: ''
+                      topicId: 0.0.8361167
+                      iri: '#86d9d01e-979b-4a38-b860-857d1f26cf9b&1.0.0'
+                      category: POLICY
+                    - id: 69c2d0b134d008dac2664496
+                      name: Tool 05 Scenario B | Generic Approach
+                      description: ''
+                      topicId: 0.0.8361167
+                      iri: '#ab7d5541-fdca-4375-bb40-582f0168b745&1.0.0'
+                      category: POLICY
+                    - id: 69c2d0b134d008dac266449b
+                      name: Tool 05 Power Plants
+                      description: ''
+                      topicId: 0.0.8361167
+                      iri: '#9d4ea98d-981d-4dbf-857f-90f480e2497f&1.0.0'
+                      category: POLICY
+                    - id: 69c2d0b134d008dac26644a0
+                      name: Tool 05 Scenario A
+                      description: ''
+                      topicId: 0.0.8361167
+                      iri: '#1371798f-a1c2-41d7-b660-13383741f8de&1.0.0'
+                      category: POLICY
+                    - id: 69c2d0b134d008dac26644a5
+                      name: Tool 05 Scenario A | Default Value
+                      description: ''
+                      topicId: 0.0.8361167
+                      iri: '#0fcf8e8a-4f24-4c46-948c-76f57e5c548a&1.0.0'
+                      category: POLICY
+                    - id: 69c2d0b134d008dac26644aa
+                      name: Tool 05 Scenario B
+                      description: ''
+                      topicId: 0.0.8361167
+                      iri: '#2a7c2925-6956-4cf6-b3fb-66593bdc496b&1.0.0'
+                      category: POLICY
+                    - id: 69c2d0b134d008dac26644af
+                      name: Generic Approach
+                      description: ''
+                      topicId: 0.0.8361167
+                      iri: '#88920b11-f2c3-45d4-b762-a487076aeb35&1.0.0'
+                      category: POLICY
+                  id: 69c2d0b134d008dac26644b4
         '401':
           description: Unauthorized request.
           content:
@@ -9991,7 +11810,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -10010,7 +11829,7 @@ paths:
           in: path
           description: Tool message ID
           schema:
-            example: '1773670900.819264517'
+            example: '1709106946.913157840'
             type: string
       responses:
         '200':
@@ -10045,7 +11864,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -40503,6 +42322,7 @@ components:
       properties:
         messageId:
           type: string
+          description: Hedera topic message id
         metadata:
           type: object
           additionalProperties: true
@@ -40587,9 +42407,22 @@ components:
           type: array
           items:
             type: string
+        id:
+          type: string
+          description: Config block ID (for tool validation)
+        tools:
+          type: array
+          items:
+            type: object
+          description: Tool-level errors (for tool validation)
+        isValid:
+          type: boolean
+          description: Overall validation result (for tool validation)
       required:
         - blocks
         - errors
+        - tools
+        - isValid
     ModuleValidationDTO:
       type: object
       properties:
@@ -40604,6 +42437,84 @@ components:
       required:
         - module
         - results
+    CreateToolConfigDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 47c1f826-88ef-46a0-b3b7-e9038108f97c
+          description: Config block ID (UUID)
+        blockType:
+          type: string
+          enum:
+            - tool
+          example: tool
+          description: Must be "tool"
+      required:
+        - blockType
+    CreateToolDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Tool name
+          description: Tool display name
+        description:
+          type: string
+          example: Description
+          description: Tool description
+        config:
+          description: 'Tool config. Must have blockType: "tool". May include id (UUID).'
+          allOf:
+            - $ref: '#/components/schemas/CreateToolConfigDTO'
+      required:
+        - config
+    ToolConfigResponseDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        blockType:
+          type: string
+          enum:
+            - tool
+        permissions:
+          type: array
+          items:
+            type: object
+        children:
+          type: array
+          items:
+            type: object
+        events:
+          type: array
+          items:
+            type: object
+        artifacts:
+          type: array
+          items:
+            type: object
+        variables:
+          type: array
+          items:
+            type: object
+        inputEvents:
+          type: array
+          items:
+            type: object
+        outputEvents:
+          type: array
+          items:
+            type: object
+        innerEvents:
+          type: array
+          items:
+            type: object
+        tag:
+          type: string
+      required:
+        - id
+        - blockType
     ToolDTO:
       type: object
       properties:
@@ -40625,7 +42536,7 @@ components:
             - DRAFT
             - PUBLISHED
             - PUBLISH_ERROR
-          example: NEW
+          example: DRAFT
         creator:
           type: string
           example: >-
@@ -40639,18 +42550,47 @@ components:
           example: 0.0.6046379
         messageId:
           type: string
+          nullable: true
           example: '1773670900.819264517'
+          description: Message ID (for PUBLISHED tools only; omitted or null for DRAFT)
         codeVersion:
           type: string
           example: 1.0.0
         createDate:
           type: string
           example: '2026-03-03T17:25:53.312Z'
+        updateDate:
+          type: string
+          example: '2026-03-03T17:25:53.312Z'
+          description: Last update date
+        configFileId:
+          type: string
+          description: Config file ID (internal)
+        tagsTopicId:
+          type: string
+          description: Tags topic ID (for PUBLISHED tools only)
+        contentFileId:
+          type: string
+          description: >-
+            File id of the original tool zip (imported from IPFS or publish
+            flow). Present for PUBLISHED tools.
+        hash:
+          type: string
+          description: Hash (for PUBLISHED tools only)
+        tools:
+          type: array
+          items:
+            type: object
+          description: 'Referenced sub-tools: { name, version?, topicId, messageId }'
         config:
-          $ref: '#/components/schemas/BlockDTO'
+          $ref: '#/components/schemas/ToolConfigResponseDTO'
         version:
           type: string
+          nullable: true
           example: 1.0.0
+          description: >-
+            Published tool version (e.g. 1.0.0); null or omitted when not
+            published
       required:
         - id
         - uuid
@@ -40660,11 +42600,12 @@ components:
         - creator
         - owner
         - topicId
-        - messageId
         - codeVersion
         - createDate
+        - updateDate
+        - configFileId
+        - tools
         - config
-        - version
     TaskDTO:
       type: object
       properties:
@@ -40675,10 +42616,94 @@ components:
         expectation:
           type: number
           description: Expected count of task phases
-          example: 0
+          example: 8
+        action:
+          type: string
+          description: Task action
+          example: Create tool
+        userId:
+          type: string
+          description: User Id
+          example: 69bcfd90c98df6ceb05e8a78
       required:
         - taskId
         - expectation
+        - action
+        - userId
+    ToolListV2ItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - PUBLISH_ERROR
+        creator:
+          type: string
+        owner:
+          type: string
+        topicId:
+          type: string
+        messageId:
+          type: string
+          nullable: true
+          description: Message ID (for PUBLISHED tools only)
+      required:
+        - id
+        - name
+        - description
+        - status
+        - creator
+        - owner
+        - topicId
+        - messageId
+    ToolVersionDTO:
+      type: object
+      properties:
+        toolVersion:
+          type: string
+          example: 1.0.0
+      required:
+        - toolVersion
+    ToolPublishResponseDTO:
+      type: object
+      properties:
+        tool:
+          $ref: '#/components/schemas/ToolDTO'
+        isValid:
+          type: boolean
+          description: Whether validation passed (true = tool published successfully)
+        errors:
+          description: Validation errors and block-level results
+          allOf:
+            - $ref: '#/components/schemas/ValidationErrorsDTO'
+      required:
+        - tool
+        - isValid
+        - errors
+    ToolDryRunResponseDTO:
+      type: object
+      properties:
+        isValid:
+          type: boolean
+          description: >-
+            Whether the tool config passed validation (true = dry run started;
+            false = dry run not started)
+        errors:
+          description: Validation details (blocks, tools, common errors)
+          allOf:
+            - $ref: '#/components/schemas/ValidationErrorsDTO'
+      required:
+        - isValid
+        - errors
     ToolValidationDTO:
       type: object
       properties:
@@ -40689,38 +42714,242 @@ components:
       required:
         - tool
         - results
-    ToolVersionDTO:
+    ToolExportMessageDTO:
       type: object
       properties:
-        toolVersion:
+        id:
           type: string
-          example: 1.0.0
+          description: Tool ID (internal)
+        uuid:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        messageId:
+          type: string
+          nullable: true
+          description: >-
+            Hedera topic message id when published; null for DRAFT / not yet
+            published
+        owner:
+          type: string
       required:
-        - toolVersion
+        - id
+        - uuid
+        - name
+        - description
+        - messageId
+        - owner
     ToolPreviewDTO:
       type: object
       properties:
         tool:
-          $ref: '#/components/schemas/ToolDTO'
+          description: >-
+            Main tool object from `tool.json` in the IPFS archive. Shape is
+            close to ToolDTO but may omit DB-only fields (id, uuid, status,
+            topicId, messageId, etc.).
+          allOf:
+            - $ref: '#/components/schemas/ToolDTO'
         schemas:
           additionalProperties: true
+          description: >-
+            Schema entities parsed from `schemas/*` in the archive (full Schema
+            objects with document, context, …)
           type: array
           items:
             type: object
         tags:
           additionalProperties: true
+          description: Tag entities parsed from `tags/*` in the archive
           type: array
           items:
             type: object
         tools:
           type: array
           items:
-            $ref: '#/components/schemas/ToolDTO'
+            type: object
+            additionalProperties: true
+          description: >-
+            Additional tool JSON files from `tools/*` in the archive (not the
+            same as top-level `tool`)
+        messageId:
+          type: string
+          description: >-
+            Present only for `POST /tools/import/message/preview` — same as
+            request `messageId`. Omitted for file-based preview.
+        toolTopicId:
+          type: string
+          description: >-
+            Present only for message-based preview — topic id from the Hedera
+            tool message. Omitted for file-based preview.
       required:
         - tool
         - schemas
         - tags
         - tools
+    ToolImportResponseDTO:
+      type: object
+      properties:
+        tool:
+          description: Imported tool entity.
+          allOf:
+            - $ref: '#/components/schemas/ToolDTO'
+        errors:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: >-
+            Import errors. Empty array means the import completed without
+            reported errors.
+      required:
+        - tool
+        - errors
+    ToolMenuConfigItemDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: input_tool_03
+        description:
+          type: string
+          example: ''
+      required:
+        - name
+        - description
+    ToolMenuVariableDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Role
+        description:
+          type: string
+          example: ''
+        type:
+          type: string
+          example: Role
+      required:
+        - name
+        - description
+        - type
+    ToolMenuConfigDTO:
+      type: object
+      properties:
+        inputEvents:
+          description: Tool input events exposed in the menu.
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolMenuConfigItemDTO'
+        outputEvents:
+          description: Tool output events exposed in the menu.
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolMenuConfigItemDTO'
+        variables:
+          description: Tool variables exposed in the menu.
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolMenuVariableDTO'
+    ToolMenuSchemaDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        name:
+          type: string
+          example: Tool 03
+        description:
+          type: string
+          example: ''
+        topicId:
+          type: string
+          example: 0.0.6046379
+        iri:
+          type: string
+          example: '#a9fe3be9-38d5-452e-9948-5c319d5c14e1&1.0.0'
+        category:
+          type: string
+          example: POLICY
+          description: Schema category when present in the source response.
+      required:
+        - id
+        - name
+        - description
+        - topicId
+        - iri
+    ToolMenuSubToolDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Tool 03
+          description: Referenced sub-tool name.
+        version:
+          type: string
+          nullable: true
+          example: 1.0.0
+          description: Referenced sub-tool version when available.
+        topicId:
+          type: string
+          example: 0.0.6046379
+          description: Referenced sub-tool topic id.
+        messageId:
+          type: string
+          example: '1773670900.819264517'
+          description: Referenced sub-tool message id.
+    ToolMenuItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        hash:
+          type: string
+          example: GcDE9NsPJc7oCZvSVJySCZHxTxvjc3ZAMgtKozP1r1Eh
+        name:
+          type: string
+          example: Tool 03
+        description:
+          type: string
+          example: ''
+        owner:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        topicId:
+          type: string
+          example: 0.0.6046379
+        messageId:
+          type: string
+          example: '1773670900.819264517'
+        tools:
+          description: Referenced sub-tools from the tool config.
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolMenuSubToolDTO'
+        config:
+          description: Reduced tool config returned by the menu endpoint.
+          allOf:
+            - $ref: '#/components/schemas/ToolMenuConfigDTO'
+        schemas:
+          description: Schemas linked to the tool topic.
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolMenuSchemaDTO'
+      required:
+        - id
+        - hash
+        - name
+        - description
+        - owner
+        - topicId
+        - messageId
+        - tools
+        - config
+        - schemas
     ProfileDTO:
       type: object
       properties:
@@ -44011,3 +46240,46 @@ components:
         - token
         - count
         - serials
+    ToolListV1ItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        uuid:
+          type: string
+        hash:
+          type: string
+          nullable: true
+          description: Hash (for PUBLISHED tools only)
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - PUBLISH_ERROR
+        creator:
+          type: string
+        owner:
+          type: string
+        topicId:
+          type: string
+        messageId:
+          type: string
+          nullable: true
+          description: Message ID (for PUBLISHED tools only)
+      required:
+        - id
+        - uuid
+        - hash
+        - name
+        - description
+        - status
+        - creator
+        - owner
+        - topicId
+        - messageId
