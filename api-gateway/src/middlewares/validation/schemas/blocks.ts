@@ -67,4 +67,13 @@ export class ValidationErrorsDTO {
 
     @ApiProperty({ type: 'string', isArray: true, required: false })
     infos?: string[];
+
+    @ApiProperty({ type: 'string', required: false, description: 'Config block ID (for tool validation)' })
+    id?: string;
+
+    @ApiProperty({ type: 'array', items: { type: 'object' }, description: 'Tool-level errors (for tool validation)' })
+    tools?: any[];
+
+    @ApiProperty({ type: 'boolean', description: 'Overall validation result (for tool validation)' })
+    isValid?: boolean;
 }

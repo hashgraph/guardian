@@ -129,6 +129,18 @@ const PERMISSIONS_SR = [
     'LOG_LOG_READ',
     'LOG_SYSTEM_READ']
 
+/**
+ * Short placeholder for customLogicBlock.expression in tool examples (production scripts are often very long).
+ * Same pattern as GET /tools/:id example below.
+ */
+const TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT =
+    'function calc_tool_16(document) {\n' +
+    '    document.C14 = document.tool_01?.field2?.field1 === \'Yes\' ? \'Yes\' : \'No\';\n' +
+    '    // ... [calculation logic continues, hundreds of lines] ...\n' +
+    '    return document;\n' +
+    '}\n' +
+    'calc();';
+
 export const ObjectExamples = {
     PERMISSION_SR: PERMISSIONS_SR,
 
@@ -147,7 +159,6 @@ export const ObjectExamples = {
             syncDisabled: false,
             version: '1.0.1',
             wipeTokenIds: [],
-            _id: '69bd0429fdc2fd0bb2f9e95b',
             id: '69bd0429fdc2fd0bb2f9e95b'
         }
     ],
@@ -167,7 +178,6 @@ export const ObjectExamples = {
             syncDisabled: false,
             version: '1.0.1',
             wipeTokenIds: ['0.0.8300593'],
-            _id: '69bd04bcfdc2fd0bb2f9e971',
             id: '69bd04bcfdc2fd0bb2f9e971'
         }
     ],
@@ -185,7 +195,6 @@ export const ObjectExamples = {
         syncDisabled: false,
         version: '1.0.1',
         wipeTokenIds: [],
-        _id: '69bd13b4fdc2fd0bb2f9eccc',
         id: '69bd13b4fdc2fd0bb2f9eccc'
     },
 
@@ -202,7 +211,6 @@ export const ObjectExamples = {
         syncDisabled: false,
         version: '1.0.1',
         wipeTokenIds: [],
-        _id: '69bd13df2a7b53526de3826b',
         id: '69bd13df2a7b53526de3826b'
     },
 
@@ -235,7 +243,6 @@ export const ObjectExamples = {
         syncDisabled: false,
         version: '1.0.1',
         wipeTokenIds: [],
-        _id: '69bd13b4fdc2fd0bb2f9eccc',
         id: '69bd13b4fdc2fd0bb2f9eccc'
     },
 
@@ -253,7 +260,6 @@ export const ObjectExamples = {
         syncDisabled: false,
         version: '1.0.1',
         wipeTokenIds: [],
-        _id: '69bd13df2a7b53526de3826b',
         id: '69bd13df2a7b53526de3826b'
     },
 
@@ -490,7 +496,7 @@ export const ObjectExamples = {
         }
     ],
 
-     SESSION_RESPONSE_WITH_ID: {
+    SESSION_RESPONSE_WITH_ID: {
         id: Examples.DB_ID,
         username: Examples.USER_NAME_SR_1,
         did: Examples.DID,
@@ -575,7 +581,6 @@ export const ObjectExamples = {
             owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
             extention: 'json',
             creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
-            _id: '69b7cdefa48bb15eb7afb3e5',
             id: '69b7cdefa48bb15eb7afb3e5'
         },
         {
@@ -588,7 +593,6 @@ export const ObjectExamples = {
             owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
             extention: 'json',
             creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
-            _id: '69b7cdefa48bb15eb7afb3e3',
             id: '69b7cdefa48bb15eb7afb3e3'
         }
     ],
@@ -604,7 +608,6 @@ export const ObjectExamples = {
             owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
             extention: 'json',
             category: 'policy',
-            _id: '69bc0ba1f6b2fa8ae50f2ec9',
             id: '69bc0ba1f6b2fa8ae50f2ec9'
         }
     ],
@@ -620,7 +623,6 @@ export const ObjectExamples = {
             owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
             extention: 'json',
             category: 'policy',
-            _id: '69b7cdefa48bb15eb7afb3e5',
             id: '69b7cdefa48bb15eb7afb3e5'
         },
         {
@@ -633,7 +635,6 @@ export const ObjectExamples = {
             owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8145348',
             extention: 'json',
             category: 'policy',
-            _id: '69b7cdefa48bb15eb7afb3e3',
             id: '69b7cdefa48bb15eb7afb3e3'
         }
     ],
@@ -686,7 +687,6 @@ export const ObjectExamples = {
         },
         documentFileId: '69b3d86d0b1c848021821bf9',
         tableFileIds: [],
-        _id: '69b3d85f0b1c848021821bf2',
         id: '69b3d85f0b1c848021821bf2'
     },
 
@@ -738,7 +738,6 @@ export const ObjectExamples = {
         },
         documentFileId: '69b41277b23f3b6a77d127a5',
         tableFileIds: [],
-        _id: '69b41269b23f3b6a77d1279e',
         id: '69b41269b23f3b6a77d1279e'
     },
 
@@ -787,7 +786,6 @@ export const ObjectExamples = {
                 messageId: '1706867833.676387003'
             }
         ],
-        _id: '69b411d8b23f3b6a77d12742',
         userRoles: [
             'Administrator'
         ],
@@ -843,7 +841,6 @@ export const ObjectExamples = {
                 messageId: '1706867530.884259218'
             }
         ],
-        _id: '69b41005b23f3b6a77d125ed',
         userRoles: [
             'Administrator'
         ],
@@ -1384,5 +1381,2388 @@ export const ObjectExamples = {
                 id: '69bd67b53090533214e731f1'
             }
         ]
-    }
+    },
+
+    /**
+     * Request body for POST /tools and POST /tools/push (create tool).
+     * Only config with blockType: "tool" is required. Other fields are optional.
+     */
+    TOOL_CREATE_REQUEST: {
+        name: 'Test Tool New',
+        description: 'This is test description',
+        config: {
+            id: '47c1f826-88ef-46a0-b3b7-e9038108f97c',
+            blockType: 'tool'
+        }
+    },
+
+    /**
+     * Request body for PUT /tools/:id — original (current) tool state.
+     */
+    TOOL_UPDATE_REQUEST: {
+        name: 'Updated Tool Name',
+        description: 'Updated Tool Description',
+        config: {
+            id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+            blockType: 'tool',
+            permissions: [],
+            tag: 'Tool',
+            children: [],
+            events: [],
+            variables: [],
+            inputEvents: [],
+            outputEvents: []
+        }
+    },
+
+    /**
+     * Response for PUT /tools/:id (updated tool).
+     */
+    TOOL_UPDATE_RESPONSE: {
+        id: '69c168d8fb66de861cc9dda8',
+        createDate: '2026-03-23T16:22:48.808Z',
+        updateDate: '2026-03-23T18:35:33.333Z',
+        uuid: '56af783a-eddc-4969-a6a7-894694f0a3c0',
+        name: 'Updated Tool Name',
+        description: 'Updated Tool Description',
+        configFileId: '69c187f5fb66de861cc9de5a',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        topicId: '0.0.8346214',
+        codeVersion: '1.5.1',
+        tools: [],
+        config: {
+            id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+            blockType: 'tool',
+            permissions: [],
+            tag: 'Tool',
+            children: [],
+            events: [],
+            variables: [],
+            inputEvents: [],
+            outputEvents: [],
+            artifacts: [],
+            innerEvents: []
+        }
+    },
+
+    /**
+     * Response for PUT /tools/:id/publish (sync publish).
+     */
+    TOOL_PUBLISH_RESPONSE: {
+        tool: {
+            createDate: '2026-03-24T07:32:07.366Z',
+            updateDate: '2026-03-24T07:53:40.891Z',
+            hash: '62zo1ujESm1SehDeQoUK4o7um73qiwqf7fQ8YNan1NGE',
+            uuid: '01188757-acb8-42f3-af19-700ba073b66f',
+            name: 'Tool 06_1774337527363',
+            description: '',
+            version: '1.0.0',
+            configFileId: '69c243047a442bf5c32d604f',
+            status: 'PUBLISHED',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            topicId: '0.0.8356129',
+            messageId: '1774338819.468936917',
+            codeVersion: '1.5.1',
+            tagsTopicId: '0.0.8356229',
+            tools: [],
+            contentFileId: '69c242f77a442bf5c32d6047',
+            id: '69c23df77a442bf5c32d5ffe',
+            config: {
+                id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+                blockType: 'tool',
+                permissions: [],
+                tag: 'Tool',
+                children: [
+                    {
+                        id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'get',
+                        schema: '#d22a8d47-cfde-468d-b8e7-e87cbaea52f5&1.0.0',
+                        tag: 'get_tool_06',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '52974f49-497d-403b-9616-829da32590fe',
+                        blockType: 'customLogicBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        uiMetaData: {},
+                        expression: TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT,
+                        documentSigner: '',
+                        idType: 'UUID',
+                        outputSchema: '#d22a8d47-cfde-468d-b8e7-e87cbaea52f5&1.0.0',
+                        unsigned: true,
+                        tag: 'calc_tool_06',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'set',
+                        schema: '#d22a8d47-cfde-468d-b8e7-e87cbaea52f5&1.0.0',
+                        tag: 'set_tool_06',
+                        children: [],
+                        events: [
+                            {
+                                target: 'Tool',
+                                source: 'set_tool_06',
+                                input: 'output_tool_06',
+                                output: 'RunEvent',
+                                actor: '',
+                                disabled: false
+                            }
+                        ],
+                        artifacts: []
+                    }
+                ],
+                events: [
+                    {
+                        target: 'get_tool_06',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_06',
+                        actor: '',
+                        disabled: false
+                    }
+                ],
+                artifacts: [],
+                variables: [
+                    {
+                        name: 'Role',
+                        description: '',
+                        type: 'Role'
+                    }
+                ],
+                inputEvents: [
+                    {
+                        name: 'input_tool_06',
+                        description: ''
+                    }
+                ],
+                outputEvents: [
+                    {
+                        name: 'output_tool_06',
+                        description: ''
+                    }
+                ],
+                innerEvents: [
+                    {
+                        target: 'get_tool_06',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_06',
+                        actor: '',
+                        disabled: false
+                    }
+                ]
+            }
+        },
+        isValid: true,
+        errors: {
+            errors: [],
+            blocks: [
+                {
+                    id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                    name: 'extractDataBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '52974f49-497d-403b-9616-829da32590fe',
+                    name: 'customLogicBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                    name: 'extractDataBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                }
+            ],
+            tools: [],
+            id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+            isValid: true
+        }
+    },
+
+    /**
+     * PUT /tools/:id/publish — validation failed (HTTP 200): same tool as TOOL_PUBLISH_RESPONSE
+     * plus invalid createTokenBlock; publish not applied (DRAFT, no hash/messageId).
+     */
+    TOOL_PUBLISH_RESPONSE_INVALID: {
+        tool: {
+            createDate: '2026-03-24T07:32:07.366Z',
+            updateDate: '2026-03-24T07:53:40.891Z',
+            uuid: '01188757-acb8-42f3-af19-700ba073b66f',
+            name: 'Tool 06_1774337527363',
+            description: '',
+            configFileId: '69c243047a442bf5c32d604f',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            topicId: '0.0.8356129',
+            codeVersion: '1.5.1',
+            tools: [],
+            id: '69c23df77a442bf5c32d5ffe',
+            config: {
+                id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+                blockType: 'tool',
+                permissions: [],
+                tag: 'Tool',
+                children: [
+                    {
+                        id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'get',
+                        schema: '#d22a8d47-cfde-468d-b8e7-e87cbaea52f5&1.0.0',
+                        tag: 'get_tool_06',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '2e2e1d55-853b-4d07-9a68-793ea88d28c9',
+                        blockType: 'createTokenBlock',
+                        tag: 'Block_1',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '52974f49-497d-403b-9616-829da32590fe',
+                        blockType: 'customLogicBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        uiMetaData: {},
+                        expression: TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT,
+                        documentSigner: '',
+                        idType: 'UUID',
+                        outputSchema: '#d22a8d47-cfde-468d-b8e7-e87cbaea52f5&1.0.0',
+                        unsigned: true,
+                        tag: 'calc_tool_06',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'set',
+                        schema: '#d22a8d47-cfde-468d-b8e7-e87cbaea52f5&1.0.0',
+                        tag: 'set_tool_06',
+                        children: [],
+                        events: [
+                            {
+                                target: 'Tool',
+                                source: 'set_tool_06',
+                                input: 'output_tool_06',
+                                output: 'RunEvent',
+                                actor: '',
+                                disabled: false
+                            }
+                        ],
+                        artifacts: []
+                    }
+                ],
+                events: [
+                    {
+                        target: 'get_tool_06',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_06',
+                        actor: '',
+                        disabled: false
+                    }
+                ],
+                artifacts: [],
+                variables: [
+                    {
+                        name: 'Role',
+                        description: '',
+                        type: 'Role'
+                    }
+                ],
+                inputEvents: [
+                    {
+                        name: 'input_tool_06',
+                        description: ''
+                    }
+                ],
+                outputEvents: [
+                    {
+                        name: 'output_tool_06',
+                        description: ''
+                    }
+                ],
+                innerEvents: [
+                    {
+                        target: 'get_tool_06',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_06',
+                        actor: '',
+                        disabled: false
+                    }
+                ]
+            }
+        },
+        isValid: false,
+        errors: {
+            errors: [],
+            blocks: [
+                {
+                    id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                    name: 'extractDataBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '2e2e1d55-853b-4d07-9a68-793ea88d28c9',
+                    name: 'createTokenBlock',
+                    errors: [
+                        'Template can not be empty',
+                        'Token "undefined" does not exist'
+                    ],
+                    warnings: [],
+                    infos: [],
+                    isValid: false
+                },
+                {
+                    id: '52974f49-497d-403b-9616-829da32590fe',
+                    name: 'customLogicBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                    name: 'extractDataBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+                    name: 'tool',
+                    errors: ['Tool is invalid'],
+                    isValid: false
+                }
+            ],
+            tools: [],
+            id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+            isValid: false
+        }
+    },
+
+    /**
+     * Response for PUT /tools/:id/push/publish (async publish — task handle).
+     */
+    TOOL_PUBLISH_ASYNC_TASK_RESPONSE: {
+        taskId: '02b66111-15f1-4834-8e31-4227f058efa0',
+        expectation: 2,
+        action: 'Publish tool',
+        userId: '69bcfd90c98df6ceb05e8a78'
+    },
+
+    /**
+     * Response for POST /tools/push/import/file (async import — task handle).
+     */
+    TOOL_IMPORT_FILE_ASYNC_TASK_RESPONSE: {
+        taskId: '4c4bb402-197a-4682-a5eb-ff52e7542f28',
+        expectation: 9,
+        action: 'Import tool file',
+        userId: '69bcfd90c98df6ceb05e8a78'
+    },
+
+    /**
+     * Response for POST /tools/push/import/message (async import by message — task handle).
+     */
+    TOOL_IMPORT_MESSAGE_ASYNC_TASK_RESPONSE: {
+        taskId: '4c4bb402-197a-4682-a5eb-ff52e7542f28',
+        expectation: 11,
+        action: 'Import tool message',
+        userId: '69bcfd90c98df6ceb05e8a78'
+    },
+
+    /**
+     * Response for POST /tools/push/import/file-metadata (async import by file with metadata — task handle).
+     */
+    TOOL_IMPORT_FILE_METADATA_ASYNC_TASK_RESPONSE: {
+        taskId: 'e2869118-935c-4f13-bbed-e7868b058606',
+        expectation: 9,
+        action: 'Import tool file',
+        userId: '69b806bbd51470fcd6ea9ba3'
+    },
+
+    /**
+     * Response for GET /tools/menu/all.
+     */
+    TOOL_MENU_ALL_RESPONSE: [
+        {
+            hash: '81PmVismGTVZGSStCGGcAuAqXi3V6JJzu8MKoHT7djQz',
+            name: 'Tool 07_modified',
+            description: '',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            topicId: '0.0.8360425',
+            messageId: '1774367941.594676930',
+            tools: [],
+            config: {
+                inputEvents: [
+                    {
+                        name: 'input_tool_07',
+                        description: ''
+                    }
+                ],
+                outputEvents: [
+                    {
+                        name: 'output_tool_07',
+                        description: ''
+                    }
+                ],
+                variables: [
+                    {
+                        name: 'Role',
+                        description: '',
+                        type: 'Role'
+                    }
+                ]
+            },
+            schemas: [
+                {
+                    id: '69c2b4947a442bf5c32d6c8c',
+                    name: 'Tool 07',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#31f4f114-95e6-4d3a-b0c0-8888b2ea11f7&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6c91',
+                    name: 'Build Margin',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#012635cb-a876-4041-b8fe-2b5297cc86c6&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6c96',
+                    name: 'Fuel Type',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#e6f79971-c19a-4317-be13-e39410f72773&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6c9b',
+                    name: 'Average OM (Option A1)',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#dfdd825f-7c91-45c2-9a43-12d21da69022&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6ca0',
+                    name: 'Average OM (Option A2)',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#3758fbe8-b3c2-4dac-aefd-57ddfe02e718&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6ca5',
+                    name: 'Average OM (Option A3)',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#14dae990-fa84-4b98-8e11-f62c0a1a8a24&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6caa',
+                    name: '(Average OM, Simple Adj OM) Power units serving the grid in specified year',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#c6e1b179-7c88-4260-9afa-1d3b4be46a3d&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6caf',
+                    name: 'Calculation based on average efficiency and electricity  generation of each plant',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#41f1e5ad-8398-47ed-826e-118a8b6d4b47&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6cb4',
+                    name: 'Calculation based on total fuel consumption and electricity  generation of the system',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#c47928b5-4cef-405f-85a6-461b5d899bdb&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6cb9',
+                    name: 'Average OM, Simple OM',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#267aabfe-573c-4027-b93f-f627428d2d5e&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6cbe',
+                    name: 'Dispatch Data OM',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#ec4d478c-5b67-4f96-9467-af8aaba9e382&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6cc3',
+                    name: 'Lambda Approach 2',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#7cb46d6d-86e2-4c3c-b7a2-98ad30e0b031&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6cc8',
+                    name: 'Lambda Approach 1',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#63fa3154-e12d-4809-ab4e-d5f4e4a42b47&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6ccd',
+                    name: 'Simple Adj OM',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#76ee38e8-cfcb-4d87-b5aa-69e3f83ef661&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6cd2',
+                    name: 'Do you have annual aggregated data from the grid on power generation, fuel type and fuel consumption?',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#6039ed67-a1ff-49dd-af60-ae9f89898128&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4947a442bf5c32d6cd7',
+                    name: 'Is the LASL more than one third of the HASL?',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#63f27fe2-b840-40a7-b9c9-7405497aed7f&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4957a442bf5c32d6cdc',
+                    name: 'Are hourly loads of the grid in MW available?',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#d59ab516-2731-44f0-a7bd-7a0c8678acc3&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4957a442bf5c32d6ce1',
+                    name: 'Is the average load by LCMR less than the average LASL over three years?',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#8f354fab-04f8-470a-8872-d19645a22120&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4957a442bf5c32d6ce6',
+                    name: 'Is LCMR share less than 50% in recent 5 years?',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#c8c2f95b-e95c-4375-8c84-7dcbca057ccc&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4957a442bf5c32d6ceb',
+                    name: 'Combined Margin',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#99e9128b-daab-4c58-ab10-bc025ee5de5a&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4957a442bf5c32d6cf0',
+                    name: 'Weighted average CM',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#36c4dde5-2940-4d44-9203-0f8b64a7abc9&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4957a442bf5c32d6cf5',
+                    name: 'Simplified CM',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#3e3e976d-bfb7-42d7-b4e7-bf77cbfebe02&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4957a442bf5c32d6cfa',
+                    name: 'Simplified CM for Isolated Grid System',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#18b5b956-0e33-40e9-b7d6-f91c0b3b96da&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4957a442bf5c32d6cff',
+                    name: 'For multiple power plants, choose the option that best fits your project',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#4e9cf1f2-0de5-4f1a-b670-7902cb6d0fe0&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4957a442bf5c32d6d04',
+                    name: 'Power Unit',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#29b50d9d-5bae-424c-b5ea-628e9da9b2a7&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2b4957a442bf5c32d6d09',
+                    name: 'Combined Margin. Is grid located in LDC/SIDs/URC or an isolated system.',
+                    description: '',
+                    topicId: '0.0.8360425',
+                    iri: '#26f3d4d2-f2a4-45c9-9706-9be055ddafc3&1.0.0',
+                    category: 'POLICY'
+                }
+            ],
+            id: '69c2d0af34d008dac2664405'
+        },
+        {
+            hash: 'HPD7E8x2xyqDAXeMaRc9uAG4nMArdxuYSFYVKg9W18x8',
+            name: 'Tool 05',
+            description: '',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8361167',
+            messageId: '1774375293.192012846',
+            tools: [
+                {
+                    name: 'Tool 07_modified',
+                    version: '7',
+                    topicId: '0.0.8360425',
+                    messageId: '1774367941.594676930'
+                }
+            ],
+            config: {
+                inputEvents: [
+                    {
+                        name: 'input_tool_05',
+                        description: ''
+                    }
+                ],
+                outputEvents: [
+                    {
+                        name: 'output_tool_05',
+                        description: ''
+                    }
+                ],
+                variables: [
+                    {
+                        name: 'Role',
+                        description: '',
+                        type: 'Role'
+                    }
+                ]
+            },
+            schemas: [
+                {
+                    id: '69c2d0b134d008dac266448c',
+                    name: 'Tool 05',
+                    description: '',
+                    topicId: '0.0.8361167',
+                    iri: '#b2c91711-693c-4fd8-aed8-68ff83c0ded6&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2d0b134d008dac2664491',
+                    name: 'Tool 05 Scenario C',
+                    description: '',
+                    topicId: '0.0.8361167',
+                    iri: '#86d9d01e-979b-4a38-b860-857d1f26cf9b&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2d0b134d008dac2664496',
+                    name: 'Tool 05 Scenario B | Generic Approach',
+                    description: '',
+                    topicId: '0.0.8361167',
+                    iri: '#ab7d5541-fdca-4375-bb40-582f0168b745&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2d0b134d008dac266449b',
+                    name: 'Tool 05 Power Plants',
+                    description: '',
+                    topicId: '0.0.8361167',
+                    iri: '#9d4ea98d-981d-4dbf-857f-90f480e2497f&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2d0b134d008dac26644a0',
+                    name: 'Tool 05 Scenario A',
+                    description: '',
+                    topicId: '0.0.8361167',
+                    iri: '#1371798f-a1c2-41d7-b660-13383741f8de&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2d0b134d008dac26644a5',
+                    name: 'Tool 05 Scenario A | Default Value',
+                    description: '',
+                    topicId: '0.0.8361167',
+                    iri: '#0fcf8e8a-4f24-4c46-948c-76f57e5c548a&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2d0b134d008dac26644aa',
+                    name: 'Tool 05 Scenario B',
+                    description: '',
+                    topicId: '0.0.8361167',
+                    iri: '#2a7c2925-6956-4cf6-b3fb-66593bdc496b&1.0.0',
+                    category: 'POLICY'
+                },
+                {
+                    id: '69c2d0b134d008dac26644af',
+                    name: 'Generic Approach',
+                    description: '',
+                    topicId: '0.0.8361167',
+                    iri: '#88920b11-f2c3-45d4-b762-a487076aeb35&1.0.0',
+                    category: 'POLICY'
+                }
+            ],
+            id: '69c2d0b134d008dac26644b4'
+        }
+    ],
+
+    /**
+     * Response for PUT /tools/:id/dry-run (validation result; same shape as guardian-service MessageResponse).
+     */
+    TOOL_DRY_RUN_RESPONSE: {
+        isValid: true,
+        errors: {
+            errors: [],
+            blocks: [
+                {
+                    id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                    name: 'extractDataBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '52974f49-497d-403b-9616-829da32590fe',
+                    name: 'customLogicBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                    name: 'extractDataBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                }
+            ],
+            tools: [],
+            id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+            isValid: true
+        }
+    },
+
+    /**
+     * PUT /tools/:id/dry-run — validation failed (HTTP 200, isValid false; dry run not started).
+     */
+    TOOL_DRY_RUN_RESPONSE_VALIDATION_FAILED: {
+        isValid: false,
+        errors: {
+            errors: [],
+            blocks: [
+                {
+                    id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                    name: 'extractDataBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '8a317e5a-b462-4334-a6ea-263ca527f39a',
+                    name: 'createTokenBlock',
+                    errors: [
+                        'Template can not be empty',
+                        'Token "undefined" does not exist'
+                    ],
+                    warnings: [],
+                    infos: [],
+                    isValid: false
+                },
+                {
+                    id: '52974f49-497d-403b-9616-829da32590fe',
+                    name: 'customLogicBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                    name: 'extractDataBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+                    name: 'tool',
+                    errors: ['Tool is invalid'],
+                    isValid: false
+                }
+            ],
+            tools: [],
+            id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+            isValid: false
+        }
+    },
+
+    /**
+     * POST /tools/validate — request body (valid tool).
+     */
+    TOOL_VALIDATE_REQUEST_VALID: {
+        id: '69c245a07a442bf5c32d60a9',
+        uuid: 'b03154fa-6c33-4b3a-ba14-6a24df47f5ec',
+        name: 'Tool 06_1774339488650',
+        description: '',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        topicId: '0.0.8356269',
+        messageId: null,
+        codeVersion: '1.5.1',
+        createDate: '2026-03-24T08:04:48.653Z',
+        version: null,
+        config: {
+            id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+            blockType: 'tool',
+            permissions: [],
+            tag: 'Tool',
+            children: [
+                {
+                    id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                    blockType: 'extractDataBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    action: 'get',
+                    schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9',
+                    tag: 'get_tool_06',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                },
+                {
+                    id: '52974f49-497d-403b-9616-829da32590fe',
+                    blockType: 'customLogicBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    uiMetaData: {},
+                    expression: TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT,
+                    documentSigner: '',
+                    idType: 'UUID',
+                    outputSchema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9',
+                    unsigned: true,
+                    tag: 'calc_tool_06',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                },
+                {
+                    id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                    blockType: 'extractDataBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    action: 'set',
+                    schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9',
+                    tag: 'set_tool_06',
+                    children: [],
+                    events: [
+                        {
+                            target: 'Tool',
+                            source: 'set_tool_06',
+                            input: 'output_tool_06',
+                            output: 'RunEvent',
+                            actor: '',
+                            disabled: false
+                        }
+                    ],
+                    artifacts: []
+                }
+            ],
+            events: [
+                {
+                    target: 'get_tool_06',
+                    source: 'Tool',
+                    input: 'RunEvent',
+                    output: 'input_tool_06',
+                    actor: '',
+                    disabled: false
+                }
+            ],
+            artifacts: [],
+            variables: [
+                {
+                    name: 'Role',
+                    description: '',
+                    type: 'Role'
+                }
+            ],
+            inputEvents: [
+                {
+                    name: 'input_tool_06',
+                    description: ''
+                }
+            ],
+            outputEvents: [
+                {
+                    name: 'output_tool_06',
+                    description: ''
+                }
+            ],
+            innerEvents: [
+                {
+                    target: 'get_tool_06',
+                    source: 'Tool',
+                    input: 'RunEvent',
+                    output: 'input_tool_06',
+                    actor: '',
+                    disabled: false
+                }
+            ]
+        }
+    },
+
+    /**
+     * POST /tools/validate — request body (invalid: createTokenBlock).
+     */
+    TOOL_VALIDATE_REQUEST_INVALID: {
+        id: '69c245a07a442bf5c32d60a9',
+        uuid: 'b03154fa-6c33-4b3a-ba14-6a24df47f5ec',
+        name: 'Tool 06_1774339488650',
+        description: '',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        topicId: '0.0.8356269',
+        messageId: null,
+        codeVersion: '1.5.1',
+        createDate: '2026-03-24T08:04:48.653Z',
+        version: null,
+        config: {
+            id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+            blockType: 'tool',
+            permissions: [],
+            tag: 'Tool',
+            children: [
+                {
+                    id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                    blockType: 'extractDataBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    action: 'get',
+                    schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9',
+                    tag: 'get_tool_06',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                },
+                {
+                    id: '68a86a37-e1b9-4c93-8892-624645bfd467',
+                    blockType: 'createTokenBlock',
+                    defaultActive: true,
+                    permissions: [],
+                    tag: 'Block_1',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                },
+                {
+                    id: '52974f49-497d-403b-9616-829da32590fe',
+                    blockType: 'customLogicBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    uiMetaData: {},
+                    expression: TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT,
+                    documentSigner: '',
+                    idType: 'UUID',
+                    outputSchema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9',
+                    unsigned: true,
+                    tag: 'calc_tool_06',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                },
+                {
+                    id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                    blockType: 'extractDataBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    action: 'set',
+                    schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9',
+                    tag: 'set_tool_06',
+                    children: [],
+                    events: [
+                        {
+                            target: 'Tool',
+                            source: 'set_tool_06',
+                            input: 'output_tool_06',
+                            output: 'RunEvent',
+                            actor: '',
+                            disabled: false
+                        }
+                    ],
+                    artifacts: []
+                }
+            ],
+            events: [
+                {
+                    target: 'get_tool_06',
+                    source: 'Tool',
+                    input: 'RunEvent',
+                    output: 'input_tool_06',
+                    actor: '',
+                    disabled: false
+                }
+            ],
+            artifacts: [],
+            variables: [
+                {
+                    name: 'Role',
+                    description: '',
+                    type: 'Role'
+                }
+            ],
+            inputEvents: [
+                {
+                    name: 'input_tool_06',
+                    description: ''
+                }
+            ],
+            outputEvents: [
+                {
+                    name: 'output_tool_06',
+                    description: ''
+                }
+            ],
+            innerEvents: [
+                {
+                    target: 'get_tool_06',
+                    source: 'Tool',
+                    input: 'RunEvent',
+                    output: 'input_tool_06',
+                    actor: '',
+                    disabled: false
+                }
+            ]
+        }
+    },
+
+    /**
+     * POST /tools/validate — HTTP 200 (validation passed).
+     */
+    TOOL_VALIDATE_RESPONSE_VALID: {
+        results: {
+            errors: [],
+            blocks: [
+                {
+                    id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                    name: 'extractDataBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '52974f49-497d-403b-9616-829da32590fe',
+                    name: 'customLogicBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                    name: 'extractDataBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                }
+            ],
+            tools: [],
+            id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+            isValid: true
+        },
+        tool: {
+            id: '69c245a07a442bf5c32d60a9',
+            uuid: 'b03154fa-6c33-4b3a-ba14-6a24df47f5ec',
+            name: 'Tool 06_1774339488650',
+            description: '',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            topicId: '0.0.8356269',
+            messageId: null,
+            codeVersion: '1.5.1',
+            createDate: '2026-03-24T08:04:48.653Z',
+            version: null,
+            config: {
+                id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+                blockType: 'tool',
+                permissions: [],
+                tag: 'Tool',
+                children: [
+                    {
+                        id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'get',
+                        schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9',
+                        tag: 'get_tool_06',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '52974f49-497d-403b-9616-829da32590fe',
+                        blockType: 'customLogicBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        uiMetaData: {},
+                        expression: TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT,
+                        documentSigner: '',
+                        idType: 'UUID',
+                        outputSchema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9',
+                        unsigned: true,
+                        tag: 'calc_tool_06',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'set',
+                        schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9',
+                        tag: 'set_tool_06',
+                        children: [],
+                        events: [
+                            {
+                                target: 'Tool',
+                                source: 'set_tool_06',
+                                input: 'output_tool_06',
+                                output: 'RunEvent',
+                                actor: '',
+                                disabled: false
+                            }
+                        ],
+                        artifacts: []
+                    }
+                ],
+                events: [
+                    {
+                        target: 'get_tool_06',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_06',
+                        actor: '',
+                        disabled: false
+                    }
+                ],
+                artifacts: [],
+                variables: [
+                    {
+                        name: 'Role',
+                        description: '',
+                        type: 'Role'
+                    }
+                ],
+                inputEvents: [
+                    {
+                        name: 'input_tool_06',
+                        description: ''
+                    }
+                ],
+                outputEvents: [
+                    {
+                        name: 'output_tool_06',
+                        description: ''
+                    }
+                ],
+                innerEvents: [
+                    {
+                        target: 'get_tool_06',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_06',
+                        actor: '',
+                        disabled: false
+                    }
+                ]
+            }
+        }
+    },
+
+    /**
+     * POST /tools/validate — HTTP 200 (validation failed).
+     */
+    TOOL_VALIDATE_RESPONSE_INVALID: {
+        results: {
+            errors: [],
+            blocks: [
+                {
+                    id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                    name: 'extractDataBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '68a86a37-e1b9-4c93-8892-624645bfd467',
+                    name: 'createTokenBlock',
+                    errors: ['Template can not be empty', 'Token "undefined" does not exist'],
+                    warnings: [],
+                    infos: [],
+                    isValid: false
+                },
+                {
+                    id: '52974f49-497d-403b-9616-829da32590fe',
+                    name: 'customLogicBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                    name: 'extractDataBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+                    name: 'tool',
+                    errors: ['Tool is invalid'],
+                    isValid: false
+                }
+            ],
+            tools: [],
+            id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+            isValid: false
+        },
+        tool: {
+            id: '69c245a07a442bf5c32d60a9',
+            uuid: 'b03154fa-6c33-4b3a-ba14-6a24df47f5ec',
+            name: 'Tool 06_1774339488650',
+            description: '',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            topicId: '0.0.8356269',
+            messageId: null,
+            codeVersion: '1.5.1',
+            createDate: '2026-03-24T08:04:48.653Z',
+            version: null,
+            config: {
+                id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+                blockType: 'tool',
+                permissions: [],
+                tag: 'Tool',
+                children: [
+                    {
+                        id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'get',
+                        schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9',
+                        tag: 'get_tool_06',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '68a86a37-e1b9-4c93-8892-624645bfd467',
+                        blockType: 'createTokenBlock',
+                        defaultActive: true,
+                        permissions: [],
+                        tag: 'Block_1',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '52974f49-497d-403b-9616-829da32590fe',
+                        blockType: 'customLogicBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        uiMetaData: {},
+                        expression: TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT,
+                        documentSigner: '',
+                        idType: 'UUID',
+                        outputSchema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9',
+                        unsigned: true,
+                        tag: 'calc_tool_06',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'set',
+                        schema: '#1bdad0d4-90ab-49cd-88d7-253d6b2d4ff9',
+                        tag: 'set_tool_06',
+                        children: [],
+                        events: [
+                            {
+                                target: 'Tool',
+                                source: 'set_tool_06',
+                                input: 'output_tool_06',
+                                output: 'RunEvent',
+                                actor: '',
+                                disabled: false
+                            }
+                        ],
+                        artifacts: []
+                    }
+                ],
+                events: [
+                    {
+                        target: 'get_tool_06',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_06',
+                        actor: '',
+                        disabled: false
+                    }
+                ],
+                artifacts: [],
+                variables: [
+                    {
+                        name: 'Role',
+                        description: '',
+                        type: 'Role'
+                    }
+                ],
+                inputEvents: [
+                    {
+                        name: 'input_tool_06',
+                        description: ''
+                    }
+                ],
+                outputEvents: [
+                    {
+                        name: 'output_tool_06',
+                        description: ''
+                    }
+                ],
+                innerEvents: [
+                    {
+                        target: 'get_tool_06',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_06',
+                        actor: '',
+                        disabled: false
+                    }
+                ]
+            }
+        }
+    },
+
+    /**
+     * GET /tools/:id/export/message — published tool (messageId set).
+     */
+    TOOL_EXPORT_MESSAGE_RESPONSE_PUBLISHED: {
+        id: '69c1502ffb66de861cc9dcef',
+        uuid: '7d56aec4-5db3-46d3-9f3f-236fc33e0772',
+        name: 'Tool 16',
+        description: '',
+        messageId: '1720000738.873798003',
+        owner: 'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265'
+    },
+
+    /**
+     * GET /tools/:id/export/message — DRAFT / dry-run (no Hedera message yet).
+     */
+    TOOL_EXPORT_MESSAGE_RESPONSE_DRAFT: {
+        id: '69c245a07a442bf5c32d60a9',
+        uuid: 'b03154fa-6c33-4b3a-ba14-6a24df47f5ec',
+        name: 'Tool 06_1774339488650',
+        description: '',
+        messageId: null,
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835'
+    },
+
+    /**
+     * POST /tools/import/message/preview — parsed ZIP + message ids (see guardian `preparePreviewMessage`).
+     * `schemas` items include full metadata; `document` / `context` are `{}` in the example; `tool` may omit DB fields.
+     */
+    TOOL_IMPORT_MESSAGE_PREVIEW_RESPONSE: {
+        tool: {
+            name: 'Tool 33',
+            description: '',
+            creator: 'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+            owner: 'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+            codeVersion: '1.5.1',
+            tagsTopicId: '0.0.4865958',
+            tools: [],
+            config: {
+                id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+                blockType: 'tool',
+                permissions: [],
+                tag: 'Tool',
+                children: [
+                    {
+                        id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'get',
+                        schema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0',
+                        tag: 'get_tool_33',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '52974f49-497d-403b-9616-829da32590fe',
+                        blockType: 'customLogicBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        uiMetaData: {},
+                        expression: TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT,
+                        documentSigner: '',
+                        idType: 'UUID',
+                        outputSchema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0',
+                        unsigned: true,
+                        tag: 'calc_tool_33',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'set',
+                        schema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0',
+                        tag: 'set_tool_33',
+                        children: [],
+                        events: [
+                            {
+                                target: 'Tool',
+                                source: 'set_tool_33',
+                                input: 'output_tool_33',
+                                output: 'RunEvent',
+                                actor: '',
+                                disabled: false
+                            }
+                        ],
+                        artifacts: []
+                    }
+                ],
+                events: [
+                    {
+                        target: 'get_tool_33',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_33',
+                        actor: '',
+                        disabled: false
+                    }
+                ],
+                artifacts: [],
+                variables: [{ name: 'Role', description: '', type: 'Role' }],
+                inputEvents: [{ name: 'input_tool_33', description: '' }],
+                outputEvents: [{ name: 'output_tool_33', description: '' }],
+                innerEvents: [
+                    {
+                        target: 'get_tool_33',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_33',
+                        actor: '',
+                        disabled: false
+                    }
+                ]
+            }
+        },
+        tags: [],
+        schemas: [
+            {
+                id: '66e9b98854cf4ebe299cb399',
+                createDate: '2024-09-17T17:17:00.224Z',
+                updateDate: '2024-09-17T17:18:28.695Z',
+                uuid: '073bdaf5-68d1-4bfd-9290-2c4f40a98034',
+                hash: '',
+                name: 'Tool 33',
+                description: '',
+                entity: 'VC',
+                documentFileId: '66e9b9e454cf4ebe299cb3c9',
+                contextFileId: '66e9b9e454cf4ebe299cb3cb',
+                version: '1.0.0',
+                sourceVersion: '',
+                creator:
+                    'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+                owner:
+                    'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+                topicId: '0.0.4865949',
+                messageId: '1726593505.353812000',
+                documentURL: 'ipfs://bafkreiflnxkizsxsmtyiraojvykwj7s4y3i3twsytelw6egboutawr7xta',
+                contextURL: 'ipfs://bafkreic4mekxeq3p5es7bacfdswkae3rxlmka5hirtlnxmr63ukdn7l6ki',
+                iri: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0',
+                system: false,
+                active: false,
+                category: 'TOOL',
+                codeVersion: '1.1.0',
+                defs: ['#64d676db-cd55-41f7-87ed-71d8e7a582dc&1.0.0'],
+                errors: [],
+                document: {},
+                context: {}
+            },
+            {
+                id: '66e9b98c54cf4ebe299cb3a2',
+                createDate: '2024-09-17T17:17:03.328Z',
+                updateDate: '2024-09-17T17:18:21.063Z',
+                uuid: '64d676db-cd55-41f7-87ed-71d8e7a582dc',
+                hash: '',
+                name: 'Tool 33. Carbon dioxide emission factor for diesel generating system used for offgrid power generation purposes | Carbon dioxide emission factor for kerosene used for lighting applications',
+                description: '',
+                entity: 'VC',
+                documentFileId: '66e9b9dd54cf4ebe299cb3bb',
+                contextFileId: '66e9b9dd54cf4ebe299cb3bd',
+                version: '1.0.0',
+                sourceVersion: '',
+                creator:
+                    'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+                owner:
+                    'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+                topicId: '0.0.4865949',
+                messageId: '1726593498.351403305',
+                documentURL: 'ipfs://bafkreifkfy6ft5bpoudp2oruy5zfwicfycrikcx473vgm7tm7kau6x4raq',
+                contextURL: 'ipfs://bafkreifxxqtc4nku6x5y7bu2przweee2flnbhskij35igfhc2xnb5fwutq',
+                iri: '#64d676db-cd55-41f7-87ed-71d8e7a582dc&1.0.0',
+                system: false,
+                active: false,
+                category: 'TOOL',
+                codeVersion: '1.1.0',
+                defs: [],
+                errors: [],
+                document: {},
+                context: {}
+            }
+        ],
+        tools: [],
+        messageId: '1726593517.484578000',
+        toolTopicId: '0.0.4865949'
+    },
+
+    /**
+     * POST /tools/import/file/preview — parsed ZIP without Hedera message fields.
+     * Same structure as message preview, but no top-level `messageId` / `toolTopicId`.
+     */
+    TOOL_IMPORT_FILE_PREVIEW_RESPONSE: {
+        tool: {
+            name: 'Tool 33',
+            description: '',
+            creator: 'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+            owner: 'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+            codeVersion: '1.5.1',
+            tagsTopicId: '0.0.4865958',
+            tools: [],
+            config: {
+                id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+                blockType: 'tool',
+                permissions: [],
+                tag: 'Tool',
+                children: [
+                    {
+                        id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'get',
+                        schema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0',
+                        tag: 'get_tool_33',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '52974f49-497d-403b-9616-829da32590fe',
+                        blockType: 'customLogicBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        uiMetaData: {},
+                        expression: TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT,
+                        documentSigner: '',
+                        idType: 'UUID',
+                        outputSchema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0',
+                        unsigned: true,
+                        tag: 'calc_tool_33',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'set',
+                        schema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0',
+                        tag: 'set_tool_33',
+                        children: [],
+                        events: [
+                            {
+                                target: 'Tool',
+                                source: 'set_tool_33',
+                                input: 'output_tool_33',
+                                output: 'RunEvent',
+                                actor: '',
+                                disabled: false
+                            }
+                        ],
+                        artifacts: []
+                    }
+                ],
+                events: [
+                    {
+                        target: 'get_tool_33',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_33',
+                        actor: '',
+                        disabled: false
+                    }
+                ],
+                artifacts: [],
+                variables: [{ name: 'Role', description: '', type: 'Role' }],
+                inputEvents: [{ name: 'input_tool_33', description: '' }],
+                outputEvents: [{ name: 'output_tool_33', description: '' }],
+                innerEvents: [
+                    {
+                        target: 'get_tool_33',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_33',
+                        actor: '',
+                        disabled: false
+                    }
+                ]
+            }
+        },
+        tags: [],
+        schemas: [
+            {
+                id: '66e9b98854cf4ebe299cb399',
+                createDate: '2024-09-17T17:17:00.224Z',
+                updateDate: '2024-09-17T17:18:28.695Z',
+                uuid: '073bdaf5-68d1-4bfd-9290-2c4f40a98034',
+                hash: '',
+                name: 'Tool 33',
+                description: '',
+                entity: 'VC',
+                documentFileId: '66e9b9e454cf4ebe299cb3c9',
+                contextFileId: '66e9b9e454cf4ebe299cb3cb',
+                version: '1.0.0',
+                sourceVersion: '',
+                creator:
+                    'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+                owner:
+                    'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+                topicId: '0.0.4865949',
+                messageId: '1726593505.353812000',
+                documentURL: 'ipfs://bafkreiflnxkizsxsmtyiraojvykwj7s4y3i3twsytelw6egboutawr7xta',
+                contextURL: 'ipfs://bafkreic4mekxeq3p5es7bacfdswkae3rxlmka5hirtlnxmr63ukdn7l6ki',
+                iri: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0',
+                system: false,
+                active: false,
+                category: 'TOOL',
+                codeVersion: '1.1.0',
+                defs: ['#64d676db-cd55-41f7-87ed-71d8e7a582dc&1.0.0'],
+                errors: [],
+                document: {},
+                context: {}
+            },
+            {
+                id: '66e9b98c54cf4ebe299cb3a2',
+                createDate: '2024-09-17T17:17:03.328Z',
+                updateDate: '2024-09-17T17:18:21.063Z',
+                uuid: '64d676db-cd55-41f7-87ed-71d8e7a582dc',
+                hash: '',
+                name: 'Tool 33. Carbon dioxide emission factor for diesel generating system used for offgrid power generation purposes | Carbon dioxide emission factor for kerosene used for lighting applications',
+                description: '',
+                entity: 'VC',
+                documentFileId: '66e9b9dd54cf4ebe299cb3bb',
+                contextFileId: '66e9b9dd54cf4ebe299cb3bd',
+                version: '1.0.0',
+                sourceVersion: '',
+                creator:
+                    'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+                owner:
+                    'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+                topicId: '0.0.4865949',
+                messageId: '1726593498.351403305',
+                documentURL: 'ipfs://bafkreifkfy6ft5bpoudp2oruy5zfwicfycrikcx473vgm7tm7kau6x4raq',
+                contextURL: 'ipfs://bafkreifxxqtc4nku6x5y7bu2przweee2flnbhskij35igfhc2xnb5fwutq',
+                iri: '#64d676db-cd55-41f7-87ed-71d8e7a582dc&1.0.0',
+                system: false,
+                active: false,
+                category: 'TOOL',
+                codeVersion: '1.1.0',
+                defs: [],
+                errors: [],
+                document: {},
+                context: {}
+            }
+        ],
+        tools: []
+    },
+
+    /**
+     * POST /tools/import/message — imported tool result.
+     * Matches runtime response shape `{ tool, errors }`; `expression` is shortened.
+     */
+    TOOL_IMPORT_MESSAGE_RESPONSE: {
+        tool: {
+            createDate: '2026-03-24T13:31:34.959Z',
+            updateDate: '2026-03-24T13:31:34.959Z',
+            hash: 'Ceo5z8VkMbYWAcgjhesqGXHzJ9Z6aEdEEGWA4Jq4XE2i',
+            uuid: '8772ca4b-4efe-4517-93ae-6c63a4281257',
+            name: 'Tool 33',
+            description: '',
+            configFileId: '69c292367a442bf5c32d6157',
+            status: 'PUBLISHED',
+            creator: 'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+            owner: 'did:hedera:testnet:5h54ixs4SfsNJwPxtpdMcd2M1V4ddK8aRYCh44nnWxfv_0.0.4674597',
+            topicId: '0.0.4865949',
+            messageId: '1726593517.484578000',
+            codeVersion: '1.5.1',
+            tagsTopicId: '0.0.4865958',
+            tools: [],
+            contentFileId: '69c292367a442bf5c32d6154',
+            id: '69c292367a442bf5c32d6156',
+            config: {
+                id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+                blockType: 'tool',
+                permissions: [],
+                tag: 'Tool',
+                children: [
+                    {
+                        id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'get',
+                        schema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0',
+                        tag: 'get_tool_33',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '52974f49-497d-403b-9616-829da32590fe',
+                        blockType: 'customLogicBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        uiMetaData: {},
+                        expression: TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT,
+                        documentSigner: '',
+                        idType: 'UUID',
+                        outputSchema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0',
+                        unsigned: true,
+                        tag: 'calc_tool_33',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                        blockType: 'extractDataBlock',
+                        defaultActive: false,
+                        permissions: ['Role'],
+                        onErrorAction: 'no-action',
+                        action: 'set',
+                        schema: '#073bdaf5-68d1-4bfd-9290-2c4f40a98034&1.0.0',
+                        tag: 'set_tool_33',
+                        children: [],
+                        events: [
+                            {
+                                target: 'Tool',
+                                source: 'set_tool_33',
+                                input: 'output_tool_33',
+                                output: 'RunEvent',
+                                actor: '',
+                                disabled: false
+                            }
+                        ],
+                        artifacts: []
+                    }
+                ],
+                events: [
+                    {
+                        target: 'get_tool_33',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_33',
+                        actor: '',
+                        disabled: false
+                    }
+                ],
+                artifacts: [],
+                variables: [{ name: 'Role', description: '', type: 'Role' }],
+                inputEvents: [{ name: 'input_tool_33', description: '' }],
+                outputEvents: [{ name: 'output_tool_33', description: '' }],
+                innerEvents: [
+                    {
+                        target: 'get_tool_33',
+                        source: 'Tool',
+                        input: 'RunEvent',
+                        output: 'input_tool_33',
+                        actor: '',
+                        disabled: false
+                    }
+                ]
+            }
+        },
+        errors: []
+    },
+
+    /**
+     * POST /tools/import/file — imported local ZIP as DRAFT tool.
+     * Matches ToolDTO shape; runtime Mongo `_id` is intentionally omitted from docs.
+     */
+    TOOL_IMPORT_FILE_RESPONSE: {
+        createDate: '2026-03-24T13:53:21.329Z',
+        updateDate: '2026-03-24T13:53:21.329Z',
+        uuid: '6ae44173-e280-406b-bb64-5588bc539be3',
+        name: 'Tool 33_1774360401319',
+        description: '',
+        configFileId: '69c297517a442bf5c32d617f',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        topicId: '0.0.8359424',
+        codeVersion: '1.5.1',
+        tools: [],
+        id: '69c297517a442bf5c32d617e',
+        config: {
+            id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+            blockType: 'tool',
+            permissions: [],
+            tag: 'Tool',
+            children: [
+                {
+                    id: 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+                    blockType: 'extractDataBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    action: 'get',
+                    schema: '#02527932-b2ba-4f0d-be2a-563a8ab21889',
+                    tag: 'get_tool_33',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                },
+                {
+                    id: '52974f49-497d-403b-9616-829da32590fe',
+                    blockType: 'customLogicBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    uiMetaData: {},
+                    expression: TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT,
+                    documentSigner: '',
+                    idType: 'UUID',
+                    outputSchema: '#02527932-b2ba-4f0d-be2a-563a8ab21889',
+                    unsigned: true,
+                    tag: 'calc_tool_33',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                },
+                {
+                    id: '16f57f36-48db-4989-adb1-ddb276fc23f1',
+                    blockType: 'extractDataBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    action: 'set',
+                    schema: '#02527932-b2ba-4f0d-be2a-563a8ab21889',
+                    tag: 'set_tool_33',
+                    children: [],
+                    events: [
+                        {
+                            target: 'Tool',
+                            source: 'set_tool_33',
+                            input: 'output_tool_33',
+                            output: 'RunEvent',
+                            actor: '',
+                            disabled: false
+                        }
+                    ],
+                    artifacts: []
+                }
+            ],
+            events: [
+                {
+                    target: 'get_tool_33',
+                    source: 'Tool',
+                    input: 'RunEvent',
+                    output: 'input_tool_33',
+                    actor: '',
+                    disabled: false
+                }
+            ],
+            artifacts: [],
+            variables: [{ name: 'Role', description: '', type: 'Role' }],
+            inputEvents: [{ name: 'input_tool_33', description: '' }],
+            outputEvents: [{ name: 'output_tool_33', description: '' }],
+            innerEvents: [
+                {
+                    target: 'get_tool_33',
+                    source: 'Tool',
+                    input: 'RunEvent',
+                    output: 'input_tool_33',
+                    actor: '',
+                    disabled: false
+                }
+            ]
+        }
+    },
+
+    /**
+     * POST /tools/import/file-metadata — imported local *.tool with metadata.
+     * Matches ToolDTO shape; runtime Mongo `_id` is intentionally omitted from docs.
+     */
+    TOOL_IMPORT_FILE_METADATA_RESPONSE: {
+        createDate: '2026-03-24T17:11:34.719Z',
+        updateDate: '2026-03-24T17:11:34.719Z',
+        uuid: '1c04677c-0c6f-4abf-a10b-5f1a34a4efb1',
+        name: 'Tool 05',
+        description: '',
+        configFileId: '69c2c5c693723d9b1b38c359',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8360865',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8360865',
+        topicId: '0.0.8360888',
+        codeVersion: '1.5.1',
+        tools: [],
+        id: '69c2c5c693723d9b1b38c358',
+        config: {
+            id: '8f3c6675-16ee-4680-ab1f-58c0f619ab82',
+            blockType: 'tool',
+            permissions: [],
+            tag: 'Tool',
+            children: [
+                {
+                    id: '816f0414-286d-4d2d-ade1-6ce7768fa171',
+                    blockType: 'tool',
+                    defaultActive: true,
+                    hash: 'FYwXXAw2pumRVekHJbVpVrtqUGPvNGjMnNsrcZ6gagiS',
+                    messageId: '1706867530.884259218',
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    Role: 'Role',
+                    tag: 'tool_07',
+                    children: [],
+                    events: [
+                        {
+                            target: 'get_tool_05',
+                            source: 'tool_07',
+                            input: 'RunEvent',
+                            output: 'output_tool_07',
+                            actor: '',
+                            disabled: false
+                        }
+                    ],
+                    artifacts: [],
+                    variables: [{ name: 'Role', description: '', type: 'Role' }],
+                    inputEvents: [{ name: 'input_tool_07', description: '' }],
+                    outputEvents: [{ name: 'output_tool_07', description: '' }],
+                    innerEvents: []
+                },
+                {
+                    id: '5119c09c-804c-4eea-9b26-7a9eb90a8394',
+                    blockType: 'extractDataBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    action: 'get',
+                    schema: '#433e11e5-918d-43c1-ad05-063c9ac12d67',
+                    tag: 'get_tool_05',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                },
+                {
+                    id: '88cc53c2-83db-4d21-93a8-0e0cdc25ce3b',
+                    blockType: 'customLogicBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    uiMetaData: {},
+                    expression: TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT,
+                    documentSigner: '',
+                    idType: 'UUID',
+                    outputSchema: '#433e11e5-918d-43c1-ad05-063c9ac12d67',
+                    unsigned: true,
+                    tag: 'calc_tool_05',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                },
+                {
+                    id: '61fa5298-d71f-41e3-8d6c-df0c94052edf',
+                    blockType: 'extractDataBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    action: 'set',
+                    schema: '#433e11e5-918d-43c1-ad05-063c9ac12d67',
+                    tag: 'set_tool_05',
+                    children: [],
+                    events: [
+                        {
+                            target: 'Tool',
+                            source: 'set_tool_05',
+                            input: 'output_tool_05',
+                            output: 'RunEvent',
+                            actor: '',
+                            disabled: false
+                        }
+                    ],
+                    artifacts: []
+                }
+            ],
+            events: [
+                {
+                    target: 'tool_07',
+                    source: 'Tool',
+                    input: 'input_tool_07',
+                    output: 'input_tool_05',
+                    actor: '',
+                    disabled: false
+                }
+            ],
+            artifacts: [],
+            variables: [{ name: 'Role', description: '', type: 'Role' }],
+            inputEvents: [{ name: 'input_tool_05', description: '' }],
+            outputEvents: [{ name: 'output_tool_05', description: '' }],
+            innerEvents: [
+                {
+                    target: 'tool_07',
+                    source: 'Tool',
+                    input: 'input_tool_07',
+                    output: 'input_tool_05',
+                    actor: '',
+                    disabled: false
+                }
+            ]
+        }
+    },
+
+    /**
+     * Response for GET /tools/:id (tool by id).
+     */
+    TOOL_GET_BY_ID_RESPONSE: {
+        id: '69c1502ffb66de861cc9dcef',
+        createDate: '2026-03-23T14:37:35.376Z',
+        updateDate: '2026-03-23T14:37:35.376Z',
+        hash: '8j5UAc8s38X2qRaePqzCBj1rMuM9SXwkE3GcfXSJ7SaN',
+        uuid: '7d56aec4-5db3-46d3-9f3f-236fc33e0772',
+        name: 'Tool 16',
+        description: '',
+        configFileId: '69c1502ffb66de861cc9dcf0',
+        status: 'PUBLISHED',
+        creator: 'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        owner: 'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        topicId: '0.0.4496134',
+        messageId: '1720000738.873798003',
+        codeVersion: '1.5.1',
+        tagsTopicId: '0.0.4496152',
+        contentFileId: '69c1500afb66de861cc9dbca',
+        tools: [
+            {
+                name: 'Tool 01',
+                version: null,
+                topicId: '0.0.3418896',
+                messageId: '1707834520.925981198'
+            },
+            {
+                name: 'Tool 12',
+                version: null,
+                topicId: '0.0.3625013',
+                messageId: '1709106946.913157840'
+            },
+            {
+                name: 'Tool 03',
+                version: null,
+                topicId: '0.0.2182119',
+                messageId: '1706867833.676387003'
+            }
+        ],
+        config: {
+            id: 'ee7c7a73-96b0-464e-9ad9-13198b0fadf5',
+            blockType: 'tool',
+            permissions: [],
+            tag: 'Tool',
+            children: [
+                {
+                    id: '0988b533-bbe2-4cf9-9f43-c041764e163b',
+                    blockType: 'tool',
+                    defaultActive: true,
+                    hash: 'FE2TVGaYbHkzT5xox71zRGowBh9uz7p1QZEmDd1BZbco',
+                    messageId: '1719310223.735760003',
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    tag: 'Tool_14',
+                    children: [],
+                    events: [
+                        {
+                            target: 'Tool_1',
+                            source: 'Tool_14',
+                            input: 'input_tool_01',
+                            output: 'output_tool_14',
+                            actor: '',
+                            disabled: false
+                        }
+                    ],
+                    artifacts: [],
+                    variables: [{ name: 'Role', description: '', type: 'Role' }],
+                    inputEvents: [{ name: 'input_tool_14', description: '' }],
+                    outputEvents: [{ name: 'output_tool_14', description: '' }],
+                    innerEvents: []
+                },
+                {
+                    id: '52974f49-497d-403b-9616-829da32590fe',
+                    blockType: 'customLogicBlock',
+                    defaultActive: false,
+                    permissions: ['Role'],
+                    onErrorAction: 'no-action',
+                    uiMetaData: {},
+                    expression: TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT,
+                    documentSigner: '',
+                    idType: 'UUID',
+                    outputSchema: '#7e8f0766-996d-4715-b501-3abf55efa3ac&1.0.0',
+                    unsigned: true,
+                    tag: 'calc_tool_16',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                }
+            ],
+            events: [
+                {
+                    target: 'Tool_14',
+                    source: 'Tool',
+                    input: 'input_tool_14',
+                    output: 'input_tool_16',
+                    actor: '',
+                    disabled: false
+                }
+            ],
+            variables: [{ name: 'Role', description: '', type: 'Role' }],
+            inputEvents: [{ name: 'input_tool_16', description: '' }],
+            outputEvents: [{ name: 'output_tool_16', description: '' }],
+            innerEvents: [
+                {
+                    target: 'Tool_14',
+                    source: 'Tool',
+                    input: 'input_tool_14',
+                    output: 'input_tool_16',
+                    actor: '',
+                    disabled: false
+                }
+            ]
+        }
+    },
+
+    /**
+     * Response for POST /tools (sync create).
+     */
+    TOOL_CREATE_RESPONSE: {
+        id: '69c17209fb66de861cc9de3a',
+        createDate: '2026-03-23T17:02:01.093Z',
+        updateDate: '2026-03-23T17:02:01.093Z',
+        uuid: '0e2a0907-18a4-41cf-bd93-dbd5b1ad5f98',
+        name: 'Test Tool New',
+        description: 'This is test description',
+        configFileId: '69c17209fb66de861cc9de3b',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+        topicId: '0.0.8346869',
+        codeVersion: '1.5.1',
+        tools: [],
+        config: {
+            id: Examples.UUID,
+            blockType: 'tool',
+            permissions: [],
+            children: [],
+            events: [],
+            artifacts: [],
+            variables: [],
+            inputEvents: [],
+            outputEvents: [],
+            innerEvents: []
+        }
+    },
+
+    TOOLS_V1_RESPONSE: [
+        {
+            uuid: '741556b2-ebf9-481b-837d-3cfd13322279',
+            name: 'Tool 06_new_edited',
+            description: '',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            topicId: '0.0.8345573',
+            id: '69c156a4fb66de861cc9dd8a'
+        },
+        {
+            hash: '8j5UAc8s38X2qRaePqzCBj1rMuM9SXwkE3GcfXSJ7SaN',
+            uuid: '7d56aec4-5db3-46d3-9f3f-236fc33e0772',
+            name: 'Tool 16',
+            description: '',
+            status: 'PUBLISHED',
+            creator: 'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+            owner: 'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+            topicId: '0.0.4496134',
+            messageId: '1720000738.873798003',
+            id: '69c1502ffb66de861cc9dcef'
+        },
+        {
+            hash: 'CQZ9E5bEmFwsCQ8vmqsvtXMQfK8hjLAnq5Ryk5Td49BP',
+            uuid: '840cda66-9e63-41ce-a779-b6ec3557f798',
+            name: 'Tool 06',
+            description: '',
+            status: 'PUBLISHED',
+            creator: 'did:hedera:testnet:9pZJ9UokYbTyeb7ZWUrLWWLxFmuF3UAcLbjhwge8d3hp_0.0.2172755',
+            owner: 'did:hedera:testnet:9pZJ9UokYbTyeb7ZWUrLWWLxFmuF3UAcLbjhwge8d3hp_0.0.2172755',
+            topicId: '0.0.2657406',
+            messageId: '1707068762.886477003',
+            id: '69c1501cfb66de861cc9dc26'
+        }
+    ],
+
+    TOOLS_V2_RESPONSE: [
+        {
+            name: 'Tool 06_new_edited',
+            description: '',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8299835',
+            topicId: '0.0.8345573',
+            id: '69c156a4fb66de861cc9dd8a'
+        },
+        {
+            name: 'Tool 16',
+            description: '',
+            status: 'PUBLISHED',
+            creator: 'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+            owner: 'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+            topicId: '0.0.4496134',
+            messageId: '1720000738.873798003',
+            id: '69c1502ffb66de861cc9dcef'
+        },
+        {
+            name: 'Tool 06',
+            description: '',
+            status: 'PUBLISHED',
+            creator: 'did:hedera:testnet:9pZJ9UokYbTyeb7ZWUrLWWLxFmuF3UAcLbjhwge8d3hp_0.0.2172755',
+            owner: 'did:hedera:testnet:9pZJ9UokYbTyeb7ZWUrLWWLxFmuF3UAcLbjhwge8d3hp_0.0.2172755',
+            topicId: '0.0.2657406',
+            messageId: '1707068762.886477003',
+            id: '69c1501cfb66de861cc9dc26'
+        }
+    ]
 }
