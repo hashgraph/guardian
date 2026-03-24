@@ -305,7 +305,7 @@ export class CustomLogicBlock {
                             const pendingDones: Promise<void>[] = [];
                             await runPythonInDocker(pythonWorkerData, {
                                 onDone: (result, final) => {
-                                    pendingDones.push(done(result, final));
+                                    pendingDones.push(done(result, final).catch(safeReject));
                                 },
                                 onDebug: (result) => {
                                     ref.debug(result);
@@ -362,7 +362,7 @@ export class CustomLogicBlock {
                             }
                             try {
                                 if (data?.type === 'done') {
-                                    pendingDones.push(done(data.result, data.final));
+                                    pendingDones.push(done(data.result, data.final).catch(safeReject));
                                 }
                                 if (data?.type === 'debug') {
                                     ref.debug(data.result);
