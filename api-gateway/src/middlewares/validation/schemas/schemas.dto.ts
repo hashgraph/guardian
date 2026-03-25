@@ -6,6 +6,22 @@ import { Examples } from '../examples.js';
 export class SchemaDTO {
     @ApiProperty({
         type: 'string',
+        required: false,
+        nullable: true,
+        example: '2026-03-25T12:40:32.586Z'
+    })
+    createDate?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        nullable: true,
+        example: '2026-03-25T12:40:59.908Z'
+    })
+    updateDate?: string;
+
+    @ApiProperty({
+        type: 'string',
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -80,6 +96,16 @@ export class SchemaDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
+        nullable: true,
+        example: Examples.DID
+    })
+    @IsOptional()
+    @IsString()
+    creator?: string;
+
+    @ApiProperty({
+        type: 'string',
         example: Examples.DID
     })
     @IsOptional()
@@ -88,6 +114,8 @@ export class SchemaDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
+        nullable: true,
         example: Examples.MESSAGE_ID
     })
     @IsOptional()
@@ -120,20 +148,76 @@ export class SchemaDTO {
     contextURL?: string;
 
     @ApiProperty({
-        type: 'object',
-        additionalProperties: true
+        oneOf: [
+            {
+                type: 'object',
+                additionalProperties: true
+            },
+            {
+                type: 'string',
+                example: 'innerSchemaConfigurationInText'
+            }
+        ]
     })
     @IsOptional()
     @IsObject()
     document?: any;
 
     @ApiProperty({
-        type: 'object',
-        additionalProperties: true
+        oneOf: [
+            {
+                type: 'object',
+                additionalProperties: true
+            },
+            {
+                type: 'string',
+                example: 'jsonLdContextInText'
+            }
+        ]
     })
     @IsOptional()
     @IsObject()
     context?: any;
+
+    @ApiProperty({
+        type: 'boolean',
+        required: false,
+        nullable: true,
+        example: false
+    })
+    readonly?: boolean;
+
+    @ApiProperty({
+        type: 'boolean',
+        required: false,
+        nullable: true,
+        example: false
+    })
+    system?: boolean;
+
+    @ApiProperty({
+        type: 'boolean',
+        required: false,
+        nullable: true,
+        example: false
+    })
+    active?: boolean;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        nullable: true,
+        example: '1.2.0'
+    })
+    codeVersion?: string;
+
+    @ApiProperty({
+        type: 'number',
+        required: false,
+        nullable: true,
+        example: 1
+    })
+    topicCount?: number;
 }
 
 export class SystemSchemaDTO {

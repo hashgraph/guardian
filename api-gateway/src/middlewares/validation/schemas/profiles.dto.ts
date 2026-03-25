@@ -306,7 +306,7 @@ export class PolicyKeyConfigDTO {
     @ApiProperty({
         type: 'string',
         description:
-            'DER-encoded private key when **importing** on the remote user account. Omit when **generating** for the remote-user flow (only `messageId`).',
+            'DER-encoded private key when **importing** on the remote user account. Omit when **generating** for user flow (only `messageId`).',
         example: 'Key'
     })
     @IsOptional()

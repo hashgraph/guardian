@@ -1729,6 +1729,1023 @@ export const ObjectExamples = {
         variables: { columns: [], report: [] }
     },
 
+    /** POST /modules — typical SR UI create body */
+    MODULE_POST_CREATE_REQUEST: {
+        name: 'New Module',
+        description: 'New module description',
+        menu: 'show',
+        config: {
+            blockType: 'module'
+        }
+    },
+
+    /** POST /modules — created module after `updateModuleConfig` defaults */
+    MODULE_POST_CREATE_RESPONSE: {
+        createDate: '2026-03-25T12:04:14.291Z',
+        updateDate: '2026-03-25T12:04:14.291Z',
+        uuid: 'f0624944-02f0-4329-8cae-e871c1984bf4',
+        name: 'New Module',
+        description: 'New module description',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+        owner: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+        codeVersion: '1.0.0',
+        type: 'CUSTOM',
+        config: {
+            blockType: 'module',
+            permissions: [],
+            children: [],
+            events: [],
+            artifacts: [],
+            variables: [],
+            inputEvents: [],
+            outputEvents: [],
+            innerEvents: []
+        },
+        id: '69c3cf3e462c9c1141de3052'
+    },
+
+    MODULE_PUT_UPDATE_REQUEST: {
+        createDate: '2026-03-25T14:29:09.327Z',
+        uuid: 'f964f762-4e77-4f09-b98e-c1f12961ff17',
+        name: 'UPDATED NAME',
+        description: 'UPDATED DESCRIPTION',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        type: 'CUSTOM',
+        config: {
+            name: 'UPDATED NAME',
+            description: 'UPDATED DESCRIPTION',
+            blockType: 'module',
+            permissions: [],
+            id: '738b9162-a25c-43b9-a609-490a10af3bd6',
+            tag: 'Module',
+            children: [
+                {
+                    id: '90debdfe-1f45-4704-8641-a957aef87f77',
+                    blockType: 'interfaceContainerBlock',
+                    defaultActive: true,
+                    permissions: [],
+                    onErrorAction: 'no-action',
+                    uiMetaData: {
+                        type: 'blank',
+                        title: 'UPDATED TITLE'
+                    },
+                    tag: 'Module:UPDATED_BLOCK_NAME',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                }
+            ],
+            events: [],
+            artifacts: [],
+            variables: [],
+            inputEvents: [],
+            outputEvents: [],
+            innerEvents: []
+        },
+        id: '69c3f135ae73da728c8d8f57'
+    },
+
+    MODULE_PUT_UPDATE_RESPONSE: {
+        createDate: '2026-03-25T14:29:09.327Z',
+        updateDate: '2026-03-25T14:33:42.812Z',
+        uuid: 'f964f762-4e77-4f09-b98e-c1f12961ff17',
+        name: 'UPDATED NAME',
+        description: 'UPDATED DESCRIPTION',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        codeVersion: '1.0.0',
+        type: 'CUSTOM',
+        config: {
+            name: 'UPDATED NAME',
+            description: 'UPDATED DESCRIPTION',
+            blockType: 'module',
+            permissions: [],
+            id: '738b9162-a25c-43b9-a609-490a10af3bd6',
+            tag: 'Module',
+            children: [
+                {
+                    id: '90debdfe-1f45-4704-8641-a957aef87f77',
+                    blockType: 'interfaceContainerBlock',
+                    defaultActive: true,
+                    permissions: [],
+                    onErrorAction: 'no-action',
+                    uiMetaData: {
+                        type: 'blank',
+                        title: 'UPDATED TITLE'
+                    },
+                    tag: 'Module:UPDATED_BLOCK_NAME',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                }
+            ],
+            events: [],
+            artifacts: [],
+            variables: [],
+            inputEvents: [],
+            outputEvents: [],
+            innerEvents: []
+        },
+        id: '69c3f135ae73da728c8d8f57'
+    },
+
+    MODULE_IMPORT_FILE_PREVIEW_RESPONSE: {
+        module: {
+            updateDate: '2026-03-25T12:22:27.680Z',
+            name: 'Device configuration module',
+            description: 'Part of devices flow',
+            creator: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+            owner: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+            codeVersion: '1.0.0',
+            type: 'CUSTOM',
+            config: {}
+        },
+        tags: [],
+        schemas: []
+    },
+
+    MODULE_IMPORT_MESSAGE_REQUEST: {
+        messageId: '1774456966.828228000'
+    },
+
+    MODULE_IMPORT_MESSAGE_PREVIEW_RESPONSE: {
+        module: {
+            updateDate: '2026-03-25T16:42:26.445Z',
+            name: 'Test Module with two blocks',
+            description: 'Description for the test module',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            codeVersion: '1.0.0',
+            type: 'CUSTOM',
+            config: {
+                name: 'Test Module with two blocks',
+                description: 'Description for the test module',
+                blockType: 'module',
+                permissions: [],
+                id: 'cd87187f-26aa-4dfb-994f-12ad810dc952',
+                tag: 'Module',
+                children: [
+                    {
+                        id: '4242c579-891b-437d-8cef-61696c2baf2a',
+                        blockType: 'interfaceContainerBlock',
+                        defaultActive: true,
+                        permissions: [],
+                        onErrorAction: 'no-action',
+                        uiMetaData: {
+                            type: 'blank',
+                            title: 'Main page'
+                        },
+                        tag: 'Module:Main_container_block',
+                        children: [
+                            {
+                                id: 'e851686a-9cd6-4fb0-b3da-3a9e33c54af9',
+                                blockType: 'interfaceContainerBlock',
+                                defaultActive: true,
+                                permissions: [],
+                                onErrorAction: 'no-action',
+                                uiMetaData: {
+                                    type: 'blank',
+                                    title: 'Child page'
+                                },
+                                tag: 'Module:Child_container_block',
+                                children: [],
+                                events: [],
+                                artifacts: []
+                            }
+                        ],
+                        events: [],
+                        artifacts: []
+                    }
+                ],
+                events: [],
+                artifacts: [],
+                variables: [],
+                inputEvents: [],
+                outputEvents: [],
+                innerEvents: []
+            }
+        },
+        tags: [],
+        schemas: [],
+        messageId: '1774456966.828228000',
+        moduleTopicId: '0.0.8373989'
+    },
+
+    MODULE_IMPORT_MESSAGE_RESPONSE: {
+        createDate: '2026-03-25T16:48:48.711Z',
+        updateDate: '2026-03-25T16:48:48.711Z',
+        uuid: 'fd51a3a7-ad99-4699-8de8-0c0ccb300aab',
+        name: 'Test Module with two blocks',
+        description: 'Description for the test module',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        codeVersion: '1.0.0',
+        type: 'CUSTOM',
+        config: {
+            name: 'Test Module with two blocks',
+            description: 'Description for the test module',
+            blockType: 'module',
+            permissions: [],
+            id: 'cd87187f-26aa-4dfb-994f-12ad810dc952',
+            tag: 'Module',
+            children: [
+                {
+                    id: '4242c579-891b-437d-8cef-61696c2baf2a',
+                    blockType: 'interfaceContainerBlock',
+                    defaultActive: true,
+                    permissions: [],
+                    onErrorAction: 'no-action',
+                    uiMetaData: {
+                        type: 'blank',
+                        title: 'Main page'
+                    },
+                    tag: 'Module:Main_container_block',
+                    children: [
+                        {
+                            id: 'e851686a-9cd6-4fb0-b3da-3a9e33c54af9',
+                            blockType: 'interfaceContainerBlock',
+                            defaultActive: true,
+                            permissions: [],
+                            onErrorAction: 'no-action',
+                            uiMetaData: {
+                                type: 'blank',
+                                title: 'Child page'
+                            },
+                            tag: 'Module:Child_container_block',
+                            children: [],
+                            events: [],
+                            artifacts: []
+                        }
+                    ],
+                    events: [],
+                    artifacts: []
+                }
+            ],
+            events: [],
+            artifacts: [],
+            variables: [],
+            inputEvents: [],
+            outputEvents: [],
+            innerEvents: []
+        },
+        id: '69c411f0ae73da728c8d8f99'
+    },
+
+    MODULE_VALIDATE_REQUEST_VALID: {
+        id: '69c411f0ae73da728c8d8f99',
+        uuid: 'fd51a3a7-ad99-4699-8de8-0c0ccb300aab',
+        name: 'Test Module with two blocks',
+        description: 'Description for the test module',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        codeVersion: '1.0.0',
+        createDate: '2026-03-25T16:48:48.711Z',
+        config: {
+            name: 'Test Module with two blocks',
+            description: 'Description for the test module',
+            blockType: 'module',
+            permissions: [],
+            id: 'cd87187f-26aa-4dfb-994f-12ad810dc952',
+            tag: 'Module',
+            children: [
+                {
+                    id: '4242c579-891b-437d-8cef-61696c2baf2a',
+                    blockType: 'interfaceContainerBlock',
+                    defaultActive: true,
+                    permissions: [],
+                    onErrorAction: 'no-action',
+                    uiMetaData: {
+                        type: 'blank',
+                        title: 'Main page'
+                    },
+                    tag: 'Module:Main_container_block',
+                    children: [
+                        {
+                            id: 'e851686a-9cd6-4fb0-b3da-3a9e33c54af9',
+                            blockType: 'interfaceContainerBlock',
+                            defaultActive: true,
+                            permissions: [],
+                            onErrorAction: 'no-action',
+                            uiMetaData: {
+                                type: 'blank',
+                                title: 'Child page'
+                            },
+                            tag: 'Module:Child_container_block',
+                            children: [],
+                            events: [],
+                            artifacts: []
+                        }
+                    ],
+                    events: [],
+                    artifacts: []
+                }
+            ],
+            events: [],
+            artifacts: [],
+            variables: [],
+            inputEvents: [],
+            outputEvents: [],
+            innerEvents: []
+        }
+    },
+
+    MODULE_VALIDATE_REQUEST_INVALID: {
+        id: '69c411f0ae73da728c8d8f99',
+        uuid: 'fd51a3a7-ad99-4699-8de8-0c0ccb300aab',
+        name: 'Test Module with two blocks',
+        description: 'Description for the test module',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        codeVersion: '1.0.0',
+        createDate: '2026-03-25T16:48:48.711Z',
+        config: {
+            name: 'Test Module with two blocks',
+            description: 'Description for the test module',
+            blockType: 'module',
+            permissions: [],
+            id: 'cd87187f-26aa-4dfb-994f-12ad810dc952',
+            tag: 'Module',
+            children: [
+                {
+                    id: '4242c579-891b-437d-8cef-61696c2baf2a',
+                    blockType: 'interfaceContainerBlock',
+                    defaultActive: true,
+                    permissions: [],
+                    onErrorAction: 'no-action',
+                    uiMetaData: {
+                        type: 'blank',
+                        title: 'Main page'
+                    },
+                    tag: 'Module:Main_container_block',
+                    children: [
+                        {
+                            id: 'e851686a-9cd6-4fb0-b3da-3a9e33c54af9',
+                            blockType: 'interfaceContainerBlock',
+                            defaultActive: true,
+                            permissions: [],
+                            onErrorAction: 'no-action',
+                            uiMetaData: {
+                                type: 'blank',
+                                title: 'Child page'
+                            },
+                            tag: 'Module:Child_container_block',
+                            children: [],
+                            events: [],
+                            artifacts: []
+                        }
+                    ],
+                    events: [],
+                    artifacts: []
+                },
+                {
+                    id: '4237578f-1057-4aa6-bdac-4d8e11b3be30',
+                    blockType: 'createTokenBlock',
+                    defaultActive: true,
+                    permissions: [],
+                    tag: 'Block_1',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                }
+            ],
+            events: [],
+            artifacts: [],
+            variables: [],
+            inputEvents: [],
+            outputEvents: [],
+            innerEvents: []
+        }
+    },
+
+    MODULE_VALIDATE_RESPONSE_VALID: {
+        results: {
+            errors: [],
+            blocks: [
+                {
+                    id: '4242c579-891b-437d-8cef-61696c2baf2a',
+                    name: 'interfaceContainerBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: 'e851686a-9cd6-4fb0-b3da-3a9e33c54af9',
+                    name: 'interfaceContainerBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                }
+            ],
+            tools: [],
+            id: 'cd87187f-26aa-4dfb-994f-12ad810dc952',
+            isValid: true
+        },
+        module: {
+            id: '69c411f0ae73da728c8d8f99',
+            uuid: 'fd51a3a7-ad99-4699-8de8-0c0ccb300aab',
+            name: 'Test Module with two blocks',
+            description: 'Description for the test module',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            codeVersion: '1.0.0',
+            createDate: '2026-03-25T16:48:48.711Z',
+            config: {
+                name: 'Test Module with two blocks',
+                description: 'Description for the test module',
+                blockType: 'module',
+                permissions: [],
+                id: 'cd87187f-26aa-4dfb-994f-12ad810dc952',
+                tag: 'Module',
+                children: [
+                    {
+                        id: '4242c579-891b-437d-8cef-61696c2baf2a',
+                        blockType: 'interfaceContainerBlock',
+                        defaultActive: true,
+                        permissions: [],
+                        onErrorAction: 'no-action',
+                        uiMetaData: {
+                            type: 'blank',
+                            title: 'Main page'
+                        },
+                        tag: 'Module:Main_container_block',
+                        children: [
+                            {
+                                id: 'e851686a-9cd6-4fb0-b3da-3a9e33c54af9',
+                                blockType: 'interfaceContainerBlock',
+                                defaultActive: true,
+                                permissions: [],
+                                onErrorAction: 'no-action',
+                                uiMetaData: {
+                                    type: 'blank',
+                                    title: 'Child page'
+                                },
+                                tag: 'Module:Child_container_block',
+                                children: [],
+                                events: [],
+                                artifacts: []
+                            }
+                        ],
+                        events: [],
+                        artifacts: []
+                    }
+                ],
+                events: [],
+                artifacts: [],
+                variables: [],
+                inputEvents: [],
+                outputEvents: [],
+                innerEvents: []
+            }
+        }
+    },
+
+    MODULE_VALIDATE_RESPONSE_INVALID: {
+        results: {
+            errors: [],
+            blocks: [
+                {
+                    id: '4242c579-891b-437d-8cef-61696c2baf2a',
+                    name: 'interfaceContainerBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: 'e851686a-9cd6-4fb0-b3da-3a9e33c54af9',
+                    name: 'interfaceContainerBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: '4237578f-1057-4aa6-bdac-4d8e11b3be30',
+                    name: 'createTokenBlock',
+                    errors: [
+                        'Template can not be empty',
+                        'Token "undefined" does not exist'
+                    ],
+                    warnings: [],
+                    infos: [],
+                    isValid: false
+                },
+                {
+                    id: 'cd87187f-26aa-4dfb-994f-12ad810dc952',
+                    name: 'module',
+                    errors: [
+                        'Module is invalid'
+                    ],
+                    isValid: false
+                }
+            ],
+            tools: [],
+            id: 'cd87187f-26aa-4dfb-994f-12ad810dc952',
+            isValid: false
+        },
+        module: {
+            id: '69c411f0ae73da728c8d8f99',
+            uuid: 'fd51a3a7-ad99-4699-8de8-0c0ccb300aab',
+            name: 'Test Module with two blocks',
+            description: 'Description for the test module',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            codeVersion: '1.0.0',
+            createDate: '2026-03-25T16:48:48.711Z',
+            config: {
+                name: 'Test Module with two blocks',
+                description: 'Description for the test module',
+                blockType: 'module',
+                permissions: [],
+                id: 'cd87187f-26aa-4dfb-994f-12ad810dc952',
+                tag: 'Module',
+                children: [
+                    {
+                        id: '4242c579-891b-437d-8cef-61696c2baf2a',
+                        blockType: 'interfaceContainerBlock',
+                        defaultActive: true,
+                        permissions: [],
+                        onErrorAction: 'no-action',
+                        uiMetaData: {
+                            type: 'blank',
+                            title: 'Main page'
+                        },
+                        tag: 'Module:Main_container_block',
+                        children: [
+                            {
+                                id: 'e851686a-9cd6-4fb0-b3da-3a9e33c54af9',
+                                blockType: 'interfaceContainerBlock',
+                                defaultActive: true,
+                                permissions: [],
+                                onErrorAction: 'no-action',
+                                uiMetaData: {
+                                    type: 'blank',
+                                    title: 'Child page'
+                                },
+                                tag: 'Module:Child_container_block',
+                                children: [],
+                                events: [],
+                                artifacts: []
+                            }
+                        ],
+                        events: [],
+                        artifacts: []
+                    },
+                    {
+                        id: '4237578f-1057-4aa6-bdac-4d8e11b3be30',
+                        blockType: 'createTokenBlock',
+                        defaultActive: true,
+                        permissions: [],
+                        tag: 'Block_1',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    }
+                ],
+                events: [],
+                artifacts: [],
+                variables: [],
+                inputEvents: [],
+                outputEvents: [],
+                innerEvents: []
+            }
+        }
+    },
+
+    MODULE_PUBLISH_RESPONSE: {
+        module: {
+            createDate: '2026-03-25T17:11:30.244Z',
+            updateDate: '2026-03-25T17:12:17.150Z',
+            uuid: '8310f001-8fdc-43bb-8ad0-bcd43ca17363',
+            name: 'Test Module with two blocks',
+            description: 'Description for the test module',
+            status: 'PUBLISHED',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8375153',
+            messageId: '1774458729.161736000',
+            codeVersion: '1.0.0',
+            type: 'CUSTOM',
+            contentFileId: '69c4175cae73da728c8d8fad',
+            config: {
+                name: 'Test Module with two blocks',
+                description: 'Description for the test module',
+                blockType: 'module',
+                permissions: [],
+                id: 'cd87187f-26aa-4dfb-994f-12ad810dc952',
+                tag: 'Module',
+                children: [
+                    {
+                        id: '4242c579-891b-437d-8cef-61696c2baf2a',
+                        blockType: 'interfaceContainerBlock',
+                        defaultActive: true,
+                        permissions: [],
+                        onErrorAction: 'no-action',
+                        uiMetaData: {
+                            type: 'blank',
+                            title: 'Main page'
+                        },
+                        tag: 'Module:Main_container_block',
+                        children: [
+                            {
+                                id: 'e851686a-9cd6-4fb0-b3da-3a9e33c54af9',
+                                blockType: 'interfaceContainerBlock',
+                                defaultActive: true,
+                                permissions: [],
+                                onErrorAction: 'no-action',
+                                uiMetaData: {
+                                    type: 'blank',
+                                    title: 'Child page'
+                                },
+                                tag: 'Module:Child_container_block',
+                                children: [],
+                                events: [],
+                                artifacts: []
+                            }
+                        ],
+                        events: [],
+                        artifacts: []
+                    }
+                ],
+                events: [],
+                artifacts: [],
+                variables: [],
+                inputEvents: [],
+                outputEvents: [],
+                innerEvents: []
+            },
+            id: '69c41742ae73da728c8d8fa6'
+        },
+        isValid: true,
+        errors: {
+            errors: [],
+            blocks: [
+                {
+                    id: '4242c579-891b-437d-8cef-61696c2baf2a',
+                    name: 'interfaceContainerBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                },
+                {
+                    id: 'e851686a-9cd6-4fb0-b3da-3a9e33c54af9',
+                    name: 'interfaceContainerBlock',
+                    errors: [],
+                    warnings: [],
+                    infos: [],
+                    isValid: true
+                }
+            ],
+            tools: [],
+            id: 'cd87187f-26aa-4dfb-994f-12ad810dc952',
+            isValid: true
+        }
+    },
+
+    MODULE_IMPORT_FILE_RESPONSE: {
+        createDate: '2026-03-25T16:34:31.456Z',
+        updateDate: '2026-03-25T16:34:31.456Z',
+        uuid: '70f318e1-d505-4b7b-ac9c-9184839f0072',
+        name: 'Device configuration module',
+        description: 'Part of devices flow',
+        status: 'DRAFT',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        codeVersion: '1.0.0',
+        type: 'CUSTOM',
+        config: {
+            name: 'Device configuration module',
+            description: 'Part of devices flow',
+            blockType: 'module',
+            permissions: [],
+            id: '3dc74d7b-eae8-49a5-84d5-c267c1fd8d06',
+            tag: 'Module',
+            children: [],
+            events: [],
+            artifacts: [],
+            variables: [],
+            inputEvents: [],
+            outputEvents: [],
+            innerEvents: []
+        },
+        id: '69c40e97ae73da728c8d8f78'
+    },
+
+    MODULES_GET_RESPONSE_LIST: [
+        {
+            createDate: '2026-03-25T12:23:36.763Z',
+            updateDate: '2026-03-25T12:24:28.059Z',
+            uuid: '2abde099-08f6-4d75-9de3-d6f33d95bc72',
+            name: 'New Module',
+            description: 'New module description',
+            status: 'PUBLISHED',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8370210',
+            messageId: '1774441459.171929000',
+            codeVersion: '1.0.0',
+            type: 'CUSTOM',
+            contentFileId: '69c3d3e5462c9c1141de3074',
+            config: {
+                name: 'New Module',
+                description: 'New module description',
+                blockType: 'module',
+                permissions: [],
+                id: '7d25fdf6-8fc4-4d01-b635-541b996415ce',
+                tag: 'Module',
+                children: [],
+                events: [],
+                artifacts: [],
+                variables: [],
+                inputEvents: [],
+                outputEvents: [],
+                innerEvents: []
+            },
+            id: '69c3d3c8462c9c1141de3069'
+        },
+        {
+            createDate: '2026-03-25T12:23:29.549Z',
+            updateDate: '2026-03-25T12:23:53.759Z',
+            uuid: 'e4ecf6f4-36fb-4872-99b8-9b592aac241d',
+            name: 'Device configuration module',
+            description: 'Part of devices flow',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            codeVersion: '1.0.0',
+            type: 'CUSTOM',
+            config: {
+                name: 'Device configuration module',
+                description: 'Part of devices flow',
+                blockType: 'module',
+                permissions: [],
+                id: '3dc74d7b-eae8-49a5-84d5-c267c1fd8d06',
+                tag: 'Module',
+                children: [],
+                events: [],
+                artifacts: [],
+                variables: [],
+                inputEvents: [],
+                outputEvents: [],
+                innerEvents: []
+            },
+            id: '69c3d3c1462c9c1141de3066'
+        }
+    ],
+
+    MODULES_MENU_RESPONSE_LIST: [
+        {
+            createDate: '2026-03-25T12:23:36.763Z',
+            updateDate: '2026-03-25T12:24:28.059Z',
+            uuid: '2abde099-08f6-4d75-9de3-d6f33d95bc72',
+            name: 'New Module',
+            description: 'New module description',
+            status: 'PUBLISHED',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8370210',
+            messageId: '1774441459.171929000',
+            codeVersion: '1.0.0',
+            type: 'CUSTOM',
+            contentFileId: '69c3d3e5462c9c1141de3074',
+            config: {
+                name: 'New Module',
+                description: 'New module description',
+                blockType: 'module',
+                permissions: [],
+                id: '7d25fdf6-8fc4-4d01-b635-541b996415ce',
+                tag: 'Module',
+                children: [],
+                events: [],
+                artifacts: [],
+                variables: [],
+                inputEvents: [],
+                outputEvents: [],
+                innerEvents: []
+            },
+            id: '69c3d3c8462c9c1141de3069'
+        },
+        {
+            createDate: '2026-03-25T12:23:29.549Z',
+            updateDate: '2026-03-25T12:23:53.759Z',
+            uuid: 'e4ecf6f4-36fb-4872-99b8-9b592aac241d',
+            name: 'Device configuration module',
+            description: 'Part of devices flow',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            codeVersion: '1.0.0',
+            type: 'CUSTOM',
+            config: {
+                name: 'Device configuration module',
+                description: 'Part of devices flow',
+                blockType: 'module',
+                permissions: [],
+                id: '3dc74d7b-eae8-49a5-84d5-c267c1fd8d06',
+                tag: 'Module',
+                children: [],
+                events: [],
+                artifacts: [],
+                variables: [],
+                inputEvents: [],
+                outputEvents: [],
+                innerEvents: []
+            },
+            id: '69c3d3c1462c9c1141de3066'
+        }
+    ],
+
+    MODULE_SCHEMAS_GET_RESPONSE_LIST: [
+        {
+            createDate: '2026-03-25T12:40:32.586Z',
+            updateDate: '2026-03-25T12:40:59.908Z',
+            uuid: 'b71c8b0e-b4aa-4d0b-ab63-639e306c02ea',
+            name: 'Module schema 3',
+            description: '',
+            entity: 'VC',
+            status: 'PUBLISHED',
+            version: '3',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8370319',
+            messageId: '1774442456.657381000',
+            documentURL: 'ipfs://bafkreifyyqurrnlxnhblm57qobo2ecv4wjm3o7i3axgscls3ydjn3fefaq',
+            contextURL: 'ipfs://bafkreid6crdhdtk3mtusl4mqcrjlsan6o7eanyetko3k5nwykcvezndepy',
+            iri: '#b71c8b0e-b4aa-4d0b-ab63-639e306c02ea&3',
+            readonly: false,
+            system: false,
+            active: false,
+            category: 'MODULE',
+            codeVersion: '1.2.0',
+            document: 'innerSchemaConfigurationInText',
+            context: 'jsonLdContextInText',
+            topicCount: 1,
+            id: '69c3d7b9462c9c1141de309b'
+        },
+        {
+            createDate: '2026-03-25T12:29:13.470Z',
+            updateDate: '2026-03-25T12:29:13.470Z',
+            uuid: '5ff2b3dd-1ea0-44c1-a84d-7c68c0d55184',
+            name: 'Module schema 2',
+            description: '',
+            entity: 'NONE',
+            status: 'DRAFT',
+            version: '1.0.1',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8370227',
+            documentURL: '',
+            contextURL: 'schema:5ff2b3dd-1ea0-44c1-a84d-7c68c0d55184',
+            iri: '#5ff2b3dd-1ea0-44c1-a84d-7c68c0d55184&1.0.1',
+            readonly: false,
+            system: false,
+            active: false,
+            category: 'MODULE',
+            codeVersion: '1.2.0',
+            document: 'innerSchemaConfigurationInText',
+            topicCount: 1,
+            id: '69c3d513462c9c1141de3091'
+        },
+        {
+            createDate: '2026-03-25T12:28:37.997Z',
+            updateDate: '2026-03-25T12:28:37.997Z',
+            uuid: 'de840307-57f4-423b-9216-fb6f0e1f788e',
+            name: 'Module schema 1',
+            description: '',
+            entity: 'VC',
+            status: 'DRAFT',
+            version: '1.0.1',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8370224',
+            documentURL: '',
+            contextURL: 'schema:de840307-57f4-423b-9216-fb6f0e1f788e',
+            iri: '#de840307-57f4-423b-9216-fb6f0e1f788e&1.0.1',
+            readonly: false,
+            system: false,
+            active: false,
+            category: 'MODULE',
+            codeVersion: '1.2.0',
+            document: 'innerSchemaConfigurationInText',
+            topicCount: 1,
+            id: '69c3d4ef462c9c1141de3087'
+        }
+    ],
+
+    MODULE_SCHEMAS_POST_REQUEST: {
+        uuid: 'd26a7a31-00ba-4c30-1314-3d9eecfd7eda',
+        hash: '',
+        name: 'Module schema example',
+        description: '',
+        entity: 'NONE',
+        status: 'DRAFT',
+        readonly: false,
+        document: {
+            $id: '#d26a7a31-00ba-4c30-1314-3d9eecfd7eda',
+            $comment: '{ "@id": "schema:d26a7a31-00ba-4c30-1314-3d9eecfd7eda#d26a7a31-00ba-4c30-1314-3d9eecfd7eda", "term": "d26a7a31-00ba-4c30-1314-3d9eecfd7eda" }',
+            title: 'Module schema example',
+            description: '',
+            type: 'object',
+            properties: {
+                '@context': {
+                    oneOf: [
+                        { type: 'string' },
+                        {
+                            type: 'array',
+                            items: {
+                                type: 'string'
+                            }
+                        }
+                    ],
+                    readOnly: true
+                },
+                type: {
+                    oneOf: [
+                        { type: 'string' },
+                        {
+                            type: 'array',
+                            items: {
+                                type: 'string'
+                            }
+                        }
+                    ],
+                    readOnly: true
+                },
+                id: {
+                    type: 'string',
+                    readOnly: true
+                },
+                field0: {
+                    title: 'field0',
+                    description: 'qweqwe',
+                    readOnly: false,
+                    type: 'string',
+                    $comment: '{"term":"field0","@id":"https://www.schema.org/text","availableOptions":[],"orderPosition":0}'
+                }
+            },
+            required: ['@context', 'type'],
+            additionalProperties: false,
+            $defs: {}
+        },
+        context: null,
+        version: '',
+        sourceVersion: '',
+        creator: '',
+        owner: '',
+        messageId: '',
+        documentURL: '',
+        contextURL: 'schema:d26a7a31-00ba-4c30-1314-3d9eecfd7eda',
+        iri: '',
+        fields: [],
+        conditions: [],
+        active: false,
+        system: false,
+        category: 'MODULE',
+        errors: [],
+        userDID: null,
+        codeVersion: ''
+    },
+
+    MODULE_SCHEMAS_POST_RESPONSE_LIST: [
+        {
+            createDate: '2026-03-25T13:43:28.481Z',
+            updateDate: '2026-03-25T13:43:28.481Z',
+            uuid: 'd26a7a31-00ba-4c30-1314-3d9eecfd7eda',
+            name: 'Module schema example',
+            description: '',
+            entity: 'NONE',
+            status: 'DRAFT',
+            version: '1.0.1',
+            sourceVersion: '',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8371271',
+            messageId: null,
+            documentURL: '',
+            contextURL: 'schema:d26a7a31-00ba-4c30-1314-3d9eecfd7eda',
+            iri: '#d26a7a31-00ba-4c30-1314-3d9eecfd7eda&1.0.1',
+            readonly: false,
+            system: false,
+            active: false,
+            category: 'MODULE',
+            codeVersion: '1.2.0',
+            document: 'innerSchemaConfigurationInText',
+            id: '69c3e679ae73da728c8d8eaf'
+        }
+    ],
+
     COMPARE_SCHEMAS_RESPONSE: {
         left: {
             id: Examples.DB_ID,
