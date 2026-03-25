@@ -43,7 +43,7 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
   },
 }
 
-export const DEFAULT_NETWORK: NetworkId = "mainnet"
+export const DEFAULT_NETWORK: NetworkId = "testnet"
 
 export function getActivePolicy(networkId: NetworkId): PolicyConfig {
   return NETWORKS[networkId].policies[0]

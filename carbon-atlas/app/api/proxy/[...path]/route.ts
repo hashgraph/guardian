@@ -9,7 +9,8 @@ async function fetchUpstream(upstreamUrl: string, token: string) {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    next: { revalidate: 600 },  // 10 min server-side cache
+    // No Next.js server-side cache — we control caching via Cache-Control headers
+    cache: "no-store",
   })
 }
 
@@ -36,6 +37,11 @@ export async function GET(
     invalidateTokens()
     const freshToken = await getIndexerToken()
     res = await fetchUpstream(upstreamUrl, freshToken)
+  }
+
+  // On 500, retry once — upstream indexer has transient failures
+  if (res.status === 500) {
+    res = await fetchUpstream(upstreamUrl, token)
   }
 
   const data = await res.json()
