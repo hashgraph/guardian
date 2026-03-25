@@ -1,0 +1,84 @@
+<div #dialogHeader class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Configure API Documentation</div>
+    </div>
+    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+
+<div class="dialog-body">
+    <div class="entries-container">
+        <div *ngIf="entries.length === 0" class="empty-state">
+            No API endpoints configured. Click "+ Add Endpoint" to get started.
+        </div>
+
+        <div *ngFor="let entry of entries; let i = index" class="entry-row">
+            <div class="entry-fields">
+                <div class="field-group field-block">
+                    <label>Block</label>
+                    <select-block
+                        [(value)]="entry.target"
+                        [blocks]="blocks"
+                        [root]="root"
+                        (change)="onTargetChange(i)"
+                    ></select-block>
+                </div>
+                <div class="field-group field-method">
+                    <label>Method</label>
+                    <p-dropdown
+                        [(ngModel)]="entry.method"
+                        [options]="methods"
+                        appendTo="body"
+                        class="guardian-dropdown"
+                    ></p-dropdown>
+                </div>
+                <div class="field-group field-name">
+                    <label>Name</label>
+                    <input type="text" pInputText [(ngModel)]="entry.name" placeholder="Endpoint name" />
+                </div>
+                <div class="field-group field-description">
+                    <label>Description</label>
+                    <input type="text" pInputText [(ngModel)]="entry.description" placeholder="What this endpoint does" />
+                </div>
+                <div class="field-group field-alias">
+                    <label>Alias</label>
+                    <input type="text" pInputText [(ngModel)]="entry.alias" (input)="onAliasChange(i)" placeholder="url-friendly-alias" />
+                </div>
+                <div class="field-group field-preview">
+                    <label>Preview URL</label>
+                    <div class="preview-url">{{ getPreviewUrl(entry) || '—' }}</div>
+                </div>
+                <div class="field-group field-actions">
+                    <label>&nbsp;</label>
+                    <button class="guardian-button guardian-button-secondary remove-btn" (click)="removeEntry(i)" title="Remove">
+                        <i class="pi pi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div *ngIf="validationErrors.has(i)" class="entry-error">
+                {{ validationErrors.get(i) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="add-row">
+        <button class="guardian-button guardian-button-secondary" (click)="addEntry()">
+            <i class="pi pi-plus"></i> Add Endpoint
+        </button>
+    </div>
+</div>
+
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button dialog-button">
+            <button (click)="onClose()" class="guardian-button guardian-button-secondary">Cancel</button>
+        </div>
+        <div class="confirm-button dialog-button">
+            <button (click)="onSave()" class="guardian-button guardian-button-primary" [disabled]="validationErrors.size > 0 && entries.length > 0">Save</button>
+        </div>
+    </div>
+</div>

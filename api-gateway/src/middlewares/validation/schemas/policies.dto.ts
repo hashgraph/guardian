@@ -386,13 +386,15 @@ export class PolicyDTO {
         type: 'object',
         additionalProperties: true,
         isArray: true,
-        description: 'Auto-generated policy documentation entries',
+        description: 'User-configured policy API documentation entries',
         example: [{
             name: 'create_device',
             description: 'Send event to create_device',
             target: 'create_device',
             method: 'POST',
-            url: '/api/v1/policies/{policyId}/blocks/create_device/events/send-event'
+            alias: 'create-device',
+            url: '/api/v1/policies/{policyId}/tag/create_device/blocks',
+            dmrvUrl: '/api/v1/dmrv/{policyId}/create-device'
         }]
     })
     @IsOptional()

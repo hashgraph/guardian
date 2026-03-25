@@ -1182,7 +1182,7 @@ export class PoliciesComponent implements OnInit {
                 this.dialogService.open(PolicyDocumentationDialogComponent, {
                     showHeader: false,
                     header: 'Policy Documentation',
-                    width: '900px',
+                    width: '90vw',
                     styleClass: 'guardian-dialog',
                     data: {
                         entries: entries || [],

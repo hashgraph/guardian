@@ -14,6 +14,7 @@ import { ModulesApi } from './api/service/module.js';
 import { ToolsApi } from './api/service/tool.js';
 import { ProfileApi } from './api/service/profile.js';
 import { PolicyApi } from './api/service/policy.js';
+import { DmrvApi } from './api/service/dmrv.js';
 import { SchemaApi, SingleSchemaApi } from './api/service/schema.js';
 import { SettingsApi } from './api/service/settings.js';
 import { TagsApi } from './api/service/tags.js';
@@ -84,6 +85,7 @@ import { ExternalPoliciesApi } from './api/service/external-policy.js';
         ToolsApi,
         ProfileApi,
         PolicyApi,
+        DmrvApi,
         SingleSchemaApi,
         SchemaApi,
         SettingsApi,

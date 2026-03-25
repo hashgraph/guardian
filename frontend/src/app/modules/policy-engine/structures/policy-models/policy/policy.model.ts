@@ -37,7 +37,7 @@ export class PolicyTemplate {
     public readonly version!: string;
     public readonly previousVersion!: string;
     public readonly tests!: any;
-    public readonly policyDocumentation!: any[];
+    public policyDocumentation!: any[];
 
     private _policyTag!: string;
     private _name!: string;

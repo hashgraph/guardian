@@ -133,6 +133,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { DialogModule } from 'primeng/dialog';
 import { DeleteDialogComponent } from './dialogs/delete-dialog/delete-dialog.component';
 import { PolicyDocumentationDialogComponent } from './dialogs/policy-documentation-dialog/policy-documentation-dialog.component';
+import { PolicyApiConfigDialogComponent } from './dialogs/policy-api-config-dialog/policy-api-config-dialog.component';
 import { ProgressTrackerComponent } from './policy-viewer/progress-tracker/progress-tracker.component';
 import { PolicyProgressService } from './services/policy-progress.service';
 import { InputSwitchModule } from 'primeng/inputswitch';
@@ -275,6 +276,7 @@ import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-di
         SearchBlocksComponent,
         DeleteDialogComponent,
         PolicyDocumentationDialogComponent,
+        PolicyApiConfigDialogComponent,
         ProgressTrackerComponent,
         RecordControllerComponent,
         RecordResultDialog,

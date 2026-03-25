@@ -1,6 +1,9 @@
-<div class="dialog-header">
+<div #dialogHeader class="dialog-header">
     <div class="header-container">
         <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
     </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
@@ -16,13 +19,14 @@
         No documented endpoints for this policy.
     </div>
 
-    <p-table *ngIf="!loading && entries.length > 0" [value]="entries" [scrollable]="true" scrollHeight="400px" styleClass="p-datatable-sm">
+    <p-table *ngIf="!loading && entries.length > 0" [value]="entries" [scrollable]="true" scrollHeight="flex" styleClass="p-datatable-sm">
         <ng-template pTemplate="header">
             <tr>
                 <th>Name</th>
                 <th>Description</th>
                 <th>Method</th>
                 <th>URL</th>
+                <th>Alias URL</th>
                 <th style="width: 60px"></th>
             </tr>
         </ng-template>
@@ -36,8 +40,9 @@
                     </span>
                 </td>
                 <td class="url-cell">{{entry.url}}</td>
+                <td class="url-cell">{{entry.dmrvUrl}}</td>
                 <td>
-                    <button class="guardian-button guardian-button-secondary copy-btn" (click)="copyUrl(entry.url)" title="Copy URL">
+                    <button class="guardian-button guardian-button-secondary copy-btn" (click)="copyUrl(entry.dmrvUrl || entry.url)" title="Copy URL">
                         Copy
                     </button>
                 </td>

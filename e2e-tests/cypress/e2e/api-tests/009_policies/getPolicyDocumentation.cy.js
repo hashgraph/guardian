@@ -54,6 +54,8 @@ context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () 
 						expect(entry).to.have.property("description");
 						expect(entry).to.have.property("method");
 						expect(entry).to.have.property("url");
+						expect(entry).to.have.property("alias");
+						expect(entry).to.have.property("dmrvUrl");
 						expect(["GET", "POST"]).to.include(entry.method);
 					});
 				}
@@ -75,6 +77,8 @@ context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () 
 				postEntries.forEach((entry) => {
 					expect(entry.url).to.include("/api/v1/policies/");
 					expect(entry.url).to.include("/tag/");
+					expect(entry.dmrvUrl).to.include("/api/v1/dmrv/");
+					expect(entry.dmrvUrl).to.include(entry.alias);
 				});
 			});
 		});
@@ -94,7 +98,8 @@ context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () 
 				getEntries.forEach((entry) => {
 					expect(entry.url).to.include("/api/v1/policies/");
 					expect(entry.url).to.include("/tag/");
-					expect(entry.url).to.not.match(/\/blocks$/);
+					expect(entry.dmrvUrl).to.include("/api/v1/dmrv/");
+					expect(entry.dmrvUrl).to.include(entry.alias);
 				});
 			});
 		});
@@ -113,15 +118,41 @@ context("Policy Documentation", { tags: ['policies', 'secondPool', 'all'] }, () 
 				response.body.forEach((entry) => {
 					expect(entry.url).to.match(/^\/api\/v1\//);
 					expect(entry.url).to.not.match(/^https?:\/\//);
+					expect(entry.dmrvUrl).to.match(/^\/api\/v1\/dmrv\//);
 				});
 			});
 		});
 	});
 
-it("Documentation without authorization returns 401", () => {
+	it("DMRV proxy with invalid alias returns 404", () => {
+		Authorization.getAccessToken(SRUsername).then((authorization) => {
+			cy.request({
+				method: METHOD.GET,
+				url: API.ApiServer + `dmrv/${policyId}/nonexistent-alias`,
+				headers: {
+					authorization,
+				},
+				failOnStatusCode: false,
+			}).then((response) => {
+				expect(response.status).to.eq(STATUS_CODE.NOT_FOUND);
+			});
+		});
+	});
+
+	it("Documentation without authorization returns 401", () => {
 		cy.request({
 			method: METHOD.GET,
 			url: API.PolicyDocumentation(policyId),
+			failOnStatusCode: false,
+		}).then((response) => {
+			expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
+		});
+	});
+
+	it("DMRV proxy without authorization returns 401", () => {
+		cy.request({
+			method: METHOD.GET,
+			url: API.ApiServer + `dmrv/${policyId}/some-alias`,
 			failOnStatusCode: false,
 		}).then((response) => {
 			expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);

@@ -3,25 +3,33 @@
  */
 export interface IPolicyDocumentationEntry {
   /**
-   * Block name
+   * User-visible name
    */
   name: string;
   /**
-   * Description
+   * User-provided description
    */
   description: string;
   /**
-   * Block target name
+   * Block target name (unique block name in the policy tree)
    */
   target: string;
   /**
-   * HTTP method
+   * HTTP method: GET | POST
    */
   method: string;
   /**
-   * Relative URL
+   * Human-readable alias for the DMRV URL (lowercase, alphanumeric, hyphens)
+   */
+  alias: string;
+  /**
+   * Technical URL (auto-generated on save, points to block by tag)
    */
   url: string;
+  /**
+   * External DMRV URL (auto-generated on save, based on alias)
+   */
+  dmrvUrl: string;
 }
 
 /**

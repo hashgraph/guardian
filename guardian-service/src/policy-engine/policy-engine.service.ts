@@ -79,92 +79,35 @@ import { PolicyCommentsUtils } from './policy-comments-utils.js';
 import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
 
 /**
- * URL-safe name regex: alphanumeric, hyphens, underscores only
+ * Alias regex: lowercase alphanumeric and hyphens only
  */
-const URL_SAFE_REGEX = /^[a-zA-Z0-9_-]+$/;
+const ALIAS_REGEX = /^[a-z0-9-]+$/;
 
 /**
- * Cached block about registry (blockType -> BlockAbout metadata)
+ * Build technical and DMRV URLs for user-configured documentation entries.
+ * Called on policy save to enrich entries with generated URLs.
  */
-let blockAboutCache: Record<string, { post: boolean; get: boolean }> | null = null;
-
-/**
- * Fetch and cache block about registry from policy-service
- */
-async function getBlockAboutRegistry(): Promise<Record<string, { post: boolean; get: boolean }>> {
-    if (blockAboutCache) {
-        return blockAboutCache;
-    }
-    const result = await new GuardiansService()
-        .sendMessageWithTimeout(PolicyEvents.GET_BLOCK_ABOUT, 60 * 1000, null);
-    blockAboutCache = typeof result === 'string' ? JSON.parse(result) : result;
-    return blockAboutCache;
-}
-
-/**
- * Recursively collect all blocks from the config tree
- */
-function collectBlocks(config: any, blocks: any[] = []): any[] {
-    if (!config) {
-        return blocks;
-    }
-    blocks.push(config);
-    if (Array.isArray(config.children)) {
-        for (const child of config.children) {
-            collectBlocks(child, blocks);
-        }
-    }
-    return blocks;
-}
-
-/**
- * Auto-generate policy documentation entries by scanning the block tree
- */
-async function generatePolicyDocumentation(
+function buildDocumentationUrls(
     policyId: string,
-    config: any
-): Promise<IPolicyDocumentationEntry[]> {
-    const entries: IPolicyDocumentationEntry[] = [];
-    if (!config) {
-        return entries;
+    entries: IPolicyDocumentationEntry[]
+): IPolicyDocumentationEntry[] {
+    if (!Array.isArray(entries)) {
+        return [];
     }
-
-    const blockAboutRegistry = await getBlockAboutRegistry();
-    const allBlocks = collectBlocks(config);
-
-    for (const block of allBlocks) {
-        const tag = block.tag;
-        if (!tag || !URL_SAFE_REGEX.test(tag)) {
-            continue;
-        }
-
-        const about = blockAboutRegistry[block.blockType];
-        if (!about) {
-            continue;
-        }
-
-        if (about.post) {
-            entries.push({
-                name: tag,
-                description: `Send event to ${tag}`,
-                target: tag,
-                method: 'POST',
-                url: `/api/v1/policies/${policyId}/tag/${tag}/blocks`,
-            });
-        }
-
-        if (about.get) {
-            entries.push({
-                name: tag,
-                description: `Get data from ${tag}`,
-                target: tag,
-                method: 'GET',
-                url: `/api/v1/policies/${policyId}/tag/${tag}`,
-            });
-        }
-    }
-
-    return entries;
+    return entries.map((entry) => {
+        const tag = entry.target;
+        const alias = entry.alias;
+        const method = entry.method;
+        const technicalUrl = method === 'POST'
+            ? `/api/v1/policies/${policyId}/tag/${tag}/blocks`
+            : `/api/v1/policies/${policyId}/tag/${tag}`;
+        const dmrvUrl = `/api/v1/dmrv/${policyId}/${alias}`;
+        return {
+            ...entry,
+            url: technicalUrl,
+            dmrvUrl,
+        };
+    });
 }
 
 /**
@@ -1313,7 +1256,7 @@ export class PolicyEngineService {
                         throw new Error('Policy is not in draft status.');
                     }
 
-                    model.policyDocumentation = await generatePolicyDocumentation(policyId, model.config);
+                    model.policyDocumentation = buildDocumentationUrls(policyId, model.policyDocumentation || []);
 
                     let result = await DatabaseServer.updatePolicyConfig(policyId, model);
                     result = await PolicyImportExportHelper.updatePolicyComponents(result, logger, owner.id);
