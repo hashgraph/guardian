@@ -550,6 +550,22 @@
     margin-bottom: 24px;
 }
 
+.expression-btn-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.expression-help-icon {
+    font-size: 16px;
+    color: #4680ee;
+    cursor: help;
+
+    &:hover {
+        color: #2a5fc7;
+    }
+}
+
 .checkbox-field-container.private {
     margin-left: 7px;
     padding-left: 1px;

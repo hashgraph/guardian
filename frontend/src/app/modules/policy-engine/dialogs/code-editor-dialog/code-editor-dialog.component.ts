@@ -1,6 +1,7 @@
 import { AfterContentInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
+import { EditorHelpContext } from './editor-help-context';
 
 /**
  * Export schema dialog.
@@ -23,7 +24,7 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
         ],
         autoCloseBrackets: true,
         matchBrackets: true,
-        lint: true,
+        lint: false,
         readonly: false,
         autoFocus: true
     };
@@ -32,6 +33,12 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
     public loading = true;
     public data: any
     public test: boolean
+
+    public helpContext: EditorHelpContext | null = null;
+    public helpPanelOpen = false;
+    public validationErrors: string[] = [];
+    public shouldValidate = false;
+    public expandedCategories: { [key: string]: boolean } = {};
 
     @ViewChild(CodemirrorComponent)
     codeEditorComponent!: CodemirrorComponent;
@@ -52,9 +59,17 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
         if (this.data.mode) {
             this.codeMirrorOptions.mode = this.data.mode;
         }
+        if (this.data.placeholder) {
+            this.codeMirrorOptions.placeholder = this.data.placeholder;
+        }
+        if (this.data.variables) {
+            this.codeMirrorOptions.variables = this.data.variables;
+        }
         this.expression = this.data.expression;
         this.codeMirrorOptions.readOnly = this.data.readonly;
         this.test = this.data.test;
+        this.helpContext = this.data.helpContext || null;
+        this.shouldValidate = !!this.data.validate;
     }
 
     ngAfterContentInit() {
@@ -66,7 +81,72 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
         }, 100);
     }
 
+    public toggleHelpPanel(): void {
+        this.helpPanelOpen = !this.helpPanelOpen;
+    }
+
+    public insertField(fieldName: string): void {
+        const cm = this.codeEditorComponent?.codeMirror;
+        if (cm) {
+            const cursor = cm.getCursor();
+            cm.replaceRange(fieldName, cursor);
+            cm.focus();
+        }
+    }
+
+    public validateExpression(): string[] {
+        const errors: string[] = [];
+        const expr = (this.expression || '').trim();
+
+        if (!expr) {
+            errors.push('Expression is empty.');
+            return errors;
+        }
+
+        // Build a mock document with available fields as properties
+        const mockDocument: any = {};
+        if (this.helpContext?.availableFields) {
+            for (const field of this.helpContext.availableFields) {
+                mockDocument[field] = 0;
+            }
+        }
+
+        // Build a mock table helper matching the backend's buildTableHelper()
+        const mockTable: any = {
+            normalize: () => ({ type: 'table', columnKeys: [], rows: [] }),
+            keys: () => [],
+            rows: () => [],
+            cell: () => 0,
+            col: () => [],
+            num: (v: any) => Number(v) || 0,
+        };
+
+        // Compile and execute, exactly as the backend does
+        try {
+            const fn = new Function('table', `with (this) { return ${expr} }`);
+            fn.apply(mockDocument, [mockTable]);
+        } catch (error: any) {
+            const message = error?.message || String(error);
+            errors.push(message);
+        }
+
+        return errors;
+    }
+
     public onSave(): void {
+        if (this.shouldValidate) {
+            this.validationErrors = this.validateExpression();
+            if (this.validationErrors.length > 0) {
+                return;
+            }
+        }
+        this.dialogRef.close({
+            type: 'save',
+            expression: this.expression
+        });
+    }
+
+    public forceSave(): void {
         this.dialogRef.close({
             type: 'save',
             expression: this.expression

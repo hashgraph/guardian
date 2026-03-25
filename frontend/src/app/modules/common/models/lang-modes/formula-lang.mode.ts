@@ -8,26 +8,27 @@ import CodeMirror, { Mode, StringStream } from 'codemirror';
 
 CodeMirror.defineMode('formula-lang', function (config, parserConfig) {
     const operations = [
-        'and', 
-        'or', 
-        'not', 
-        'xor', 
-        '\\=', 
-        '<', 
-        '>', 
-        '\\+', 
-        '\\-', 
-        '\\*', 
+        'and',
+        'or',
+        'not',
+        'xor',
+        '\\=',
+        '<',
+        '>',
+        '\\+',
+        '\\-',
+        '\\*',
         '\\/'
     ].map((v) => `(${v})`).join('|');
     const isOperations = new RegExp(operations);
 
+    const variables = (config as any).variables as string[];
+    const isVariables = variables?.length
+        ? new RegExp(variables.map((v) => `(${v})`).join('|'))
+        : null;
+
     const policySyntaxOverlay: Mode<any> = {
         token: function (stream: StringStream) {
-            const variables = (config as any).variables as string[];
-            const variablesName = variables.map((v) => `(${v})`).join('|');
-            const isVariables = variables.length ? new RegExp(variablesName) : null;
-
             if (stream.match(isOperations)) {
                 return 'formula-operation';
             } else if (isVariables && stream.match(isVariables)) {
@@ -43,7 +44,7 @@ CodeMirror.defineMode('formula-lang', function (config, parserConfig) {
     };
     return CodeMirror.overlayMode(
         //text/x-spreadsheet
-        CodeMirror.getMode(config, parserConfig.backdrop || 'application/ld+json'),
+        CodeMirror.getMode(config, parserConfig.backdrop || 'text/plain'),
         policySyntaxOverlay
     );
 });
