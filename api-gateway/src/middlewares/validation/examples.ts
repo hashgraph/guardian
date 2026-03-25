@@ -141,6 +141,32 @@ const TOOL_EXAMPLE_CUSTOM_LOGIC_EXPRESSION_SHORT =
     '}\n' +
     'calc();';
 
+const PROFILE_DID_DOCUMENT_SAMPLE = {
+    id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+    '@context': 'https://www.w3.org/ns/did/v1',
+    verificationMethod: [
+        {
+            id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key',
+            type: 'Ed25519VerificationKey2018',
+            controller:
+                'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+            publicKeyBase58: '2vKLgbwo1DoxTebvSzmz1mk1H4tJTX3FaUt4RUFPCZ6p'
+        },
+        {
+            id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs',
+            type: 'Bls12381G2Key2020',
+            controller:
+                'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+            publicKeyBase58:
+                '24LRAHd2Dc7d2qziS9D6hXHFmc5uir2TDzowcxzprCd24ynNBjz5NP1kcpGoFbHdRLZo69ZvwdcsjNGSxEyDyCpgqe2Z1ihL8Ysy8Z9KA6wJmBUjEmTYdNNMur8mxgmapoq6'
+        }
+    ],
+    authentication: [
+        'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key'
+    ],
+    assertionMethod: ['#did-root-key', '#did-root-key-bbs']
+};
+
 export const ObjectExamples = {
     PERMISSION_SR: PERMISSIONS_SR,
 
@@ -570,6 +596,549 @@ export const ObjectExamples = {
         }
     ],
 
+    PROFILE_RESPONSE: {
+        username: 'StandardRegistry',
+        role: 'STANDARD_REGISTRY',
+        permissions: [
+            'ACCOUNTS_STANDARD_REGISTRY_READ',
+            'DEMO_KEY_CREATE',
+            'IPFS_FILE_READ',
+            'IPFS_FILE_CREATE',
+            'PROFILES_USER_READ',
+            'PROFILES_USER_UPDATE',
+            'PROFILES_BALANCE_READ',
+            'ACCOUNTS_ACCOUNT_READ',
+            'ANALYTIC_POLICY_READ',
+            'ANALYTIC_MODULE_READ',
+            'ANALYTIC_TOOL_READ',
+            'ANALYTIC_SCHEMA_READ',
+            'ANALYTIC_DOCUMENT_READ',
+            'ARTIFACTS_FILE_READ',
+            'ARTIFACTS_FILE_CREATE',
+            'ARTIFACTS_FILE_DELETE',
+            'BRANDING_CONFIG_UPDATE',
+            'CONTRACTS_CONTRACT_READ',
+            'CONTRACTS_CONTRACT_CREATE',
+            'CONTRACTS_CONTRACT_DELETE',
+            'CONTRACTS_CONTRACT_MANAGE',
+            'CONTRACTS_WIPE_REQUEST_READ',
+            'CONTRACTS_WIPE_REQUEST_UPDATE',
+            'CONTRACTS_WIPE_REQUEST_DELETE',
+            'CONTRACTS_WIPE_REQUEST_REVIEW',
+            'CONTRACTS_WIPE_ADMIN_CREATE',
+            'CONTRACTS_WIPE_ADMIN_DELETE',
+            'CONTRACTS_WIPE_MANAGER_CREATE',
+            'CONTRACTS_WIPE_MANAGER_DELETE',
+            'CONTRACTS_WIPER_CREATE',
+            'CONTRACTS_WIPER_DELETE',
+            'CONTRACTS_POOL_READ',
+            'CONTRACTS_POOL_UPDATE',
+            'CONTRACTS_POOL_DELETE',
+            'CONTRACTS_RETIRE_REQUEST_READ',
+            'CONTRACTS_RETIRE_REQUEST_CREATE',
+            'CONTRACTS_RETIRE_REQUEST_DELETE',
+            'CONTRACTS_RETIRE_REQUEST_REVIEW',
+            'CONTRACTS_RETIRE_ADMIN_CREATE',
+            'CONTRACTS_RETIRE_ADMIN_DELETE',
+            'CONTRACTS_PERMISSIONS_READ',
+            'CONTRACTS_DOCUMENT_READ',
+            'LOG_LOG_READ',
+            'MODULES_MODULE_READ',
+            'MODULES_MODULE_CREATE',
+            'MODULES_MODULE_UPDATE',
+            'MODULES_MODULE_DELETE',
+            'MODULES_MODULE_REVIEW',
+            'POLICIES_POLICY_READ',
+            'POLICIES_POLICY_CREATE',
+            'POLICIES_POLICY_UPDATE',
+            'POLICIES_POLICY_DELETE',
+            'POLICIES_POLICY_REVIEW',
+            'POLICIES_POLICY_EXECUTE',
+            'POLICIES_POLICY_MANAGE',
+            'POLICIES_MIGRATION_CREATE',
+            'POLICIES_RECORD_ALL',
+            'SCHEMAS_SCHEMA_READ',
+            'SCHEMAS_SCHEMA_CREATE',
+            'SCHEMAS_SCHEMA_UPDATE',
+            'SCHEMAS_SCHEMA_DELETE',
+            'SCHEMAS_SCHEMA_REVIEW',
+            'SCHEMAS_SYSTEM_SCHEMA_READ',
+            'SCHEMAS_SYSTEM_SCHEMA_CREATE',
+            'SCHEMAS_SYSTEM_SCHEMA_UPDATE',
+            'SCHEMAS_SYSTEM_SCHEMA_DELETE',
+            'SCHEMAS_SYSTEM_SCHEMA_REVIEW',
+            'TOOLS_TOOL_READ',
+            'TOOLS_TOOL_CREATE',
+            'TOOLS_TOOL_UPDATE',
+            'TOOLS_TOOL_DELETE',
+            'TOOLS_TOOL_REVIEW',
+            'TOOL_MIGRATION_CREATE',
+            'TOKENS_TOKEN_READ',
+            'TOKENS_TOKEN_CREATE',
+            'TOKENS_TOKEN_UPDATE',
+            'TOKENS_TOKEN_DELETE',
+            'TOKENS_TOKEN_MANAGE',
+            'TAGS_TAG_READ',
+            'TAGS_TAG_CREATE',
+            'PROFILES_RESTORE_ALL',
+            'SUGGESTIONS_SUGGESTIONS_READ',
+            'SUGGESTIONS_SUGGESTIONS_UPDATE',
+            'SETTINGS_SETTINGS_READ',
+            'SETTINGS_SETTINGS_UPDATE',
+            'SETTINGS_THEME_READ',
+            'SETTINGS_THEME_CREATE',
+            'SETTINGS_THEME_UPDATE',
+            'SETTINGS_THEME_DELETE',
+            'PERMISSIONS_ROLE_READ',
+            'PERMISSIONS_ROLE_CREATE',
+            'PERMISSIONS_ROLE_UPDATE',
+            'PERMISSIONS_ROLE_DELETE',
+            'PERMISSIONS_ROLE_MANAGE',
+            'ACCESS_POLICY_ALL',
+            'SCHEMAS_RULE_CREATE',
+            'SCHEMAS_RULE_READ',
+            'SCHEMAS_RULE_EXECUTE',
+            'FORMULAS_FORMULA_CREATE',
+            'FORMULAS_FORMULA_READ',
+            'WORKER_TASKS_READ',
+            'WORKER_TASKS_EXECUTE',
+            'WORKER_TASKS_DELETE',
+            'POLICIES_EXTERNAL_POLICY_READ',
+            'POLICIES_EXTERNAL_POLICY_CREATE',
+            'POLICIES_EXTERNAL_POLICY_UPDATE',
+            'POLICIES_EXTERNAL_POLICY_DELETE',
+            'LOG_LOG_READ',
+            'LOG_SYSTEM_READ'
+        ],
+        did: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        hederaAccountId: '0.0.6046379',
+        location: 'local',
+        confirmed: true,
+        failed: false,
+        topicId: '0.0.8361161',
+        parentTopicId: '0.0.1960',
+        didDocument: {
+            createDate: '2026-03-24T17:54:47.965Z',
+            updateDate: '2026-03-24T17:55:01.913Z',
+            did: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            document: {
+                id: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+                '@context': 'https://www.w3.org/ns/did/v1',
+                verificationMethod: [
+                    {
+                        id: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161#did-root-key',
+                        type: 'Ed25519VerificationKey2018',
+                        controller: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+                        publicKeyBase58: 'QDui45JN8tAZyc8aNcgbjKH8DQDzgXYpNGD7wfpeqwSAsm3FJ5TymhXz7japEGMW'
+                    },
+                    {
+                        id: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161#did-root-key-bbs',
+                        type: 'Bls12381G2Key2020',
+                        controller: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+                        publicKeyBase58: 'sneuVgE8ZoiH9kJzG1uAZZ9Rgj1wcfWhJv2DACLzqvdPkVzgWRPKFQ2eZPZRKYoUyoZM44UXViXWQvpWAjaML739EuJXEcsanrKvKsaBUAN5GG3Zx82NP8c2pZd3rBCQnWM'
+                    }
+                ],
+                authentication: [
+                    'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161#did-root-key'
+                ],
+                assertionMethod: [
+                    '#did-root-key',
+                    '#did-root-key-bbs'
+                ]
+            },
+            status: 'CREATE',
+            messageId: '1774374900.107419100',
+            topicId: '0.0.8361161',
+            verificationMethods: {
+                Ed25519VerificationKey2018: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161#did-root-key',
+                Bls12381G2Key2020: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161#did-root-key-bbs'
+            },
+            id: '69c2cfe734d008dac2664379'
+        },
+        vcDocument: {
+            createDate: '2026-03-24T17:55:35.698Z',
+            updateDate: '2026-03-24T17:55:48.545Z',
+            hash: '8KKWiMe45XrgPpRsPa9bWJW5sqBNRdzH2ftYgG6TnDia',
+            hederaStatus: 'ISSUE',
+            signature: 0,
+            type: 'STANDARD_REGISTRY',
+            option: {
+                status: 'NEW'
+            },
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8361161',
+            messageId: '1774374946.399537000',
+            document: {
+                id: 'urn:uuid:e2b24cbd-f480-4675-8b68-b51fe72aadfd',
+                type: [
+                    'VerifiableCredential'
+                ],
+                issuer: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+                issuanceDate: '2026-03-24T17:55:35.574Z',
+                '@context': [
+                    'https://www.w3.org/2018/credentials/v1',
+                    'ipfs://bafkreihj7gclc4qgem27tre5je6a3t7tpdrk4li6oamdl6bnflwnoyfs5i'
+                ],
+                credentialSubject: [
+                    {
+                        OrganizationName: 'OrgName',
+                        Website: 'https://test.test',
+                        Tags: 'Tag',
+                        '@context': [
+                            'ipfs://bafkreihj7gclc4qgem27tre5je6a3t7tpdrk4li6oamdl6bnflwnoyfs5i'
+                        ],
+                        id: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+                        type: 'StandardRegistry'
+                    }
+                ],
+                proof: {
+                    type: 'Ed25519Signature2018',
+                    created: '2026-03-24T17:55:35Z',
+                    verificationMethod: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161#did-root-key',
+                    proofPurpose: 'assertionMethod',
+                    jws: 'eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..TktKeCGVTYDA4qY67dN3Tbpy8ufbElVOcYdgAOsx1f1q50FWlMbqsTStESgDX0F-fmVWuuS_D-WSoGMBMqoLAA'
+                }
+            },
+            documentFileId: '69c2d02434d008dac26643ca',
+            tableFileIds: [],
+            id: '69c2d01734d008dac26643c3'
+        }
+    },
+
+    /** Typical request body for PUT `/profiles/{username}` and PUT `/profiles/push/{username}` (local Hedera + SR VC fields). */
+    PROFILE_CREDENTIALS_PUT_BODY: {
+        hederaAccountId: '0.0.6059566',
+        hederaAccountKey:
+            '3030020100300706052b8104000a04220420dcfc59e2346b4f0cef1c9f11dee3af6c50be449a08badc55764498787e8a1899',
+        vcDocument: {
+            OrganizationName: 'Another Org name',
+            Website: 'https://google.com',
+            Tags: 'AnotherTag'
+        },
+        didDocument: null,
+        useFireblocksSigning: false,
+        fireblocksConfig: {
+            fireBlocksVaultId: '',
+            fireBlocksAssetId: '',
+            fireBlocksApiKey: '',
+            fireBlocksPrivateiKey: ''
+        },
+        didKeys: []
+    },
+
+    /** Reusable DID document sample used by validate / restore examples. */
+    PROFILE_DID_DOCUMENT_SAMPLE,
+
+    /** `POST /profiles/did-document/validate` — valid DID document (expected verification method types). */
+    PROFILE_DID_DOCUMENT_VALIDATE_REQUEST_VALID: {
+        id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+        '@context': 'https://www.w3.org/ns/did/v1',
+        verificationMethod: [
+            {
+                id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key',
+                type: 'Ed25519VerificationKey2018',
+                controller:
+                    'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+                publicKeyBase58: '2vKLgbwo1DoxTebvSzmz1mk1H4tJTX3FaUt4RUFPCZ6p'
+            },
+            {
+                id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs',
+                type: 'Bls12381G2Key2020',
+                controller:
+                    'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+                publicKeyBase58:
+                    '24LRAHd2Dc7d2qziS9D6hXHFmc5uir2TDzowcxzprCd24ynNBjz5NP1kcpGoFbHdRLZo69ZvwdcsjNGSxEyDyCpgqe2Z1ihL8Ysy8Z9KA6wJmBUjEmTYdNNMur8mxgmapoq6'
+            }
+        ],
+        authentication: [
+            'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key'
+        ],
+        assertionMethod: ['#did-root-key', '#did-root-key-bbs']
+    },
+
+    /** Same endpoint — invalid `type` on a verification method (e.g. not Ed25519VerificationKey2018). */
+    PROFILE_DID_DOCUMENT_VALIDATE_REQUEST_INVALID: {
+        id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+        '@context': 'https://www.w3.org/ns/did/v1',
+        verificationMethod: [
+            {
+                id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key',
+                type: 'noType',
+                controller:
+                    'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+                publicKeyBase58: '2vKLgbwo1DoxTebvSzmz1mk1H4tJTX3FaUt4RUFPCZ6p'
+            },
+            {
+                id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs',
+                type: 'Bls12381G2Key2020',
+                controller:
+                    'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+                publicKeyBase58:
+                    '24LRAHd2Dc7d2qziS9D6hXHFmc5uir2TDzowcxzprCd24ynNBjz5NP1kcpGoFbHdRLZo69ZvwdcsjNGSxEyDyCpgqe2Z1ihL8Ysy8Z9KA6wJmBUjEmTYdNNMur8mxgmapoq6'
+            }
+        ],
+        authentication: [
+            'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key'
+        ],
+        assertionMethod: ['#did-root-key', '#did-root-key-bbs']
+    },
+
+    /** `POST /profiles/did-document/validate` — success body (shape matches guardian-service). */
+    PROFILE_DID_DOCUMENT_VALIDATE_RESPONSE_VALID: {
+        valid: true,
+        error: '',
+        keys: {
+            Ed25519VerificationKey2018: [
+                {
+                    name: '#did-root-key',
+                    id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key'
+                }
+            ],
+            Bls12381G2Key2020: [
+                {
+                    name: '#did-root-key-bbs',
+                    id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs'
+                }
+            ]
+        }
+    },
+
+    /** Same endpoint — `valid: false` when a required method type is missing or invalid. */
+    PROFILE_DID_DOCUMENT_VALIDATE_RESPONSE_INVALID: {
+        valid: false,
+        error: 'Ed25519VerificationKey2018 method not found.',
+        keys: {
+            Ed25519VerificationKey2018: [],
+            Bls12381G2Key2020: [
+                {
+                    name: '#did-root-key-bbs',
+                    id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs'
+                }
+            ]
+        }
+    },
+
+    /** `POST /profiles/did-keys/validate` — placeholder keys (expect `valid: false`). */
+    PROFILE_DID_KEYS_VALIDATE_REQUEST_INVALID: {
+        document: PROFILE_DID_DOCUMENT_SAMPLE,
+        keys: [
+            {
+                id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key',
+                key: '1'
+            },
+            {
+                id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs',
+                key: '1'
+            }
+        ]
+    },
+
+    /** Same route — real private key material (expect `valid: true`). */
+    PROFILE_DID_KEYS_VALIDATE_REQUEST_VALID: {
+        document: PROFILE_DID_DOCUMENT_SAMPLE,
+        keys: [
+            {
+                id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key',
+                key: '4RE1RukTJFzz2JV3ccio6yupN1PEq7JD7hVEsViFDigkgj8ZdUdmjJKsq2evxM9NusXvYcPJA9bu5szma3917Q24'
+            },
+            {
+                id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs',
+                key: '38Rcnwc8Gw62MQYDjSHVovEuHCgXDq8WmnoxozJyzFHj'
+            }
+        ]
+    },
+
+    /** `POST /profiles/did-keys/validate` — response array when keys are invalid. */
+    PROFILE_DID_KEYS_VALIDATE_RESPONSE_INVALID: [
+        {
+            id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key',
+            key: '1',
+            valid: false
+        },
+        {
+            id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs',
+            key: '1',
+            valid: false
+        }
+    ],
+
+    /** Same endpoint — response array when keys validate. */
+    PROFILE_DID_KEYS_VALIDATE_RESPONSE_VALID: [
+        {
+            id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key',
+            key: '4RE1RukTJFzz2JV3ccio6yupN1PEq7JD7hVEsViFDigkgj8ZdUdmjJKsq2evxM9NusXvYcPJA9bu5szma3917Q24',
+            valid: true
+        },
+        {
+            id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs',
+            key: '38Rcnwc8Gw62MQYDjSHVovEuHCgXDq8WmnoxozJyzFHj',
+            valid: true
+        }
+    ],
+
+    /** Request body for `PUT /profiles/restore/{username}` — topic + Hedera keys; `didDocument` may be null. */
+    PROFILE_PUT_RESTORE_USERNAME_REQUEST: {
+        topicId: '0.0.8310503',
+        hederaAccountId: '0.0.6057669',
+        hederaAccountKey:
+            '302e020100300506032b657004220420efb6030ba3c022d16b6828a7cf826c88b1578bcf9d69fbcc4a548f5292b6068f',
+        didDocument: null,
+        didKeys: []
+    },
+
+    /** Same route with full `didDocument` and `didKeys`. */
+    PROFILE_PUT_RESTORE_USERNAME_REQUEST_WITH_DID: {
+        topicId: '0.0.7813042',
+        hederaAccountId: '0.0.6057669',
+        hederaAccountKey:
+            '302e020100300506032b657004220420efb6030ba3c022d16b6828a7cf826c88b1578bcf9d69fbcc4a548f5292b6068f',
+        didDocument: {
+            id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+            '@context': 'https://www.w3.org/ns/did/v1',
+            verificationMethod: [
+                {
+                    id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key',
+                    type: 'Ed25519VerificationKey2018',
+                    controller:
+                        'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+                    publicKeyBase58: '2vKLgbwo1DoxTebvSzmz1mk1H4tJTX3FaUt4RUFPCZ6p'
+                },
+                {
+                    id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs',
+                    type: 'Bls12381G2Key2020',
+                    controller:
+                        'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+                    publicKeyBase58:
+                        '24LRAHd2Dc7d2qziS9D6hXHFmc5uir2TDzowcxzprCd24ynNBjz5NP1kcpGoFbHdRLZo69ZvwdcsjNGSxEyDyCpgqe2Z1ihL8Ysy8Z9KA6wJmBUjEmTYdNNMur8mxgmapoq6'
+                }
+            ],
+            authentication: [
+                'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key'
+            ],
+            assertionMethod: ['#did-root-key', '#did-root-key-bbs']
+        },
+        didKeys: [
+            {
+                id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key',
+                key: '4RE1RukTJFzz2JV3ccio6yupN1PEq7JD7hVEsViFDigkgj8ZdUdmjJKsq2evxM9NusXvYcPJA9bu5szma3917Q24'
+            },
+            {
+                id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs',
+                key: '38Rcnwc8Gw62MQYDjSHVovEuHCgXDq8WmnoxozJyzFHj'
+            }
+        ]
+    },
+
+    /** `202 Accepted` from `PUT /profiles/restore/{username}` (`TaskAction.RESTORE_USER_PROFILE`, expectation 2). */
+    PROFILE_PUT_RESTORE_USERNAME_ACCEPTED_TASK: {
+        taskId: 'de64235b-939b-47e5-99ed-2dbf7c4a3e61',
+        expectation: 2,
+        action: 'Restore user profile',
+        userId: '69c3a5b08c0ae8a3b1083e95'
+    },
+
+    /** Request body for `PUT /profiles/restore/topics/{username}` (Hedera credentials; `didDocument` may be null). */
+    PROFILE_RESTORE_TOPICS_REQUEST: {
+        hederaAccountId: '0.0.6057669',
+        hederaAccountKey:
+            '302e020100300506032b657004220420efb6030ba3c022d16b6828a7cf826c88b1578bcf9d69fbcc4a548f5292b6068f',
+        didDocument: null
+    },
+
+    /** Same route with a full `didDocument` (Hedera DID + verification methods). */
+    PROFILE_RESTORE_TOPICS_REQUEST_WITH_DID: {
+        hederaAccountId: '0.0.6057669',
+        hederaAccountKey:
+            '302e020100300506032b657004220420efb6030ba3c022d16b6828a7cf826c88b1578bcf9d69fbcc4a548f5292b6068f',
+        didDocument: {
+            id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+            '@context': 'https://www.w3.org/ns/did/v1',
+            verificationMethod: [
+                {
+                    id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key',
+                    type: 'Ed25519VerificationKey2018',
+                    controller:
+                        'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+                    publicKeyBase58: '2vKLgbwo1DoxTebvSzmz1mk1H4tJTX3FaUt4RUFPCZ6p'
+                },
+                {
+                    id: 'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs',
+                    type: 'Bls12381G2Key2020',
+                    controller:
+                        'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734',
+                    publicKeyBase58:
+                        '24LRAHd2Dc7d2qziS9D6hXHFmc5uir2TDzowcxzprCd24ynNBjz5NP1kcpGoFbHdRLZo69ZvwdcsjNGSxEyDyCpgqe2Z1ihL8Ysy8Z9KA6wJmBUjEmTYdNNMur8mxgmapoq6'
+                }
+            ],
+            authentication: [
+                'did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key'
+            ],
+            assertionMethod: ['#did-root-key', '#did-root-key-bbs']
+        }
+    },
+
+    /** `202 Accepted` from `PUT /profiles/restore/topics/{username}` (`TaskAction.GET_USER_TOPICS`, expectation 2). */
+    PROFILE_RESTORE_TOPICS_ACCEPTED_TASK: {
+        taskId: 'b34f028a-16b5-4f5e-a75f-17c3da89bb7d',
+        expectation: 2,
+        action: 'Get user topics',
+        userId: '69c3a5b08c0ae8a3b1083e95'
+    },
+
+    /** `202 Accepted` body from `PUT /profiles/push/{username}` (`TaskAction.CONNECT_USER`, expectation 9). */
+    PROFILE_ASYNC_PUT_ACCEPTED_TASK: {
+        taskId: '415e6c71-7fc5-4c67-a40d-918ed0202bd4',
+        expectation: 9,
+        action: 'Connect user',
+        userId: '69c2cfc621d39e7b6d15e23f'
+    },
+
+    /**
+     * `POST /profiles/keys` — only `messageId`: server generates a policy signing key (generate path).
+     * Flow: pass `messageId` + returned `key` out of band to the **remote user**; they call import with both fields.
+     */
+    PROFILE_POST_KEYS_REQUEST_MESSAGE_ONLY: {
+        messageId: '1769689879.382295507'
+    },
+
+    /** `POST /profiles/keys` — import on **remote user** account: same `messageId` plus DER private `key` received out of band. */
+    PROFILE_POST_KEYS_REQUEST_IMPORT: {
+        messageId: '1769689879.382295507',
+        key: '302e020100300506032b6570042204200c05a906fc9f560901032fd8781d49811a82eb855baa6143f8bdb5976d0f9273'
+    },
+
+    /**
+     * `POST /profiles/keys` success body. Documented id is `id`; runtime may also expose internal fields.
+     */
+    PROFILE_POST_KEYS_RESPONSE: {
+        createDate: '2026-03-25T07:53:00.554Z',
+        updateDate: '2026-03-25T07:53:00.554Z',
+        messageId: '1769689879.382295507',
+        owner: 'did:hedera:testnet:BftZd6RVk1D5yXC64g25b9TmhAvNLwki271mWgDAu7yW_0.0.8361161',
+        id: '69c3945c462c9c1141de2e06',
+        key: '302e020100300506032b6570042204201f7147c259331152b8f8b4772029af8cfe60385db3c5a1c1cdb8dc9bd6810a6a'
+    },
+
+    /** `GET /profiles/keys` response body (array). `policyName` / `policyVersion` may be added when resolvable. */
+    PROFILE_GET_KEYS_RESPONSE_LIST: [
+        {
+            createDate: '2026-03-25T08:38:23.528Z',
+            updateDate: '2026-03-25T08:38:23.528Z',
+            messageId: '1774427068.001165000',
+            owner: 'did:hedera:testnet:BftZd6RVk1D5yXC64g25b9TmhAvNLwki271mWgDAu7yW_0.0.8361161',
+            policyName: 'CDM AMS-III.AR Policy',
+            id: '69c39eff462c9c1141de2f7d'
+        },
+        {
+            createDate: '2026-03-25T08:38:15.920Z',
+            updateDate: '2026-03-25T08:38:15.920Z',
+            messageId: '1774427841.463316056',
+            owner: 'did:hedera:testnet:BftZd6RVk1D5yXC64g25b9TmhAvNLwki271mWgDAu7yW_0.0.8361161',
+            policyName: 'CDM AMS-II.J Policy',
+            id: '69c39ef7462c9c1141de2f7c'
+        }
+    ],
+
     ARTIFACTS_RESPONSE_LIST: [
         {
             createDate: '2026-03-16T09:31:27.902Z',
@@ -642,8 +1211,6 @@ export const ObjectExamples = {
     VC_DOCUMENT_1: {
         createDate: '2026-03-13T09:26:55.610Z',
         updateDate: '2026-03-13T09:27:09.653Z',
-        _propHash: 'fd1dea4c3cdc680fcf570c13fc5089cc',
-        _docHash: 'b7a2726053900b6572cb3f8fa9b51468',
         hash: '74RwXshVfxSkWFkNhDWdHHMqHhAFMbZ6pR4sepB4pJz2',
         hederaStatus: 'ISSUE',
         signature: 0,
@@ -693,8 +1260,6 @@ export const ObjectExamples = {
     VC_DOCUMENT_2: {
         createDate: '2026-03-13T13:34:33.856Z',
         updateDate: '2026-03-13T13:34:47.849Z',
-        _propHash: '99a25ce7c710196fc32281ad2f3b11b1',
-        _docHash: 'c23b6b611c733f21c676010720b5b471',
         hash: '2L9fzuBnQpQnnZeSXXQi3NTuXDsJG5YjeeDRj4wWomhi',
         hederaStatus: 'ISSUE',
         signature: 0,

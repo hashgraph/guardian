@@ -1,4 +1,4 @@
-import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import { Examples, ObjectExamples } from '../examples.js';
 import { PolicyDTO } from './policies.dto.js';
@@ -200,25 +200,29 @@ export class VpDocumentDTO {
 export class VcDocumentDTO {
     @ApiProperty({
         type: String,
-        example: Examples.DB_ID
+        example: Examples.DB_ID,
+        required: false
     })
     id?: string;
 
     @ApiProperty({
         type: String,
-        example: Examples.DB_ID
+        example: Examples.DB_ID,
+        required: false
     })
     policyId?: string;
 
     @ApiProperty({
         type: String,
-        example: 'hash'
+        example: 'hash',
+        required: false
     })
     hash?: string;
 
     @ApiProperty({
         type: Number,
-        example: 0
+        example: 0,
+        required: false
     })
     signature?: number;
 
@@ -232,37 +236,43 @@ export class VcDocumentDTO {
             'RESUME',
             'FAILED'
         ],
-        example: 'NEW'
+        example: 'NEW',
+        required: false
     })
     status?: string;
 
     @ApiProperty({
         type: String,
-        example: 'Block tag'
+        example: 'Block tag',
+        required: false
     })
     tag?: string;
 
     @ApiProperty({
         type: String,
-        example: 'Document type'
+        example: 'Document type',
+        required: false
     })
     type?: string;
 
     @ApiProperty({
         type: String,
-        example: Examples.DATE
+        example: Examples.DATE,
+        required: false
     })
     createDate?: string;
 
     @ApiProperty({
         type: String,
-        example: Examples.DATE
+        example: Examples.DATE,
+        required: false
     })
     updateDate?: string;
 
     @ApiProperty({
         type: String,
-        example: Examples.DID
+        example: Examples.DID,
+        required: false
     })
     owner?: string;
 
@@ -273,7 +283,7 @@ export class VcDocumentDTO {
     })
     hederaStatus?: string;
 
-    @ApiProperty({
+    @ApiPropertyOptional({
         type: 'object',
         additionalProperties: true,
         example: {
@@ -298,6 +308,7 @@ export class VcDocumentDTO {
 
     @ApiProperty({
         type: () => VcDTO,
+        required: false
     })
     document?: VcDTO;
 }
