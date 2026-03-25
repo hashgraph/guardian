@@ -1,4 +1,30 @@
 /**
+ * Policy documentation entry
+ */
+export interface IPolicyDocumentationEntry {
+  /**
+   * Block name
+   */
+  name: string;
+  /**
+   * Description
+   */
+  description: string;
+  /**
+   * Block target name
+   */
+  target: string;
+  /**
+   * HTTP method
+   */
+  method: string;
+  /**
+   * Relative URL
+   */
+  url: string;
+}
+
+/**
  * Policy response item
  */
 export interface IPolicy {
@@ -70,4 +96,8 @@ export interface IPolicy {
    * id
    */
   id: string;
+  /**
+   * policyDocumentation
+   */
+  policyDocumentation?: IPolicyDocumentationEntry[];
 }

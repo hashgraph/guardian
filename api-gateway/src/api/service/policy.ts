@@ -957,6 +957,55 @@ export class PolicyApi {
     }
 
     /**
+     * Get policy documentation
+     */
+    @Get('/:policyId/about')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+        Permissions.POLICIES_POLICY_AUDIT,
+    )
+    @ApiOperation({
+        summary: 'Returns auto-generated API documentation for the policy.',
+        description: 'Returns a list of documented API actions with relative URLs for the specified policy.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Policy documentation entries.',
+        type: [Object]
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getPolicyDocumentation(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<any[]> {
+        try {
+            const engineService = new PolicyEngine();
+            const policy = await engineService.getPolicy({
+                filters: policyId,
+                userDid: user.did,
+            }, new EntityOwner(user));
+            if (!policy) {
+                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND);
+            }
+            return policy.policyDocumentation || [];
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Updates policy
      */
     @Put('/:policyId')
@@ -1014,6 +1063,7 @@ export class PolicyApi {
             model.policyGroups = policy.policyGroups;
             model.categories = policy.categories;
             model.projectSchema = policy.projectSchema;
+            model.policyDocumentation = policy.policyDocumentation;
 
             const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`, `${PREFIXES.SCHEMES}schema-with-sub-schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));

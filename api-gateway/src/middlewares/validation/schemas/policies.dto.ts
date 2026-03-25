@@ -383,6 +383,23 @@ export class PolicyDTO {
     policyGroups?: any[];
 
     @ApiProperty({
+        type: 'object',
+        additionalProperties: true,
+        isArray: true,
+        description: 'Auto-generated policy documentation entries',
+        example: [{
+            name: 'create_device',
+            description: 'Send event to create_device',
+            target: 'create_device',
+            method: 'POST',
+            url: '/api/v1/policies/{policyId}/blocks/create_device/events/send-event'
+        }]
+    })
+    @IsOptional()
+    @IsArray()
+    policyDocumentation?: any[];
+
+    @ApiProperty({
         type: 'string',
         isArray: true
     })

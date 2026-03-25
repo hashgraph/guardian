@@ -59,7 +59,8 @@ import {
     PolicyActionStatus,
     IgnoreRule,
     SchemaStatus,
-    MigrationConfig, MigrationRunStatus
+    MigrationConfig, MigrationRunStatus,
+    IPolicyDocumentationEntry
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
@@ -76,6 +77,95 @@ import { IPolicyUser } from './policy-user.js';
 import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
 import { PolicyCommentsUtils } from './policy-comments-utils.js';
 import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
+
+/**
+ * URL-safe name regex: alphanumeric, hyphens, underscores only
+ */
+const URL_SAFE_REGEX = /^[a-zA-Z0-9_-]+$/;
+
+/**
+ * Cached block about registry (blockType -> BlockAbout metadata)
+ */
+let blockAboutCache: Record<string, { post: boolean; get: boolean }> | null = null;
+
+/**
+ * Fetch and cache block about registry from policy-service
+ */
+async function getBlockAboutRegistry(): Promise<Record<string, { post: boolean; get: boolean }>> {
+    if (blockAboutCache) {
+        return blockAboutCache;
+    }
+    const result = await new GuardiansService()
+        .sendMessageWithTimeout(PolicyEvents.GET_BLOCK_ABOUT, 60 * 1000, null);
+    blockAboutCache = typeof result === 'string' ? JSON.parse(result) : result;
+    return blockAboutCache;
+}
+
+/**
+ * Recursively collect all blocks from the config tree
+ */
+function collectBlocks(config: any, blocks: any[] = []): any[] {
+    if (!config) {
+        return blocks;
+    }
+    blocks.push(config);
+    if (Array.isArray(config.children)) {
+        for (const child of config.children) {
+            collectBlocks(child, blocks);
+        }
+    }
+    return blocks;
+}
+
+/**
+ * Auto-generate policy documentation entries by scanning the block tree
+ */
+async function generatePolicyDocumentation(
+    policyId: string,
+    config: any
+): Promise<IPolicyDocumentationEntry[]> {
+    const entries: IPolicyDocumentationEntry[] = [];
+    if (!config) {
+        return entries;
+    }
+
+    const blockAboutRegistry = await getBlockAboutRegistry();
+    const allBlocks = collectBlocks(config);
+
+    for (const block of allBlocks) {
+        const tag = block.tag;
+        if (!tag || !URL_SAFE_REGEX.test(tag)) {
+            continue;
+        }
+
+        const about = blockAboutRegistry[block.blockType];
+        if (!about) {
+            continue;
+        }
+
+        if (about.post) {
+            entries.push({
+                name: tag,
+                description: `Send event to ${tag}`,
+                target: tag,
+                method: 'POST',
+                url: `/api/v1/policies/${policyId}/tag/${tag}/blocks`,
+            });
+        }
+
+        if (about.get) {
+            entries.push({
+                name: tag,
+                description: `Get data from ${tag}`,
+                target: tag,
+                method: 'GET',
+                url: `/api/v1/policies/${policyId}/tag/${tag}`,
+            });
+        }
+    }
+
+    return entries;
+}
 
 /**
  * PolicyEngineChannel
@@ -1222,6 +1312,9 @@ export class PolicyEngineService {
                     if (policy.status !== PolicyStatus.DRAFT) {
                         throw new Error('Policy is not in draft status.');
                     }
+
+                    model.policyDocumentation = await generatePolicyDocumentation(policyId, model.config);
+
                     let result = await DatabaseServer.updatePolicyConfig(policyId, model);
                     result = await PolicyImportExportHelper.updatePolicyComponents(result, logger, owner.id);
 

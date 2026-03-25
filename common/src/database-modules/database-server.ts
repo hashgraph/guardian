@@ -4916,6 +4916,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         model.policyGroups = data.policyGroups;
         model.categories = data.categories;
         model.projectSchema = data.projectSchema;
+        model.policyDocumentation = data.policyDocumentation;
 
         return await new DataBaseHelper(Policy).save(model);
     }

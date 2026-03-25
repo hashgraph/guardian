@@ -33,6 +33,7 @@ import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
 import { DeleteDialogComponent } from '../dialogs/delete-dialog/delete-dialog.component';
+import { PolicyDocumentationDialogComponent } from '../dialogs/policy-documentation-dialog/policy-documentation-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
 import { MigrateData, MigrationActionResult } from '../dialogs/migrate-data/migrate-data.component';
@@ -615,6 +616,21 @@ export class PoliciesComponent implements OnInit {
                     })
                 ]
             }, {
+                tooltip: 'Documentation',
+                group: false,
+                visible: true,
+                color: 'primary-color',
+                buttons: [
+                    new MenuButton({
+                        visible: true,
+                        disabled: false,
+                        tooltip: 'Documentation',
+                        icon: 'document',
+                        color: 'primary-color',
+                        click: () => this.showPolicyDocumentation(policy)
+                    })
+                ]
+            }, {
                 tooltip: 'Users',
                 group: false,
                 visible: true,
@@ -1154,6 +1170,22 @@ export class PoliciesComponent implements OnInit {
                     styleClass: 'guardian-dialog',
                     data: {
                         policy: exportedPolicy,
+                    },
+                });
+            });
+    }
+
+    public showPolicyDocumentation(policy: any) {
+        this.policyEngineService
+            .getPolicyDocumentation(policy?.id)
+            .pipe(takeUntil(this._destroy$)).subscribe((entries) => {
+                this.dialogService.open(PolicyDocumentationDialogComponent, {
+                    showHeader: false,
+                    header: 'Policy Documentation',
+                    width: '900px',
+                    styleClass: 'guardian-dialog',
+                    data: {
+                        entries: entries || [],
                     },
                 });
             });
