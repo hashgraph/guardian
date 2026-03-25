@@ -364,43 +364,43 @@ export class MockUpHelper {
     } {
         if (type === 'TokenCreateTransaction') {
             const t = transaction as TokenCreateTransaction;
-            const token_id = MockUpHelper.getTokenId();
+            const tokenId = MockUpHelper.getTokenId();
 
-            const treasury_account_id = t.treasuryAccountId?.toString();
+            const treasuryAccountId = t.treasuryAccountId?.toString();
             const name = t.tokenName;
             const symbol = t.tokenSymbol;
-            const type = t.tokenType === TokenType.FungibleCommon ? 'FUNGIBLE_COMMON' : 'NON_FUNGIBLE_UNIQUE';
+            const tokenType = t.tokenType === TokenType.FungibleCommon ? 'FUNGIBLE_COMMON' : 'NON_FUNGIBLE_UNIQUE';
             const decimals = t.decimals.toInt();
-            const admin_key = !!t.adminKey;
-            const supply_key = !!t.supplyKey;
-            const freeze_key = !!t.freezeKey;
-            const kyc_key = !!t.kycKey;
-            const wipe_key = !!t.wipeKey;
+            const adminKey = !!t.adminKey;
+            const supplyKey = !!t.supplyKey;
+            const freezeKey = !!t.freezeKey;
+            const kycKey = !!t.kycKey;
+            const wipeKey = !!t.wipeKey;
             return {
                 type: MockEntityType.TOKEN,
                 transaction: {
-                    id: token_id,
-                    token_id,
-                    treasury_account_id,
+                    id: tokenId,
+                    token_id: tokenId,
+                    treasury_account_id: treasuryAccountId,
                     name,
                     symbol,
-                    type,
+                    type: tokenType,
                     decimals,
-                    admin_key,
-                    supply_key,
-                    freeze_key,
-                    kyc_key,
-                    wipe_key
+                    admin_key: adminKey,
+                    supply_key: supplyKey,
+                    freeze_key: freezeKey,
+                    kyc_key: kycKey,
+                    wipe_key: wipeKey
                 }
             }
         }
         if (type === 'AccountCreateTransaction') {
-            const account_id = MockUpHelper.getAccountId();
+            const newAccountId = MockUpHelper.getAccountId();
             return {
                 type: MockEntityType.ACCOUNT,
                 transaction: {
-                    id: account_id,
-                    account_id
+                    id: newAccountId,
+                    account_id: newAccountId
                 }
             }
         }
@@ -499,18 +499,18 @@ export class MockUpHelper {
         if (type === 'TopicMessageSubmitTransaction') {
             const t = transaction as TopicMessageSubmitTransaction;
             const timestamp = MockUpHelper.getTimestamp();
-            const consensus_timestamp = MockUpHelper.timestampToString(timestamp);
-            const topic_id = t.topicId.toString();
+            const consensusTimestamp = MockUpHelper.timestampToString(timestamp);
+            const topicId = t.topicId.toString();
             const message = t.getMessage().toString();
             const base64 = Buffer.from(message, 'utf8').toString('base64');
 
             return {
                 type: MockEntityType.MESSAGE,
                 transaction: {
-                    id: consensus_timestamp,
-                    consensus_timestamp,
-                    topicId: topic_id,
-                    topic_id,
+                    id: consensusTimestamp,
+                    consensus_timestamp: consensusTimestamp,
+                    topicId,
+                    topic_id: topicId,
                     payer_account_id: accountId,
                     sequence_number: 1,
                     message: base64
@@ -637,7 +637,6 @@ export class MockUpHelper {
         for (const config of apiMap.values()) {
             api.push(config);
         }
-
 
         const userRows = await DatabaseServer.getVirtualUsers(mockId, null, true, true);
         const users: any[] = [];

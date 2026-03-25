@@ -2572,7 +2572,6 @@ export class PolicyEngineService {
                     const config = await new GuardiansService()
                         .sendBlockMessage(PolicyEvents.GET_MOCK_UP_CONFIG, policyId, {}) as any
 
-
                     return new MessageResponse(config);
                 } catch (error) {
                     return new MessageError(error);

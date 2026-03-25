@@ -137,7 +137,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Enable Mock Up
              */
-            private enableMockUp: boolean;
+            private readonly enableMockUp: boolean;
             /**
              * Block class name
              */

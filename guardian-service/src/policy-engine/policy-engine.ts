@@ -44,7 +44,6 @@ import {
     Schema as SchemaCollection,
     SchemaFields,
     SchemaMessage,
-    SchemaPackageMessage,
     Singleton,
     SynchronizationMessage,
     Token,
@@ -59,8 +58,6 @@ import {
 import {
     deleteDemoSchema,
     deleteSchema,
-    findAndDryRunSchema,
-    generatePackage,
     generateSchemaContext,
     ImportMode,
     ImportPolicyOptions,

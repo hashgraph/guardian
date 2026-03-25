@@ -1121,13 +1121,13 @@ export class HederaSDKHelper {
                 }
             });
             if (mockData) {
-                const buffer = Buffer.from(mockData.message, 'base64').toString();
+                const messageBuffer = Buffer.from(mockData.message, 'base64').toString();
                 return {
                     id: mockData.consensus_timestamp,
                     payer_account_id: mockData.payer_account_id,
                     sequence_number: mockData.sequence_number,
                     topicId: mockData.topic_id,
-                    message: buffer
+                    message: messageBuffer
                 }
             }
         }
@@ -1177,10 +1177,10 @@ export class HederaSDKHelper {
                 }
             });
             if (mockData) {
-                const result = [];
+                const mockResult = [];
                 for (const item of mockData) {
                     const buffer = Buffer.from(item.message, 'base64').toString();
-                    result.push({
+                    mockResult.push({
                         id: item.consensus_timestamp,
                         payer_account_id: item.payer_account_id,
                         sequence_number: item.sequence_number,
@@ -1188,7 +1188,7 @@ export class HederaSDKHelper {
                         message: buffer
                     });
                 }
-                return result;
+                return mockResult;
             }
         }
 
@@ -1287,13 +1287,13 @@ export class HederaSDKHelper {
                 }
             });
             if (mockData) {
-                const buffer = Buffer.from(mockData.message, 'base64').toString();
+                const messageBuffer = Buffer.from(mockData.message, 'base64').toString();
                 return {
                     id: mockData.consensus_timestamp,
                     payer_account_id: mockData.payer_account_id,
                     sequence_number: mockData.sequence_number,
                     topicId: mockData.topic_id,
-                    message: buffer
+                    message: messageBuffer
                 }
             }
         }
@@ -1365,7 +1365,7 @@ export class HederaSDKHelper {
 
     /**
      * Execute and receipt
-     * 
+     *
      * @param transaction
      * @param type
      * @param userId
@@ -1427,7 +1427,7 @@ export class HederaSDKHelper {
 
     /**
      * Execute and receipt
-     * 
+     *
      * @param client
      * @param transaction
      * @param type

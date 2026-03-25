@@ -194,7 +194,7 @@ export class MintNFT extends TypedMint {
                             data: {
                                 hederaAccountId: relayerAccount.hederaAccountId,
                                 hederaAccountKey: relayerAccount.hederaAccountKey,
-                                dryRun: dryRun,
+                                dryRun,
                                 tokenId: this._token.tokenId,
                                 supplyKey: this._token.supplyKey,
                                 metaData: new Array(

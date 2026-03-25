@@ -156,10 +156,10 @@ Promise.all([
     const policyValidator = new PolicyValidator(policyConfig);
 
     const policyModel = await generator.generate(
-        policyConfig, 
-        skipRegistration, 
-        policyValidator, 
-        logger, 
+        policyConfig,
+        skipRegistration,
+        policyValidator,
+        logger,
         policyOwnerId,
         enableMockUp
     );

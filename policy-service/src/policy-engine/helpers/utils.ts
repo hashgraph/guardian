@@ -18,10 +18,7 @@ import {
     Workers,
     EncryptVcHelper,
     SchemaConverterUtils,
-    Tag,
-    MockService,
-    MockType,
-    MockEntityType
+    Tag
 } from '@guardian/common';
 import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SchemaField, SignatureType, TagType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hiero-ledger/sdk';
