@@ -30,6 +30,10 @@ export interface IPolicyDocumentationEntry {
    * External DMRV URL (auto-generated on save, based on alias)
    */
   dmrvUrl: string;
+  /**
+   * Block type (auto-populated for query params display)
+   */
+  blockType?: string;
 }
 
 /**

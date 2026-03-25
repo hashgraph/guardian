@@ -103,13 +103,25 @@ export class DmrvApi {
                 await this.cacheService.invalidate(
                     getCacheKey([req.url, ...invalidedCacheTags], user)
                 );
+                const timeout = query.timeout ? Number(query.timeout) : 60000;
+                const waitRemotePolicy = query.waitRemotePolicy !== 'false';
                 return await engineService.setBlockDataByTag(
-                    user, policyId, tagName, body, false, false, 60000, true
+                    user, policyId, tagName, body, false, false, timeout, waitRemotePolicy
                 );
             } else {
-                return await engineService.getBlockByTagName(
-                    user, policyId, tagName
-                );
+                const hasQueryParams = Object.keys(query).length > 0;
+                if (hasQueryParams) {
+                    query.savepointIds = typeof query.savepointIds === 'string'
+                        ? JSON.parse(query.savepointIds)
+                        : query.savepointIds;
+                    return await engineService.getBlockDataByTag(
+                        user, policyId, tagName, query
+                    );
+                } else {
+                    return await engineService.getBlockByTagName(
+                        user, policyId, tagName
+                    );
+                }
             }
         } catch (error) {
             await InternalException(error, this.logger, user.id);

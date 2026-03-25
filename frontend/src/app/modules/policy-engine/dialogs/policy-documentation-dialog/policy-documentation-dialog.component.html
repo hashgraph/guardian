@@ -27,6 +27,7 @@
                 <th>Method</th>
                 <th>URL</th>
                 <th>Alias URL</th>
+                <th>Query Params</th>
                 <th style="width: 60px"></th>
             </tr>
         </ng-template>
@@ -41,6 +42,11 @@
                 </td>
                 <td class="url-cell">{{entry.url}}</td>
                 <td class="url-cell">{{entry.dmrvUrl}}</td>
+                <td class="params-cell">
+                    <span *ngFor="let p of getQueryParams(entry)" class="query-param-badge" [title]="p.description">
+                        {{p.name}}<span class="param-type">: {{p.type}}</span>
+                    </span>
+                </td>
                 <td>
                     <button class="guardian-button guardian-button-secondary copy-btn" (click)="copyUrl(entry.dmrvUrl || entry.url)" title="Copy URL">
                         Copy

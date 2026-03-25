@@ -59,6 +59,12 @@
                     </button>
                 </div>
             </div>
+            <div class="entry-query-params">
+                <span class="query-params-label">Query params:</span>
+                <span *ngFor="let p of getQueryParams(entry)" class="query-param-badge" [title]="p.description">
+                    {{p.name}}<span class="param-type">: {{p.type}}</span>
+                </span>
+            </div>
             <div *ngIf="validationErrors.has(i)" class="entry-error">
                 {{ validationErrors.get(i) }}
             </div>

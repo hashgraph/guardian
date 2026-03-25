@@ -32,3 +32,24 @@
     min-width: unset;
     padding: 4px 8px;
 }
+
+.params-cell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.query-param-badge {
+    display: inline-block;
+    font-family: monospace;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background-color: var(--color-bg-secondary, #f0f0f0);
+    color: var(--color-text-primary, #333);
+    cursor: default;
+
+    .param-type {
+        color: var(--color-text-secondary, #888);
+    }
+}

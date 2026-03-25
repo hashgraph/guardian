@@ -19,6 +19,25 @@ export class PolicyApiConfigDialogComponent {
     public validationErrors: Map<number, string> = new Map();
     public isLargeSize = true;
 
+    private static readonly POST_PARAMS: { name: string; type: string; description: string }[] = [
+        { name: 'timeout', type: 'number', description: 'Request timeout in ms (default: 60000)' },
+        { name: 'waitRemotePolicy', type: 'boolean', description: 'Wait for remote policy response (default: true)' },
+    ];
+
+    private static readonly GET_PARAMS_BY_BLOCK_TYPE: Record<string, { name: string; type: string; description: string }[]> = {
+        interfaceDocumentsSourceBlock: [
+            { name: 'page', type: 'number', description: 'Page number (0-based)' },
+            { name: 'itemsPerPage', type: 'number', description: 'Items per page' },
+            { name: 'sortField', type: 'string', description: 'Field name to sort by' },
+            { name: 'sortDirection', type: 'string', description: 'Sort direction (asc/desc)' },
+            { name: 'filterByUUID', type: 'string', description: 'Filter by document UUID' },
+            { name: 'savepointIds', type: 'string[]', description: 'Savepoint IDs filter (JSON array)' },
+        ],
+        dataTransformationAddon: [
+            { name: 'filterByUUID', type: 'string', description: 'Filter by document UUID' },
+        ],
+    };
+
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     constructor(
@@ -52,11 +71,15 @@ export class PolicyApiConfigDialogComponent {
 
     onTargetChange(index: number): void {
         const entry = this.entries[index];
-        if (entry.target && !entry.name) {
-            entry.name = entry.target;
-        }
-        if (entry.target && !entry.alias) {
-            entry.alias = entry.target.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+        if (entry.target) {
+            const block = this.blocks.find((b: any) => b.tag === entry.target);
+            entry.blockType = block?.blockType || '';
+            if (!entry.name) {
+                entry.name = entry.target;
+            }
+            if (!entry.alias) {
+                entry.alias = entry.target.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+            }
         }
         this.revalidate();
     }
@@ -98,6 +121,20 @@ export class PolicyApiConfigDialogComponent {
             }
             aliasSet.set(key, i);
         }
+    }
+
+    getQueryParams(entry: IPolicyDocumentationEntry): { name: string; type: string; description: string }[] {
+        if (entry.method === 'POST') {
+            return PolicyApiConfigDialogComponent.POST_PARAMS;
+        }
+        if (!entry.target) {
+            return [];
+        }
+        const block = this.blocks.find((b: any) => b.tag === entry.target);
+        if (!block) {
+            return [];
+        }
+        return PolicyApiConfigDialogComponent.GET_PARAMS_BY_BLOCK_TYPE[block.blockType] || [];
     }
 
     onSave(): void {
