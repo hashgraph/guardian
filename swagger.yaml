@@ -743,8 +743,6 @@ paths:
                   vcDocument:
                     createDate: '2026-03-13T09:26:55.610Z'
                     updateDate: '2026-03-13T09:27:09.653Z'
-                    _propHash: fd1dea4c3cdc680fcf570c13fc5089cc
-                    _docHash: b7a2726053900b6572cb3f8fa9b51468
                     hash: 74RwXshVfxSkWFkNhDWdHHMqHhAFMbZ6pR4sepB4pJz2
                     hederaStatus: ISSUE
                     signature: 0
@@ -883,8 +881,6 @@ paths:
                   vcDocument:
                     createDate: '2026-03-13T13:34:33.856Z'
                     updateDate: '2026-03-13T13:34:47.849Z'
-                    _propHash: 99a25ce7c710196fc32281ad2f3b11b1
-                    _docHash: c23b6b611c733f21c676010720b5b471
                     hash: 2L9fzuBnQpQnnZeSXXQi3NTuXDsJG5YjeeDRj4wWomhi
                     hederaStatus: ISSUE
                     signature: 0
@@ -11874,14 +11870,21 @@ paths:
   /profiles/{username}:
     get:
       description: >-
-        Returns user account information. For users with the Standard Registry
-        role it also returns address book and VC document information.
+        Returns account information for the **currently authenticated user**
+        (Bearer token). The `username` path segment is **not** used to choose
+        whose profile is returned; authorization alone determines the subject.
+        Clients often pass their own username in the path for URL compatibility.
+        For users with the Standard Registry role the response also includes
+        address book and VC document information.
       operationId: ProfileApi_getProfile
       parameters:
         - name: username
           required: true
           in: path
-          description: The name of the user for whom to fetch the information
+          description: >-
+            Present for URL compatibility with existing clients. The server does
+            not use this value when resolving the resource—the response is
+            always the profile of the user identified by the Bearer token.
           schema:
             example: username
             type: string
@@ -11893,12 +11896,210 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProfileDTO'
               example:
+                username: StandardRegistry
+                role: STANDARD_REGISTRY
+                permissions:
+                  - ACCOUNTS_STANDARD_REGISTRY_READ
+                  - DEMO_KEY_CREATE
+                  - IPFS_FILE_READ
+                  - IPFS_FILE_CREATE
+                  - PROFILES_USER_READ
+                  - PROFILES_USER_UPDATE
+                  - PROFILES_BALANCE_READ
+                  - ACCOUNTS_ACCOUNT_READ
+                  - ANALYTIC_POLICY_READ
+                  - ANALYTIC_MODULE_READ
+                  - ANALYTIC_TOOL_READ
+                  - ANALYTIC_SCHEMA_READ
+                  - ANALYTIC_DOCUMENT_READ
+                  - ARTIFACTS_FILE_READ
+                  - ARTIFACTS_FILE_CREATE
+                  - ARTIFACTS_FILE_DELETE
+                  - BRANDING_CONFIG_UPDATE
+                  - CONTRACTS_CONTRACT_READ
+                  - CONTRACTS_CONTRACT_CREATE
+                  - CONTRACTS_CONTRACT_DELETE
+                  - CONTRACTS_CONTRACT_MANAGE
+                  - CONTRACTS_WIPE_REQUEST_READ
+                  - CONTRACTS_WIPE_REQUEST_UPDATE
+                  - CONTRACTS_WIPE_REQUEST_DELETE
+                  - CONTRACTS_WIPE_REQUEST_REVIEW
+                  - CONTRACTS_WIPE_ADMIN_CREATE
+                  - CONTRACTS_WIPE_ADMIN_DELETE
+                  - CONTRACTS_WIPE_MANAGER_CREATE
+                  - CONTRACTS_WIPE_MANAGER_DELETE
+                  - CONTRACTS_WIPER_CREATE
+                  - CONTRACTS_WIPER_DELETE
+                  - CONTRACTS_POOL_READ
+                  - CONTRACTS_POOL_UPDATE
+                  - CONTRACTS_POOL_DELETE
+                  - CONTRACTS_RETIRE_REQUEST_READ
+                  - CONTRACTS_RETIRE_REQUEST_CREATE
+                  - CONTRACTS_RETIRE_REQUEST_DELETE
+                  - CONTRACTS_RETIRE_REQUEST_REVIEW
+                  - CONTRACTS_RETIRE_ADMIN_CREATE
+                  - CONTRACTS_RETIRE_ADMIN_DELETE
+                  - CONTRACTS_PERMISSIONS_READ
+                  - CONTRACTS_DOCUMENT_READ
+                  - LOG_LOG_READ
+                  - MODULES_MODULE_READ
+                  - MODULES_MODULE_CREATE
+                  - MODULES_MODULE_UPDATE
+                  - MODULES_MODULE_DELETE
+                  - MODULES_MODULE_REVIEW
+                  - POLICIES_POLICY_READ
+                  - POLICIES_POLICY_CREATE
+                  - POLICIES_POLICY_UPDATE
+                  - POLICIES_POLICY_DELETE
+                  - POLICIES_POLICY_REVIEW
+                  - POLICIES_POLICY_EXECUTE
+                  - POLICIES_POLICY_MANAGE
+                  - POLICIES_MIGRATION_CREATE
+                  - POLICIES_RECORD_ALL
+                  - SCHEMAS_SCHEMA_READ
+                  - SCHEMAS_SCHEMA_CREATE
+                  - SCHEMAS_SCHEMA_UPDATE
+                  - SCHEMAS_SCHEMA_DELETE
+                  - SCHEMAS_SCHEMA_REVIEW
+                  - SCHEMAS_SYSTEM_SCHEMA_READ
+                  - SCHEMAS_SYSTEM_SCHEMA_CREATE
+                  - SCHEMAS_SYSTEM_SCHEMA_UPDATE
+                  - SCHEMAS_SYSTEM_SCHEMA_DELETE
+                  - SCHEMAS_SYSTEM_SCHEMA_REVIEW
+                  - TOOLS_TOOL_READ
+                  - TOOLS_TOOL_CREATE
+                  - TOOLS_TOOL_UPDATE
+                  - TOOLS_TOOL_DELETE
+                  - TOOLS_TOOL_REVIEW
+                  - TOOL_MIGRATION_CREATE
+                  - TOKENS_TOKEN_READ
+                  - TOKENS_TOKEN_CREATE
+                  - TOKENS_TOKEN_UPDATE
+                  - TOKENS_TOKEN_DELETE
+                  - TOKENS_TOKEN_MANAGE
+                  - TAGS_TAG_READ
+                  - TAGS_TAG_CREATE
+                  - PROFILES_RESTORE_ALL
+                  - SUGGESTIONS_SUGGESTIONS_READ
+                  - SUGGESTIONS_SUGGESTIONS_UPDATE
+                  - SETTINGS_SETTINGS_READ
+                  - SETTINGS_SETTINGS_UPDATE
+                  - SETTINGS_THEME_READ
+                  - SETTINGS_THEME_CREATE
+                  - SETTINGS_THEME_UPDATE
+                  - SETTINGS_THEME_DELETE
+                  - PERMISSIONS_ROLE_READ
+                  - PERMISSIONS_ROLE_CREATE
+                  - PERMISSIONS_ROLE_UPDATE
+                  - PERMISSIONS_ROLE_DELETE
+                  - PERMISSIONS_ROLE_MANAGE
+                  - ACCESS_POLICY_ALL
+                  - SCHEMAS_RULE_CREATE
+                  - SCHEMAS_RULE_READ
+                  - SCHEMAS_RULE_EXECUTE
+                  - FORMULAS_FORMULA_CREATE
+                  - FORMULAS_FORMULA_READ
+                  - WORKER_TASKS_READ
+                  - WORKER_TASKS_EXECUTE
+                  - WORKER_TASKS_DELETE
+                  - POLICIES_EXTERNAL_POLICY_READ
+                  - POLICIES_EXTERNAL_POLICY_CREATE
+                  - POLICIES_EXTERNAL_POLICY_UPDATE
+                  - POLICIES_EXTERNAL_POLICY_DELETE
+                  - LOG_LOG_READ
+                  - LOG_SYSTEM_READ
+                did: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                hederaAccountId: 0.0.6046379
+                location: local
                 confirmed: true
-                failed: true
-                topicId: f3b2a9c1e4d5678901234567
-                parentTopicId: f3b2a9c1e4d5678901234567
-                didDocument: {}
-                vcDocument: {}
+                failed: false
+                topicId: 0.0.8361161
+                parentTopicId: 0.0.1960
+                didDocument:
+                  createDate: '2026-03-24T17:54:47.965Z'
+                  updateDate: '2026-03-24T17:55:01.913Z'
+                  did: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  document:
+                    id: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                    '@context': https://www.w3.org/ns/did/v1
+                    verificationMethod:
+                      - id: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161#did-root-key
+                        type: Ed25519VerificationKey2018
+                        controller: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                        publicKeyBase58: >-
+                          QDui45JN8tAZyc8aNcgbjKH8DQDzgXYpNGD7wfpeqwSAsm3FJ5TymhXz7japEGMW
+                      - id: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161#did-root-key-bbs
+                        type: Bls12381G2Key2020
+                        controller: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                        publicKeyBase58: >-
+                          sneuVgE8ZoiH9kJzG1uAZZ9Rgj1wcfWhJv2DACLzqvdPkVzgWRPKFQ2eZPZRKYoUyoZM44UXViXWQvpWAjaML739EuJXEcsanrKvKsaBUAN5GG3Zx82NP8c2pZd3rBCQnWM
+                    authentication:
+                      - >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161#did-root-key
+                    assertionMethod:
+                      - '#did-root-key'
+                      - '#did-root-key-bbs'
+                  status: CREATE
+                  messageId: '1774374900.107419100'
+                  topicId: 0.0.8361161
+                  verificationMethods:
+                    Ed25519VerificationKey2018: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161#did-root-key
+                    Bls12381G2Key2020: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161#did-root-key-bbs
+                  id: 69c2cfe734d008dac2664379
+                vcDocument:
+                  createDate: '2026-03-24T17:55:35.698Z'
+                  updateDate: '2026-03-24T17:55:48.545Z'
+                  hash: 8KKWiMe45XrgPpRsPa9bWJW5sqBNRdzH2ftYgG6TnDia
+                  hederaStatus: ISSUE
+                  signature: 0
+                  type: STANDARD_REGISTRY
+                  option:
+                    status: NEW
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  topicId: 0.0.8361161
+                  messageId: '1774374946.399537000'
+                  document:
+                    id: urn:uuid:e2b24cbd-f480-4675-8b68-b51fe72aadfd
+                    type:
+                      - VerifiableCredential
+                    issuer: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                    issuanceDate: '2026-03-24T17:55:35.574Z'
+                    '@context':
+                      - https://www.w3.org/2018/credentials/v1
+                      - >-
+                        ipfs://bafkreihj7gclc4qgem27tre5je6a3t7tpdrk4li6oamdl6bnflwnoyfs5i
+                    credentialSubject:
+                      - OrganizationName: OrgName
+                        Website: https://test.test
+                        Tags: Tag
+                        '@context':
+                          - >-
+                            ipfs://bafkreihj7gclc4qgem27tre5je6a3t7tpdrk4li6oamdl6bnflwnoyfs5i
+                        id: >-
+                          did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                        type: StandardRegistry
+                    proof:
+                      type: Ed25519Signature2018
+                      created: '2026-03-24T17:55:35Z'
+                      verificationMethod: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161#did-root-key
+                      proofPurpose: assertionMethod
+                      jws: >-
+                        eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..TktKeCGVTYDA4qY67dN3Tbpy8ufbElVOcYdgAOsx1f1q50FWlMbqsTStESgDX0F-fmVWuuS_D-WSoGMBMqoLAA
+                  documentFileId: 69c2d02434d008dac26643ca
+                  tableFileIds: []
+                  id: 69c2d01734d008dac26643c3
         '401':
           description: Unauthorized request.
           content:
@@ -11925,40 +12126,64 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Returns user account info.
+      summary: Returns the authenticated user's account info.
       tags:
         - profiles
     put:
       description: >-
-        Sets Hedera credentials for the user. For users with the Standard
+        Applies to the **currently authenticated user** (Bearer token). The
+        `username` path segment is **not** used to choose whose profile is
+        updated; authorization alone determines the subject. Clients often pass
+        their own username in the path for URL compatibility. Sets Hedera
+        credentials and related DID/VC data. For users with the Standard
         Registry role it also creates an address book.
       operationId: ProfileApi_setUserProfile
       parameters:
         - name: username
           required: true
           in: path
-          description: The name of the user for whom to update the information.
+          description: >-
+            Present for URL compatibility with existing clients. The server does
+            not use this value when applying the update—the request always
+            targets the user identified by the Bearer token.
           schema:
             example: username
             type: string
       requestBody:
         required: true
-        description: Object that contains the Hedera account data.
+        description: >-
+          Hedera account, optional DID/VC payloads, and optional Fireblocks
+          signing options.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CredentialsDTO'
+            examples:
+              connectLocalStandardRegistry:
+                summary: Local Hedera key + SR VC subject fields
+                value:
+                  hederaAccountId: 0.0.6059566
+                  hederaAccountKey: >-
+                    3030020100300706052b8104000a04220420dcfc59e2346b4f0cef1c9f11dee3af6c50be449a08badc55764498787e8a1899
+                  vcDocument:
+                    OrganizationName: Another Org name
+                    Website: https://google.com
+                    Tags: AnotherTag
+                  didDocument: null
+                  useFireblocksSigning: false
+                  fireblocksConfig:
+                    fireBlocksVaultId: ''
+                    fireBlocksAssetId: ''
+                    fireBlocksApiKey: ''
+                    fireBlocksPrivateiKey: ''
+                  didKeys: []
       responses:
         '204':
-          description: Hedera credentials set successfully.
-          content:
-            application/json:
-              example:
-                result: ok
+          description: ''
         '401':
           description: Unauthorized request.
           content:
@@ -11985,44 +12210,80 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Sets Hedera credentials for the user.
+      summary: Sets Hedera credentials for the authenticated user.
       tags:
         - profiles
   /profiles/push/{username}:
     put:
       description: >-
-        Sets Hedera credentials for the user. For users with the Standard
-        Registry role it also creates an address book.
+        Applies to the **currently authenticated user** (Bearer token). The
+        `username` path segment is **not** used to choose whose profile is
+        updated; authorization alone determines the subject. Clients often pass
+        their own username in the path for URL compatibility. Starts a
+        background task to connect Hedera credentials, publish DID/VC documents
+        as required, and for Standard Registry users create an address book.
+        Returns immediately with `202 Accepted` and a **task** identifier—use
+        the worker-tasks API or your client notifications to track completion or
+        errors.
       operationId: ProfileApi_setUserProfileAsync
       parameters:
         - name: username
           required: true
           in: path
-          description: The name of the user for whom to update the information.
+          description: >-
+            Present for URL compatibility with existing clients. The server does
+            not use this value when applying the update—the request always
+            targets the user identified by the Bearer token.
           schema:
             example: username
             type: string
       requestBody:
         required: true
-        description: Object that contains the Hedera account data.
+        description: >-
+          Hedera account, optional DID/VC payloads, and optional Fireblocks
+          signing options. Submission is accepted immediately; processing
+          happens in the background.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CredentialsDTO'
+            examples:
+              connectLocalStandardRegistry:
+                summary: Local Hedera key + SR VC subject fields
+                value:
+                  hederaAccountId: 0.0.6059566
+                  hederaAccountKey: >-
+                    3030020100300706052b8104000a04220420dcfc59e2346b4f0cef1c9f11dee3af6c50be449a08badc55764498787e8a1899
+                  vcDocument:
+                    OrganizationName: Another Org name
+                    Website: https://google.com
+                    Tags: AnotherTag
+                  didDocument: null
+                  useFireblocksSigning: false
+                  fireblocksConfig:
+                    fireBlocksVaultId: ''
+                    fireBlocksAssetId: ''
+                    fireBlocksApiKey: ''
+                    fireBlocksPrivateiKey: ''
+                  didKeys: []
       responses:
         '202':
-          description: Successful operation.
+          description: >-
+            Task accepted for asynchronous processing. Poll or subscribe for
+            task status.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
               example:
-                taskId: f3b2a9c1e4d5678901234567
-                expectation: 0
+                taskId: 415e6c71-7fc5-4c67-a40d-918ed0202bd4
+                expectation: 9
+                action: Connect user
+                userId: 69c2cfc621d39e7b6d15e23f
         '401':
           description: Unauthorized request.
           content:
@@ -12049,18 +12310,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Sets Hedera credentials for the user.
+      summary: Sets Hedera credentials asynchronously for the authenticated user.
       tags:
         - profiles
   /profiles/{username}/balance:
     get:
-      description: >-
-        Requests Hedera account balance. Only users with the Installer role are
-        allowed to make the request.
+      description: Requests Hedera account balance.
       operationId: ProfileApi_getUserBalance
       parameters:
         - name: username
@@ -12077,6 +12336,7 @@ paths:
             application/json:
               schema:
                 type: string
+                example: 833.88244301 ℏ
         '401':
           description: Unauthorized request.
           content:
@@ -12101,9 +12361,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid Account
         '500':
           description: Internal server error.
           content:
@@ -12111,7 +12372,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -12120,13 +12381,23 @@ paths:
         - profiles
   /profiles/restore/{username}:
     put:
-      description: Restore user data (policy, DID documents, VC documents).
+      description: >-
+        Applies to the **currently authenticated user** (Bearer token). The
+        `username` path segment is **not** used to choose whose data is
+        restored; authorization alone determines the subject. Clients often pass
+        their own username in the path for URL compatibility. Starts a
+        background task to restore user data (policy, DID documents, VC
+        documents). Returns immediately with `202 Accepted` and a **task**
+        identifier.
       operationId: ProfileApi_restoreUserProfile
       parameters:
         - name: username
           required: true
           in: path
-          description: The name of the user for whom to restore the information.
+          description: >-
+            Present for URL compatibility with existing clients. The server does
+            not use this value when applying the update—the request always
+            targets the user identified by the Bearer token.
           schema:
             example: username
             type: string
@@ -12137,6 +12408,57 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CredentialsDTO'
+            examples:
+              restoreUserProfile:
+                summary: >-
+                  Topic and Hedera credentials (`didDocument` may be null;
+                  `didKeys` may be empty)
+                value:
+                  topicId: 0.0.8310503
+                  hederaAccountId: 0.0.6057669
+                  hederaAccountKey: >-
+                    302e020100300506032b657004220420efb6030ba3c022d16b6828a7cf826c88b1578bcf9d69fbcc4a548f5292b6068f
+                  didDocument: null
+                  didKeys: []
+              restoreUserProfileWithDid:
+                summary: Topic, Hedera credentials, full DID document, and didKeys
+                value:
+                  topicId: 0.0.7813042
+                  hederaAccountId: 0.0.6057669
+                  hederaAccountKey: >-
+                    302e020100300506032b657004220420efb6030ba3c022d16b6828a7cf826c88b1578bcf9d69fbcc4a548f5292b6068f
+                  didDocument:
+                    id: >-
+                      did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                    '@context': https://www.w3.org/ns/did/v1
+                    verificationMethod:
+                      - id: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                        type: Ed25519VerificationKey2018
+                        controller: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                        publicKeyBase58: 2vKLgbwo1DoxTebvSzmz1mk1H4tJTX3FaUt4RUFPCZ6p
+                      - id: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
+                        type: Bls12381G2Key2020
+                        controller: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                        publicKeyBase58: >-
+                          24LRAHd2Dc7d2qziS9D6hXHFmc5uir2TDzowcxzprCd24ynNBjz5NP1kcpGoFbHdRLZo69ZvwdcsjNGSxEyDyCpgqe2Z1ihL8Ysy8Z9KA6wJmBUjEmTYdNNMur8mxgmapoq6
+                    authentication:
+                      - >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                    assertionMethod:
+                      - '#did-root-key'
+                      - '#did-root-key-bbs'
+                  didKeys:
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                      key: >-
+                        4RE1RukTJFzz2JV3ccio6yupN1PEq7JD7hVEsViFDigkgj8ZdUdmjJKsq2evxM9NusXvYcPJA9bu5szma3917Q24
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
+                      key: 38Rcnwc8Gw62MQYDjSHVovEuHCgXDq8WmnoxozJyzFHj
       responses:
         '202':
           description: Successful operation.
@@ -12145,8 +12467,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
               example:
-                taskId: f3b2a9c1e4d5678901234567
-                expectation: 0
+                taskId: de64235b-939b-47e5-99ed-2dbf7c4a3e61
+                expectation: 2
+                action: Restore user profile
+                userId: 69c3a5b08c0ae8a3b1083e95
         '401':
           description: Unauthorized request.
           content:
@@ -12173,7 +12497,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -12182,13 +12506,22 @@ paths:
         - profiles
   /profiles/restore/topics/{username}:
     put:
-      description: List of available recovery topics.
+      description: >-
+        Applies to the **currently authenticated user** (Bearer token). The
+        `username` path segment is **not** used to choose whose recovery topics
+        are listed; authorization alone determines the subject. Clients often
+        pass their own username in the path for URL compatibility. Starts a
+        background task to list available recovery topics. Returns immediately
+        with `202 Accepted` and a **task** identifier.
       operationId: ProfileApi_restoreTopic
       parameters:
         - name: username
           required: true
           in: path
-          description: The name of the user for whom to restore the information.
+          description: >-
+            Present for URL compatibility with existing clients. The server does
+            not use this value when applying the update—the request always
+            targets the user identified by the Bearer token.
           schema:
             example: username
             type: string
@@ -12199,6 +12532,44 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CredentialsDTO'
+            examples:
+              restoreTopics:
+                summary: Hedera credentials (didDocument may be null)
+                value:
+                  hederaAccountId: 0.0.6057669
+                  hederaAccountKey: >-
+                    302e020100300506032b657004220420efb6030ba3c022d16b6828a7cf826c88b1578bcf9d69fbcc4a548f5292b6068f
+                  didDocument: null
+              restoreTopicsWithDid:
+                summary: Hedera credentials with full DID document
+                value:
+                  hederaAccountId: 0.0.6057669
+                  hederaAccountKey: >-
+                    302e020100300506032b657004220420efb6030ba3c022d16b6828a7cf826c88b1578bcf9d69fbcc4a548f5292b6068f
+                  didDocument:
+                    id: >-
+                      did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                    '@context': https://www.w3.org/ns/did/v1
+                    verificationMethod:
+                      - id: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                        type: Ed25519VerificationKey2018
+                        controller: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                        publicKeyBase58: 2vKLgbwo1DoxTebvSzmz1mk1H4tJTX3FaUt4RUFPCZ6p
+                      - id: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
+                        type: Bls12381G2Key2020
+                        controller: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                        publicKeyBase58: >-
+                          24LRAHd2Dc7d2qziS9D6hXHFmc5uir2TDzowcxzprCd24ynNBjz5NP1kcpGoFbHdRLZo69ZvwdcsjNGSxEyDyCpgqe2Z1ihL8Ysy8Z9KA6wJmBUjEmTYdNNMur8mxgmapoq6
+                    authentication:
+                      - >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                    assertionMethod:
+                      - '#did-root-key'
+                      - '#did-root-key-bbs'
       responses:
         '202':
           description: Successful operation.
@@ -12207,8 +12578,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
               example:
-                taskId: f3b2a9c1e4d5678901234567
-                expectation: 0
+                taskId: b34f028a-16b5-4f5e-a75f-17c3da89bb7d
+                expectation: 2
+                action: Get user topics
+                userId: 69c3a5b08c0ae8a3b1083e95
         '401':
           description: Unauthorized request.
           content:
@@ -12235,7 +12608,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -12244,7 +12617,10 @@ paths:
         - profiles
   /profiles/did-document/validate:
     post:
-      description: Validate DID document format.
+      description: >-
+        Checks the DID document and returns whether required Hedera verification
+        methods (Ed25519 + BLS) are present. Response includes `keys` grouped by
+        verification method type.
       operationId: ProfileApi_validateDidDocument
       parameters: []
       requestBody:
@@ -12254,17 +12630,94 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DidDocumentDTO'
+            examples:
+              validDidDocument:
+                summary: Valid verification method types
+                value:
+                  id: >-
+                    did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                  '@context': https://www.w3.org/ns/did/v1
+                  verificationMethod:
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                      type: Ed25519VerificationKey2018
+                      controller: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                      publicKeyBase58: 2vKLgbwo1DoxTebvSzmz1mk1H4tJTX3FaUt4RUFPCZ6p
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
+                      type: Bls12381G2Key2020
+                      controller: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                      publicKeyBase58: >-
+                        24LRAHd2Dc7d2qziS9D6hXHFmc5uir2TDzowcxzprCd24ynNBjz5NP1kcpGoFbHdRLZo69ZvwdcsjNGSxEyDyCpgqe2Z1ihL8Ysy8Z9KA6wJmBUjEmTYdNNMur8mxgmapoq6
+                  authentication:
+                    - >-
+                      did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                  assertionMethod:
+                    - '#did-root-key'
+                    - '#did-root-key-bbs'
+              invalidDidDocument:
+                summary: Invalid type (e.g. wrong `verificationMethod[].type`)
+                value:
+                  id: >-
+                    did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                  '@context': https://www.w3.org/ns/did/v1
+                  verificationMethod:
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                      type: noType
+                      controller: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                      publicKeyBase58: 2vKLgbwo1DoxTebvSzmz1mk1H4tJTX3FaUt4RUFPCZ6p
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
+                      type: Bls12381G2Key2020
+                      controller: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                      publicKeyBase58: >-
+                        24LRAHd2Dc7d2qziS9D6hXHFmc5uir2TDzowcxzprCd24ynNBjz5NP1kcpGoFbHdRLZo69ZvwdcsjNGSxEyDyCpgqe2Z1ihL8Ysy8Z9KA6wJmBUjEmTYdNNMur8mxgmapoq6
+                  authentication:
+                    - >-
+                      did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                  assertionMethod:
+                    - '#did-root-key'
+                    - '#did-root-key-bbs'
       responses:
         '200':
-          description: Successful operation.
+          description: >-
+            HTTP 200 for both valid and invalid documents; inspect `valid` and
+            `error`.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DidDocumentStatusDTO'
-              example:
-                valid: true
-                error: string
-                didDocument: {}
+              examples:
+                valid:
+                  summary: DID document passes validation
+                  value:
+                    valid: true
+                    error: ''
+                    keys:
+                      Ed25519VerificationKey2018:
+                        - name: '#did-root-key'
+                          id: >-
+                            did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                      Bls12381G2Key2020:
+                        - name: '#did-root-key-bbs'
+                          id: >-
+                            did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
+                invalid:
+                  summary: Validation failed (e.g. required method type missing)
+                  value:
+                    valid: false
+                    error: Ed25519VerificationKey2018 method not found.
+                    keys:
+                      Ed25519VerificationKey2018: []
+                      Bls12381G2Key2020:
+                        - name: '#did-root-key-bbs'
+                          id: >-
+                            did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
         '401':
           description: Unauthorized request.
           content:
@@ -12289,9 +12742,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Body is empty
         '500':
           description: Internal server error.
           content:
@@ -12299,7 +12753,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -12308,27 +12762,124 @@ paths:
         - profiles
   /profiles/did-keys/validate:
     post:
-      description: Validate DID document keys.
+      description: >-
+        For each entry in `keys`, checks that `id` matches a verification method
+        in `document` and that `key` validates against it. Returns the same
+        array with a `valid` flag per entry (HTTP 200 even when some keys fail).
       operationId: ProfileApi_validateDidKeys
       parameters: []
       requestBody:
         required: true
-        description: DID Document and keys.
+        description: >-
+          DID document plus `keys`: `{ id, key }` where `id` is the full
+          verification method id.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/DidDocumentWithKeyDTO'
+            examples:
+              invalidKeys:
+                summary: Placeholder keys (validation fails)
+                value:
+                  document:
+                    id: >-
+                      did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                    '@context': https://www.w3.org/ns/did/v1
+                    verificationMethod:
+                      - id: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                        type: Ed25519VerificationKey2018
+                        controller: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                        publicKeyBase58: 2vKLgbwo1DoxTebvSzmz1mk1H4tJTX3FaUt4RUFPCZ6p
+                      - id: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
+                        type: Bls12381G2Key2020
+                        controller: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                        publicKeyBase58: >-
+                          24LRAHd2Dc7d2qziS9D6hXHFmc5uir2TDzowcxzprCd24ynNBjz5NP1kcpGoFbHdRLZo69ZvwdcsjNGSxEyDyCpgqe2Z1ihL8Ysy8Z9KA6wJmBUjEmTYdNNMur8mxgmapoq6
+                    authentication:
+                      - >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                    assertionMethod:
+                      - '#did-root-key'
+                      - '#did-root-key-bbs'
+                  keys:
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                      key: '1'
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
+                      key: '1'
+              validKeys:
+                summary: Private keys matching verification methods
+                value:
+                  document:
+                    id: >-
+                      did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                    '@context': https://www.w3.org/ns/did/v1
+                    verificationMethod:
+                      - id: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                        type: Ed25519VerificationKey2018
+                        controller: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                        publicKeyBase58: 2vKLgbwo1DoxTebvSzmz1mk1H4tJTX3FaUt4RUFPCZ6p
+                      - id: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
+                        type: Bls12381G2Key2020
+                        controller: >-
+                          did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                        publicKeyBase58: >-
+                          24LRAHd2Dc7d2qziS9D6hXHFmc5uir2TDzowcxzprCd24ynNBjz5NP1kcpGoFbHdRLZo69ZvwdcsjNGSxEyDyCpgqe2Z1ihL8Ysy8Z9KA6wJmBUjEmTYdNNMur8mxgmapoq6
+                    authentication:
+                      - >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                    assertionMethod:
+                      - '#did-root-key'
+                      - '#did-root-key-bbs'
+                  keys:
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                      key: >-
+                        4RE1RukTJFzz2JV3ccio6yupN1PEq7JD7hVEsViFDigkgj8ZdUdmjJKsq2evxM9NusXvYcPJA9bu5szma3917Q24
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
+                      key: 38Rcnwc8Gw62MQYDjSHVovEuHCgXDq8WmnoxozJyzFHj
       responses:
         '200':
-          description: Successful operation.
+          description: Array of results in the same order as request `keys`.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DidKeyStatusDTO'
-              example:
-                id: f3b2a9c1e4d5678901234567
-                key: string
-                valid: true
+                type: array
+                items:
+                  $ref: '#/components/schemas/DidKeyStatusDTO'
+              examples:
+                invalidKeys:
+                  summary: 'Placeholder keys — `valid: false`'
+                  value:
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                      key: '1'
+                      valid: false
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
+                      key: '1'
+                      valid: false
+                validKeys:
+                  summary: 'Matching keys — `valid: true`'
+                  value:
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key
+                      key: >-
+                        4RE1RukTJFzz2JV3ccio6yupN1PEq7JD7hVEsViFDigkgj8ZdUdmjJKsq2evxM9NusXvYcPJA9bu5szma3917Q24
+                      valid: true
+                    - id: >-
+                        did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734#did-root-key-bbs
+                      key: 38Rcnwc8Gw62MQYDjSHVovEuHCgXDq8WmnoxozJyzFHj
+                      valid: true
         '401':
           description: Unauthorized request.
           content:
@@ -12353,9 +12904,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Document is empty
         '500':
           description: Internal server error.
           content:
@@ -12363,7 +12915,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -12406,13 +12958,20 @@ paths:
                 items:
                   $ref: '#/components/schemas/PolicyKeyDTO'
               example:
-                - id: f3b2a9c1e4d5678901234567
-                  createDate: string
-                  updateDate: string
-                  messageId: f3b2a9c1e4d5678901234567
-                  owner: string
-                  policyName: Policy name
-                  key: Key
+                - createDate: '2026-03-25T08:38:23.528Z'
+                  updateDate: '2026-03-25T08:38:23.528Z'
+                  messageId: '1774427068.001165000'
+                  owner: >-
+                    did:hedera:testnet:BftZd6RVk1D5yXC64g25b9TmhAvNLwki271mWgDAu7yW_0.0.8361161
+                  policyName: CDM AMS-III.AR Policy
+                  id: 69c39eff462c9c1141de2f7d
+                - createDate: '2026-03-25T08:38:15.920Z'
+                  updateDate: '2026-03-25T08:38:15.920Z'
+                  messageId: '1774427841.463316056'
+                  owner: >-
+                    did:hedera:testnet:BftZd6RVk1D5yXC64g25b9TmhAvNLwki271mWgDAu7yW_0.0.8361161
+                  policyName: CDM AMS-II.J Policy
+                  id: 69c39ef7462c9c1141de2f7c
         '401':
           description: Unauthorized request.
           content:
@@ -12439,7 +12998,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -12447,16 +13006,46 @@ paths:
       tags:
         - profiles
     post:
-      description: Creates a new key.
+      description: >-
+        Registers a **policy message key** for the authenticated user's DID.
+        **Generate:** send only `messageId`—the server creates a private key for
+        that policy. The owner can copy the `messageId` and returned `key` from
+        the response and pass them **out of band** to another person.
+        **Import:** the recipient calls this endpoint with the same `messageId`
+        plus the DER-encoded private `key` they received, so their account can
+        use the policy like the original owner.
       operationId: ProfileApi_generateKey
       parameters: []
       requestBody:
         required: true
-        description: Config.
+        description: >-
+          `messageId` is always the policy **message id**. `key` is optional:
+          omit it to **generate** a new key; provide it to **import** a key that
+          was shared with you.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PolicyKeyConfigDTO'
+            examples:
+              generateKeyForPolicy:
+                summary: Generate key for a policy message
+                description: >-
+                  Only `messageId` is sent; the server generates the private
+                  key. Use this to obtain a key for a specific policy, then
+                  share `messageId` and the private `key` from the response with
+                  another user manually.
+                value:
+                  messageId: '1769689879.382295507'
+              remoteUserImport:
+                summary: Import key (remote user)
+                description: >-
+                  The **remote user** sends the same `messageId` and the DER
+                  private `key` they received out of band so this profile can
+                  use that policy.
+                value:
+                  messageId: '1769689879.382295507'
+                  key: >-
+                    302e020100300506032b6570042204200c05a906fc9f560901032fd8781d49811a82eb855baa6143f8bdb5976d0f9273
       responses:
         '200':
           description: Successful operation.
@@ -12465,13 +13054,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/PolicyKeyDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                createDate: string
-                updateDate: string
-                messageId: f3b2a9c1e4d5678901234567
-                owner: string
-                policyName: Policy name
-                key: Key
+                createDate: '2026-03-25T07:53:00.554Z'
+                updateDate: '2026-03-25T07:53:00.554Z'
+                messageId: '1769689879.382295507'
+                owner: >-
+                  did:hedera:testnet:BftZd6RVk1D5yXC64g25b9TmhAvNLwki271mWgDAu7yW_0.0.8361161
+                id: 69c3945c462c9c1141de2e06
+                key: >-
+                  302e020100300506032b6570042204201f7147c259331152b8f8b4772029af8cfe60385db3c5a1c1cdb8dc9bd6810a6a
         '401':
           description: Unauthorized request.
           content:
@@ -12496,9 +13086,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Message ID is empty
         '500':
           description: Internal server error.
           content:
@@ -12506,11 +13097,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
-      summary: Creates a new key.
+      summary: Create or import a policy signing key.
       tags:
         - profiles
   /profiles/keys/{id}:
@@ -12556,9 +13147,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid id
         '500':
           description: Internal server error.
           content:
@@ -12566,7 +13158,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -39339,19 +39931,6 @@ components:
           example: '1773670900.819264517'
         document:
           $ref: '#/components/schemas/VcDTO'
-      required:
-        - id
-        - policyId
-        - hash
-        - signature
-        - status
-        - tag
-        - type
-        - createDate
-        - updateDate
-        - owner
-        - option
-        - document
     PolicyTestDTO:
       type: object
       properties:
@@ -42950,91 +43529,13 @@ components:
         - tools
         - config
         - schemas
-    ProfileDTO:
-      type: object
-      properties:
-        username:
-          type: string
-          example: username
-        role:
-          type: string
-          enum:
-            - STANDARD_REGISTRY
-            - USER
-            - AUDITOR
-          example: USER
-        permissionsGroup:
-          example:
-            - {}
-          type: array
-          items:
-            type: string
-        permissions:
-          example:
-            - POLICIES_POLICY_READ
-          type: array
-          items:
-            type: string
-        did:
-          type: string
-          example: >-
-            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
-        parent:
-          type: string
-          example: >-
-            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
-        hederaAccountId:
-          type: string
-          example: 0.0.6046379
-        confirmed:
-          type: boolean
-          example: true
-        failed:
-          type: boolean
-          example: true
-        topicId:
-          type: string
-          example: 0.0.6046379
-        parentTopicId:
-          type: string
-          example: 0.0.6046379
-        didDocument:
-          type: object
-          nullable: true
-          additionalProperties: true
-        vcDocument:
-          type: object
-          nullable: true
-          additionalProperties: true
-      required:
-        - username
-        - role
-        - permissions
-        - didDocument
-        - vcDocument
-    SubjectDTO:
-      type: object
-      properties:
-        '@context':
-          nullable: true
-          type: array
-          items:
-            type: string
-        id:
-          type: string
-          nullable: true
-        type:
-          type: string
-          nullable: true
-      required:
-        - '@context'
     DidDocumentDTO:
       type: object
       properties:
         id:
           type: string
           nullable: false
-        context:
+        '@context':
           nullable: true
           type: array
           items:
@@ -43093,7 +43594,7 @@ components:
             type: object
       required:
         - id
-        - context
+        - '@context'
         - alsoKnownAs
         - controller
         - verificationMethod
@@ -43103,6 +43604,203 @@ components:
         - capabilityInvocation
         - capabilityDelegation
         - service
+    ProfileDidDocumentRecordDTO:
+      type: object
+      properties:
+        createDate:
+          type: string
+          example: '2026-03-03T17:25:53.312Z'
+        updateDate:
+          type: string
+          example: '2026-03-03T17:25:53.312Z'
+        did:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        document:
+          $ref: '#/components/schemas/DidDocumentDTO'
+        status:
+          type: string
+          example: CREATE
+        messageId:
+          type: string
+          example: '1773670900.819264517'
+        topicId:
+          type: string
+          example: 0.0.6046379
+        verificationMethods:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            Ed25519VerificationKey2018: >-
+              did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599#did-root-key
+            Bls12381G2Key2020: >-
+              did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599#did-root-key-bbs
+        id:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+      required:
+        - createDate
+        - updateDate
+        - did
+        - document
+        - status
+        - messageId
+        - topicId
+        - verificationMethods
+        - id
+    ProfileVcDocumentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        policyId:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        hash:
+          type: string
+          example: hash
+        signature:
+          type: number
+          example: 0
+        status:
+          type: string
+          enum:
+            - NEW
+            - ISSUE
+            - REVOKE
+            - SUSPEND
+            - RESUME
+            - FAILED
+          example: NEW
+        tag:
+          type: string
+          example: Block tag
+        type:
+          type: string
+          example: Document type
+        createDate:
+          type: string
+          example: '2026-03-03T17:25:53.312Z'
+        updateDate:
+          type: string
+          example: '2026-03-03T17:25:53.312Z'
+        owner:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        hederaStatus:
+          type: string
+          example: ISSUE
+        option:
+          type: object
+          additionalProperties: true
+          example:
+            status: NEW
+        topicId:
+          type: string
+          example: 0.0.6046379
+        messageId:
+          type: string
+          example: '1773670900.819264517'
+        document:
+          $ref: '#/components/schemas/VcDTO'
+        documentFileId:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        tableFileIds:
+          example: []
+          type: array
+          items:
+            type: string
+    ProfileDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          example: username
+        role:
+          type: string
+          enum:
+            - STANDARD_REGISTRY
+            - USER
+            - AUDITOR
+          example: USER
+        permissionsGroup:
+          example:
+            - {}
+          type: array
+          items:
+            type: string
+        permissions:
+          example:
+            - POLICIES_POLICY_READ
+          type: array
+          items:
+            type: string
+        did:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        parent:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        hederaAccountId:
+          type: string
+          example: 0.0.6046379
+        confirmed:
+          type: boolean
+          example: true
+        failed:
+          type: boolean
+          example: true
+        topicId:
+          type: string
+          example: 0.0.6046379
+        parentTopicId:
+          type: string
+          example: 0.0.6046379
+        location:
+          type: string
+          enum:
+            - local
+            - remote
+            - custom
+          example: local
+          description: Whether the user account is local, remote, or custom.
+        didDocument:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/ProfileDidDocumentRecordDTO'
+        vcDocument:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/ProfileVcDocumentDTO'
+      required:
+        - username
+        - role
+        - permissions
+        - didDocument
+        - vcDocument
+    SubjectDTO:
+      type: object
+      properties:
+        '@context':
+          nullable: true
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+          nullable: true
+        type:
+          type: string
+          nullable: true
+      required:
+        - '@context'
     DidKeyDTO:
       type: object
       properties:
@@ -43115,27 +43813,56 @@ components:
       required:
         - id
         - key
+    FireblocksConfigDTO:
+      type: object
+      properties:
+        fireBlocksVaultId:
+          type: string
+          example: ''
+        fireBlocksAssetId:
+          type: string
+          example: ''
+        fireBlocksApiKey:
+          type: string
+          example: ''
+        fireBlocksPrivateiKey:
+          type: string
+          example: ''
+          description: >-
+            API property name is `fireBlocksPrivateiKey` (typo preserved for
+            compatibility).
     CredentialsDTO:
       type: object
       properties:
         entity:
           type: string
-          nullable: false
+          description: Schema entity label; often inferred from the user role when omitted.
+        topicId:
+          type: string
+          description: Hedera topic id (e.g. restore / profile flows).
+          example: 0.0.7813042
         hederaAccountId:
           type: string
           nullable: false
         hederaAccountKey:
           type: string
-          nullable: false
+          nullable: true
+          description: >-
+            Hedera private key (local signing). May be omitted for some remote
+            flows.
         parent:
           type: string
           nullable: true
         vcDocument:
           nullable: true
+          description: >-
+            VC credential subject fields (e.g. OrganizationName, Website, Tags)
+            for Standard Registry.
           allOf:
             - $ref: '#/components/schemas/SubjectDTO'
         didDocument:
           nullable: true
+          description: DID document to publish, or null to skip in this request.
           allOf:
             - $ref: '#/components/schemas/DidDocumentDTO'
         didKeys:
@@ -43143,10 +43870,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DidKeyDTO'
+        useFireblocksSigning:
+          type: boolean
+          example: false
+        fireblocksConfig:
+          $ref: '#/components/schemas/FireblocksConfigDTO'
       required:
-        - entity
         - hederaAccountId
-        - hederaAccountKey
+    DidVerificationMethodEntryDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Fragment/name reference (e.g. `#did-root-key`).
+        id:
+          type: string
+          description: Full verification method id URI.
+      required:
+        - name
+        - id
     DidDocumentStatusDTO:
       type: object
       properties:
@@ -43156,17 +43898,37 @@ components:
         error:
           type: string
           nullable: true
-        didDocument:
+          description: Error message when `valid` is false; empty string when valid.
+        keys:
           type: object
           nullable: false
+          description: >-
+            Verification methods grouped by key type (e.g.
+            Ed25519VerificationKey2018, Bls12381G2Key2020). Matches runtime
+            `keys` in the guardian response.
           additionalProperties:
             type: array
             items:
-              $ref: '#/components/schemas/DidKeyDTO'
+              $ref: '#/components/schemas/DidVerificationMethodEntryDTO'
       required:
         - valid
         - error
-        - didDocument
+        - keys
+    DidDocumentWithKeyDTO:
+      type: object
+      properties:
+        document:
+          nullable: false
+          allOf:
+            - $ref: '#/components/schemas/DidDocumentDTO'
+        keys:
+          nullable: false
+          type: array
+          items:
+            $ref: '#/components/schemas/DidKeyDTO'
+      required:
+        - document
+        - keys
     DidKeyStatusDTO:
       type: object
       properties:
@@ -43183,21 +43945,6 @@ components:
         - id
         - key
         - valid
-    DidDocumentWithKeyDTO:
-      type: object
-      properties:
-        document:
-          nullable: false
-          allOf:
-            - $ref: '#/components/schemas/DidDocumentDTO'
-        keys:
-          nullable: false
-          type: array
-          items:
-            $ref: '#/components/schemas/DidKeyDTO'
-      required:
-        - document
-        - keys
     PolicyKeyDTO:
       type: object
       properties:
@@ -43244,7 +43991,10 @@ components:
           example: '1773670900.819264517'
         key:
           type: string
-          description: New key
+          description: >-
+            DER-encoded private key when **importing** on the remote user
+            account. Omit when **generating** for the remote-user flow (only
+            `messageId`).
           example: Key
       required:
         - messageId
