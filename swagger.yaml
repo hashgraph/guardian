@@ -7023,32 +7023,54 @@ paths:
       parameters: []
       requestBody:
         required: true
-        description: Module config.
+        description: >-
+          Module configuration. Only config with blockType: "module" is
+          required. Other fields (name, description) are optional. Fields like
+          id, uuid, creator, owner are set by the server.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ModuleDTO'
+            examples:
+              createModule:
+                summary: Minimal create
+                value:
+                  name: New Module
+                  description: New module description
+                  menu: show
+                  config:
+                    blockType: module
       responses:
         '201':
-          description: Created module.
+          description: Successful operation.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ModuleDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                uuid: f3b2a9c1e4d5678901234567
-                type: string
-                name: string
-                description: string
-                status: string
-                creator: string
-                owner: string
-                topicId: f3b2a9c1e4d5678901234567
-                messageId: f3b2a9c1e4d5678901234567
-                codeVersion: string
-                createDate: string
-                config: {}
+                createDate: '2026-03-25T12:04:14.291Z'
+                updateDate: '2026-03-25T12:04:14.291Z'
+                uuid: f0624944-02f0-4329-8cae-e871c1984bf4
+                name: New Module
+                description: New module description
+                status: DRAFT
+                creator: >-
+                  did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                owner: >-
+                  did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                codeVersion: 1.0.0
+                type: CUSTOM
+                config:
+                  blockType: module
+                  permissions: []
+                  children: []
+                  events: []
+                  artifacts: []
+                  variables: []
+                  inputEvents: []
+                  outputEvents: []
+                  innerEvents: []
+                id: 69c3cf3e462c9c1141de3052
         '401':
           description: Unauthorized request.
           content:
@@ -7069,13 +7091,16 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: >-
+            Invalid module config (missing config or config.blockType !==
+            "module").
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid module config
         '500':
           description: Internal server error.
           content:
@@ -7083,7 +7108,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7127,19 +7152,63 @@ paths:
                 items:
                   $ref: '#/components/schemas/ModuleDTO'
               example:
-                - id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  type: string
-                  name: string
-                  description: string
-                  status: string
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: string
-                  createDate: string
-                  config: {}
+                - createDate: '2026-03-25T12:23:36.763Z'
+                  updateDate: '2026-03-25T12:24:28.059Z'
+                  uuid: 2abde099-08f6-4d75-9de3-d6f33d95bc72
+                  name: New Module
+                  description: New module description
+                  status: PUBLISHED
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  topicId: 0.0.8370210
+                  messageId: '1774441459.171929000'
+                  codeVersion: 1.0.0
+                  type: CUSTOM
+                  contentFileId: 69c3d3e5462c9c1141de3074
+                  config:
+                    name: New Module
+                    description: New module description
+                    blockType: module
+                    permissions: []
+                    id: 7d25fdf6-8fc4-4d01-b635-541b996415ce
+                    tag: Module
+                    children: []
+                    events: []
+                    artifacts: []
+                    variables: []
+                    inputEvents: []
+                    outputEvents: []
+                    innerEvents: []
+                  id: 69c3d3c8462c9c1141de3069
+                - createDate: '2026-03-25T12:23:29.549Z'
+                  updateDate: '2026-03-25T12:23:53.759Z'
+                  uuid: e4ecf6f4-36fb-4872-99b8-9b592aac241d
+                  name: Device configuration module
+                  description: Part of devices flow
+                  status: DRAFT
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  codeVersion: 1.0.0
+                  type: CUSTOM
+                  config:
+                    name: Device configuration module
+                    description: Part of devices flow
+                    blockType: module
+                    permissions: []
+                    id: 3dc74d7b-eae8-49a5-84d5-c267c1fd8d06
+                    tag: Module
+                    children: []
+                    events: []
+                    artifacts: []
+                    variables: []
+                    inputEvents: []
+                    outputEvents: []
+                    innerEvents: []
+                  id: 69c3d3c1462c9c1141de3066
         '401':
           description: Unauthorized request.
           content:
@@ -7166,7 +7235,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7199,7 +7268,7 @@ paths:
         - name: topicId
           required: false
           in: query
-          description: Topic id
+          description: Filter module schemas by topic id.
           schema:
             example: 0.0.6046379
             type: string
@@ -7218,22 +7287,82 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
               example:
-                - id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  name: Schema name
-                  description: Description
-                  entity: string
-                  iri: string
-                  status: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  version: 1.0.0
-                  owner: string
-                  messageId: f3b2a9c1e4d5678901234567
-                  category: string
-                  documentURL: https://example.com
-                  contextURL: https://example.com
-                  document: {}
-                  context: {}
+                - createDate: '2026-03-25T12:40:32.586Z'
+                  updateDate: '2026-03-25T12:40:59.908Z'
+                  uuid: b71c8b0e-b4aa-4d0b-ab63-639e306c02ea
+                  name: Module schema 3
+                  description: ''
+                  entity: VC
+                  status: PUBLISHED
+                  version: '3'
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  topicId: 0.0.8370319
+                  messageId: '1774442456.657381000'
+                  documentURL: >-
+                    ipfs://bafkreifyyqurrnlxnhblm57qobo2ecv4wjm3o7i3axgscls3ydjn3fefaq
+                  contextURL: >-
+                    ipfs://bafkreid6crdhdtk3mtusl4mqcrjlsan6o7eanyetko3k5nwykcvezndepy
+                  iri: '#b71c8b0e-b4aa-4d0b-ab63-639e306c02ea&3'
+                  readonly: false
+                  system: false
+                  active: false
+                  category: MODULE
+                  codeVersion: 1.2.0
+                  document: innerSchemaConfigurationInText
+                  context: jsonLdContextInText
+                  topicCount: 1
+                  id: 69c3d7b9462c9c1141de309b
+                - createDate: '2026-03-25T12:29:13.470Z'
+                  updateDate: '2026-03-25T12:29:13.470Z'
+                  uuid: 5ff2b3dd-1ea0-44c1-a84d-7c68c0d55184
+                  name: Module schema 2
+                  description: ''
+                  entity: NONE
+                  status: DRAFT
+                  version: 1.0.1
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  topicId: 0.0.8370227
+                  documentURL: ''
+                  contextURL: schema:5ff2b3dd-1ea0-44c1-a84d-7c68c0d55184
+                  iri: '#5ff2b3dd-1ea0-44c1-a84d-7c68c0d55184&1.0.1'
+                  readonly: false
+                  system: false
+                  active: false
+                  category: MODULE
+                  codeVersion: 1.2.0
+                  document: innerSchemaConfigurationInText
+                  topicCount: 1
+                  id: 69c3d513462c9c1141de3091
+                - createDate: '2026-03-25T12:28:37.997Z'
+                  updateDate: '2026-03-25T12:28:37.997Z'
+                  uuid: de840307-57f4-423b-9216-fb6f0e1f788e
+                  name: Module schema 1
+                  description: ''
+                  entity: VC
+                  status: DRAFT
+                  version: 1.0.1
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  topicId: 0.0.8370224
+                  documentURL: ''
+                  contextURL: schema:de840307-57f4-423b-9216-fb6f0e1f788e
+                  iri: '#de840307-57f4-423b-9216-fb6f0e1f788e&1.0.1'
+                  readonly: false
+                  system: false
+                  active: false
+                  category: MODULE
+                  codeVersion: 1.2.0
+                  document: innerSchemaConfigurationInText
+                  topicCount: 1
+                  id: 69c3d4ef462c9c1141de3087
         '401':
           description: Unauthorized request.
           content:
@@ -7260,7 +7389,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7280,6 +7409,73 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SchemaDTO'
+            examples:
+              createModuleSchema:
+                summary: Create module schema
+                value:
+                  uuid: d26a7a31-00ba-4c30-1314-3d9eecfd7eda
+                  hash: ''
+                  name: Module schema example
+                  description: ''
+                  entity: NONE
+                  status: DRAFT
+                  readonly: false
+                  document:
+                    $id: '#d26a7a31-00ba-4c30-1314-3d9eecfd7eda'
+                    $comment: >-
+                      { "@id":
+                      "schema:d26a7a31-00ba-4c30-1314-3d9eecfd7eda#d26a7a31-00ba-4c30-1314-3d9eecfd7eda",
+                      "term": "d26a7a31-00ba-4c30-1314-3d9eecfd7eda" }
+                    title: Module schema example
+                    description: ''
+                    type: object
+                    properties:
+                      '@context':
+                        oneOf:
+                          - type: string
+                          - type: array
+                            items:
+                              type: string
+                        readOnly: true
+                      type:
+                        oneOf:
+                          - type: string
+                          - type: array
+                            items:
+                              type: string
+                        readOnly: true
+                      id:
+                        type: string
+                        readOnly: true
+                      field0:
+                        title: field0
+                        description: qweqwe
+                        readOnly: false
+                        type: string
+                        $comment: >-
+                          {"term":"field0","@id":"https://www.schema.org/text","availableOptions":[],"orderPosition":0}
+                    required:
+                      - '@context'
+                      - type
+                    additionalProperties: false
+                    $defs: {}
+                  context: null
+                  version: ''
+                  sourceVersion: ''
+                  creator: ''
+                  owner: ''
+                  messageId: ''
+                  documentURL: ''
+                  contextURL: schema:d26a7a31-00ba-4c30-1314-3d9eecfd7eda
+                  iri: ''
+                  fields: []
+                  conditions: []
+                  active: false
+                  system: false
+                  category: MODULE
+                  errors: []
+                  userDID: null
+                  codeVersion: ''
       responses:
         '201':
           description: Created schema.
@@ -7290,22 +7486,31 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
               example:
-                - id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  name: Schema name
-                  description: Description
-                  entity: string
-                  iri: string
-                  status: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  version: 1.0.0
-                  owner: string
-                  messageId: f3b2a9c1e4d5678901234567
-                  category: string
-                  documentURL: https://example.com
-                  contextURL: https://example.com
-                  document: {}
-                  context: {}
+                - createDate: '2026-03-25T13:43:28.481Z'
+                  updateDate: '2026-03-25T13:43:28.481Z'
+                  uuid: d26a7a31-00ba-4c30-1314-3d9eecfd7eda
+                  name: Module schema example
+                  description: ''
+                  entity: NONE
+                  status: DRAFT
+                  version: 1.0.1
+                  sourceVersion: ''
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  topicId: 0.0.8371271
+                  messageId: null
+                  documentURL: ''
+                  contextURL: schema:d26a7a31-00ba-4c30-1314-3d9eecfd7eda
+                  iri: '#d26a7a31-00ba-4c30-1314-3d9eecfd7eda&1.0.1'
+                  readonly: false
+                  system: false
+                  active: false
+                  category: MODULE
+                  codeVersion: 1.2.0
+                  document: innerSchemaConfigurationInText
+                  id: 69c3e679ae73da728c8d8eaf
         '401':
           description: Unauthorized request.
           content:
@@ -7326,13 +7531,14 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Schema does not exist.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Schema does not exist.
         '500':
           description: Internal server error.
           content:
@@ -7340,7 +7546,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7394,7 +7600,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7422,19 +7628,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModuleDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                uuid: f3b2a9c1e4d5678901234567
-                type: string
-                name: string
-                description: string
-                status: string
-                creator: string
-                owner: string
-                topicId: f3b2a9c1e4d5678901234567
-                messageId: f3b2a9c1e4d5678901234567
-                codeVersion: string
-                createDate: string
+                createDate: '2026-03-25T12:23:29.549Z'
+                uuid: e4ecf6f4-36fb-4872-99b8-9b592aac241d
+                name: Device configuration module
+                description: Part of devices flow
+                status: DRAFT
+                creator: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                owner: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                codeVersion: 1.0.0
+                type: CUSTOM
                 config: {}
+                id: 69c3d3c1462c9c1141de3066
         '401':
           description: Unauthorized request.
           content:
@@ -7455,13 +7661,14 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Invalid uuid.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid uuid
         '500':
           description: Internal server error.
           content:
@@ -7469,7 +7676,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7496,6 +7703,47 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ModuleDTO'
+            examples:
+              updateModule:
+                summary: Update module
+                value:
+                  createDate: '2026-03-25T14:29:09.327Z'
+                  uuid: f964f762-4e77-4f09-b98e-c1f12961ff17
+                  name: UPDATED NAME
+                  description: UPDATED DESCRIPTION
+                  status: DRAFT
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  type: CUSTOM
+                  config:
+                    name: UPDATED NAME
+                    description: UPDATED DESCRIPTION
+                    blockType: module
+                    permissions: []
+                    id: 738b9162-a25c-43b9-a609-490a10af3bd6
+                    tag: Module
+                    children:
+                      - id: 90debdfe-1f45-4704-8641-a957aef87f77
+                        blockType: interfaceContainerBlock
+                        defaultActive: true
+                        permissions: []
+                        onErrorAction: no-action
+                        uiMetaData:
+                          type: blank
+                          title: UPDATED TITLE
+                        tag: Module:UPDATED_BLOCK_NAME
+                        children: []
+                        events: []
+                        artifacts: []
+                    events: []
+                    artifacts: []
+                    variables: []
+                    inputEvents: []
+                    outputEvents: []
+                    innerEvents: []
+                  id: 69c3f135ae73da728c8d8f57
       responses:
         '201':
           description: Successful operation.
@@ -7504,19 +7752,45 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModuleDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                uuid: f3b2a9c1e4d5678901234567
-                type: string
-                name: string
-                description: string
-                status: string
-                creator: string
-                owner: string
-                topicId: f3b2a9c1e4d5678901234567
-                messageId: f3b2a9c1e4d5678901234567
-                codeVersion: string
-                createDate: string
-                config: {}
+                createDate: '2026-03-25T14:29:09.327Z'
+                updateDate: '2026-03-25T14:33:42.812Z'
+                uuid: f964f762-4e77-4f09-b98e-c1f12961ff17
+                name: UPDATED NAME
+                description: UPDATED DESCRIPTION
+                status: DRAFT
+                creator: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                owner: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                codeVersion: 1.0.0
+                type: CUSTOM
+                config:
+                  name: UPDATED NAME
+                  description: UPDATED DESCRIPTION
+                  blockType: module
+                  permissions: []
+                  id: 738b9162-a25c-43b9-a609-490a10af3bd6
+                  tag: Module
+                  children:
+                    - id: 90debdfe-1f45-4704-8641-a957aef87f77
+                      blockType: interfaceContainerBlock
+                      defaultActive: true
+                      permissions: []
+                      onErrorAction: no-action
+                      uiMetaData:
+                        type: blank
+                        title: UPDATED TITLE
+                      tag: Module:UPDATED_BLOCK_NAME
+                      children: []
+                      events: []
+                      artifacts: []
+                  events: []
+                  artifacts: []
+                  variables: []
+                  inputEvents: []
+                  outputEvents: []
+                  innerEvents: []
+                id: 69c3f135ae73da728c8d8f57
         '401':
           description: Unauthorized request.
           content:
@@ -7537,13 +7811,14 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Invalid module config.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Invalid module config
         '500':
           description: Internal server error.
           content:
@@ -7551,7 +7826,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7575,19 +7850,63 @@ paths:
                 items:
                   $ref: '#/components/schemas/ModuleDTO'
               example:
-                - id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  type: string
-                  name: string
-                  description: string
-                  status: string
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: string
-                  createDate: string
-                  config: {}
+                - createDate: '2026-03-25T12:23:36.763Z'
+                  updateDate: '2026-03-25T12:24:28.059Z'
+                  uuid: 2abde099-08f6-4d75-9de3-d6f33d95bc72
+                  name: New Module
+                  description: New module description
+                  status: PUBLISHED
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  topicId: 0.0.8370210
+                  messageId: '1774441459.171929000'
+                  codeVersion: 1.0.0
+                  type: CUSTOM
+                  contentFileId: 69c3d3e5462c9c1141de3074
+                  config:
+                    name: New Module
+                    description: New module description
+                    blockType: module
+                    permissions: []
+                    id: 7d25fdf6-8fc4-4d01-b635-541b996415ce
+                    tag: Module
+                    children: []
+                    events: []
+                    artifacts: []
+                    variables: []
+                    inputEvents: []
+                    outputEvents: []
+                    innerEvents: []
+                  id: 69c3d3c8462c9c1141de3069
+                - createDate: '2026-03-25T12:23:29.549Z'
+                  updateDate: '2026-03-25T12:23:53.759Z'
+                  uuid: e4ecf6f4-36fb-4872-99b8-9b592aac241d
+                  name: Device configuration module
+                  description: Part of devices flow
+                  status: DRAFT
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  codeVersion: 1.0.0
+                  type: CUSTOM
+                  config:
+                    name: Device configuration module
+                    description: Part of devices flow
+                    blockType: module
+                    permissions: []
+                    id: 3dc74d7b-eae8-49a5-84d5-c267c1fd8d06
+                    tag: Module
+                    children: []
+                    events: []
+                    artifacts: []
+                    variables: []
+                    inputEvents: []
+                    outputEvents: []
+                    innerEvents: []
+                  id: 69c3d3c1462c9c1141de3066
         '401':
           description: Unauthorized request.
           content:
@@ -7614,7 +7933,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7638,14 +7957,14 @@ paths:
             type: string
       responses:
         '200':
-          description: File.
+          description: >-
+            Binary ZIP archive (`Content-Type: application/zip`,
+            `Content-Disposition: attachment`). Not JSON.
           content:
             application/zip:
               schema:
                 type: string
                 format: binary
-              example:
-                result: ok
         '401':
           description: Unauthorized request.
           content:
@@ -7672,7 +7991,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7704,11 +8023,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ExportMessageDTO'
               example:
-                uuid: f3b2a9c1e4d5678901234567
-                name: string
-                description: string
-                messageId: f3b2a9c1e4d5678901234567
-                owner: string
+                uuid: 2abde099-08f6-4d75-9de3-d6f33d95bc72
+                name: New Module
+                description: New module description
+                messageId: '1774441459.171929000'
+                owner: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
         '401':
           description: Unauthorized request.
           content:
@@ -7735,7 +8055,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7757,6 +8077,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ImportMessageDTO'
+            examples:
+              importModuleMessage:
+                summary: Import module by message
+                value:
+                  messageId: '1774456966.828228000'
       responses:
         '201':
           description: Created module.
@@ -7765,19 +8090,57 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModuleDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                uuid: f3b2a9c1e4d5678901234567
-                type: string
-                name: string
-                description: string
-                status: string
-                creator: string
-                owner: string
-                topicId: f3b2a9c1e4d5678901234567
-                messageId: f3b2a9c1e4d5678901234567
-                codeVersion: string
-                createDate: string
-                config: {}
+                createDate: '2026-03-25T16:48:48.711Z'
+                updateDate: '2026-03-25T16:48:48.711Z'
+                uuid: fd51a3a7-ad99-4699-8de8-0c0ccb300aab
+                name: Test Module with two blocks
+                description: Description for the test module
+                status: DRAFT
+                creator: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                owner: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                codeVersion: 1.0.0
+                type: CUSTOM
+                config:
+                  name: Test Module with two blocks
+                  description: Description for the test module
+                  blockType: module
+                  permissions: []
+                  id: cd87187f-26aa-4dfb-994f-12ad810dc952
+                  tag: Module
+                  children:
+                    - id: 4242c579-891b-437d-8cef-61696c2baf2a
+                      blockType: interfaceContainerBlock
+                      defaultActive: true
+                      permissions: []
+                      onErrorAction: no-action
+                      uiMetaData:
+                        type: blank
+                        title: Main page
+                      tag: Module:Main_container_block
+                      children:
+                        - id: e851686a-9cd6-4fb0-b3da-3a9e33c54af9
+                          blockType: interfaceContainerBlock
+                          defaultActive: true
+                          permissions: []
+                          onErrorAction: no-action
+                          uiMetaData:
+                            type: blank
+                            title: Child page
+                          tag: Module:Child_container_block
+                          children: []
+                          events: []
+                          artifacts: []
+                      events: []
+                      artifacts: []
+                  events: []
+                  artifacts: []
+                  variables: []
+                  inputEvents: []
+                  outputEvents: []
+                  innerEvents: []
+                id: 69c411f0ae73da728c8d8f99
         '401':
           description: Unauthorized request.
           content:
@@ -7798,13 +8161,14 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Message ID in body is empty.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Message ID in body is empty
         '500':
           description: Internal server error.
           content:
@@ -7812,7 +8176,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7829,11 +8193,12 @@ paths:
       parameters: []
       requestBody:
         required: true
-        description: File.
+        description: Module archive as raw binary request body.
         content:
-          application/json:
+          binary/octet-stream:
             schema:
               type: string
+              format: binary
       responses:
         '201':
           description: Created module.
@@ -7842,19 +8207,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModuleDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                uuid: f3b2a9c1e4d5678901234567
-                type: string
-                name: string
-                description: string
-                status: string
-                creator: string
-                owner: string
-                topicId: f3b2a9c1e4d5678901234567
-                messageId: f3b2a9c1e4d5678901234567
-                codeVersion: string
-                createDate: string
-                config: {}
+                createDate: '2026-03-25T16:34:31.456Z'
+                updateDate: '2026-03-25T16:34:31.456Z'
+                uuid: 70f318e1-d505-4b7b-ac9c-9184839f0072
+                name: Device configuration module
+                description: Part of devices flow
+                status: DRAFT
+                creator: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                owner: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                codeVersion: 1.0.0
+                type: CUSTOM
+                config:
+                  name: Device configuration module
+                  description: Part of devices flow
+                  blockType: module
+                  permissions: []
+                  id: 3dc74d7b-eae8-49a5-84d5-c267c1fd8d06
+                  tag: Module
+                  children: []
+                  events: []
+                  artifacts: []
+                  variables: []
+                  inputEvents: []
+                  outputEvents: []
+                  innerEvents: []
+                id: 69c40e97ae73da728c8d8f78
         '401':
           description: Unauthorized request.
           content:
@@ -7881,7 +8260,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7903,6 +8282,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ImportMessageDTO'
+            examples:
+              importModuleMessagePreview:
+                summary: Preview module by message
+                value:
+                  messageId: '1774456966.828228000'
       responses:
         '200':
           description: Module preview.
@@ -7912,25 +8296,57 @@ paths:
                 $ref: '#/components/schemas/ModulePreviewDTO'
               example:
                 module:
-                  id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  type: string
-                  name: string
-                  description: string
-                  status: string
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: string
-                  createDate: string
-                  config: {}
-                messageId: f3b2a9c1e4d5678901234567
-                schemas:
-                  - {}
-                tags:
-                  - {}
-                moduleTopicId: f3b2a9c1e4d5678901234567
+                  updateDate: '2026-03-25T16:42:26.445Z'
+                  name: Test Module with two blocks
+                  description: Description for the test module
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  codeVersion: 1.0.0
+                  type: CUSTOM
+                  config:
+                    name: Test Module with two blocks
+                    description: Description for the test module
+                    blockType: module
+                    permissions: []
+                    id: cd87187f-26aa-4dfb-994f-12ad810dc952
+                    tag: Module
+                    children:
+                      - id: 4242c579-891b-437d-8cef-61696c2baf2a
+                        blockType: interfaceContainerBlock
+                        defaultActive: true
+                        permissions: []
+                        onErrorAction: no-action
+                        uiMetaData:
+                          type: blank
+                          title: Main page
+                        tag: Module:Main_container_block
+                        children:
+                          - id: e851686a-9cd6-4fb0-b3da-3a9e33c54af9
+                            blockType: interfaceContainerBlock
+                            defaultActive: true
+                            permissions: []
+                            onErrorAction: no-action
+                            uiMetaData:
+                              type: blank
+                              title: Child page
+                            tag: Module:Child_container_block
+                            children: []
+                            events: []
+                            artifacts: []
+                        events: []
+                        artifacts: []
+                    events: []
+                    artifacts: []
+                    variables: []
+                    inputEvents: []
+                    outputEvents: []
+                    innerEvents: []
+                tags: []
+                schemas: []
+                messageId: '1774456966.828228000'
+                moduleTopicId: 0.0.8373989
         '401':
           description: Unauthorized request.
           content:
@@ -7951,13 +8367,14 @@ paths:
                 error: Forbidden
                 statusCode: 403
         '422':
-          description: Unprocessable entity.
+          description: Message ID in body is empty.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
               example:
-                result: ok
+                statusCode: 422
+                message: Message ID in body is empty
         '500':
           description: Internal server error.
           content:
@@ -7965,7 +8382,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -7982,39 +8399,33 @@ paths:
       parameters: []
       requestBody:
         required: true
-        description: File.
+        description: Module archive as raw binary request body.
         content:
-          application/json:
+          binary/octet-stream:
             schema:
               type: string
+              format: binary
       responses:
         '200':
           description: Module preview.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModulePreviewDTO'
+                $ref: '#/components/schemas/ModuleImportFileResponseDTO'
               example:
                 module:
-                  id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  type: string
-                  name: string
-                  description: string
-                  status: string
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: string
-                  createDate: string
+                  updateDate: '2026-03-25T12:22:27.680Z'
+                  name: Device configuration module
+                  description: Part of devices flow
+                  creator: >-
+                    did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                  owner: >-
+                    did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY_0.0.3578734
+                  codeVersion: 1.0.0
+                  type: CUSTOM
                   config: {}
-                messageId: f3b2a9c1e4d5678901234567
-                schemas:
-                  - {}
-                tags:
-                  - {}
-                moduleTopicId: f3b2a9c1e4d5678901234567
+                tags: []
+                schemas: []
         '401':
           description: Unauthorized request.
           content:
@@ -8041,7 +8452,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -8065,33 +8476,100 @@ paths:
             example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
             type: string
       requestBody:
-        required: true
-        description: Module.
+        required: false
+        description: >-
+          Ignored by the current implementation. Publish uses the `uuid` path
+          parameter and the module stored in DB.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ModuleDTO'
+            examples:
+              ignoredBody:
+                summary: Body is ignored
+                value: {}
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModuleDTO'
+                $ref: '#/components/schemas/ModulePublishResponseDTO'
               example:
-                id: f3b2a9c1e4d5678901234567
-                uuid: f3b2a9c1e4d5678901234567
-                type: string
-                name: string
-                description: string
-                status: string
-                creator: string
-                owner: string
-                topicId: f3b2a9c1e4d5678901234567
-                messageId: f3b2a9c1e4d5678901234567
-                codeVersion: string
-                createDate: string
-                config: {}
+                module:
+                  createDate: '2026-03-25T17:11:30.244Z'
+                  updateDate: '2026-03-25T17:12:17.150Z'
+                  uuid: 8310f001-8fdc-43bb-8ad0-bcd43ca17363
+                  name: Test Module with two blocks
+                  description: Description for the test module
+                  status: PUBLISHED
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  topicId: 0.0.8375153
+                  messageId: '1774458729.161736000'
+                  codeVersion: 1.0.0
+                  type: CUSTOM
+                  contentFileId: 69c4175cae73da728c8d8fad
+                  config:
+                    name: Test Module with two blocks
+                    description: Description for the test module
+                    blockType: module
+                    permissions: []
+                    id: cd87187f-26aa-4dfb-994f-12ad810dc952
+                    tag: Module
+                    children:
+                      - id: 4242c579-891b-437d-8cef-61696c2baf2a
+                        blockType: interfaceContainerBlock
+                        defaultActive: true
+                        permissions: []
+                        onErrorAction: no-action
+                        uiMetaData:
+                          type: blank
+                          title: Main page
+                        tag: Module:Main_container_block
+                        children:
+                          - id: e851686a-9cd6-4fb0-b3da-3a9e33c54af9
+                            blockType: interfaceContainerBlock
+                            defaultActive: true
+                            permissions: []
+                            onErrorAction: no-action
+                            uiMetaData:
+                              type: blank
+                              title: Child page
+                            tag: Module:Child_container_block
+                            children: []
+                            events: []
+                            artifacts: []
+                        events: []
+                        artifacts: []
+                    events: []
+                    artifacts: []
+                    variables: []
+                    inputEvents: []
+                    outputEvents: []
+                    innerEvents: []
+                  id: 69c41742ae73da728c8d8fa6
+                isValid: true
+                errors:
+                  errors: []
+                  blocks:
+                    - id: 4242c579-891b-437d-8cef-61696c2baf2a
+                      name: interfaceContainerBlock
+                      errors: []
+                      warnings: []
+                      infos: []
+                      isValid: true
+                    - id: e851686a-9cd6-4fb0-b3da-3a9e33c54af9
+                      name: interfaceContainerBlock
+                      errors: []
+                      warnings: []
+                      infos: []
+                      isValid: true
+                  tools: []
+                  id: cd87187f-26aa-4dfb-994f-12ad810dc952
+                  isValid: true
         '401':
           description: Unauthorized request.
           content:
@@ -8118,7 +8596,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -8139,6 +8617,119 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ModuleDTO'
+            examples:
+              valid:
+                summary: Valid module
+                value:
+                  id: 69c411f0ae73da728c8d8f99
+                  uuid: fd51a3a7-ad99-4699-8de8-0c0ccb300aab
+                  name: Test Module with two blocks
+                  description: Description for the test module
+                  status: DRAFT
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  codeVersion: 1.0.0
+                  createDate: '2026-03-25T16:48:48.711Z'
+                  config:
+                    name: Test Module with two blocks
+                    description: Description for the test module
+                    blockType: module
+                    permissions: []
+                    id: cd87187f-26aa-4dfb-994f-12ad810dc952
+                    tag: Module
+                    children:
+                      - id: 4242c579-891b-437d-8cef-61696c2baf2a
+                        blockType: interfaceContainerBlock
+                        defaultActive: true
+                        permissions: []
+                        onErrorAction: no-action
+                        uiMetaData:
+                          type: blank
+                          title: Main page
+                        tag: Module:Main_container_block
+                        children:
+                          - id: e851686a-9cd6-4fb0-b3da-3a9e33c54af9
+                            blockType: interfaceContainerBlock
+                            defaultActive: true
+                            permissions: []
+                            onErrorAction: no-action
+                            uiMetaData:
+                              type: blank
+                              title: Child page
+                            tag: Module:Child_container_block
+                            children: []
+                            events: []
+                            artifacts: []
+                        events: []
+                        artifacts: []
+                    events: []
+                    artifacts: []
+                    variables: []
+                    inputEvents: []
+                    outputEvents: []
+                    innerEvents: []
+              invalid:
+                summary: Invalid createTokenBlock
+                value:
+                  id: 69c411f0ae73da728c8d8f99
+                  uuid: fd51a3a7-ad99-4699-8de8-0c0ccb300aab
+                  name: Test Module with two blocks
+                  description: Description for the test module
+                  status: DRAFT
+                  creator: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                  codeVersion: 1.0.0
+                  createDate: '2026-03-25T16:48:48.711Z'
+                  config:
+                    name: Test Module with two blocks
+                    description: Description for the test module
+                    blockType: module
+                    permissions: []
+                    id: cd87187f-26aa-4dfb-994f-12ad810dc952
+                    tag: Module
+                    children:
+                      - id: 4242c579-891b-437d-8cef-61696c2baf2a
+                        blockType: interfaceContainerBlock
+                        defaultActive: true
+                        permissions: []
+                        onErrorAction: no-action
+                        uiMetaData:
+                          type: blank
+                          title: Main page
+                        tag: Module:Main_container_block
+                        children:
+                          - id: e851686a-9cd6-4fb0-b3da-3a9e33c54af9
+                            blockType: interfaceContainerBlock
+                            defaultActive: true
+                            permissions: []
+                            onErrorAction: no-action
+                            uiMetaData:
+                              type: blank
+                              title: Child page
+                            tag: Module:Child_container_block
+                            children: []
+                            events: []
+                            artifacts: []
+                        events: []
+                        artifacts: []
+                      - id: 4237578f-1057-4aa6-bdac-4d8e11b3be30
+                        blockType: createTokenBlock
+                        defaultActive: true
+                        permissions: []
+                        tag: Block_1
+                        children: []
+                        events: []
+                        artifacts: []
+                    events: []
+                    artifacts: []
+                    variables: []
+                    inputEvents: []
+                    outputEvents: []
+                    innerEvents: []
       responses:
         '200':
           description: Validation result.
@@ -8146,38 +8737,170 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ModuleValidationDTO'
-              example:
-                module:
-                  id: f3b2a9c1e4d5678901234567
-                  uuid: f3b2a9c1e4d5678901234567
-                  type: string
-                  name: string
-                  description: string
-                  status: string
-                  creator: string
-                  owner: string
-                  topicId: f3b2a9c1e4d5678901234567
-                  messageId: f3b2a9c1e4d5678901234567
-                  codeVersion: string
-                  createDate: string
-                  config: {}
-                results:
-                  blocks:
-                    - id: f3b2a9c1e4d5678901234567
-                      name: string
-                      errors:
-                        - {}
-                      warnings:
-                        - {}
-                      infos:
-                        - {}
+              examples:
+                valid:
+                  summary: All blocks valid
+                  value:
+                    results:
+                      errors: []
+                      blocks:
+                        - id: 4242c579-891b-437d-8cef-61696c2baf2a
+                          name: interfaceContainerBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: e851686a-9cd6-4fb0-b3da-3a9e33c54af9
+                          name: interfaceContainerBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                      tools: []
+                      id: cd87187f-26aa-4dfb-994f-12ad810dc952
                       isValid: true
-                  errors:
-                    - string
-                  warnings:
-                    - string
-                  infos:
-                    - string
+                    module:
+                      id: 69c411f0ae73da728c8d8f99
+                      uuid: fd51a3a7-ad99-4699-8de8-0c0ccb300aab
+                      name: Test Module with two blocks
+                      description: Description for the test module
+                      status: DRAFT
+                      creator: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                      codeVersion: 1.0.0
+                      createDate: '2026-03-25T16:48:48.711Z'
+                      config:
+                        name: Test Module with two blocks
+                        description: Description for the test module
+                        blockType: module
+                        permissions: []
+                        id: cd87187f-26aa-4dfb-994f-12ad810dc952
+                        tag: Module
+                        children:
+                          - id: 4242c579-891b-437d-8cef-61696c2baf2a
+                            blockType: interfaceContainerBlock
+                            defaultActive: true
+                            permissions: []
+                            onErrorAction: no-action
+                            uiMetaData:
+                              type: blank
+                              title: Main page
+                            tag: Module:Main_container_block
+                            children:
+                              - id: e851686a-9cd6-4fb0-b3da-3a9e33c54af9
+                                blockType: interfaceContainerBlock
+                                defaultActive: true
+                                permissions: []
+                                onErrorAction: no-action
+                                uiMetaData:
+                                  type: blank
+                                  title: Child page
+                                tag: Module:Child_container_block
+                                children: []
+                                events: []
+                                artifacts: []
+                            events: []
+                            artifacts: []
+                        events: []
+                        artifacts: []
+                        variables: []
+                        inputEvents: []
+                        outputEvents: []
+                        innerEvents: []
+                invalid:
+                  summary: createTokenBlock fails validation
+                  value:
+                    results:
+                      errors: []
+                      blocks:
+                        - id: 4242c579-891b-437d-8cef-61696c2baf2a
+                          name: interfaceContainerBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: e851686a-9cd6-4fb0-b3da-3a9e33c54af9
+                          name: interfaceContainerBlock
+                          errors: []
+                          warnings: []
+                          infos: []
+                          isValid: true
+                        - id: 4237578f-1057-4aa6-bdac-4d8e11b3be30
+                          name: createTokenBlock
+                          errors:
+                            - Template can not be empty
+                            - Token "undefined" does not exist
+                          warnings: []
+                          infos: []
+                          isValid: false
+                        - id: cd87187f-26aa-4dfb-994f-12ad810dc952
+                          name: module
+                          errors:
+                            - Module is invalid
+                          isValid: false
+                      tools: []
+                      id: cd87187f-26aa-4dfb-994f-12ad810dc952
+                      isValid: false
+                    module:
+                      id: 69c411f0ae73da728c8d8f99
+                      uuid: fd51a3a7-ad99-4699-8de8-0c0ccb300aab
+                      name: Test Module with two blocks
+                      description: Description for the test module
+                      status: DRAFT
+                      creator: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                      owner: >-
+                        did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                      codeVersion: 1.0.0
+                      createDate: '2026-03-25T16:48:48.711Z'
+                      config:
+                        name: Test Module with two blocks
+                        description: Description for the test module
+                        blockType: module
+                        permissions: []
+                        id: cd87187f-26aa-4dfb-994f-12ad810dc952
+                        tag: Module
+                        children:
+                          - id: 4242c579-891b-437d-8cef-61696c2baf2a
+                            blockType: interfaceContainerBlock
+                            defaultActive: true
+                            permissions: []
+                            onErrorAction: no-action
+                            uiMetaData:
+                              type: blank
+                              title: Main page
+                            tag: Module:Main_container_block
+                            children:
+                              - id: e851686a-9cd6-4fb0-b3da-3a9e33c54af9
+                                blockType: interfaceContainerBlock
+                                defaultActive: true
+                                permissions: []
+                                onErrorAction: no-action
+                                uiMetaData:
+                                  type: blank
+                                  title: Child page
+                                tag: Module:Child_container_block
+                                children: []
+                                events: []
+                                artifacts: []
+                            events: []
+                            artifacts: []
+                          - id: 4237578f-1057-4aa6-bdac-4d8e11b3be30
+                            blockType: createTokenBlock
+                            defaultActive: true
+                            permissions: []
+                            tag: Block_1
+                            children: []
+                            events: []
+                            artifacts: []
+                        events: []
+                        artifacts: []
+                        variables: []
+                        inputEvents: []
+                        outputEvents: []
+                        innerEvents: []
         '401':
           description: Unauthorized request.
           content:
@@ -8204,7 +8927,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
-                code: 500
+                statusCode: 500
                 message: Error message
       security:
         - bearer: []
@@ -42725,7 +43448,7 @@ components:
           nullable: false
         type:
           type: string
-          nullable: false
+          nullable: true
         name:
           type: string
           nullable: false
@@ -42743,16 +43466,28 @@ components:
           nullable: false
         topicId:
           type: string
-          nullable: false
+          nullable: true
         messageId:
           type: string
-          nullable: false
+          nullable: true
         codeVersion:
           type: string
           nullable: false
         createDate:
           type: string
           nullable: false
+        updateDate:
+          type: string
+          nullable: true
+        configFileId:
+          type: string
+          nullable: true
+        contentFileId:
+          type: string
+          nullable: true
+        menu:
+          type: string
+          nullable: true
         config:
           type: object
           additionalProperties: true
@@ -42760,20 +43495,25 @@ components:
       required:
         - id
         - uuid
-        - type
         - name
         - description
         - status
         - creator
         - owner
-        - topicId
-        - messageId
         - codeVersion
         - createDate
         - config
     SchemaDTO:
       type: object
       properties:
+        createDate:
+          type: string
+          nullable: true
+          example: '2026-03-25T12:40:32.586Z'
+        updateDate:
+          type: string
+          nullable: true
+          example: '2026-03-25T12:40:59.908Z'
         id:
           type: string
           example: 69aeb71ef8c5b278e3bab4e5
@@ -42830,12 +43570,18 @@ components:
         version:
           type: string
           example: 1.0.0
+        creator:
+          type: string
+          nullable: true
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         owner:
           type: string
           example: >-
             did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         messageId:
           type: string
+          nullable: true
           example: '1773670900.819264517'
         category:
           type: string
@@ -42855,11 +43601,37 @@ components:
           type: string
           example: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         document:
-          type: object
-          additionalProperties: true
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: string
+              example: innerSchemaConfigurationInText
         context:
-          type: object
-          additionalProperties: true
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: string
+              example: jsonLdContextInText
+        readonly:
+          type: boolean
+          nullable: true
+          example: false
+        system:
+          type: boolean
+          nullable: true
+          example: false
+        active:
+          type: boolean
+          nullable: true
+          example: false
+        codeVersion:
+          type: string
+          nullable: true
+          example: 1.2.0
+        topicCount:
+          type: number
+          nullable: true
+          example: 1
       required:
         - id
         - uuid
@@ -42871,7 +43643,6 @@ components:
         - topicId
         - version
         - owner
-        - messageId
         - category
         - documentURL
         - contextURL
@@ -42939,6 +43710,29 @@ components:
         - schemas
         - tags
         - moduleTopicId
+    ModuleImportFileResponseDTO:
+      type: object
+      properties:
+        module:
+          nullable: false
+          allOf:
+            - $ref: '#/components/schemas/ModuleDTO'
+        schemas:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        tags:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+      required:
+        - module
+        - schemas
+        - tags
     BlockErrorsDTO:
       type: object
       properties:
@@ -43002,6 +43796,25 @@ components:
         - errors
         - tools
         - isValid
+    ModulePublishResponseDTO:
+      type: object
+      properties:
+        module:
+          nullable: false
+          allOf:
+            - $ref: '#/components/schemas/ModuleDTO'
+        isValid:
+          type: boolean
+          description: Whether validation passed and the module was published
+        errors:
+          nullable: false
+          description: Validation details used during publish
+          allOf:
+            - $ref: '#/components/schemas/ValidationErrorsDTO'
+      required:
+        - module
+        - isValid
+        - errors
     ModuleValidationDTO:
       type: object
       properties:
@@ -43993,8 +44806,7 @@ components:
           type: string
           description: >-
             DER-encoded private key when **importing** on the remote user
-            account. Omit when **generating** for the remote-user flow (only
-            `messageId`).
+            account. Omit when **generating** for user flow (only `messageId`).
           example: Key
       required:
         - messageId
