@@ -51,6 +51,7 @@ import { TextInputAutocompleteMenuComponent } from './angular-text-input-autocom
 import { PluralizePipe } from './pipes/pluralize.pipe';
 import { PagesControl } from './pages-control/pages-control.component';
 import { GridDialogComponent } from './grid-dialog/grid-dialog.component';
+import { ContentSearchComponent } from './content-search/content-search.component';
 
 @NgModule({
     declarations: [
@@ -89,7 +90,8 @@ import { GridDialogComponent } from './grid-dialog/grid-dialog.component';
         TextInputAutocompleteMenuComponent,
         PluralizePipe,
         PagesControl,
-        GridDialogComponent
+        GridDialogComponent,
+        ContentSearchComponent,
     ],
     imports: [
         CommonModule,
@@ -150,7 +152,8 @@ import { GridDialogComponent } from './grid-dialog/grid-dialog.component';
         TextInputAutocompleteMenuComponent,
         PluralizePipe,
         PagesControl,
-        GridDialogComponent
+        GridDialogComponent,
+        ContentSearchComponent,
     ]
 })
 export class CommonComponentsModule {
