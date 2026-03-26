@@ -22,10 +22,23 @@
 }
 
 .entry-row {
+    display: flex;
+    gap: 12px;
     border: 1px solid var(--color-border, #e0e0e0);
     border-radius: 6px;
     padding: 12px;
     margin-bottom: 8px;
+}
+
+.entry-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.entry-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
 }
 
 .entry-fields {
@@ -53,7 +66,7 @@
 }
 
 .field-block {
-    flex: 0 0 180px;
+    flex: 0 0 240px;
 }
 
 .field-method {
@@ -61,15 +74,11 @@
 }
 
 .field-name {
-    flex: 0 0 140px;
+    flex: 1 1 140px;
 }
 
 .field-alias {
-    flex: 0 0 160px;
-}
-
-.field-actions {
-    flex: 0 0 40px;
+    flex: 1 1 160px;
 }
 
 .field-description-full {

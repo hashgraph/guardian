@@ -198,11 +198,11 @@ export class PolicyApiConfigDialogComponent {
                 const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
                 if (dialogEl) {
                     if (this.isLargeSize) {
-                        dialogEl.style.width = '90vw';
-                        dialogEl.style.maxWidth = '90vw';
+                        dialogEl.style.width = '70vw';
+                        dialogEl.style.maxWidth = '70vw';
                     } else {
-                        dialogEl.style.width = '50vw';
-                        dialogEl.style.maxWidth = '50vw';
+                        dialogEl.style.width = '45vw';
+                        dialogEl.style.maxWidth = '45vw';
                     }
                     dialogEl.style.maxHeight = '90vh';
                     dialogEl.style.margin = 'auto';

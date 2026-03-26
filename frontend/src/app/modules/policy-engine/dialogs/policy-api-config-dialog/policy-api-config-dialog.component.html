@@ -26,56 +26,57 @@
         </div>
 
         <div *ngFor="let entry of entries; let i = index" class="entry-row">
-            <div class="entry-fields">
-                <div class="field-group field-block">
-                    <label>Block</label>
-                    <select-block
-                        [(value)]="entry.target"
-                        [blocks]="blocks"
-                        [root]="root"
-                        (change)="onTargetChange(i)"
-                    ></select-block>
+            <div class="entry-content">
+                <div class="entry-fields">
+                    <div class="field-group field-block">
+                        <label>Block</label>
+                        <select-block
+                            [(value)]="entry.target"
+                            [blocks]="blocks"
+                            [root]="root"
+                            (change)="onTargetChange(i)"
+                        ></select-block>
+                    </div>
+                    <div class="field-group field-method">
+                        <label>Method</label>
+                        <p-dropdown
+                            [(ngModel)]="entry.method"
+                            [options]="methods"
+                            appendTo="body"
+                            class="guardian-dropdown"
+                        ></p-dropdown>
+                    </div>
+                    <div class="field-group field-name">
+                        <label>Name</label>
+                        <input type="text" pInputText [(ngModel)]="entry.name" placeholder="Endpoint name" />
+                    </div>
+                    <div class="field-group field-alias">
+                        <label>Alias</label>
+                        <input type="text" pInputText [(ngModel)]="entry.alias" (input)="onAliasChange(i)" placeholder="url-friendly-alias" />
+                    </div>
                 </div>
-                <div class="field-group field-method">
-                    <label>Method</label>
-                    <p-dropdown
-                        [(ngModel)]="entry.method"
-                        [options]="methods"
-                        appendTo="body"
-                        class="guardian-dropdown"
-                    ></p-dropdown>
+                <div class="field-group field-description-full">
+                    <label>Description</label>
+                    <textarea pInputTextarea [(ngModel)]="entry.description" placeholder="What this endpoint does" rows="2" autoResize="true"></textarea>
                 </div>
-                <div class="field-group field-name">
-                    <label>Name</label>
-                    <input type="text" pInputText [(ngModel)]="entry.name" placeholder="Endpoint name" />
+                <div *ngIf="getPreviewUrl(entry)" class="entry-preview-url">
+                    <span class="preview-label">URL:</span>
+                    <span class="preview-url">{{ getPreviewUrl(entry) }}</span>
                 </div>
-                <div class="field-group field-alias">
-                    <label>Alias</label>
-                    <input type="text" pInputText [(ngModel)]="entry.alias" (input)="onAliasChange(i)" placeholder="url-friendly-alias" />
+                <div class="entry-query-params">
+                    <span class="query-params-label">Query params:</span>
+                    <span *ngFor="let p of getQueryParams(entry)" class="query-param-badge" [title]="p.description">
+                        {{p.name}}<span class="param-type">: {{p.type}}</span>
+                    </span>
                 </div>
-                <div class="field-group field-actions">
-                    <label>&nbsp;</label>
-                    <button class="guardian-button guardian-button-secondary remove-btn" (click)="removeEntry(i)" title="Remove">
-                        <i class="pi pi-trash"></i>
-                    </button>
+                <div *ngIf="validationErrors.has(i)" class="entry-error">
+                    {{ validationErrors.get(i) }}
                 </div>
             </div>
-            <div class="field-group field-description-full">
-                <label>Description</label>
-                <textarea pInputTextarea [(ngModel)]="entry.description" placeholder="What this endpoint does" rows="2" autoResize="true"></textarea>
-            </div>
-            <div *ngIf="getPreviewUrl(entry)" class="entry-preview-url">
-                <span class="preview-label">URL:</span>
-                <span class="preview-url">{{ getPreviewUrl(entry) }}</span>
-            </div>
-            <div class="entry-query-params">
-                <span class="query-params-label">Query params:</span>
-                <span *ngFor="let p of getQueryParams(entry)" class="query-param-badge" [title]="p.description">
-                    {{p.name}}<span class="param-type">: {{p.type}}</span>
-                </span>
-            </div>
-            <div *ngIf="validationErrors.has(i)" class="entry-error">
-                {{ validationErrors.get(i) }}
+            <div class="entry-actions">
+                <button class="guardian-button guardian-button-secondary remove-btn" (click)="removeEntry(i)" title="Remove">
+                    <i class="pi pi-trash"></i>
+                </button>
             </div>
         </div>
     </div>

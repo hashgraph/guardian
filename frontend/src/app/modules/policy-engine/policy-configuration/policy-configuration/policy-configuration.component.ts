@@ -1773,7 +1773,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public openApiConfigDialog() {
         const dialogRef = this.dialog.open(PolicyApiConfigDialogComponent, {
             showHeader: false,
-            width: '90vw',
+            width: '70vw',
             styleClass: 'guardian-dialog',
             data: {
                 policyId: this.policyId,
