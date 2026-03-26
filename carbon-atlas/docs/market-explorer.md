@@ -15,135 +15,49 @@ The Market Explorer extends Carbon Atlas with a comprehensive carbon market data
 
 ## Architecture
 
-```mermaid
-graph TB
-    subgraph "Data Sources"
-        VERRA[("Verra Registry<br/>projects.csv + vcus.csv")]
-        GS[("Gold Standard<br/>projects.csv + credits CSVs")]
-    end
-
-    subgraph "ETL Pipeline (Python)"
-        HARMONIZE["offsets-db-data<br/>Harmonize + validate"]
-        EXTENDED["Extended Schema<br/>SDGs, certs, crediting periods"]
-        STATUS["Status Mapping<br/>8 statuses vs base 3"]
-        CHANGE["Change Detection<br/>Hash-based event generation"]
-    end
-
-    subgraph "Database"
-        PG[("PostgreSQL 16<br/>5 tables, ~490K rows")]
-    end
-
-    subgraph "API (FastAPI)"
-        API["FastAPI + asyncpg<br/>14 endpoints"]
-    end
-
-    subgraph "Frontend (Next.js)"
-        FE["Next.js 16 + React 19<br/>TanStack Query + shadcn/ui"]
-    end
-
-    VERRA --> HARMONIZE
-    GS --> HARMONIZE
-    HARMONIZE --> EXTENDED
-    EXTENDED --> STATUS
-    STATUS --> CHANGE
-    CHANGE --> PG
-    PG --> API
-    API --> FE
+```
+Raw CSVs (5 registries)
+    │
+    ▼
+ETL Pipeline (Python)
+    ├── offsets-db-data ── Harmonize + validate
+    ├── Extended Schema ── SDGs, certs, crediting periods
+    ├── Status Mapping ─── 8 canonical statuses
+    └── Change Detection ─ Hash-based event generation
+    │
+    ▼
+PostgreSQL 16 (5 tables)
+    │
+    ▼
+FastAPI (14 endpoints)
+    │
+    ▼
+Next.js 16 + React 19 (TanStack Query + shadcn/ui)
 ```
 
 ## Data Flow
 
-```mermaid
-sequenceDiagram
-    participant CSV as Raw CSVs
-    participant HP as Harmonization Processors
-    participant EXT as Extended Schema
-    participant SM as Status Mapping
-    participant CD as Change Detection
-    participant DB as PostgreSQL
-    participant API as FastAPI
-    participant FE as Next.js
-
-    CSV->>HP: Read raw registry exports
-    HP->>HP: Harmonize countries, protocols, categories
-    HP->>EXT: Harmonized DataFrame
-    EXT->>EXT: Merge SDGs, certs, crediting periods
-    EXT->>SM: Extended DataFrame
-    SM->>SM: Map 8 statuses from raw registry status
-    SM->>CD: Final DataFrame
-    CD->>CD: Hash rows, detect changes
-    CD->>DB: Upsert projects, credits, developers, events
-    FE->>API: GET /api/v1/projects?status=crediting
-    API->>DB: SELECT with filters
-    DB->>API: Results
-    API->>FE: PaginatedResponse JSON
+```
+Raw CSVs ──► Harmonize ──► Enrich (SDGs, certs) ──► Map statuses ──► Detect changes ──► PostgreSQL
+                                                                                            │
+Frontend ◄── PaginatedResponse JSON ◄── SELECT with filters ◄── FastAPI ◄──────────────────┘
 ```
 
 ## Data Model
 
-```mermaid
-erDiagram
-    projects ||--o{ credits : "has"
-    projects ||--o{ project_developer_links : "linked via"
-    project_developers ||--o{ project_developer_links : "linked via"
-    projects ||--o{ events : "tracks"
-
-    projects {
-        string project_id PK
-        string name
-        string registry
-        string proponent
-        jsonb protocol
-        string category
-        string status
-        string country
-        bigint issued
-        bigint retired
-        date first_issuance_at
-        date first_retirement_at
-        jsonb sdg_goals
-        jsonb additional_certifications
-        date crediting_period_start
-        date crediting_period_end
-        bigint estimated_annual_reductions
-        text description
-    }
-
-    credits {
-        int id PK
-        string project_id FK
-        bigint quantity
-        int vintage
-        date transaction_date
-        string transaction_type
-        string retirement_beneficiary
-        string registry
-    }
-
-    events {
-        int id PK
-        string event_type
-        string project_id
-        timestamp timestamp
-        jsonb old_value
-        jsonb new_value
-    }
-
-    project_developers {
-        string id PK
-        string name
-        int project_count
-        bigint total_issued
-        bigint total_retired
-        jsonb countries
-        jsonb registries
-    }
-
-    project_developer_links {
-        string project_id PK_FK
-        string developer_id PK_FK
-    }
 ```
+projects ──┬── credits (1:N via project_id)
+            ├── events (1:N via project_id)
+            └── project_developer_links (M:N) ── project_developers
+```
+
+| Table | Key columns |
+|-------|-------------|
+| `projects` | project_id (PK), name, registry, status, country, category, issued, retired, sdg_goals, crediting_period_start/end |
+| `credits` | id (PK), project_id (FK), quantity, vintage, transaction_date, transaction_type, registry |
+| `events` | id (PK), event_type, project_id, timestamp, old_value, new_value |
+| `project_developers` | id (PK), name, project_count, total_issued, total_retired, countries, registries |
+| `project_developer_links` | project_id (PK/FK), developer_id (PK/FK) |
 
 ## Directory Structure
 
