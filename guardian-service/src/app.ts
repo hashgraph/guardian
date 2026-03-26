@@ -47,6 +47,7 @@ import { toolsAPI } from './api/tool.service.js';
 import { statisticsAPI } from './api/policy-statistics.service.js';
 import { schemaRulesAPI } from './api/schema-rules.service.js';
 import { GuardiansService } from './helpers/guardians.js';
+import { saveGlobalTopic, getGlobalTopic } from './api/helpers/profile-helper.js';
 import { mapAPI } from './api/map.service.js';
 import { tagsAPI } from './api/tag.service.js';
 import { demoAPI } from './api/demo.service.js';
@@ -292,17 +293,41 @@ Promise.all([
     });
     let policyEngine: PolicyEngine;
     validator.setValidAction(async () => {
-        if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
-            process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
-                type: WorkerTaskType.NEW_TOPIC,
-                data: {
-                    hederaAccountId: OPERATOR_ID,
-                    hederaAccountKey: OPERATOR_KEY,
-                    dryRun: false,
-                    topicMemo: TopicMemo.getGlobalTopicMemo(),
-                    payload: { userId: null }
-                }
-            }, { priority: 10 });
+        console.log(`process.env.INITIALIZATION_TOPIC_ID: ${process.env.INITIALIZATION_TOPIC_ID}`)
+        // if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
+        //     process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
+        //         type: WorkerTaskType.NEW_TOPIC,
+        //         data: {
+        //             hederaAccountId: OPERATOR_ID,
+        //             hederaAccountKey: OPERATOR_KEY,
+        //             dryRun: false,
+        //             topicMemo: TopicMemo.getGlobalTopicMemo(),
+        //             payload: { userId: null }
+        //         }
+        //     }, { priority: 10 });
+        // }
+
+        if (!process.env.INITIALIZATION_TOPIC_ID || process.env.INITIALIZATION_TOPIC_ID === "" || process.env.INITIALIZATION_TOPIC_ID === undefined) {
+            const initTopicId = (await getGlobalTopic()).topicId;
+            if (!initTopicId) {
+                process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
+                    type: WorkerTaskType.NEW_INIT_TOPIC,
+                    data: {
+                        hederaAccountId: OPERATOR_ID,
+                        hederaAccountKey: OPERATOR_KEY,
+                        dryRun: false,
+                        topicMemo: TopicMemo.getGlobalTopicMemo(),
+                        payload: { userId: null }
+                    }
+                }, { priority: 10 });
+
+                await saveGlobalTopic(process.env.INITIALIZATION_TOPIC_ID);
+            }
+            else {
+                process.env.INITIALIZATION_TOPIC_ID = initTopicId;
+            }
+
+            TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
         }
 
         state.updateState(ApplicationStates.INITIALIZING);
