@@ -269,15 +269,11 @@ Promise.all([
         }
         try {
             if (process.env.INITIALIZATION_TOPIC_ID) {
-                // if (!/^\d+\.\d+\.\d+/.test(settingsContainer.settings.INITIALIZATION_TOPIC_ID)) {
-                //     throw new Error(settingsContainer.settings.INITIALIZATION_TOPIC_ID + 'is wrong');
-                // }
                 TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
             }
         } catch (error) {
             await logger.error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE'], null);
             return false;
-            // process.exit(0);
         }
         try {
             if (process.env.INITIALIZATION_TOPIC_KEY) {
@@ -286,26 +282,12 @@ Promise.all([
         } catch (error) {
             await logger.error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE'], null);
             return false;
-            // process.exit(0);
         }
 
         return true;
     });
     let policyEngine: PolicyEngine;
     validator.setValidAction(async () => {
-        console.log(`process.env.INITIALIZATION_TOPIC_ID: ${process.env.INITIALIZATION_TOPIC_ID}`)
-        // if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
-        //     process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
-        //         type: WorkerTaskType.NEW_TOPIC,
-        //         data: {
-        //             hederaAccountId: OPERATOR_ID,
-        //             hederaAccountKey: OPERATOR_KEY,
-        //             dryRun: false,
-        //             topicMemo: TopicMemo.getGlobalTopicMemo(),
-        //             payload: { userId: null }
-        //         }
-        //     }, { priority: 10 });
-        // }
 
         if (!process.env.INITIALIZATION_TOPIC_ID || process.env.INITIALIZATION_TOPIC_ID === '' || process.env.INITIALIZATION_TOPIC_ID === undefined) {
             const initTopicId = (await getGlobalTopic()).topicId;
