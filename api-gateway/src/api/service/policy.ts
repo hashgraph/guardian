@@ -3983,7 +3983,7 @@ export class PolicyApi {
     )
     @ApiOperation({
         summary: 'Creates a virtual user and returns the created user (v2).',
-        description: 'Creates a virtual user and returns the created user object instead of the full user list.' + ONLY_SR,
+        description: 'Creates a virtual user and returns the created user object.' + ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',

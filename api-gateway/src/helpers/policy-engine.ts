@@ -697,7 +697,7 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
-     * Create new Virtual User V2 — returns created user object
+     * Create new Virtual User (v2) — returns created user object
      * @param policyId
      * @param owner
      * @param savepointIds
