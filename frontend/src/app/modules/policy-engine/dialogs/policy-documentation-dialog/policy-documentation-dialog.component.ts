@@ -30,8 +30,16 @@ export class PolicyDocumentationDialogComponent implements OnInit {
         this.ref.close(false);
     }
 
-    getQueryParams(entry: any): { name: string; type: string; description: string }[] {
-        return entry.queryParams || [];
+    getGetParams(entry: any): any[] {
+        return entry.getQueryParams || [];
+    }
+
+    getPostParams(entry: any): any[] {
+        return entry.postQueryParams || [];
+    }
+
+    hasParams(entry: any): boolean {
+        return this.getGetParams(entry).length > 0 || this.getPostParams(entry).length > 0;
     }
 
     copyUrl(url: string): void {

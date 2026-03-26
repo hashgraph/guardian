@@ -36,16 +36,25 @@
                 <td>{{entry.name}}</td>
                 <td>{{entry.description}}</td>
                 <td>
-                    <span class="method-badge" [ngClass]="{'method-get': entry.method === 'GET', 'method-post': entry.method === 'POST'}">
+                    <span class="method-badge" [ngClass]="{'method-get': entry.method === 'GET', 'method-post': entry.method === 'POST', 'method-both': entry.method === 'Both'}">
                         {{entry.method}}
                     </span>
                 </td>
                 <td class="url-cell">{{entry.url}}</td>
                 <td class="url-cell">{{entry.dmrvUrl}}</td>
                 <td class="params-cell">
-                    <span *ngFor="let p of getQueryParams(entry)" class="query-param-badge" [title]="p.description">
-                        {{p.name}}<span class="param-type">: {{p.type}}</span>
-                    </span>
+                    <div *ngIf="getGetParams(entry).length > 0" class="params-group">
+                        <span class="params-group-label">GET:</span>
+                        <span *ngFor="let p of getGetParams(entry)" class="query-param-badge" [title]="p.description">
+                            {{p.name}}<span class="param-type">: {{p.type}}</span>
+                        </span>
+                    </div>
+                    <div *ngIf="getPostParams(entry).length > 0" class="params-group">
+                        <span class="params-group-label">POST:</span>
+                        <span *ngFor="let p of getPostParams(entry)" class="query-param-badge" [title]="p.description">
+                            {{p.name}}<span class="param-type">: {{p.type}}</span>
+                        </span>
+                    </div>
                 </td>
                 <td>
                     <button class="guardian-button guardian-button-secondary copy-btn" (click)="copyUrl(entry.dmrvUrl || entry.url)" title="Copy URL">

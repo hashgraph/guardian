@@ -22,7 +22,7 @@
 <div class="dialog-body">
     <div class="entries-container">
         <div *ngIf="entries.length === 0" class="empty-state">
-            No API endpoints configured. Click "+ Add Endpoint" to get started.
+            No API endpoints configured. Click "Add Endpoint" to get started.
         </div>
 
         <div *ngFor="let entry of entries; let i = index" class="entry-row">
@@ -63,11 +63,19 @@
                     <span class="preview-label">URL:</span>
                     <span class="preview-url">{{ getPreviewUrl(entry) }}</span>
                 </div>
-                <div class="entry-query-params">
-                    <span class="query-params-label">Query params:</span>
-                    <span *ngFor="let p of getQueryParams(entry)" class="query-param-badge" [title]="p.description">
-                        {{p.name}}<span class="param-type">: {{p.type}}</span>
-                    </span>
+                <div *ngIf="hasParams(entry)" class="entry-query-params">
+                    <div *ngIf="getGetParams(entry).length > 0" class="params-group">
+                        <span class="params-group-label">GET params:</span>
+                        <span *ngFor="let p of getGetParams(entry)" class="query-param-badge" [title]="p.description">
+                            {{p.name}}<span class="param-type">: {{p.type}}</span>
+                        </span>
+                    </div>
+                    <div *ngIf="getPostParams(entry).length > 0" class="params-group">
+                        <span class="params-group-label">POST params:</span>
+                        <span *ngFor="let p of getPostParams(entry)" class="query-param-badge" [title]="p.description">
+                            {{p.name}}<span class="param-type">: {{p.type}}</span>
+                        </span>
+                    </div>
                 </div>
                 <div *ngIf="validationErrors.has(i)" class="entry-error">
                     {{ validationErrors.get(i) }}

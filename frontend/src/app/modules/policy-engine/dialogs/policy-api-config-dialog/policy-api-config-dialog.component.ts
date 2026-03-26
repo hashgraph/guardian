@@ -15,6 +15,7 @@ export class PolicyApiConfigDialogComponent {
     public methods = [
         { label: 'GET', value: 'GET' },
         { label: 'POST', value: 'POST' },
+        { label: 'BOTH', value: 'Both' },
     ];
     public validationErrors: Map<number, string> = new Map();
     public isLargeSize = true;
@@ -99,7 +100,7 @@ export class PolicyApiConfigDialogComponent {
 
     private revalidate(): void {
         this.validationErrors.clear();
-        const aliasSet = new Map<string, number>();
+        const targetSet = new Map<string, number>();
         for (let i = 0; i < this.entries.length; i++) {
             const entry = this.entries[i];
             if (!entry.target) {
@@ -114,31 +115,37 @@ export class PolicyApiConfigDialogComponent {
                 this.validationErrors.set(i, 'Alias: only lowercase letters, digits and hyphens');
                 continue;
             }
-            const key = `${entry.alias}:${entry.method}`;
-            if (aliasSet.has(key)) {
-                this.validationErrors.set(i, `Duplicate alias+method (same as row ${(aliasSet.get(key) as number) + 1})`);
+            if (targetSet.has(entry.target)) {
+                this.validationErrors.set(i, `Duplicate block (same as row ${(targetSet.get(entry.target) as number) + 1})`);
                 continue;
             }
-            aliasSet.set(key, i);
+            targetSet.set(entry.target, i);
         }
     }
 
-    getQueryParams(entry: IPolicyDocumentationEntry): { name: string; type: string; description: string }[] {
-        if (entry.method === 'POST') {
-            return PolicyApiConfigDialogComponent.POST_PARAMS;
-        }
-        if (!entry.target) {
+    getGetParams(entry: IPolicyDocumentationEntry): { name: string; type: string; description: string }[] {
+        if (entry.method === 'POST' || !entry.target) {
             return [];
         }
         const block = this.blocks.find((b: any) => b.tag === entry.target);
-        if (!block) {
+        return block ? (PolicyApiConfigDialogComponent.GET_PARAMS_BY_BLOCK_TYPE[block.blockType] || []) : [];
+    }
+
+    getPostParams(entry: IPolicyDocumentationEntry): { name: string; type: string; description: string }[] {
+        if (entry.method === 'GET') {
             return [];
         }
-        return PolicyApiConfigDialogComponent.GET_PARAMS_BY_BLOCK_TYPE[block.blockType] || [];
+        return PolicyApiConfigDialogComponent.POST_PARAMS;
+    }
+
+    hasParams(entry: IPolicyDocumentationEntry): boolean {
+        return this.getGetParams(entry).length > 0 || this.getPostParams(entry).length > 0;
     }
 
     onExport(): void {
-        const data = JSON.stringify(this.entries, null, 2);
+        this.revalidate();
+        const validEntries = this.entries.filter((_, i) => !this.validationErrors.has(i));
+        const data = JSON.stringify(validEntries, null, 2);
         const blob = new Blob([data], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

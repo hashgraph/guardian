@@ -84,7 +84,7 @@ export class DmrvApi {
             const docs = policy.policyDocumentation || [];
             const method = req.method.toUpperCase();
             const entry = docs.find(
-                (d: any) => d.alias === alias && d.method === method
+                (d: any) => d.alias === alias && (d.method === method || d.method === 'Both')
             );
             if (!entry) {
                 throw new HttpException(

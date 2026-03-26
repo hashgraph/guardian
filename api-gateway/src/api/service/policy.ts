@@ -1017,12 +1017,14 @@ export class PolicyApi {
                     { name: 'filterByUUID', type: 'string', description: 'Filter by document UUID' },
                 ],
             };
-            return entries.map((entry: any) => ({
-                ...entry,
-                queryParams: entry.method === 'POST'
-                    ? postParams
-                    : (getParamsByBlockType[entry.blockType] || []),
-            }));
+            return entries.map((entry: any) => {
+                const getParams = getParamsByBlockType[entry.blockType] || [];
+                return {
+                    ...entry,
+                    getQueryParams: entry.method !== 'POST' ? getParams : [],
+                    postQueryParams: entry.method !== 'GET' ? postParams : [],
+                };
+            });
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
