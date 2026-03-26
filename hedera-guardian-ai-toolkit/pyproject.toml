@@ -1,0 +1,181 @@
+[tool.poetry]
+name = "hedera-guardian-ai-toolkit"
+version = "0.1.0"
+description = "Hedera Guardian AI Toolkit for data ingestion and semantic search"
+authors = ["Hedera Hashgraph LLC"]
+license = "MIT"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+vector_store = {path = "packages/vector_store", develop = true}
+document-ingestion-worker = {path = "packages/document_ingestion_worker", develop = true}
+schema-ingestion-worker = {path = "packages/schema_ingestion_worker", develop = true}
+hedera-guardian-mcp-server = {path = "packages/hedera_guardian_mcp_server", develop = true}
+policy-schema-builder = {path = "packages/policy_schema_builder", develop = true}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.0"
+pytest-mock = "^3.12.0"
+pytest-asyncio = "^1.3.0"
+pytest-cov = "^4.1.0"
+inline-snapshot = "^0.20.0"
+ruff = ">=0.15.0"
+pre-commit = ">=4.0.0"
+reportlab = "^4.4.5"
+
+# MCP Server dependencies for testing
+fastmcp = "2.14.5"
+fastembed = "^0.7.3"
+qdrant-client = {extras = ["fastembed"], version = "^1.16.0"}
+pydantic = "^2.12.4"
+
+# Integration test dependencies
+testcontainers = {extras = ["qdrant"], version = "^4.0.0"}
+
+[tool.inline-snapshot]
+format-command = "poetry run ruff format --stdin-filename {filename} -"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --tb=short --ignore=tests/manual"
+asyncio_mode = "auto"
+markers = [
+    "unit: marks tests as unit tests (fast, mocked dependencies)",
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+    "slow: marks tests as slow running (deselect with '-m \"not slow\"')",
+    "manual: marks tests as manual-only (require real services, not run in CI)",
+]
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+indent-width = 4
+
+# Exclude commonly ignored directories
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".ruff_cache",
+    "dist",
+    "build",
+    "*.egg-info",
+]
+
+[tool.ruff.lint]
+# Enable recommended rule sets
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import sorting)
+    "N",   # pep8-naming
+    "UP",  # pyupgrade (modern Python syntax)
+    "B",   # flake8-bugbear (common bugs)
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "RET", # flake8-return
+    "ARG", # flake8-unused-arguments
+    "PTH", # flake8-use-pathlib
+    "PL",  # pylint rules
+]
+
+# Disable specific rules that may be too strict
+ignore = [
+    "E501",    # Line too long (handled by formatter)
+    "PLR0913", # Too many arguments
+    "PLR2004", # Magic value used in comparison
+    "PLR0912", # Too many branches
+    "PLR0915", # Too many statements
+    "PTH123",  # open() should be replaced by Path.open() (gradual migration)
+    "PTH118",  # os.path.join() should be replaced by Path (gradual migration)
+    "PTH208",  # os.listdir() should be replaced by Path.iterdir() (gradual migration)
+    "PTH110",  # os.path.exists() should be replaced by Path.exists() (gradual migration)
+    "PTH112",  # os.path.isdir() should be replaced by Path.is_dir() (gradual migration)
+]
+
+# Allow fix for all enabled rules (when using --fix)
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when they start with an underscore
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Per-file ignores for specific patterns
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "ARG001",  # Unused function arguments (test fixtures often have unused args)
+    "ARG002",  # Unused method arguments (test mocks often have unused args)
+    "PLC0415", # Import outside top-level (test imports can be lazy)
+]
+"packages/vector_store/src/vector_store/embeddings/factory.py" = [
+    "PLC0415", # Import outside top-level (lazy loading of heavy ML dependencies like fastembed)
+]
+"packages/document_ingestion_worker/src/document_ingestion_worker/parallel_pipeline.py" = [
+    "PLR0911", # Too many return statements (validation functions have early returns)
+]
+"packages/document_ingestion_worker/src/document_ingestion_worker/subprocess_worker.py" = [
+    "PLC0415", # Deferred imports for subprocess spawn safety (Windows/macOS)
+]
+"packages/schema_ingestion_worker/src/schema_ingestion_worker/pipeline.py" = [
+    "PLC0415", # Lazy import of time module for performance measurement in LangGraph nodes
+    "B904",    # Re-raise TimeoutError with custom message (intentional for clarity)
+]
+"packages/vector_store/src/vector_store/qdrant_connector.py" = [
+    "B904", # Re-raise TimeoutError with custom message (intentional for clarity)
+]
+# Lazy import patterns - CLI entry points and optional dependencies
+"**/__main__.py" = [
+    "PLC0415", # CLI entry points commonly import argparse lazily
+]
+"packages/vector_store/src/vector_store/embeddings/bge_m3_onnx.py" = [
+    "PLC0415", # Heavy ML dependency lazy loading
+]
+"packages/document_ingestion_worker/src/document_ingestion_worker/document_parsing/subscript_serializer.py" = [
+    "PLC0415", # Lazy import pattern
+]
+"packages/policy_schema_builder/src/policy_schema_builder/policy_schema_visualizer/json_to_mermaid.py" = [
+    "ALL", # Ignore all linting rules for this visualization script
+]
+"packages/policy_schema_builder/src/policy_schema_builder/policy_schema_visualizer/excel_to_json.py" = [
+    "ALL", # Ignore all linting rules for this visualization script
+]
+"packages/policy_schema_builder/src/policy_schema_builder/policy_schema_visualizer/graph_interactive.py" = [
+    "ALL", # Ignore all linting rules for this visualization script
+]
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+
+# Indent with spaces
+indent-style = "space"
+
+# Respect magic trailing commas
+skip-magic-trailing-comma = false
+
+# Auto-detect line ending
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+# Group imports by type
+known-first-party = [
+    "document_ingestion_worker",
+    "hedera_guardian_mcp_server",
+    "mcp_server",
+    "policy_schema_builder",
+    "schema_ingestion_worker",
+    "vector_store",
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -14,4 +14,4 @@ Worker Tasks tab displays active user's jobs performed asynchronously by the ‘
 
 <figure><img src="../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-Architecturally, all errors (if any) are passed back to the Guardian process initiated the task (e.g. ‘publish schema’), which may result in the entire execution flow being rolled back. In the case of task manual restart and its successful completion the success status is passed back to the process originally initiated the task.
+Architecturally, all errors (if any) are passed back to the Guardian process that initiated the task (e.g. ‘publish schema’), which may result in the entire execution flow being rolled back. In the case of task manual restart and its successful completion the success status is passed back to the process originally initiated the task.

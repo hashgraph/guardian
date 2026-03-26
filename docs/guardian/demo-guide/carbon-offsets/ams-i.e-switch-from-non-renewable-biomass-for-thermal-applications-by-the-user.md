@@ -64,7 +64,7 @@ Various methodologies are used to quantify emissions reductions in cookstove pro
 
 ### Demo Video <a href="#toc1558873410" id="toc1558873410"></a>
 
-[Youtube](https://www.youtube.com/watch?v=ekk_FT4aQBE)
+[YouTube](https://www.youtube.com/watch?v=ekk_FT4aQBE)
 
 ### Policy Workflow <a href="#toc545621661" id="toc545621661"></a>
 
@@ -125,7 +125,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ![](<../../../.gitbook/assets/11 (16).png>)
 
-5. Сreate a new user again and assign their role as “VVB”.
+5. Create a new user again and assign their role as “VVB”.
 
 ![](<../../../.gitbook/assets/12 (14).png>)
 

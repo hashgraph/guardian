@@ -116,7 +116,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 <figure><img src="../../../.gitbook/assets/image (13) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
-5. Сreate a new user again and assign their role as “VVB”.
+5. Create a new user again and assign their role as “VVB”.
 6. The VVB can now provide their name or the name they would like users to see when reviewing projects (i.e. their organization’s name).
 
 <figure><img src="../../../.gitbook/assets/image (14) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>

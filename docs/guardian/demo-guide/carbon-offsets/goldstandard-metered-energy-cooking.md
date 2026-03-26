@@ -169,7 +169,7 @@ VVB is the external independent third party responsible for reviewing Project De
 
 ### Future proofing(Automated credit issuance)
 
-This workflow includes a bonus flow which is a major distinction from other existing policies. Building monitoring reports for cookstove projects is a very manual and error-prone process due to distributed nature of project. Often, a sample group of households are selected to be monitored and results are extrapolated for all the households(in thousands) leading to overcrediting. Since this methodology focuses on having direct measurement devices associated with a stove, an automated way of monitoring is possible.
+This workflow includes a bonus flow which is a major distinction from other existing policies. Building monitoring reports for cookstove projects is a very manual and error-prone process due to distributed nature of project. Often, a sample group of households are selected to be monitored and results are extrapolated for all the households(in thousands) leading to over crediting. Since this methodology focuses on having direct measurement devices associated with a stove, an automated way of monitoring is possible.
 
 <figure><img src="../../../.gitbook/assets/image (223) (2).png" alt=""><figcaption></figcaption></figure>
 

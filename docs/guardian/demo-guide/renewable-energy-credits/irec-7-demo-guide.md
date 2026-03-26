@@ -62,6 +62,6 @@ Once device details are entered, they are submitted for approval.
 
 <figure><img src="../../../.gitbook/assets/image (1) (6).png" alt=""><figcaption></figcaption></figure>
 
-13\. To view the trustchain, we need to click on View Trustchain in Token Histroy tab or Trustchain tab.
+13\. To view the trustchain, we need to click on View Trustchain in Token History tab or Trustchain tab.
 
 <figure><img src="../../../.gitbook/assets/image (1) (9).png" alt=""><figcaption></figcaption></figure>

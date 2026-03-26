@@ -27,7 +27,7 @@ To add an existing account, the account name, the Hedera account ID, and its pri
 It is also possible to create a new Hedera account and set it up as one of the relayer account for the user.
 
 {% hint style="info" %}
-Note 1: hbar balance of the new account would be 0 and would need to be toped-up (externally to Guardian) for the account to become useable.
+Note 1: hbar balance of the new account would be 0 and would need to be topped-up (externally to Guardian) for the account to become usable.
 {% endhint %}
 
 <figure><img src="../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>

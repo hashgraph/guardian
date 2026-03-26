@@ -1,6 +1,6 @@
 # Prerequesite Steps
 
-Prior to creating a policy there are a few steps that need to be done first. Please see below for the prerequesite steps:
+Prior to creating a policy there are a few steps that need to be done first. Please see below for the prerequisite steps:
 
 ### **New Standard Registry registration**
 

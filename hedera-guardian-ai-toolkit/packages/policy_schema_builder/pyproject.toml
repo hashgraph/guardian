@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "policy-schema-builder"
+version = "0.1.0"
+description = "Excel policy schema builder for Guardian Policy Schemas"
+authors = ["Hedera Hashgraph LLC"]
+readme = "README.md"
+packages = [{include = "policy_schema_builder", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.0"
+openpyxl = "^3.1.5"
+pathvalidate = "^3.3.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.0"
+pytest-cov = "^4.1.0"
+ruff = ">=0.15.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

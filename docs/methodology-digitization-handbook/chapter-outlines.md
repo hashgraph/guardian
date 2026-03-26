@@ -359,7 +359,7 @@
 * Compliance monitoring and automated audit trail generation
 * API integration and external system connectivity
 
-**VM0033 Context**: Using Guardian Indexer to monitor VM0033 tidal wetland restoration projects, track VCU credit issuances, and generate compliance reports for Verra registry requirements.
+**VM0033 Context**: Using Guardian Indexer to monitor VM0033 tidal wetland restoration projects, track VCU credit issuance, and generate compliance reports for Verra registry requirements.
 
 ## Part VII: Advanced Topics and Best Practices
 
