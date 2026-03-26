@@ -3934,8 +3934,8 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Creates virtual users.',
-        description: 'Creates virtual users. Returns the full list of virtual users.' + ONLY_SR,
+        summary: 'Creates a virtual users.',
+        description: 'Creates a virtual user. Returns the full list of virtual users.' + ONLY_SR,
         deprecated: true,
     })
     @ApiParam({
@@ -3982,7 +3982,7 @@ export class PolicyApi {
         Permissions.POLICIES_POLICY_UPDATE,
     )
     @ApiOperation({
-        summary: 'Creates a virtual user and returns the created user (v2).',
+        summary: 'Creates a virtual user (v2).',
         description: 'Creates a virtual user and returns the created user object.' + ONLY_SR,
     })
     @ApiParam({
