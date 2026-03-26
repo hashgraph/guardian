@@ -3934,7 +3934,7 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Creates a virtual users.',
+        summary: 'Creates a virtual user.',
         description: 'Creates a virtual user. Returns the full list of virtual users.' + ONLY_SR,
         deprecated: true,
     })
