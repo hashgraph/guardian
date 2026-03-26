@@ -21,6 +21,45 @@ export enum Examples {
     USER_NAME_SR_2 = 'Verra'
 }
 
+const EXTERNAL_REQUEST_BODY_EXAMPLE = {
+    owner: 'string',
+    policyTag: 'string',
+    document: {
+        id: '8f457a5a-c02b-4a18-a7d3-20e4def1bf7f',
+        '@context': [
+            'https://www.w3.org/2018/credentials/v1'
+        ],
+        type: [
+            'VerifiableCredential',
+            'a2274869-4a41-4446-8efd-dacde5a81221'
+        ],
+        credentialSubject: [
+            {
+                id: 'did:hedera:testnet:4YZuEXk95TMt2WfuAB5UYJMQSgSfUgBNutnZioUVAxkR_0.0.1774462341919',
+                field0: 'value0',
+                field1: 'value1',
+                policyId: '69c42569ae73da728c8d9027',
+                accountId: '0.0.1774462367074'
+            }
+        ],
+        issuer: 'did:hedera:testnet:4YZuEXk95TMt2WfuAB5UYJMQSgSfUgBNutnZioUVAxkR_0.0.1774462341919',
+        issuanceDate: '2026-03-25T17:12:17.150Z',
+        proof: {
+            type: 'Ed25519Signature2018',
+            created: '2026-03-25T17:12:17.150Z',
+            verificationMethod: 'did:hedera:testnet:4YZuEXk95TMt2WfuAB5UYJMQSgSfUgBNutnZioUVAxkR_0.0.1774462341919#did-root-key',
+            proofPurpose: 'assertionMethod',
+            jws: 'eyJhbGciOiJFZERTQSJ9..signature'
+        }
+    }
+};
+
+const EXTERNAL_SYNC_EVENTS_RESPONSE_EXAMPLE = {
+    response: {},
+    result: null,
+    steps: []
+};
+
 const PERMISSIONS_SR = [
     'ACCOUNTS_STANDARD_REGISTRY_READ',
     'DEMO_KEY_CREATE',
@@ -169,6 +208,8 @@ const PROFILE_DID_DOCUMENT_SAMPLE = {
 
 export const ObjectExamples = {
     PERMISSION_SR: PERMISSIONS_SR,
+    EXTERNAL_REQUEST_BODY_EXAMPLE: EXTERNAL_REQUEST_BODY_EXAMPLE,
+    EXTERNAL_SYNC_EVENTS_RESPONSE_EXAMPLE: EXTERNAL_SYNC_EVENTS_RESPONSE_EXAMPLE,
 
     CONTRACTS_LIST_RESPONSE_WIPE: [
         {
