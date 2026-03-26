@@ -109,7 +109,7 @@ export async function getGlobalTopic(): Promise<TopicConfig | null> {
 export async function saveGlobalTopic(INITIALIZATION_TOPIC_ID: string): Promise<null> {
     try {
         const dataBaseServer = new DatabaseServer();
-        await dataBaseServer.save(Settings, { name: "INITIALIZATION_TOPIC_ID", value: INITIALIZATION_TOPIC_ID });
+        await dataBaseServer.save(Settings, { name: 'INITIALIZATION_TOPIC_ID', value: INITIALIZATION_TOPIC_ID });
     } catch (error) {
         console.error(error);
         return null;

@@ -307,7 +307,7 @@ Promise.all([
         //     }, { priority: 10 });
         // }
 
-        if (!process.env.INITIALIZATION_TOPIC_ID || process.env.INITIALIZATION_TOPIC_ID === "" || process.env.INITIALIZATION_TOPIC_ID === undefined) {
+        if (!process.env.INITIALIZATION_TOPIC_ID || process.env.INITIALIZATION_TOPIC_ID === '' || process.env.INITIALIZATION_TOPIC_ID === undefined) {
             const initTopicId = (await getGlobalTopic()).topicId;
             if (!initTopicId) {
                 process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
