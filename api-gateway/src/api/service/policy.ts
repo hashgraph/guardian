@@ -999,7 +999,30 @@ export class PolicyApi {
             if (!policy) {
                 throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND);
             }
-            return policy.policyDocumentation || [];
+            const entries = policy.policyDocumentation || [];
+            const postParams = [
+                { name: 'timeout', type: 'number', description: 'Request timeout in ms (default: 60000)' },
+                { name: 'waitRemotePolicy', type: 'boolean', description: 'Wait for remote policy response (default: true)' },
+            ];
+            const getParamsByBlockType: Record<string, any[]> = {
+                interfaceDocumentsSourceBlock: [
+                    { name: 'page', type: 'number', description: 'Page number (0-based)' },
+                    { name: 'itemsPerPage', type: 'number', description: 'Items per page' },
+                    { name: 'sortField', type: 'string', description: 'Field name to sort by' },
+                    { name: 'sortDirection', type: 'string', description: 'Sort direction (asc/desc)' },
+                    { name: 'filterByUUID', type: 'string', description: 'Filter by document UUID' },
+                    { name: 'savepointIds', type: 'string[]', description: 'Savepoint IDs filter (JSON array)' },
+                ],
+                dataTransformationAddon: [
+                    { name: 'filterByUUID', type: 'string', description: 'Filter by document UUID' },
+                ],
+            };
+            return entries.map((entry: any) => ({
+                ...entry,
+                queryParams: entry.method === 'POST'
+                    ? postParams
+                    : (getParamsByBlockType[entry.blockType] || []),
+            }));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

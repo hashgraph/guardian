@@ -137,6 +137,48 @@ export class PolicyApiConfigDialogComponent {
         return PolicyApiConfigDialogComponent.GET_PARAMS_BY_BLOCK_TYPE[block.blockType] || [];
     }
 
+    onExport(): void {
+        const data = JSON.stringify(this.entries, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `api-config-${this.policyId}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    onImport(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (!input.files?.length) {
+            return;
+        }
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                const imported = JSON.parse(reader.result as string);
+                if (Array.isArray(imported)) {
+                    this.entries = imported.map((e: any) => ({
+                        name: e.name || '',
+                        description: e.description || '',
+                        target: e.target || '',
+                        method: e.method || 'GET',
+                        alias: e.alias || '',
+                        url: e.url || '',
+                        dmrvUrl: e.dmrvUrl || '',
+                        blockType: e.blockType || '',
+                    }));
+                    this.revalidate();
+                }
+            } catch {
+                // invalid JSON — ignore
+            }
+        };
+        reader.readAsText(file);
+        input.value = '';
+    }
+
     onSave(): void {
         this.revalidate();
         if (this.validationErrors.size > 0) {

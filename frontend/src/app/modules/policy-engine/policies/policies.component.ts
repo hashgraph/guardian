@@ -616,7 +616,7 @@ export class PoliciesComponent implements OnInit {
                     })
                 ]
             }, {
-                tooltip: 'Documentation',
+                tooltip: 'API Documentation',
                 group: false,
                 visible: true,
                 color: 'primary-color',
@@ -624,7 +624,7 @@ export class PoliciesComponent implements OnInit {
                     new MenuButton({
                         visible: true,
                         disabled: false,
-                        tooltip: 'Documentation',
+                        tooltip: 'API Documentation',
                         icon: 'document',
                         color: 'primary-color',
                         click: () => this.showPolicyDocumentation(policy)
@@ -1181,7 +1181,7 @@ export class PoliciesComponent implements OnInit {
             .pipe(takeUntil(this._destroy$)).subscribe((entries) => {
                 this.dialogService.open(PolicyDocumentationDialogComponent, {
                     showHeader: false,
-                    header: 'Policy Documentation',
+                    header: 'API Documentation',
                     width: '90vw',
                     styleClass: 'guardian-dialog',
                     data: {
