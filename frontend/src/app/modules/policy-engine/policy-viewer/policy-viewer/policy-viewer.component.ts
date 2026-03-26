@@ -377,8 +377,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.policyEngineService
             .createVirtualUser(this.policyInfo.id, this.savepointIds)
             .subscribe(
-                (users) => {
-                    this.virtualUsers = users;
+                (user) => {
+                    this.virtualUsers.push(user);
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
