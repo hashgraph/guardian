@@ -42,3 +42,6 @@ logs/
 
 # Contracts
 /contractAddresses.json
+jwt_private.pem
+jwt_public.pem
+test-hedera.js
