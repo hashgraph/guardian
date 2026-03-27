@@ -289,7 +289,7 @@ Promise.all([
     let policyEngine: PolicyEngine;
     validator.setValidAction(async () => {
 
-        if (!process.env.INITIALIZATION_TOPIC_ID || process.env.INITIALIZATION_TOPIC_ID === '' || process.env.INITIALIZATION_TOPIC_ID === undefined) {
+        if (!process.env.INITIALIZATION_TOPIC_ID) {
             const initTopicId = (await getGlobalTopic()).topicId;
             if (!initTopicId) {
                 process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
