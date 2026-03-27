@@ -147,7 +147,7 @@ export class ActionBlockComponent implements OnInit {
         const code: any = this.registeredService.getCode(config.blockType);
         if (code) {
             if (config.blockType === BlockType.IpfsTransformationUIAddon) {
-                return new code(config, this.ipfsService, this.dryRun);
+                return new code(config, this.policyEngineService, this.ipfsService, this.dryRun);
             }
             else{
                 return new code(config, this.policyEngineService, this.dynamicMsalAuthService, this.toastr);

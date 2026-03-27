@@ -36,7 +36,9 @@ export class SendMessages {
                     sendToIPFS: updateIpfs,
                     memo: null,
                     userId,
-                    interception: null
+                    interception: null,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId
                 });
             results.push(messageResult);
         }
@@ -114,7 +116,9 @@ export class SendMessages {
                     sendToIPFS: updateIpfs,
                     memo: null,
                     userId,
-                    interception: null
+                    interception: null,
+                    dryRun: ref.dryRun,
+                    mockId: null
                 });
             messageIds.push(messageResult.getId());
         }
@@ -164,7 +168,9 @@ export class SendMessages {
                         loadIPFS: updateIpfs,
                         encryptKey: userMessageKey,
                         userId,
-                        interception: null
+                        interception: null,
+                        dryRun: null,
+                        mockId: null
                     });
                 messages.push(message);
             }

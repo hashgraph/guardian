@@ -20,6 +20,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'reassigningBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMockUp: false,
     about: {
         label: 'Reassigning',
         title: `Add 'Reassigning' Block`,

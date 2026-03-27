@@ -218,12 +218,12 @@ export async function importToolByMessage(
         };
         await DatabaseServer.saveTopic(tagsTopic);
 
-        const tagMessages = await messageServer.getMessages<TagMessage>(
-            message.tagsTopicId,
-            userId,
-            MessageType.Tag,
-            MessageAction.PublishTag
-        );
+        const tagMessages = await messageServer.getMessages<TagMessage>({
+            topicId: message.tagsTopicId,
+            type: MessageType.Tag,
+            action: MessageAction.PublishTag,
+            userId
+        });
         for (const tag of tagMessages) {
             if (tag.entity === TagType.Tool && tag.target === messageId) {
                 toolTags.push({
@@ -416,7 +416,12 @@ export async function importToolByFile(
         owner: user.owner,
         targetId: null,
         targetUUID: null
-    }, userId, { admin: true, submit: true });
+    }, {
+        admin: true,
+        submit: true
+    }, {
+        userId
+    });
     await topic.saveKeys(userId);
     notifier.completeStep(STEP_CREATE_TOPIC);
 
@@ -440,7 +445,12 @@ export async function importToolByFile(
     notifier.completeStep(STEP_CREATE_TOOL);
 
     notifier.startStep(STEP_LINK_TOPIC);
-    await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), userId);
+    await topicHelper.twoWayLink({
+        topic,
+        parent,
+        rationale: messageStatus.getId(),
+        userId
+    });
 
     await DatabaseServer.saveTopic(topic.toObject());
     tool.topicId = topic.topicId;

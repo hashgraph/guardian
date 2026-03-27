@@ -41,14 +41,23 @@ export class CreateTopic {
             policyUUID: null,
             memo: config.memo,
             memoObj: config.memoObj === 'doc' ? memoObj : config
-        }, userId, {
+        }, {
             admin: needKey,
             submit: needKey
+        }, {
+            userId,
+            mockId: ref.mockId,
         });
         if (needKey) {
             await topic.saveKeys(userId);
         }
-        await topicHelper.twoWayLink(topic, rootTopic, null);
+        await topicHelper.twoWayLink({
+            topic,
+            parent: rootTopic,
+            rationale: null,
+            userId: null,
+            mockId: ref.mockId
+        });
         await ref.databaseServer.saveTopic(topic.toObject());
         return topic;
     }
@@ -114,14 +123,23 @@ export class CreateTopic {
             userRelayerAccount.signOptions,
             ref.dryRun,
         );
-        const topicConfig = await topicHelper.create(topic, userId, {
+        const topicConfig = await topicHelper.create(topic, {
             admin: false,
             submit: false
+        }, {
+            userId,
+            mockId: null
         });
 
         const parentConfig = await TopicConfig.fromObject(parent, false, userId);
 
-        await topicHelper.twoWayLink(topicConfig, parentConfig, null);
+        await topicHelper.twoWayLink({
+            topic: topicConfig,
+            parent: parentConfig,
+            rationale: null,
+            userId: null,
+            mockId: null
+        });
         await ref.databaseServer.saveTopic(topicConfig.toObject());
 
         return {

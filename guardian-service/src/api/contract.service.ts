@@ -1599,10 +1599,12 @@ export async function contractAPI(
                     policyId: null,
                     policyUUID: null,
                 },
-                userId,
                 {
                     admin: true,
                     submit: false,
+                },
+                {
+                    userId
                 }
             );
 
@@ -1660,7 +1662,12 @@ export async function contractAPI(
                 true, userId
             );
 
-            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
+            await topicHelper.twoWayLink({
+                topic,
+                parent: userTopic,
+                rationale: contractMessageResult.getId(),
+                userId
+            });
 
             return new MessageResponse(contract);
         } catch (error) {
@@ -1707,10 +1714,12 @@ export async function contractAPI(
                     policyId: null,
                     policyUUID: null,
                 },
-                userId,
                 {
                     admin: true,
                     submit: false,
+                },
+                {
+                    userId
                 }
             );
 
@@ -1768,7 +1777,12 @@ export async function contractAPI(
                 true, userId
             );
 
-            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
+            await topicHelper.twoWayLink({
+                topic,
+                parent: userTopic,
+                rationale: contractMessageResult.getId(),
+                userId
+            });
 
             return new MessageResponse(contract);
         } catch (error) {

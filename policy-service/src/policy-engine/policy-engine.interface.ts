@@ -131,6 +131,11 @@ export interface IPolicyBlock {
      */
     actionType?: LocationType;
     /**
+     * Enable Mock Up
+     */
+    enableMockUp?: boolean;
+
+    /**
      * Block permissions
      */
     readonly permissions: string[];
@@ -170,6 +175,16 @@ export interface IPolicyBlock {
      * Dry-run
      */
     readonly dryRun: string;
+
+    /**
+     * Mock ID
+     */
+    readonly mockId: string;
+
+    /**
+     * Can Mock Up
+     */
+    readonly canMockUp: boolean;
 
     /**
      * Policy status
@@ -1139,6 +1154,11 @@ export interface IPolicyInstance {
      * Relayer Account
      */
     readonly relayerAccount: boolean;
+
+    /**
+     * Enable MockUp
+     */
+    enableMockUp: boolean;
 }
 
 /**

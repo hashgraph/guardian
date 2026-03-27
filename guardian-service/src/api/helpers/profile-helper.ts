@@ -383,8 +383,18 @@ export async function createUserProfile({
             owner: null,
             policyId: null,
             policyUUID: null
-        }, logId);
-        await topicHelper.oneWayLink(topicConfig, globalTopic, user.id.toString());
+        }, {
+            admin: true,
+            submit: true
+        }, {
+            userId: logId
+        });
+        await topicHelper.oneWayLink({
+            topic: topicConfig,
+            parent: globalTopic,
+            rationale: null,
+            userId: user.id.toString()
+        });
         newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
     }
     messageServer.setTopicObject(topicConfig);

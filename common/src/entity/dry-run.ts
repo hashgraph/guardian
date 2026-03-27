@@ -901,6 +901,30 @@ export class DryRun extends BaseEntity {
     lastFailedAt?: any;
 
     /**
+     * CID
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    cid?: string;
+
+    /**
+     * Transaction
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    transaction?: any;
+
+    /**
+     * Request
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    request?: any;
+
+    /**
+     * Response
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    response?: any;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

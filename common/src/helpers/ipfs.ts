@@ -4,13 +4,22 @@ import { MessageBrokerChannel } from '../mq/index.js';
 
 export interface IPFSOptions {
     userId?: string | null,
-    interception?: string | boolean | null
+    interception?: string | boolean | null,
+    mockId?: string,
+    dryRun?: string,
 }
 
 /**
  * IPFS service
  */
 export class IPFS {
+    public static DEFAULT_OPTIONS: IPFSOptions = {
+        userId: null,
+        interception: null,
+        mockId: null,
+        dryRun: null
+    }
+
     /**
      * IPFS Protocol
      */
@@ -52,7 +61,10 @@ export class IPFS {
      * @param options
      * @returns {string} - hash
      */
-    public static async addFile(file: Buffer | ArrayBuffer, options?: IPFSOptions): Promise<{
+    public static async addFile(
+        file: Buffer | ArrayBuffer,
+        options: IPFSOptions
+    ): Promise<{
         /**
          * CID
          */
@@ -76,7 +88,10 @@ export class IPFS {
             attempts: 3,
             registerCallback: true,
             interception: options?.interception,
-            userId: options?.userId
+            userId: options?.userId,
+            dryRun: options?.dryRun,
+            mockId: options?.mockId,
+
         });
         if (!res) {
             throw new Error('Add File: Invalid response');
@@ -97,7 +112,7 @@ export class IPFS {
     public static async getFile(
         cid: string,
         responseType: 'json' | 'raw' | 'str',
-        options?: IPFSOptions
+        options: IPFSOptions
     ): Promise<any> {
         const res = await new Workers().addNonRetryableTask({
             type: WorkerTaskType.GET_FILE,
@@ -113,7 +128,9 @@ export class IPFS {
             priority: 10,
             registerCallback: true,
             interception: options?.interception,
-            userId: options?.userId
+            userId: options?.userId,
+            dryRun: options?.dryRun,
+            mockId: options?.mockId,
         });
         if (!res) {
             throw new Error('Get File: Invalid response');
@@ -135,7 +152,9 @@ export class IPFS {
             attempts: 3,
             registerCallback: true,
             interception: options?.interception,
-            userId: options?.userId
+            userId: options?.userId,
+            dryRun: options?.dryRun,
+            mockId: options?.mockId,
         });
 
         if (!res) {
@@ -154,7 +173,10 @@ export class IPFS {
      * @param options
      * @returns true
      */
-    public static async deleteCid(cid: string, options?: IPFSOptions): Promise<boolean> {
+    public static async deleteCid(
+        cid: string,
+        options: IPFSOptions
+    ): Promise<boolean> {
         const cleaned = cid?.replace(/^ipfs:\/\//, '');
         if (!cleaned) {
             throw new Error('Delete CID: Empty cid');
@@ -177,7 +199,9 @@ export class IPFS {
             priority: 10,
             registerCallback: true,
             interception: options?.interception,
-            userId: options?.userId
+            userId: options?.userId,
+            dryRun: options?.dryRun,
+            mockId: options?.mockId,
         });
 
         if (res === undefined || res === null) {

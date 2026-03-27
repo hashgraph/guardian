@@ -194,6 +194,8 @@ export class QueueService extends NatsService {
         return {
             id: task.taskId,
             priority: task.priority,
+            dryRun: task.dryRun,
+            mockId: task.mockId,
             type: task.type,
             data: task.data,
         };

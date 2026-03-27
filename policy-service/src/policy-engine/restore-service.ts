@@ -174,7 +174,9 @@ export class PolicyBackupService {
                 sendToIPFS: true,
                 memo: null,
                 userId: this.userId,
-                interception: null
+                interception: null,
+                dryRun: null,
+                mockId: null
             });
 
         diff.messageId = result.getId();
@@ -231,7 +233,7 @@ export class PolicyRestoreService {
     private async task(data: ITopicMessage): Promise<boolean> {
         try {
             const message = PolicyDiffMessage.fromMessage(data.message);
-            await MessageServer.loadDocument(message);
+            await MessageServer.loadDocument(message, null, { dryRun: null, mockId: null });
             const buffer = message.document;
             const arrayBuffer = buffer?.buffer?.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
             const file = await FileHelper.unZipFile(arrayBuffer);

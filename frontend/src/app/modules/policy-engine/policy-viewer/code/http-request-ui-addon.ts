@@ -14,7 +14,7 @@ export class HttpRequestUIAddonCode {
     private readonly policyEngineService: PolicyEngineService;
     private readonly dynamicMsalAuthService: DynamicMsalAuthService;
     private readonly toastr: ToastrService;
-
+    private readonly mockId: string | null;
     constructor(
         config: any,
         policyEngineService: PolicyEngineService,
@@ -31,6 +31,7 @@ export class HttpRequestUIAddonCode {
         this.policyEngineService = policyEngineService;
         this.dynamicMsalAuthService = dynamicMsalAuthService;
         this.toastr = toastr;
+        this.mockId = config.mockId;
     }
 
     public async run(
@@ -42,9 +43,41 @@ export class HttpRequestUIAddonCode {
     ) {
         const url = this.createUrl(data.document);
         const headers = await this.createHeaders();
+        if (this.mockId) {
+            return this.mockRequest(this.mockId, this.type, url, data, headers);
+        } else {
+            return this.customRequest(this.type, url, data, headers);
+        }
+    }
+
+    private customRequest(type: string, url: string, data: any, headers: any): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this.policyEngineService
-                .customRequest(this.type, url, data.document, headers)
+                .customRequest(type, url, data.document, headers)
+                .subscribe((response: any) => {
+                    data.document = response;
+                    this.toastr.success('Document was submitted successfully.', '', {
+                        timeOut: 3000,
+                        closeButton: true,
+                        positionClass: 'toast-bottom-right',
+                        enableHtml: true,
+                    });
+                    resolve(data);
+                }, (e) => {
+                    reject(e);
+                });
+        });
+    }
+
+    private mockRequest(mockId: string, type: string, url: string, data: any, headers: any): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            this.policyEngineService
+                .mockApiRequest(mockId, {
+                    type,
+                    url,
+                    body: data.document,
+                    headers
+                })
                 .subscribe((response: any) => {
                     data.document = response;
                     this.toastr.success('Document was submitted successfully.', '', {
@@ -88,7 +121,7 @@ export class HttpRequestUIAddonCode {
             let token = localStorage.getItem('accessToken') as string;
 
             if (environment.requireAuthorizationPopup) {
-                if(this.authenticationURL && this.authenticationClientId) {
+                if (this.authenticationURL && this.authenticationClientId) {
                     token = await this.getRemoteAuthToken();
                 }
             }

@@ -23,6 +23,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'externalDataBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMockUp: true,
     about: {
         label: 'External Data',
         title: `Add 'External Data' Block`,
