@@ -27,7 +27,7 @@ The result is a **production-grade template** that project developers, standard 
   Guardian Managed Guardian Service (MGS) policy export for AMS‑III.AV / VMR0015.
 
 - `SCHEMA.json`  
-  All 8 data schemas: Project Registration, Public Network Check, Water Quality Survey, Annual Monitoring Report, Emission Reduction Calculation, VVB Verification Report.[cite:14]
+  All 7 data schemas: Project Registration, Public Network Check, Water Quality Survey, Annual Monitoring Report, Emission Reduction Calculation, VVB Verification Report.[cite:14]
 
 - `EVIDENCE.md`  
   Full Hedera testnet evidence: accounts, topics, token, HashScan links, transaction IDs, and workflow traces (policy → project → monitoring → verification → VCU minting).[cite:22]
