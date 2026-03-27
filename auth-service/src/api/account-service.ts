@@ -1,5 +1,5 @@
 import { User } from '../entity/user.js';
-import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, ProviderAuthUser, Singleton } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, ProviderAuthUser, Singleton, DataBaseHelper } from '@guardian/common';
 import {
     AuthEvents,
     GenerateUUIDv4,
@@ -23,6 +23,7 @@ import {
 import { UserUtils, UserPassword, PasswordType, UserAccessTokenService, UserProp } from '#utils';
 import { passwordComplexity, PasswordError } from '#constants';
 import { HttpStatus } from '@nestjs/common';
+import { OtpHelper } from '../helpers/otp-helper.js';
 
 /**
  * Account service
@@ -351,13 +352,19 @@ export class AccountService extends NatsService {
             });
 
         this.getMessages<IGenerateTokenMessage, IGenerateTokenResponse>(AuthEvents.GENERATE_NEW_TOKEN,
-            async (msg: { username: string, password: string }) => {
+            async (msg: { username: string, password: string, otp: string }) => {
                 try {
-                    const { username, password } = msg;
+                    const { username, password, otp } = msg;
                     const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.RAW);
                     if (user) {
                         if (user.passwordVersion === PasswordType.V2) {
                             if (await UserPassword.verifyPasswordV2(user, password)) {
+                                if (await OtpHelper.isConfiguredFor(user) && !otp) {
+                                    return new MessageResponse({ success: false, otprequired: true });
+                                }
+                                if (!await OtpHelper.checkOtp(user, otp)) {
+                                    return new MessageError('OTP not valid');
+                                }
                                 const userAccessTokenService = await UserAccessTokenService.New();
                                 const token = userAccessTokenService.generateRefreshToken(user);
                                 if (!Array.isArray(user.refreshToken)) {
@@ -538,5 +545,80 @@ export class AccountService extends NatsService {
                     return new MessageError(error);
                 }
             });
+
+        this.getMessages<any, any>(AuthEvents.OTP_GENERATE_SECRET, async (msg) => {
+            try {
+                const { userId } = msg;
+
+                const user = await new DataBaseHelper(User).findOne({ id: userId });
+                if (!user) {
+                    return new MessageError('Invalid user');
+                }
+
+                const key = await OtpHelper.generateNewSecretFor(user);
+
+                return new MessageResponse(key);
+            } catch (error) {
+                await logger.error(error, ['AUTH_SERVICE', 'OTP_GENERATE_SECRET']);
+                return new MessageError(error);
+            }
+        });
+
+        //
+        this.getMessages<any, any>(AuthEvents.OTP_CONFIRM_SECRET, async (msg) => {
+            try {
+                const { userId, token } = msg;
+
+                const user = await new DataBaseHelper(User).findOne({ id: userId });
+                if (!user) {
+                    return new MessageError('Invalid user');
+                }
+                const result = await OtpHelper.confirmNewSecret(user, token);
+                if (result) {
+                    const codes = await OtpHelper.generateBackupCodes(user);
+                    return new MessageResponse({ success: true, backupCodes: codes });
+                }
+                else {
+                    return new MessageResponse({ success: false });
+                }
+            } catch (error) {
+                await logger.error(error, ['AUTH_SERVICE', 'OTP_GENERATE_SECRET']);
+                return new MessageError(error);
+            }
+        });
+
+        this.getMessages<any, any>(AuthEvents.OTP_GET_STATUS, async (msg) => {
+            try {
+                const { userId } = msg;
+
+                const user = await new DataBaseHelper(User).findOne({ id: userId });
+                if (!user) {
+                    return new MessageError('Invalid user');
+                }
+                const result = await OtpHelper.isConfiguredFor(user);
+
+                return new MessageResponse({ enabled: result });
+            } catch (error) {
+                await logger.error(error, ['AUTH_SERVICE', 'OTP_GET_STATUS']);
+                return new MessageError(error);
+            }
+        });
+
+        this.getMessages<any, any>(AuthEvents.OTP_DEACTIVATE, async (msg) => {
+            try {
+                const { userId } = msg;
+
+                const user = await new DataBaseHelper(User).findOne({ id: userId });
+                if (!user) {
+                    return new MessageError('Invalid user');
+                }
+                const result = await OtpHelper.deactivate(user);
+
+                return new MessageResponse({ enabled: result });
+            } catch (error) {
+                await logger.error(error, ['AUTH_SERVICE', 'OTP_DEACTIVATE']);
+                return new MessageError(error);
+            }
+        });
     }
 }
