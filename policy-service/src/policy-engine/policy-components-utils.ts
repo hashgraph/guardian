@@ -1930,8 +1930,10 @@ export class PolicyComponentsUtils {
         const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
 
         const blockMap = new Map<string, boolean>();
-        for (const block of config.blocks) {
-            blockMap.set(block.uuid, block.enable);
+        if (Array.isArray(config.blocks)) {
+            for (const block of config.blocks) {
+                blockMap.set(block.uuid, block.enable);
+            }
         }
 
         const enable = !!config.enable

@@ -1,4 +1,4 @@
-import { BasePolicyDTO, ExportMessageDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
+import { BasePolicyDTO, ExportMessageDTO, MockUpConfigDTO, MockUpDataDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
 import { IAuthUser, MockType, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
@@ -910,7 +910,7 @@ export class PolicyEngine extends NatsService {
     public async getMockupConfig(
         policyId: string,
         owner: IOwner,
-    ): Promise<any> {
+    ): Promise<MockUpConfigDTO> {
         return await this.sendMessage(PolicyEngineEvents.GET_MOCK_UP_CONFIG, { policyId, owner });
     }
 
@@ -922,7 +922,7 @@ export class PolicyEngine extends NatsService {
     public async getMockupData(
         policyId: string,
         owner: IOwner,
-    ): Promise<any> {
+    ): Promise<MockUpDataDTO> {
         return await this.sendMessage(PolicyEngineEvents.GET_MOCK_UP_DATA, { policyId, owner });
     }
 
@@ -935,7 +935,7 @@ export class PolicyEngine extends NatsService {
     public async setMockupConfig(
         policyId: string,
         owner: IOwner,
-        config: any,
+        config: MockUpConfigDTO,
     ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.SET_MOCK_UP_CONFIG, { policyId, owner, config });
     }
@@ -949,7 +949,7 @@ export class PolicyEngine extends NatsService {
     public async updateMockData(
         policyId: string,
         owner: IOwner,
-        data: any,
+        data: MockUpDataDTO,
     ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.SET_MOCK_UP_DATA, { policyId, owner, data });
     }
