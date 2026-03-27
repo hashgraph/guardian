@@ -98,6 +98,16 @@ export abstract class AbstractDatabaseServer {
     }
 
     /**
+     * Count Virtual Users
+     * @param policyId
+     *
+     * @virtual
+     */
+    public static async countVirtualUsers(policyId: string, savepointIds?: string[]): Promise<number> {
+        throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.countVirtualUsers.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+    }
+
+    /**
      * Set Current Virtual User
      * @param policyId
      * @param did
