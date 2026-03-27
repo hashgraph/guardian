@@ -10,6 +10,11 @@
     </div>
 </div>
 <div class="dialog-body">
+    <content-search
+        *ngIf="!loading"
+        [searchContainer]="dialogContent"
+    ></content-search>
+    <div #dialogContent>
     <div *ngIf="loading" class="loading">
         <div class="preloader-image preloader-image-l-size"></div>
     </div>
@@ -300,6 +305,7 @@
                 </div>
             </div>
         </div>
+    </div>
     </div>
 </div>
 <div class="dialog-footer">
