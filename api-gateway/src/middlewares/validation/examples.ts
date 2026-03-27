@@ -21,45 +21,6 @@ export enum Examples {
     USER_NAME_SR_2 = 'Verra'
 }
 
-const EXTERNAL_REQUEST_BODY_EXAMPLE = {
-    owner: 'string',
-    policyTag: 'string',
-    document: {
-        id: '8f457a5a-c02b-4a18-a7d3-20e4def1bf7f',
-        '@context': [
-            'https://www.w3.org/2018/credentials/v1'
-        ],
-        type: [
-            'VerifiableCredential',
-            'a2274869-4a41-4446-8efd-dacde5a81221'
-        ],
-        credentialSubject: [
-            {
-                id: 'did:hedera:testnet:4YZuEXk95TMt2WfuAB5UYJMQSgSfUgBNutnZioUVAxkR_0.0.1774462341919',
-                field0: 'value0',
-                field1: 'value1',
-                policyId: '69c42569ae73da728c8d9027',
-                accountId: '0.0.1774462367074'
-            }
-        ],
-        issuer: 'did:hedera:testnet:4YZuEXk95TMt2WfuAB5UYJMQSgSfUgBNutnZioUVAxkR_0.0.1774462341919',
-        issuanceDate: '2026-03-25T17:12:17.150Z',
-        proof: {
-            type: 'Ed25519Signature2018',
-            created: '2026-03-25T17:12:17.150Z',
-            verificationMethod: 'did:hedera:testnet:4YZuEXk95TMt2WfuAB5UYJMQSgSfUgBNutnZioUVAxkR_0.0.1774462341919#did-root-key',
-            proofPurpose: 'assertionMethod',
-            jws: 'eyJhbGciOiJFZERTQSJ9..signature'
-        }
-    }
-};
-
-const EXTERNAL_SYNC_EVENTS_RESPONSE_EXAMPLE = {
-    response: {},
-    result: null,
-    steps: []
-};
-
 const PERMISSIONS_SR = [
     'ACCOUNTS_STANDARD_REGISTRY_READ',
     'DEMO_KEY_CREATE',
@@ -208,8 +169,271 @@ const PROFILE_DID_DOCUMENT_SAMPLE = {
 
 export const ObjectExamples = {
     PERMISSION_SR: PERMISSIONS_SR,
-    EXTERNAL_REQUEST_BODY_EXAMPLE,
-    EXTERNAL_SYNC_EVENTS_RESPONSE_EXAMPLE,
+
+    TAG_BLOCK_MAP_RESPONSE: {
+        Choose_Roles: '67b1ba6f-732b-49fe-b96c-2bc65d2bfef5',
+        header: 'eba62c72-d50d-4deb-92e1-efb320b999d8',
+        approve_PP: 'de7655e2-abb4-4c11-9c9d-d9045863655f',
+        pp_grid_sr: '342d3226-60b8-440f-ae74-4d9d4e9b1502',
+        pp_grid_sr_documents_to_approve: '75a79a7a-9e5d-451b-ac9a-0cae1c74e0c5',
+        pp_grid_sr_documents_approved: '721563a4-ac0b-41fd-ac3c-648f603c266f',
+        pp_grid_sr_documents_approved_rejected: '2cef948f-5331-40d7-8605-db8996949074',
+        pp_grid_sr_history: 'd8a519e6-8154-441e-b0c5-ce9354ee3e20',
+        approve_pp_documents_btn: 'ba9bbaff-777c-4cea-b57c-88f5e66738e8',
+        revoke_pp_sr_btn: '52566539-55b9-401e-a7ae-5c155e3c4e84',
+        revoke_pp_sr: 'c5625a1d-4211-4c86-a807-138bef4ed683',
+        save_revoke_pp_sr: 'b0f38345-c568-4846-bc16-a001f324c1be',
+        approve_VVB: '7df235de-8a3a-4b6a-b7e4-afbbb1e07789',
+        vvb_grid_sr: '7dcca0c2-686d-4f6e-ae6f-9047a062b21e',
+        vvb_grid_sr_documents_to_approve: 'a81f2eb8-c463-40c0-9a99-1b54b4330d13',
+        vvb_grid_sr_documents_approved: '5eb49aed-e645-4cce-ac66-478f33e43ecb',
+        vvb_grid_sr_documents_approved_rejected: '94d0f573-d925-487c-93c5-197ae62b835c',
+        'history_addon_35a0bfb0-72a2-4dde-a107-ce356544a9c7': '779fc971-2db2-402e-b74e-3a93c4d3fee1',
+        approve_documents_btn: '11957409-363d-4c9a-ad63-b44e22f095b9',
+        revoke_vvb_sr_btn: '4484e430-afdd-464b-9908-736f9f8691ca',
+        revoke_vvb_sr: '07ecfe0c-4764-4e4d-845d-1b906a74c673',
+        save_revoke_vvb_sr: 'ef7b5c39-efb5-4c4c-8705-38d47a05c098',
+        return_vvb_to_wait: 'c257b2c4-415e-4580-a1ca-b7978ae18e2a',
+        project_Pipeline: 'ca3f48e7-46e0-4a9a-b808-0a8635950fc3',
+        project_grid_sr: '4e31d57a-4c68-49a3-bd32-3971df87bc4e',
+        project_grid_sr_waiting_for_validation: '9ea132db-8394-4f3d-b622-5468458ccb94',
+        project_grid_sr_validated_revoked: '42e89bd3-3f7b-4b3b-8de2-d5e9f568b966',
+        project_grid_sr_rejected: '28902755-9f7d-4b56-96f2-901bb11985c4',
+        sr_project_grid_history: '57e1bff5-28cd-407e-b011-43d2cffd99f3',
+        sr_validate_project_btn: '3dfdf39a-9e20-4622-b8cf-588083c3e643',
+        sr_save_validated_project: '391cd16e-3250-4630-a1a8-83e5567b9d6d',
+        sr_reassign_validated_project: '2e841cf4-90fe-4828-ab4e-2c6cb6ba931c',
+        sr_save_reassigned_validated_project_hedera: 'c3970f63-517f-471b-b883-a09436634926',
+        sr_save_reassigned_validated_project_db: '5a6c1aaf-aab0-4356-a2ba-54885479401b',
+        sr_save_rejected_project: '4931d0ac-102f-42b2-943f-fb2f5ee4747e',
+        sr_reassign_rejected_project: '4231d33a-da43-43f6-b71b-4777f3241407',
+        sr_save_reassigned_rejected_project_hedera: 'ed395fc3-f4e2-465c-a69f-c4f731683036',
+        sr_save_reassigned_rejected_project_db: 'b375e199-3b1d-4d52-be48-153a77272f7c',
+        sr_revoke_project_btn: 'f641ac31-b3db-4797-bf09-41399cc092d1',
+        sr_revoke_project: 'e5d52ff6-000c-4024-b80c-810bd0487a89',
+        sr_save_revoked_projects: '6a5d7596-34d5-4be1-bc5c-002504c3c8a8',
+        Monitoring_Reports_sr: 'd1ede253-2ad7-4e72-88e1-28d1caa8fbf7',
+        report_grid_sr: '6e844eaf-2209-4bc1-a615-dddd2b091414',
+        report_grid_sr_verified_approved_reports: 'd4e2a6dd-dc93-4871-830d-74d6b6393cc5',
+        report_grid_sr_approved_revoked: 'e68c4e8d-cc14-4779-871d-0d7fd1ea991f',
+        report_grid_sr_rejected: '544c78ea-9298-4579-87f2-0a77d08f93c7',
+        'history_addon_97744a6d-4bd6-4281-9075-3695b76475f1': '251ad205-4bf8-4b3f-a3bc-748db5da2c9d',
+        sr_approve_report_btn: 'bdee1b47-ce92-439e-91ae-851c9248540c',
+        sr_save_approved_report: '4e443dd1-913f-446d-8fb9-40e14290fdd0',
+        sr_reassign_approved_report: 'cc29360f-e5ec-4d0f-bae3-e79491426b37',
+        sr_save_reassigned_approved_report_hedera: '90f82730-9304-4620-98a2-aa4487e713a0',
+        sr_save_reassigned_approved_report_db: 'c5b54039-1ad3-454c-acda-fd85ba79cf41',
+        mintToken: 'e9557770-0664-41c7-977d-b90e02705a58',
+        sr_save_rejected_report: 'f7873839-57e1-41dd-8ea1-c5247f458a1f',
+        sr_reassign_rejected_report: '52babd73-4b65-4d67-a1c1-7c8b24631731',
+        sr_save_reassigned_rejected_report_hedera: 'bd6127a3-556e-4366-a73b-28979db863fb',
+        sr_save_reassigned_rejected_report_db: '9adb9ed4-7cfa-4417-90ca-cfd2db637473',
+        sr_revoke_report_btn: 'e8351d12-0ef0-4c13-8429-7c7461636879',
+        sr_revoke_reports: '501467ae-149f-4ca6-a0a5-af6312d50334',
+        sr_save_revoked_reports: '46422837-79c1-45b6-ade8-96f80a1af585',
+        VP: 'dca1dc1e-8b6e-4d32-a2ed-f750c7408fee',
+        vp_grid: '76a5c371-2d7a-4669-a5c5-5e74b2e43922',
+        vp_grid_vp_documents: '903eb680-1d02-4eb1-b2d2-92c9b6089957',
+        TrustChain: '193f034e-f621-4187-92e8-4e02c23ae556',
+        trustChainBlock: '267d727f-b405-465e-bc0a-bb09f121b308',
+        MintTokenItem: '5ef14a78-bd0b-4460-9f5c-2f9b947b8b52',
+        ReportMonitoringReportApproved: '92390fb9-c377-4be5-95f7-8111d739ce5e',
+        ReportMonitoringReportVerified: '0e21256b-4217-4bad-8cbf-4f6a1f0c8f82',
+        AutomaticMonitoringReport: '9ab4f8d7-4b20-4fb9-99cd-1d8e0e685d61',
+        ReportMonitoringReportCreated: '6c6ca33b-1b17-473c-a0c4-f86c773ab85e',
+        ReportProjectValidation: '18d32be0-b899-4d12-b36f-ce23f45694d3',
+        AutomaticProject: '224bc884-fe6a-46e6-bec0-7888d7a54d1e',
+        ReportProjectCreated: '8b0c9803-c6a0-4c13-83f6-b02a7844c44b',
+        pp_step: '38ebef4b-0b4e-4724-b19f-81bb8b8c4c8a',
+        create_pp_profile: 'a091d4c6-aa73-40d8-8c52-b33eb4f8dd00',
+        preset_pp_profile: '05ac6b40-f5e9-43aa-9e20-bffbfe3be525',
+        save_pp_profile_hedera: '0d5f03aa-cfe9-46bb-bc36-48d994750806',
+        save_pp_profile_db: 'e290fad5-25de-461c-8c52-35df7c90d68e',
+        pp_wait_for_approve: '70e31450-e940-47ea-8e1b-e2b6da708fb2',
+        save_approved_pp: 'bc9ec5a6-7bf6-4625-a0d4-6ec14dcd100b',
+        reassign_approved_pp: 'f4300ce7-b62f-4bf7-8f90-fce944c01453',
+        save_reassigned_approved_pp_hedera: '101fbcb2-7410-4eb6-ac0b-aad62dfa61ad',
+        save_reassigned_approved_pp_db: 'd8bd023e-26ef-4e5f-bc29-327a099dfc2d',
+        'Project Participant_header': 'b7c48ef6-9eff-4696-8967-41cb25efe008',
+        pp_document: '3e907e60-c851-4803-963d-193b85f2de15',
+        pp_profile_grid: '0852f759-da33-4a64-950f-bde731c87112',
+        pp_documents: '7d591df9-2869-418c-ba72-29a43daf2177',
+        pp_documents_rejected: '02b132cc-f987-4ed2-a050-1f6070aa4754',
+        pp_documents_history: '2738651e-be9f-4e7d-a51d-89a842238d89',
+        pp_revoke_profile: 'd4bd6553-3ff4-474b-9cd2-b020ad87ab00',
+        pp_revoke_profile_documents: '999824d8-0a96-426e-8853-597d6406a377',
+        pp_save_revoked_profile_documents: '177d6b7b-eb34-4420-a852-3e5f015902ff',
+        Projects_pp: '84fb55a8-1107-427a-8c82-a77016698d6e',
+        project_grid_pp_2: 'd4482a69-7390-48c1-8e76-d06ef487c85b',
+        project_grid_pp_2_waiting_to_validate_projects: 'da8f13f6-afdf-444a-bd91-98dfd7924c41',
+        project_grid_pp_2_validated_projects: '166a3df0-b133-4b2b-80dc-20e45c7fb031',
+        project_grid_pp_2_validated_revoked_projects_own: '00e46aee-09ff-423a-8a1b-3dacc4a88226',
+        project_grid_pp_2_rejected_projects_own: 'e178f60e-ef66-4ba0-81fb-3afbc49cfcc7',
+        'history_addon_4f31ccda-2486-4cc8-8c7b-647283e8f093': '745524f9-ee8d-4200-b767-cabb36a2d0e8',
+        new_project: 'ee6dea12-94ce-4e88-ab39-a0b5183a761d',
+        add_project_bnt: '0110af34-bfd0-4ff5-b7f8-b821462f37ff',
+        pp_set_profile_to_project: '865c907e-61de-49b7-bc18-48a98fa47d8a',
+        pp_profile_project: '5d26570a-8b95-4f6b-9ade-b2f66d60d0fc',
+        save_project_form_pp_hedera: 'ff8d0501-e896-4865-a58c-f89a77486ac8',
+        save_project_form_pp: '56f64879-69e6-45aa-8d7e-d6d99ade8ddc',
+        tool_19_project: '84a5d3b0-223d-4ee6-8e26-9dab6f3aa31c',
+        'tool_19_project:get_tool_19': '4ccdf064-9966-46d9-84b3-56d97d68dac8',
+        'tool_19_project:calc_tool_19': '4a91f065-e631-4c9a-bcdc-49d3170b0862',
+        'tool_19_project:set_tool_19': '472bedb8-bfa9-4e97-9ad0-b253b30ad043',
+        tool_21_project: '12e30f68-e7b7-4427-aa9a-7d7f75c22900',
+        'tool_21_project:get_tool_21': 'b7984eab-893a-497f-ba73-3e6d4c0b7ce0',
+        'tool_21_project:set_tool_21': '16f57f36-48db-4989-adb1-ddb276fc23f1',
+        tool_33_project: 'dac9b2e4-cccd-4125-8e13-6bdb4c7d83f8',
+        'tool_33_project:get_tool_33': '805c54af-bea3-4351-b07c-cf30af8b8ecb',
+        'tool_33_project:calc_tool_33': '52974f49-497d-403b-9616-829da32590fe',
+        'tool_33_project:set_tool_33': 'caabfe37-e697-45d0-a4d8-506b5917560e',
+        tool_07_project: 'a740d560-f27f-49b4-8484-c3c41acfc7a6',
+        'tool_07_project:get_tool_07': '5c961ffe-a69a-40b7-bdbc-6d860b963dbd',
+        'tool_07_project:calc_tool_07': 'a1cc5525-6c22-4fda-8c95-1de20864ae40',
+        'tool_07_project:set_tool_07': '88db65b4-38e1-4395-8f7a-f1f9b2c9cb0b',
+        calculate_project_fields: '48e0c5b9-2037-486f-9e62-a4a72a737174',
+        save_project_hedera: '913db0c4-9a5f-4880-89e7-199f0b9f4893',
+        save_project: '579b91a8-5843-475a-9df4-0cd62a193bd5',
+        new_report: '9a3f8b47-d5f2-4a30-ae30-8591325cec5e',
+        add_report_bnt: '3fce7522-70a5-4941-8885-70f889d76744',
+        save_report_form_pp_hedera: '5c3542f5-10c9-45e4-9e4f-f19337311450',
+        save_report_form_pp: 'df353891-48aa-4e1d-a7f2-254b4eed845d',
+        tool_19_report: 'a6142f4e-2833-4682-b90a-13e470fac3e5',
+        'tool_19_report:get_tool_19': 'f79682a5-ec6f-4880-bd16-5cf79a47646f',
+        'tool_19_report:calc_tool_19': '199a7094-d437-4cd2-a868-28d89c5e4003',
+        'tool_19_report:set_tool_19': 'd34c7e63-362b-44c4-b09c-7e22ca0204b1',
+        tool_21_report: '682bceb0-aca3-459e-868b-5071769e0010',
+        'tool_21_report:get_tool_21': '6adbef57-40b4-4605-a14a-396cff579f9b',
+        'tool_21_report:set_tool_21': 'e98d3b99-0336-493a-9437-d8c987a055af',
+        tool_33_report: '3015c9e1-0fd1-49dd-9e99-5e4360b03843',
+        'tool_33_report:get_tool_33': 'c0efbc98-7bd2-4ab2-99ea-156d38cb8582',
+        'tool_33_report:calc_tool_33': 'e7a04257-8aa2-46f0-a2de-356d7d4c0a23',
+        'tool_33_report:set_tool_33': '855895bd-3cc4-4f2a-b56f-24d7c2903341',
+        tool_07_report: 'ca9c2f91-0137-4bff-b4ae-122c779ebc8a',
+        'tool_07_report:get_tool_07': 'a85a2235-f39e-4661-9149-ce960a1232c1',
+        'tool_07_report:calc_tool_07': '68e09c24-dda7-44dd-8cc5-cd99e97dc9bf',
+        'tool_07_report:set_tool_07': 'a4ebe74e-170f-4a95-a9c1-181382a8aeb4',
+        calculate_report_fields: '84efaf85-e863-4227-8398-36d502112803',
+        save_report_form_hedera: 'a49433cd-9d55-4f89-9ec5-657389be864c',
+        save_report: 'ee19553c-3125-4beb-b46f-4ff625c3bf61',
+        revoke_project_pp_btn: '85579c1a-da55-48ad-a158-9aea06cdf875',
+        revoke_project_pp: 'a09c849a-09f6-45fb-90dc-38c8ae376cf4',
+        send_revoke_project_pp: '5549e44e-abd3-452a-8b94-199decf5d90e',
+        Monitoring_Reports_pp: 'ad0195d8-f851-44ac-a6e0-a516e54aa0a8',
+        report_grid_pp: 'b6b93966-5db4-4cf5-bf6c-04caa79efa56',
+        report_grid_pp_reports_verified: 'ca93cd28-c825-42e4-8235-8b051b15fb50',
+        report_grid_pp_reports_waiting_for_verification: '7e58d3ff-2b5b-4dbc-82ab-0803b9b6a69e',
+        report_grid_pp_reports_rejected: '2f91b842-d120-47c0-8988-7d10898e0b9f',
+        report_by_project: '5eb3bd9f-508a-4f34-878a-caeec03f5cc6',
+        report_grid_pp_projects: 'cc29afb5-44cc-4743-ab06-61ff78f2e367',
+        'history_addon_1797768b-5cff-4271-a075-b47d47414f42': 'a9fdaf82-c435-4624-9667-fcf7b8aeba77',
+        assign_vvb: '3764ff77-1d04-4685-83ff-4e40e943b02b',
+        assign_vvb_documents: '8060701d-0503-4322-8566-155156f657f3',
+        save_assign: 'caa9d743-4e7c-4849-b180-6ded8ae547de',
+        revoke_report_pp_btn: 'c1bfcfd6-ef0f-431a-a647-132fd8896aee',
+        revoke_report_pp: 'b8e58e5c-168e-4dfa-ab57-22cc81709276',
+        send_revoke_report_pp: 'c395bd76-2e9d-4201-9d8f-d8ee2b02eed3',
+        tokens: '9c69a673-99de-43ae-a3cb-1180e47a7419',
+        tokens_grid: '96b059a2-fd03-4af6-92bd-b8cf7cfc8cab',
+        tokens_grid_tokens: '36e9f937-a265-4133-9449-dbac4502a339',
+        save_rejected_pp: '1087c34d-4a52-4ddf-b608-02c6b1af23e6',
+        reassign_rejected_pp: '053512e1-ead8-423c-b643-ed2b823fb0e5',
+        save_reassigned_rejected_pp_hedera: '6970ea93-234d-46f6-86fb-b10841bdfeef',
+        save_reassigned_rejected_pp_db: 'da466bdf-2cff-4732-a730-35af6a8681fc',
+        rewrite_pp: 'fa15cdb3-13a9-40e8-b1b5-9fb40f4d3d61',
+        pp_rejected: '8e7ae449-f7a6-444d-9a4f-73bfeb63facc',
+        return_pp_btn: '17ced663-b5fb-4f05-bf6d-57617215adbd',
+        VVB: '65e4019a-cf24-4399-a036-b0736c46d147',
+        new_VVB: '7dccf230-bae6-4e28-a330-670b974e2c0e',
+        create_new_vvb: '4c06fc97-f3a8-429d-a1a2-e0c406f69ff0',
+        rejected_vvb_docs: '3aaeea11-d9f6-4bd6-b3ef-8ea34fb7c6c6',
+        save_new_approve_document_hedera: '54dc2457-6fbc-4c4f-b6ff-43c88f632795',
+        save_new_approve_document: '4e7c4631-3720-4e65-b8ca-a93b1814eb32',
+        wait_for_approve: 'a46dd8eb-cba4-427e-bec7-529b5e6741ce',
+        update_approve_document_status: 'f08795df-218f-44f1-8067-fec69e3439ca',
+        reassign_vc_vvb: '52a85cef-d272-4412-b178-fd70f164a789',
+        save_vc_vvb_hedera: 'cfed0069-5303-422a-889b-e64728193bbf',
+        save_vc_vvb: 'c97eb5df-9bc9-4f7a-8e9c-202aea60f3a8',
+        VVB_Header: '3e94224b-1271-4daf-a4c6-8dc83466fac3',
+        'VVB Documents': 'fe7f6083-df0d-4484-82c7-b2667a493ba3',
+        vvb_grid: 'aef5a12f-2104-4363-a0b8-1de0d9cf2dfd',
+        vvb_grid_documents: '3a766cbe-64c4-4981-9ebf-00c0b91a2bf9',
+        vvb_grid_documents_rejected: '5e19229a-d4af-4d86-ad80-2a8d8f2f5337',
+        'history_addon_eb2f56e0-f2d6-4288-bffe-ee08f89d60ab': 'b59d9cda-644e-45b3-b2f8-ae35b1ac787b',
+        revoke_vvb_own_document_btn: '4f1c84fd-86ed-42c3-87b7-c76e054b63b8',
+        revoke_vvb_own_document: '16080f49-a76a-42c4-b914-426d5d0fe9e7',
+        save_revoked_vvb_own_document: 'd27b561b-e5a2-4bf8-944e-8e977eea82ee',
+        return_vvb_to_request: '96a50c03-a562-41e6-801e-50b56a0f3bb5',
+        Monitoring_Reports_vvp: 'bfa2879f-37a5-43f3-8046-8aae903628a1',
+        report_grid_vvb: 'd29b2e1f-2176-4978-b189-c6dd30530f80',
+        report_grid_vvb_reports: 'c446e056-3631-4092-ae6d-b7a432aacdc8',
+        'report_grid_vvb_reports(approved)': '4c2e2765-cfc1-4fdc-b1b3-37ab0e7cd6e8',
+        'report_grid_vvb_reports(rejected)': 'a7aa15ce-f271-4e28-9812-82bfd7ef5aa7',
+        'history_addon_a40f0da4-e982-481c-a23e-b86f7e76e770': '85b1cab4-ba3c-4e5f-a1da-7270082013c5',
+        approve_report_btn: '710427a1-85ce-4745-8e25-d87d6e0998f7',
+        mint_events: '9980537e-f8d8-4dc4-8d80-17b07891f0e7',
+        approve_report_status: '21e27f70-b4ab-4a65-8b60-0f351671bc2e',
+        reassign_report: 'c3a99ced-d1bf-4282-ac9e-eda9764f4d3d',
+        set_relationships_to_report_vvb: '6b47557b-df51-44c5-be4e-5ad311944c77',
+        vvb_own_documents_relationships: '305c7fb4-50bb-4b1a-afa2-8beb0c9a7bec',
+        save_reassign_report_hedera: 'c93e6a61-65f8-4d3d-9f67-bb1d2f48b8d2',
+        save_reassign_report: 'df3240b6-112a-4138-8e00-801931583a28',
+        reject_report_status: 'f4f1db2e-cd0f-4662-aa0f-a320a3296747',
+        reassign_rejected_report: '69dd0278-04c0-41bd-a950-fcd5dd1a23ee',
+        set_relationships_to_rejected_vvb: '54e168f0-3ebc-4af1-ac8e-ee89c3221542',
+        vvb_own_documents_relationships_rejected: '69e5d217-7c34-47f7-8dd1-26ad2dfafbf3',
+        save_reassign_rejected_report_hedera: 'ccb1148f-7496-4739-b921-d0ddbc31d6a2',
+        save_reassign_rejected_report: '49e0ff43-aa52-44af-9bf2-5b3861c4144a',
+        revoke_reassign_report_btn: '783618ca-1efa-4d31-b42b-5dc09826cb38',
+        revoke_reassign_report: '66173aee-a100-43fd-b6df-71c9b4b97d6d',
+        save_revoke_reassign_report: 'd8cdb61b-1ea6-4658-bf39-3f4db876247a',
+        update_approve_document_status_2: 'fbe5b897-990e-4108-862b-e65356301617',
+        reassign_rejected_vvb: '69247fb9-8146-4c3f-89bb-56c562419a5e',
+        reassign_rejected_vvb_hedera: 'b7c10574-8462-48ed-a099-3444e3af95a7',
+        save_reassign_rejected_vvb: 'b1a12acd-9d41-4174-8f10-58bbe8aaeaa4',
+        rewrite_vvb: '5e1cdd40-8687-4279-bb27-479fa7ba1356',
+        vvb_rejected: '65d9c1f5-94af-45fd-b483-6fa33d92c4e8',
+        return_vvb_btn: 'b81d06d9-35f8-476a-91d5-e86bd570ab68'
+    },
+
+    EXTERNAL_REQUEST_BODY_EXAMPLE: {
+        owner: 'string',
+        policyTag: 'string',
+        document: {
+            id: '8f457a5a-c02b-4a18-a7d3-20e4def1bf7f',
+            '@context': [
+                'https://www.w3.org/2018/credentials/v1'
+            ],
+            type: [
+                'VerifiableCredential',
+                'a2274869-4a41-4446-8efd-dacde5a81221'
+            ],
+            credentialSubject: [
+                {
+                    id: 'did:hedera:testnet:4YZuEXk95TMt2WfuAB5UYJMQSgSfUgBNutnZioUVAxkR_0.0.1774462341919',
+                    field0: 'value0',
+                    field1: 'value1',
+                    policyId: '69c42569ae73da728c8d9027',
+                    accountId: '0.0.1774462367074'
+                }
+            ],
+            issuer: 'did:hedera:testnet:4YZuEXk95TMt2WfuAB5UYJMQSgSfUgBNutnZioUVAxkR_0.0.1774462341919',
+            issuanceDate: '2026-03-25T17:12:17.150Z',
+            proof: {
+                type: 'Ed25519Signature2018',
+                created: '2026-03-25T17:12:17.150Z',
+                verificationMethod: 'did:hedera:testnet:4YZuEXk95TMt2WfuAB5UYJMQSgSfUgBNutnZioUVAxkR_0.0.1774462341919#did-root-key',
+                proofPurpose: 'assertionMethod',
+                jws: 'eyJhbGciOiJFZERTQSJ9..signature'
+            }
+        }
+    },
+
+    EXTERNAL_SYNC_EVENTS_RESPONSE_EXAMPLE: {
+        response: {},
+        result: null,
+        steps: []
+    },
 
     CONTRACTS_LIST_RESPONSE_WIPE: [
         {
@@ -415,6 +639,633 @@ export const ObjectExamples = {
             serials: [1, 2, 4]
         }
     ],
+
+    POLICIES_GET_LIST_USER: [
+        {
+            uuid: 'b7e7d5ff-2675-4018-ac08-47609bc5a437',
+            name: 'Verra VM0007 Policy',
+            version: '1',
+            description: 'REDD+ Methodology Framework',
+            status: 'PUBLISH',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8381081',
+            instanceTopicId: '0.0.8381318',
+            messageId: '1774508369.453794000',
+            availability: 'private',
+            userRoles: ['Project_Proponent'],
+            userGroups: [
+                {
+                    uuid: 'd5c3ff1e-7e83-4ed9-a122-839c5843707d',
+                    role: 'VVB(manager)',
+                    groupName: 'VVBs',
+                    groupLabel: '',
+                    active: false,
+                    id: '69c4d9881e6768b3a86de534'
+                },
+                {
+                    uuid: '923b88ff-8ee8-429f-b32a-0a8799e6954e',
+                    role: 'Project_Proponent',
+                    groupName: 'Project_Proponent',
+                    groupLabel: '',
+                    active: false,
+                    id: '69c4da1f1e6768b3a86de558'
+                },
+                {
+                    uuid: '65347d9b-391e-4d2d-8758-039e3fd42490',
+                    role: 'Project_Proponent',
+                    groupName: 'Project_Proponent',
+                    groupLabel: 'AnotherProponent',
+                    active: true,
+                    id: '69c4da671e6768b3a86de55e'
+                }
+            ],
+            userRole: 'Project_Proponent',
+            userGroup: {
+                uuid: '65347d9b-391e-4d2d-8758-039e3fd42490',
+                role: 'Project_Proponent',
+                groupName: 'Project_Proponent',
+                groupLabel: 'AnotherProponent',
+                active: true,
+                id: '69c4da671e6768b3a86de55e'
+            },
+            tests: [],
+            id: '69c4d51ac4f45966decb4710'
+        },
+        {
+            uuid: '1e95fab1-7b3e-4692-a16c-d977032be0d1',
+            name: 'CDM AMS-III.AR Policy',
+            version: '1',
+            description: 'Substituting fossil fuel-based lighting with LED/CFL lighting systems',
+            status: 'PUBLISH',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8366207',
+            instanceTopicId: '0.0.8366841',
+            messageId: '1774427068.001165000',
+            availability: 'private',
+            userRoles: ['VVB'],
+            userGroups: [
+                {
+                    uuid: '5ff7e8cc-d399-48be-ae4c-0c90e240d1d6',
+                    role: 'VVB',
+                    groupName: 'VVB',
+                    groupLabel: null,
+                    active: true,
+                    id: '69c4d3e0340a8cb2868e3095'
+                }
+            ],
+            userRole: 'VVB',
+            userGroup: {
+                uuid: '5ff7e8cc-d399-48be-ae4c-0c90e240d1d6',
+                role: 'VVB',
+                groupName: 'VVB',
+                groupLabel: null,
+                active: true,
+                id: '69c4d3e0340a8cb2868e3095'
+            },
+            tests: [],
+            id: '69c38f81462c9c1141de2df2'
+        }
+    ],
+    /** GET /policies (Api-Version: 2) — SR: userGroups usually roles of virtual users on dry-run; ordinary user: usually roles on published policies */
+    POLICIES_GET_LIST_STANDARD_REGISTRY: [
+        {
+            uuid: '9b4a5fb8-7775-4aac-8d88-8876d3ab3fc5',
+            name: 'VM0042',
+            version: 'Dry Run',
+            description: '',
+            status: 'DRY-RUN',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8381520',
+            instanceTopicId: '0.0.1774509251971',
+            availability: 'private',
+            userRoles: [
+                'Project Proponent'
+            ],
+            userGroups: [
+                {
+                    uuid: '192d89a6-0ed8-4ebe-aa30-52c07df105ea',
+                    active: true,
+                    role: 'Project Proponent',
+                    groupName: 'Project Proponent',
+                    groupLabel: null,
+                    id: '69c636fd7f98ec7068519d67'
+                }
+            ],
+            userRole: 'Project Proponent',
+            userGroup: {
+                uuid: '192d89a6-0ed8-4ebe-aa30-52c07df105ea',
+                active: true,
+                role: 'Project Proponent',
+                groupName: 'Project Proponent',
+                groupLabel: null,
+                id: '69c636fd7f98ec7068519d67'
+            },
+            tests: [],
+            id: '69c4dc82c4f45966decb4cdd'
+        },
+        {
+            uuid: 'b7e7d5ff-2675-4018-ac08-47609bc5a437',
+            name: 'Verra VM0007 Policy',
+            version: '1',
+            description: 'REDD+ Methodology Framework',
+            status: 'PUBLISH',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8381081',
+            instanceTopicId: '0.0.8381318',
+            messageId: '1774508369.453794000',
+            availability: 'private',
+            userRoles: ['Administrator'],
+            userGroups: [],
+            userRole: 'Administrator',
+            userGroup: null,
+            tests: [],
+            id: '69c4d51ac4f45966decb4710'
+        },
+        {
+            uuid: '1e95fab1-7b3e-4692-a16c-d977032be0d1',
+            name: 'CDM AMS-III.AR Policy',
+            version: '1',
+            description: 'Substituting fossil fuel-based lighting with LED/CFL lighting systems',
+            status: 'PUBLISH',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8366207',
+            instanceTopicId: '0.0.8366841',
+            messageId: '1774427068.001165000',
+            availability: 'private',
+            userRoles: ['Administrator'],
+            userGroups: [],
+            userRole: 'Administrator',
+            userGroup: null,
+            tests: [],
+            id: '69c38f81462c9c1141de2df2'
+        }
+    ],
+
+    /**
+     * POST /policies/migrate-data (sync) and POST /policies/push/migrate-data (async) — request body.
+     * Maps source entities (schemas, groups, roles, blocks, tokens) to destination policy equivalents.
+     */
+    POLICY_POST_MIGRATE_DATA_REQUEST: {
+        policies: {
+            src: '69c63ecb2737af139ce96bf1',
+            dst: '69c642562737af139ce96e7c'
+        },
+        vcs: [
+            '69c63f5634e3e2878e651c4f',
+            '69c63f6a34e3e2878e651c62',
+            '69c63fe534e3e2878e651c71',
+            '69c63ff834e3e2878e651c7d',
+            '69c6402a34e3e2878e651c8a',
+            '69c6403d34e3e2878e651c96',
+            '69c6404c34e3e2878e651ca1'
+        ],
+        vps: [
+            '69c6405934e3e2878e651ca6'
+        ],
+        schemas: {
+            '#a63f77de-b9ca-46c7-aa4c-fe8ef89fe50a&1.0.0': '#8e8198b8-86ae-477c-a996-f7fa1e229614&1.0.0',
+            '#a0f1bcdd-911d-496d-958f-01b55e01ea3b&1.0.0': '#f9fbc33a-b91f-4b9a-9ab7-9dc2ece4a756&1.0.0',
+            '#c6832572-8a62-4da0-ae0b-7f8b7abb47d4&1.0.0': '#6046253d-b414-4ea1-8d5a-c883a02e4e15&1.0.0'
+        },
+        groups: {},
+        roles: {
+            Registrant: 'Registrant'
+        },
+        migrateState: true,
+        editedVCs: {},
+        blocks: {
+            '9fd3f431-d96f-459e-b1fa-af74d50b88f2': 'ebe327ef-1eda-4266-9100-04bcf7b741ba',
+            'f876c7cc-5e8a-4a47-a2da-3ef4c99ed8d9': '3a82b6fc-c141-46cb-9ce4-b413a278e707',
+            'ca500f4d-104c-4440-920a-c4c942149971': '22d8d663-0179-48f9-9375-a7f095b5959b',
+            '9fcb7585-8422-48ef-acea-faeed5b0c931': 'b6faca4f-2220-4665-a1ef-a649d5598cbf',
+            'a7c2402b-c0ab-47db-82f3-a18f87852194': 'd28ec286-9e18-4c21-abe4-ca8713f83639',
+            '5c9ece32-4c10-443a-beaa-cd5e2c1cfefe': '83bfc30f-a2e1-475f-9124-fdafd2a8445f',
+            '138c7d6a-3b08-43a3-b741-c2d0dd635573': '35e8eb6b-fcd1-4a0f-881d-dc8f0df6c0c0',
+            '34aed736-c0b2-40b7-8aa5-69b1478c86e8': 'c6c02969-624b-4a23-a929-a27d43d6923a',
+            'b7d6aad4-23a9-4f5b-8037-a0e9475abf05': 'e8fa9426-a33c-41aa-b8c3-20c40d51d246',
+            '51fdfac6-86b6-41f9-a613-ac5868e214d7': '1c9baf00-8410-4a7b-a5ef-d39a86a03773'
+        },
+        tokens: {},
+        tokensMap: {
+            '0.0.8393265': '0.0.8393387'
+        },
+        migrateRetirePools: true,
+        retireContractId: ''
+    },
+
+    /** POST /policies/push/migrate-data — accepted task (async migration). */
+    POLICY_POST_PUSH_MIGRATE_DATA_TASK: {
+        taskId: '147d8d77-4eea-43f3-b20e-2e83971a398f',
+        expectation: 4,
+        action: 'Migrate data',
+        userId: '69c2cfc021d39e7b6d15e236'
+    },
+
+    /** POST /policies/migrate-data — per-document errors (e.g. JSON schema validation). */
+    POLICY_POST_MIGRATE_DATA_ERRORS: [
+        {
+            id: '69c5075ffdec38062c93a27b',
+            message: 'Error: JSON_SCHEMA_VALIDATION_ERROR'
+        },
+        {
+            id: '69c5078afdec38062c93a287',
+            message: 'Error: JSON_SCHEMA_VALIDATION_ERROR'
+        }
+    ],
+
+    /** GET /policies/migrate-data/status — documented failedItems omit Mongo `_id`. */
+    POLICY_GET_MIGRATE_DATA_STATUS_RESPONSE: {
+        items: [
+            {
+                runId: '69c643902737af139ce96ee7',
+                srcPolicyId: '69c63ecb2737af139ce96bf1',
+                dstPolicyId: '69c642562737af139ce96e7c',
+                status: 'completed',
+                startedAt: '2026-03-27T08:45:04.532Z',
+                finishedAt: '2026-03-27T09:09:55.412Z',
+                summary: {
+                    vcDocument: {
+                        total: 7,
+                        success: 7,
+                        failed: 0,
+                        cursorLastId: '69c643a82737af139ce96f35'
+                    },
+                    vpDocument: {
+                        total: 1,
+                        success: 1,
+                        failed: 0,
+                        cursorLastId: '69c643b42737af139ce96f5d'
+                    },
+                    roleVcDocument: {
+                        total: 0,
+                        success: 0,
+                        failed: 0,
+                        cursorLastId: null
+                    },
+                    policyRole: {
+                        total: 1,
+                        success: 1,
+                        failed: 0,
+                        cursorLastId: '69c63f3934e3e2878e651c48'
+                    },
+                    policyState: {
+                        total: 3,
+                        success: 0,
+                        failed: 3,
+                        cursorLastId: '69c63f4134e3e2878e651c4b'
+                    },
+                    mintRequest: {
+                        total: 1,
+                        success: 1,
+                        failed: 0,
+                        cursorLastId: '69c6405934e3e2878e651cab'
+                    },
+                    mintTransaction: {
+                        total: 1,
+                        success: 1,
+                        failed: 0,
+                        cursorLastId: '69c6405934e3e2878e651cb0'
+                    },
+                    multiDocument: {
+                        total: 0,
+                        success: 0,
+                        failed: 0,
+                        cursorLastId: null
+                    },
+                    aggregateVc: {
+                        total: 0,
+                        success: 0,
+                        failed: 0,
+                        cursorLastId: null
+                    },
+                    splitDocument: {
+                        total: 0,
+                        success: 0,
+                        failed: 0,
+                        cursorLastId: null
+                    },
+                    documentState: {
+                        total: 11,
+                        success: 11,
+                        failed: 0,
+                        cursorLastId: '69c643a82737af139ce96f4b'
+                    },
+                    token: {
+                        total: 0,
+                        success: 0,
+                        failed: 0,
+                        cursorLastId: null
+                    },
+                    retirePool: {
+                        total: 0,
+                        success: 0,
+                        failed: 0,
+                        cursorLastId: null
+                    }
+                },
+                isDryRun: false,
+                failedItems: [
+                    {
+                        createDate: '2026-03-27T08:45:04.584Z',
+                        updateDate: '2026-03-27T09:09:55.401Z',
+                        srcPolicyId: '69c63ecb2737af139ce96bf1',
+                        dstPolicyId: '69c642562737af139ce96e7c',
+                        entityType: 'policyState',
+                        srcEntityId: '69c63f4134e3e2878e651c4b',
+                        runId: '69c643902737af139ce96ee7',
+                        attemptCount: 2,
+                        errorMessage:
+                            'Error: Destination block mapping not found for policyState',
+                        firstFailedAt: '2026-03-27T08:45:04.583Z',
+                        lastFailedAt: '2026-03-27T09:09:55.397Z',
+                        id: '69c643902737af139ce96eec'
+                    },
+                    {
+                        createDate: '2026-03-27T08:45:04.582Z',
+                        updateDate: '2026-03-27T09:09:55.401Z',
+                        srcPolicyId: '69c63ecb2737af139ce96bf1',
+                        dstPolicyId: '69c642562737af139ce96e7c',
+                        entityType: 'policyState',
+                        srcEntityId: '69c6401d34e3e2878e651c86',
+                        runId: '69c643902737af139ce96ee7',
+                        attemptCount: 2,
+                        errorMessage:
+                            'Error: Destination block mapping not found for policyState',
+                        firstFailedAt: '2026-03-27T08:45:04.581Z',
+                        lastFailedAt: '2026-03-27T09:09:55.397Z',
+                        id: '69c643902737af139ce96eeb'
+                    },
+                    {
+                        createDate: '2026-03-27T08:45:04.580Z',
+                        updateDate: '2026-03-27T09:09:55.400Z',
+                        srcPolicyId: '69c63ecb2737af139ce96bf1',
+                        dstPolicyId: '69c642562737af139ce96e7c',
+                        entityType: 'policyState',
+                        srcEntityId: '69c63fd734e3e2878e651c6d',
+                        runId: '69c643902737af139ce96ee7',
+                        attemptCount: 2,
+                        errorMessage:
+                            'Error: Destination block mapping not found for policyState',
+                        firstFailedAt: '2026-03-27T08:45:04.580Z',
+                        lastFailedAt: '2026-03-27T09:09:55.397Z',
+                        id: '69c643902737af139ce96eea'
+                    }
+                ]
+            }
+        ]
+    },
+
+    /** GET /policies/migrate-data/status — no runs for the selected source/destination pair. */
+    POLICY_GET_MIGRATE_DATA_STATUS_RESPONSE_EMPTY: {
+        items: []
+    },
+
+    /** PUT /policies/{policyId}/discontinue — immediate (empty object). */
+    POLICY_PUT_DISCONTINUE_BODY_IMMEDIATE: {},
+
+    /** PUT /policies/{policyId}/discontinue — scheduled discontinue at `date`. */
+    POLICY_PUT_DISCONTINUE_BODY_SCHEDULED: {
+        date: '2026-03-30T20:00:00.000Z'
+    },
+
+    /** GET /policies/{policyId}/navigation | GET /policies/{policyId}/groups — `savepointIds` query (stringified JSON array). */
+    POLICY_QUERY_SAVEPOINT_IDS_JSON:
+        '["69c68bf7fbdb94688e7ef0d4","69c68c51fbdb94688e7ef0f8"]',
+
+    /** POST /policies/{policyId}/groups — Default State (`uuid` null); you may create a new group from there if you choose. */
+    POLICY_POST_GROUPS_BODY_DEFAULT_STATE: {
+        uuid: null
+    },
+
+    /** POST /policies/{policyId}/groups — select an existing group by uuid. */
+    POLICY_POST_GROUPS_BODY_EXISTING: {
+        uuid: '70db1f4c-d0cc-4593-a424-7b95118b3c43'
+    },
+
+    /** GET /policies/{policyId}/document-owners — response body: distinct document owner DIDs. */
+    POLICY_GET_DOCUMENT_OWNERS_RESPONSE: [
+        'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        'did:hedera:testnet:BftZd6RVk1D5yXC64g25b9TmhAvNLwki271mWgDAu7yW_0.0.8361161'
+    ],
+
+    /** GET /policies/{policyId}/documents — paged document index rows (`X-Total-Count` header). */
+    POLICY_GET_DOCUMENTS_RESPONSE: [
+        {
+            schema: '#16462e4c-4553-4b91-8ff8-ea3a1094a744&1.0.0',
+            owner: 'did:hedera:testnet:BftZd6RVk1D5yXC64g25b9TmhAvNLwki271mWgDAu7yW_0.0.8361161',
+            messageId: '1774621651.173557000',
+            id: '69c693d288a9ebd936dfcb2d'
+        }
+    ],
+
+    POLICY_POST_CREATE_REQUEST: {
+        name: 'New policy',
+        applicabilityConditions: '',
+        detailsUrl: '',
+        typicalProjects: '',
+        topicDescription: '',
+        description: 'Policy description',
+        categories: ['69c2cfc534d008dac266432c', '69c2cfc534d008dac2664316', ''],
+        importantParameters: {
+            atValidation: '',
+            monitored: ''
+        }
+    },
+
+    /** POST /policies response example: full policy list (Mongo _id omitted from docs). */
+    POLICY_POST_CREATE_RESPONSE: [
+        {
+            createDate: '2026-03-26T08:00:30.081Z',
+            uuid: '8fe6f490-a978-4eb0-9d81-772dc62ae970',
+            name: 'New policy',
+            description: 'Policy description',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            topicId: '0.0.8381928',
+            codeVersion: '1.5.1',
+            tools: [],
+            userRoles: ['Administrator'],
+            userGroups: [],
+            userRole: 'Administrator',
+            userGroup: null,
+            tests: [],
+            id: '69c4e782c4f45966decb5091'
+        },
+        {
+            createDate: '2026-03-26T07:13:06.988Z',
+            uuid: '9b4a5fb8-7775-4aac-8d88-8876d3ab3fc5',
+            name: 'VM0042',
+            version: 'Dry Run',
+            description: '',
+            status: 'DRY-RUN',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            policyRoles: ['Project Proponent', 'VVB'],
+            policyGroups: [],
+            topicId: '0.0.8381520',
+            instanceTopicId: '0.0.1774509251971',
+            policyTag: 'Tag_1774509146169',
+            codeVersion: '1.5.1',
+            tools: [
+                {
+                    name: 'AR-AM Tool 04',
+                    version: null,
+                    topicId: '0.0.5664329',
+                    messageId: '1741365085.279118931'
+                },
+                {
+                    name: 'Tool 24',
+                    version: null,
+                    topicId: '0.0.5703543',
+                    messageId: '1741724529.286080000'
+                },
+                {
+                    name: 'AR Tool 14',
+                    version: null,
+                    topicId: '0.0.5738458',
+                    messageId: '1742305279.639972851'
+                }
+            ],
+            userRoles: ['Administrator'],
+            userGroups: [],
+            userRole: 'Administrator',
+            userGroup: null,
+            tests: [],
+            id: '69c4dc82c4f45966decb4cdd'
+        },
+        {
+            createDate: '2026-03-26T06:41:30.240Z',
+            uuid: 'b7e7d5ff-2675-4018-ac08-47609bc5a437',
+            name: 'Verra VM0007 Policy',
+            version: '1',
+            description: 'REDD+ Methodology Framework',
+            status: 'PUBLISH',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            policyRoles: ['Project_Proponent', 'VVB', 'VVB(manager)'],
+            policyGroups: [
+                {
+                    name: 'VVBs',
+                    creator: 'VVB(manager)',
+                    members: ['VVB'],
+                    groupRelationshipType: 'Multiple',
+                    groupAccessType: 'Private'
+                },
+                {
+                    name: 'Project_Proponent',
+                    creator: 'Project_Proponent',
+                    members: ['Project_Proponent'],
+                    groupRelationshipType: 'Single',
+                    groupAccessType: 'Private'
+                }
+            ],
+            topicId: '0.0.8381081',
+            instanceTopicId: '0.0.8381318',
+            policyTag: 'Tag_1774507267355',
+            messageId: '1774508369.453794000',
+            codeVersion: '1.5.1',
+            tools: [],
+            userRoles: ['Administrator'],
+            userGroups: [],
+            userRole: 'Administrator',
+            userGroup: null,
+            tests: [],
+            id: '69c4d51ac4f45966decb4710'
+        },
+        {
+            createDate: '2026-03-25T08:34:23.327Z',
+            uuid: '42d2531a-d2e0-44fe-8601-057633c1b9bd',
+            name: 'CDM AMS-II.J Policy',
+            version: '2',
+            description: 'Demand-Side Activities for Efficient Lighting Technologies',
+            status: 'PUBLISH',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            policyRoles: ['Project Participant', 'VVB'],
+            policyGroups: [],
+            topicId: '0.0.8366933',
+            instanceTopicId: '0.0.8366950',
+            policyTag: 'Tag_1774427637162',
+            messageId: '1774427841.463316056',
+            codeVersion: '1.5.1',
+            tools: [
+                {
+                    name: 'Tool 07',
+                    version: null,
+                    topicId: '0.0.2175383',
+                    messageId: '1706867530.884259218'
+                }
+            ],
+            userRoles: ['Administrator'],
+            userGroups: [],
+            userRole: 'Administrator',
+            userGroup: null,
+            tests: [],
+            id: '69c39e0f462c9c1141de2f0b'
+        },
+        {
+            createDate: '2026-03-25T07:32:17.567Z',
+            uuid: '1e95fab1-7b3e-4692-a16c-d977032be0d1',
+            name: 'CDM AMS-III.AR Policy',
+            version: '1',
+            description: 'Substituting fossil fuel-based lighting with LED/CFL lighting systems',
+            status: 'PUBLISH',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            policyRoles: ['Project Participant', 'VVB'],
+            policyGroups: [],
+            topicId: '0.0.8366207',
+            instanceTopicId: '0.0.8366841',
+            policyTag: 'Tag_1774423895959',
+            messageId: '1774427068.001165000',
+            codeVersion: '1.5.1',
+            tools: [
+                {
+                    name: 'Tool 33',
+                    version: null,
+                    topicId: '0.0.4865949',
+                    messageId: '1726593517.484578000'
+                },
+                {
+                    name: 'Tool 19',
+                    version: null,
+                    topicId: '0.0.2196124',
+                    messageId: '1706869798.177938003'
+                },
+                {
+                    name: 'Tool 21',
+                    version: null,
+                    topicId: '0.0.2203279',
+                    messageId: '1706873385.455822873'
+                },
+                {
+                    name: 'Tool 07',
+                    version: null,
+                    topicId: '0.0.2175383',
+                    messageId: '1706867530.884259218'
+                }
+            ],
+            userRoles: ['Administrator'],
+            userGroups: [],
+            userRole: 'Administrator',
+            userGroup: null,
+            tests: [],
+            id: '69c38f81462c9c1141de2df2'
+        }
+    ],
+
+    CLONE_POLICY_POST_CREATE_REQUEST: {
+        policyTag: 'Tag_1774613972836',
+        name: 'ClonedPolicy',
+        topicDescription: 'Topic description text',
+        description: 'Description text'
+    },
 
     RETIRE_VCS_INDEXER_RESPONSE: [
         {
@@ -5387,5 +6238,88 @@ export const ObjectExamples = {
             messageId: '1707068762.886477003',
             id: '69c1501cfb66de861cc9dc26'
         }
-    ]
+    ],
+
+    /** GET /policies/{policyId}/blocks/{uuid} — example (interface container + nested blocks; `blocks` may contain null slots). */
+    POLICY_GET_BLOCK_BY_UUID_RESPONSE: {
+        id: '3e907e60-c851-4803-963d-193b85f2de15',
+        blockType: 'interfaceContainerBlock',
+        actionType: 'local',
+        readonly: false,
+        uiMetaData: {
+            type: 'blank',
+            title: 'Documents'
+        },
+        blocks: [
+            {
+                uiMetaData: {
+                    fields: [
+                        {
+                            title: 'Owner',
+                            name: 'document.issuer',
+                            tooltip: '',
+                            type: 'text'
+                        },
+                        {
+                            title: 'Text',
+                            name: 'document.credentialSubject.0.field0',
+                            tooltip: '',
+                            type: 'text'
+                        },
+                        {
+                            title: 'Operation',
+                            name: '',
+                            tooltip: '',
+                            type: 'block',
+                            action: '',
+                            url: '',
+                            dialogContent: '',
+                            dialogClass: '',
+                            dialogType: '',
+                            bindBlock: 'pp_revoke_profile',
+                            bindGroup: 'pp_documents'
+                        },
+                        {
+                            title: 'Operation',
+                            name: 'option.status',
+                            tooltip: '',
+                            type: 'text',
+                            action: '',
+                            url: '',
+                            dialogContent: '',
+                            dialogClass: '',
+                            dialogType: '',
+                            bindBlock: '',
+                            width: '250px'
+                        },
+                        {
+                            title: 'Document',
+                            name: 'document',
+                            tooltip: '',
+                            type: 'button',
+                            action: 'dialog',
+                            url: '',
+                            dialogContent: 'VC',
+                            dialogClass: '',
+                            dialogType: 'json',
+                            bindBlock: '',
+                            content: 'View Document',
+                            uiClass: 'link'
+                        }
+                    ]
+                },
+                content: 'interfaceDocumentsSourceBlock',
+                blockType: 'interfaceDocumentsSourceBlock',
+                id: '0852f759-da33-4a64-950f-bde731c87112'
+            },
+            null,
+            null,
+            null
+        ]
+    },
+
+    /** GET /policies/{policyId}/tag/{tagName} — resolves a block tag to the block UUID. */
+    POLICY_GET_BLOCK_BY_TAG_RESPONSE: {
+        id: Examples.UUID
+    }
 }

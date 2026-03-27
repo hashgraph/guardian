@@ -160,7 +160,27 @@ export class PolicyToolDTO {
     messageId?: string;
 }
 
-@ApiExtraModels(PolicyTestDTO)
+export class PolicyImportantParametersDTO {
+    @ApiProperty({
+        type: String,
+        required: false,
+        example: ''
+    })
+    @IsOptional()
+    @IsString()
+    atValidation?: string;
+
+    @ApiProperty({
+        type: String,
+        required: false,
+        example: ''
+    })
+    @IsOptional()
+    @IsString()
+    monitored?: string;
+}
+
+@ApiExtraModels(PolicyTestDTO, PolicyImportantParametersDTO)
 export class PolicyDTO {
     @ApiProperty({
         type: String,
@@ -201,6 +221,42 @@ export class PolicyDTO {
     @IsOptional()
     @IsString()
     topicDescription?: string;
+
+    @ApiProperty({
+        type: String,
+        required: false,
+        example: ''
+    })
+    @IsOptional()
+    @IsString()
+    applicabilityConditions?: string;
+
+    @ApiProperty({
+        type: String,
+        required: false,
+        example: ''
+    })
+    @IsOptional()
+    @IsString()
+    detailsUrl?: string;
+
+    @ApiProperty({
+        type: String,
+        required: false,
+        example: ''
+    })
+    @IsOptional()
+    @IsString()
+    typicalProjects?: string;
+
+    @ApiProperty({
+        type: () => PolicyImportantParametersDTO,
+        required: false
+    })
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => PolicyImportantParametersDTO)
+    importantParameters?: PolicyImportantParametersDTO;
 
     @ApiProperty({
         type: String,
@@ -258,6 +314,16 @@ export class PolicyDTO {
     @IsOptional()
     @IsString()
     messageId?: string;
+
+    @ApiProperty({
+        type: String,
+        enum: PolicyAvailability,
+        required: false,
+        example: PolicyAvailability.PRIVATE
+    })
+    @IsOptional()
+    @IsString()
+    availability?: PolicyAvailability;
 
     @ApiProperty({
         type: String,
@@ -330,6 +396,8 @@ export class PolicyDTO {
         type: 'object',
         additionalProperties: true,
         nullable: true,
+        description:
+            'Last active group in iteration order (not a separate summary). Often shown via groupLabel or uuid.',
         example: {
             uuid: Examples.UUID,
             role: 'Installer',
@@ -346,6 +414,7 @@ export class PolicyDTO {
         type: 'object',
         additionalProperties: true,
         isArray: true,
+        description: 'Full list of group rows for this user in the policy (getGroupsByUser), including inactive.',
         example: [{
             uuid: Examples.UUID,
             role: 'Installer',
