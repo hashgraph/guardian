@@ -8,8 +8,6 @@ form {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
     margin: 15px;
-    /* margin-left: auto; */
-    /* margin-right: auto; */
     font-size: 24px;
     & > div {        
         text-align: center;
@@ -82,7 +80,6 @@ button .pi {
         font-style: normal;
         font-weight: 500;
         line-height: 30px;
-        /* 214.286% */
         cursor: pointer;
     }
 }
@@ -94,7 +91,6 @@ button .pi {
     font-style: normal;
     font-weight: 500;
     line-height: 30px;
-    /* 214.286% */
     cursor: pointer;
 }
 

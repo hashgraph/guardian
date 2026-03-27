@@ -401,7 +401,7 @@ export class AccountApi {
     }
 
     /**
-     * Generate a OTP secret for 2FA setup
+     * Generate an OTP secret for 2FA setup
      */
     @Post('otp/generate')
     @Auth()
