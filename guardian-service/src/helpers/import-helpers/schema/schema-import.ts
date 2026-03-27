@@ -329,6 +329,8 @@ export class SchemaImport {
     ): Promise<void> {
         step.start();
         const schemasByIds = schemasIds?.length ? await DatabaseServer.getSchemasByIds(schemasIds) : [];
+        const updatedSchemasIriMap = new Map<string, string>();
+        const savedSchemas: any[] = [];
 
         let index = 0;
         for (const file of schemas) {
@@ -375,14 +377,58 @@ export class SchemaImport {
                 await updateSchemaDefs(row.iri);
                 this.schemasMapping[index].newID = row.id;
 
+                if (file.iri !== row.iri) {
+                    updatedSchemasIriMap.set(file.iri, row.iri);
+                }
+
+                savedSchemas.push(row);
+
             } else {
                 const row = await DatabaseServer.saveSchema(schemaObject);
                 this.schemasMapping[index].newID = row.id.toString();
+                savedSchemas.push(row);
             }
 
             _step.complete();
             index++;
         }
+
+        if (updatedSchemasIriMap.size > 0) {
+            for (const savedSchema of savedSchemas) {
+                let needsUpdate = false;
+                let documentStr = JSON.stringify(savedSchema.document);
+
+                for (const [tempIri, actualIri] of updatedSchemasIriMap) {
+                    const tempUuid = tempIri.substring(1);
+                    const actualUuid = actualIri.substring(1);
+
+                    if (documentStr.includes(tempUuid)) {
+                        documentStr = documentStr.replaceAll(tempUuid, actualUuid);
+                        needsUpdate = true;
+                    }
+                }
+
+                if (needsUpdate) {
+                    const updatedDocument = JSON.parse(documentStr);
+
+                    if (updatedDocument.$defs) {
+                        const newDefs: any = {};
+                        for (const [defKey, defValue] of Object.entries(updatedDocument.$defs)) {
+                            const actualIri = updatedSchemasIriMap.get(defKey) || defKey;
+                            newDefs[actualIri] = defValue;
+                        }
+                        updatedDocument.$defs = newDefs;
+                    }
+
+                    const schemaFromDb = await DatabaseServer.getSchemaById(savedSchema.id);
+                    if (schemaFromDb) {
+                        schemaFromDb.document = updatedDocument;
+                        await DatabaseServer.updateSchema(schemaFromDb.id, schemaFromDb);
+                    }
+                }
+            }
+        }
+
         step.complete();
     }
 

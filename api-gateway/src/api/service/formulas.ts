@@ -414,6 +414,98 @@ export class FormulasApi {
     }
 
     /**
+     * Draft formula
+     */
+    @Put('/:formulaId/draft')
+    @Auth(Permissions.FORMULAS_FORMULA_CREATE)
+    @ApiOperation({
+        summary: 'Return formula to editing.',
+        description: 'Return formula to editing for the specified formula ID.',
+    })
+    @ApiParam({
+        name: 'formulaId',
+        type: String,
+        description: 'Formula Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: FormulaDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async draftFormula(
+        @AuthUser() user: IAuthUser,
+        @Param('formulaId') formulaId: string
+    ): Promise<FormulaDTO> {
+        try {
+            if (!formulaId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const oldItem = await guardians.getFormulaById(formulaId, owner);
+            if (!oldItem) {
+                throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
+            }
+            return await guardians.draftFormula(formulaId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Dry-Run formula
+     */
+    @Put('/:formulaId/dry-run')
+    @Auth(Permissions.FORMULAS_FORMULA_CREATE)
+    @ApiOperation({
+        summary: 'Dry Run formula.',
+        description: 'Run formula without making any persistent changes or executing transaction.',
+    })
+    @ApiParam({
+        name: 'formulaId',
+        type: String,
+        description: 'Formula Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: FormulaDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async dryRunFormula(
+        @AuthUser() user: IAuthUser,
+        @Param('formulaId') formulaId: string
+    ): Promise<FormulaDTO> {
+        try {
+            if (!formulaId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const oldItem = await guardians.getFormulaById(formulaId, owner);
+            if (!oldItem) {
+                throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
+            }
+            return await guardians.dryRunFormula(formulaId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Publish formula
      */
     @Put('/:formulaId/publish')
@@ -439,7 +531,7 @@ export class FormulasApi {
     })
     @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async publishPolicyLabel(
+    async publishFormula(
         @AuthUser() user: IAuthUser,
         @Param('formulaId') formulaId: string
     ): Promise<FormulaDTO> {

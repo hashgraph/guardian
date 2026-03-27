@@ -162,7 +162,7 @@
 }
 
 .dialog-body {
-    height: 55vh;
+    max-height: 75vh;
     max-width: 100vw;
     overflow-y: auto;
 }

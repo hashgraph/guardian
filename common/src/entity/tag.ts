@@ -110,6 +110,12 @@ export class Tag extends RestoreEntity {
     date: string;
 
     /**
+     * Tag schema id
+     */
+    @Property({ persist: false, nullable: true })
+    tagSchemaId?: string;
+
+    /**
      * File id of the original tag (publish flow).
      */
     @Property({ nullable: true })

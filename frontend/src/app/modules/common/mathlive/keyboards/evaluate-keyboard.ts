@@ -193,6 +193,16 @@ export const evaluateKeyboard = {
                 latex: "\\operatorname{element}",
                 insert: "\\operatorname{\\_}",
             },
+            {
+                class: "small",
+                latex: "\\operatorname{index}",
+                insert: "\\mathrm{index}\\mapsto #0",
+            },
+            {
+                class: "small",
+                latex: "\\operatorname{Each}",
+                insert: "\\mathrm{Map}\\left(1..\\mathrm{Length}\\left(#0\\right),\\mathrm{index}\\mapsto#0\\right)",
+            },
         ]
     ]
 };

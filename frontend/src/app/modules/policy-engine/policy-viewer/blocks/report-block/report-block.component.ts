@@ -233,7 +233,7 @@ export class ReportBlockComponent implements OnInit {
         const row = Array.isArray(item.document) ? item.document[0].document : item.document.document;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 id: row.id,
@@ -254,7 +254,7 @@ export class ReportBlockComponent implements OnInit {
         const row = Array.isArray(item.document) ? item.document[0] : item.document;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 id: row.id,
@@ -274,7 +274,7 @@ export class ReportBlockComponent implements OnInit {
         const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 row: item,
@@ -597,7 +597,7 @@ export class ReportBlockComponent implements OnInit {
         const title = `Retire Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 id: item.id,

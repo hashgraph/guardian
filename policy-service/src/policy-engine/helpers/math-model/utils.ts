@@ -226,19 +226,14 @@ function _findCommand(json: any, command: string, parent: any, result: any[]): a
 export function parseValue(value: any): any {
     if (value && value.type) {
         if (value.type.kind === 'list') {
-            const iter = value.each();
             const result = [];
-            if (iter) {
-                let next = iter.next();
-                while (next && !next.done) {
-                    const itemValue = parseValue(next.value);
+            if (Array.isArray(value.ops)) {
+                for (const element of value.ops) {
+                    const itemValue = parseValue(element);
                     result.push(itemValue);
-                    next = iter.next();
                 }
-                return result;
-            } else {
-                return [];
             }
+            return result;
         }
         return value.value;
     }

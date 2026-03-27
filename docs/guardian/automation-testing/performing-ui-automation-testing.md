@@ -30,7 +30,7 @@ Finally, all the selected test runs and you can see the key components of the Te
 
 <figure><img src="../../.gitbook/assets/image (2) (1) (1) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
-**Test Status Menu:** The menu shows a summary of the number of tests passed, passed, failed, or incomplete, and the time spent on the test.
+**Test Status Menu:** The menu shows a summary of the number of tests pending, passed, failed, or incomplete, and the time spent on the test.
 
 **URL Preview:** Shows the URL of the test, helps track the URL.
 

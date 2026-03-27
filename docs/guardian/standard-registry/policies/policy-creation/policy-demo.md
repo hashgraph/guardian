@@ -89,7 +89,7 @@ On the Policy page, it is now possible to filter the policies list by policy nam
 
 Users can select and delete policies from the Policies table in Guardian UI and also through the API.
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note:
@@ -97,3 +97,23 @@ Note:
 1. Selected items remain selection across pagination.
 2. Dependencies are considered when deleting multiple schemas.
 {% endhint %}
+
+### 5. Policy Disconnection
+
+#### 5.1 Disconnecting from a Local Policy
+
+<figure><img src="../../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+
+After disconnection:
+
+* The policy is removed from your active policies grid and moved to the Disconnected Policies section
+
+<figure><img src="../../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+
+* All documents created by you within that policy are marked accordingly to inform other policy participants that you have disconnected.
+
+<figure><img src="../../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+
+The disconnection operation is reversible. If necessary (for example, in case of accidental disconnection), you can reconnect to the policy at any time.
+
+<figure><img src="../../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>

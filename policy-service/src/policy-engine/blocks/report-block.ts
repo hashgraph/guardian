@@ -112,7 +112,15 @@ export class ReportBlock {
     private async addReportByVP(
         report: IReport,
         variables: any,
-        vp: VpDocument & { transferAmount?: number, wasTransferNeeded?: boolean, tokenIds?: string[] },
+        vp: VpDocument & {
+            mintAmount?: number,
+            transferAmount?: number,
+            mintExpected?: number,
+            transferExpected?: number,
+            wasTransferNeeded?: boolean,
+            tokenIds?: string[],
+            mainDocument?: string
+        },
         isMain: boolean = false
     ): Promise<IReport> {
         const vcs = vp.document.verifiableCredential || [];
@@ -134,8 +142,12 @@ export class ReportBlock {
             date: getVCField(mint, 'date'),
             expected: getVCField(mint, 'amount'),
             amount: String(vp.amount),
+            mintAmount: String(vp.mintAmount),
             transferAmount: String(vp.transferAmount),
+            mintExpected: String(vp.mintExpected),
+            transferExpected: String(vp.transferExpected),
             wasTransferNeeded: vp.wasTransferNeeded,
+            mainDocument: vp.messageId === vp.mainDocument ? null : String(vp.mainDocument),
             tag: vp.tag,
             issuer: vp.owner,
             username: vp.owner,
@@ -182,9 +194,9 @@ export class ReportBlock {
         for (let i = 0; i < vcs.length - 1; i++) {
             const doc = vcs[i];
             const credentialSubject = doc.credentialSubject[0];
-            if (credentialSubject.type === 'TokenDataSource') {
+            if (credentialSubject.type && credentialSubject.type.startsWith('TokenDataSource')) {
                 dataSource.push(doc);
-            } else if (credentialSubject.type === 'ActivityImpact') {
+            } else if (credentialSubject.type && credentialSubject.type.startsWith('ActivityImpact')) {
                 impacts.push({
                     type: 'VC',
                     impactType: getVCField(doc, 'impactType'),
@@ -369,7 +381,18 @@ export class ReportBlock {
             }) as VpDocument[];
 
             for (const additionalVp of additionalVps) {
-                [additionalVp.serials, additionalVp.amount, additionalVp.error, additionalVp.wasTransferNeeded, additionalVp.transferSerials, additionalVp.transferAmount, additionalVp.tokenIds] = await ref.databaseServer.getVPMintInformation(additionalVp);
+                const info = await ref.databaseServer.getVPMintInformation(additionalVp);
+                additionalVp.serials = info.serials;
+                additionalVp.amount = info.amount;
+                additionalVp.error = info.error;
+                additionalVp.wasTransferNeeded = info.wasTransferNeeded;
+                additionalVp.transferSerials = info.transferSerials;
+                additionalVp.mintAmount = info.mintAmount;
+                additionalVp.transferAmount = info.transferAmount;
+                additionalVp.mintExpected = info.mintExpected;
+                additionalVp.transferExpected = info.transferExpected;
+                additionalVp.tokenIds = info.tokenIds;
+                additionalVp.mainDocument = info.mainDocument;
                 const additionalReport = await this.addReportByVP({}, {}, additionalVp);
                 additionalReports.push(additionalReport);
             }
@@ -382,7 +405,18 @@ export class ReportBlock {
             } as FilterObject<VpDocument>) as VpDocument[];
 
             for (const additionalVp of additionalVps) {
-                [additionalVp.serials, additionalVp.amount, additionalVp.error, additionalVp.wasTransferNeeded, additionalVp.transferSerials, additionalVp.transferAmount, additionalVp.tokenIds] = await ref.databaseServer.getVPMintInformation(additionalVp);
+                const info = await ref.databaseServer.getVPMintInformation(additionalVp);
+                additionalVp.serials = info.serials;
+                additionalVp.amount = info.amount;
+                additionalVp.error = info.error;
+                additionalVp.wasTransferNeeded = info.wasTransferNeeded;
+                additionalVp.transferSerials = info.transferSerials;
+                additionalVp.mintAmount = info.mintAmount;
+                additionalVp.transferAmount = info.transferAmount;
+                additionalVp.mintExpected = info.mintExpected;
+                additionalVp.transferExpected = info.transferExpected;
+                additionalVp.tokenIds = info.tokenIds;
+                additionalVp.mainDocument = info.mainDocument;
                 const additionalReport = await this.addReportByVP({}, {}, additionalVp);
                 additionalReports.push(additionalReport);
             }
@@ -437,16 +471,19 @@ export class ReportBlock {
 
             const vp: any = await ref.databaseServer.getVpDocument({ hash, policyId: ref.policyId });
             if (vp) {
-                [
-                    vp.serials,
-                    vp.amount,
-                    vp.error,
-                    vp.wasTransferNeeded,
-                    vp.transferSerials,
-                    vp.transferAmount,
-                    vp.tokenIds,
-                    vp.target
-                ] = await ref.databaseServer.getVPMintInformation(vp);
+                const info = await ref.databaseServer.getVPMintInformation(vp);
+                vp.serials = info.serials;
+                vp.amount = info.amount;
+                vp.error = info.error;
+                vp.wasTransferNeeded = info.wasTransferNeeded;
+                vp.transferSerials = info.transferSerials;
+                vp.mintAmount = info.mintAmount;
+                vp.transferAmount = info.transferAmount;
+                vp.mintExpected = info.mintExpected;
+                vp.transferExpected = info.transferExpected;
+                vp.tokenIds = info.tokenIds;
+                vp.mainDocument = info.mainDocument;
+                vp.target = info.target;
                 report = await this.addReportByVP(report, variables, vp, true);
             } else {
                 const vc = await ref.databaseServer.getVcDocument({ hash, policyId: ref.policyId })

@@ -70,7 +70,7 @@ export class TreeGraphComponent implements OnInit {
             roots: this.source.roots,
             nodes: this.source.nodes,
             source: this.source
-        })
+        });
     }
 
     public select(node: TreeNode<any> | null) {
@@ -88,6 +88,9 @@ export class TreeGraphComponent implements OnInit {
         for (const node of this.grid.nodes) {
             for (const line of node.lines) {
                 line.select();
+            }
+            if (node.linkLine) {
+                node.linkLine.select();
             }
         }
     }

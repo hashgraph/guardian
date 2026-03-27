@@ -206,8 +206,6 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.setLoading(true);
-
         const payload = {
             operation: 'Update',
             streams: [
@@ -219,16 +217,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             ],
         };
 
-        this.policyEngineService
-            .setBlockData(this.id, this.policyId, payload)
-            .subscribe(
-                () => {},
-                (e) => {
-                    console.error(e?.error || e);
-                    this.setLoading(false);
-                    this.loadData();
-                },
-            );
+        this.submitAndReload(payload);
     }
 
     public onStreamDocumentTypeChange(row: WriterStreamRow, value: GlobalDocumentType | null): void {
@@ -305,7 +294,6 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
         }
 
         this.addTopicModalError = '';
-        this.setLoading(true);
 
         this.addTopicModalOpen = false;
         this.addTopicModalError = '';
@@ -321,16 +309,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             ],
         };
 
-        this.policyEngineService
-            .setBlockData(this.id, this.policyId, payload)
-            .subscribe(
-                () => {},
-                (e) => {
-                    console.error(e?.error || e);
-                    this.addTopicModalError = 'Failed to add topic';
-                    this.changeDetector.detectChanges();
-                },
-            );
+        this.submitAndReload(payload);
     }
 
     public deleteStream(row: WriterStreamRow): void {
@@ -359,21 +338,12 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.setLoading(true);
-
         const payload = {
             operation: 'Delete',
             streams: [{ topicId }],
         };
 
-        this.policyEngineService
-            .setBlockData(this.id, this.policyId, payload)
-            .subscribe(
-                () => {},
-                (e) => {
-                    console.error(e?.error || e);
-                },
-            );
+        this.submitAndReload(payload)
     }
 
     public openCreateTopicModal(): void {
@@ -434,21 +404,12 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.setLoading(true);
-
         const payload = {
             operation: 'CreateTopic',
             streams: [],
         };
 
-        this.policyEngineService
-            .setBlockData(this.id, this.policyId, payload)
-            .subscribe(
-                () => {},
-                (e) => {
-                    console.error(e?.error || e);
-                },
-            );
+        this.submitAndReload(payload);
     }
 
     public onNext(): void {
@@ -464,21 +425,12 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.setLoading(true);
-
         const payload = {
             operation: 'Next',
             streams: [],
         };
 
-        this.policyEngineService
-            .setBlockData(this.id, this.policyId, payload)
-            .subscribe(
-                () => {},
-                (e) => {
-                    console.error(e?.error || e);
-                },
-            );
+        this.submitAndReload(payload);
     }
 
     public isDefaultTopic(topicId: string): boolean {
@@ -492,5 +444,23 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
             return key;
         }
         return String(index);
+    }
+
+    private submitAndReload(payload: any): void {
+        this.setLoading(true);
+
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, payload)
+            .pipe(
+                finalize(() => {
+                    this.loadData();
+                }),
+            )
+            .subscribe(
+                () => {},
+                (e) => {
+                    console.error(e?.error || e);
+                },
+            );
     }
 }

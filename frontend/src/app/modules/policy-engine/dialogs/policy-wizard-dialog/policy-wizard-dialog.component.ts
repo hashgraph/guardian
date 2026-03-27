@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, Inject, OnInit, TemplateRef, ViewChild, } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Inject, OnInit, TemplateRef, ViewChild, } from '@angular/core';
 import { AbstractControl, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
 import { IWizardConfig, PolicyCategoryType, Schema, SchemaField, SchemaHelper, Token } from '@guardian/interfaces';
 import { Subject } from 'rxjs';
@@ -25,6 +25,9 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     @ViewChild('schemaRoleConfig', { read: TemplateRef }) schemaRoleConfig: any;
     @ViewChild('trustChainConfig', { read: TemplateRef }) trustChainConfig: any;
     @ViewChild('trustChainRoleConfig', { read: TemplateRef }) trustChainRoleConfig: any;
+
+    public isLargeSize: boolean = true;
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     public loading: boolean = false;
 
@@ -842,5 +845,26 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
             event.previousIndex,
             event.currentIndex
         );
+    }
+
+     public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
     }
 }

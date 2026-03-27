@@ -126,7 +126,18 @@ export class MessagesReportBlock {
             let messageId: string;
             const vp: any = await ref.databaseServer.getVpDocument({ hash: value, policyId: ref.policyId });
             if (vp) {
-                [vp.serials, vp.amount, vp.error, vp.wasTransferNeeded, vp.transferSerials, vp.transferAmount, vp.tokenIds] = await ref.databaseServer.getVPMintInformation(vp);
+                const info = await ref.databaseServer.getVPMintInformation(vp);
+                vp.serials = info.serials;
+                vp.amount = info.amount;
+                vp.error = info.error;
+                vp.wasTransferNeeded = info.wasTransferNeeded;
+                vp.transferSerials = info.transferSerials;
+                vp.mintAmount = info.mintAmount;
+                vp.transferAmount = info.transferAmount;
+                vp.mintExpected = info.mintExpected;
+                vp.transferExpected = info.transferExpected;
+                vp.tokenIds = info.tokenIds;
+                vp.mainDocument = info.mainDocument;
                 messageId = vp.messageId;
             } else {
                 const vc = await ref.databaseServer.getVcDocument({ hash: value, policyId: ref.policyId })

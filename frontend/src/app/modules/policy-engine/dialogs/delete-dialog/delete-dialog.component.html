@@ -1,3 +1,12 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+
 <div class="dialog-body">
     <div *ngIf="loading" class="loading">
         <div class="preloader-image preloader-image-l-size"></div>
@@ -15,19 +24,15 @@
 
 <div class="dialog-footer">
     <div class="action-buttons">
-        <div class="cancel-button">
-            <p-button
-                    (click)="onClose()"
-                    label="Cancel"
-                    [outlined]=true
-            ></p-button>
+        <div class="cancel-button dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Cancel</button>
         </div>
-        <div class="delete-button-container">
-            <p-button
-                    (click)="handleDeleteSchema()"
-                    label="Delete"
-                    class="p-button-danger"
-            ></p-button>
+        <div class="delete-button-container dialog-button">
+            <button 
+                (click)="handleDeleteSchema()" 
+                class="guardian-button guardian-button-delete">Delete</button>
         </div>
     </div>
 </div>

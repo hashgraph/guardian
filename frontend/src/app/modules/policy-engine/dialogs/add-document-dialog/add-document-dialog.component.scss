@@ -205,3 +205,9 @@
     margin-bottom: 12px;
     border-radius: 8px;
 }
+
+.textarea-preview {
+    margin-top: 16px !important;
+    overflow: hidden !important;
+    height: calc(100% - 250px) !important;
+}

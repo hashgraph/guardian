@@ -146,6 +146,7 @@ const API = {
     ReportGridVerra: "tag/report_grid_verra/blocks",
     AssignVVBMR: "tag/assign_vvb_mr/blocks",
     MintTokenVerra: "tag/mint_token_verra/blocks",
+    RevokeProjectPP: "tag/revoke_project_pp_btn/blocks",
     Categories: "methodologies/categories/",
     AddValidationReport: "tag/add_new_validation_report/blocks",
     AddVerificationReport: "tag/add_verification_report/blocks",

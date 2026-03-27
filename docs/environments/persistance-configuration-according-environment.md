@@ -5,7 +5,7 @@ Content of data stored during Guardian operative sessions are discriminated acco
 Persisted data during each session regarding  transactions both towards Headera net and or Guardian database are easily discriminated in terms of environment  and remain consistent with target Hedera network. 
 
 The persistence consistency is guaranteed leveraging the environment variable which describe the target Headera Network(HEDERA_NET) used  together with the "Guardian ecosystem-environment" name itself (GUARDIAN_ENV). 
-This two environment attribute can be considered as a key of the other session parameters, infact there is a functional dependency between the couple  <GuardianEnvironment, HederaNetwork> and the data written to the DB during a working session.
+This two environment attribute can be considered as a key of the other session parameters, in fact there is a functional dependency between the couple  <GuardianEnvironment, HederaNetwork> and the data written to the DB during a working session.
 
 The implementation goes in the same line as Data level separation of concerns: in order to discriminate data stored to the database it has been added a different database per each Hedera network and Guardian environment. The new db names have the following format  
 	
@@ -15,6 +15,6 @@ The implementation goes in the same line as Data level separation of concerns: i
 
 It has been introduced a new parameter PREUSED_HEDERA_NET, this parameter is intended to hold the target Hedera network that the system already started to notarized data to. The PREUSED_HEDERA_NET can assume the values mainnet, testnet, previewnet, localnode.
 
-To mantain the usage of the current databse the GUARDIAN_ENV parameter has to be left empty while the PREUSED_HEDERA_NET should be configured as stated before. 
+To maintain the usage of the current database the GUARDIAN_ENV parameter has to be left empty while the PREUSED_HEDERA_NET should be configured as stated before. 
 
 Using this configuration the system will keep behaving in the same way as now and the original database names will be used for the data related to the currently used HEDERA_NET and current Guardian environment. In this way the modification will not impact the current data but will be possible to define multiple different environments and hedera net target BC sharing the same infrastructure without data separation concerns.

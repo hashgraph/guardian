@@ -415,9 +415,8 @@ export class SchemaHelper {
                     });
                 }
                 const subSchema = schemaCache.get(field.type);
-                const clone = JSON.parse(JSON.stringify(subSchema));
-                field.fields = clone.fields;
-                field.conditions = clone.conditions;
+                field.fields = subSchema.fields;
+                field.conditions = subSchema.conditions;
             }
             if (field.order === -1) {
                 fields.push(field);

@@ -408,7 +408,9 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     PolicyStatus.DEMO,
                     PolicyStatus.VIEW
                 ].includes(policy.status)) {
-                    formulaFilters.status = EntityStatus.PUBLISHED;
+                    formulaFilters.status = { $in: [EntityStatus.DRY_RUN, EntityStatus.PUBLISHED] };
+                } else {
+                    formulaFilters.status = EntityStatus.DRY_RUN;
                 }
 
                 const formulas = await DatabaseServer.getFormulas(formulaFilters);
@@ -443,6 +445,80 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     });
                 }
                 return new MessageResponse(null);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Draft Formula
+     *
+     * @param {any} msg - Formula id
+     *
+     * @returns {any} - Formula
+     */
+    ApiResponse(MessageAPI.DRAFT_FORMULA,
+        async (msg: { formulaId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { formulaId, owner } = msg;
+
+                const item = await DatabaseServer.getFormulaById(formulaId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status === EntityStatus.DRAFT) {
+                    return new MessageError(`Item is draft.`);
+                }
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError(`Item is published.`);
+                }
+
+                item.status = EntityStatus.DRAFT;
+
+                const result = await DatabaseServer.updateFormula(item);
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Dry-Run Formula
+     *
+     * @param {any} msg - Formula id
+     *
+     * @returns {any} - Formula
+     */
+    ApiResponse(MessageAPI.DRY_RUN_FORMULA,
+        async (msg: { formulaId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { formulaId, owner } = msg;
+
+                const item = await DatabaseServer.getFormulaById(formulaId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status === EntityStatus.DRY_RUN) {
+                    return new MessageError(`Item is draft.`);
+                }
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError(`Item is published.`);
+                }
+
+                item.status = EntityStatus.DRY_RUN;
+
+                const result = await DatabaseServer.updateFormula(item);
+                return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);

@@ -384,7 +384,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
         const ref = this.dialog.open(TableDialogComponent, {
             header: 'Edit table',
-            width: '70vw',
+            width: '90%',
             data: { columnDefs, rowData: parsedRows },
         });
 

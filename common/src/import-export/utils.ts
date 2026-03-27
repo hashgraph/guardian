@@ -73,6 +73,15 @@ export class ImportExportUtils {
                         results.add(blockConfig[name]);
                     }
                 }
+
+                // globalEventsReaderBlock: schemas are stored in branches[].schema
+                if (Array.isArray((blockConfig as any).branches)) {
+                    for (const branch of (blockConfig as any).branches) {
+                        if (branch?.schema && typeof branch.schema === 'string') {
+                            results.add(branch.schema);
+                        }
+                    }
+                }
             }
             if (
                 blockConfig.blockType !== BlockType.Tool &&

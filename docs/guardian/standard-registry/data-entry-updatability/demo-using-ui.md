@@ -18,11 +18,11 @@ Allow users to edit documents and view all their versions.
 
 Go to Manage Schema. Select the desired schema or create a new schema. Select the field with the Simple type, and the “Updatable field” field will become available. Check this box. Save form.
 
-<figure><img src="../../../.gitbook/assets/unknown.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/unknown (2).png" alt=""><figcaption></figcaption></figure>
 
 **Note:** If the field type is not one of a Simple type, the value in the “Updatable Field” will be removed and will become non-editable.
 
-<figure><img src="../../../.gitbook/assets/unknown (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/unknown (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 3. Creating and Viewing Document Changes
 
@@ -30,7 +30,7 @@ Changes to a document can be created by the user who created the original docume
 
 To create a new version, view the document in the published policy by clicking the “View Document” button, which will open the viewing form. If the current user is the document owner, a “Switch to Edit Mode” button will appear in the upper right corner.
 
-<figure><img src="../../../.gitbook/assets/unknown (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/unknown (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 “Switch to Edit Mode” will be available to the document owner provided that the selected version of the document is the latest (current) version. Clicking this button will open the document in Edit mode.
 

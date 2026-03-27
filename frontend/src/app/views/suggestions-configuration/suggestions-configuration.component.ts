@@ -3,7 +3,7 @@ import {
     moveItemInArray,
     transferArrayItem,
 } from '@angular/cdk/drag-drop';
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { ModulesService } from 'src/app/services/modules.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -11,6 +11,7 @@ import { ConfigType, IUser, sortObjectsArray } from '@guardian/interfaces';
 import { SuggestionsService } from 'src/app/services/suggestions.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DndDropEvent } from 'ngx-drag-drop';
+import { DynamicDialogRef } from 'primeng/dynamicdialog';
 
 interface SuggestionsOrderPriorityItem {
     id: string;
@@ -31,11 +32,15 @@ export class SuggestionsConfigurationComponent {
     policiesAndModules: SuggestionsOrderPriorityItem[] = [];
     suggestionsOrderPriority: SuggestionsOrderPriorityItem[] = [];
 
+    public isLargeSize: boolean = true;
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
+
     constructor(
         private engineService: PolicyEngineService,
         private suggestionsService: SuggestionsService,
         private moduleService: ModulesService,
-        private profileService: ProfileService
+        private profileService: ProfileService,
+        private dialogRef: DynamicDialogRef,
     ) {}
 
     ngOnInit() {
@@ -174,5 +179,31 @@ export class SuggestionsConfigurationComponent {
 
     onLeftDrop(event: DndDropEvent, policiesAndModules: SuggestionsOrderPriorityItem[]) {
         console.log('123');
+    }
+
+    
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
+    }
+    
+    public onClose() {
+        this.dialogRef.close(null);
     }
 }

@@ -120,18 +120,24 @@ export class VcHelper extends VCJS {
             const dataBaseServer = new DatabaseServer();
             if (context && context.length) {
                 for (const c of context) {
+                    let document: SchemaCollection;
                     if (c.startsWith('schema#') || c.startsWith('schema:')) {
-                        return new Schema(
-                            await dataBaseServer.findOne(SchemaCollection, {
-                                iri,
-                            })
-                        );
+                        document = await dataBaseServer.findOne(SchemaCollection, { iri });
                     }
-                    return new Schema(
-                        await dataBaseServer.findOne(SchemaCollection, {
+                    if (!document) {
+                        document = await dataBaseServer.findOne(SchemaCollection, {
                             contextURL: { $in: context },
+                            iri: `#${type}`
                         })
-                    );
+                    }
+                    if (!document) {
+                        document = await dataBaseServer.findOne(SchemaCollection, {
+                            contextURL: { $in: context }
+                        })
+                    }
+                    if (document) {
+                        return new Schema(document);
+                    }
                 }
             }
             return null;

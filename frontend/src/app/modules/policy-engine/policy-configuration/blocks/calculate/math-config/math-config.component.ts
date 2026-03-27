@@ -63,7 +63,7 @@ export class MathConfigComponent implements OnInit {
     public editExpression($event: MouseEvent) {
         const dialogRef = this.dialog.open(MathEditorDialogComponent, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 test: true,

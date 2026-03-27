@@ -39,7 +39,7 @@ After a VC document has been created, the Formulas Diagram view can be accessed 
 3. Click the formula (fx) icon next to this field.
 4.  In the View Formula dialog that opens, switch to the Diagram tab.
 
-    <figure><img src="../../../../.gitbook/assets/unknown (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../../.gitbook/assets/unknown (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 4. Graphical view
 
@@ -51,7 +51,7 @@ Key characteristics:
 * Nodes are connected based on the underlying navigation tree to reflect component hierarchy.
 * Nodes are styled according to the value status of their linked field (Missing, Default, Suggested, Not null), except for constants, which are never highlighted.
 
-<figure><img src="../../../../.gitbook/assets/unknown (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 5. Value Status
 

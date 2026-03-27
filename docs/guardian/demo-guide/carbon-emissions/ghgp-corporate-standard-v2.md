@@ -28,7 +28,7 @@
 
 ### Introduction <a href="#toc146717947" id="toc146717947"></a>
 
-The GHG Protocol Corporate Accounting and Reporting Standard (GHGP Corporate Standard) is the world’s leading standard outlining requirements and guidance for corporate-level and organizational-level GHG emission inventories. Approximately 92% of Fortune 500 companies responding to the CDP—an investor-led effort to increase corporate carbon disclosures—referenced the used the GHGP Corporate Standard to conduct their GHG inventories.\[1] Also, many other GHG-related standards—such as the Natural Capital Partner’s CarbonNeutral Protocol and the Science Based Targets Initiative (SBTi)—point to the Greenhouse Gas Protocol as the commonplace standard for the quantification and accounting of corporate GHG emissions. As future regulations and standards are developed and implemented, they may either prescribe or encourage the use of Greenhouse Gas Protocol standards.
+The GHG Protocol Corporate Accounting and Reporting Standard (GHGP Corporate Standard) is the world’s leading standard outlining requirements and guidance for corporate-level and organizational-level GHG emission inventories. Approximately 92% of Fortune 500 companies responding to the CDP—an investor-led effort to increase corporate carbon disclosures—referenced the used GHGP Corporate Standard to conduct their GHG inventories.\[1] Also, many other GHG-related standards—such as the Natural Capital Partner’s CarbonNeutral Protocol and the Science Based Targets Initiative (SBTi)—point to the Greenhouse Gas Protocol as the commonplace standard for the quantification and accounting of corporate GHG emissions. As future regulations and standards are developed and implemented, they may either prescribe or encourage the use of Greenhouse Gas Protocol standards.
 
 This Guardian Policy mints Carbon Emission Tokens (CETs) in accordance with the GHGP Corporate Standard, including the Scope 2 Guidance, which was later published as an amendment to the GHGP Corporate Standard. In addition, the policy includes functionality to attribute emissions to products and services and use this data to calculate and publish product carbon footprints (PCFs) in accordance with the Pathfinder Framework v2.0. The policy and methodologies are designed to calculate emissions based on MRV data that can either be input manually by the organization, or automatically through API and trusted external data sources. The policy is equipped with standard emission factors (such as eGRID emission rates) and Intergovernmental Panel on Climate Change (IPCC) global warming potentials (GWPs).
 
@@ -190,7 +190,7 @@ Supply chain partners can reference the PCF to support their scope 3 calculation
 
 1. After the organizational emissions have been calculated, the Registry will approve or reject the CET issuance request, and consequently issue CETs if approved.
 
-<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Futureproofing (Automated GHG Inventories) <a href="#toc146717959" id="toc146717959"></a>
 

@@ -1,0 +1,49 @@
+# Low-memory override for 8-12GB RAM systems (Windows/macOS Docker Desktop)
+# NOTE: Mutually exclusive with docker-compose.gpu.yml — do not combine them.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.low-memory.yml <command>
+#
+# Examples:
+#   docker compose -f docker-compose.yml -f docker-compose.low-memory.yml run --rm document-ingestion-worker
+#   docker compose -f docker-compose.yml -f docker-compose.low-memory.yml up -d
+#
+# Tip: Create an alias:
+#   alias dc-low='docker compose -f docker-compose.yml -f docker-compose.low-memory.yml'
+#   dc-low run --rm document-ingestion-worker
+#
+# Memory budget (12GB Windows host):
+#   Windows OS + WSL2 overhead: ~4GB
+#   Available for Docker:       ~8GB
+#   Qdrant (actual ~0.5-1GB):   limit 2g
+#   MCP server (actual ~0.8GB): limit 2g
+#   Worker subprocess:          limit 5g (psutil-enforced)
+#
+# Only vars that differ from base are listed — Docker Compose merges env maps.
+
+services:
+  qdrant:
+    mem_limit: 2g          # down from 4g — sufficient for typical collections
+    memswap_limit: 3g
+
+  hedera-guardian-mcp-server:
+    mem_limit: 2g          # down from 4g — BGE-M3 model fits in ~800MB
+    memswap_limit: 3g
+
+  schema-ingestion-worker:
+    mem_limit: 3g          # down from 4g
+    memswap_limit: 4g
+
+  document-ingestion-worker:
+    mem_limit: 6g          # down from 10g
+    memswap_limit: 7g
+    environment:
+      # Only override memory-critical vars (rest inherited from base via merge)
+      - DOCUMENT_INGESTION_MAX_PARALLEL_FILES=1
+      - DOCUMENT_INGESTION_ACCELERATOR_DEVICE=cpu
+      - DOCUMENT_INGESTION_SUBPROCESS_MEMORY_LIMIT_GB=5
+      - DOCUMENT_INGESTION_USE_SURYA_FORMULA_ENRICHMENT=false
+      - DOCUMENT_INGESTION_EMBEDDING_BATCH_SIZE=3
+      - DOCUMENT_INGESTION_LAYOUT_BATCH_SIZE=1
+      - DOCUMENT_INGESTION_OCR_BATCH_SIZE=1
+      - DOCUMENT_INGESTION_TABLE_BATCH_SIZE=1
+      - DOCUMENT_INGESTION_PDF_IMAGES_SCALE=2.0
+      - DOCUMENT_INGESTION_NUM_THREADS=1

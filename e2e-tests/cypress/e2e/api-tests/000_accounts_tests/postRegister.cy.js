@@ -137,7 +137,7 @@ context("Register", { tags: ['accounts', 'firstPool', 'all'] }, () => {
     });
 
     // password validation sets to easy + 4 length for CICD, so we cannot get weak password
-    it.skip('Register user with weak password - Negative', () => {
+    it('Register user with weak password - Negative', () => {
         postRegister({
             username: name + 'test',
             password: "tt",

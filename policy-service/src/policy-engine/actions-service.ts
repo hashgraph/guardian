@@ -121,7 +121,8 @@ export class PolicyActionsService {
     public async sendAction(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
-        data: any
+        data: any,
+        waitRemotePolicy?: boolean
     ): Promise<any> {
         const userCred = await PolicyUtils.getUserCredentials(block, user.did, user.userId);
         const userHederaCred = await userCred.loadHederaCredentials(block, user.userId);
@@ -177,9 +178,13 @@ export class PolicyActionsService {
         await this.updateLastStatus(row);
         await this.sentNotification(row);
 
-        return new Promise<any>((resolve, reject) => {
-            this.actions.set(row.startMessageId, { resolve, reject });
-        });
+        if (waitRemotePolicy === false) {
+            return true;
+        } else {
+            return new Promise<any>((resolve, reject) => {
+                this.actions.set(row.startMessageId, { resolve, reject });
+            });
+        }
     }
 
     public async sendRemoteAction(

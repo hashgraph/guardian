@@ -525,11 +525,16 @@ export class PolicyEngineService {
                 data: any,
                 syncEvents?: boolean,
                 history?: boolean,
+                timeout?: number,
+                waitRemotePolicy?: boolean
             }): Promise<IMessageResponse<any>> => {
                 try {
                     const { user, blockId, policyId, data, syncEvents, history } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+
+                    const timeout = Math.min(Math.max(msg.timeout || 5 * 60 * 1000, 10), 60 * 60 * 1000);
+                    const waitRemotePolicy = !(msg.waitRemotePolicy === false);
                     const blockData = await new GuardiansService()
                         .sendBlockMessage(PolicyEvents.SET_BLOCK_DATA, policyId, {
                             user,
@@ -537,8 +542,9 @@ export class PolicyEngineService {
                             policyId,
                             data,
                             syncEvents,
-                            history
-                        }) as any;
+                            history,
+                            waitRemotePolicy
+                        }, timeout) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
@@ -554,11 +560,16 @@ export class PolicyEngineService {
                 data: any,
                 syncEvents?: boolean,
                 history?: boolean,
+                timeout?: number,
+                waitRemotePolicy?: boolean
             }): Promise<IMessageResponse<any>> => {
                 try {
                     const { user, tag, policyId, data, syncEvents, history } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+
+                    const timeout = Math.min(Math.max(msg.timeout || 5 * 60 * 1000, 10), 60 * 60 * 1000);
+                    const waitRemotePolicy = !(msg.waitRemotePolicy === false);
                     const blockData = await new GuardiansService()
                         .sendBlockMessage(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, {
                             user,
@@ -567,7 +578,8 @@ export class PolicyEngineService {
                             data,
                             syncEvents,
                             history,
-                        }) as any
+                            waitRemotePolicy
+                        }, timeout) as any
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
@@ -1190,17 +1202,17 @@ export class PolicyEngineService {
                     let result = await DatabaseServer.updatePolicyConfig(policyId, model);
                     result = await PolicyImportExportHelper.updatePolicyComponents(result, logger, owner.id);
 
-                    if(result && (result.originalZipId || result.originalMessageId)) {
+                    if (result && (result.originalZipId || result.originalMessageId)) {
                         const policyComponents = await PolicyImportExport.loadPolicyComponents(result);
                         const policyHash = PolicyImportExport.getPolicyHash(policyComponents);
 
-                        if(policyHash !== result.originalHash) {
+                        if (policyHash !== result.originalHash) {
                             result.originalChanged = true;
                         } else {
                             result.originalChanged = false;
                         }
 
-                        if(result.id) {
+                        if (result.id) {
                             await DatabaseServer.updatePolicy(result);
                         }
                     }
@@ -1579,15 +1591,14 @@ export class PolicyEngineService {
                         await this.policyEngine.startDemo(result.policy, owner, logger, NewNotifier.empty());
                     }
 
-                    if(originalTracking && result.policy)
-                    {
+                    if (originalTracking && result.policy) {
                         const originalFileId = await PolicyImportExport.saveOriginalZip(Buffer.from(zip.data), result.policy.name);
                         const policyHash = await PolicyImportExport.getPolicyHash(policyToImport);
                         result.policy.originalHash = policyHash;
                         result.policy.originalChanged = false;
                         result.policy.originalZipId = originalFileId;
 
-                        if(result.policy?.id) {
+                        if (result.policy?.id) {
                             await DatabaseServer.updatePolicy(result.policy);
                         }
                     }
@@ -1655,8 +1666,7 @@ export class PolicyEngineService {
                         errors: result.errors
                     });
 
-                    if(originalTracking && result.policy)
-                    {
+                    if (originalTracking && result.policy) {
                         const originalFileId = await PolicyImportExport.saveOriginalZip(Buffer.from(zip.data), result.policy.name);
                         const policyComponents = await PolicyImportExport.loadPolicyComponents(result.policy);
                         const policyHash = await PolicyImportExport.getPolicyHash(policyComponents);
@@ -1664,7 +1674,7 @@ export class PolicyEngineService {
                         result.policy.originalChanged = false;
                         result.policy.originalZipId = originalFileId;
 
-                        if(result.policy?.id) {
+                        if (result.policy?.id) {
                             await DatabaseServer.updatePolicy(result.policy);
                         }
                     }
@@ -1770,14 +1780,13 @@ export class PolicyEngineService {
                         );
                     }
 
-                    if(originalTracking && result.policy)
-                    {
+                    if (originalTracking && result.policy) {
                         const policyComponents = await PolicyImportExport.loadPolicyComponents(result.policy);
                         const policyHash = await PolicyImportExport.getPolicyHash(policyComponents);
                         result.policy.originalHash = policyHash;
                         result.policy.originalChanged = false;
                         result.policy.originalMessageId = messageId;
-                        if(result.policy?.id) {
+                        if (result.policy?.id) {
                             await DatabaseServer.updatePolicy(result.policy);
                         }
                     }
@@ -1854,14 +1863,13 @@ export class PolicyEngineService {
                             errors: result.errors
                         });
 
-                        if(originalTracking && result.policy)
-                        {
+                        if (originalTracking && result.policy) {
                             const policyComponents = await PolicyImportExport.loadPolicyComponents(result.policy);
                             const policyHash = await PolicyImportExport.getPolicyHash(policyComponents);
                             result.policy.originalHash = policyHash;
                             result.policy.originalChanged = false;
                             result.policy.originalMessageId = messageId;
-                            if(result.policy?.id) {
+                            if (result.policy?.id) {
                                 await DatabaseServer.updatePolicy(result.policy);
                             }
                         }

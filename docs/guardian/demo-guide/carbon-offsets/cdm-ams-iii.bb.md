@@ -105,11 +105,11 @@ Key parameters play a vital role in the implementation and monitoring of AMS-III
 
 The AMS-III.BB methodology plays a vital role in addressing the growing need for sustainable electrification in communities that lack access to reliable electricity. It provides a structured approach for projects aimed at extending the grid or constructing new mini grids to connect consumers who were previously off the grid. These initiatives aim to displace high-carbon-intensive electricity sources and fuel-based lighting systems, thus reducing greenhouse gas emissions and fostering economic development in underserved regions. To understand the significance of AMS-III.BB, it's essential to compare the merits and considerations of mini grids versus grid electricity.
 
-Mini-grids are localized power generation and distribution systems, often deployed in remote or rural areaswhere connecting to the national or regional grid is cost-prohibitive. They bring electricity to communities that were once reliant on high-carbon-intensive mini-grids or stand-alone power generators. While mini grids offer reliable electricity access and the potential to integrate renewable energy sources, they can be economically challenging to establish and may rely on fossil fuel generators. In contrast, grid electricity operates within large, interconnected networks, benefiting from economies of scale and efficient power transmission. Grids can access a diverse energy mix, including renewables, and are subject to stringent environmental regulations, generally resulting in lower emissions compared to mini grids. The choice between mini-grids and grid electricity depends on the specific needs, geographic location, and economic viability of the targeted community or region.
+Mini-grids are localized power generation and distribution systems, often deployed in remote or rural areas where connecting to the national or regional grid is cost-prohibitive. They bring electricity to communities that were once reliant on high-carbon-intensive mini-grids or stand-alone power generators. While mini grids offer reliable electricity access and the potential to integrate renewable energy sources, they can be economically challenging to establish and may rely on fossil fuel generators. In contrast, grid electricity operates within large, interconnected networks, benefiting from economies of scale and efficient power transmission. Grids can access a diverse energy mix, including renewables, and are subject to stringent environmental regulations, generally resulting in lower emissions compared to mini grids. The choice between mini-grids and grid electricity depends on the specific needs, geographic location, and economic viability of the targeted community or region.
 
 ### Demo Video <a href="#toc146642051" id="toc146642051"></a>
 
-[Youtube](https://www.youtube.com/watch?v=CN0IDPGGS44\&list=PLnld0e1pwLho3M7uAzcbyzyJobn-X9wG_\&index=10)
+[YouTube](https://www.youtube.com/watch?v=CN0IDPGGS44\&list=PLnld0e1pwLho3M7uAzcbyzyJobn-X9wG_\&index=10)
 
 ### Policy Workflow <a href="#toc146642052" id="toc146642052"></a>
 
@@ -212,7 +212,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 <figure><img src="../../../.gitbook/assets/image (365).png" alt=""><figcaption></figcaption></figure>
 
-17. Once minting is completed after clicking on Mint, we can view Trustchain by clikcing on "View Trustchain"
+17. Once minting is completed after clicking on Mint, we can view Trustchain by clicking on "View Trustchain"
 
 <figure><img src="../../../.gitbook/assets/image (398).png" alt=""><figcaption></figcaption></figure>
 

@@ -6587,6 +6587,22 @@ paths:
           schema:
             example: 00000000-0000-0000-0000-000000000000
             type: string
+        - name: timeout
+          required: false
+          in: query
+          description: Timeout
+          schema:
+            default: 60000
+            example: 60000
+            type: number
+        - name: waitRemotePolicy
+          required: false
+          in: query
+          description: Wait for a response from the remote policy
+          schema:
+            default: true
+            example: true
+            type: boolean
       requestBody:
         required: true
         description: Data
@@ -6648,6 +6664,22 @@ paths:
           schema:
             example: true
             type: boolean
+        - name: timeout
+          required: false
+          in: query
+          description: Timeout
+          schema:
+            default: 60000
+            example: 60000
+            type: number
+        - name: waitRemotePolicy
+          required: false
+          in: query
+          description: Wait for a response from the remote policy
+          schema:
+            default: true
+            example: true
+            type: boolean
       requestBody:
         required: true
         description: Data
@@ -6702,6 +6734,22 @@ paths:
           schema:
             example: block-tag
             type: string
+        - name: timeout
+          required: false
+          in: query
+          description: Timeout
+          schema:
+            default: 60000
+            example: 60000
+            type: number
+        - name: waitRemotePolicy
+          required: false
+          in: query
+          description: Wait for a response from the remote policy
+          schema:
+            default: true
+            example: true
+            type: boolean
       requestBody:
         required: true
         description: Data
@@ -6809,6 +6857,22 @@ paths:
           in: query
           description: History
           schema:
+            example: true
+            type: boolean
+        - name: timeout
+          required: false
+          in: query
+          description: Timeout
+          schema:
+            default: 60000
+            example: 60000
+            type: number
+        - name: waitRemotePolicy
+          required: false
+          in: query
+          description: Wait for a response from the remote policy
+          schema:
+            default: true
             example: true
             type: boolean
       requestBody:
@@ -15631,10 +15695,80 @@ paths:
       summary: Imports a zip file containing formula.
       tags:
         - formulas
+  /formulas/{formulaId}/draft:
+    put:
+      description: Return formula to editing for the specified formula ID.
+      operationId: FormulasApi_draftFormula
+      parameters:
+        - name: formulaId
+          required: true
+          in: path
+          description: Formula Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Return formula to editing.
+      tags:
+        - formulas
+  /formulas/{formulaId}/dry-run:
+    put:
+      description: >-
+        Run formula without making any persistent changes or executing
+        transaction.
+      operationId: FormulasApi_dryRunFormula
+      parameters:
+        - name: formulaId
+          required: true
+          in: path
+          description: Formula Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Dry Run formula.
+      tags:
+        - formulas
   /formulas/{formulaId}/publish:
     put:
       description: Publishes formula for the specified formula ID.
-      operationId: FormulasApi_publishPolicyLabel
+      operationId: FormulasApi_publishFormula
       parameters:
         - name: formulaId
           required: true
@@ -18168,7 +18302,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 3.5.0-rc
+  version: 3.5.0
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -20823,6 +20957,10 @@ components:
         document:
           type: object
           additionalProperties: true
+        tagSchemaId:
+          type: string
+          description: Tag schema database ID (for tags created with a tag schema)
+          example: '000000000000000000000001'
         inheritTags:
           type: boolean
           example: false
@@ -21994,6 +22132,7 @@ components:
           type: string
           enum:
             - DRAFT
+            - DRY_RUN
             - PUBLISHED
             - ERROR
             - ACTIVE
@@ -22108,6 +22247,7 @@ components:
           type: string
           enum:
             - DRAFT
+            - DRY_RUN
             - PUBLISHED
             - ERROR
             - ACTIVE
@@ -22193,6 +22333,7 @@ components:
           type: string
           enum:
             - DRAFT
+            - DRY_RUN
             - PUBLISHED
             - ERROR
             - ACTIVE
@@ -22474,6 +22615,7 @@ components:
           type: string
           enum:
             - DRAFT
+            - DRY_RUN
             - PUBLISHED
             - ERROR
             - ACTIVE

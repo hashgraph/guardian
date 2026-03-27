@@ -178,7 +178,7 @@ export class Worker extends NatsService {
             }
         });
 
-        const runTask = async (task) => {
+        const runTask = async (task, completeEvent: WorkerEvents = WorkerEvents.TASK_COMPLETE) => {
             this.isInUse = true;
             this.currentTaskId = task.id;
             const userId = task.data?.payload?.userId;
@@ -200,10 +200,22 @@ export class Worker extends NatsService {
 
             }
 
-            const completeTask = async (data: any) => {
-                await this.publish(WorkerEvents.TASK_COMPLETE, data);
+            if (completeEvent === WorkerEvents.TASK_COMPLETE) {
+                const completeTask = async (data: any) => {
+                    await this.publish(completeEvent, data);
+                }
+                await completeTask(result);
+            } else {
+                const payload = {
+                    id: task.id,
+                    data: result?.data,
+                    error: result?.error,
+                    isTimeoutError: result?.isTimeoutError
+                };
+
+                await this.publish(completeEvent, payload);
             }
-            await completeTask(result);
+
             await this.publish(WorkerEvents.WORKER_READY);
             this.isInUse = false;
         }
@@ -211,6 +223,19 @@ export class Worker extends NatsService {
         this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
             if (!this.isInUse) {
                 runTask(task);
+
+                return new MessageResponse({
+                    result: true
+                })
+            }
+            return new MessageResponse({
+                result: false
+            })
+        })
+
+        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER_DIRECT].join('.'), async (task) => {
+            if (!this.isInUse) {
+                runTask(task, WorkerEvents.TASK_COMPLETE_DIRECT);
 
                 return new MessageResponse({
                     result: true
@@ -1184,6 +1209,14 @@ export class Worker extends NatsService {
                         .setNetwork(networkOptions)
                         .getTransactions(accountId, transactiontype, timestamp, order, filter, limit);
                     result.data = transactions || [];
+                    break;
+                }
+
+                case WorkerTaskType.RESOLVE_ACCOUNT_ALIAS: {
+                    const { accountId } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .resolveAccountAlias(accountId);
                     break;
                 }
 

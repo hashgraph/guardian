@@ -194,3 +194,11 @@ export interface SchemaField {
      */
     arrayLvl?: number;
 }
+
+export interface IFieldNode {
+    path: string;
+    arrayLvl: number;
+    type: string;
+    field: SchemaField;
+    fields: IFieldNode[];
+}

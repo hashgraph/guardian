@@ -356,7 +356,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 user: PolicyUser,
                 data: U,
                 actionStatus: RecordActionStep
-            ): Promise<void> {
+            ): Promise<void | any[]> {
+                const results = [];
+
                 if (output === PolicyOutputEventType.RunEvent && actionStatus) {
                     actionStatus.saveResult(data);
                 }
@@ -370,12 +372,16 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                         if (actionStatus?.syncActions) {
                             const syncRes = await link.run(user, data, actionStatus);
 
-                            return syncRes;
+                            if (output === PolicyOutputEventType.RunEvent) {
+                                results.push(syncRes);
+                            }
                         } else {
                             link.run(user, data, actionStatus);
                         }
                     }
                 }
+
+                return results;
             }
 
             /**

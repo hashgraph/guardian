@@ -25,7 +25,7 @@ Subscribes to global topics and routes incoming events into policy branches.
 | Document type                           | expected type for this branch (VC / JSON / CSV / TEXT / ANY)            | VC                       |
 | Schema (optional)                       | local policy schema used for VC validation before routing.              | Registrant & Participant |
 
-<figure><img src="../../../../../.gitbook/assets/unknown (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/unknown (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * Events tab - setting output events to the branches.
 

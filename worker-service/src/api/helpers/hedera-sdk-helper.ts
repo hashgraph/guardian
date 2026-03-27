@@ -2184,4 +2184,23 @@ export class HederaSDKHelper {
         }
         return result;
     }
+
+    /**
+     * Resolve alias (0.0.<hex>) to numeric account id via Mirror Node.
+     * Works for ECDSA alias where accountId is hex.
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Resolve alias request timeout exceeded')
+    public static async resolveAccountAlias(accountId: string): Promise<{ accountId: string }> {
+        const res = await axios.get(
+            `${Environment.HEDERA_ACCOUNT_API}${accountId}`,
+            { responseType: 'json' }
+        );
+
+        if (res?.data?.account) {
+            return { accountId: res.data.account };
+        }
+
+        return { accountId };
+    }
+
 }
