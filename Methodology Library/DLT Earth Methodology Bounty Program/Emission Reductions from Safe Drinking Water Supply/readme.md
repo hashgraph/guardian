@@ -74,4 +74,11 @@ This is a brief description of the methodology and policy. You can find the deta
 
 ### Workflow diagram
 
-![Diagram](YOUR_DIAGRAM_IMAGE_DIRECT_URL)
+```mermaid
+flowchart LR
+    A["Project\nRegistration"] --> B["Registry\nApproval"]
+    B --> C["Annual\nMonitoring"]
+    C --> D["VVB\nReview"]
+    D --> E["ER_y\nCalculation"]
+    E --> F["VCU\nMinting"]
+```
