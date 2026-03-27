@@ -2125,6 +2125,23 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_VIRTUAL_USER,
+            async (msg: { policyId: string, did: string, owner: IOwner }) => {
+                try {
+                    const { policyId, did, owner } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+                    const instanceDB = new DatabaseServer(policyId);
+                    const user = await instanceDB.getVirtualUser(did);
+                    return new MessageResponse(user);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER,
             async (msg: { policyId: string, owner: IOwner, savepointIds?: string[] }) => {
                 try {
@@ -2145,8 +2162,8 @@ export class PolicyEngineService {
                     const did = didObject.getDid();
                     const document = didObject.getDocument();
 
-                    const count = await DatabaseServer.getVirtualUsers(policyId, savepointIds);
-                    const username = `Virtual User ${count.length}`;
+                    const count = await DatabaseServer.countVirtualUsers(policyId, savepointIds);
+                    const username = `Virtual User ${count}`;
 
                     await DatabaseServer.createVirtualUser(
                         policyId,
@@ -2179,6 +2196,72 @@ export class PolicyEngineService {
 
                     const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds);
                     return new MessageResponse(users);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Create Virtual User V2 — returns created user object instead of full list
+         */
+        this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER_V2,
+            async (msg: { policyId: string, owner: IOwner, savepointIds?: string[] }) => {
+                try {
+                    const { policyId, owner, savepointIds } = msg;
+
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    const topic = await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic);
+                    const newPrivateKey = PrivateKey.generate();
+                    const newAccountId = new AccountId(Date.now());
+
+                    const vcHelper = new VcHelper();
+                    const didObject = await vcHelper.generateNewDid(topic.topicId, newPrivateKey);
+                    const did = didObject.getDid();
+                    const document = didObject.getDocument();
+
+                    const count = await DatabaseServer.countVirtualUsers(policyId, savepointIds);
+                    const username = `Virtual User ${count}`;
+
+                    await DatabaseServer.createVirtualUser(
+                        policyId,
+                        username,
+                        did,
+                        newAccountId.toString(),
+                        newPrivateKey.toString(),
+                        false
+                    );
+
+                    const instanceDB = new DatabaseServer(policyId);
+                    const keys = didObject.getPrivateKeys();
+                    const verificationMethods = {};
+                    for (const item of keys) {
+                        const { id, type, key } = item;
+                        verificationMethods[type] = id;
+                        await instanceDB.setVirtualKey(did, id, key);
+                    }
+                    await instanceDB.setVirtualKey(did, did, newPrivateKey.toString());
+                    await instanceDB.saveDid({ did, document, verificationMethods });
+
+                    await (new GuardiansService())
+                        .sendPolicyMessage(PolicyEvents.CREATE_VIRTUAL_USER, policyId, {
+                            did,
+                            data: {
+                                accountId: newAccountId.toString(),
+                                document
+                            }
+                        });
+
+                    return new MessageResponse({
+                        username,
+                        did,
+                        hederaAccountId: newAccountId.toString(),
+                        active: false
+                    });
                 } catch (error) {
                     return new MessageError(error);
                 }

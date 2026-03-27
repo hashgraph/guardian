@@ -670,7 +670,21 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
-     * Create new Virtual User
+     * Get Virtual User by DID
+     * @param policyId
+     * @param did
+     * @param owner
+     */
+    public async getVirtualUser(
+        policyId: string,
+        did: string,
+        owner: IOwner
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_USER, { policyId, did, owner });
+    }
+
+    /**
+     * Create new Virtual User (v1) — returns all virtual users
      * @param policyId
      * @param owner
      * @param savepointIds
@@ -681,6 +695,20 @@ export class PolicyEngine extends NatsService {
         savepointIds: string[]
     ) {
         return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, owner, savepointIds });
+    }
+
+    /**
+     * Create new Virtual User (v2) — returns created user object
+     * @param policyId
+     * @param owner
+     * @param savepointIds
+     */
+    public async createVirtualUserV2(
+        policyId: string,
+        owner: IOwner,
+        savepointIds: string[]
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER_V2, { policyId, owner, savepointIds });
     }
 
     /**

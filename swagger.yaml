@@ -8047,12 +8047,12 @@ paths:
       summary: Returns virtual users.
       tags:
         - policies
-  /policies/{policyId}/dry-run/user:
-    post:
+  /policies/{policyId}/dry-run/user/{did}:
+    get:
       description: >-
-        Creates virtual users. Only users with the Standard Registry role are
-        allowed to make the request.
-      operationId: PolicyApi_setDryRunUser
+        Returns a virtual user by DID. Only users with the Standard Registry
+        role are allowed to make the request.
+      operationId: PolicyApi_getDryRunUser
       parameters:
         - name: policyId
           required: true
@@ -8061,9 +8061,15 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
+        - name: did
+          required: true
+          in: path
+          description: Virtual User DID
+          schema:
+            type: string
       responses:
         '200':
-          description: Virtual users.
+          description: Virtual user.
         '401':
           description: Unauthorized.
         '403':
@@ -8076,7 +8082,39 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Creates virtual users.
+      summary: Returns a virtual user by DID.
+      tags:
+        - policies
+  /policies/{policyId}/dry-run/user:
+    post:
+      description: >-
+        Creates a virtual user and returns the created user object. Only users
+        with the Standard Registry role are allowed to make the request.
+      operationId: PolicyApi_setDryRunUserV2
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Created virtual user.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Creates a virtual user (v2).
       tags:
         - policies
   /policies/{policyId}/dry-run/login:

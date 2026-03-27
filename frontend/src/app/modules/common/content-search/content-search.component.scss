@@ -1,0 +1,102 @@
+.content-search {
+    margin-bottom: 16px;
+}
+
+.content-search-input-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #E1E7EF;
+    border-radius: 8px;
+    padding: 0 12px;
+    height: 40px;
+    background: #fff;
+    transition: border-color 0.2s;
+
+    &:focus-within {
+        border-color: var(--color-primary, #4169E2);
+    }
+}
+
+.content-search-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.content-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    line-height: 16px;
+    color: #181818;
+    background: transparent;
+
+    &::placeholder {
+        color: #9CA3AF;
+    }
+}
+
+.content-search-counter {
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    color: #6B7280;
+    white-space: nowrap;
+    margin-right: 8px;
+
+    &.no-results {
+        color: #FF432A;
+    }
+}
+
+.content-search-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.content-search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 0;
+
+    &:hover:not(:disabled) {
+        background: #F3F4F6;
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+
+    svg-icon {
+        width: 14px;
+        height: 14px;
+        display: flex;
+        align-items: center;
+    }
+}
+
+// Global highlight styles (applied to the search container)
+::ng-deep .content-search-highlight {
+    background-color: #FBBF24;
+    color: inherit;
+    padding: 1px 0;
+    border-radius: 2px;
+}
+
+::ng-deep .content-search-highlight-active {
+    background-color: #F97316;
+    color: #fff;
+}
