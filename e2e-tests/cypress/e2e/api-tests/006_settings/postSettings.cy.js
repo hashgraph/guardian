@@ -49,7 +49,6 @@ context('Settings', { tags: ['settings', 'thirdPool', 'all'] }, () => {
                 }
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS)
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS)
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + 'settings',
