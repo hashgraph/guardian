@@ -23,7 +23,7 @@
             <label class="p-field-label" for="login">Code</label>
             <input class="p-field-input code-input" [ngClass]="{'input-error':tokenError}" minlength="6" maxlength="6"
                 formControlName="token" id="toekn" pInputText placeholder="Code" type="text" />
-            <div class="error" *ngIf="tokenError">Wrong or expired code! Please, enter code again to confirm setup
+            <div class="error" *ngIf="tokenError">Wrong or expired code! Please enter the code again to confirm setup.
             </div>
         </div>
 

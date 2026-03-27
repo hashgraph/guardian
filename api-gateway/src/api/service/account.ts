@@ -406,8 +406,8 @@ export class AccountApi {
     @Post('otp/generate')
     @Auth()
     @ApiOperation({
-        summary: 'Generate a OTP secret for 2FA setup.',
-        description: 'Generate a OTP secret for 2FA setup.',
+        summary: 'Generate an OTP secret for 2FA setup.',
+        description: 'Generate an OTP secret for 2FA setup.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -478,7 +478,7 @@ export class AccountApi {
     @Auth()
     @ApiOperation({
         summary: 'Get OTP status.',
-        description: 'Get OTP status for current user.',
+        description: 'Get OTP status for the current user.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
