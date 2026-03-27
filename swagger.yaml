@@ -253,7 +253,7 @@ paths:
         - accounts
   /accounts/otp/generate:
     post:
-      description: Generate a OTP secret for 2FA setup.
+      description: Generate an OTP secret for 2FA setup.
       operationId: AccountApi_generateOtp
       parameters: []
       responses:
@@ -275,7 +275,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Generate a OTP secret for 2FA setup.
+      summary: Generate an OTP secret for 2FA setup.
       tags:
         - accounts
   /accounts/otp/confirm:
@@ -314,7 +314,7 @@ paths:
         - accounts
   /accounts/otp/status:
     get:
-      description: Get OTP status for current user.
+      description: Get OTP status for the current user.
       operationId: AccountApi_getOtpStatus
       parameters: []
       responses:
