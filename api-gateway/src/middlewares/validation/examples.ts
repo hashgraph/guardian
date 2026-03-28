@@ -6321,5 +6321,24 @@ export const ObjectExamples = {
     /** GET /policies/{policyId}/tag/{tagName} — resolves a block tag to the block UUID. */
     POLICY_GET_BLOCK_BY_TAG_RESPONSE: {
         id: Examples.UUID
+    },
+
+    /** GET /policies/{policyId}/blocks/{uuid}/parents — parent UUID chain from the current block to the root block. */
+    POLICY_GET_BLOCK_PARENTS_RESPONSE: [
+        '9ea132db-8394-4f3d-b622-5468458ccb94',
+        '4e31d57a-4c68-49a3-bd32-3971df87bc4e',
+        'ca3f48e7-46e0-4a9a-b808-0a8635950fc3',
+        'eba62c72-d50d-4deb-92e1-efb320b999d8',
+        '4b80c383-2354-47f6-b07d-c5e3b07b8533'
+    ],
+
+    /** GET /policies/{policyId}/export/message — exportable policy message metadata. */
+    POLICY_EXPORT_MESSAGE_RESPONSE: {
+        id: '69c38f81462c9c1141de2df2',
+        name: 'CDM AMS-III.AR Policy',
+        description: 'Substituting fossil fuel-based lighting with LED/CFL lighting systems',
+        version: '1',
+        messageId: '1774427068.001165000',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161'
     }
 }

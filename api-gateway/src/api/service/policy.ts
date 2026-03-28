@@ -1174,7 +1174,8 @@ export class PolicyApi {
     )
     @ApiOperation({
         summary: 'Retrieves policy configuration.',
-        description: 'Retrieves policy configuration for the specified policy ID.' + ONLY_SR,
+        description:
+            'Retrieves policy configuration for the specified policy ID for users who have API permission to read, execute, manage, or audit policies and access to that policy.',
     })
     @ApiParam({
         name: 'policyId',
@@ -1797,7 +1798,9 @@ export class PolicyApi {
     )
     @ApiOperation({
         summary: 'Dry Run policy.',
-        description: 'Run policy without making any persistent changes or executing transaction.' + ONLY_SR,
+        description:
+            'Switches the specified policy into dry-run mode and returns the resulting validation payload. Dry-run mode is intended for testing and simulation without executing real transactions.' +
+            ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -2220,7 +2223,7 @@ export class PolicyApi {
     )
     @ApiOperation({
         summary: 'Validates policy.',
-        description: 'Validates selected policy.' + ONLY_SR,
+        description: 'Validates the policy configuration provided in the request body.' + ONLY_SR,
     })
     @ApiBody({
         description: 'Policy configuration.',
@@ -2780,8 +2783,8 @@ export class PolicyApi {
         Permissions.POLICIES_POLICY_EXECUTE,
     )
     @ApiOperation({
-        summary: 'Returns a zip file containing policy project data.',
-        description: 'Export policy project data in CSV format.',
+        summary: 'Export policy documents as a ZIP archive.',
+        description: 'Exports policy documents and related filtered data as a ZIP archive.',
     })
     @ApiParam({
         name: 'policyId',
@@ -3387,7 +3390,8 @@ export class PolicyApi {
     )
     @ApiOperation({
         summary: 'Retrieves data for the policy root block.',
-        description: 'Returns data from the root policy block. Only users with the Standard Registry and Installer role are allowed to make the request.',
+        description:
+            'Returns data from the root policy block. Users with permission to execute or manage the policy can make this request. If the root block is not available to the caller at the current policy stage or time, the request may fail.',
     })
     @ApiParam({
         name: 'policyId',
@@ -3525,8 +3529,9 @@ export class PolicyApi {
         // UserRole.USER,
     )
     @ApiOperation({
-        summary: 'Sends data to the specified block.',
-        description: 'Sends data to the specified block.',
+        summary: 'Send data to block by UUID.',
+        description:
+            'Sends block-specific input to the block identified by `uuid` and returns the block action result.',
     })
     @ApiParam({
         name: 'policyId',
@@ -3617,8 +3622,9 @@ export class PolicyApi {
         // UserRole.USER,
     )
     @ApiOperation({
-        summary: 'Sends data to the specified block.',
-        description: 'Sends data to the specified block.',
+        summary: 'Send data to block by UUID with sync events.',
+        description:
+            'Sends block-specific input to the block identified by `uuid` and returns the action result together with sync event metadata. Set `history=true` to include the full steps history.',
     })
     @ApiParam({
         name: 'policyId',
@@ -3913,7 +3919,7 @@ export class PolicyApi {
     @ApiOperation({
         summary: 'Get block UUID by tag name.',
         description:
-            'Resolves the block identified by `tagName` within the policy and returns its block UUID as `{ id }`. Only users with a role that described in block are allowed to make the request.',
+            'Resolves the block identified by `tagName` within the policy and returns its block UUID as `{ id }`. Users with permission to execute or manage the policy can make this request. The block tag is case-sensitive.',
     })
     @ApiParam({
         name: 'policyId',
@@ -3926,7 +3932,7 @@ export class PolicyApi {
         name: 'tagName',
         type: 'string',
         required: true,
-        description: 'Block name (Tag)',
+        description: 'Block name (Tag). Case-sensitive.',
         example: 'block-tag',
     })
     @ApiOkResponse({
@@ -3979,7 +3985,7 @@ export class PolicyApi {
     @ApiOperation({
         summary: 'Get block data by tag name.',
         description:
-            'Requests block data by tag. Only users with a role that described in block are allowed to make the request. ' +
+            'Requests block data by tag. Users with permission to execute or manage the policy can make this request. The block tag is case-sensitive. ' +
             'Works the same way as `GET /policies/{policyId}/blocks/{uuid}`. The only difference is that this route identifies the target block by **`tagName`** instead of **`uuid`**.',
     })
     @ApiParam({
@@ -4048,8 +4054,9 @@ export class PolicyApi {
         // UserRole.USER,
     )
     @ApiOperation({
-        summary: 'Requests block\'s parents.',
-        description: 'Requests block\'s parents. Only users with a role that described in block are allowed to make the request.',
+        summary: 'Get block parent chain by UUID.',
+        description:
+            'Returns the UUID chain for the specified block, starting with the requested block and continuing through its parents up to the root block. Users with permission to execute or manage the policy can make this request.',
     })
     @ApiParam({
         name: 'policyId',
@@ -4067,9 +4074,15 @@ export class PolicyApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: BlockDTO,
         isArray: true,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', blockType: 'string', blocks: [{}] }]
+        schema: {
+            type: 'array',
+            items: {
+                type: 'string',
+                format: 'uuid'
+            }
+        },
+        example: ObjectExamples.POLICY_GET_BLOCK_PARENTS_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -4156,13 +4169,13 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiProduces('application/zip')
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'ZIP archive containing the exported policy file.',
         schema: {
             type: 'string',
             format: 'binary'
-        },
-        example: { result: 'ok' }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -4198,8 +4211,10 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
-        summary: 'Return Heder message ID for the specified published policy.',
-        description: 'Returns the Hedera message ID for the specified policy published onto IPFS.' + ONLY_SR,
+        summary: 'Return Hedera message ID for the specified published policy.',
+        description:
+            'Returns the Hedera message ID for the specified published policy together with related policy metadata: internal `id`, `name`, `description`, `version`, and `owner` DID.' +
+            ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -4209,16 +4224,27 @@ export class PolicyApi {
         example: Examples.DB_ID
     })
     @ApiOkResponse({
-        description: 'Message.',
-        type: ExportMessageDTO,
-        example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'string', description: 'string', messageId: 'f3b2a9c1e4d5678901234567', owner: 'string' }
+        description: 'Hedera message ID and related policy metadata.',
+        schema: {
+            type: 'object',
+            properties: {
+                id: { type: 'string', example: '69c38f81462c9c1141de2df2' },
+                name: { type: 'string', example: 'CDM AMS-III.AR Policy' },
+                description: { type: 'string', example: 'Substituting fossil fuel-based lighting with LED/CFL lighting systems' },
+                version: { type: 'string', example: '1' },
+                messageId: { type: 'string', example: '1774427068.001165000' },
+                owner: { type: 'string', example: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161' }
+            },
+            required: ['id', 'name', 'description', 'version', 'messageId', 'owner']
+        },
+        example: ObjectExamples.POLICY_EXPORT_MESSAGE_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
         example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ExportMessageDTO, InternalServerErrorDTO)
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getPolicyExportMessage(
         @AuthUser() user: IAuthUser,
@@ -6448,7 +6474,7 @@ export class PolicyApi {
     )
     @ApiOperation({
         summary: 'Requests policy links.',
-        description: 'Requests policy links. Only users with a role that described in block are allowed to make the request.',
+        description: 'Requests policy links. Users with permission to execute or manage the policy can make this request.',
     })
     @ApiParam({
         name: 'policyId',
@@ -6494,7 +6520,7 @@ export class PolicyApi {
     )
     @ApiOperation({
         summary: 'Creates policy link.',
-        description: 'Creates policy link. Only users with a role that described in block are allowed to make the request.',
+        description: 'Creates policy link. Users with permission to execute or manage the policy can make this request.',
     })
     @ApiParam({
         name: 'policyId',
