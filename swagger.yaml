@@ -456,19 +456,31 @@ paths:
                   password: test
       responses:
         '200':
-          description: ''
+          description: Successful operation.
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/LoginSuccessResponseDTO'
+              - $ref: '#/components/schemas/LoginOTPRequiredResponseDTO'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccountsLoginResponseDTO'
-              example:
-                username: StandardRegistry
-                did: >-
-                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
-                role: STANDARD_REGISTRY
-                refreshToken: >-
-                  eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYwNmY2MzIyLTk2NGYtNGIwMC05ZjgwLTljM2Y1OTdjYTYyYSIsIm5hbWUiOiJTdGFuZGFyZFJlZ2lzdHJ5IiwiZXhwaXJlQXQiOjE4MDQ3MDAzOTczMzgsImlhdCI6MTc3MzE2NDM5N30.ODc0_ktbl5xPRn4Ub1Kuj-xrjlho2_oyohucLdgMUqFGrI2SD_T3A96OaV2cKx7NQwsxc-QFBpBnrGSriJ9qPUcDm9rYmQYSqwpRJT0uSuL7xwu4TiPlVzghCd5xlLTw_uA6uJR7CG7HrDphPQI6zMGSxKXcn2S9xIZ6z5uBuWU
-                weakPassword: false
+              examples:
+                success:
+                  summary: Successful response
+                  value:
+                    did: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                    refreshToken: >-
+                      eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYwNmY2MzIyLTk2NGYtNGIwMC05ZjgwLTljM2Y1OTdjYTYyYSIsIm5hbWUiOiJTdGFuZGFyZFJlZ2lzdHJ5IiwiZXhwaXJlQXQiOjE4MDQ3MDAzOTczMzgsImlhdCI6MTc3MzE2NDM5N30.ODc0_ktbl5xPRn4Ub1Kuj-xrjlho2_oyohucLdgMUqFGrI2SD_T3A96OaV2cKx7NQwsxc-QFBpBnrGSriJ9qPUcDm9rYmQYSqwpRJT0uSuL7xwu4TiPlVzghCd5xlLTw_uA6uJR7CG7HrDphPQI6zMGSxKXcn2S9xIZ6z5uBuWU
+                    role: STANDARD_REGISTRY
+                    username: StandardRegistry
+                    weakPassword: false
+                otpRequired:
+                  summary: OTP required
+                  value:
+                    success: false
+                    otprequired: true
         '401':
           description: Unauthorized request.
           content:
@@ -1030,9 +1042,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/GenerateOPTResponseDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -1064,9 +1091,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/OTPConfirmResponseDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -1091,9 +1133,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/OTPStatusResponseDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -1118,9 +1175,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/EmptyResponseDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -20950,18 +21022,15 @@ paths:
           schema:
             example: 69aeb71ef8c5b278e3bab4e5
             type: string
+        - name: did
+          required: true
+          in: path
+          description: Virtual User DID
+          schema:
+            type: string
       responses:
-        '201':
-          description: Virtual users.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  additionalProperties: true
-              example:
-                result: ok
+        '200':
+          description: Virtual user.
         '401':
           description: Unauthorized request.
           content:
@@ -20987,9 +21056,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-              example:
-                statusCode: 500
-                message: Error message
       security:
         - bearer: []
       summary: Returns a virtual user by DID.
@@ -21007,15 +21073,30 @@ paths:
           in: path
           description: Policy Id
           schema:
-            example: '000000000000000000000001'
+            example: 69aeb71ef8c5b278e3bab4e5
             type: string
       responses:
         '200':
           description: Created virtual user.
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -41559,9 +41640,12 @@ components:
         password:
           type: string
           example: test
+        otp:
+          type: string
       required:
         - username
         - password
+        - otp
     AccountsLoginResponseDTO:
       type: object
       properties:
@@ -49066,6 +49150,44 @@ components:
           type: array
           items:
             type: string
+    LoginOTPRequiredResponseDTO:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        otprequired:
+          type: boolean
+          example: true
+      required:
+        - success
+        - otprequired
+    LoginSuccessResponseDTO:
+      type: object
+      properties:
+        did:
+          type: string
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        refreshToken:
+          type: string
+          example: >-
+            eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYwNmY2MzIyLTk2NGYtNGIwMC05ZjgwLTljM2Y1OTdjYTYyYSIsIm5hbWUiOiJTdGFuZGFyZFJlZ2lzdHJ5IiwiZXhwaXJlQXQiOjE4MDQ3MDAzOTczMzgsImlhdCI6MTc3MzE2NDM5N30.ODc0_ktbl5xPRn4Ub1Kuj-xrjlho2_oyohucLdgMUqFGrI2SD_T3A96OaV2cKx7NQwsxc-QFBpBnrGSriJ9qPUcDm9rYmQYSqwpRJT0uSuL7xwu4TiPlVzghCd5xlLTw_uA6uJR7CG7HrDphPQI6zMGSxKXcn2S9xIZ6z5uBuWU
+        role:
+          type: string
+          example: STANDARD_REGISTRY
+        username:
+          type: string
+          example: StandardRegistry
+        weakPassword:
+          type: string
+          example: false
+      required:
+        - did
+        - refreshToken
+        - role
+        - username
+        - weakPassword
     RetireRequestTokenDTO:
       type: object
       properties:
