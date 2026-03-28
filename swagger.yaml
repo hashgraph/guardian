@@ -15553,8 +15553,9 @@ paths:
   /policies/{policyId}:
     get:
       description: >-
-        Retrieves policy configuration for the specified policy ID. Only users
-        with the Standard Registry role are allowed to make the request.
+        Retrieves policy configuration for the specified policy ID for users who
+        have API permission to read, execute, manage, or audit policies and
+        access to that policy.
       operationId: PolicyApi_getPolicy
       parameters:
         - name: policyId
@@ -16244,9 +16245,10 @@ paths:
   /policies/{policyId}/dry-run:
     put:
       description: >-
-        Run policy without making any persistent changes or executing
-        transaction. Only users with the Standard Registry role are allowed to
-        make the request.
+        Switches the specified policy into dry-run mode and returns the
+        resulting validation payload. Dry-run mode is intended for testing and
+        simulation without executing real transactions. Only users with the
+        Standard Registry role are allowed to make the request.
       operationId: PolicyApi_dryRunPolicy
       parameters:
         - name: policyId
@@ -16715,8 +16717,8 @@ paths:
   /policies/validate:
     post:
       description: >-
-        Validates selected policy. Only users with the Standard Registry role
-        are allowed to make the request.
+        Validates the policy configuration provided in the request body. Only
+        users with the Standard Registry role are allowed to make the request.
       operationId: PolicyApi_validatePolicy
       parameters: []
       requestBody:
@@ -17426,7 +17428,7 @@ paths:
         - policies
   /policies/{policyId}/export-documents:
     get:
-      description: Export policy project data in CSV format.
+      description: Exports policy documents and related filtered data as a ZIP archive.
       operationId: PolicyApi_exportPolicyDocuments
       parameters:
         - name: policyId
@@ -17520,7 +17522,7 @@ paths:
                 message: Error message
       security:
         - bearer: []
-      summary: Returns a zip file containing policy project data.
+      summary: Export policy documents as a ZIP archive.
       tags:
         - policies
   /policies/{policyId}/document-owners:
@@ -18219,8 +18221,10 @@ paths:
   /policies/{policyId}/blocks:
     get:
       description: >-
-        Returns data from the root policy block. Only users with the Standard
-        Registry and Installer role are allowed to make the request.
+        Returns data from the root policy block. Users with permission to
+        execute or manage the policy can make this request. If the root block is
+        not available to the caller at the current policy stage or time, the
+        request may fail.
       operationId: PolicyApi_getPolicyBlocks
       parameters:
         - name: policyId
@@ -18450,7 +18454,9 @@ paths:
       tags:
         - policies
     post:
-      description: Sends data to the specified block.
+      description: >-
+        Sends block-specific input to the block identified by `uuid` and returns
+        the block action result.
       operationId: PolicyApi_setBlockData
       parameters:
         - name: policyId
@@ -18555,12 +18561,15 @@ paths:
                 message: Error message
       security:
         - bearer: []
-      summary: Sends data to the specified block.
+      summary: Send data to block by UUID.
       tags:
         - policies
   /policies/{policyId}/blocks/{uuid}/sync-events:
     post:
-      description: Sends data to the specified block.
+      description: >-
+        Sends block-specific input to the block identified by `uuid` and returns
+        the action result together with sync event metadata. Set `history=true`
+        to include the full steps history.
       operationId: PolicyApi_setBlockDataWithSyncEvents
       parameters:
         - name: policyId
@@ -18664,7 +18673,7 @@ paths:
                 message: Error message
       security:
         - bearer: []
-      summary: Sends data to the specified block.
+      summary: Send data to block by UUID with sync events.
       tags:
         - policies
   /policies/{policyId}/tag/{tagName}/blocks:
@@ -18782,11 +18791,11 @@ paths:
         - policies
     get:
       description: >-
-        Requests block data by tag. Only users with a role that described in
-        block are allowed to make the request. Works the same way as `GET
-        /policies/{policyId}/blocks/{uuid}`. The only difference is that this
-        route identifies the target block by **`tagName`** instead of
-        **`uuid`**.
+        Requests block data by tag. Users with permission to execute or manage
+        the policy can make this request. The block tag is case-sensitive. Works
+        the same way as `GET /policies/{policyId}/blocks/{uuid}`. The only
+        difference is that this route identifies the target block by
+        **`tagName`** instead of **`uuid`**.
       operationId: PolicyApi_getBlocksByTagName
       parameters:
         - name: policyId
@@ -18984,8 +18993,8 @@ paths:
     get:
       description: >-
         Resolves the block identified by `tagName` within the policy and returns
-        its block UUID as `{ id }`. Only users with a role that described in
-        block are allowed to make the request.
+        its block UUID as `{ id }`. Users with permission to execute or manage
+        the policy can make this request. The block tag is case-sensitive.
       operationId: PolicyApi_getBlockByTagName
       parameters:
         - name: policyId
@@ -18998,7 +19007,7 @@ paths:
         - name: tagName
           required: true
           in: path
-          description: Block name (Tag)
+          description: Block name (Tag). Case-sensitive.
           schema:
             example: block-tag
             type: string
@@ -19063,8 +19072,10 @@ paths:
   /policies/{policyId}/blocks/{uuid}/parents:
     get:
       description: >-
-        Requests block's parents. Only users with a role that described in block
-        are allowed to make the request.
+        Returns the UUID chain for the specified block, starting with the
+        requested block and continuing through its parents up to the root block.
+        Users with permission to execute or manage the policy can make this
+        request.
       operationId: PolicyApi_getBlockParents
       parameters:
         - name: policyId
@@ -19089,12 +19100,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/BlockDTO'
+                  type: string
+                  format: uuid
               example:
-                - id: f3b2a9c1e4d5678901234567
-                  blockType: string
-                  blocks:
-                    - {}
+                - 9ea132db-8394-4f3d-b622-5468458ccb94
+                - 4e31d57a-4c68-49a3-bd32-3971df87bc4e
+                - ca3f48e7-46e0-4a9a-b808-0a8635950fc3
+                - eba62c72-d50d-4deb-92e1-efb320b999d8
+                - 4b80c383-2354-47f6-b07d-c5e3b07b8533
         '401':
           description: Unauthorized request.
           content:
@@ -19125,7 +19138,7 @@ paths:
                 message: Error message
       security:
         - bearer: []
-      summary: Requests block's parents.
+      summary: Get block parent chain by UUID.
       tags:
         - policies
   /policies/blocks/about:
@@ -19195,18 +19208,16 @@ paths:
             type: string
       responses:
         '200':
-          description: Successful operation.
+          description: ZIP archive containing the exported policy file.
           content:
-            application/json:
+            application/zip:
               schema:
                 type: string
                 format: binary
-              example:
-                result: ok
         '401':
           description: Unauthorized request.
           content:
-            application/json:
+            application/zip:
               schema:
                 $ref: '#/components/schemas/UnauthorizedErrorDTO'
               example:
@@ -19215,7 +19226,7 @@ paths:
         '403':
           description: Forbidden
           content:
-            application/json:
+            application/zip:
               schema:
                 $ref: '#/components/schemas/ForbiddenErrorDTO'
               example:
@@ -19225,7 +19236,7 @@ paths:
         '500':
           description: Internal server error.
           content:
-            application/json:
+            application/zip:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
               example:
@@ -19241,9 +19252,10 @@ paths:
   /policies/{policyId}/export/message:
     get:
       description: >-
-        Returns the Hedera message ID for the specified policy published onto
-        IPFS. Only users with the Standard Registry role are allowed to make the
-        request.
+        Returns the Hedera message ID for the specified published policy
+        together with related policy metadata: internal `id`, `name`,
+        `description`, `version`, and `owner` DID. Only users with the Standard
+        Registry role are allowed to make the request.
       operationId: PolicyApi_getPolicyExportMessage
       parameters:
         - name: policyId
@@ -19255,17 +19267,50 @@ paths:
             type: string
       responses:
         '200':
-          description: Message.
+          description: Hedera message ID and related policy metadata.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExportMessageDTO'
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 69c38f81462c9c1141de2df2
+                  name:
+                    type: string
+                    example: CDM AMS-III.AR Policy
+                  description:
+                    type: string
+                    example: >-
+                      Substituting fossil fuel-based lighting with LED/CFL
+                      lighting systems
+                  version:
+                    type: string
+                    example: '1'
+                  messageId:
+                    type: string
+                    example: '1774427068.001165000'
+                  owner:
+                    type: string
+                    example: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
+                required:
+                  - id
+                  - name
+                  - description
+                  - version
+                  - messageId
+                  - owner
               example:
-                uuid: f3b2a9c1e4d5678901234567
-                name: string
-                description: string
-                messageId: f3b2a9c1e4d5678901234567
-                owner: string
+                id: 69c38f81462c9c1141de2df2
+                name: CDM AMS-III.AR Policy
+                description: >-
+                  Substituting fossil fuel-based lighting with LED/CFL lighting
+                  systems
+                version: '1'
+                messageId: '1774427068.001165000'
+                owner: >-
+                  did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161
         '401':
           description: Unauthorized request.
           content:
@@ -19296,7 +19341,7 @@ paths:
                 message: Error message
       security:
         - bearer: []
-      summary: Return Heder message ID for the specified published policy.
+      summary: Return Hedera message ID for the specified published policy.
       tags:
         - policies
   /policies/{policyId}/export/xlsx:
@@ -21728,8 +21773,8 @@ paths:
   /policies/{policyId}/multiple:
     get:
       description: >-
-        Requests policy links. Only users with a role that described in block
-        are allowed to make the request.
+        Requests policy links. Users with permission to execute or manage the
+        policy can make this request.
       operationId: PolicyApi_getMultiplePolicies
       parameters:
         - name: policyId
@@ -21783,8 +21828,8 @@ paths:
         - policies
     post:
       description: >-
-        Creates policy link. Only users with a role that described in block are
-        allowed to make the request.
+        Creates policy link. Users with permission to execute or manage the
+        policy can make this request.
       operationId: PolicyApi_setMultiplePolicies
       parameters:
         - name: policyId
