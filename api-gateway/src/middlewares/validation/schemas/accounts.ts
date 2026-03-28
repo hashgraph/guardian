@@ -14,7 +14,6 @@ import { UserRole } from '@guardian/interfaces';
 import { Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Match } from '../../../helpers/decorators/match.validator.js';
-import { Examples } from '../../../middlewares/validation/examples.js';
 
 export class PermissionGroupResponseDTO {
     @ApiProperty({
@@ -72,7 +71,7 @@ export class AccountsResponseDTO {
     @ApiProperty({
         type: String,
         required: true,
-        example: Examples.USER_ROLE_SR
+        example: Examples.ROLE_SR
     })
     @IsString()
     @Expose()
@@ -129,7 +128,7 @@ export class AccountsLoginResponseDTO {
     @ApiProperty({
         type: String,
         required: true,
-        example: Examples.USER_ROLE_SR
+        example: Examples.ROLE_SR
     })
     @IsString()
     @Expose()
@@ -193,7 +192,7 @@ export class AccountsSessionResponseDTO {
     @ApiProperty({
         type: String,
         required: true,
-        example: Examples.USER_ROLE_SR
+        example: Examples.ROLE_SR
     })
     @IsString()
     @Expose()
@@ -239,7 +238,7 @@ export class LoginSuccessResponseDTO {
     @ApiProperty({
         type: String,
         required: true,
-        example: Examples.TOKEN
+        example: Examples.REFRESH_TOKEN
     })
     @IsString()
     refreshToken: string;
@@ -375,7 +374,7 @@ export class RegisterUserDTO {
     @ApiProperty({
         type: String,
         required: true,
-        example: Examples.USER_ROLE_SR
+        example: Examples.ROLE_SR
     })
     @IsString()
     @IsNotEmpty()

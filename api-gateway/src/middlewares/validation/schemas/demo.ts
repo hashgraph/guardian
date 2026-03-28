@@ -79,7 +79,7 @@ export class RegisteredUserDTO {
     username: string;
 
     @ApiProperty({
-        example: Examples.USER_ROLE_SR
+        example: Examples.ROLE_SR
     })
     @IsString()
     role: string;

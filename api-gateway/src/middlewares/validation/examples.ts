@@ -16,18 +16,16 @@ export enum Examples {
     HASH = 'GcDE9NsPJc7oCZvSVJySCZHxTxvjc3ZAMgtKozP1r1Eh',
     REFRESH_TOKEN = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYwNmY2MzIyLTk2NGYtNGIwMC05ZjgwLTljM2Y1OTdjYTYyYSIsIm5hbWUiOiJTdGFuZGFyZFJlZ2lzdHJ5IiwiZXhwaXJlQXQiOjE4MDQ3MDAzOTczMzgsImlhdCI6MTc3MzE2NDM5N30.ODc0_ktbl5xPRn4Ub1Kuj-xrjlho2_oyohucLdgMUqFGrI2SD_T3A96OaV2cKx7NQwsxc-QFBpBnrGSriJ9qPUcDm9rYmQYSqwpRJT0uSuL7xwu4TiPlVzghCd5xlLTw_uA6uJR7CG7HrDphPQI6zMGSxKXcn2S9xIZ6z5uBuWU',
     ACCESS_TOKEN = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlN0YW5kYXJkUmVnaXN0cnkiLCJkaWQiOiJkaWQ6aGVkZXJhOnRlc3RuZXQ6Q3Z6cDVrS1ZVdWlwQkNRamNGNTRmQmpkaWN2YUtzQjh6SGVRNlFxMjJVMlpfMC4wLjgxNDUzNDgiLCJyb2xlIjoiU1RBTkRBUkRfUkVHSVNUUlkiLCJleHBpcmVBdCI6MTc3MzgzNzIwNDYzOSwiaWF0IjoxNzczMjM3MjA0fQ.R9F3os4r4BdVpIXO1WhMq9GYp4qiAzBESMqVwM4NacCht4oRyR2X62t2VVckHyb8ElN4Igwy9C7CHdkSL3kpGlRHrN8haDbDfWxtMWw3bpRNUc8Wyvx8p8-N_aSOBZMgoWJQo-K6hB4MgXP2lPT0MQ-JDP01eG8Xn6MtQF4dctA',
-    USER_ROLE_SR = 'STANDARD_REGISTRY',
+    ROLE_SR = 'STANDARD_REGISTRY',
+    ROLE_USER = 'USER',
     OTP_NAME = 'OS Guardian',
     USER_NAME_SR_1 = 'StandardRegistry',
+    USER_NAME_SR_2 = 'Verra',
     OTP_SECRET = 'AAA0AA0A0A00A000',
     OTP_AUTH_URL = 'otpauth://totp/OS%20Guardian:StandardRegistry?issuer=OS+Guardian&period=30&secret=XXX0XX0X0X00X000',
     OTP_ALGO = 'sha1',
     NUMBER = 111,
-    OTP_CODE = '111111',
-    TOKEN = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImIxM2E0NTkyLWU2YjQtNDg0OS1hMTkxLTAxOWVkODNkYzM5ZCIsIm5hbWUiOiJTdGFuZGFyZFJlZ2lzdHJ5IiwiZXhwaXJlQXQiOjE4MDUyODI4NjU3MDEsImlhdCI6MTc3Mzc0Njg2NX0.BsKje1bza0NEKKTAHFMRfwa3H-H-eRu7-KEDHKTftljXE3eQNmYCf_ftaPpw3DdsfsavBcEDfs5UQwlyeMsaTJPehEx_gl697rGQx6b8objGkqfFL2A7nWetMbWtxFFsIrbxs4mqHy1LM_4VVJuiXsH2DYQZkxOmw4HdyUshjE84',
-    ROLE_SR = 'STANDARD_REGISTRY',
-    ROLE_USER = 'USER'
-    USER_NAME_SR_2 = 'Verra'
+    OTP_CODE = '111111'
 }
 
 const PERMISSIONS_SR = [
@@ -179,7 +177,7 @@ const PROFILE_DID_DOCUMENT_SAMPLE = {
 export const ObjectExamples = {
     LOGIN_SUCCESSFUL: {
         did: Examples.DID,
-        refreshToken: Examples.TOKEN,
+        refreshToken: Examples.REFRESH_TOKEN,
         role: Examples.ROLE_SR,
         username: Examples.USER_NAME_SR_1,
         weakPassword: false
@@ -188,8 +186,8 @@ export const ObjectExamples = {
     OTP_REQUIRED_RESPONSE: {
         success: false,
         otprequired: true
-    }
-    
+    },
+
     PERMISSION_SR: PERMISSIONS_SR,
 
     TAG_BLOCK_MAP_RESPONSE: {
@@ -1441,7 +1439,7 @@ export const ObjectExamples = {
         username: Examples.USER_NAME_SR_1,
         did: Examples.DID,
         hederaAccountId: Examples.ACCOUNT_ID,
-        role: Examples.USER_ROLE_SR,
+        role: Examples.ROLE_SR,
         permissions: PERMISSIONS_SR,
         location: 'local'
     },
@@ -1449,7 +1447,7 @@ export const ObjectExamples = {
     SESSION_RESPONSE_WITHOUT_ID: {
         id: Examples.DB_ID,
         username: Examples.USER_NAME_SR_1,
-        role: Examples.USER_ROLE_SR,
+        role: Examples.ROLE_SR,
         permissions: PERMISSIONS_SR,
         location: 'local'
     },
@@ -1457,7 +1455,7 @@ export const ObjectExamples = {
     REGISTER_RESPONSE: {
         id: Examples.DB_ID,
         username: Examples.USER_NAME_SR_1,
-        role: Examples.USER_ROLE_SR,
+        role: Examples.ROLE_SR,
         permissions: PERMISSIONS_SR,
         permissionsGroup: [
             {
@@ -1486,7 +1484,7 @@ export const ObjectExamples = {
         {
             did: Examples.DID,
             username: Examples.USER_NAME_SR_1,
-            role: Examples.USER_ROLE_SR,
+            role: Examples.ROLE_SR,
             policyRoles: []
         },
         {

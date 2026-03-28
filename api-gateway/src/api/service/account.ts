@@ -20,7 +20,6 @@ import {
     StandardRegistryAccountDTO,
     UnauthorizedErrorDTO,
     UnprocessableEntityErrorDTO,
-    ObjectExamples,
     UserAccountDTO,
     GenerateOPTResponseDTO,
     EmptyResponseDTO,
@@ -116,7 +115,7 @@ export class AccountApi {
                     username: Examples.USER_NAME_SR_1,
                     password: 'StrongPassword3#',
                     password_confirmation: 'StrongPassword3#',
-                    role: Examples.USER_ROLE_SR
+                    role: Examples.ROLE_SR
                 }
             }
         }
@@ -298,7 +297,7 @@ export class AccountApi {
         example: {
             username: Examples.USER_NAME_SR_1,
             did: Examples.DID,
-            role: Examples.USER_ROLE_SR,
+            role: Examples.ROLE_SR,
             refreshToken: Examples.REFRESH_TOKEN
         }
     })
