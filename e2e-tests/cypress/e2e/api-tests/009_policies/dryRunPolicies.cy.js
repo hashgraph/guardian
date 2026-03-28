@@ -94,10 +94,27 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             postWithAuth(authorization, `${policiesUrl}${policyId}/dry-run/user`).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
-                const did = response.body[0].did;
+                expect(response.body).to.have.property('did');
+                const did = response.body.did;
 
                 postWithAuth(authorization, `${policiesUrl}${policyId}/dry-run/login`, { did }).then((loginRes) => {
                     expect(loginRes.status).to.eq(STATUS_CODE.OK);
+                });
+            });
+        });
+    });
+
+    it("Get virtual user by DID", () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            // First create a user
+            postWithAuth(authorization, `${policiesUrl}${policyId}/dry-run/user`).then((response) => {
+                expect(response.status).eql(STATUS_CODE.SUCCESS);
+                const did = response.body.did;
+
+                // Then fetch that user by DID
+                getWithAuth(authorization, `${policiesUrl}${policyId}/dry-run/user/${encodeURIComponent(did)}`).then((getRes) => {
+                    expect(getRes.status).to.eq(STATUS_CODE.OK);
+                    expect(getRes.body).to.have.property('did', did);
                 });
             });
         });

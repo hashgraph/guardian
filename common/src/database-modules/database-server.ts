@@ -4008,6 +4008,29 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Count Virtual Users
+     * @param policyId
+     * @param savepointIds
+     * @virtual
+     */
+    public static async countVirtualUsers(policyId: string, savepointIds?: string[]): Promise<number> {
+        const filter: any = {
+            dryRunId: policyId,
+            dryRunClass: 'VirtualUsers',
+            $or: [
+                { savepointId: null },
+                { savepointId: { $exists: false } }
+            ]
+        };
+
+        if (savepointIds) {
+            filter.$or.push({ savepointId: { $in: savepointIds } });
+        }
+
+        return await new DataBaseHelper(DryRun).count(filter);
+    }
+
+    /**
      * Get Vp Document
      * @param filters
      *

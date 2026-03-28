@@ -6,6 +6,7 @@ import {
     IsBoolean,
     IsIn,
     IsNotEmpty,
+    IsNumber,
     IsOptional,
     IsString
 } from 'class-validator';
@@ -13,6 +14,7 @@ import { UserRole } from '@guardian/interfaces';
 import { Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Match } from '../../../helpers/decorators/match.validator.js';
+import { Examples } from '../../../middlewares/validation/examples.js';
 
 export class PermissionGroupResponseDTO {
     @ApiProperty({
@@ -225,6 +227,65 @@ export class AccountsSessionResponseDTO {
     location?: string;
 }
 
+export class LoginSuccessResponseDTO {
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.DID
+    })
+    @IsString()
+    did: string;
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.TOKEN
+    })
+    @IsString()
+    refreshToken: string;
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.ROLE_SR
+    })
+    @IsString()
+    role: string
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.USER_NAME_SR_1
+    })
+    @IsString()
+    username: string
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: false
+    })
+    @IsString()
+    weakPassword: string
+}
+
+export class LoginOTPRequiredResponseDTO {
+    @ApiProperty({
+        type: Boolean,
+        required: true,
+        example: false
+    })
+    @IsBoolean()
+    success: boolean;
+
+    @ApiProperty({
+        type: Boolean,
+        required: true,
+        example: true
+    })
+    @IsBoolean()
+    otprequired: boolean;
+}
 export class ChangePasswordDTO {
     @ApiProperty({
         type: String,
@@ -272,6 +333,11 @@ export class LoginUserDTO {
     @IsString()
     @IsNotEmpty()
     password: string;
+
+    @ApiProperty()
+    @IsString()
+    @IsOptional()
+    otp: string;
 }
 
 export class RegisterUserDTO {
@@ -426,6 +492,124 @@ export class BalanceResponseDTO {
         required: true
     })
     user: StandardRegistryAccountDTO;
+}
+
+export class OTPConfigDTO {
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.OTP_ALGO
+    })
+    @IsString()
+    algo: string;
+
+    @ApiProperty({
+        type: Number,
+        required: true,
+        example: Examples.NUMBER
+    })
+    @IsNumber()
+    digits: number;
+
+    @ApiProperty({
+        type: Number,
+        required: true,
+        example: Examples.NUMBER
+    })
+    @IsNumber()
+    period: number;
+
+    @ApiProperty({
+        type: Number,
+        required: true,
+        example: Examples.NUMBER
+    })
+    @IsNumber()
+    secretSize: number;
+}
+
+export class GenerateOPTResponseDTO {
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.OTP_NAME
+    })
+    @IsString()
+    issuer: string;
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.USER_NAME_SR_1
+    })
+    @IsString()
+    user: string;
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.OTP_SECRET
+    })
+    @IsString()
+    secret: string;
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.OTP_AUTH_URL
+    })
+    @IsString()
+    url: string;
+
+    @ApiProperty({
+        type: OTPConfigDTO,
+        required: true,
+    })
+    @Type(() => OTPConfigDTO)
+    config: OTPConfigDTO;
+}
+
+export class OTPConfirmDTO {
+    @ApiProperty({
+        type: String,
+        required: true,
+        example: Examples.OTP_CODE
+    })
+    @IsString()
+    token: string;
+}
+
+export class OTPConfirmResponseDTO {
+    @ApiProperty({
+        type: Boolean,
+        required: true,
+        example: true
+    })
+    @IsBoolean()
+    success: boolean;
+
+    @ApiProperty({
+        type: String,
+        required: true,
+        isArray: true,
+        example: ['000000', '111111', '222222', '333333', '444444', '555555', '666666', '777777', '888888', '999999']
+    })
+    @IsArray()
+    @IsString({ each: true })
+    backupCodes: string[];
+}
+
+export class OTPStatusResponseDTO {
+    @ApiProperty({
+        type: Boolean,
+        required: true,
+        example: true
+    })
+    @IsBoolean()
+    enabled: boolean;
+}
+
+export class EmptyResponseDTO {
 }
 
 export const registerSchema = () => {

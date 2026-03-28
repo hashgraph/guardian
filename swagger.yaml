@@ -456,7 +456,7 @@ paths:
                   password: test
       responses:
         '200':
-          description: Successful operation.
+          description: ''
           content:
             application/json:
               schema:
@@ -1015,6 +1015,121 @@ paths:
       security:
         - bearer: []
       summary: Returns user's Hedera account balance.
+      tags:
+        - accounts
+  /accounts/otp/generate:
+    post:
+      description: Generate an OTP secret for 2FA setup.
+      operationId: AccountApi_generateOtp
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateOPTResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Generate an OTP secret for 2FA setup.
+      tags:
+        - accounts
+  /accounts/otp/confirm:
+    post:
+      description: Confirm OTP setup by OTP token.
+      operationId: AccountApi_confirmOtp
+      parameters: []
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPConfirmDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OTPConfirmResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Confirm OTP setup.
+      tags:
+        - accounts
+  /accounts/otp/status:
+    get:
+      description: Get OTP status for the current user.
+      operationId: AccountApi_getOtpStatus
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OTPStatusResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get OTP status.
+      tags:
+        - accounts
+  /accounts/otp/deactivate:
+    post:
+      description: Deactivate 2FA.
+      operationId: AccountApi_deactivateOtp
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Deactivate 2FA.
       tags:
         - accounts
   /analytics/search/policies:
@@ -20821,12 +20936,12 @@ paths:
       summary: Returns virtual users.
       tags:
         - policies
-  /policies/{policyId}/dry-run/user:
-    post:
+  /policies/{policyId}/dry-run/user/{did}:
+    get:
       description: >-
-        Creates virtual users. Only users with the Standard Registry role are
-        allowed to make the request.
-      operationId: PolicyApi_setDryRunUser
+        Returns a virtual user by DID. Only users with the Standard Registry
+        role are allowed to make the request.
+      operationId: PolicyApi_getDryRunUser
       parameters:
         - name: policyId
           required: true
@@ -20877,7 +20992,39 @@ paths:
                 message: Error message
       security:
         - bearer: []
-      summary: Creates virtual users.
+      summary: Returns a virtual user by DID.
+      tags:
+        - policies
+  /policies/{policyId}/dry-run/user:
+    post:
+      description: >-
+        Creates a virtual user and returns the created user object. Only users
+        with the Standard Registry role are allowed to make the request.
+      operationId: PolicyApi_setDryRunUserV2
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Created virtual user.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Creates a virtual user (v2).
       tags:
         - policies
   /policies/{policyId}/dry-run/login:
@@ -42050,6 +42197,93 @@ components:
         - balance
         - unit
         - user
+    OTPConfigDTO:
+      type: object
+      properties:
+        algo:
+          type: string
+          example: sha1
+        digits:
+          type: number
+          example: 111
+        period:
+          type: number
+          example: 111
+        secretSize:
+          type: number
+          example: 111
+      required:
+        - algo
+        - digits
+        - period
+        - secretSize
+    GenerateOPTResponseDTO:
+      type: object
+      properties:
+        issuer:
+          type: string
+          example: OS Guardian
+        user:
+          type: string
+          example: StandardRegistry
+        secret:
+          type: string
+          example: AAA0AA0A0A00A000
+        url:
+          type: string
+          example: >-
+            otpauth://totp/OS%20Guardian:StandardRegistry?issuer=OS+Guardian&period=30&secret=XXX0XX0X0X00X000
+        config:
+          $ref: '#/components/schemas/OTPConfigDTO'
+      required:
+        - issuer
+        - user
+        - secret
+        - url
+        - config
+    OTPConfirmDTO:
+      type: object
+      properties:
+        token:
+          type: string
+          example: '111111'
+      required:
+        - token
+    OTPConfirmResponseDTO:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        backupCodes:
+          example:
+            - '000000'
+            - '111111'
+            - '222222'
+            - '333333'
+            - '444444'
+            - '555555'
+            - '666666'
+            - '777777'
+            - '888888'
+            - '999999'
+          type: array
+          items:
+            type: string
+      required:
+        - success
+        - backupCodes
+    OTPStatusResponseDTO:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          example: true
+      required:
+        - enabled
+    EmptyResponseDTO:
+      type: object
+      properties: {}
     FilterSearchPoliciesDTO:
       type: object
       properties:

@@ -885,6 +885,19 @@ export class Worker extends NatsService {
                     break;
                 }
 
+                case WorkerTaskType.NEW_INIT_TOPIC: {
+                    const {hederaAccountId, hederaAccountKey, dryRun, topicMemo, payload: {userId}} = task.data;
+                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
+                    result.data = await client.newTopic(
+                        userId,
+                        null,
+                        null,
+                        topicMemo
+                    );
+
+                    break;
+                }
+
                 case WorkerTaskType.GET_TOKEN_INFO: {
                     const {tokenId} = task.data;
                     result.data = await HederaSDKHelper

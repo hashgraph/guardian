@@ -5601,6 +5601,54 @@ export class PolicyApi {
     }
 
     /**
+     * Get virtual user by DID
+     */
+    @Get('/:policyId/dry-run/user/:did')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+    )
+    @ApiOperation({
+        summary: 'Returns a virtual user by DID.',
+        description: 'Returns a virtual user by DID.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'did',
+        type: String,
+        description: 'Virtual User DID',
+        required: true,
+    })
+    @ApiOkResponse({
+        description: 'Virtual user.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getDryRunUser(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('did') did: string,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+        try {
+            return await engineService.getVirtualUser(policyId, did, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Create virtual user
      */
     @Post('/:policyId/dry-run/user')
@@ -5609,8 +5657,9 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Creates virtual users.',
-        description: 'Creates virtual users.' + ONLY_SR,
+        summary: 'Creates a virtual user.',
+        description: 'Creates a virtual user. Returns the full list of virtual users.' + ONLY_SR,
+        deprecated: true,
     })
     @ApiParam({
         name: 'policyId',
@@ -5652,6 +5701,54 @@ export class PolicyApi {
 
         try {
             return await engineService.createVirtualUser(policyId, owner, body?.savepointIds);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Create virtual user V2 — returns the created user object
+     */
+    @Post('/:policyId/dry-run/user')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+    )
+    @ApiOperation({
+        summary: 'Creates a virtual user (v2).',
+        description: 'Creates a virtual user and returns the created user object.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Created virtual user.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    @Version('2')
+    async setDryRunUserV2(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: { savepointIds?: string[] },
+        @Req() req,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
+        try {
+            return await engineService.createVirtualUserV2(policyId, owner, body?.savepointIds);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
