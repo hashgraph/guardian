@@ -6360,5 +6360,800 @@ export const ObjectExamples = {
         version: '1',
         messageId: '1774427068.001165000',
         owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161'
-    }
+    },
+
+    /** POST /policies/import/xlsx — import result for updating a policy from an XLSX file. */
+    POLICY_IMPORT_XLSX_RESPONSE: {
+        policyId: '69c38f81462c9c1141de2df2',
+        errors: []
+    },
+
+    /** POST /policies/import/xlsx/preview — preview payload parsed from an XLSX policy file. */
+    POLICY_IMPORT_XLSX_PREVIEW_RESPONSE: {
+        schemas: [
+            {
+                iri: '#60283eee-79a8-46ef-adf3-79775ea1192c',
+                name: 'Monitoring Report',
+                description: 'Monitoring Report',
+                version: '',
+                status: 'DRAFT'
+            }
+        ],
+        tools: [
+            {
+                uuid: '1706867530.884259218',
+                name: '1706867530.884259218',
+                messageId: '1706867530.884259218',
+                worksheet: 'Combined Margin. Is gri (tool)'
+            }
+        ],
+        errors: [
+            {
+                type: 'error',
+                text: 'Failed to parse variables.',
+                message: 'Error: G5: Type not found.',
+                worksheet: 'Monitoring Report'
+            }
+        ]
+    },
+
+    /** GET /policies/{policyId}/dry-run/users — dry-run virtual users list. */
+    POLICY_GET_DRY_RUN_USERS_RESPONSE: [
+        {
+            active: true,
+            did: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            username: 'Administrator',
+            hederaAccountId: '0.0.6046379',
+            id: '69c83b92cebecbe1c023104d'
+        },
+        {
+            active: false,
+            did: 'did:hedera:testnet:DoabcYQtNM3kqxAv6DiWadYRF6LYNqGX85ZtZFZibjTA_0.0.8417999',
+            username: 'Virtual User 2',
+            hederaAccountId: '0.0.1774730673941',
+            id: '69c83db1cebecbe1c0231117'
+        }
+    ],
+
+    /** POST /policies/{policyId}/dry-run/login — select active virtual user by DID. */
+    POLICY_POST_DRY_RUN_LOGIN_REQUEST: {
+        did: 'did:hedera:testnet:9VywBBXBtcV2RW7Whak6aJ9GR7PsKsiJaymAeWnBVvUB_0.0.8417999'
+    },
+
+    /** POST /policies/{policyId}/dry-run/login — updated virtual users list after login. */
+    POLICY_POST_DRY_RUN_LOGIN_RESPONSE: [
+        {
+            active: false,
+            did: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            username: 'Administrator',
+            hederaAccountId: '0.0.6046379',
+            id: '69c83b92cebecbe1c023104d'
+        },
+        {
+            active: true,
+            did: 'did:hedera:testnet:9VywBBXBtcV2RW7Whak6aJ9GR7PsKsiJaymAeWnBVvUB_0.0.8417999',
+            username: 'Virtual User 1',
+            hederaAccountId: '0.0.1774731899661',
+            id: '69c8427bcebecbe1c02311eb'
+        }
+    ],
+
+    /** POST /policies/{policyId}/dry-run/block — `policyRolesBlock` (choose role) dry-run sample. */
+    POLICY_POST_DRY_RUN_BLOCK_REQUEST: {
+        block: {
+            id: 'f6c7c294-24a2-4f60-a131-03d023bda7c7',
+            blockType: 'policyRolesBlock',
+            defaultActive: true,
+            permissions: ['NO_ROLE'],
+            onErrorAction: 'no-action',
+            uiMetaData: {
+                title: 'Registration',
+                description: 'Choose a role'
+            },
+            roles: ['Registrant'],
+            tag: 'choose_role',
+            children: [],
+            events: [],
+            artifacts: []
+        },
+        data: {
+            type: 'json',
+            input: 'RunEvent',
+            output: 'CreateGroup',
+            document: {
+                role: 'Registrant'
+            }
+        }
+    },
+
+    /** POST /policies/{policyId}/dry-run/block — sample engine result (`input` mirrors wrapped VC documents). */
+    POLICY_POST_DRY_RUN_BLOCK_RESPONSE: {
+        input: {
+            documents: [
+                {
+                    policyId: Examples.DB_ID,
+                    tag: 'test',
+                    hash: '',
+                    document: {
+                        id: 'urn:uuid:00000000-0000-0000-0000-000000000000',
+                        type: ['VerifiableCredential'],
+                        issuer: Examples.DID,
+                        issuanceDate: Examples.DATE,
+                        '@context': ['https://www.w3.org/2018/credentials/v1'],
+                        credentialSubject: [
+                            {
+                                role: 'Registrant'
+                            }
+                        ],
+                        proof: {
+                            type: 'Ed25519Signature2018',
+                            created: Examples.DATE,
+                            verificationMethod: `${Examples.DID}#did-root-key`,
+                            proofPurpose: 'assertionMethod',
+                            jws: '...'
+                        }
+                    },
+                    owner: Examples.DID,
+                    group: null,
+                    hederaStatus: 'NEW',
+                    signature: 0
+                }
+            ]
+        },
+        output: [],
+        errors: [],
+        logs: ['Building...', 'Done', 'Running...']
+    },
+
+    /** GET /policies/{policyId}/savepoints — `{ items }` list (literal sample; documented shape uses `id` only). */
+    POLICY_GET_SAVEPOINTS_RESPONSE: {
+        items: [
+            {
+                createDate: '2026-03-29T06:57:06.670Z',
+                updateDate: '2026-03-29T06:57:06.670Z',
+                policyId: '69c83b44cebecbe1c0231007',
+                name: 'Third (last) savepoint',
+                parentSavepointId: '69c8cd3a81910b160912c315',
+                savepointPath: [
+                    '69c8cd3481910b160912c300',
+                    '69c8cd3a81910b160912c315',
+                    '69c8cd4281910b160912c328'
+                ],
+                isDeleted: false,
+                isCurrent: true,
+                id: '69c8cd4281910b160912c328'
+            },
+            {
+                createDate: '2026-03-29T06:56:58.465Z',
+                updateDate: '2026-03-29T06:56:58.465Z',
+                policyId: '69c83b44cebecbe1c0231007',
+                name: 'Second savepoint',
+                parentSavepointId: '69c8cd3481910b160912c300',
+                savepointPath: ['69c8cd3481910b160912c300', '69c8cd3a81910b160912c315'],
+                isDeleted: false,
+                isCurrent: false,
+                id: '69c8cd3a81910b160912c315'
+            },
+            {
+                createDate: '2026-03-29T06:56:52.583Z',
+                updateDate: '2026-03-29T06:56:52.583Z',
+                policyId: '69c83b44cebecbe1c0231007',
+                name: 'First savepoint',
+                parentSavepointId: null,
+                savepointPath: ['69c8cd3481910b160912c300'],
+                isDeleted: false,
+                isCurrent: false,
+                id: '69c8cd3481910b160912c300'
+            }
+        ]
+    },
+
+    /**
+     * POST /policies/{policyId}/savepoints | PUT /policies/{policyId}/savepoints/{savepointId} — `{ savepoint }` payload (documented `id` only).
+     */
+    POLICY_DRY_RUN_SAVEPOINT_RESPONSE: {
+        savepoint: {
+            createDate: '2026-03-29T06:59:01.000Z',
+            updateDate: '2026-03-29T06:59:01.000Z',
+            policyId: '69c83b44cebecbe1c0231007',
+            name: 'Third (last) savepoint',
+            parentSavepointId: '69c8cd3a81910b160912c315',
+            savepointPath: [
+                '69c8cd3481910b160912c300',
+                '69c8cd3a81910b160912c315',
+                '69c8cd4281910b160912c328'
+            ],
+            isDeleted: false,
+            isCurrent: true,
+            id: '69c8cd5081910b160912c33a'
+        }
+    },
+
+    /** POST /policies/{policyId}/savepoints/delete — hard-delete result when current-savepoint guard is skipped. */
+    POLICY_DELETE_SAVEPOINTS_RESPONSE_WITH_HARD_DELETE: {
+        hardDeletedIds: [
+            '69c8d45081910b160912c4a8',
+            '69c8d44d81910b160912c49b',
+            '69c8d40281910b160912c480',
+            '69c8d40081910b160912c473',
+            '69c8d3fd81910b160912c466'
+        ]
+    },
+
+    /** POST /policies/{policyId}/savepoints/delete — empty result when the current-savepoint guard is enforced. */
+    POLICY_DELETE_SAVEPOINTS_RESPONSE_EMPTY: {
+        hardDeletedIds: []
+    },
+
+    /** POST /policies/{policyId}/dry-run/restart — sample policy list returned after restart (documented `id` only). */
+    POLICY_POST_DRY_RUN_RESTART_RESPONSE: [
+        {
+            createDate: '2026-03-29T08:22:18.508Z',
+            uuid: 'eaee9611-4f1a-44e4-93f0-7fc7c81d9b9f',
+            name: 'CDM AMS-III.AR Policy',
+            version: 'Dry Run',
+            description: 'Substituting fossil fuel-based lighting with LED/CFL lighting systems',
+            status: 'DRY-RUN',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            topicId: '0.0.8425763',
+            policyTag: 'Tag_1774772501756',
+            codeVersion: '1.5.1',
+            id: '69c8e13a81910b160912c709'
+        },
+        {
+            createDate: '2026-03-29T08:22:19.897Z',
+            uuid: 'de1b156b-26fd-48d2-b7f3-b237bde9e2d3',
+            name: 'CDM AMS-II.J Policy',
+            version: 'Dry Run',
+            description: 'Demand-Side Activities for Efficient Lighting Technologies',
+            status: 'DRY-RUN',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            topicId: '0.0.8425767',
+            policyTag: 'Tag_1774772516671',
+            codeVersion: '1.5.1',
+            id: '69c8e13b81910b160912c74a'
+        },
+        {
+            createDate: '2026-03-29T08:24:59.784Z',
+            uuid: 'f934eef5-59c7-4cab-b997-1be01d478084',
+            name: 'CDM AMS-III.BB',
+            description: 'CDM AMS-III.BB. policy',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            topicId: '0.0.8425809',
+            policyTag: 'Tag_1774772670088',
+            codeVersion: '1.5.1',
+            id: '69c8e1db81910b160912c8ca'
+        }
+    ],
+
+    /** GET /policies/{policyId}/dry-run/transactions — dry-run virtual Hedera transactions (documented `id` only). */
+    POLICY_GET_DRY_RUN_TRANSACTIONS_RESPONSE: [
+        {
+            createDate: '2026-03-29T08:37:56.615Z',
+            type: 'TopicMessageSubmitTransaction',
+            hederaAccountId: '0.0.1774773370443',
+            id: '69c8e4e481910b160912c8f1'
+        },
+        {
+            createDate: '2026-03-29T08:37:53.627Z',
+            type: 'TopicMessageSubmitTransaction',
+            hederaAccountId: '0.0.1774773370443',
+            id: '69c8e4e181910b160912c8f0'
+        }
+    ],
+
+    /**
+     * GET /policies/{policyId}/dry-run/artifacts — one dry-run VC row shape; nested payloads collapsed for size (`document` / `option` / `accounts` empty objects, list fields empty arrays).
+     */
+    POLICY_GET_DRY_RUN_ARTIFACTS_RESPONSE: [
+        {
+            createDate: '2026-03-29T08:37:56.683Z',
+            updateDate: '2026-03-29T08:37:56.694Z',
+            dryRunId: '69c8e13b81910b160912c74a',
+            dryRunClass: 'VcDocumentCollection',
+            systemMode: false,
+            owner: 'did:hedera:testnet:CeNjDpdEQUizTejk8FhX9uzyTg3zUjp2GCk23NsETJPG_0.0.8417999',
+            hash: 'J1jAp7nAXQvV1qsZ4dAg64w6rYFt3AXBnRb6c94WgnxL',
+            document: {},
+            documentFileId: '69c8e4e43dcb07295bf82382',
+            documentFields: [],
+            status: 'NEW',
+            signature: 0,
+            type: 'project',
+            policyId: '69c8e13b81910b160912c74a',
+            tag: 'save_project',
+            messageId: '1774.773476613',
+            startMessageId: '1774.773476613',
+            topicId: '0.0.1774773413061',
+            relationships: [],
+            option: {},
+            hederaStatus: 'ISSUE',
+            schema: '#f69fb091-6a2c-4883-87fb-b571f32d0459',
+            accounts: {},
+            tokens: null,
+            uuid: '01372cfa-5e92-44c2-8c26-a87f832f5255',
+            entity: 'NONE',
+            iri: '01372cfa-5e92-44c2-8c26-a87f832f5255',
+            readonly: false,
+            system: false,
+            active: false,
+            codeVersion: '1.0.0',
+            group: '00546354-dc9b-4d68-9d02-e58e62a9c7be',
+            messageHash: 'CRxH77p9bmY9rxmKG38ja8KHDnpw9Vzb9ti163uZjW3U',
+            messageIds: [],
+            isMintNeeded: true,
+            isTransferNeeded: false,
+            wasTransferNeeded: false,
+            edited: false,
+            relayerAccount: '0.0.1774773370443',
+            tableFileIds: [],
+            id: '69c8e4e43dcb07295bf8237f'
+        }
+    ],
+
+    /** GET /policies/{policyId}/dry-run/ipfs — dry-run virtual IPFS file rows (documented `id` only). */
+    POLICY_GET_DRY_RUN_IPFS_RESPONSE: [
+        {
+            createDate: '2026-03-29T08:22:32.046Z',
+            documentURL: '66a64d1c-6c20-4465-bf00-0f28d1379acc',
+            id: '69c8e14881910b160912c786'
+        }
+    ],
+
+    /** POST /policies/{policyId}/multiple — request payload for creating or joining a multi-policy link. */
+    POLICY_POST_MULTIPLE_REQUEST: {
+        mainPolicyTopicId: '0.0.8425949',
+        synchronizationTopicId: '0.0.8425951'
+    },
+
+    /** POST /policies/push/delete-multiple — request payload with policy ids to delete. */
+    POLICY_POST_DELETE_MULTIPLE_REQUEST: {
+        policyIds: [
+            '69c673f3fbdb94688e7eea7f',
+            '69c67548fbdb94688e7eeb98'
+        ]
+    },
+
+    /** GET/POST /policies/{policyId}/multiple — current policy is not yet linked to a multi-policy. */
+    POLICY_GET_MULTIPLE_RESPONSE_BEFORE_CREATE: {
+        uuid: null,
+        instanceTopicId: '0.0.8425949',
+        mainPolicyTopicId: '0.0.8425949',
+        synchronizationTopicId: '0.0.8425951',
+        owner: 'did:hedera:testnet:2Tak8KVd1K33DWvDFqmKVaihNfzvfGEYehXr3UZ1dGHV_0.0.8417999',
+        type: null
+    },
+
+    /** GET/POST /policies/{policyId}/multiple — current policy is the main policy in the link. */
+    POLICY_GET_MULTIPLE_RESPONSE_MAIN: {
+        createDate: '2026-03-29T09:02:23.828Z',
+        updateDate: '2026-03-29T09:02:23.828Z',
+        uuid: '1f847dbc-c9ef-41e7-a453-558f3b368aca',
+        instanceTopicId: '0.0.8425949',
+        mainPolicyTopicId: '0.0.8425949',
+        synchronizationTopicId: '0.0.8425951',
+        owner: 'did:hedera:testnet:2Tak8KVd1K33DWvDFqmKVaihNfzvfGEYehXr3UZ1dGHV_0.0.8417999',
+        type: 'Main',
+        user: '0.0.6046457',
+        policyOwner: '0.0.6046379',
+        id: '69c8ea9881910b160912cf0e'
+    },
+
+    /** GET/POST /policies/{policyId}/multiple — current policy is a sub-policy in the link. */
+    POLICY_GET_MULTIPLE_RESPONSE_SUB: {
+        createDate: '2026-03-29T09:03:53.348Z',
+        updateDate: '2026-03-29T09:03:53.348Z',
+        uuid: 'dd200ad1-a8c5-4fb8-99da-dadf6d0004d7',
+        instanceTopicId: '0.0.8425980',
+        mainPolicyTopicId: '0.0.8425949',
+        synchronizationTopicId: '0.0.8425951',
+        owner: 'did:hedera:testnet:2Tak8KVd1K33DWvDFqmKVaihNfzvfGEYehXr3UZ1dGHV_0.0.8417999',
+        type: 'Sub',
+        user: '0.0.6046457',
+        policyOwner: '0.0.6046379',
+        id: '69c8eaf681910b160912cf13'
+    },
+
+    /** POST /policies/{policyId}/test — uploaded policy test records created from multipart files (documented `id` only). */
+    POLICY_POST_TEST_RESPONSE: [
+        {
+            createDate: '2026-03-29T09:24:23.762Z',
+            updateDate: '2026-03-29T09:24:23.762Z',
+            uuid: '12164c83-3f6e-4135-b6e8-186bed0cb502',
+            name: 'CDM_AMS_III',
+            policyId: '69c8efa181910b160912d0f4',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            status: 'New',
+            date: null,
+            result: null,
+            resultId: null,
+            progress: 0,
+            error: null,
+            duration: 57359,
+            file: '69c8efc781910b160912d165',
+            id: '69c8efc781910b160912d167'
+        }
+    ],
+
+    /** GET /policies/{policyId}/test/{testId} — policy test details with execution result (documented `id` only). */
+    POLICY_GET_TEST_RESPONSE: {
+        createDate: '2026-03-29T09:24:23.762Z',
+        updateDate: '2026-03-29T09:27:29.815Z',
+        uuid: '12164c83-3f6e-4135-b6e8-186bed0cb502',
+        name: 'CDM_AMS_III',
+        policyId: '69c8efa181910b160912d0f4',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+        status: 'Failure',
+        date: '2026-03-29T09:26:29.897Z',
+        result: {
+            info: {
+                documents: 5,
+                tokens: 0
+            },
+            total: 83,
+            details: {
+                documents: [],
+                recorded: []
+            },
+            documents: []
+        },
+        resultId: null,
+        progress: null,
+        error: null,
+        duration: 57359,
+        file: '69c8efc781910b160912d165',
+        id: '69c8efc781910b160912d167'
+    },
+
+    /** POST /policies/{policyId}/test/{testId}/start — test run started (documented `id` only). */
+    POLICY_POST_TEST_START_RESPONSE: {
+        createDate: '2026-03-29T09:24:23.762Z',
+        updateDate: '2026-03-29T09:24:23.762Z',
+        uuid: '12164c83-3f6e-4135-b6e8-186bed0cb502',
+        name: 'CDM_AMS_III',
+        policyId: '69c8efa181910b160912d0f4',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+        status: 'Running',
+        date: '2026-03-29T09:26:29.897Z',
+        result: null,
+        resultId: '96374bd4-5ab4-4993-8e66-c192eb79204f',
+        progress: 0,
+        error: null,
+        duration: 57359,
+        file: '69c8efc781910b160912d165',
+        id: '69c8efc781910b160912d167'
+    },
+
+    /** POST /policies/{policyId}/test/{testId}/start — test run started (documented `id` only). */
+    POLICY_POST_TEST_STOP_RESPONSE: {
+        createDate: '2026-03-29T09:24:23.762Z',
+        updateDate: '2026-03-29T09:24:23.762Z',
+        uuid: '12164c83-3f6e-4135-b6e8-186bed0cb502',
+        name: 'CDM_AMS_III',
+        policyId: '69c8efa181910b160912d0f4',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+        status: 'Stopped',
+        date: '2026-03-29T09:26:29.897Z',
+        result: null,
+        resultId: null,
+        progress: 0,
+        error: null,
+        duration: 57359,
+        file: '69c8efc781910b160912d165',
+        id: '69c8efc781910b160912d167'
+    },
+
+    /** GET /policies/{policyId}/test/{testId}/details — test run comparison / report shell. */
+    POLICY_GET_TEST_DETAILS_RESPONSE: {
+        left: {},
+        right: {},
+        total: 83,
+        documents: {
+            columns: [],
+            report: []
+        }
+    },
+
+    /** POST /policies/{policyId}/create-new-version-vc-document — success flag. */
+    POLICY_POST_CREATE_NEW_VERSION_VC_DOCUMENT_RESPONSE: {
+        ok: true
+    },
+
+    /** POST /policies/{policyId}/create-new-version-vc-document — request payload for creating a new VC document version. */
+    POLICY_POST_CREATE_NEW_VERSION_VC_DOCUMENT_REQUEST: {
+        documentId: '67b8f31d2a26f8be2a9f0be9',
+        document: {}
+    },
+
+    /**
+     * GET /policies/{policyId}/get-all-version-vc-documents/{documentId} — VC document versions (newest first; `document` collapsed).
+     */
+    POLICY_GET_ALL_VERSION_VC_DOCUMENTS_RESPONSE: [
+        {
+            createDate: '2026-03-29T13:20:00.178Z',
+            updateDate: '2026-03-29T13:20:00.190Z',
+            hash: 'aZFSzKANCaBqpZb78BWgi9UW2X5UswnH7j1WeJMaenr',
+            hederaStatus: 'ISSUE',
+            signature: 0,
+            type: 'approved_project',
+            policyId: '69c9207581910b160912d330',
+            recordActionId: '427a6a9b-fc67-4418-8d87-0eb1a05fd8e3',
+            tag: 'sr_save_reassigned_validated_project_db',
+            schema: '#b4bccf9f-2f54-49b6-bfa8-4fa979dcaa7b&1.0.0',
+            option: {},
+            relationships: [],
+            owner: 'did:hedera:testnet:2Tak8KVd1K33DWvDFqmKVaihNfzvfGEYehXr3UZ1dGHV_0.0.8417999',
+            group: '3c869012-3832-4256-9f6a-84ef3d0bf4a3',
+            accounts: {},
+            topicId: '0.0.8427267',
+            messageId: '1774790398.768848833',
+            startMessageId: '1774789024.639432984',
+            messageHash: 'Gv9gCggtuRR7pMCLwUvYcfPZGoXUsiCfwkJD17WLis4N',
+            messageIds: [],
+            document: {},
+            documentFileId: '69c92700e78ca16d4322acdc',
+            documentFields: [],
+            edited: false,
+            relayerAccount: '0.0.6046457',
+            tableFileIds: [],
+            oldVersion: false,
+            initId: '1774789048.788625000',
+            id: '69c92700e78ca16d4322acd9'
+        },
+        {
+            createDate: '2026-03-29T12:57:30.831Z',
+            updateDate: '2026-03-29T13:25:28.818Z',
+            hash: 'BXjpB77tRLL7gUFZNGedUMWCts97U5x5kcYoGXdTB4sB',
+            hederaStatus: 'ISSUE',
+            signature: 0,
+            type: 'approved_project',
+            policyId: '69c9207581910b160912d330',
+            recordActionId: '427a6a9b-fc67-4418-8d87-0eb1a05fd8e3',
+            tag: 'sr_save_reassigned_validated_project_db',
+            schema: '#b4bccf9f-2f54-49b6-bfa8-4fa979dcaa7b&1.0.0',
+            option: {},
+            relationships: [],
+            owner: 'did:hedera:testnet:2Tak8KVd1K33DWvDFqmKVaihNfzvfGEYehXr3UZ1dGHV_0.0.8417999',
+            group: '3c869012-3832-4256-9f6a-84ef3d0bf4a3',
+            accounts: {},
+            topicId: '0.0.8427267',
+            messageId: '1774789048.788625000',
+            startMessageId: '1774789024.639432984',
+            messageHash: '5t8tXB7RDWUepWh3Z28NesPeXKbSWKeQoKPqhrrphz6W',
+            messageIds: [],
+            document: {},
+            documentFileId: '69c92848e78ca16d4322ace5',
+            documentFields: [],
+            edited: false,
+            relayerAccount: '0.0.6046457',
+            tableFileIds: [],
+            oldVersion: true,
+            id: '69c921bae78ca16d4322ac8b'
+        }
+    ],
+
+    /** GET /policies/{policyId}/dry-run/block/{tagName}/history — literal sample payload (no `Examples` placeholders). */
+    POLICY_GET_DRY_RUN_BLOCK_HISTORY_RESPONSE: [
+        {
+            createDate: '2026-03-29T06:49:28.919Z',
+            updateDate: '2026-03-29T06:49:28.929Z',
+            dryRunId: '69c83b44cebecbe1c0231007',
+            dryRunClass: 'VcDocumentCollection',
+            systemMode: false,
+            owner: 'did:hedera:testnet:8d2RiS1SmDUnHdmFZHc8NvaU3WqKMrdsorE6aRHzLpij_0.0.8417999',
+            hash: 'FJDt4cKy7t8MdGg9b7U2RB29N4Rk3kUUBFSTT6RuQMR4',
+            document: {
+                id: 'urn:uuid:d7c5e170-a1fe-4e85-b280-ff2c697104ad',
+                type: ['VerifiableCredential'],
+                issuer: 'did:hedera:testnet:8d2RiS1SmDUnHdmFZHc8NvaU3WqKMrdsorE6aRHzLpij_0.0.8417999',
+                issuanceDate: '2026-03-29T06:49:28.123Z',
+                '@context': [
+                    'https://www.w3.org/2018/credentials/v1',
+                    'ipfs://bafkreib2ey4mdnzp7gkgj5ecldu2a46ulkwzvnwzec3xjpsubcwua6rwce'
+                ],
+                credentialSubject: [
+                    {
+                        role: 'Registrant',
+                        userId: 'did:hedera:testnet:8d2RiS1SmDUnHdmFZHc8NvaU3WqKMrdsorE6aRHzLpij_0.0.8417999',
+                        policyId: '69c83b44cebecbe1c0231007',
+                        groupOwner: 'did:hedera:testnet:8d2RiS1SmDUnHdmFZHc8NvaU3WqKMrdsorE6aRHzLpij_0.0.8417999',
+                        groupName: 'Registrant',
+                        '@context': [
+                            'ipfs://bafkreib2ey4mdnzp7gkgj5ecldu2a46ulkwzvnwzec3xjpsubcwua6rwce'
+                        ],
+                        id: 'urn:uuid:d7c5e170-a1fe-4e85-b280-ff2c697104ad',
+                        type: 'UserRole&1.0.0'
+                    }
+                ],
+                proof: {
+                    type: 'Ed25519Signature2018',
+                    created: '2026-03-29T06:49:28Z',
+                    verificationMethod:
+                        'did:hedera:testnet:8d2RiS1SmDUnHdmFZHc8NvaU3WqKMrdsorE6aRHzLpij_0.0.8417999#did-root-key',
+                    proofPurpose: 'assertionMethod',
+                    jws: 'eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..0AG-g08EnArujEU_Q5D0dJH19rlprc0fKGiIoG3FKGNuBzlT8Ro-Oj9G10njLdHnnHGxsyrm4sR_GrxvtS78Cw'
+                }
+            },
+            documentFileId: '69c8cb78bc0d9cc64682b7d4',
+            status: 'NEW',
+            signature: 0,
+            type: 'user-role',
+            policyId: '69c83b44cebecbe1c0231007',
+            tag: 'choose_role',
+            messageId: '1774.766968878',
+            topicId: '0.0.1774730127150',
+            relationships: null,
+            option: {
+                status: 'NEW'
+            },
+            hederaStatus: 'NEW',
+            schema: '#UserRole&1.0.0',
+            uuid: '4fa46122-c52a-45b4-983c-84c7d0be64d9',
+            entity: 'NONE',
+            iri: '4fa46122-c52a-45b4-983c-84c7d0be64d9',
+            readonly: false,
+            system: false,
+            active: false,
+            codeVersion: '1.0.0',
+            group: null,
+            isMintNeeded: true,
+            isTransferNeeded: false,
+            wasTransferNeeded: false,
+            relayerAccount: null,
+            tableFileIds: [],
+            id: '69c8cb78bc0d9cc64682b7d1'
+        }
+    ],
+
+    /** GET /policies/{policyId}/dry-run/user/{did} — single dry-run virtual user. */
+    POLICY_GET_DRY_RUN_USER_RESPONSE: {
+        createDate: '2026-03-28T20:47:45.739Z',
+        updateDate: '2026-03-28T20:47:45.739Z',
+        dryRunId: '69c83b44cebecbe1c0231007',
+        dryRunClass: 'VirtualUsers',
+        systemMode: false,
+        status: 'NEW',
+        signature: 0,
+        option: {
+            status: 'NEW'
+        },
+        hederaStatus: 'NEW',
+        uuid: '0ff5fb0d-98dd-4289-8369-6db2b84517f1',
+        entity: 'NONE',
+        iri: '0ff5fb0d-98dd-4289-8369-6db2b84517f1',
+        readonly: false,
+        system: false,
+        active: false,
+        codeVersion: '1.0.0',
+        did: 'did:hedera:testnet:6K6LvvNnSQ1RboTi23rsXuH3guur1qUKxWt2zPhPdiNp_0.0.8417999',
+        username: 'Virtual User 3',
+        hederaAccountId: '0.0.1774730865730',
+        isMintNeeded: true,
+        isTransferNeeded: false,
+        wasTransferNeeded: false,
+        id: '69c83e71cebecbe1c0231182'
+    },
+
+    /** POST /policies/{policyId}/dry-run/user (Api-Version: 2) — created virtual user payload. */
+    POLICY_POST_DRY_RUN_USER_V2_RESPONSE: {
+        username: 'Virtual User 3',
+        did: 'did:hedera:testnet:6K6LvvNnSQ1RboTi23rsXuH3guur1qUKxWt2zPhPdiNp_0.0.8417999',
+        hederaAccountId: '0.0.1774730865730',
+        active: false
+    },
+
+    /** POST /policies/{policyId}/dry-run/user — full virtual users list after creation (documented `id` only). */
+    POLICY_POST_DRY_RUN_USER_RESPONSE: [
+        {
+            active: false,
+            did: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            username: 'Administrator',
+            hederaAccountId: '0.0.6046379',
+            id: '69c8f0fa81910b160912d236'
+        },
+        {
+            active: true,
+            did: 'did:hedera:testnet:F6Euo3PPrDtm5J2VjDfYs6JSyTgn8BvJuqjhM2GW38rN_0.0.8417999',
+            username: 'Virtual User 1',
+            hederaAccountId: '0.0.1774777687871',
+            id: '69c8f557fd6d97ee3534e2b1'
+        }
+    ],
+
+    /** POST /policies/data — imported policy returned after uploading a `.data` archive (documented `id` only). */
+    POLICY_POST_UPLOAD_POLICY_DATA_RESPONSE: {
+        createDate: '2026-03-26T10:10:06.439Z',
+        updateDate: '2026-03-26T10:11:37.309Z',
+        uuid: 'a3336ac3-ae33-4397-85ab-0dbed992c99b',
+        name: 'iRec_4_1774519806406',
+        version: '3',
+        description: 'iRec Description',
+        topicDescription: 'iRec Description',
+        configFileId: '69c5065988275585de0ab308',
+        status: 'PUBLISH',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+        policyRoles: [],
+        policyGroups: [],
+        policyTopics: [],
+        policyTokens: [],
+        topicId: '0.0.8382928',
+        instanceTopicId: '0.0.8382933',
+        synchronizationTopicId: '0.0.8382934',
+        commentsTopicId: '0.0.8382936',
+        policyTag: 'Tag_1774519783335',
+        messageId: '1774519889.760696000',
+        codeVersion: '1.5.1',
+        hash: '35nNHbsFioMqSKBbv67YcL2KvHsQEu821T2hNdV3LWvk',
+        hashMapFileId: '69c5065988275585de0ab30a',
+        tools: [],
+        availability: 'private',
+        locationType: 'local',
+        recordsTopicId: '0.0.8382935',
+        autoRecordSteps: true,
+        contentFileId: '69c5064588275585de0ab2f0',
+        config: {},
+        hashMap: {},
+        id: '69c937108f421b1354945d4b'
+    },
+
+    /** POST /policies/import/file-metadata — created policy list after ZIP+metadata import. */
+    POLICY_IMPORT_FILE_METADATA_RESPONSE: [
+        {
+            createDate: '2026-03-28T18:27:11.922Z',
+            uuid: 'e6f6664e-1c89-4fa1-82c6-a8ba8e1b13c9',
+            name: 'CDM AMS-III.AR Policy',
+            description: 'Substituting fossil fuel-based lighting with LED/CFL lighting systems',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417238',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417238',
+            policyRoles: [
+                'Project Participant',
+                'VVB'
+            ],
+            policyGroups: [],
+            topicId: '0.0.8417334',
+            instanceTopicId: null,
+            policyTag: 'Tag_1774722384863',
+            codeVersion: '1.5.1',
+            tools: [
+                {
+                    name: 'Tool 33_modified',
+                    version: '1.8.8',
+                    topicId: '0.0.8417180',
+                    messageId: '1774721982.046674000'
+                },
+                {
+                    name: 'Tool 19_modified',
+                    version: '1.7.7',
+                    topicId: '0.0.8417160',
+                    messageId: '1774721939.774362000'
+                },
+                {
+                    name: 'Tool 21_modified',
+                    version: '3',
+                    topicId: '0.0.8417140',
+                    messageId: '1774721890.353019000'
+                },
+                {
+                    name: 'Tool 07_modified',
+                    version: '7',
+                    topicId: '0.0.8360425',
+                    messageId: '1774367941.594676930'
+                }
+            ],
+            userRoles: [
+                'Administrator'
+            ],
+            userGroups: [],
+            userRole: 'Administrator',
+            userGroup: null,
+            tests: [],
+            id: '69c81d7fc778760bac62cf66'
+        }
+    ]
 }

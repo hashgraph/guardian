@@ -1096,24 +1096,19 @@ export class PolicyApi {
     @ApiBody({
         description: 'List of policy IDs to delete.',
         required: true,
+        examples: {
+            delete: {
+                summary: 'Remove multiple policies',
+                value: ObjectExamples.POLICY_POST_DELETE_MULTIPLE_REQUEST
+            }
+        },
         schema: {
             type: 'object',
             required: ['policyIds'],
             properties: {
                 policyIds: {
                     type: 'array',
-                    items: { type: 'string' },
-                    examples: {
-                        delete: {
-                            summary: 'Remove multiple policies',
-                            value: {
-                                policyIds: [
-                                    '69c673f3fbdb94688e7eea7f',
-                                    '69c67548fbdb94688e7eeb98'
-                                ]
-                            }
-                        }
-                    }
+                    items: { type: 'string' }
                 }
             }
         }
@@ -3087,9 +3082,10 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Uploaded policy.',
         schema: {
-            type: 'object'
+            type: 'object',
+            additionalProperties: true
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_POST_UPLOAD_POLICY_DATA_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -4277,13 +4273,13 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiProduces('application/zip')
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'ZIP/XLSX binary payload returned as a file download.',
         schema: {
             type: 'string',
             format: 'binary'
-        },
-        example: { result: 'ok' }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -4323,8 +4319,13 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Imports new policy from IPFS.',
-        description: 'Imports new policy and all associated artifacts from IPFS into the local DB.' + ONLY_SR,
+        summary: 'Import new policy from a Hedera message.',
+        description:
+            'Imports a new policy and all associated artifacts into the local DB using the provided Hedera topic message ID. ' +
+            '`versionOfTopicId` imports the policy as a new version of an existing policy topic instead of creating a new one. ' +
+            '`demo=true` imports the policy in demo mode and starts it as a demo policy. ' +
+            '`originalTracking=true` stores the imported policy original hash/message linkage for later change tracking.' +
+            ONLY_SR,
     })
     @ApiQuery({
         name: 'versionOfTopicId',
@@ -4451,8 +4452,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO,
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean,
-        @Query('originalTracking') originalTracking?: boolean
+        @Query('demo', new ParseBoolPipe({ optional: true })) demo?: boolean,
+        @Query('originalTracking', new ParseBoolPipe({ optional: true })) originalTracking?: boolean
     ): Promise<PolicyDTO[]> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -4483,8 +4484,13 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Imports new policy from IPFS.',
-        description: 'Imports new policy and all associated artifacts from IPFS into the local DB.' + ONLY_SR,
+        summary: 'Import new policy from a Hedera message asynchronously.',
+        description:
+            'Starts asynchronous import of a new policy and all associated artifacts into the local DB using the provided Hedera topic message ID. ' +
+            '`versionOfTopicId` imports the policy as a new version of an existing policy topic instead of creating a new one. ' +
+            '`demo=true` imports the policy in demo mode and starts it as a demo policy. ' +
+            '`originalTracking=true` stores the imported policy original hash/message linkage for later change tracking.' +
+            ONLY_SR,
     })
     @ApiQuery({
         name: 'versionOfTopicId',
@@ -4514,7 +4520,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        example: {
+            taskId: '9901fd45-5360-4269-879d-a20332eb8e65',
+            expectation: 17,
+            action: 'Import policy message',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
     })
     @ApiUnprocessableEntityResponse({
         description: 'Unprocessable entity.',
@@ -4532,8 +4543,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO,
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean,
-        @Query('originalTracking') originalTracking?: boolean
+        @Query('demo', new ParseBoolPipe({ optional: true })) demo?: boolean,
+        @Query('originalTracking', new ParseBoolPipe({ optional: true })) originalTracking?: boolean
     ): Promise<any> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -4575,7 +4586,7 @@ export class PolicyApi {
     )
     @ApiOperation({
         summary: 'Policy preview from IPFS.',
-        description: 'Previews the policy from IPFS without loading it into the local DB.' + ONLY_SR,
+        description: 'Previews the policy identified by the provided Hedera topic message ID without loading it into the local DB.' + ONLY_SR,
     })
     @ApiBody({
         description: 'Message.',
@@ -4584,7 +4595,7 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Policy preview.',
         type: PolicyPreviewDTO,
-        example: { module: { id: Examples.DB_ID,
+        example: { policy: { id: Examples.DB_ID,
             uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
@@ -4706,7 +4717,7 @@ export class PolicyApi {
     )
     @ApiOperation({
         summary: 'Policy preview from IPFS.',
-        description: 'Previews the policy from IPFS without loading it into the local DB.' + ONLY_SR,
+        description: 'Previews the policy identified by the provided Hedera topic message ID without loading it into the local DB.' + ONLY_SR,
     })
     @ApiBody({
         description: 'Message.',
@@ -4715,7 +4726,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        example: {
+            taskId: '9901fd45-5360-4269-879d-a20332eb8e65',
+            expectation: 4,
+            action: 'Preview policy message',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
     })
     @ApiUnprocessableEntityResponse({
         description: 'Unprocessable entity.',
@@ -4758,8 +4774,12 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
-        summary: 'Imports new policy from a zip file.',
-        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
+        summary: 'Import new policy from a ZIP file.',
+        description:
+            'Imports a new policy and all associated artifacts, such as schemas and VCs, from the provided ZIP file into the local DB. ' +
+            '`versionOfTopicId` imports the policy as a new version of an existing policy topic instead of creating a new one. ' +
+            '`demo=true` imports the policy in demo mode and starts it as a demo policy.' +
+            ONLY_SR,
     })
     @ApiQuery({
         name: 'versionOfTopicId',
@@ -4775,10 +4795,14 @@ export class PolicyApi {
         required: false,
         example: true
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'A zip file containing policy config.',
+        description: 'Raw ZIP archive bytes containing policy config. Send with `Content-Type: binary/octet-stream`.',
         required: true,
-        type: String
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
     @ApiCreatedResponse({
         description: 'Created policy.',
@@ -4876,7 +4900,7 @@ export class PolicyApi {
         @Body() file: any,
         @Req() req,
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean
+        @Query('demo', new ParseBoolPipe({ optional: true })) demo?: boolean
     ): Promise<PolicyDTO[]> {
         try {
             const engineService = new PolicyEngine();
@@ -4900,8 +4924,13 @@ export class PolicyApi {
         //UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
-        summary: 'Imports new policy from a zip file with metadata.',
-        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
+        summary: 'Import new policy from a ZIP file with metadata.',
+        description:
+            'Imports a new policy and all associated artifacts, such as schemas and VCs, from the provided ZIP file into the local DB. ' +
+            '`versionOfTopicId` imports the policy as a new version of an existing policy topic instead of creating a new one. ' +
+            '`demo=true` imports the policy in demo mode and starts it as a demo policy. ' +
+            'The optional `metadata` file is a JSON payload used for import settings such as tool message remapping and `importRecords`.' +
+            ONLY_SR,
     })
     @ApiQuery({
         name: 'versionOfTopicId',
@@ -4919,105 +4948,31 @@ export class PolicyApi {
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'Form data with policy file and metadata.',
+        description: 'Multipart form data with a policy ZIP archive and optional metadata JSON file.',
         required: true,
         schema: {
             type: 'object',
+            required: ['policyFile'],
             properties: {
                 'policyFile': {
                     type: 'string',
                     format: 'binary',
+                    description: 'Policy archive (ZIP format).'
                 },
                 'metadata': {
                     type: 'string',
                     format: 'binary',
+                    nullable: true,
+                    description: 'Optional JSON file (for example `metadata.json`) with content like `{ "tools": { "1706867530.884259218": "1774367941.594676930" }, "importRecords": true }`.'
                 }
             }
         }
     })
     @ApiCreatedResponse({
-        description: 'Successful operation.',
+        description: 'Created policy.',
         type: PolicyDTO,
         isArray: true,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
-        name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
-        owner: 'string',
-        status: 'string',
-        date: 'string',
-        duration: 0,
-        progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }]
+        example: ObjectExamples.POLICY_IMPORT_FILE_METADATA_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -5031,7 +4986,7 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any[],
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean
+        @Query('demo', new ParseBoolPipe({ optional: true })) demo?: boolean
     ): Promise<PolicyDTO[]> {
         try {
             const policyFile = files.find((item) => item.fieldname === 'policyFile');
@@ -5063,8 +5018,13 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Imports new policy from a zip file.',
-        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
+        summary: 'Import new policy from a ZIP file asynchronously.',
+        description:
+            'Starts asynchronous import of a new policy and all associated artifacts, such as schemas and VCs, from the provided ZIP file into the local DB. ' +
+            '`versionOfTopicId` imports the policy as a new version of an existing policy topic instead of creating a new one. ' +
+            '`demo=true` imports the policy in demo mode and starts it as a demo policy. ' +
+            '`originalTracking=true` stores the imported policy original ZIP/hash linkage for later change tracking.' +
+            ONLY_SR,
     })
     @ApiQuery({
         name: 'versionOfTopicId',
@@ -5087,15 +5047,24 @@ export class PolicyApi {
         required: false,
         example: true
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'A zip file containing policy config.',
+        description: 'Raw ZIP archive bytes containing policy config. Send with `Content-Type: binary/octet-stream`.',
         required: true,
-        type: String
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        example: {
+            taskId: '9901fd45-5360-4269-879d-a20332eb8e65',
+            expectation: 15,
+            action: 'Import policy file',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -5108,8 +5077,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() file: any,
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean,
-        @Query('originalTracking') originalTracking?: boolean
+        @Query('demo', new ParseBoolPipe({ optional: true })) demo?: boolean,
+        @Query('originalTracking', new ParseBoolPipe({ optional: true })) originalTracking?: boolean
     ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
@@ -5132,8 +5101,14 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Imports new policy from a zip file with metadata.',
-        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
+        summary: 'Import new policy from a ZIP file with metadata asynchronously.',
+        description:
+            'Starts asynchronous import of a new policy and all associated artifacts, such as schemas and VCs, from the provided ZIP file into the local DB. ' +
+            '`versionOfTopicId` imports the policy as a new version of an existing policy topic instead of creating a new one. ' +
+            '`demo=true` imports the policy in demo mode and starts it as a demo policy. ' +
+            '`originalTracking=true` stores the imported policy original ZIP/hash linkage for later change tracking. ' +
+            'The optional `metadata` file is a JSON payload used for import settings such as tool message remapping and `importRecords`.' +
+            ONLY_SR,
     })
     @ApiQuery({
         name: 'versionOfTopicId',
@@ -5158,18 +5133,22 @@ export class PolicyApi {
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'Form data with policy file and metadata.',
+        description: 'Multipart form data with a policy ZIP archive and optional metadata JSON file.',
         required: true,
         schema: {
             type: 'object',
+            required: ['policyFile'],
             properties: {
                 'policyFile': {
                     type: 'string',
                     format: 'binary',
+                    description: 'Policy archive (ZIP format).'
                 },
                 'metadata': {
                     type: 'string',
                     format: 'binary',
+                    nullable: true,
+                    description: 'Optional JSON file (for example `metadata.json`) with content like `{ "tools": { "1706867530.884259218": "1774367941.594676930" }, "importRecords": true }`.'
                 }
             }
         }
@@ -5177,7 +5156,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        example: {
+            taskId: '9901fd45-5360-4269-879d-a20332eb8e65',
+            expectation: 15,
+            action: 'Import policy file',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -5191,8 +5175,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any[],
         @Query('versionOfTopicId') versionOfTopicId?: string,
-        @Query('demo') demo?: boolean,
-        @Query('originalTracking') originalTracking?: boolean
+        @Query('demo', new ParseBoolPipe({ optional: true })) demo?: boolean,
+        @Query('originalTracking', new ParseBoolPipe({ optional: true })) originalTracking?: boolean
     ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
@@ -5238,15 +5222,19 @@ export class PolicyApi {
         summary: 'Policy preview from a zip file.',
         description: 'Previews the policy from a zip file without loading it into the local DB.' + ONLY_SR,
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'A zip file containing policy config.',
+        description: 'Raw ZIP archive bytes containing policy config. Send with `Content-Type: binary/octet-stream`.',
         required: true,
-        type: String
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
     @ApiOkResponse({
         description: 'Policy preview.',
         type: PolicyPreviewDTO,
-        example: { module: { id: Examples.DB_ID,
+        example: { policy: { id: Examples.DB_ID,
             uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
@@ -5376,17 +5364,32 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'A xlsx file containing policy config.',
+        description: 'Raw XLSX file bytes containing policy config. Send with `Content-Type: binary/octet-stream`.',
         required: true,
-        type: String
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
     @ApiCreatedResponse({
-        description: 'Successful operation.',
+        description: 'Import result for the updated policy.',
         schema: {
-            'type': 'object'
+            type: 'object',
+            properties: {
+                policyId: { type: 'string', example: Examples.DB_ID },
+                errors: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        additionalProperties: true
+                    }
+                }
+            },
+            required: ['policyId', 'errors']
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_IMPORT_XLSX_RESPONSE
     })
     @ApiUnprocessableEntityResponse({
         description: 'Unprocessable entity.',
@@ -5440,15 +5443,31 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiQuery({
+        name: 'schemas',
+        type: String,
+        description: 'Optional comma-separated schema ids used by the async XLSX import flow.',
+        required: false,
+        example: '69c2cfc021d39e7b6d15e236,69c2cfc021d39e7b6d15e237'
+    })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'A xlsx file containing policy config.',
+        description: 'Raw XLSX file bytes containing policy config. Send with `Content-Type: binary/octet-stream`.',
         required: true,
-        type: String
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        example: {
+            taskId: '9901fd45-5360-4269-879d-a20332eb8e65',
+            expectation: 15,
+            action: 'Import policy file',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
     })
     @ApiUnprocessableEntityResponse({
         description: 'Unprocessable entity.',
@@ -5507,17 +5526,44 @@ export class PolicyApi {
         summary: 'Policy preview from a xlsx file.',
         description: 'Previews the policy from a xlsx file without loading it into the local DB.' + ONLY_SR,
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'A xlsx file containing policy config.',
+        description: 'Raw XLSX file bytes containing policy config. Send with `Content-Type: binary/octet-stream`.',
         required: true,
-        type: String
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Preview payload parsed from the XLSX file.',
         schema: {
-            'type': 'object'
+            type: 'object',
+            properties: {
+                schemas: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        additionalProperties: true
+                    }
+                },
+                tools: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        additionalProperties: true
+                    }
+                },
+                errors: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        additionalProperties: true
+                    }
+                }
+            }
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_IMPORT_XLSX_PREVIEW_RESPONSE
     })
     @ApiUnprocessableEntityResponse({
         description: 'Unprocessable entity.',
@@ -5555,8 +5601,11 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Returns virtual users.',
-        description: 'Returns virtual users.' + ONLY_SR,
+        summary: 'Get dry-run virtual users.',
+        description:
+            'Returns virtual users for the selected dry-run policy. ' +
+            'Optional `savepointIds` can be provided as a stringified JSON array to read users from a specific savepoint context.' +
+            ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -5565,8 +5614,15 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiQuery({
+        name: 'savepointIds',
+        type: String,
+        description: 'Optional stringified JSON array of savepoint ids used to read users from a specific savepoint context.',
+        required: false,
+        example: ObjectExamples.POLICY_QUERY_SAVEPOINT_IDS_JSON
+    })
     @ApiOkResponse({
-        description: 'Virtual users.',
+        description: 'Virtual users for the current dry-run state or the selected savepoints.',
         schema: {
             type: 'array',
             items: {
@@ -5574,7 +5630,7 @@ export class PolicyApi {
                 additionalProperties: true
             }
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_GET_DRY_RUN_USERS_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -5608,8 +5664,8 @@ export class PolicyApi {
         Permissions.POLICIES_POLICY_UPDATE,
     )
     @ApiOperation({
-        summary: 'Returns a virtual user by DID.',
-        description: 'Returns a virtual user by DID.' + ONLY_SR,
+        summary: 'Get dry-run virtual user by DID.',
+        description: 'Returns a virtual user from the selected dry-run policy by its DID.' + ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -5623,9 +5679,15 @@ export class PolicyApi {
         type: String,
         description: 'Virtual User DID',
         required: true,
+        example: Examples.DID
     })
     @ApiOkResponse({
         description: 'Virtual user.',
+        schema: {
+            type: 'object',
+            additionalProperties: true
+        },
+        example: ObjectExamples.POLICY_GET_DRY_RUN_USER_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -5651,6 +5713,7 @@ export class PolicyApi {
     /**
      * Create virtual user
      */
+    @ApiExcludeEndpoint()
     @Post('/:policyId/dry-run/user')
     @Auth(
         Permissions.POLICIES_POLICY_UPDATE,
@@ -5677,7 +5740,7 @@ export class PolicyApi {
                 additionalProperties: true
             }
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_POST_DRY_RUN_USER_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -5713,9 +5776,18 @@ export class PolicyApi {
     @Auth(
         Permissions.POLICIES_POLICY_UPDATE,
     )
+    @ApiHeader({
+        name: 'Api-Version',
+        description: 'Use "2" for this endpoint (returns the created dry-run virtual user object).',
+        required: true,
+        example: '2'
+    })
     @ApiOperation({
-        summary: 'Creates a virtual user (v2).',
-        description: 'Creates a virtual user and returns the created user object.' + ONLY_SR,
+        summary: 'Create dry-run virtual user.',
+        description:
+            'Creates a new virtual user for the selected dry-run policy and returns the created user object. ' +
+            'Use `Api-Version: 2`. Optional `savepointIds` in the request body scopes creation to a specific savepoint context.' +
+            ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -5724,8 +5796,47 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
-    @ApiOkResponse({
+    @ApiBody({
+        description: 'Optional savepoint context for virtual user creation.',
+        required: false,
+        schema: {
+            type: 'object',
+            properties: {
+                savepointIds: {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    },
+                    example: ['67c85d2fcebecbe1c0231522', '67c85d35cebecbe1c0231523']
+                }
+            }
+        }
+    })
+    @ApiCreatedResponse({
         description: 'Created virtual user.',
+        schema: {
+            type: 'object',
+            required: ['username', 'did', 'hederaAccountId', 'active'],
+            properties: {
+                username: {
+                    type: 'string',
+                    example: 'Virtual User 3'
+                },
+                did: {
+                    type: 'string',
+                    example: Examples.DID
+                },
+                hederaAccountId: {
+                    type: 'string',
+                    example: '0.0.1774730865730'
+                },
+                active: {
+                    type: 'boolean',
+                    example: false
+                }
+            }
+        },
+        example: ObjectExamples.POLICY_POST_DRY_RUN_USER_V2_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -5764,7 +5875,7 @@ export class PolicyApi {
     )
     @ApiOperation({
         summary: 'Change active virtual user.',
-        description: 'Change active virtual user.' + ONLY_SR,
+        description: 'Sets the active dry-run virtual user by DID and returns the updated virtual users list.' + ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -5774,16 +5885,31 @@ export class PolicyApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Credentials.',
-        type: Object
-    })
-    @ApiOkResponse({
-        description: 'Virtual users.',
+        description: 'Virtual user DID to activate.',
+        required: true,
         schema: {
             type: 'object',
-            additionalProperties: true
+            required: ['did'],
+            properties: {
+                did: {
+                    type: 'string',
+                    description: 'DID of the virtual user to activate.',
+                    example: Examples.DID
+                }
+            },
+            example: ObjectExamples.POLICY_POST_DRY_RUN_LOGIN_REQUEST
+        }
+    })
+    @ApiOkResponse({
+        description: 'Virtual users for the dry-run policy after the active user change.',
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                additionalProperties: true
+            }
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_POST_DRY_RUN_LOGIN_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -5818,8 +5944,8 @@ export class PolicyApi {
     @Post('/:policyId/dry-run/block')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: '.',
-        description: '.' + ONLY_SR,
+        summary: 'Run a policy block in dry-run mode.',
+        description: 'Runs the provided block configuration in dry-run mode with the supplied event/document payload and returns execution logs, errors, input, and output documents.' + ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -5829,13 +5955,42 @@ export class PolicyApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Block config.',
-        type: DebugBlockConfigDTO
+        description: 'Block configuration and input data to execute in dry-run mode.',
+        schema: {
+            type: 'object',
+            properties: {
+                block: {
+                    type: 'object',
+                    additionalProperties: true,
+                    description: 'Serialized block configuration to run in isolation.'
+                },
+                data: {
+                    type: 'object',
+                    properties: {
+                        input: { type: 'string', example: 'RunEvent' },
+                        output: { type: 'string', example: 'RunEvent' },
+                        type: {
+                            type: 'string',
+                            enum: ['schema', 'json', 'file', 'history'],
+                            example: 'json'
+                        },
+                        document: {
+                            oneOf: [
+                                { type: 'string' },
+                                { type: 'object', additionalProperties: true }
+                            ]
+                        }
+                    },
+                    additionalProperties: false
+                }
+            },
+            example: ObjectExamples.POLICY_POST_DRY_RUN_BLOCK_REQUEST
+        }
     })
     @ApiCreatedResponse({
-        description: 'Result.',
+        description: 'Dry-run execution result for the requested block.',
         type: DebugBlockResultDTO,
-        example: { logs: ['string'], errors: ['string'], input: [{}], output: [{}] }
+        example: ObjectExamples.POLICY_POST_DRY_RUN_BLOCK_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -5864,8 +6019,8 @@ export class PolicyApi {
     @Get('/:policyId/dry-run/block/:tagName/history')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: '.',
-        description: '.' + ONLY_SR,
+        summary: 'List dry-run history records for a block tag.',
+        description: 'Returns stored dry-run history entries for the specified block tag, including recorded document payloads and related metadata.' + ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -5878,21 +6033,26 @@ export class PolicyApi {
         name: 'tagName',
         type: 'string',
         required: true,
-        description: 'Block name (Tag)',
-        example: 'block-tag',
+        description: 'Block tag (e.g. choose_role).',
+        example: 'choose_role',
     })
     @ApiOkResponse({
-        description: 'Input data.',
-        isArray: true,
-        type: DebugBlockHistoryDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', createDate: 'string', document: {} }]
+        description: 'Array of dry-run document records for the block tag.',
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                additionalProperties: true
+            }
+        },
+        example: ObjectExamples.POLICY_GET_DRY_RUN_BLOCK_HISTORY_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
         example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(DebugBlockHistoryDTO, InternalServerErrorDTO)
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getBlockHistory(
         @AuthUser() user: IAuthUser,
@@ -5926,13 +6086,18 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'List of dry-run savepoints.',
         schema: {
-            type: 'array',
-            items: {
-                type: 'object',
-                additionalProperties: true
+            type: 'object',
+            properties: {
+                items: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        additionalProperties: true
+                    }
+                }
             }
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_GET_SAVEPOINTS_RESPONSE
     })
     @ApiForbiddenResponse({
         description: 'Policy is not in Dry Run mode.',
@@ -5978,7 +6143,7 @@ export class PolicyApi {
         description: 'Dry-run savepoints count.',
         schema: {
             type: 'number',
-            example: 5
+            example: { 'count': 5 }
         }
     })
     @ApiForbiddenResponse({
@@ -6021,25 +6186,35 @@ export class PolicyApi {
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
         summary: 'Apply savepoint',
-        description: 'Restores Dry Run state to the selected savepoint and returns its metadata.'
+        description:
+            'Restores Dry Run state to the selected savepoint. Returns `{ savepoint }` with the updated savepoint record (same shape as POST /savepoints).'
     })
     @ApiParam({
         name: 'policyId',
         type: String,
-        required: true
+        required: true,
+        description: 'Policy identifier.',
+        example: Examples.DB_ID
     })
     @ApiParam({
         name: 'savepointId',
         type: String,
-        required: true
+        required: true,
+        description: 'Savepoint id to apply.',
+        example: Examples.DB_ID_2
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Response includes `savepoint`: the applied dry-run savepoint record after restore.',
         schema: {
             type: 'object',
-            additionalProperties: true
+            properties: {
+                savepoint: {
+                    type: 'object',
+                    additionalProperties: true
+                }
+            }
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_DRY_RUN_SAVEPOINT_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -6091,7 +6266,8 @@ export class PolicyApi {
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
         summary: 'Create dry-run savepoint.',
-        description: 'Creates a new savepoint for the policy (Dry Run only).',
+        description:
+            'Creates a new savepoint for the policy (Dry Run only). Returns `{ savepoint }` with the created record (same shape as items in GET /savepoints).',
     })
     @ApiParam({ name: 'policyId', type: String, required: true, example: Examples.DB_ID })
     @ApiBody({
@@ -6106,12 +6282,17 @@ export class PolicyApi {
         }
     })
     @ApiOkResponse({
-        description: 'Created dry-run savepoint metadata.',
+        description: 'Response includes `savepoint`: the created dry-run savepoint record.',
         schema: {
             type: 'object',
-            additionalProperties: true
+            properties: {
+                savepoint: {
+                    type: 'object',
+                    additionalProperties: true
+                }
+            }
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_DRY_RUN_SAVEPOINT_RESPONSE
     })
     @ApiForbiddenResponse({
         description: 'Policy is not in Dry Run mode.',
@@ -6159,7 +6340,7 @@ export class PolicyApi {
         description: 'Updates the name of a Dry Run savepoint for the policy.'
     })
     @ApiParam({ name: 'policyId', type: String, required: true, example: Examples.DB_ID })
-    @ApiParam({ name: 'savepointId', type: String, required: true, example: Examples.DB_ID })
+    @ApiParam({ name: 'savepointId', type: String, required: true, example: Examples.DB_ID_2 })
     @ApiBody({
         description: 'Savepoint rename payload.',
         schema: {
@@ -6176,7 +6357,7 @@ export class PolicyApi {
             type: 'object',
             additionalProperties: true
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_DRY_RUN_SAVEPOINT_RESPONSE
     })
     @ApiBadRequestResponse({
         description: 'Name is required.',
@@ -6234,7 +6415,11 @@ export class PolicyApi {
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
         summary: 'Delete dry-run savepoints.',
-        description: 'Deletes the specified savepoints for the policy (Dry Run only).'
+        description:
+            'Deletes the specified savepoints for the policy (Dry Run only). ' +
+            'When the policy has more than one savepoint and `skipCurrentSavepointGuard` is `false`, the current savepoint cannot be deleted and the request fails. ' +
+            'When `skipCurrentSavepointGuard` is `true`, that guard is bypassed; the UI uses this mode for "delete all savepoints". ' +
+            'Leaf savepoints are hard-deleted, while savepoints with children are marked as deleted.'
     })
     @ApiParam({
         name: 'policyId',
@@ -6244,9 +6429,31 @@ export class PolicyApi {
     })
     @ApiBody({ type: DeleteSavepointsDTO })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        type: DeleteSavepointsResultDTO,
-        example: 'string'
+        description:
+            'Deletion result. `hardDeletedIds` contains only savepoints that were hard-deleted. ' +
+            'This array can be empty when the request causes only soft deletes (for example, deleting savepoints that still have children). ' +
+            'If the current savepoint is included while the guard is enforced, the request fails instead of returning an empty result.',
+        schema: {
+            type: 'object',
+            properties: {
+                hardDeletedIds: {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    }
+                }
+            }
+        },
+        examples: {
+            skipCurrentSavepointGuardFalse: {
+                summary: 'Current savepoint guard enforced',
+                value: ObjectExamples.POLICY_DELETE_SAVEPOINTS_RESPONSE_EMPTY
+            },
+            skipCurrentSavepointGuardTrue: {
+                summary: 'Current savepoint guard skipped',
+                value: ObjectExamples.POLICY_DELETE_SAVEPOINTS_RESPONSE_WITH_HARD_DELETE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -6255,10 +6462,10 @@ export class PolicyApi {
     })
     @ApiForbiddenResponse({
         description: 'Policy is not in Dry Run mode.',
-        type: InternalServerErrorDTO,
-        example: { statusCode: 500, message: 'Error message' }
+        type: ForbiddenErrorDTO,
+        example: { statusCode: 403, message: 'Invalid status.', error: 'Forbidden' }
     })
-    @ApiExtraModels(DeleteSavepointsDTO, DeleteSavepointsResultDTO, InternalServerErrorDTO)
+    @ApiExtraModels(DeleteSavepointsDTO, DeleteSavepointsResultDTO, ForbiddenErrorDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSavepoints(
         @AuthUser() user: IAuthUser,
@@ -6308,22 +6515,16 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
-    @ApiBody({
-        description: 'Dry-run restart payload. Pass filters/options supported by the engine restart operation.',
-        required: false,
-        schema: {
-            type: 'object',
-            additionalProperties: true,
-            example: { result: 'ok' }
-        }
-    })
     @ApiOkResponse({
         description: 'Dry-run state restart result.',
         schema: {
-            type: 'object',
-            additionalProperties: true
+            type: 'array',
+            items: {
+                type: 'object',
+                additionalProperties: true
+            }
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_POST_DRY_RUN_RESTART_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -6332,10 +6533,10 @@ export class PolicyApi {
     })
     @ApiForbiddenResponse({
         description: 'Policy is not in Dry Run mode.',
-        type: InternalServerErrorDTO,
-        example: { statusCode: 500, message: 'Error message' }
+        type: ForbiddenErrorDTO,
+        example: { statusCode: 403, message: 'Invalid status.', error: 'Forbidden' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(ForbiddenErrorDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async restartDryRun(
         @AuthUser() user: IAuthUser,
@@ -6369,8 +6570,8 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Get dry-run details (Transactions).',
-        description: 'Get dry-run details (Transactions).' + ONLY_SR,
+        summary: 'Get dry-run transactions.',
+        description: 'Returns virtual Hedera transactions generated during the policy dry-run.' + ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -6395,10 +6596,15 @@ export class PolicyApi {
     })
     @ApiOkResponse({
         description: 'Transactions.',
-        isArray: true,
         headers: pageHeader,
-        type: Object,
-        example: [{}]
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                additionalProperties: true
+            }
+        },
+        example: ObjectExamples.POLICY_GET_DRY_RUN_TRANSACTIONS_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -6434,8 +6640,8 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Get dry-run details (Artifacts).',
-        description: 'Get dry-run details (Artifacts).' + ONLY_SR,
+        summary: 'Get dry-run artifacts.',
+        description: 'Returns dry-run artifacts/documents generated for the policy.' + ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -6460,10 +6666,15 @@ export class PolicyApi {
     })
     @ApiOkResponse({
         description: 'Artifacts.',
-        isArray: true,
         headers: pageHeader,
-        type: Object,
-        example: [{}]
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                additionalProperties: true
+            }
+        },
+        example: ObjectExamples.POLICY_GET_DRY_RUN_ARTIFACTS_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -6499,8 +6710,8 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Get dry-run details (Files).',
-        description: 'Get dry-run details (Files).' + ONLY_SR,
+        summary: 'Get dry-run IPFS files.',
+        description: 'Returns IPFS file records generated during the policy dry-run.' + ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -6525,10 +6736,15 @@ export class PolicyApi {
     })
     @ApiOkResponse({
         description: 'Files.',
-        isArray: true,
         headers: pageHeader,
-        type: Object,
-        example: [{}]
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                additionalProperties: true
+            }
+        },
+        example: ObjectExamples.POLICY_GET_DRY_RUN_IPFS_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -6570,8 +6786,8 @@ export class PolicyApi {
         // UserRole.USER,
     )
     @ApiOperation({
-        summary: 'Requests policy links.',
-        description: 'Requests policy links. Users with permission to execute or manage the policy can make this request.',
+        summary: 'Get multi-policy link.',
+        description: 'Returns the current multi-policy link settings for the policy. Users with permission to execute or manage the policy can make this request.',
     })
     @ApiParam({
         name: 'policyId',
@@ -6582,9 +6798,24 @@ export class PolicyApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        isArray: true,
-        type: Object,
-        example: [{}]
+        schema: {
+            type: 'object',
+            additionalProperties: true
+        },
+        examples: {
+            beforeCreate: {
+                summary: 'Before multi-policy creation',
+                value: ObjectExamples.POLICY_GET_MULTIPLE_RESPONSE_BEFORE_CREATE
+            },
+            mainPolicy: {
+                summary: 'Main policy link',
+                value: ObjectExamples.POLICY_GET_MULTIPLE_RESPONSE_MAIN
+            },
+            subPolicy: {
+                summary: 'Sub-policy link',
+                value: ObjectExamples.POLICY_GET_MULTIPLE_RESPONSE_SUB
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -6616,8 +6847,12 @@ export class PolicyApi {
         // UserRole.USER,
     )
     @ApiOperation({
-        summary: 'Creates policy link.',
-        description: 'Creates policy link. Users with permission to execute or manage the policy can make this request.',
+        summary: 'Create or update multi-policy link.',
+        description:
+            'Creates or updates the multi-policy link for the current policy. ' +
+            'For a main policy, call GET /policies/{policyId}/multiple and reuse the returned mainPolicyTopicId and synchronizationTopicId. ' +
+            'For a sub-policy, use the link generated by the main policy owner; it contains both mainPolicyTopicId and synchronizationTopicId. ' +
+            'Users with permission to execute or manage the policy can make this request.',
     })
     @ApiParam({
         name: 'policyId',
@@ -6627,14 +6862,47 @@ export class PolicyApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Policy links payload.',
-        type: Object
+        description:
+            'Multi-policy link payload. ' +
+            'For a main policy, take mainPolicyTopicId and synchronizationTopicId from GET /policies/{policyId}/multiple. ' +
+            'For a sub-policy, use the values from the link shared by the main policy owner.',
+        schema: {
+            type: 'object',
+            required: ['mainPolicyTopicId', 'synchronizationTopicId'],
+            properties: {
+                mainPolicyTopicId: {
+                    type: 'string',
+                    description: 'Topic ID of the main policy.'
+                },
+                synchronizationTopicId: {
+                    type: 'string',
+                    description: 'Synchronization topic ID shared between linked policies.'
+                }
+            }
+        },
+        examples: {
+            default: {
+                summary: 'Create or join a multi-policy link',
+                value: ObjectExamples.POLICY_POST_MULTIPLE_REQUEST
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        isArray: true,
-        type: Object,
-        example: [{}]
+        schema: {
+            type: 'object',
+            additionalProperties: true
+        },
+        examples: {
+            mainPolicy: {
+                summary: 'Main policy link',
+                value: ObjectExamples.POLICY_GET_MULTIPLE_RESPONSE_MAIN
+            },
+            subPolicy: {
+                summary: 'Sub-policy link',
+                value: ObjectExamples.POLICY_GET_MULTIPLE_RESPONSE_SUB
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -6683,17 +6951,21 @@ export class PolicyApi {
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'Form data with tests.',
+        description:
+            'Multipart form data with one or more policy test files. ' +
+            'Typically files are uploaded in the `tests` field; the route processes all received uploaded files.',
         required: true,
         schema: {
-            type: 'array',
-            items: {
-                type: 'object',
-                properties: {
-                    'tests': {
+            type: 'object',
+            required: ['tests'],
+            properties: {
+                'tests': {
+                    type: 'array',
+                    items: {
                         type: 'string',
                         format: 'binary',
-                    }
+                    },
+                    description: 'One or more uploaded test files.'
                 }
             }
         }
@@ -6702,7 +6974,7 @@ export class PolicyApi {
         description: 'Successful operation.',
         isArray: true,
         type: PolicyTestDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Test Name', policyId: 'f3b2a9c1e4d5678901234567', owner: 'string', status: 'string', date: 'string', duration: 0, progress: 0, resultId: 'f3b2a9c1e4d5678901234567', result: {} }]
+        example: ObjectExamples.POLICY_POST_TEST_RESPONSE
     })
     @ApiBadRequestResponse({
         description: 'Bad request (e.g. no files to upload).',
@@ -6761,12 +7033,12 @@ export class PolicyApi {
         type: String,
         description: 'Test Id',
         required: true,
-        example: Examples.DB_ID
+        example: Examples.DB_ID_2
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyTestDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Test Name', policyId: 'f3b2a9c1e4d5678901234567', owner: 'string', status: 'string', date: 'string', duration: 0, progress: 0, resultId: 'f3b2a9c1e4d5678901234567', result: {} }
+        example: ObjectExamples.POLICY_GET_TEST_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -6814,7 +7086,7 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyTestDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Test Name', policyId: 'f3b2a9c1e4d5678901234567', owner: 'string', status: 'string', date: 'string', duration: 0, progress: 0, resultId: 'f3b2a9c1e4d5678901234567', result: {} }
+        example: ObjectExamples.POLICY_POST_TEST_START_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -6862,7 +7134,7 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyTestDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Test Name', policyId: 'f3b2a9c1e4d5678901234567', owner: 'string', status: 'string', date: 'string', duration: 0, progress: 0, resultId: 'f3b2a9c1e4d5678901234567', result: {} }
+        example: ObjectExamples.POLICY_POST_TEST_STOP_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -6939,7 +7211,10 @@ export class PolicyApi {
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
         summary: 'Get test details.',
-        description: 'Get test details.' + ONLY_SR,
+        description:
+            'Get test details. ' +
+            'In the UI, this data is available from the policy grid by opening the tests dialog for a policy. ' +
+            ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -6958,7 +7233,7 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: RunningDetailsDTO,
-        example: { left: {}, right: {}, total: 0, documents: {} }
+        example: ObjectExamples.POLICY_GET_TEST_DETAILS_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -6989,8 +7264,9 @@ export class PolicyApi {
      */
     @Get('/methodologies/categories')
     @ApiOperation({
-        summary: 'Get all categories',
-        description: 'Get all categories',
+        summary: 'Get methodology categories.',
+        description:
+            'Returns all available methodology categories that can be used to filter methodology / policy templates in the library.',
     })
     @ApiAcceptedResponse({
         description: 'Successful operation.',
@@ -7020,17 +7296,35 @@ export class PolicyApi {
      */
     @Post('/methodologies/search')
     @ApiOperation({
-        summary: 'Get filtered policies',
-        description: 'Get policies by categories and text',
+        summary: 'Search methodologies by categories and text.',
+        description:
+            'Returns methodology / policy templates filtered by category IDs and optional free-text search. ' +
+            'Use this endpoint to search the methodology library by selected categories, text query, or both.',
     })
     @ApiBody({
         description: 'Filters',
         required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                categoryIds: {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    },
+                    description: 'Optional methodology category IDs to filter by.'
+                },
+                text: {
+                    type: 'string',
+                    description: 'Optional free-text search query.'
+                }
+            }
+        },
         examples: {
             Filter1: {
                 value: {
-                    categoryIds: [Examples.DB_ID, Examples.DB_ID],
-                    text: 'abc'
+                    categoryIds: [Examples.DB_ID, Examples.DB_ID_2],
+                    text: 'CDM'
                 }
             }
         }
@@ -7150,8 +7444,10 @@ export class PolicyApi {
         Permissions.POLICIES_POLICY_MANAGE,
     )
     @ApiOperation({
-        summary: 'Create new version vc document.',
-        description: 'Create new version vc document.',
+        summary: 'Create a new VC document version.',
+        description:
+            'Creates a new version of an existing VC document for the policy using the provided document DB record ID and updated document payload. ' +
+            'In the UI, this is triggered from the VC document viewer after switching to edit mode and saving changes.',
     })
     @ApiParam({
         name: 'policyId',
@@ -7162,13 +7458,24 @@ export class PolicyApi {
     })
     @ApiBody({
         description: 'Data',
-        type: Object,
+        schema: {
+            type: 'object',
+            required: ['documentId', 'document'],
+            properties: {
+                documentId: {
+                    type: 'string',
+                    description: 'Document DB record ID of the VC document to version.'
+                },
+                document: {
+                    type: 'object',
+                    additionalProperties: true,
+                    description: 'Updated VC document payload used to create the new version.'
+                }
+            }
+        },
         examples: {
             default: {
-                value: {
-                    documentId: '67b8f31d2a26f8be2a9f0be9',
-                    reason: 'metadata update'
-                }
+                value: ObjectExamples.POLICY_POST_CREATE_NEW_VERSION_VC_DOCUMENT_REQUEST
             }
         }
     })
@@ -7178,7 +7485,7 @@ export class PolicyApi {
             type: 'object',
             additionalProperties: true
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_POST_CREATE_NEW_VERSION_VC_DOCUMENT_RESPONSE
     })
     @ApiUnprocessableEntityResponse({
         description: 'Unprocessable entity.',
@@ -7214,8 +7521,11 @@ export class PolicyApi {
         Permissions.POLICIES_POLICY_MANAGE,
     )
     @ApiOperation({
-        summary: 'Get all version VC documents.',
-        description: 'Get all version VC documents.',
+        summary: 'Get all versions of a VC document.',
+        description:
+            'Returns all stored versions of the selected VC document for the policy. ' +
+            'The `documentId` parameter must be the document DB record ID (the same `row.id` used in the UI), not the VC `document.id` / `urn:uuid`. ' +
+            'In the UI, this data is used in the VC document viewer to populate the version selector.',
     })
     @ApiParam({
         name: 'policyId',
@@ -7229,7 +7539,7 @@ export class PolicyApi {
         type: String,
         description: 'Document Id',
         required: true,
-        example: Examples.DB_ID
+        example: Examples.DB_ID_2
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -7240,7 +7550,7 @@ export class PolicyApi {
                 additionalProperties: true
             }
         },
-        example: { result: 'ok' }
+        example: ObjectExamples.POLICY_GET_ALL_VERSION_VC_DOCUMENTS_RESPONSE
     })
     @ApiUnprocessableEntityResponse({
         description: 'Unprocessable entity.',

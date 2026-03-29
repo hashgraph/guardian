@@ -858,7 +858,9 @@ export class DeleteSavepointsDTO {
         type: Boolean,
         required: false,
         example: false,
-        description: 'Skip protection for currently selected savepoint'
+        description:
+            'If `false`, and the policy has more than one savepoint, the current savepoint cannot be deleted. ' +
+            'If `true`, that guard is bypassed (used by the UI for deleting all savepoints).'
     })
     @IsOptional()
     @IsBoolean()
