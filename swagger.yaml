@@ -20567,6 +20567,7 @@ components:
             - POLICY_DISCUSSION_V2
             - POLICY_COMMENT
             - POLICY_EXPORT_PROOF
+            - EVIDENCE_ATTACHMENTS
           example: POLICY
         iri:
           type: string
