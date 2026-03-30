@@ -29,14 +29,14 @@ export async function GET(
 
   const upstreamUrl = `${BASE_URL}/${network}/${pathStr}${qs ? `?${qs}` : ""}`
 
-  const token = await getIndexerToken()
+  let token = await getIndexerToken()
   let res = await fetchUpstream(upstreamUrl, token)
 
   // On 401, invalidate cached token and retry once with a fresh token
   if (res.status === 401) {
     invalidateTokens()
-    const freshToken = await getIndexerToken()
-    res = await fetchUpstream(upstreamUrl, freshToken)
+    token = await getIndexerToken()
+    res = await fetchUpstream(upstreamUrl, token)
   }
 
   // On 500, retry once — upstream indexer has transient failures

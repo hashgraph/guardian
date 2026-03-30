@@ -1,4 +1,18 @@
 /**
+ * Custom error that carries the HTTP status code so TanStack Query
+ * retry logic can distinguish transient failures from auth errors.
+ */
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string
+  ) {
+    super(message)
+    this.name = "ApiError"
+  }
+}
+
+/**
  * Thin wrapper that routes all API calls through our auth proxy
  * so the bearer token never appears in client bundles.
  *
@@ -26,7 +40,7 @@ export async function fetchProxy<T>(
   } as RequestInit)
 
   if (!res.ok) {
-    throw new Error(`API error ${res.status}: ${await res.text()}`)
+    throw new ApiError(res.status, `API error ${res.status}: ${await res.text()}`)
   }
 
   return res.json() as Promise<T>
