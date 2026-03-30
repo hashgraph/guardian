@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { ThemeProvider } from "next-themes"
 import "./globals.css"
 import { QueryProvider } from "@/providers/QueryProvider"
-import { NetworkProvider } from "@/providers/NetworkProvider"
+import { PolicyNetworkProvider } from "@/providers/PolicyNetworkProvider"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,9 +40,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <NetworkProvider>
+          <PolicyNetworkProvider>
             <QueryProvider>{children}</QueryProvider>
-          </NetworkProvider>
+          </PolicyNetworkProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -3,24 +3,25 @@
 import { useQuery } from "@tanstack/react-query"
 import { getAllPolicyVcs } from "@/lib/api/vc-documents"
 import type { EntityType, PolicyVcListResponse, VCListItem } from "@/lib/types/indexer"
-import { useNetwork } from "@/providers/NetworkProvider"
+import { usePolicyNetwork } from "@/providers/PolicyNetworkProvider"
 
 /**
  * Fetch all policy VCs of a given entity type (client-side filtered) and cache
- * them. Query keys include network so each network has its own cache.
+ * them. Query keys include slug + network so each policy-network has its own cache.
  */
 export function useAllPolicyVcs(entityType?: EntityType) {
-  const { network, activePolicy } = useNetwork()
+  const { policy, network, deployment } = usePolicyNetwork()
 
   return useQuery<VCListItem[], Error>({
-    queryKey: ["vc-documents-all", network, entityType],
+    queryKey: ["vc-documents-all", policy.slug, network, entityType],
     queryFn: () =>
       getAllPolicyVcs(entityType, {
-        policyId: activePolicy.policyHederaId,
+        policyId: deployment!.policyHederaId,
         network,
       }),
     staleTime: 15 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
+    enabled: !!deployment,
   })
 }
 

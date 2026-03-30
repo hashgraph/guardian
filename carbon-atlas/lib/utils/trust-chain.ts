@@ -229,24 +229,38 @@ export function deduplicateProjects(
   allVcs: VCListItem[]
 ): { vc: VCListItem; developerDid: string | undefined; stage: string }[] {
   const byTs = new Map(allVcs.map((vc) => [vc.consensusTimestamp, vc]))
+
   const approvedProjects = allVcs.filter(
     (vc) => vc.options?.entityType === "approved_project"
   )
   const projectForms = allVcs.filter(
     (vc) => vc.options?.entityType === "project_form"
   )
+  const calculatedProjects = allVcs.filter(
+    (vc) => vc.options?.entityType === "project"
+  )
 
-  // Trace approved_project → project → project_form to find covered forms
+  // Build a set of project_form timestamps that are superseded by a companion
+  // calculated `project` VC (project VC's relationships include the project_form).
+  const formsWithCalculation = new Set<string>()
+  for (const cp of calculatedProjects) {
+    for (const relTs of cp.options?.relationships ?? []) {
+      const rel = byTs.get(relTs)
+      if (rel?.options?.entityType === "project_form") {
+        formsWithCalculation.add(relTs)
+      }
+    }
+  }
+
+  // Trace approved_project → project → project_form to find validated forms
   const coveredFormTs = new Set<string>()
   const formForApproved = new Map<string, VCListItem>()
 
   for (const ap of approvedProjects) {
-    const rels = ap.options?.relationships ?? []
-    for (const relTs of rels) {
+    for (const relTs of ap.options?.relationships ?? []) {
       const rel = byTs.get(relTs)
       if (rel?.options?.entityType === "project") {
-        const projectRels = rel.options?.relationships ?? []
-        for (const pRelTs of projectRels) {
+        for (const pRelTs of rel.options?.relationships ?? []) {
           const pRel = byTs.get(pRelTs)
           if (pRel?.options?.entityType === "project_form") {
             coveredFormTs.add(pRelTs)
@@ -257,9 +271,20 @@ export function deduplicateProjects(
     }
   }
 
+  // De-duplicate project_forms by issuer DID: keep only the latest submission
+  // per developer. Re-submissions of the same project have the same issuer.
+  const latestFormByIssuer = new Map<string, VCListItem>()
+  for (const pf of projectForms) {
+    const issuer = pf.options?.issuer ?? "__unknown__"
+    const existing = latestFormByIssuer.get(issuer)
+    if (!existing || pf.consensusTimestamp > existing.consensusTimestamp) {
+      latestFormByIssuer.set(issuer, pf)
+    }
+  }
+
   const results: { vc: VCListItem; developerDid: string | undefined; stage: string }[] = []
 
-  // Approved projects — show as "Validated" with the developer's DID
+  // 1. Approved projects — show as "Validated"
   for (const ap of approvedProjects) {
     const form = formForApproved.get(ap.consensusTimestamp)
     results.push({
@@ -269,15 +294,17 @@ export function deduplicateProjects(
     })
   }
 
-  // Uncovered project_forms — projects not yet validated
-  for (const pf of projectForms) {
-    if (!coveredFormTs.has(pf.consensusTimestamp)) {
-      results.push({
-        vc: pf,
-        developerDid: pf.options?.issuer,
-        stage: "Submitted",
-      })
-    }
+  // 2. Uncovered forms (de-duplicated to latest per issuer) — "Submitted" or "Calculated"
+  for (const pf of latestFormByIssuer.values()) {
+    if (coveredFormTs.has(pf.consensusTimestamp)) continue
+    const stage = formsWithCalculation.has(pf.consensusTimestamp)
+      ? "Calculated"
+      : "Submitted"
+    results.push({
+      vc: pf,
+      developerDid: pf.options?.issuer,
+      stage,
+    })
   }
 
   return results

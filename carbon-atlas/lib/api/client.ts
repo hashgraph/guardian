@@ -16,8 +16,7 @@ export class ApiError extends Error {
  * Thin wrapper that routes all API calls through our auth proxy
  * so the bearer token never appears in client bundles.
  *
- * The `network` param is forwarded as `_network` so the proxy can
- * route to the correct indexer endpoint (mainnet vs testnet).
+ * Uses the network-segmented proxy: /api/proxy/{network}/{path}
  */
 export async function fetchProxy<T>(
   path: string,
@@ -30,13 +29,12 @@ export async function fetchProxy<T>(
       if (v !== undefined) searchParams.set(k, String(v))
     }
   }
-  searchParams.set("_network", network)
 
   const qs = searchParams.toString()
-  const url = `/api/proxy/${path}${qs ? `?${qs}` : ""}`
+  const url = `/api/proxy/${network}/${path}${qs ? `?${qs}` : ""}`
 
   const res = await fetch(url, {
-    next: { revalidate: 60 },
+    cache: "no-store",
   } as RequestInit)
 
   if (!res.ok) {
