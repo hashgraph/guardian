@@ -7,6 +7,7 @@ export enum Examples {
     MESSAGE_ID = '1773670900.819264517',
     UUID = '9db028d2-03ad-4d49-a178-cf4b67f8c147',
     UUID_2 = 'e9c0d9ee-fc29-4372-89e0-0a7e08516699',
+    SCHEMA_TYPE = 'cfc8e34f-adae-4009-bb22-1f8c13364cb7&1.0.0',
     ACCOUNT_ID = '0.0.6046379',
     DATE = '2026-03-03T17:25:53.312Z',
     IPFS = 'ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
@@ -186,6 +187,939 @@ export const ObjectExamples = {
     OTP_REQUIRED_RESPONSE: {
         success: false,
         otprequired: true
+    },
+
+    /** GET /schema/{schemaId} — single schema record (documented `id` only). */
+    SCHEMA_GET_BY_ID_RESPONSE: {
+        createDate: '2026-03-29T12:52:05.192Z',
+        updateDate: '2026-03-29T12:52:52.015Z',
+        uuid: 'c5434400-5cca-41cc-b904-1d4d78017a29',
+        hash: '',
+        name: 'Project Details',
+        description: '',
+        entity: 'NONE',
+        status: 'PUBLISHED',
+        version: '1.0.0',
+        sourceVersion: '',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+        topicId: '0.0.8427214',
+        messageId: '1774788770.467514813',
+        documentURL: 'ipfs://bafkreic5fnqunk6x5kr2i45pb4ut2ovevpqpubwyrbrfgscmgvwp7wy2ya',
+        contextURL: 'ipfs://bafkreide5ft6pnew5po4rjlsd5m2gqzq25xpih276fnj7hxf56km3wh4am',
+        iri: '#c5434400-5cca-41cc-b904-1d4d78017a29&1.0.0',
+        readonly: false,
+        system: false,
+        active: false,
+        category: 'POLICY',
+        codeVersion: '1.2.0',
+        defs: ['#GeoJSON', '#cecced3d-a673-4bcc-a93c-e3b900181949&1.0.0'],
+        errors: [],
+        document: {},
+        context: {},
+        id: '69c9207581910b160912d32b',
+        isOwner: true,
+        isCreator: true
+    },
+
+    /** GET /schema/{schemaId}/parents — array of parent schema records (documented `id` only). */
+    SCHEMA_PARENTS_RESPONSE: [
+        {
+            name: 'Project Description',
+            status: 'PUBLISHED',
+            version: '1.0.0',
+            sourceVersion: '',
+            category: 'POLICY',
+            id: '69c9207481910b160912d2ef'
+        },
+        {
+            name: 'Monitoring Report',
+            status: 'PUBLISHED',
+            version: '1.0.0',
+            sourceVersion: '',
+            category: 'POLICY',
+            id: '69c9207481910b160912d2f9'
+        }
+    ],
+
+    /** GET /schema/{schemaId}/tree — nested schema tree (iri-style `type`). */
+    SCHEMA_TREE_RESPONSE: {
+        name: 'Project Details',
+        type: '#c5434400-5cca-41cc-b904-1d4d78017a29&1.0.0',
+        children: [
+            {
+                name: 'Date Range',
+                type: '#cecced3d-a673-4bcc-a93c-e3b900181949&1.0.0',
+                children: []
+            }
+        ]
+    },
+
+    /** GET /schema/{schemaId}/sample-payload — generated sample document (shape varies by schema). */
+    SCHEMA_SAMPLE_PAYLOAD_RESPONSE: {
+        id: '59760e7b-f249-46a6-a39f-d59d861e9690',
+        field0: 'example',
+        field1: ['example'],
+        field2: [
+            {
+                type: 'FeatureCollection',
+                features: [
+                    {
+                        type: 'Feature',
+                        properties: {},
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [0, 0]
+                        }
+                    }
+                ]
+            }
+        ],
+        field3: ['example@email.com'],
+        type: 'c5434400-5cca-41cc-b904-1d4d78017a29&1.0.0',
+        '@context': ['#c5434400-5cca-41cc-b904-1d4d78017a29&1.0.0']
+    },
+
+    /** PUT /schemas — request body for updating a draft policy schema. */
+    SCHEMA_PUT_REQUEST: {
+        id: '69c95d972df024260a5079ca',
+        uuid: '9af962d2-d595-488d-a9ce-bb600882d5df',
+        hash: '',
+        name: 'TestVC',
+        description: '',
+        entity: 'VC',
+        status: 'DRAFT',
+        readonly: false,
+        document: {
+            '$id': '#9af962d2-d595-488d-a9ce-bb600882d5df&1.0.1',
+            '$comment':
+                '{ "@id": "schema:9af962d2-d595-488d-a9ce-bb600882d5df#9af962d2-d595-488d-a9ce-bb600882d5df&1.0.1", "term": "9af962d2-d595-488d-a9ce-bb600882d5df&1.0.1" }',
+            title: 'TestVC',
+            description: '',
+            type: 'object',
+            properties: {},
+            required: [],
+            additionalProperties: false,
+            $defs: {}
+        },
+        context: null,
+        version: '1.0.1',
+        sourceVersion: '',
+        creator:
+            'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+        topicId: '0.0.8428661',
+        messageId: '',
+        documentURL: '',
+        contextURL: 'schema:9af962d2-d595-488d-a9ce-bb600882d5df',
+        iri: '#9af962d2-d595-488d-a9ce-bb600882d5df&1.0.1',
+        type: '9af962d2-d595-488d-a9ce-bb600882d5df&1.0.1',
+        fields: [],
+        conditions: [],
+        active: false,
+        system: false,
+        category: 'POLICY',
+        errors: [],
+        userDID: null,
+        codeVersion: '1.2.0'
+    },
+
+    /** POST /schemas/{topicId} and POST /schemas/push/{topicId} — create schema body. */
+    SCHEMA_POST_TOPIC_ID_REQUEST: {
+        uuid: '99004913-be86-4e48-bdf8-8e478135a6ce',
+        hash: '',
+        name: 'CreateSchema',
+        description: '',
+        entity: 'VC',
+        status: 'DRAFT',
+        readonly: false,
+        document: {
+            '$id': '#99004913-be86-4e48-bdf8-8e478135a6ce',
+            '$comment':
+                '{ "@id": "schema:99004913-be86-4e48-bdf8-8e478135a6ce#99004913-be86-4e48-bdf8-8e478135a6ce", "term": "99004913-be86-4e48-bdf8-8e478135a6ce" }',
+            title: 'CreateSchema',
+            description: '',
+            type: 'object',
+            properties: {
+                '@context': {
+                    oneOf: [
+                        {
+                            type: 'string'
+                        },
+                        {
+                            type: 'array',
+                            items: {
+                                type: 'string'
+                            }
+                        }
+                    ],
+                    readOnly: true
+                },
+                type: {
+                    oneOf: [
+                        {
+                            type: 'string'
+                        },
+                        {
+                            type: 'array',
+                            items: {
+                                type: 'string'
+                            }
+                        }
+                    ],
+                    readOnly: true
+                },
+                id: {
+                    type: 'string',
+                    readOnly: true
+                },
+                field0: {
+                    title: 'field0',
+                    description: 'TestStringField',
+                    readOnly: false,
+                    type: 'string',
+                    '$comment':
+                        '{"term":"field0","@id":"https://www.schema.org/text","isPrivate":false,"availableOptions":[],"orderPosition":0}'
+                },
+                policyId: {
+                    title: 'Policy Id',
+                    description: 'Policy Id',
+                    readOnly: true,
+                    type: 'string',
+                    '$comment': '{"term":"policyId","@id":"https://www.schema.org/text"}'
+                },
+                ref: {
+                    title: 'Relationships',
+                    description: 'Relationships',
+                    readOnly: true,
+                    type: 'string',
+                    '$comment': '{"term":"ref","@id":"https://www.schema.org/text"}'
+                },
+                guardianVersion: {
+                    title: 'Guardian Version',
+                    description: 'Guardian Version',
+                    readOnly: true,
+                    type: 'string',
+                    '$comment': '{"term":"guardianVersion","@id":"https://www.schema.org/text"}'
+                }
+            },
+            required: ['@context', 'type', 'field0', 'policyId'],
+            additionalProperties: false,
+            $defs: {}
+        },
+        context: null,
+        version: '',
+        sourceVersion: '',
+        creator: '',
+        owner: '',
+        topicId: '0.0.8428661',
+        messageId: '',
+        documentURL: '',
+        contextURL: 'schema:99004913-be86-4e48-bdf8-8e478135a6ce',
+        iri: '',
+        fields: [],
+        conditions: [],
+        active: false,
+        system: false,
+        category: 'POLICY',
+        errors: [],
+        userDID: null,
+        codeVersion: ''
+    },
+
+    /** GET /schemas/type/{schemaType} — partial schema payload (gateway returns subset). */
+    SCHEMA_GET_BY_TYPE_RESPONSE: {
+        uuid: 'cfc8e34f-adae-4009-bb22-1f8c13364cb7',
+        iri: '#cfc8e34f-adae-4009-bb22-1f8c13364cb7&1.0.0',
+        name: 'Project Description',
+        version: '1.0.0',
+        document: {
+            '$id': '#cfc8e34f-adae-4009-bb22-1f8c13364cb7&1.0.0',
+            '$comment':
+                '{ "@id": "#cfc8e34f-adae-4009-bb22-1f8c13364cb7&1.0.0", "term": "cfc8e34f-adae-4009-bb22-1f8c13364cb7&1.0.0" }',
+            title: 'Project Description',
+            description: 'Project Description',
+            type: 'object',
+            properties: {},
+            required: [],
+            additionalProperties: false,
+            $defs: {}
+        },
+        documentURL: 'ipfs://bafkreiefl3543dhxcicjl3v6bmct4uqnuxharci45opopg3jwgqkpdccr4',
+        context: {},
+        contextURL: 'ipfs://bafkreidkocws2ks2s5zrm7ef6t4noqu5fylvyjj74yfcgbpmn4q5f2bjzq'
+    },
+
+    /** GET /schemas/list/all — short schema rows. */
+    SCHEMA_LIST_ALL_RESPONSE: [
+        {
+            name: 'Project Description',
+            description: 'Project Description',
+            status: 'PUBLISHED',
+            version: '1.0.0',
+            sourceVersion: '',
+            topicId: '0.0.8425763',
+            category: 'POLICY',
+            id: '69c8e13981910b160912c6c8'
+        },
+        {
+            name: 'Monitoring Report',
+            description: 'Monitoring Report',
+            status: 'PUBLISHED',
+            version: '1.0.0',
+            sourceVersion: '',
+            topicId: '0.0.8425763',
+            category: 'POLICY',
+            id: '69c8e13981910b160912c6d2'
+        }
+    ],
+
+    /** GET /schemas/schema-with-sub-schemas — selected schema and related sub schemas. */
+    SCHEMA_WITH_SUB_SCHEMAS_RESPONSE: {
+        schema: {
+            createDate: '2026-03-29T08:22:17.965Z',
+            updateDate: '2026-03-29T08:55:59.633Z',
+            uuid: 'da24858f-0ce0-44ef-b5b4-3689960d00c7',
+            hash: '',
+            name: 'VVB',
+            description: 'VVB',
+            entity: 'VC',
+            status: 'PUBLISHED',
+            documentFileId: '69c8e91f81910b160912cda8',
+            contextFileId: '69c8e91f81910b160912cdaa',
+            version: '1.0.0',
+            sourceVersion: '',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            topicId: '0.0.8425763',
+            messageId: '1774774558.160429342',
+            documentURL: 'ipfs://bafkreiefl3543dhxcicjl3v6bmct4uqnuxharci45opopg3jwgqkpdccr4',
+            contextURL: 'ipfs://bafkreidkocws2ks2s5zrm7ef6t4noqu5fylvyjj74yfcgbpmn4q5f2bjzq',
+            iri: '#da24858f-0ce0-44ef-b5b4-3689960d00c7&1.0.0',
+            readonly: false,
+            system: false,
+            active: false,
+            category: 'POLICY',
+            codeVersion: '1.2.0',
+            defs: [],
+            errors: [],
+            document: {},
+            context: {},
+            id: '69c8e13981910b160912c6d7'
+        },
+        subSchemas: [
+            {
+                createDate: '2026-03-29T08:22:17.738Z',
+                updateDate: '2026-03-29T08:55:59.069Z',
+                uuid: 'cfc8e34f-adae-4009-bb22-1f8c13364cb7',
+                hash: '',
+                name: 'Project Description',
+                description: 'Project Description',
+                entity: 'VC',
+                status: 'PUBLISHED',
+                documentFileId: '69c8e91f81910b160912cd78',
+                contextFileId: '69c8e91f81910b160912cd7a',
+                version: '1.0.0',
+                sourceVersion: '',
+                creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+                owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+                topicId: '0.0.8425763',
+                messageId: '1774774558.160429342',
+                documentURL: 'ipfs://bafkreiefl3543dhxcicjl3v6bmct4uqnuxharci45opopg3jwgqkpdccr4',
+                contextURL: 'ipfs://bafkreidkocws2ks2s5zrm7ef6t4noqu5fylvyjj74yfcgbpmn4q5f2bjzq',
+                iri: '#cfc8e34f-adae-4009-bb22-1f8c13364cb7&1.0.0',
+                readonly: false,
+                system: false,
+                active: false,
+                category: 'POLICY',
+                codeVersion: '1.2.0',
+                defs: [],
+                errors: [],
+                document: {},
+                context: {},
+                __component: 'Current',
+                id: '69c8e13981910b160912c6c8'
+            },
+            {
+                createDate: '2026-03-29T08:22:17.819Z',
+                updateDate: '2026-03-29T08:55:59.542Z',
+                uuid: 'eb36a762-feaa-4511-9ae6-be255a88fff7',
+                hash: '',
+                name: 'PP',
+                description: '',
+                entity: 'VC',
+                status: 'PUBLISHED',
+                documentFileId: '69c8e91f81910b160912cda0',
+                contextFileId: '69c8e91f81910b160912cda2',
+                version: '1.0.0',
+                sourceVersion: '',
+                creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+                owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+                topicId: '0.0.8425763',
+                messageId: '1774774558.160429342',
+                documentURL: 'ipfs://bafkreiefl3543dhxcicjl3v6bmct4uqnuxharci45opopg3jwgqkpdccr4',
+                contextURL: 'ipfs://bafkreidkocws2ks2s5zrm7ef6t4noqu5fylvyjj74yfcgbpmn4q5f2bjzq',
+                iri: '#eb36a762-feaa-4511-9ae6-be255a88fff7&1.0.0',
+                readonly: false,
+                system: false,
+                active: false,
+                category: 'POLICY',
+                codeVersion: '1.2.0',
+                defs: [],
+                errors: [],
+                document: {},
+                context: {},
+                __component: 'Current',
+                id: '69c8e13981910b160912c6cd'
+            }
+        ]
+    },
+
+    /** POST /schemas/push/copy — async copy schema. */
+    SCHEMA_PUSH_COPY_REQUEST: {
+        topicId: '0.0.8425763',
+        name: 'Project lamp type and charging method copy',
+        iri: '#b242b108-c226-46ab-b527-7c2bbf1275ea&1.0.0',
+        copyNested: true
+    },
+
+    /** POST /schemas/import/message/preview — preview rows from Hedera message (no DB id). */
+    SCHEMA_IMPORT_MESSAGE_PREVIEW_RESPONSE: [
+        {
+            iri: '#7afe4f57-5eee-4dd0-a6f1-94bdba4820f4&1.0.5',
+            uuid: '7afe4f57-5eee-4dd0-a6f1-94bdba4820f4',
+            hash: '',
+            owner: null,
+            messageId: '1774856488.194427000',
+            name: 'Contact Details',
+            description: 'Contact Details',
+            entity: 'NONE',
+            version: '1.0.5',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            topicId: '0.0.8434944',
+            codeVersion: '1.2.0',
+            relationships: [],
+            status: 'PUBLISHED',
+            readonly: false,
+            system: false,
+            active: false,
+            document: {},
+            context: {},
+            documentURL: 'ipfs://bafkreicekq6bw5v3gfyibvlsjtc4erjo4m6kucumzfdfnz767w5ermtmqe',
+            contextURL: 'ipfs://bafkreib5jzeebobcel5p6e4cvrmcgtjlmlh7fx5nayb74eifqnwxevlhsy'
+        }
+    ],
+
+    /** POST /schemas/import/file/preview — parsed archive rows; may include nested schemas (no Mongo _id in docs). */
+    SCHEMA_IMPORT_FILE_PREVIEW_RESPONSE: [
+        {
+            createDate: '2026-03-29T08:22:18.331Z',
+            updateDate: '2026-03-29T08:55:59.184Z',
+            uuid: '4c187317-b5c8-472f-a583-d87e9a1002fa',
+            hash: '',
+            name: 'Project Details',
+            description: '',
+            entity: 'NONE',
+            status: 'PUBLISHED',
+            documentFileId: '69c8e91f81910b160912cd7c',
+            contextFileId: '69c8e91f81910b160912cd7e',
+            version: '1.0.0',
+            sourceVersion: '',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            topicId: '0.0.8425763',
+            messageId: '1774774558.160429342',
+            documentURL: 'ipfs://bafkreiefl3543dhxcicjl3v6bmct4uqnuxharci45opopg3jwgqkpdccr4',
+            contextURL: 'ipfs://bafkreidkocws2ks2s5zrm7ef6t4noqu5fylvyjj74yfcgbpmn4q5f2bjzq',
+            iri: '#4c187317-b5c8-472f-a583-d87e9a1002fa&1.0.0',
+            readonly: false,
+            system: false,
+            active: false,
+            category: 'POLICY',
+            codeVersion: '1.2.0',
+            defs: [],
+            errors: [],
+            document: {},
+            context: {},
+            id: '69c8e13a81910b160912c704'
+        },
+        {
+            createDate: '2026-03-29T08:22:17.989Z',
+            updateDate: '2026-03-29T08:55:59.252Z',
+            uuid: '55892d75-bb2b-411a-a6bc-5fc476762edb',
+            hash: '',
+            name: 'Date Range',
+            description: '',
+            entity: 'NONE',
+            status: 'PUBLISHED',
+            documentFileId: '69c8e91f81910b160912cd80',
+            contextFileId: '69c8e91f81910b160912cd82',
+            version: '1.0.0',
+            sourceVersion: '',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+            topicId: '0.0.8425763',
+            messageId: '1774774558.160429342',
+            documentURL: 'ipfs://bafkreiefl3543dhxcicjl3v6bmct4uqnuxharci45opopg3jwgqkpdccr4',
+            contextURL: 'ipfs://bafkreidkocws2ks2s5zrm7ef6t4noqu5fylvyjj74yfcgbpmn4q5f2bjzq',
+            iri: '#55892d75-bb2b-411a-a6bc-5fc476762edb&1.0.0',
+            readonly: false,
+            system: false,
+            active: false,
+            category: 'POLICY',
+            codeVersion: '1.2.0',
+            defs: [],
+            errors: [],
+            document: {},
+            context: {},
+            id: '69c8e13981910b160912c6dc'
+        }
+    ],
+
+    /** POST /schemas/import/xlsx/preview — preview payload parsed from an XLSX schema file. */
+    SCHEMA_IMPORT_XLSX_PREVIEW_RESPONSE: {
+        schemas: [
+            {
+                iri: '#10deca32-b66e-43c0-b744-bc0ed15d4917',
+                name: 'Monitoring Report',
+                description: 'Monitoring Report',
+                version: '',
+                status: 'DRAFT'
+            },
+            {
+                iri: '#3b92df74-ad23-4a73-8297-108437900d16',
+                name: 'Project Description',
+                description: 'Project Description',
+                version: '',
+                status: 'DRAFT'
+            },
+            {
+                iri: '#ece2072e-e031-4bf8-9fd6-9c1be591c598',
+                name: 'VVB',
+                description: 'VVB',
+                version: '',
+                status: 'DRAFT'
+            },
+            {
+                iri: '#af17530b-47e6-4eb1-b35e-9e515920ebb2',
+                name: 'PP',
+                description: null,
+                version: '',
+                status: 'DRAFT'
+            },
+            {
+                iri: '#aabea446-e5e0-49f9-b5ab-9b0aa4df31c9',
+                name: 'Date Range',
+                description: null,
+                version: '',
+                status: 'DRAFT'
+            },
+            {
+                iri: '#356d60fc-3199-470f-8452-cfdf10e77355',
+                name: 'Baseline Emissions Per Lamp Type and Charging Method',
+                description: null,
+                version: '',
+                status: 'DRAFT'
+            },
+            {
+                iri: '#40e36ff6-6938-49af-9e20-b80d8ac16ce3',
+                name: 'Emissions Reduction (for all project lamp types and charging methods)',
+                description: null,
+                version: '',
+                status: 'DRAFT'
+            },
+            {
+                iri: '#aab7e58c-94a7-43e3-aae6-128c5f439b41',
+                name: 'Default Annual Baseline Emissions Factor',
+                description: null,
+                version: '',
+                status: 'DRAFT'
+            },
+            {
+                iri: '#284ad979-321c-4faf-a56f-25586b8edd8f',
+                name: 'Additionality Determination',
+                description: null,
+                version: '',
+                status: 'DRAFT'
+            },
+            {
+                iri: '#faa9b06a-fede-4cca-97c9-47541b2f02ae',
+                name: 'Minimum Requirements for the Design Specifications of Project Lamps',
+                description: null,
+                version: '',
+                status: 'DRAFT'
+            },
+            {
+                iri: '#98607eef-e463-4301-ac34-1582ff902d7e',
+                name: 'Project Emissions Per Lamp Type and Charging Method',
+                description: null,
+                version: '',
+                status: 'DRAFT'
+            },
+            {
+                iri: '#88bbf6fc-c828-4b42-a7bc-cb43f096ea7e',
+                name: 'Project lamp type and charging method',
+                description: null,
+                version: '',
+                status: 'DRAFT'
+            },
+            {
+                iri: '#33379ea8-8d6c-4559-bdb4-79d72ac1596a',
+                name: 'Project Details',
+                description: null,
+                version: '',
+                status: 'DRAFT'
+            }
+        ],
+        tools: [
+            {
+                uuid: 'aed9799a-1273-41cd-a7a1-3e4fae066f71',
+                name: 'Tool 07',
+                messageId: '1706867530.884259218'
+            },
+            {
+                uuid: '0edcecb5-743d-4d83-ac0f-1a9f102db873',
+                name: 'Tool 19',
+                messageId: '1706869798.177938003'
+            },
+            {
+                uuid: '01356919-66ef-435e-ab58-3648c19ee2e2',
+                name: 'Tool 21',
+                messageId: '1706873385.455822873'
+            },
+            {
+                uuid: '8772ca4b-4efe-4517-93ae-6c63a4281257',
+                name: 'Tool 33',
+                messageId: '1726593517.484578000'
+            }
+        ],
+        errors: []
+    },
+
+    /** POST /schemas/deletionPreview — deletion preview with deletable and blocked child schemas. */
+    SCHEMA_DELETION_PREVIEW_RESPONSE: {
+        deletableChildren: [
+            {
+                name: 'Energy Sources',
+                status: 'DRAFT',
+                version: '',
+                sourceVersion: '1.0.0',
+                iri: '#c0040849-87bc-4173-9301-d84af5adfd92',
+                category: 'POLICY',
+                id: '69ca5ccd89551902666683e0'
+            }
+        ],
+        blockedChildren: [
+            {
+                schema: 'Contact Details',
+                blockingSchemas: [
+                    'I-REC Registrant & Participant App',
+                    'I-REC Issue Request'
+                ]
+            },
+            {
+                schema: 'Production Device',
+                blockingSchemas: [
+                    'I-REC Issue Request'
+                ]
+            }
+        ]
+    },
+
+    /** POST /schemas/import/schemas/duplicates — duplicate check request. */
+    SCHEMA_IMPORT_DUPLICATES_REQUEST: {
+        policyId: '0.0.8425763',
+        schemaNames: ['Project Details', 'Date Range']
+    },
+
+    /** POST /schemas/import/schemas/duplicates — replaceable draft matches (no Mongo _id in docs). */
+    SCHEMA_IMPORT_DUPLICATES_RESPONSE: {
+        schemasCanBeReplaced: [
+            {
+                createDate: '2026-03-30T08:24:18.971Z',
+                updateDate: '2026-03-30T08:24:18.971Z',
+                uuid: '6f4a68b6-5ef6-4145-90a3-a1c88c36b1d4',
+                hash: '',
+                name: 'Date Range',
+                description: '',
+                entity: 'NONE',
+                status: 'DRAFT',
+                documentFileId: '69ca33323c361aeff876bd67',
+                contextFileId: '69ca33323c361aeff876bd69',
+                version: '',
+                sourceVersion: '1.0.0',
+                creator: 'did:hedera:testnet:4Rh3aC5jNAzPJwwNtsy95Ava954Thyjk41gREjynY2D9_0.0.8429609',
+                owner: 'did:hedera:testnet:4Rh3aC5jNAzPJwwNtsy95Ava954Thyjk41gREjynY2D9_0.0.8429609',
+                topicId: '0.0.8435307',
+                messageId: null,
+                documentURL: null,
+                contextURL: 'schema:6f4a68b6-5ef6-4145-90a3-a1c88c36b1d4',
+                iri: '#6f4a68b6-5ef6-4145-90a3-a1c88c36b1d4',
+                readonly: false,
+                system: false,
+                active: false,
+                category: 'POLICY',
+                codeVersion: '1.2.0',
+                defs: [],
+                errors: [],
+                document: {},
+                context: {},
+                id: '69ca33323c361aeff876bd66'
+            },
+            {
+                createDate: '2026-03-30T08:24:19.313Z',
+                updateDate: '2026-03-30T08:24:19.313Z',
+                uuid: '3056f5cf-b904-49af-9cb9-6ad71e6f885b',
+                hash: '',
+                name: 'Project Details',
+                description: '',
+                entity: 'NONE',
+                status: 'DRAFT',
+                documentFileId: '69ca33333c361aeff876bd8f',
+                contextFileId: '69ca33333c361aeff876bd91',
+                version: '',
+                sourceVersion: '1.0.0',
+                creator: 'did:hedera:testnet:4Rh3aC5jNAzPJwwNtsy95Ava954Thyjk41gREjynY2D9_0.0.8429609',
+                owner: 'did:hedera:testnet:4Rh3aC5jNAzPJwwNtsy95Ava954Thyjk41gREjynY2D9_0.0.8429609',
+                topicId: '0.0.8435307',
+                messageId: null,
+                documentURL: null,
+                contextURL: 'schema:3056f5cf-b904-49af-9cb9-6ad71e6f885b',
+                iri: '#3056f5cf-b904-49af-9cb9-6ad71e6f885b',
+                readonly: false,
+                system: false,
+                active: false,
+                category: 'POLICY',
+                codeVersion: '1.2.0',
+                defs: [],
+                errors: [],
+                document: {},
+                context: {},
+                id: '69ca33333c361aeff876bd8e'
+            }
+        ]
+    },
+
+    /** POST /schemas/system/{username} — create system schema request. */
+    SCHEMA_SYSTEM_POST_REQUEST: {
+        uuid: '1f3fa1e2-1579-4fcd-98ab-906fcca02972',
+        hash: '',
+        name: 'NewStandardRegistrySystemSchema',
+        description: 'Example of description',
+        entity: 'STANDARD_REGISTRY',
+        status: 'DRAFT',
+        readonly: false,
+        document: {
+            '$id': '#1f3fa1e2-1579-4fcd-98ab-906fcca02972',
+            '$comment':
+                '{ "@id": "schema:1f3fa1e2-1579-4fcd-98ab-906fcca02972#1f3fa1e2-1579-4fcd-98ab-906fcca02972", "term": "1f3fa1e2-1579-4fcd-98ab-906fcca02972" }',
+            title: 'NewStandardRegistrySystemSchema',
+            description: 'Example of description',
+            type: 'object',
+            properties: {
+                '@context': {
+                    oneOf: [
+                        {
+                            type: 'string'
+                        },
+                        {
+                            type: 'array',
+                            items: {
+                                type: 'string'
+                            }
+                        }
+                    ],
+                    readOnly: true
+                },
+                type: {
+                    oneOf: [
+                        {
+                            type: 'string'
+                        },
+                        {
+                            type: 'array',
+                            items: {
+                                type: 'string'
+                            }
+                        }
+                    ],
+                    readOnly: true
+                },
+                id: {
+                    type: 'string',
+                    readOnly: true
+                },
+                field0: {
+                    title: 'field0',
+                    description: 'ExampleOfNumberField',
+                    readOnly: false,
+                    type: 'number',
+                    '$comment':
+                        '{"term":"field0","@id":"https://www.schema.org/text","availableOptions":[],"orderPosition":0}'
+                }
+            },
+            required: ['@context', 'type'],
+            additionalProperties: false,
+            $defs: {}
+        },
+        context: null,
+        version: '',
+        sourceVersion: '',
+        creator: '',
+        owner: '',
+        messageId: '',
+        documentURL: '',
+        contextURL: 'schema:1f3fa1e2-1579-4fcd-98ab-906fcca02972',
+        iri: '',
+        fields: [],
+        conditions: [],
+        active: false,
+        system: true,
+        category: 'SYSTEM',
+        errors: [],
+        userDID: null,
+        codeVersion: ''
+    },
+
+    /** PUT /schemas/system/{schemaId} — update system schema request (no Mongo _id in docs). */
+    SCHEMA_SYSTEM_PUT_REQUEST: {
+        id: '69ca4e053c361aeff876bde7',
+        uuid: '1f3fa1e2-1579-4fcd-98ab-906fcca02972',
+        hash: '',
+        name: 'NewStandardRegistrySystemSchemaUPDATED',
+        description: 'Example of description UPDATED',
+        entity: 'STANDARD_REGISTRY',
+        status: 'DRAFT',
+        readonly: false,
+        document: {
+            '$id': '#1f3fa1e2-1579-4fcd-98ab-906fcca02972',
+            '$comment':
+                '{ "@id": "schema:1f3fa1e2-1579-4fcd-98ab-906fcca02972#1f3fa1e2-1579-4fcd-98ab-906fcca02972", "term": "1f3fa1e2-1579-4fcd-98ab-906fcca02972" }',
+            title: 'NewStandardRegistrySystemSchemaUPDATED',
+            description: 'Example of description UPDATED',
+            type: 'object',
+            properties: {
+                '@context': {
+                    oneOf: [
+                        {
+                            type: 'string'
+                        },
+                        {
+                            type: 'array',
+                            items: {
+                                type: 'string'
+                            }
+                        }
+                    ],
+                    readOnly: true
+                },
+                type: {
+                    oneOf: [
+                        {
+                            type: 'string'
+                        },
+                        {
+                            type: 'array',
+                            items: {
+                                type: 'string'
+                            }
+                        }
+                    ],
+                    readOnly: true
+                },
+                id: {
+                    type: 'string',
+                    readOnly: true
+                },
+                field0: {
+                    title: 'field0',
+                    description: 'ExampleOfNumberFieldUPDATED',
+                    readOnly: false,
+                    type: 'number',
+                    '$comment':
+                        '{"term":"field0","@id":"https://www.schema.org/text","availableOptions":[],"orderPosition":0}'
+                }
+            },
+            required: ['@context', 'type'],
+            additionalProperties: false,
+            $defs: {}
+        },
+        context: null,
+        version: '',
+        sourceVersion: '',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999',
+        messageId: '',
+        documentURL: '',
+        contextURL: 'schema:1f3fa1e2-1579-4fcd-98ab-906fcca02972',
+        iri: '#1f3fa1e2-1579-4fcd-98ab-906fcca02972',
+        type: '1f3fa1e2-1579-4fcd-98ab-906fcca02972',
+        fields: [],
+        conditions: [],
+        active: false,
+        system: true,
+        category: 'SYSTEM',
+        errors: [],
+        userDID: null,
+        codeVersion: '1.2.0'
+    },
+
+    /** GET /schemas/system/entity/{schemaEntity} — example payload (no Mongo _id in docs). */
+    SCHEMA_SYSTEM_ENTITY_GET_RESPONSE: {
+        uuid: 'StandardRegistry',
+        iri: 'StandardRegistry',
+        name: 'StandardRegistry',
+        document: {
+            '$id': '#StandardRegistry',
+            '$comment': '{ "term": "StandardRegistry", "@id": "#StandardRegistry" }',
+            title: 'StandardRegistry',
+            description: 'StandardRegistry',
+            type: 'object',
+            properties: {
+                '@context': {
+                    oneOf: [
+                        { type: 'string' },
+                        { type: 'array', items: { type: 'string' } }
+                    ],
+                    readOnly: true
+                },
+                type: {
+                    oneOf: [
+                        { type: 'string' },
+                        { type: 'array', items: { type: 'string' } }
+                    ],
+                    readOnly: true
+                },
+                id: {
+                    type: 'string',
+                    readOnly: true
+                },
+                OrganizationName: {
+                    title: 'OrganizationName',
+                    description: 'OrganizationName',
+                    readOnly: false,
+                    type: 'string',
+                    '$comment':
+                        '{"term":"OrganizationName","@id":"https://www.schema.org/text","orderPosition":0}'
+                },
+                Website: {
+                    title: 'Website',
+                    description: 'Website',
+                    readOnly: false,
+                    type: 'string',
+                    '$comment': '{"term":"Website","@id":"https://www.schema.org/text","orderPosition":1}'
+                },
+                Tags: {
+                    title: 'Tags',
+                    description: 'Tags',
+                    readOnly: false,
+                    type: 'string',
+                    '$comment': '{"term":"Tags","@id":"https://www.schema.org/text","orderPosition":2}'
+                }
+            },
+            required: ['OrganizationName', 'Website', 'Tags'],
+            additionalProperties: false
+        }
     },
 
     PERMISSION_SR: PERMISSIONS_SR,
