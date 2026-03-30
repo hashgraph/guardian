@@ -37,6 +37,7 @@ export class PolicyTemplate {
     public readonly version!: string;
     public readonly previousVersion!: string;
     public readonly tests!: any;
+    public policyDocumentation!: any[];
 
     private _policyTag!: string;
     private _name!: string;
@@ -99,6 +100,7 @@ export class PolicyTemplate {
         this.version = policy.version;
         this.previousVersion = policy.previousVersion;
         this.tests = policy.tests;
+        this.policyDocumentation = policy.policyDocumentation;
 
         this.buildPolicy(policy);
         this.buildBlock(policy.config);
@@ -647,6 +649,7 @@ export class PolicyTemplate {
             policyTopics: Array<any>(),
             policyTokens: Array<any>(),
             policyGroups: Array<any>(),
+            policyDocumentation: this.policyDocumentation || [],
             config: null,
         };
         for (const role of this.policyRoles) {
