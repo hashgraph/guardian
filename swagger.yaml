@@ -9403,6 +9403,57 @@ paths:
       summary: Returns schema tree.
       tags:
         - schema
+  /schema/{schemaId}/tree/export/plantuml:
+    get:
+      description: Returns schema tree as exportable PlantUML code.
+      operationId: SingleSchemaApi_getSchemaTreePlantUML
+      parameters:
+        - name: schemaId
+          required: true
+          in: path
+          description: Schema identifier
+          schema:
+            type: string
+        - name: includeFields
+          required: false
+          in: query
+          description: Include field names and descriptions in classes
+          schema:
+            type: boolean
+        - name: includeFormulas
+          required: false
+          in: query
+          description: Include formula components and links
+          schema:
+            type: boolean
+        - name: includeDependencies
+          required: false
+          in: query
+          description: Include dependent formulas referenced by directly linked formulas
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns schema tree in PlantUML format.
+      tags:
+        - schema
   /schema/{schemaId}/sample-payload:
     get:
       description: Returns a sample payload for the schema by schema Id.
