@@ -171,6 +171,76 @@ export class SingleSchemaApi {
     }
 
     /**
+     * Returns schema tree in PlantUML format.
+     */
+    @Get('/:schemaId/tree/export/plantuml')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_READ,
+    )
+    @ApiOperation({
+        summary: 'Returns schema tree in PlantUML format.',
+        description: 'Returns schema tree as exportable PlantUML code.',
+    })
+    @ApiParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema identifier',
+        required: true
+    })
+    @ApiQuery({
+        name: 'includeFields',
+        type: Boolean,
+        description: 'Include field names and descriptions in classes',
+        required: false
+    })
+    @ApiQuery({
+        name: 'includeFormulas',
+        type: Boolean,
+        description: 'Include formula components and links',
+        required: false
+    })
+    @ApiQuery({
+        name: 'includeDependencies',
+        type: Boolean,
+        description: 'Include dependent formulas referenced by directly linked formulas',
+        required: false
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'string'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSchemaTreePlantUML(
+        @AuthUser() user: IAuthUser,
+        @Param('schemaId') schemaId: string,
+        @Response() res: any,
+        @Query('includeFields') includeFields?: string,
+        @Query('includeFormulas') includeFormulas?: string,
+        @Query('includeDependencies') includeDependencies?: string,
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const fields = includeFields !== 'false';
+            const formulas = includeFormulas === 'true';
+            const dependencies = includeDependencies === 'true';
+            const plantUML = await guardians.getSchemaTreePlantUML(schemaId, owner, fields, formulas, dependencies);
+            res.header('Content-Type', 'text/plain');
+            res.header('Content-Disposition', `attachment; filename="schema-tree-${schemaId}.puml"`);
+            return res.send(plantUML);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Returns a sample payload for the schema by schema Id.
      */
     @Get('/:schemaId/sample-payload')
