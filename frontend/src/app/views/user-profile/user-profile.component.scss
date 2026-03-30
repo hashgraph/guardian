@@ -1244,3 +1244,20 @@ mat-radio-button {
 :host ::ng-deep .p-tabview-nav-link {
     text-decoration: none !important;
 }
+
+.otp-status {
+    &.disabled {
+        border-color: var(--color-grey-3) !important;
+        background-color: var(--color-grey-3);
+        span {
+            color: var(--color-grey-6) !important;
+        }
+    }
+    &.active{
+        border-color: var(--color-accent-green-2) !important;
+        background-color: var(--color-accent-green-2);
+        span {
+            color: var(--color-accent-green-1) !important;
+        }
+    }
+}

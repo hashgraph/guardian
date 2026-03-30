@@ -24,6 +24,7 @@ export enum WorkerTaskType {
     TRANSFER_NFT = 'transfer-nft',
     TRANSFER_FT = 'transfer-ft',
     NEW_TOPIC = 'new-topic',
+    NEW_INIT_TOPIC = 'new-init-topic',
     CHECK_ACCOUNT = 'check-account',
     GET_TOPIC_MESSAGE = 'get-topic-message',
     GET_TOPIC_MESSAGES = 'get-topic-messages',
