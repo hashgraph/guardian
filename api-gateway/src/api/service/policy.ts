@@ -1181,7 +1181,7 @@ export class PolicyApi {
     ): Promise<PoliciesValidationDTO> {
         try {
             const engineService = new PolicyEngine();
-            const enableMockUp = !!body.enableMockUp;
+            const enableMockUp = !!body?.enableMockUp;
             const result = await engineService.dryRunPolicy(policyId, new EntityOwner(user), enableMockUp);
             result.policies = await getOldResult(user);
 
