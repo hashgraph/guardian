@@ -30,12 +30,22 @@ export class TaskApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: TaskStatusDTO,
-        example: { action: 'Create policy', userId: 'f3b2a9c1e4d5678901234567', expectation: 0, taskId: 'f3b2a9c1e4d5678901234567', date: 'string', statuses: [{ message: 'string', type: 'Info' }], result: {}, error: {} }
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { action: 'Create policy', userId: Examples.DB_ID, expectation: 0, taskId: Examples.DB_ID, date: 'string', statuses: [{ message: 'string', type: 'Info' }], result: {}, error: {} }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TaskStatusDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

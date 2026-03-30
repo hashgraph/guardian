@@ -73,7 +73,7 @@ export class UnprocessableEntityErrorDTO {
     error?: string;
 }
 
-export class UnauthorizedErrorDTO  {
+export class UnauthorizedErrorDTO {
     @ApiProperty({
         type: Number,
         required: true,
@@ -93,7 +93,7 @@ export class UnauthorizedErrorDTO  {
     message: string;
 }
 
-export class ForbiddenErrorDTO  {
+export class ForbiddenErrorDTO {
     @ApiProperty({
         type: Number,
         required: true,
@@ -122,7 +122,7 @@ export class ForbiddenErrorDTO  {
     error?: string;
 }
 
-export class ConflictErrorDTO  {
+export class ConflictErrorDTO {
     @ApiProperty({
         type: Number,
         required: true,

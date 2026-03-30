@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, SchemaRuleDTO, SchemaRuleDataDTO, SchemaRuleOptionsDTO, SchemaRuleRelationshipsDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, UnprocessableEntityErrorDTO, ObjectExamples, SchemaRuleDTO, SchemaRuleDataDTO, SchemaRuleOptionsDTO, SchemaRuleRelationshipsDTO, pageHeader } from '#middlewares';
 import { Guardians, InternalException, EntityOwner } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -18,23 +18,51 @@ export class SchemaRulesApi {
     @Auth(Permissions.SCHEMAS_RULE_CREATE)
     @ApiOperation({
         summary: 'Creates a new schema rule.',
-        description: 'Creates a new schema rule.',
+        description: 'Creates a new schema rule linked to a policy. Schema rules define validation and transformation logic applied to documents within the policy.',
     })
     @ApiBody({
-        description: 'Configuration.',
+        description: 'Schema rule configuration. Must include name, description, and policyId.',
         type: SchemaRuleDTO,
-        required: true
+        required: true,
+        examples: {
+            createRule: {
+                summary: 'Create a new schema rule',
+                value: {
+                    name: 'Test Schema Rule',
+                    description: 'Description of test schema rule',
+                    policyId: '69b83f18cd6b7c4adf4139bc'
+                }
+            }
+        }
     })
     @ApiCreatedResponse({
         description: 'Successful operation.',
         type: SchemaRuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Tool name', description: 'Description', creator: 'string', owner: 'string', policyId: 'f3b2a9c1e4d5678901234567', policyTopicId: 'f3b2a9c1e4d5678901234567', policyInstanceTopicId: 'f3b2a9c1e4d5678901234567', status: 'string', config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.SCHEMA_RULE
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemActive: {
+                summary: 'Item is already active/inactive',
+                value: { statusCode: 500, message: 'Item is already active.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaRuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -61,7 +89,7 @@ export class SchemaRulesApi {
     @Auth(Permissions.SCHEMAS_RULE_READ)
     @ApiOperation({
         summary: 'Return a list of all schema rules.',
-        description: 'Returns all schema rules.',
+        description: 'Returns a paginated list of schema rules owned by the current user. Optionally filter by policy ID.',
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -85,16 +113,38 @@ export class SchemaRulesApi {
         example: Examples.ACCOUNT_ID
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns schema rules array and total count in X-Total-Count header.',
         isArray: true,
         headers: pageHeader,
         type: SchemaRuleDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Tool name', description: 'Description', creator: 'string', owner: 'string', policyId: 'f3b2a9c1e4d5678901234567', policyTopicId: 'f3b2a9c1e4d5678901234567', policyInstanceTopicId: 'f3b2a9c1e4d5678901234567', status: 'string', config: {} }]
+        examples: {
+            withRules: {
+                summary: 'Schema rules found (list returns fewer fields than GET /:id)',
+                value: [ObjectExamples.SCHEMA_RULE_LIST_ITEM]
+            },
+            empty: {
+                summary: 'No schema rules',
+                value: []
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemActive: {
+                summary: 'Item is already active/inactive',
+                value: { statusCode: 500, message: 'Item is already active.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaRuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -134,13 +184,31 @@ export class SchemaRulesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaRuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Tool name', description: 'Description', creator: 'string', owner: 'string', policyId: 'f3b2a9c1e4d5678901234567', policyTopicId: 'f3b2a9c1e4d5678901234567', policyInstanceTopicId: 'f3b2a9c1e4d5678901234567', status: 'string', config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.SCHEMA_RULE
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemActive: {
+                summary: 'Item is already active/inactive',
+                value: { statusCode: 500, message: 'Item is already active.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaRuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -179,19 +247,47 @@ export class SchemaRulesApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: SchemaRuleDTO
+        type: SchemaRuleDTO,
+        examples: {
+            updateRule: {
+                summary: 'Update a schema rule',
+                value: {
+                    name: 'Updated Rule',
+                    description: 'Updated description',
+                    policyId: '69aeb71ef8c5b278e3bab4e5'
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaRuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Tool name', description: 'Description', creator: 'string', owner: 'string', policyId: 'f3b2a9c1e4d5678901234567', policyTopicId: 'f3b2a9c1e4d5678901234567', policyInstanceTopicId: 'f3b2a9c1e4d5678901234567', status: 'string', config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.SCHEMA_RULE
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemActive: {
+                summary: 'Item is already active/inactive',
+                value: { statusCode: 500, message: 'Item is already active.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaRuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -235,13 +331,31 @@ export class SchemaRulesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: true
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemActive: {
+                summary: 'Item is already active/inactive',
+                value: { statusCode: 500, message: 'Item is already active.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -280,14 +394,32 @@ export class SchemaRulesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaRuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Tool name', description: 'Description', creator: 'string', owner: 'string', policyId: 'f3b2a9c1e4d5678901234567', policyTopicId: 'f3b2a9c1e4d5678901234567', policyInstanceTopicId: 'f3b2a9c1e4d5678901234567', status: 'string', config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.SCHEMA_RULE
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemActive: {
+                summary: 'Item is already active/inactive',
+                value: { statusCode: 500, message: 'Item is already active.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaRuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -330,14 +462,32 @@ export class SchemaRulesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaRuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Tool name', description: 'Description', creator: 'string', owner: 'string', policyId: 'f3b2a9c1e4d5678901234567', policyTopicId: 'f3b2a9c1e4d5678901234567', policyInstanceTopicId: 'f3b2a9c1e4d5678901234567', status: 'string', config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.SCHEMA_RULE
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemActive: {
+                summary: 'Item is already active/inactive',
+                value: { statusCode: 500, message: 'Item is already active.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaRuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -380,7 +530,10 @@ export class SchemaRulesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaRuleRelationshipsDTO,
-        example: { policy: { id: Examples.DB_ID,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { policy: { id: Examples.DB_ID,
             uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
@@ -475,12 +628,27 @@ export class SchemaRulesApi {
         contextURL: Examples.IPFS,
         document: {},
         context: {} }] }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemActive: {
+                summary: 'Item is already active/inactive',
+                value: { statusCode: 500, message: 'Item is already active.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaRuleRelationshipsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -512,25 +680,38 @@ export class SchemaRulesApi {
     @ApiBody({
         description: 'Options.',
         type: SchemaRuleOptionsDTO,
-        required: true
+        required: true,
+        examples: {
+            getSchemaRuleData: {
+                summary: 'Retrieve schema rule data for a document',
+                value: {
+                    policyId: '69aeb71ef8c5b278e3bab4e5',
+                    schemaId: '69aeb71ef8c5b278e3bab4e5',
+                    documentId: '69aeb71ef8c5b278e3bab4e5'
+                }
+            }
+        }
     })
     @ApiCreatedResponse({
         description: 'Successful operation.',
         type: SchemaRuleDataDTO,
         isArray: true,
-        example: [{ rules: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ rules: { id: Examples.DB_ID,
+            uuid: Examples.DB_ID,
+            name: 'Validation Rule',
             description: 'Description',
             creator: 'string',
             owner: 'string',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            policyId: Examples.DB_ID,
+            policyTopicId: Examples.DB_ID,
+            policyInstanceTopicId: Examples.DB_ID,
             status: 'string',
             config: {} },
-            document: { id: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
+            document: { id: Examples.DB_ID,
+            policyId: Examples.DB_ID,
             hash: 'hash',
             signature: 0,
             status: 'NEW',
@@ -539,7 +720,7 @@ export class SchemaRulesApi {
             createDate: 'string',
             updateDate: 'string',
             owner: 'string',
-            document: { id: 'f3b2a9c1e4d5678901234567',
+            document: { id: Examples.DB_ID,
             type: ['string'],
             credentialSubject: {},
             issuer: {},
@@ -549,8 +730,8 @@ export class SchemaRulesApi {
             verificationMethod: 'string',
             proofPurpose: 'string',
             jws: 'string' } } },
-            relationships: [{ id: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
+            relationships: [{ id: Examples.DB_ID,
+            policyId: Examples.DB_ID,
             hash: 'hash',
             signature: 0,
             status: 'NEW',
@@ -559,7 +740,7 @@ export class SchemaRulesApi {
             createDate: 'string',
             updateDate: 'string',
             owner: 'string',
-            document: { id: 'f3b2a9c1e4d5678901234567',
+            document: { id: Examples.DB_ID,
             type: [{}],
             credentialSubject: {},
             issuer: {},
@@ -569,12 +750,27 @@ export class SchemaRulesApi {
             verificationMethod: {},
             proofPurpose: {},
             jws: {} } } }] }]
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemActive: {
+                summary: 'Item is already active/inactive',
+                value: { statusCode: 500, message: 'Item is already active.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaRuleOptionsDTO, SchemaRuleDataDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -615,18 +811,36 @@ export class SchemaRulesApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'A zip file containing rules to be imported.',
+        description: 'A binary/zip file containing rules to be imported.',
         required: true
     })
     @ApiCreatedResponse({
         description: 'Successful operation.',
         type: SchemaRuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Tool name', description: 'Description', creator: 'string', owner: 'string', policyId: 'f3b2a9c1e4d5678901234567', policyTopicId: 'f3b2a9c1e4d5678901234567', policyInstanceTopicId: 'f3b2a9c1e4d5678901234567', status: 'string', config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.SCHEMA_RULE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemActive: {
+                summary: 'Item is already active/inactive',
+                value: { statusCode: 500, message: 'Item is already active.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaRuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -667,12 +881,30 @@ export class SchemaRulesApi {
             type: 'string',
             format: 'binary'
         },
-        example: { result: 'ok' }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { result: 'ok' }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemActive: {
+                summary: 'Item is already active/inactive',
+                value: { statusCode: 500, message: 'Item is already active.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -703,17 +935,35 @@ export class SchemaRulesApi {
         description: 'Imports a zip file containing rules.',
     })
     @ApiBody({
-        description: 'File.',
+        description: 'A binary/zip file containing rules to preview.',
     })
     @ApiOkResponse({
         description: 'Schema rule preview.',
         type: SchemaRuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Tool name', description: 'Description', creator: 'string', owner: 'string', policyId: 'f3b2a9c1e4d5678901234567', policyTopicId: 'f3b2a9c1e4d5678901234567', policyInstanceTopicId: 'f3b2a9c1e4d5678901234567', status: 'string', config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.SCHEMA_RULE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemActive: {
+                summary: 'Item is already active/inactive',
+                value: { statusCode: 500, message: 'Item is already active.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaRuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

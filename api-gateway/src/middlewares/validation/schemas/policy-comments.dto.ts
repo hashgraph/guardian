@@ -6,6 +6,7 @@ import { VcDTO } from './document.dto.js';
 export class PolicyCommentUserDTO {
     @ApiProperty({
         type: 'string',
+        description: 'Display name (username for users, role name for roles, "All" for broadcast)',
         required: true,
         example: 'Administrator'
     })
@@ -14,6 +15,7 @@ export class PolicyCommentUserDTO {
 
     @ApiProperty({
         type: 'string',
+        description: 'Value to use when targeting (DID for users, role name for roles, "all" for broadcast)',
         required: true,
         example: 'Administrator'
     })
@@ -22,12 +24,24 @@ export class PolicyCommentUserDTO {
 
     @ApiProperty({
         type: 'string',
+        description: 'Entry type: "all" = broadcast to everyone, "role" = target by role, "user" = target specific user',
         required: true,
         enum: ['all', 'role', 'user'],
         example: 'role'
     })
     @IsString()
     type: 'all' | 'role' | 'user';
+
+    @ApiProperty({
+        type: 'string',
+        description: 'List of roles assigned to this user (only present when type = "user")',
+        isArray: true,
+        required: false,
+        example: ['Administrator']
+    })
+    @IsOptional()
+    @IsArray()
+    roles?: string[];
 }
 
 export class PolicyCommentRelationshipDTO {
@@ -299,7 +313,8 @@ export class PolicyDiscussionDTO {
     system?: boolean;
 
     @ApiProperty({
-        type: 'string',
+        type: Number,
+        description: 'Number of comments in this discussion',
         required: false,
         example: 0
     })
@@ -309,6 +324,17 @@ export class PolicyDiscussionDTO {
 
     @ApiProperty({ nullable: false, required: true, type: () => VcDTO })
     document: VcDTO;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Array of document IDs that form the history chain for this discussion target (added by API for GET /discussions)',
+        isArray: true,
+        required: false,
+        example: [Examples.DB_ID]
+    })
+    @IsOptional()
+    @IsArray()
+    historyIds?: string[];
 }
 
 export class NewPolicyCommentDTO {
@@ -364,6 +390,7 @@ export class NewPolicyCommentDTO {
 export class PolicyCommentSearchDTO {
     @ApiProperty({
         type: 'string',
+        description: 'Search text — matches against comment text, field name, sender name, or sender role',
         required: false,
         example: 'text'
     })
@@ -373,6 +400,7 @@ export class PolicyCommentSearchDTO {
 
     @ApiProperty({
         type: 'string',
+        description: 'Filter by schema field path (e.g. "#schema-uuid&version/fieldName")',
         required: false,
         example: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
     })
@@ -382,6 +410,7 @@ export class PolicyCommentSearchDTO {
 
     @ApiProperty({
         type: 'string',
+        description: 'Cursor for pagination — return comments with _id less than this value (older comments)',
         required: false,
         example: Examples.DB_ID
     })
@@ -391,6 +420,7 @@ export class PolicyCommentSearchDTO {
 
     @ApiProperty({
         type: 'string',
+        description: 'Cursor for pagination — return comments with _id greater than this value (newer comments)',
         required: false,
         example: Examples.DB_ID
     })
@@ -592,21 +622,31 @@ export class PolicyCommentDTO {
 
     @ApiProperty({ nullable: false, required: true, type: () => VcDTO })
     document: VcDTO;
+
+    @ApiProperty({
+        type: Boolean,
+        description: 'Whether the current user is the sender of this comment (added by API, not stored in DB)',
+        required: false,
+        example: true
+    })
+    @IsOptional()
+    @IsBoolean()
+    isOwner?: boolean;
 }
 
 export class PolicyCommentCountDTO {
     @ApiProperty({
-        type: 'string',
-        required: false,
-        isArray: true,
-        example: ['#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1']
+        type: 'object',
+        description: 'Map of schema field paths to comment counts. Key = field IRI, value = number of comments on that field.',
+        additionalProperties: { type: 'number' },
+        example: { '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1': 3 }
     })
     @IsOptional()
-    @IsArray()
-    fields?: string[];
+    fields?: { [field: string]: number };
 
     @ApiProperty({
-        type: 'string',
+        type: Number,
+        description: 'Number of comments in this discussion',
         required: false,
         example: 0
     })

@@ -176,6 +176,332 @@ const PROFILE_DID_DOCUMENT_SAMPLE = {
 };
 
 export const ObjectExamples = {
+    BRANDING: {
+        headerColor: '#0031ff',
+        headerColor1: '#8259ef',
+        primaryColor: '#0031ff',
+        companyName: 'GUARDIAN',
+        companyLogoUrl: '/assets/images/logo.png',
+        loginBannerUrl: '/assets/bg.jpg',
+        faviconUrl: 'favicon.ico',
+        termsAndConditions: 'Lorem Ipsum Version Introduction...'
+    },
+
+    FORMULA: {
+        createDate: '2026-03-16T17:35:18.617Z',
+        updateDate: '2026-03-25T14:40:22.393Z',
+        uuid: 'fb7980f1-f347-47f3-9c1d-698b60162aba',
+        name: 'Test 3',
+        description: '',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        status: 'PUBLISHED',
+        messageId: '1774449622.177353801',
+        policyId: '69b83f18cd6b7c4adf4139bc',
+        policyTopicId: '0.0.8251226',
+        policyInstanceTopicId: '0.0.8372748',
+        id: '69b83f56cd6b7c4adf413a1e'
+    },
+
+    FORMULA_LIST_ITEM: {
+        name: 'Test 3',
+        description: '',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        status: 'PUBLISHED',
+        policyId: '69b83f18cd6b7c4adf4139bc',
+        policyTopicId: '0.0.8251226',
+        policyInstanceTopicId: '0.0.8372748',
+        id: '69b83f56cd6b7c4adf413a1e'
+    },
+
+    SCHEMA_RULE: {
+        createDate: '2026-03-25T15:34:42.540Z',
+        updateDate: '2026-03-25T15:34:42.540Z',
+        uuid: 'f11d9161-a429-46de-989d-3d7bdeb32da6',
+        name: 'Test Schema Rule',
+        description: 'Description of test schema rule',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        status: 'DRAFT',
+        policyId: '69b83f18cd6b7c4adf4139bc',
+        policyTopicId: '0.0.8251226',
+        policyInstanceTopicId: '0.0.8372748',
+        config: { fields: [] },
+        id: '69c40092810b639b34bae8a2'
+    },
+    RELAYER_ACCOUNT: {
+        createDate: '2026-03-25T15:30:37.191Z',
+        updateDate: '2026-03-25T15:30:37.191Z',
+        name: 'New Test Account',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        account: '0.0.6046500',
+        username: 'ExampleUser',
+        _id: '69c3ff9de85d8b6ef99ef86a',
+        id: '69c3ff9de85d8b6ef99ef86a'
+    },
+
+    NOTIFICATION_SUCCESS: {
+        createDate: '2026-03-25T14:40:28.853Z',
+        updateDate: '2026-03-25T14:40:28.853Z',
+        userId: '69b00a309fe1408d21bea39a',
+        title: 'Policy published',
+        type: 'SUCCESS',
+        action: 'POLICY_CONFIGURATION',
+        result: '69b83f18cd6b7c4adf4139bc',
+        message: 'Policy 69b83f18cd6b7c4adf4139bc published',
+        read: false,
+        old: false,
+        id: '69c3f3dc0c86dc7119046b9f'
+    },
+
+    NOTIFICATION_ERROR: {
+        createDate: '2026-03-10T13:15:21.260Z',
+        updateDate: '2026-03-10T13:15:21.260Z',
+        userId: '69b00a309fe1408d21bea39a',
+        title: 'Import schema file',
+        type: 'ERROR',
+        message: 'Cannot destructure property \'category\' of \'(intermediate value)\' as it is null.',
+        read: false,
+        old: false,
+        id: '69b01969b8a32e85cd3714bd'
+    },
+
+    SCHEMA_RULE_LIST_ITEM: {
+        name: 'Test Schema Rule',
+        description: 'Description of test schema rule',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        status: 'DRAFT',
+        policyId: '69b83f18cd6b7c4adf4139bc',
+        config: { fields: [] },
+        id: '69c40092810b639b34bae8a2'
+    },
+
+    THEME: {
+        createDate: '2026-03-25T14:36:51.320Z',
+        updateDate: '2026-03-25T14:36:51.320Z',
+        uuid: '71725b88-1801-4ab6-b672-3c133cd73e89',
+        name: 'Test Theme',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        rules: [
+            {
+                description: 'Container style',
+                text: '#ffffff',
+                background: '#1a1a2e',
+                border: '#16213e',
+                shape: '0',
+                borderWidth: '2px',
+                filterType: 'type',
+                filterValue: 'interfaceContainerBlock'
+            }
+        ],
+        id: '69c3f303810b639b34bae861'
+    },
+
+    TAG: {
+        uuid: '9db028d2-03ad-4d49-a178-cf4b67f8c147',
+        name: 'Carbon Credit Verification',
+        description: 'Tag for verified carbon credit documents',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        date: '2026-03-03T17:25:53.312Z',
+        entity: 'PolicyDocument',
+        status: 'Published',
+        operation: 'Create',
+        topicId: '0.0.6046379',
+        messageId: '1773670900.819264517',
+        policyId: '69b411d8b23f3b6a77d12742',
+        uri: 'ipfs://bafkreihj7gclc4qgem27tre5je6a3t7tpdrk4li6oamdl6bnflwnoyfs5i',
+        target: '1773670900.819264517',
+        localTarget: '69b411d8b23f3b6a77d12742',
+        document: {},
+        tagSchemaId: null,
+        inheritTags: false
+    },
+
+    TAG_MAP: {
+        entity: 'PolicyDocument',
+        target: '1773670900.819264517',
+        refreshDate: '2026-03-03T17:30:00.000Z',
+        tags: [
+            {
+                uuid: '9db028d2-03ad-4d49-a178-cf4b67f8c147',
+                name: 'Carbon Credit Verification',
+                description: 'Tag for verified carbon credit documents',
+                owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+                date: '2026-03-03T17:25:53.312Z',
+                entity: 'PolicyDocument',
+                status: 'Published',
+                operation: 'Create',
+                topicId: '0.0.6046379',
+                messageId: '1773670900.819264517',
+                policyId: '69b411d8b23f3b6a77d12742',
+                target: '1773670900.819264517',
+                localTarget: '69b411d8b23f3b6a77d12742'
+            }
+        ]
+    },
+
+    TOKEN: {
+        createDate: '2026-03-10T13:18:36.660Z',
+        updateDate: '2026-03-10T13:18:36.660Z',
+        tokenId: '737a27a4-5706-4d87-b5a2-c8a12c45d109',
+        tokenName: 'VCU',
+        tokenSymbol: 'VCU',
+        tokenType: 'non-fungible',
+        decimals: 0,
+        initialSupply: 0,
+        adminId: null,
+        changeSupply: true,
+        enableAdmin: true,
+        enableKYC: true,
+        enableFreeze: true,
+        enableWipe: true,
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        policyId: null,
+        draftToken: true,
+        id: '69b01a2c3f674c474aa928e4',
+        policies: ['VM0042 10/27 (DRAFT)'],
+        policyIds: ['69b01a323f674c474aa931ba'],
+        canDelete: true
+    },
+
+    TOKEN_INFO: {
+        createDate: '2026-03-10T13:18:36.660Z',
+        updateDate: '2026-03-10T13:18:36.660Z',
+        tokenId: '737a27a4-5706-4d87-b5a2-c8a12c45d109',
+        tokenName: 'VCU',
+        tokenSymbol: 'VCU',
+        tokenType: 'non-fungible',
+        decimals: 0,
+        initialSupply: 0,
+        adminId: null,
+        changeSupply: true,
+        enableAdmin: true,
+        enableKYC: true,
+        enableFreeze: true,
+        enableWipe: true,
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        policyId: null,
+        draftToken: true,
+        id: '69b01a2c3f674c474aa928e4',
+        policies: ['VM0042 10/27 (DRAFT)'],
+        policyIds: ['69b01a323f674c474aa931ba'],
+        canDelete: true,
+        associated: false,
+        frozen: false,
+        kyc: false,
+        balance: '0'
+    },
+
+    SETTINGS: {
+        operatorId: '0.0.1858',
+        operatorKey: '',
+        ipfsStorageApiKey: ''
+    },
+
+    PERMISSION: {
+        name: 'ANALYTIC_POLICY_READ',
+        category: 'ANALYTIC',
+        entity: 'POLICY',
+        action: 'READ',
+        disabled: false,
+        dependOn: ['POLICIES_POLICY_READ']
+    },
+
+    PERMISSION_ROLE: {
+        createDate: '2026-03-10T13:06:42.559Z',
+        updateDate: '2026-03-10T13:06:54.056Z',
+        uuid: '5c4eb19b-a946-4edb-a79f-e7199317824c',
+        name: 'Policy User',
+        description: '',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        permissions: [
+            'CONTRACTS_CONTRACT_READ',
+            'POLICIES_POLICY_EXECUTE',
+            'POLICIES_POLICY_READ',
+            'TOKENS_TOKEN_READ',
+            'TAGS_TAG_READ'
+        ],
+        default: false,
+        readonly: false,
+        id: '69b017625a07d3f3b40a9acd'
+    },
+
+    VP_DOCUMENT: {
+        id: '69aeb71ef8c5b278e3bab4e5',
+        hash: 'GcDE9NsPJc7oCZvSVJySCZHxTxvjc3ZAMgtKozP1r1Eh',
+        owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+        type: 'VP',
+        policyId: '69b411d8b23f3b6a77d12742',
+        tag: 'mint_token',
+        createDate: '2026-03-03T17:25:53.312Z',
+        updateDate: '2026-03-03T17:26:10.000Z',
+        document: {
+            id: 'urn:uuid:962aa166-7da1-4fab-ad88-6681ac55f770',
+            type: ['VerifiablePresentation'],
+            '@context': ['https://www.w3.org/2018/credentials/v1']
+        }
+    },
+
+    TRUST_CHAIN: {
+        chain: [
+            {
+                id: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+                type: 'DID',
+                tag: '',
+                label: 'DID Document',
+                schema: '',
+                owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+                document: {}
+            },
+            {
+                id: 'urn:uuid:962aa166-7da1-4fab-ad88-6681ac55f770',
+                type: 'VC',
+                tag: 'create_vc',
+                label: 'Verifiable Credential',
+                schema: '#StandardRegistry',
+                owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+                document: {}
+            }
+        ],
+        userMap: [
+            {
+                did: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+                username: 'StandardRegistry'
+            }
+        ]
+    },
+
+    WIZARD_CONFIG: {
+        roles: ['Project_Proponent', 'VVB'],
+        policy: {
+            name: 'New Wizard Policy',
+            description: 'Policy created by wizard',
+            topicDescription: 'Wizard policy topic',
+            policyTag: 'Tag_wizard_1773408686116'
+        },
+        schemas: [],
+        trustChain: []
+    },
+
+    WIZARD_RESULT: {
+        policyId: '69b411d8b23f3b6a77d12742',
+        wizardConfig: {
+            roles: ['Project_Proponent', 'VVB'],
+            policy: {
+                name: 'New Wizard Policy',
+                description: 'Policy created by wizard',
+                topicDescription: 'Wizard policy topic',
+                policyTag: 'Tag_wizard_1773408686116'
+            },
+            schemas: [],
+            trustChain: []
+        }
+    },
+
     LOGIN_SUCCESSFUL: {
         did: Examples.DID,
         refreshToken: Examples.REFRESH_TOKEN,

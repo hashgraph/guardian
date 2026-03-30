@@ -2,7 +2,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { Controller, Get, HttpCode, HttpStatus, Inject, Put, Query } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
 import { AISuggestions, InternalException } from '#helpers';
-import { InternalServerErrorDTO } from '#middlewares';
+import { InternalServerErrorDTO} from '#middlewares';
 import { PinoLogger } from '@guardian/common';
 
 /**
@@ -23,10 +23,16 @@ export class AISuggestionsAPI {
         description: 'Returns AI response to the current question',
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns a comma-separated list of suggested methodology codes.',
         schema: {
-            example: 'ACM0001, ACM0002, ACM0006, ACM0007, ACM0018'
+            type: 'string'
         },
+        examples: {
+            withSuggestions: {
+                summary: 'AI returned suggestions',
+                value: 'ACM0001, ACM0002, ACM0006, ACM0007, ACM0018'
+            }
+        }
     })
     @ApiQuery({
         name: 'q',
@@ -38,7 +44,12 @@ export class AISuggestionsAPI {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -62,14 +73,26 @@ export class AISuggestionsAPI {
         description: 'Rebuilds vector based on policy data in the DB',
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        type: Boolean,
-        example: true
+        description: 'Successful operation. Returns true when vector rebuild is complete.',
+        schema: {
+            type: 'boolean'
+        },
+        examples: {
+            success: {
+                summary: 'Vector rebuilt successfully',
+                value: true
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

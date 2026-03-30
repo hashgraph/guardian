@@ -83,12 +83,28 @@ export class ThemeRoleDTO {
 export class ThemeDTO {
     @ApiProperty({
         type: 'string',
+        description: 'Internal database identifier',
         example: Examples.DB_ID
     })
     id?: string;
 
     @ApiProperty({
         type: 'string',
+        description: 'Creation date in ISO 8601 format',
+        example: Examples.DATE
+    })
+    createDate?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Last update date in ISO 8601 format',
+        example: Examples.DATE
+    })
+    updateDate?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Unique universal identifier',
         required: true,
         example: Examples.UUID
     })
@@ -96,6 +112,14 @@ export class ThemeDTO {
 
     @ApiProperty({
         type: 'string',
+        description: 'DID of the theme owner',
+        example: Examples.DID
+    })
+    owner?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Theme name',
         required: true,
         example: 'Theme name'
     })

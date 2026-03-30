@@ -16,7 +16,7 @@ import {
     Response
 } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
-import { AssignPolicyDTO, Examples, InternalServerErrorDTO, PermissionsDTO, PolicyDTO, RoleDTO, UserDTO, pageHeader } from '#middlewares';
+import { AssignPolicyDTO, Examples, InternalServerErrorDTO, UnprocessableEntityErrorDTO, ObjectExamples, PermissionsDTO, PolicyDTO, RoleDTO, UserDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, Users } from '#helpers';
 import { WebSocketsService } from './websockets.js';
@@ -38,18 +38,36 @@ export class PermissionsApi {
     )
     @ApiOperation({
         summary: 'Return a list of all permissions.',
-        description: 'Returns all permissions.',
+        description: 'Returns the complete list of available permissions in the system. Each permission has a category, entity, action, and optional dependencies on other permissions.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
         type: PermissionsDTO,
-        example: [{ name: 'string', category: 'string', entity: 'string', action: 'string', disabled: true, dependOn: [Permissions.POLICIES_POLICY_READ] }]
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [ObjectExamples.PERMISSION]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -73,14 +91,14 @@ export class PermissionsApi {
     )
     @ApiOperation({
         summary: 'Return a list of all roles.',
-        description: 'Returns all roles.',
+        description: 'Returns a paginated list of custom roles created by the current Standard Registry. Filter by role name with partial match.',
     })
     @ApiQuery({
         name: 'name',
         type: String,
-        description: 'Filter by role name',
+        description: 'Filter by role name (case-insensitive, partial match). Leave empty to return all.',
         required: false,
-        example: 'name'
+        example: ''
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -97,16 +115,38 @@ export class PermissionsApi {
         example: 20
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns roles array and total count in X-Total-Count header.',
         isArray: true,
         headers: pageHeader,
         type: RoleDTO,
-        example: [{ uuid: 'f3b2a9c1e4d5678901234567', name: 'Name', description: 'Description', owner: 'string', permissions: [Permissions.POLICIES_POLICY_READ] }]
+        examples: {
+            withRoles: {
+                summary: 'Roles found',
+                value: [ObjectExamples.PERMISSION_ROLE]
+            },
+            empty: {
+                summary: 'No roles',
+                value: []
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -149,16 +189,44 @@ export class PermissionsApi {
         description: 'Object that contains role information.',
         required: true,
         type: RoleDTO,
+        examples: {
+            createRole: {
+                summary: 'Create a new custom role',
+                value: {
+                    name: 'Custom Role',
+                    description: 'Role for VVB users',
+                    permissions: ['POLICIES_POLICY_READ', 'TOKENS_TOKEN_READ']
+                }
+            }
+        }
     })
     @ApiCreatedResponse({
         description: 'Created role.',
         type: RoleDTO,
-        example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'Name', description: 'Description', owner: 'string', permissions: ['POLICIES_POLICY_READ'] }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.PERMISSION_ROLE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -198,17 +266,45 @@ export class PermissionsApi {
     @ApiBody({
         description: 'Role configuration.',
         type: RoleDTO,
+        examples: {
+            updateRole: {
+                summary: 'Update an existing role',
+                value: {
+                    name: 'Custom Role',
+                    description: 'Role for VVB users',
+                    permissions: ['POLICIES_POLICY_READ', 'TOKENS_TOKEN_READ']
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Role configuration.',
         type: RoleDTO,
-        example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'Name', description: 'Description', owner: 'string', permissions: ['POLICIES_POLICY_READ'] }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.PERMISSION_ROLE
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Role not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Role does not exist.' } }}})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -268,13 +364,31 @@ export class PermissionsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: true
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 422, message: 'Invalid id' } }}})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -335,12 +449,30 @@ export class PermissionsApi {
     @ApiCreatedResponse({
         description: 'Created role.',
         type: RoleDTO,
-        example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'Name', description: 'Description', owner: 'string', permissions: ['POLICIES_POLICY_READ'] }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.PERMISSION_ROLE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -408,14 +540,32 @@ export class PermissionsApi {
         isArray: true,
         headers: pageHeader,
         type: UserDTO,
-        example: [{ username: 'username', role: 'STANDARD_REGISTRY', permissionsGroup: [{
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ username: 'username', role: 'STANDARD_REGISTRY', permissionsGroup: [{
 
         }], permissions: [Permissions.POLICIES_POLICY_READ], did: 'did:hedera:testnet:abc123', parent: 'string', hederaAccountId: '0.0.1001' }]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(UserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -474,15 +624,33 @@ export class PermissionsApi {
     @ApiOkResponse({
         description: 'User permissions.',
         type: UserDTO,
-        example: { username: 'username', role: 'USER', permissionsGroup: [{
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { username: 'username', role: 'USER', permissionsGroup: [{
 
         }], permissions: [Permissions.POLICIES_POLICY_READ], did: Examples.DID, parent: Examples.DID, hederaAccountId: Examples.ACCOUNT_ID }
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'User not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'User does not exist.' } }}})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(UserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -535,15 +703,33 @@ export class PermissionsApi {
     @ApiOkResponse({
         description: 'User permissions.',
         type: UserDTO,
-        example: { username: 'username', role: 'USER', permissionsGroup: [{
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { username: 'username', role: 'USER', permissionsGroup: [{
 
         }], permissions: [Permissions.POLICIES_POLICY_READ], did: Examples.DID, parent: Examples.DID, hederaAccountId: Examples.ACCOUNT_ID }
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'User not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'User does not exist.' } }}})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(UserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -629,8 +815,11 @@ export class PermissionsApi {
         isArray: true,
         headers: pageHeader,
         type: PolicyDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ id: Examples.DB_ID,
+            uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
             topicDescription: 'Description',
@@ -638,8 +827,8 @@ export class PermissionsApi {
             status: 'string',
             creator: 'string',
             owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
             codeVersion: '1.0.0',
             createDate: 'string',
             version: '1.0.0',
@@ -692,28 +881,43 @@ export class PermissionsApi {
         }],
         categories: ['string'],
         projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
+        tests: [{ id: Examples.DB_ID,
+        uuid: Examples.UUID,
         name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
+        policyId: Examples.DB_ID,
         owner: 'string',
         status: 'string',
         date: 'string',
         duration: 0,
         progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
+        resultId: Examples.DB_ID,
         result: {} }],
         ignoreRules: [{ code: 'string',
         blockType: 'string',
         property: 'string',
         contains: 'string',
         severity: 'warning' }] }]
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'User not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'User does not exist.' } }}})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -775,11 +979,30 @@ export class PermissionsApi {
         description: 'Options.',
         required: true,
         type: AssignPolicyDTO,
+        examples: {
+            assignPolicy: {
+                summary: 'Assign policies to a user',
+                value: {
+                    policyIds: ['69aeb71ef8c5b278e3bab4e5'],
+                    assign: true
+                }
+            },
+            unassignPolicy: {
+                summary: 'Unassign policies from a user',
+                value: {
+                    policyIds: ['69aeb71ef8c5b278e3bab4e5'],
+                    assign: false
+                }
+            }
+        }
     })
     @ApiCreatedResponse({
         description: 'Assigned policy.',
         type: PolicyDTO,
-        example: { id: Examples.DB_ID,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
             uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
@@ -858,12 +1081,27 @@ export class PermissionsApi {
         property: 'string',
         contains: 'string',
         severity: 'warning' }] }
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'User not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'User does not exist.' } }}})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -927,15 +1165,33 @@ export class PermissionsApi {
     @ApiOkResponse({
         description: 'User permissions.',
         type: UserDTO,
-        example: { username: 'username', role: 'USER', permissionsGroup: [{
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { username: 'username', role: 'USER', permissionsGroup: [{
 
         }], permissions: [Permissions.POLICIES_POLICY_READ], did: Examples.DID, parent: Examples.DID, hederaAccountId: Examples.ACCOUNT_ID }
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'User not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'User does not exist.' } }}})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(UserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -988,11 +1244,30 @@ export class PermissionsApi {
         description: 'Options.',
         required: true,
         type: AssignPolicyDTO,
+        examples: {
+            delegatePolicy: {
+                summary: 'Delegate policies to a user',
+                value: {
+                    policyIds: ['69aeb71ef8c5b278e3bab4e5'],
+                    assign: true
+                }
+            },
+            undelegatePolicy: {
+                summary: 'Remove delegation from a user',
+                value: {
+                    policyIds: ['69aeb71ef8c5b278e3bab4e5'],
+                    assign: false
+                }
+            }
+        }
     })
     @ApiCreatedResponse({
         description: 'Assigned policy.',
         type: PolicyDTO,
-        example: { id: Examples.DB_ID,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
             uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
@@ -1071,12 +1346,27 @@ export class PermissionsApi {
         property: 'string',
         contains: 'string',
         severity: 'warning' }] }
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'User not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'User does not exist.' } }}})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidRole: {
+                summary: 'Role not found or invalid',
+                value: { statusCode: 500, message: 'Invalid role' }
+            },
+            userNotFound: {
+                summary: 'User does not exist',
+                value: { statusCode: 500, message: 'User does not exist' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)

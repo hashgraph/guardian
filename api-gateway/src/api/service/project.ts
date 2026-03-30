@@ -1,7 +1,7 @@
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
-import { ProjectDTO, PropertiesDTO, CompareDocumentsDTO, CompareDocumentsV2DTO, FilterDocumentsDTO, InternalServerErrorDTO, Examples } from '#middlewares';
+import { ProjectDTO, PropertiesDTO, CompareDocumentsDTO, CompareDocumentsV2DTO, FilterDocumentsDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO, Examples} from '#middlewares';
 import { CACHE } from '#constants';
 import { UseCache, Guardians, InternalException, ProjectService } from '#helpers';
 import { PinoLogger } from '@guardian/common';
@@ -24,12 +24,23 @@ export class ProjectsAPI {
         description: 'Search projects by filters',
     })
     @ApiBody({
-        description: 'The question of choosing a methodology',
+        description: 'Search filters for projects. Optionally filter by category IDs and/or policy IDs.',
         required: true,
-        type: String,
+        schema: {
+            type: 'object',
+            properties: {
+                categoryIds: { type: 'array', items: { type: 'string' }, description: 'Filter by category IDs' },
+                policyIds: { type: 'array', items: { type: 'string' }, description: 'Filter by policy IDs' }
+            }
+        },
         examples: {
-            q: {
-                value: 'What methodology can I use for production of electricity using renewable energy technologies?'
+            withFilters: {
+                summary: 'Filter by policy IDs',
+                value: { policyIds: [Examples.DB_ID] }
+            },
+            noFilters: {
+                summary: 'Get all projects',
+                value: {}
             }
         }
     })
@@ -37,12 +48,22 @@ export class ProjectsAPI {
         description: 'Successful operation.',
         isArray: true,
         type: ProjectDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', policyId: 'f3b2a9c1e4d5678901234567', policyName: 'string', registered: 'string', title: 'string', companyName: 'string', sectoralScope: 'string' }]
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: [{ id: Examples.DB_ID, policyId: Examples.DB_ID, policyName: 'string', registered: 'string', title: 'string', companyName: 'string', sectoralScope: 'string' }]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(ProjectDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -88,13 +109,23 @@ export class ProjectsAPI {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: CompareDocumentsDTO,
-        example: { documents: {}, left: {}, right: {}, total: {} }
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { documents: {}, left: {}, right: {}, total: {} }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { default: { summary: 'Invalid parameters', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(FilterDocumentsDTO, CompareDocumentsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -178,13 +209,23 @@ export class ProjectsAPI {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: CompareDocumentsV2DTO,
-        example: { projects: { documents: {}, left: {}, right: {}, total: {} }, presentations: { documents: {}, left: {}, right: {}, total: {} } }
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { projects: { documents: {}, left: {}, right: {}, total: {} }, presentations: { documents: {}, left: {}, right: {}, total: {} } }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { default: { summary: 'Invalid parameters', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @Version('2')
     @ApiExtraModels(FilterDocumentsDTO, CompareDocumentsV2DTO, InternalServerErrorDTO)
@@ -272,12 +313,22 @@ export class ProjectsAPI {
         description: 'Successful operation.',
         isArray: true,
         type: PropertiesDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', title: 'string', value: 'string' }]
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: [{ id: Examples.DB_ID, title: 'string', value: 'string' }]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(PropertiesDTO, InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
