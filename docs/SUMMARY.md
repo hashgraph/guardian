@@ -184,6 +184,8 @@
     * [Schema Tree](guardian/standard-registry/schemas/schema-tree/README.md)
       * [Schema Tree UI](guardian/standard-registry/schemas/schema-tree/schema-tree-ui.md)
       * [API for Returning Schema Tree](guardian/standard-registry/schemas/schema-tree/returning-schema-tree.md)
+      * [Export Schema Tree as PlantUML](guardian/standard-registry/schemas/schema-tree/export-schema-tree-as-plantuml.md)
+      * [Export Schema Tree in PlantUML Format API](guardian/standard-registry/schemas/schema-tree/export-schema-tree-as-plantuml-api.md)
     * [Tag Schema](guardian/standard-registry/schemas/tag-schema/README.md)
       * [Creating Tag Schemas using UI](guardian/standard-registry/schemas/tag-schema/creating-tag-schemas-using-ui.md)
       * [Schema Tags APIs](guardian/standard-registry/schemas/tag-schema/schema-tags-apis/README.md)

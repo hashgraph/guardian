@@ -1609,6 +1609,36 @@
             ],
             "additionalProperties": false
         }
+    },
+    {
+        "uuid": "EvidenceAttachments",
+        "name": "EvidenceAttachments",
+        "entity": "EVIDENCE_ATTACHMENTS",
+        "document": {
+            "$id": "#EvidenceAttachments",
+            "$comment": "{ \"@id\": \"#EvidenceAttachments\", \"term\": \"EvidenceAttachments\" }",
+            "title": "EvidenceAttachments",
+            "description": "EvidenceAttachments",
+            "type": "object",
+            "properties": {
+                "dataType": {
+                    "title": "dataType",
+                    "description": "dataType",
+                    "type": "string",
+                    "$comment": "{\"term\": \"dataType\", \"@id\": \"https://www.schema.org/text\"}",
+                    "readOnly": false
+                },
+                "data": {
+                    "title": "data",
+                    "description": "data",
+                    "type": "string",
+                    "$comment": "{\"term\": \"data\", \"@id\": \"https://www.schema.org/text\"}",
+                    "readOnly": false
+                }
+            },
+            "required": ["dataType", "data"],
+            "additionalProperties": false
+        }
     }
 
 ]

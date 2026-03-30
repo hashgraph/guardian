@@ -45,6 +45,7 @@ export enum MessageAPI {
     GET_SCHEMA_PARENTS = 'get-schema-parents',
     GET_SCHEMA_DELETION_PREVIEW = 'get-schema-deletion-preview',
     GET_SCHEMA_TREE = 'get-schema-tree',
+    GET_SCHEMA_TREE_PLANTUML = 'get-schema-tree-plantuml',
     GET_SUB_SCHEMAS = 'get-sub-schema',
     GENERATE_DEMO_KEY = 'GENERATE_DEMO_KEY',
     GENERATE_DEMO_KEY_ASYNC = 'GENERATE_DEMO_KEY_ASYNC',

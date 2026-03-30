@@ -194,9 +194,18 @@ services:
     volumes:
       - ./policy-service/tls:/usr/local/app/tls:ro
       - ./policy-service/configs:/usr/local/app/configs:ro
+      # Uncomment for PYTHON_SANDBOX_MODE=docker:
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
     <<: *service-template
     expose:
       - '5006'
+
+  # Uncomment for PYTHON_SANDBOX_MODE=docker:
+  # python-sandbox:
+  #   build:
+  #     context: ./policy-service/docker/python-sandbox
+  #     dockerfile: Dockerfile
+  #   image: guardian/python-sandbox:latest
 
   prometheus:
     image: prom/prometheus:v2.44.0
