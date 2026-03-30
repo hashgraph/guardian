@@ -23957,9 +23957,24 @@ paths:
               schema:
                 type: string
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
