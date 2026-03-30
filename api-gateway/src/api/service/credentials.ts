@@ -134,6 +134,45 @@ export class CredentialsApi {
         }
     }
 
+    // ==================== User: view SR credentials (read-only) ====================
+
+    @Get('/user/sr-global')
+    @Auth(Permissions.CREDENTIALS_USER_READ)
+    @ApiOperation({ summary: 'Get SR global credentials visible to the current user (read-only).' })
+    @HttpCode(HttpStatus.OK)
+    async getSrGlobalCredentialsForUser(
+        @AuthUser() user: IAuthUser,
+    ): Promise<any> {
+        try {
+            if (!user.parent) {
+                return [];
+            }
+            const guardians = new Guardians();
+            return await guardians.getCredentials(user, null, user.parent);
+        } catch (error) {
+            await InternalException(error, this.logger, user?.id);
+        }
+    }
+
+    @Get('/user/sr-policy/:policyId')
+    @Auth(Permissions.CREDENTIALS_USER_READ)
+    @ApiOperation({ summary: 'Get SR policy credentials visible to the current user (read-only).' })
+    @HttpCode(HttpStatus.OK)
+    async getSrPolicyCredentialsForUser(
+        @Param('policyId') policyId: string,
+        @AuthUser() user: IAuthUser,
+    ): Promise<any> {
+        try {
+            if (!user.parent) {
+                return [];
+            }
+            const guardians = new Guardians();
+            return await guardians.getCredentials(user, policyId, user.parent);
+        } catch (error) {
+            await InternalException(error, this.logger, user?.id);
+        }
+    }
+
     // ==================== SR Global ====================
 
     @Get('/sr/global')

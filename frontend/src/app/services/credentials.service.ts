@@ -46,6 +46,16 @@ export class CredentialsService {
         });
     }
 
+    // ==================== User: view SR credentials (read-only) ====================
+
+    public getSrGlobalCredentialsForUser(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/user/sr-global`);
+    }
+
+    public getSrPolicyCredentialsForUser(policyId: string): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/user/sr-policy/${policyId}`);
+    }
+
     // ==================== SR Global ====================
 
     public getSrGlobalCredentials(): Observable<any[]> {

@@ -14,12 +14,15 @@ export class CredentialsPanelComponent implements OnInit {
     serviceSchemas: any[] = [];
     globalCredentials: any[] = [];
     policyCredentials: any[] = [];
+    srGlobalCredentials: any[] = [];
+    srPolicyCredentials: any[] = [];
     activeTabIndex: number = 0;
 
     policies: any[] = [];
     selectedPolicyId: string | null = null;
 
     showDialog: boolean = false;
+    showOverrideConfirm: boolean = false;
     dialogScope: 'global' | 'policy' = 'global';
     selectedServiceType: string = '';
     selectedDryRun: boolean = false;
@@ -40,6 +43,9 @@ export class CredentialsPanelComponent implements OnInit {
         this.loadSchemas();
         this.loadGlobalCredentials();
         this.loadPolicies();
+        if (this.role === 'user') {
+            this.loadSrGlobalCredentials();
+        }
     }
 
     loadSchemas(): void {
@@ -87,8 +93,34 @@ export class CredentialsPanelComponent implements OnInit {
         });
     }
 
+    loadSrGlobalCredentials(): void {
+        this.credentialsService.getSrGlobalCredentialsForUser().subscribe({
+            next: (creds) => this.srGlobalCredentials = creds,
+            error: () => this.srGlobalCredentials = [],
+        });
+    }
+
+    loadSrPolicyCredentials(): void {
+        if (!this.selectedPolicyId) {
+            this.srPolicyCredentials = [];
+            return;
+        }
+        this.credentialsService.getSrPolicyCredentialsForUser(this.selectedPolicyId).subscribe({
+            next: (creds) => this.srPolicyCredentials = creds,
+            error: () => this.srPolicyCredentials = [],
+        });
+    }
+
     onPolicyChange(): void {
         this.loadPolicyCredentials();
+        if (this.role === 'user') {
+            this.loadSrPolicyCredentials();
+        }
+    }
+
+    hasSrCredential(serviceType: string, dryRun: boolean, scope: 'global' | 'policy'): boolean {
+        const srCreds = scope === 'global' ? this.srGlobalCredentials : this.srPolicyCredentials;
+        return srCreds.some(c => c.serviceType === serviceType && c.dryRun === dryRun);
     }
 
     getServiceLabel(serviceType: string): string {
@@ -110,6 +142,14 @@ export class CredentialsPanelComponent implements OnInit {
     }
 
     saveCredential(): void {
+        if (this.role === 'user' && !this.showOverrideConfirm
+            && this.hasSrCredential(this.selectedServiceType, this.selectedDryRun, this.dialogScope)) {
+            this.showOverrideConfirm = true;
+            return;
+        }
+
+        this.showOverrideConfirm = false;
+
         const body = {
             serviceType: this.selectedServiceType,
             dryRun: this.selectedDryRun,
@@ -134,6 +174,10 @@ export class CredentialsPanelComponent implements OnInit {
             },
             error: () => this.showDialog = false,
         });
+    }
+
+    cancelOverride(): void {
+        this.showOverrideConfirm = false;
     }
 
     deleteCredential(cred: any, scope: 'global' | 'policy'): void {

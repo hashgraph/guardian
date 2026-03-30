@@ -107,11 +107,12 @@ export async function credentialAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             user: IAuthUser,
             policyId?: string,
+            ownerId?: string,
         }) => {
             try {
-                const { user, policyId } = msg;
+                const { user, policyId, ownerId } = msg;
 
-                const filter: any = { ownerId: user.did };
+                const filter: any = { ownerId: ownerId || user.did };
                 if (policyId !== undefined) {
                     filter.policyId = policyId || null;
                 }

@@ -4094,9 +4094,10 @@ export class Guardians extends NatsService {
      */
     public async getCredentials(
         user: IAuthUser,
-        policyId: string | null
+        policyId: string | null,
+        ownerId?: string
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.GET_CREDENTIALS, { user, policyId });
+        return await this.sendMessage(MessageAPI.GET_CREDENTIALS, { user, policyId, ownerId });
     }
 
     /**

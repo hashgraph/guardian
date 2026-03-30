@@ -193,7 +193,7 @@ import { CredentialsPanelComponent } from './components/credentials/credentials-
         UsersManagementDetailComponent,
         WorkerTasksComponent,
         UserKeysDialog,
-        CredentialsPanelComponent,,
+        CredentialsPanelComponent,
         OtpDialogComponent,
         OtpConfigDialogComponent,
         OtpDisableDialogComponent,
