@@ -179,7 +179,8 @@ docker compose -f docker-compose-build.yml build python-sandbox
 PYTHON_SANDBOX_MODE=docker
 ```
 
-3. Ensure the policy-service container has Docker socket access (for docker-compose deployments, this is configured in `docker-compose-build.yml`).
+3. Ensure the policy-service container has Docker socket access. For docker-compose deployments, uncomment the Docker socket volume mount in the policy-service and the `python-sandbox` service in the relevant compose file:
+   - `docker-compose-build.yml`, `docker-compose.yml`, `docker-compose-production.yml`, `docker-compose-production-build.yml`, `docker-compose-quickstart.yml` — uncomment the Docker socket volume and `python-sandbox` service
 
 {% hint style="warning" %}
 Docker mode requires the Docker daemon to be available. The policy-service needs access to the Docker socket to spawn sandbox containers. For production deployments, consider using a Docker API proxy to restrict operations to sandbox container management only.

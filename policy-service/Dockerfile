@@ -54,6 +54,9 @@ COPY --link --from=deps /usr/local/app/node_modules node_modules/
 COPY --link --from=deps /usr/local/app/package.json ./
 COPY --link --from=build /usr/local/app/dist dist/
 
+# Allow node user to write Pyodide package cache (warmup downloads wheels at startup)
+RUN chown -R node:node node_modules/pyodide/ 2>/dev/null || true
+
 # Change the user to node
 USER node
 
