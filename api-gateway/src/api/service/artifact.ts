@@ -88,12 +88,12 @@ export class ArtifactApi {
         isArray: true,
         headers: pageHeader,
         type: ArtifactDTOItem,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'string', uuid: 'f3b2a9c1e4d5678901234567', extention: 'string', type: 'string' }]
+        example: [{ id: Examples.DB_ID, name: 'artifact.json', uuid: Examples.UUID, extention: '.json', type: 'policy' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -199,12 +199,12 @@ export class ArtifactApi {
         isArray: true,
         headers: pageHeader,
         type: ArtifactDTOItem,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'string', uuid: 'f3b2a9c1e4d5678901234567', extention: 'string', type: 'string' }]
+        example: [{ id: Examples.DB_ID, name: 'artifact.json', uuid: Examples.UUID, extention: '.json', type: 'policy' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -291,13 +291,13 @@ export class ArtifactApi {
         description: 'Artifacts uploaded successfully.',
         isArray: true,
         type: ArtifactDTOItem,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'string', uuid: 'f3b2a9c1e4d5678901234567', extention: 'string', type: 'string' }]
+        example: [{ id: Examples.DB_ID, name: 'artifact.json', uuid: Examples.UUID, extention: '.json', type: 'policy' }]
     })
-    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { statusCode: 400, message: 'Bad request' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @UseInterceptors(AnyFilesInterceptor({
@@ -360,7 +360,7 @@ export class ArtifactApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -394,12 +394,12 @@ export class ArtifactApi {
             type: 'string',
             format: 'binary'
         },
-        example: { result: 'ok' }
+        example: { result: Examples.DB_ID }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -454,13 +454,13 @@ export class ArtifactApi {
     @ApiCreatedResponse({
         description: 'File uploaded successfully.',
         type: UpsertFileResponseDTO,
-        example: { fileId: '67b8f31d2a26f8be2a9f0be9' }
+        example: { fileId: Examples.DB_ID }
     })
-    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { statusCode: 400, message: 'Bad request' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(UpsertFileResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -514,7 +514,7 @@ export class ArtifactApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

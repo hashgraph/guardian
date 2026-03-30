@@ -20,7 +20,7 @@ export class MetricsApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        example: { result: 'ok' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
     async getMetrics(@Response() res) {

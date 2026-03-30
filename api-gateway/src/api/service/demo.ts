@@ -2,7 +2,7 @@ import { PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Permissions, TaskAction } from '@guardian/interfaces';
-import { InternalServerErrorDTO, RegisteredUsersDTO, TaskDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO, RegisteredUsersDTO, TaskDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { Guardians, InternalException, NewTask, ServiceError, TaskManager, Users } from '#helpers';
 
@@ -28,7 +28,7 @@ export class DemoApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(RegisteredUsersDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -76,7 +76,7 @@ export class DemoApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -130,12 +130,12 @@ export class DemoApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        example: { taskId: Examples.DB_ID, expectation: 0 }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { EntityOwner, Permissions } from '@guardian/interfaces';
-import { FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, InternalServerErrorDTO, CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, SearchPoliciesDTO, FilterToolsDTO, CompareToolsDTO, FilterSearchBlocksDTO, SearchBlocksDTO, Examples } from '#middlewares';
+import { FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO, CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, SearchPoliciesDTO, FilterToolsDTO, CompareToolsDTO, FilterSearchBlocksDTO, SearchBlocksDTO, Examples } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Guardians, ONLY_SR, InternalException } from '#helpers';
@@ -100,10 +100,10 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: SearchPoliciesDTO,
         example: { target: { type: 'Local',
-            id: 'f3b2a9c1e4d5678901234567',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
+            id: Examples.DB_ID,
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
+            uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Policy description',
             version: '1.0.0',
@@ -115,10 +115,10 @@ export class AnalyticsApi {
             tokensCount: 0,
             rate: 0 },
             result: [{ type: 'Local',
-            id: 'f3b2a9c1e4d5678901234567',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
+            id: Examples.DB_ID,
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
+            uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Policy description',
             version: '1.0.0',
@@ -133,7 +133,7 @@ export class AnalyticsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterSearchPoliciesDTO, SearchPoliciesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -218,7 +218,7 @@ export class AnalyticsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterPoliciesDTO, ComparePoliciesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -271,7 +271,7 @@ export class AnalyticsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterPoliciesDTO, ComparePoliciesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -332,11 +332,11 @@ export class AnalyticsApi {
         type: CompareModulesDTO,
         example: { blocks: {}, left: {}, right: {}, inputEvents: {}, outputEvents: {}, variables: {}, total: {} }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterModulesDTO, CompareModulesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -404,7 +404,7 @@ export class AnalyticsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterSchemasDTO, CompareSchemasDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -458,11 +458,11 @@ export class AnalyticsApi {
         type: CompareDocumentsDTO,
         example: { documents: {}, left: {}, right: {}, total: {} }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterDocumentsDTO, CompareDocumentsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -542,11 +542,11 @@ export class AnalyticsApi {
         type: CompareToolsDTO,
         example: { blocks: {}, left: {}, right: {}, inputEvents: {}, outputEvents: {}, variables: {}, total: {} }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterToolsDTO, CompareToolsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -662,7 +662,7 @@ export class AnalyticsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterPoliciesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -729,11 +729,11 @@ export class AnalyticsApi {
         type: String,
         example: 'string'
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterModulesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -809,7 +809,7 @@ export class AnalyticsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterSchemasDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -871,11 +871,11 @@ export class AnalyticsApi {
         type: String,
         example: 'string'
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterDocumentsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -962,11 +962,11 @@ export class AnalyticsApi {
         type: String,
         example: 'string'
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterToolsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1036,13 +1036,13 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: SearchBlocksDTO,
         isArray: true,
-        example: [{ name: 'string', description: 'string', version: 'string', owner: 'string', topicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', hash: 'QmExampleHash', chains: [{}] }]
+        example: [{ name: 'string', description: 'string', version: 'string', owner: 'string', topicId: Examples.ACCOUNT_ID, messageId: Examples.MESSAGE_ID, hash: 'QmExampleHash', chains: [{}] }]
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(FilterSearchBlocksDTO, SearchBlocksDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1082,7 +1082,7 @@ export class AnalyticsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
     async checkIndexerAvailability(

@@ -71,7 +71,7 @@ export class PolicyTestDTO {
     date?: string;
 
     @ApiProperty({
-        type: String,
+        type: Number,
         description: 'Test duration',
         example: 0
     })
@@ -80,7 +80,7 @@ export class PolicyTestDTO {
     duration?: number;
 
     @ApiProperty({
-        type: String,
+        type: Number,
         description: 'Test progress',
         example: 0
     })

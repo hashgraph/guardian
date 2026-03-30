@@ -4,7 +4,7 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Post, Response, Param, Body, Query } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
-import { InternalServerErrorDTO, RecordActionDTO, RecordStatusDTO, RunningDetailsDTO, RunningResultDTO, Examples } from '#middlewares';
+import { InternalServerErrorDTO, RecordActionDTO, RecordStatusDTO, RunningDetailsDTO, RunningResultDTO, Examples} from '#middlewares';
 
 @Controller('record')
 @ApiTags('record')
@@ -22,7 +22,7 @@ export class RecordApi {
     )
     @ApiOperation({
         summary: 'Get recording or running status.',
-        description: 'Get recording or running status.' + ONLY_SR,
+        description: 'Get recording or running status. Policy must be in dry-run mode, otherwise returns 403 "Invalid status.".' + ONLY_SR,
     })
     @ApiParam({
         name: 'policyId',
@@ -34,12 +34,26 @@ export class RecordApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: RecordStatusDTO,
-        example: { type: 'string', policyId: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', status: 'string' }
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { type: 'string', policyId: Examples.DB_ID, uuid: Examples.UUID, status: 'string' }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidStatus: {
+                summary: 'Policy is not in dry-run mode',
+                value: { statusCode: 403, message: 'Invalid status.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(RecordStatusDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -84,12 +98,26 @@ export class RecordApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: true
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidStatus: {
+                summary: 'Policy is not in dry-run mode',
+                value: { statusCode: 403, message: 'Invalid status.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -138,12 +166,26 @@ export class RecordApi {
             type: 'string',
             format: 'binary'
         },
-        example: { result: 'ok' }
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { result: 'ok' }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidStatus: {
+                summary: 'Policy is not in dry-run mode',
+                value: { statusCode: 403, message: 'Invalid status.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -189,12 +231,26 @@ export class RecordApi {
         description: 'Successful operation.',
         isArray: true,
         type: RecordActionDTO,
-        example: [{ uuid: 'f3b2a9c1e4d5678901234567', policyId: 'f3b2a9c1e4d5678901234567', method: 'string', action: 'string', time: 'string', user: 'string', target: 'string' }]
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: [{ uuid: Examples.UUID, policyId: Examples.DB_ID, method: 'string', action: 'string', time: 'string', user: 'string', target: 'string' }]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidStatus: {
+                summary: 'Policy is not in dry-run mode',
+                value: { statusCode: 403, message: 'Invalid status.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(RecordActionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -239,12 +295,26 @@ export class RecordApi {
     @ApiOkResponse({
         description: 'Record UUID.',
         type: String,
-        example: 'string'
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: 'string'
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidStatus: {
+                summary: 'Policy is not in dry-run mode',
+                value: { statusCode: 403, message: 'Invalid status.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -294,12 +364,26 @@ export class RecordApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: true
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidStatus: {
+                summary: 'Policy is not in dry-run mode',
+                value: { statusCode: 403, message: 'Invalid status.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(RecordActionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -340,12 +424,26 @@ export class RecordApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: RunningResultDTO,
-        example: { info: { tokens: 'eyJhbGciOi...', documents: 0 }, total: 0, documents: [{ type: 'string', schema: 'string', rate: 'string', documents: {} }] }
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { info: { tokens: 'eyJhbGciOi...', documents: 0 }, total: 0, documents: [{ type: 'string', schema: 'string', rate: 'string', documents: {} }] }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidStatus: {
+                summary: 'Policy is not in dry-run mode',
+                value: { statusCode: 403, message: 'Invalid status.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(RunningResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -385,12 +483,26 @@ export class RecordApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: RunningDetailsDTO,
-        example: { left: {}, right: {}, total: 0, documents: {} }
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { left: {}, right: {}, total: 0, documents: {} }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidStatus: {
+                summary: 'Policy is not in dry-run mode',
+                value: { statusCode: 403, message: 'Invalid status.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(RunningDetailsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -435,12 +547,26 @@ export class RecordApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: true
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidStatus: {
+                summary: 'Policy is not in dry-run mode',
+                value: { statusCode: 403, message: 'Invalid status.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -486,12 +612,26 @@ export class RecordApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: true
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidStatus: {
+                summary: 'Policy is not in dry-run mode',
+                value: { statusCode: 403, message: 'Invalid status.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -537,12 +677,26 @@ export class RecordApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: true
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidStatus: {
+                summary: 'Policy is not in dry-run mode',
+                value: { statusCode: 403, message: 'Invalid status.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

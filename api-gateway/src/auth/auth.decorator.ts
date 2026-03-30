@@ -17,8 +17,8 @@ export function Auth(...permissions: Permissions[]) {
             description: 'Unauthorized request.',
             type: UnauthorizedErrorDTO,
             example: {
-                statusCode: 401,
-                message: 'Unauthorized request'
+                message: 'Unauthorized',
+                statusCode: 401
             }
         }),
         ApiForbiddenResponse({
@@ -46,8 +46,8 @@ export function AuthAndLocation(locations: LocationType[], permissions: Permissi
             description: 'Unauthorized request.',
             type: UnauthorizedErrorDTO,
             example: {
-                statusCode: 401,
-                message: 'Unauthorized request'
+                message: 'Unauthorized',
+                statusCode: 401
             }
         }),
         ApiForbiddenResponse({

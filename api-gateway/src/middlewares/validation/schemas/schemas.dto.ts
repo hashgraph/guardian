@@ -5,7 +5,8 @@ import { Examples } from '../examples.js';
 
 export class SchemaDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Internal database identifier',
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -13,7 +14,8 @@ export class SchemaDTO {
     id?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Unique universal identifier of the schema',
         example: Examples.UUID
     })
     @IsOptional()
@@ -21,7 +23,8 @@ export class SchemaDTO {
     uuid?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Human-readable schema name',
         example: 'Schema name'
     })
     @IsOptional()
@@ -29,7 +32,8 @@ export class SchemaDTO {
     name?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Schema description',
         example: 'Description'
     })
     @IsOptional()
@@ -37,7 +41,8 @@ export class SchemaDTO {
     description?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Schema entity type (e.g. STANDARD_REGISTRY, USER, POLICY, etc.)',
         enum: SchemaEntity,
         example: SchemaEntity.POLICY
     })
@@ -46,7 +51,8 @@ export class SchemaDTO {
     entity?: SchemaEntity;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Internationalized Resource Identifier for the schema',
         example: Examples.UUID
     })
     @IsOptional()
@@ -54,7 +60,8 @@ export class SchemaDTO {
     iri?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Schema lifecycle status',
         enum: SchemaStatus,
         example: SchemaStatus.DRAFT
     })
@@ -63,7 +70,8 @@ export class SchemaDTO {
     status?: SchemaStatus;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Hedera topic ID associated with the schema',
         example: Examples.ACCOUNT_ID
     })
     @IsOptional()
@@ -71,7 +79,8 @@ export class SchemaDTO {
     topicId?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Published version of the schema (semver format)',
         example: '1.0.0'
     })
     @IsOptional()
@@ -79,7 +88,8 @@ export class SchemaDTO {
     version?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'DID of the schema owner',
         example: Examples.DID
     })
     @IsOptional()
@@ -87,7 +97,8 @@ export class SchemaDTO {
     owner?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Hedera message ID for the published schema',
         example: Examples.MESSAGE_ID
     })
     @IsOptional()
@@ -95,7 +106,8 @@ export class SchemaDTO {
     messageId?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Schema category (POLICY, MODULE, TOOL, TAG, etc.)',
         enum: SchemaCategory,
         example: SchemaCategory.POLICY
     })
@@ -104,7 +116,8 @@ export class SchemaDTO {
     category?: SchemaCategory;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'IPFS URL of the published JSON-LD document',
         example: Examples.IPFS
     })
     @IsOptional()
@@ -112,7 +125,8 @@ export class SchemaDTO {
     documentURL?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'IPFS URL of the published JSON-LD context',
         example: Examples.IPFS
     })
     @IsOptional()
@@ -121,6 +135,7 @@ export class SchemaDTO {
 
     @ApiProperty({
         type: 'object',
+        description: 'Raw JSON-LD schema document',
         additionalProperties: true
     })
     @IsOptional()
@@ -129,6 +144,7 @@ export class SchemaDTO {
 
     @ApiProperty({
         type: 'object',
+        description: 'Raw JSON-LD context document',
         additionalProperties: true
     })
     @IsOptional()
@@ -138,7 +154,8 @@ export class SchemaDTO {
 
 export class SystemSchemaDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Human-readable schema name',
         example: 'Schema name'
     })
     @IsString()
@@ -146,7 +163,8 @@ export class SystemSchemaDTO {
     name: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Entity type this system schema belongs to',
         enum: [UserRole.STANDARD_REGISTRY, UserRole.USER],
         example: SchemaEntity.STANDARD_REGISTRY
     })
@@ -160,7 +178,8 @@ export class SystemSchemaDTO {
 
 export class ExportSchemaDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Internal database identifier',
         required: true,
         example: Examples.DB_ID
     })
@@ -169,7 +188,8 @@ export class ExportSchemaDTO {
     id: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Human-readable schema name',
         required: true,
         example: 'Schema name'
     })
@@ -178,7 +198,8 @@ export class ExportSchemaDTO {
     name: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Schema description',
         example: 'Description'
     })
     @IsOptional()
@@ -186,7 +207,8 @@ export class ExportSchemaDTO {
     description?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Published version of the schema',
         example: '1.0.0'
     })
     @IsOptional()
@@ -194,7 +216,8 @@ export class ExportSchemaDTO {
     version?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'DID of the schema owner',
         example: Examples.DID
     })
     @IsOptional()
@@ -202,7 +225,8 @@ export class ExportSchemaDTO {
     owner?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Hedera message ID for the published schema',
         example: Examples.MESSAGE_ID
     })
     @IsOptional()
@@ -212,7 +236,8 @@ export class ExportSchemaDTO {
 
 export class VersionSchemaDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Version string to publish (semver format)',
         required: true,
         example: '1.0.0'
     })
@@ -223,7 +248,8 @@ export class VersionSchemaDTO {
 
 export class MessageSchemaDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
+        description: 'Hedera message ID to import schema from',
         required: true,
         example: Examples.MESSAGE_ID
     })

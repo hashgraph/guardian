@@ -113,7 +113,13 @@ export class LoggerApi {
     @ApiBody({
         description: 'Filters.',
         required: true,
-        type: LogFilterDTO
+        type: LogFilterDTO,
+        examples: {
+            default: {
+                summary: 'Filter logs',
+                value: { type: 'ERROR', startDate: '2026-03-01T00:00:00.000Z', endDate: '2026-03-31T23:59:59.000Z', pageIndex: 0, pageSize: 20 }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -123,7 +129,7 @@ export class LoggerApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(LogFilterDTO, LogResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -215,7 +221,7 @@ export class LoggerApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache()
@@ -260,7 +266,7 @@ export class LoggerApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(SeqUrlResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

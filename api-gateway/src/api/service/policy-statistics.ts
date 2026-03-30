@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
 import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, StatisticDefinitionDTO, StatisticAssessmentDTO, VcDocumentDTO, pageHeader, StatisticAssessmentRelationshipsDTO, StatisticDefinitionRelationshipsDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO, UnprocessableEntityErrorDTO, StatisticDefinitionDTO, StatisticAssessmentDTO, VcDocumentDTO, pageHeader, StatisticAssessmentRelationshipsDTO, StatisticDefinitionRelationshipsDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -18,35 +18,67 @@ export class PolicyStatisticsApi {
     @Auth(Permissions.STATISTICS_STATISTIC_CREATE)
     @ApiOperation({
         summary: 'Creates a new statistic definition.',
-        description: 'Creates a new statistic definition.',
+        description: 'Creates a new statistic definition linked to a policy. Defines metrics and rules for collecting and aggregating policy document data.',
     })
     @ApiBody({
         description: 'Configuration.',
         type: StatisticDefinitionDTO,
-        required: true
+        required: true,
+        examples: {
+            createDefinition: {
+                summary: 'Create a new statistic definition',
+                value: {
+                    name: 'Carbon Stats',
+                    description: 'Track emissions reductions',
+                    policyId: '69aeb71ef8c5b278e3bab4e5'
+                }
+            }
+        }
     })
     @ApiCreatedResponse({
         description: 'Successful operation.',
         type: StatisticDefinitionDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Carbon Statistics',
             description: 'Description',
             creator: 'string',
             owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
+            policyId: Examples.DB_ID,
+            policyTopicId: Examples.DB_ID,
+            policyInstanceTopicId: Examples.DB_ID,
             status: 'string',
             config: {} }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -73,7 +105,7 @@ export class PolicyStatisticsApi {
     @Auth(Permissions.STATISTICS_STATISTIC_READ)
     @ApiOperation({
         summary: 'Return a list of all statistic definitions.',
-        description: 'Returns all statistic definitions.',
+        description: 'Returns a paginated list of statistic definitions owned by the current user. Optionally filter by policy instance topic ID.',
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -97,28 +129,53 @@ export class PolicyStatisticsApi {
         example: Examples.ACCOUNT_ID
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns statistic definitions array and total count in X-Total-Count header.',
         isArray: true,
         headers: pageHeader,
         type: StatisticDefinitionDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            config: {} }]
+        examples: {
+            withDefinitions: {
+                summary: 'Statistic definitions found',
+                value: [{
+                    id: Examples.DB_ID,
+                    name: 'Carbon Emission Statistics',
+                    description: 'Tracks carbon emission reductions across policy documents',
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    topicId: Examples.ACCOUNT_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    policyId: Examples.DB_ID,
+                    status: 'DRAFT',
+                    config: {}
+                }]
+            },
+            empty: {
+                summary: 'No statistic definitions',
+                value: []
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -158,25 +215,47 @@ export class PolicyStatisticsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: StatisticDefinitionDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Carbon Statistics',
             description: 'Description',
             creator: 'string',
             owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
+            policyId: Examples.DB_ID,
+            policyTopicId: Examples.DB_ID,
+            policyInstanceTopicId: Examples.DB_ID,
             status: 'string',
             config: {} }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -215,31 +294,63 @@ export class PolicyStatisticsApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: StatisticDefinitionDTO
+        type: StatisticDefinitionDTO,
+        examples: {
+            updateDefinition: {
+                summary: 'Update a statistic definition',
+                value: {
+                    name: 'Updated Carbon Stats',
+                    description: 'Updated description for emissions tracking',
+                    policyId: '69aeb71ef8c5b278e3bab4e5'
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: StatisticDefinitionDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Carbon Statistics',
             description: 'Description',
             creator: 'string',
             owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
+            policyId: Examples.DB_ID,
+            policyTopicId: Examples.DB_ID,
+            policyInstanceTopicId: Examples.DB_ID,
             status: 'string',
             config: {} }
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -283,13 +394,35 @@ export class PolicyStatisticsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: true
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -328,26 +461,48 @@ export class PolicyStatisticsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: StatisticDefinitionDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Carbon Statistics',
             description: 'Description',
             creator: 'string',
             owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
+            policyId: Examples.DB_ID,
+            policyTopicId: Examples.DB_ID,
+            policyInstanceTopicId: Examples.DB_ID,
             status: 'string',
             config: {} }
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -390,7 +545,10 @@ export class PolicyStatisticsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: StatisticDefinitionRelationshipsDTO,
-        example: { policy: { id: Examples.DB_ID,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { policy: { id: Examples.DB_ID,
             uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
@@ -501,12 +659,31 @@ export class PolicyStatisticsApi {
         contextURL: Examples.IPFS,
         document: {},
         context: {} } }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(StatisticDefinitionRelationshipsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -561,8 +738,11 @@ export class PolicyStatisticsApi {
         isArray: true,
         headers: pageHeader,
         type: VcDocumentDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ id: Examples.DB_ID,
+            policyId: Examples.DB_ID,
             hash: 'hash',
             signature: 0,
             status: 'NEW',
@@ -571,7 +751,7 @@ export class PolicyStatisticsApi {
             createDate: 'string',
             updateDate: 'string',
             owner: 'string',
-            document: { id: 'f3b2a9c1e4d5678901234567',
+            document: { id: Examples.DB_ID,
             type: ['string'],
             credentialSubject: {},
             issuer: {},
@@ -581,11 +761,30 @@ export class PolicyStatisticsApi {
             verificationMethod: 'string',
             proofPurpose: 'string',
             jws: 'string' } } }]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(VcDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -625,29 +824,62 @@ export class PolicyStatisticsApi {
     @ApiBody({
         description: 'Configuration.',
         type: StatisticAssessmentDTO,
-        required: true
+        required: true,
+        examples: {
+            createAssessment: {
+                summary: 'Create a new statistic assessment',
+                value: {
+                    definitionId: '69aeb71ef8c5b278e3bab4e5',
+                    policyId: '69aeb71ef8c5b278e3bab4e5',
+                    target: '69aeb71ef8c5b278e3bab4e5',
+                    document: {}
+                }
+            }
+        }
     })
     @ApiCreatedResponse({
         description: 'Successful operation.',
         type: StatisticAssessmentDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            definitionId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            topicId: 'f3b2a9c1e4d5678901234567',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+            definitionId: Examples.DB_ID,
+            policyId: Examples.DB_ID,
+            policyTopicId: Examples.DB_ID,
+            policyInstanceTopicId: Examples.DB_ID,
+            topicId: Examples.ACCOUNT_ID,
             creator: 'string',
             owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
+            messageId: Examples.MESSAGE_ID,
             target: 'string',
             relationships: ['message-id'],
             document: {} }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(StatisticAssessmentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -706,24 +938,46 @@ export class PolicyStatisticsApi {
         isArray: true,
         headers: pageHeader,
         type: StatisticAssessmentDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            definitionId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            topicId: 'f3b2a9c1e4d5678901234567',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ id: Examples.DB_ID,
+            definitionId: Examples.DB_ID,
+            policyId: Examples.DB_ID,
+            policyTopicId: Examples.DB_ID,
+            policyInstanceTopicId: Examples.DB_ID,
+            topicId: Examples.ACCOUNT_ID,
             creator: 'string',
             owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
+            messageId: Examples.MESSAGE_ID,
             target: 'string',
             relationships: [Examples.MESSAGE_ID],
             document: {} }]
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(StatisticAssessmentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -773,24 +1027,46 @@ export class PolicyStatisticsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: StatisticAssessmentDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            definitionId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            topicId: 'f3b2a9c1e4d5678901234567',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+            definitionId: Examples.DB_ID,
+            policyId: Examples.DB_ID,
+            policyTopicId: Examples.DB_ID,
+            policyInstanceTopicId: Examples.DB_ID,
+            topicId: Examples.ACCOUNT_ID,
             creator: 'string',
             owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
+            messageId: Examples.MESSAGE_ID,
             target: 'string',
             relationships: ['message-id'],
             document: {} }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -837,8 +1113,11 @@ export class PolicyStatisticsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: StatisticAssessmentRelationshipsDTO,
-        example: { target: { id: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { target: { id: Examples.DB_ID,
+            policyId: Examples.DB_ID,
             hash: 'hash',
             signature: 0,
             status: 'NEW',
@@ -847,7 +1126,7 @@ export class PolicyStatisticsApi {
             createDate: 'string',
             updateDate: 'string',
             owner: 'string',
-            document: { id: 'f3b2a9c1e4d5678901234567',
+            document: { id: Examples.DB_ID,
             type: ['string'],
             credentialSubject: {},
             issuer: {},
@@ -857,8 +1136,8 @@ export class PolicyStatisticsApi {
             verificationMethod: 'string',
             proofPurpose: 'string',
             jws: 'string' } } },
-            relationships: [{ id: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
+            relationships: [{ id: Examples.DB_ID,
+            policyId: Examples.DB_ID,
             hash: 'hash',
             signature: 0,
             status: 'NEW',
@@ -867,7 +1146,7 @@ export class PolicyStatisticsApi {
             createDate: 'string',
             updateDate: 'string',
             owner: 'string',
-            document: { id: 'f3b2a9c1e4d5678901234567',
+            document: { id: Examples.DB_ID,
             type: [{}],
             credentialSubject: {},
             issuer: {},
@@ -877,12 +1156,31 @@ export class PolicyStatisticsApi {
             verificationMethod: {},
             proofPurpose: {},
             jws: {} } } }] }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -920,30 +1218,52 @@ export class PolicyStatisticsApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'A zip file containing statistic definition to be imported.',
+        description: 'A binary/zip file containing statistic definition to be imported.',
         required: true
     })
     @ApiCreatedResponse({
         description: 'Successful operation.',
         type: StatisticDefinitionDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Carbon Statistics',
             description: 'Description',
             creator: 'string',
             owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
+            policyId: Examples.DB_ID,
+            policyTopicId: Examples.DB_ID,
+            policyInstanceTopicId: Examples.DB_ID,
             status: 'string',
             config: {} }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -984,12 +1304,34 @@ export class PolicyStatisticsApi {
             type: 'string',
             format: 'binary'
         },
-        example: { result: 'ok' }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { result: 'ok' }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1020,29 +1362,51 @@ export class PolicyStatisticsApi {
         description: 'Imports a zip file containing statistic definition.',
     })
     @ApiBody({
-        description: 'File.',
+        description: 'A binary/zip file containing statistic definition to preview.',
     })
     @ApiOkResponse({
         description: 'Statistic definition preview.',
         type: StatisticDefinitionDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Carbon Statistics',
             description: 'Description',
             creator: 'string',
             owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
+            topicId: Examples.ACCOUNT_ID,
+            messageId: Examples.MESSAGE_ID,
+            policyId: Examples.DB_ID,
+            policyTopicId: Examples.DB_ID,
+            policyInstanceTopicId: Examples.DB_ID,
             status: 'string',
             config: {} }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item already published.' }
+            },
+            notPublished: {
+                summary: 'Item is not published (for assessments)',
+                value: { statusCode: 500, message: 'Item is not published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

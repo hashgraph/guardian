@@ -3,7 +3,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Par
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
-import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, pageHeader, InternalServerErrorDTO } from '#middlewares';
+import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, ObjectExamples, pageHeader, InternalServerErrorDTO, UnprocessableEntityErrorDTO } from '#middlewares';
 import { Guardians, SchemaUtils, UseCache, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
 import { MODULE_REQUIRED_PROPS, PREFIXES } from '#constants';
 
@@ -34,13 +34,13 @@ export class ModulesApi {
     @ApiCreatedResponse({
         description: 'Created module.',
         type: ModuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', type: 'string', name: 'string', description: 'string', status: 'string', creator: 'string', owner: 'string', topicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', codeVersion: 'string', createDate: 'string', config: {} }
+        example: ObjectExamples.MODULE
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -99,12 +99,15 @@ export class ModulesApi {
         isArray: true,
         headers: pageHeader,
         type: ModuleDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', type: 'string', name: 'string', description: 'string', status: 'string', creator: 'string', owner: 'string', topicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', codeVersion: 'string', createDate: 'string', config: {} }]
+        examples: {
+            withModules: { summary: 'Modules found', value: [ObjectExamples.MODULE] },
+            empty: { summary: 'No modules', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -158,12 +161,15 @@ export class ModulesApi {
         isArray: true,
         headers: pageHeader,
         type: ModuleDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', type: 'string', name: 'string', description: 'string', status: 'string', creator: 'string', owner: 'string', topicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', codeVersion: 'string', createDate: 'string', config: {} }]
+        examples: {
+            withModules: { summary: 'Modules found', value: [ObjectExamples.MODULE] },
+            empty: { summary: 'No modules', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -227,27 +233,12 @@ export class ModulesApi {
         isArray: true,
         headers: pageHeader,
         type: SchemaDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Schema name',
-            description: 'Description',
-            entity: 'string',
-            iri: 'string',
-            status: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            version: '1.0.0',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            category: 'string',
-            documentURL: 'https://example.com',
-            contextURL: 'https://example.com',
-            document: {},
-            context: {} }]
+        example: [ObjectExamples.SCHEMA]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @UseCache({ isFastify: true })
@@ -304,28 +295,13 @@ export class ModulesApi {
         description: 'Created schema.',
         type: SchemaDTO,
         isArray: true,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Schema name',
-            description: 'Description',
-            entity: 'string',
-            iri: 'string',
-            status: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            version: '1.0.0',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            category: 'string',
-            documentURL: 'https://example.com',
-            contextURL: 'https://example.com',
-            document: {},
-            context: {} }]
+        example: [ObjectExamples.SCHEMA]
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -390,7 +366,7 @@ export class ModulesApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -438,12 +414,15 @@ export class ModulesApi {
         description: 'Modules.',
         isArray: true,
         type: ModuleDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', type: 'string', name: 'string', description: 'string', status: 'string', creator: 'string', owner: 'string', topicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', codeVersion: 'string', createDate: 'string', config: {} }]
+        examples: {
+            withModules: { summary: 'Modules found', value: [ObjectExamples.MODULE] },
+            empty: { summary: 'No modules', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @UseCache()
@@ -481,13 +460,13 @@ export class ModulesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: ModuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', type: 'string', name: 'string', description: 'string', status: 'string', creator: 'string', owner: 'string', topicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', codeVersion: 'string', createDate: 'string', config: {} }
+        example: ObjectExamples.MODULE
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -533,13 +512,13 @@ export class ModulesApi {
     @ApiCreatedResponse({
         description: 'Successful operation.',
         type: ModuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', type: 'string', name: 'string', description: 'string', status: 'string', creator: 'string', owner: 'string', topicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', codeVersion: 'string', createDate: 'string', config: {} }
+        example: ObjectExamples.MODULE
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -604,7 +583,7 @@ export class ModulesApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -646,12 +625,12 @@ export class ModulesApi {
     @ApiOkResponse({
         description: 'Message.',
         type: ExportMessageDTO,
-        example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'string', description: 'string', messageId: 'f3b2a9c1e4d5678901234567', owner: 'string' }
+        example: { uuid: Examples.UUID, name: 'string', description: 'string', messageId: Examples.MESSAGE_ID, owner: 'string' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ExportMessageDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -686,13 +665,13 @@ export class ModulesApi {
     @ApiCreatedResponse({
         description: 'Created module.',
         type: ModuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', type: 'string', name: 'string', description: 'string', status: 'string', creator: 'string', owner: 'string', topicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', codeVersion: 'string', createDate: 'string', config: {} }
+        example: ObjectExamples.MODULE
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ImportMessageDTO, ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -738,12 +717,12 @@ export class ModulesApi {
     @ApiCreatedResponse({
         description: 'Created module.',
         type: ModuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', type: 'string', name: 'string', description: 'string', status: 'string', creator: 'string', owner: 'string', topicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', codeVersion: 'string', createDate: 'string', config: {} }
+        example: ObjectExamples.MODULE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -785,29 +764,17 @@ export class ModulesApi {
     @ApiOkResponse({
         description: 'Module preview.',
         type: ModulePreviewDTO,
-        example: { module: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            type: 'string',
-            name: 'string',
-            description: 'string',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: 'string',
-            createDate: 'string',
-            config: {} },
-            messageId: 'f3b2a9c1e4d5678901234567',
+        example: { module: ObjectExamples.MODULE,
+            messageId: Examples.MESSAGE_ID,
             schemas: [{}],
             tags: [{}],
-            moduleTopicId: 'f3b2a9c1e4d5678901234567' }
+            moduleTopicId: Examples.DB_ID }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ImportMessageDTO, ModulePreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -853,28 +820,16 @@ export class ModulesApi {
     @ApiOkResponse({
         description: 'Module preview.',
         type: ModulePreviewDTO,
-        example: { module: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            type: 'string',
-            name: 'string',
-            description: 'string',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: 'string',
-            createDate: 'string',
-            config: {} },
-            messageId: 'f3b2a9c1e4d5678901234567',
+        example: { module: ObjectExamples.MODULE,
+            messageId: Examples.MESSAGE_ID,
             schemas: [{}],
             tags: [{}],
-            moduleTopicId: 'f3b2a9c1e4d5678901234567' }
+            moduleTopicId: Examples.DB_ID }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ModulePreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -924,12 +879,12 @@ export class ModulesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: ModuleDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', type: 'string', name: 'string', description: 'string', status: 'string', creator: 'string', owner: 'string', topicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', codeVersion: 'string', createDate: 'string', config: {} }
+        example: ObjectExamples.MODULE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -976,20 +931,8 @@ export class ModulesApi {
     @ApiOkResponse({
         description: 'Validation result.',
         type: ModuleValidationDTO,
-        example: { module: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            type: 'string',
-            name: 'string',
-            description: 'string',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: 'string',
-            createDate: 'string',
-            config: {} },
-            results: { blocks: [{ id: 'f3b2a9c1e4d5678901234567',
+        example: { module: ObjectExamples.MODULE,
+            results: { blocks: [{ id: Examples.DB_ID,
             name: 'string',
             errors: [{}],
             warnings: [{}],
@@ -1002,7 +945,7 @@ export class ModulesApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ModuleDTO, ModuleValidationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

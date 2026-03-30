@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
-import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader, ToolVersionDTO } from '#middlewares';
+import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, ObjectExamples, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader, ToolVersionDTO, UnprocessableEntityErrorDTO } from '#middlewares';
 import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, EntityOwner, CacheService } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 import {CACHE_PREFIXES, TOOL_REQUIRED_PROPS} from '#constants';
@@ -25,7 +25,7 @@ export class ToolsApi {
         description: 'Creates a new tool.' + ONLY_SR,
     })
     @ApiBody({
-        description: 'Policy configuration.',
+        description: 'Tool configuration.',
         type: ToolDTO,
         required: true
     })
@@ -48,11 +48,11 @@ export class ToolsApi {
             blocks: [{}] },
             version: '1.0.0' }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -90,7 +90,7 @@ export class ToolsApi {
         description: 'Creates a new tool.' + ONLY_SR,
     })
     @ApiBody({
-        description: 'Policy configuration.',
+        description: 'Tool configuration.',
         type: ToolDTO,
     })
     @ApiAcceptedResponse({
@@ -98,11 +98,11 @@ export class ToolsApi {
         type: TaskDTO,
         example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -166,26 +166,15 @@ export class ToolsApi {
         isArray: true,
         headers: pageHeader,
         type: ToolDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            status: 'NEW',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            config: { id: 'f3b2a9c1e4d5678901234567',
-            blockType: 'string',
-            blocks: [{}] },
-            version: '1.0.0' }]
+        examples: {
+            withTools: { summary: 'Tools found', value: [ObjectExamples.TOOL] },
+            empty: { summary: 'No tools', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -254,26 +243,15 @@ export class ToolsApi {
         isArray: true,
         headers: pageHeader,
         type: ToolDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            status: 'NEW',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            config: { id: 'f3b2a9c1e4d5678901234567',
-            blockType: 'string',
-            blocks: [{}] },
-            version: '1.0.0' }]
+        examples: {
+            withTools: { summary: 'Tools found', value: [ObjectExamples.TOOL] },
+            empty: { summary: 'No tools', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -327,11 +305,11 @@ export class ToolsApi {
         type: Boolean,
         example: true
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -394,11 +372,11 @@ export class ToolsApi {
             blocks: [{}] },
             version: '1.0.0' }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -462,11 +440,11 @@ export class ToolsApi {
             blocks: [{}] },
             version: '1.0.0' }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -547,11 +525,11 @@ export class ToolsApi {
             warnings: ['string'],
             infos: ['string'] } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolValidationDTO, ToolVersionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -606,11 +584,11 @@ export class ToolsApi {
         type: TaskDTO,
         example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolVersionDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -687,11 +665,11 @@ export class ToolsApi {
             warnings: ['string'],
             infos: ['string'] } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -763,11 +741,11 @@ export class ToolsApi {
             warnings: ['string'],
             infos: ['string'] } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -841,7 +819,7 @@ export class ToolsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, ToolValidationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -888,13 +866,12 @@ export class ToolsApi {
             type: 'string',
             format: 'binary'
         },
-        example: { result: 'ok' }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
     async toolExportFile(
@@ -941,11 +918,11 @@ export class ToolsApi {
         type: ExportMessageDTO,
         example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'string', description: 'string', messageId: 'f3b2a9c1e4d5678901234567', owner: 'string' }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ExportMessageDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1017,11 +994,11 @@ export class ToolsApi {
             blocks: [{}] },
             version: '1.0.0' }] }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ImportMessageDTO, ToolPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1081,11 +1058,11 @@ export class ToolsApi {
             blocks: [{}] },
             version: '1.0.0' }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ImportMessageDTO, ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -1164,7 +1141,7 @@ export class ToolsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1222,7 +1199,7 @@ export class ToolsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -1296,7 +1273,7 @@ export class ToolsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @UseInterceptors(AnyFilesInterceptor())
     @HttpCode(HttpStatus.CREATED)
@@ -1355,7 +1332,7 @@ export class ToolsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1425,7 +1402,7 @@ export class ToolsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @UseInterceptors(AnyFilesInterceptor())
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1495,11 +1472,11 @@ export class ToolsApi {
         type: TaskDTO,
         example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ImportMessageDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1550,26 +1527,15 @@ export class ToolsApi {
         description: 'Modules.',
         isArray: true,
         type: ToolDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            status: 'NEW',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            config: { id: 'f3b2a9c1e4d5678901234567',
-            blockType: 'string',
-            blocks: [{}] },
-            version: '1.0.0' }]
+        examples: {
+            withTools: { summary: 'Tools found', value: [ObjectExamples.TOOL] },
+            empty: { summary: 'No tools', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @UseCache()
@@ -1614,7 +1580,7 @@ export class ToolsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @UseCache()

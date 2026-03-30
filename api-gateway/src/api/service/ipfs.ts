@@ -14,7 +14,7 @@ import {
 import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
 import { Auth, AuthUser } from '#auth';
-import { Examples, InternalServerErrorDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO, UnprocessableEntityErrorDTO } from '#middlewares';
 import { CacheService, getCacheKey, Guardians, InternalException, UseCache } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { CACHE, PREFIXES } from '#constants';
@@ -49,12 +49,12 @@ export class IpfsApi {
         type: String,
         example: 'string'
     })
-    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { statusCode: 400, message: 'Bad request' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -108,12 +108,12 @@ export class IpfsApi {
         type: String,
         example: 'string'
     })
-    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { statusCode: 400, message: 'Bad request' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -176,11 +176,11 @@ export class IpfsApi {
         type: String,
         example: 'string'
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, example: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -240,11 +240,11 @@ export class IpfsApi {
         },
         example: { result: 'ok' }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { statusCode: 404, message: 'Not found' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
@@ -295,11 +295,11 @@ export class IpfsApi {
         },
         example: { result: 'ok' }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { statusCode: 404, message: 'Not found' }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
@@ -346,7 +346,7 @@ export class IpfsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

@@ -44,7 +44,7 @@ export class ExternalApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ExternalDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -81,7 +81,7 @@ export class ExternalApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ExternalDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -137,7 +137,7 @@ export class ExternalApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ExternalDocumentDTO, ResponseDTOWithSyncEvents, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -182,7 +182,7 @@ export class ExternalApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ExternalDocumentDTO, ResponseDTOWithSyncEvents, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

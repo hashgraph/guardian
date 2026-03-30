@@ -2,13 +2,15 @@ import { Auth, AuthUser } from '#auth';
 import { InternalException, Guardians, Users } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Response } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import {
     Examples,
     InternalServerErrorDTO,
     NewRelayerAccountDTO,
+    ObjectExamples,
     pageHeader,
     RelayerAccountDTO,
+    UnprocessableEntityErrorDTO,
     VcDocumentDTO,
 } from '#middlewares';
 
@@ -25,7 +27,7 @@ export class RelayerAccountsApi {
     @Auth()
     @ApiOperation({
         summary: 'Returns the list of Relayer Accounts of the active user.',
-        description: 'Returns the list of Relayer Accounts of the active user.'
+        description: 'Returns the list of Relayer Accounts owned by the currently authenticated user. Supports pagination and text search by account name or Hedera account ID.'
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -44,23 +46,40 @@ export class RelayerAccountsApi {
     @ApiQuery({
         name: 'search',
         type: String,
-        description: 'Search filter',
+        description: 'Filter by account name or Hedera account ID (case-insensitive, partial match). Leave empty to return all.',
         required: false,
-        example: 'search'
+        example: ''
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns relayer accounts array and total count in X-Total-Count header.',
         isArray: true,
         headers: pageHeader,
         type: RelayerAccountDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'name', username: 'username', owner: 'string', parent: 'string', account: 'string' }]
+        examples: {
+            withAccounts: {
+                summary: 'Relayer accounts found',
+                value: [ObjectExamples.RELAYER_ACCOUNT]
+            },
+            empty: {
+                summary: 'No relayer accounts',
+                value: []
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            userNotFound: {
+                summary: 'User DID not found in the system',
+                value: { statusCode: 500, message: 'User does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRelayerAccounts(
         @AuthUser() user: IAuthUser,
@@ -90,24 +109,60 @@ export class RelayerAccountsApi {
     @Auth()
     @ApiOperation({
         summary: 'Adds a new Relayer Account for the active user.',
-        description: 'Adds a new Relayer Account for the active user.',
+        description: 'Creates a new Relayer Account by associating an existing Hedera account (account ID + private key) with the current user. The key is stored securely in the wallet.',
     })
     @ApiBody({
-        description: 'New Relayer Account',
-        type: NewRelayerAccountDTO
+        description: 'New Relayer Account configuration. Requires a valid Hedera account ID and its private key.',
+        type: NewRelayerAccountDTO,
+        examples: {
+            createAccount: {
+                summary: 'Create relayer account with Hedera credentials',
+                value: {
+                    name: 'My Relayer Account',
+                    account: '0.0.6046500',
+                    key: '302e020100300506032b657004220420...'
+                }
+            }
+        }
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns the created relayer account.',
         type: RelayerAccountDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', name: 'name', username: 'username', owner: 'string', parent: 'string', account: 'string' }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.RELAYER_ACCOUNT
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        examples: {
+            invalidAccount: {
+                summary: 'Hedera account/key validation failed (also returned for empty body)',
+                value: { statusCode: 422, message: 'Invalid account.' }
+            },
+            alreadyExists: {
+                summary: 'Relayer account with this Hedera ID already exists for this owner',
+                value: { statusCode: 422, message: 'Relayer account already exist.' }
+            },
+            userNotFound: {
+                summary: 'User DID not found in the system',
+                value: { statusCode: 422, message: 'User does not exist.' }
+            }
+        }
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async createRelayerAccount(
         @AuthUser() user: IAuthUser,
@@ -126,23 +181,42 @@ export class RelayerAccountsApi {
      * Get current Relayer Account
      */
     @Get('/current')
-    @Auth(
-    )
+    @Auth()
     @ApiOperation({
-        summary: 'Returns current Relayer Account of the active user.',
-        description: 'Returns current Relayer Account of the active user.'
+        summary: 'Returns current (default) Relayer Account of the active user.',
+        description: 'Returns the default Hedera account of the active user, which is used as the relayer when no specific relayer account is selected.'
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        type: RelayerAccountDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', name: 'name', username: 'username', owner: 'string', parent: 'string', account: 'string' }
+        description: 'Successful operation. Returns the default account info (name is always "Default").',
+        schema: {
+            type: 'object',
+            properties: {
+                name: { type: 'string', description: 'Account name (always "Default")', example: 'Default' },
+                owner: { type: 'string', description: 'Owner DID', example: Examples.DID },
+                account: { type: 'string', description: 'Hedera account ID', example: Examples.ACCOUNT_ID }
+            }
+        },
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { name: 'Default', owner: Examples.DID, account: Examples.ACCOUNT_ID }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            userNotFound: {
+                summary: 'User DID not found in the system',
+                value: { statusCode: 500, message: 'User does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getCurrentRelayerAccount(
         @AuthUser() user: IAuthUser,
@@ -159,24 +233,40 @@ export class RelayerAccountsApi {
      * Get all Relayer Accounts
      */
     @Get('/all')
-    @Auth(
-    )
+    @Auth()
     @ApiOperation({
         summary: 'Returns the list of Relayer Accounts available for use in the Policy by the active user.',
-        description: 'Returns the list of Relayer Accounts available for use in the Policy by the active user.'
+        description: 'Returns all Relayer Accounts owned by the current user. Unlike GET /, this endpoint returns all accounts without pagination.'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
         type: RelayerAccountDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'name', username: 'username', owner: 'string', parent: 'string', account: 'string' }]
+        examples: {
+            withAccounts: {
+                summary: 'Relayer accounts found',
+                value: [ObjectExamples.RELAYER_ACCOUNT]
+            },
+            empty: {
+                summary: 'No relayer accounts',
+                value: []
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            userNotFound: {
+                summary: 'User DID not found in the system',
+                value: { statusCode: 500, message: 'User does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRelayerAccountsAll(
         @AuthUser() user: IAuthUser,
@@ -193,30 +283,48 @@ export class RelayerAccountsApi {
      * Get Relayer Account balance
      */
     @Get('/:account/balance')
-    @Auth(
-    )
+    @Auth()
     @ApiOperation({
-        summary: 'Returns current hbar balance of the specified Relayer Account.',
-        description: 'Returns current hbar balance of the specified Relayer Account.'
+        summary: 'Returns current HBAR balance of the specified Relayer Account.',
+        description: 'Queries the Hedera network for the current HBAR balance of the specified account. The account must belong to the current user or be a relayer account owned by them.'
     })
     @ApiParam({
         name: 'account',
         type: String,
-        description: 'Account',
+        description: 'Hedera account ID of the relayer account',
         required: true,
         example: Examples.ACCOUNT_ID
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        type: Object,
-        example: { result: 'ok' }
+        description: 'Successful operation. Returns the HBAR balance as a string (e.g. "999.34 tℏ").',
+        schema: {
+            type: 'string'
+        },
+        examples: {
+            withBalance: {
+                summary: 'Account has balance',
+                value: '999.33977375 tℏ'
+            },
+            zeroBalance: {
+                summary: 'Zero balance',
+                value: '0 tℏ'
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            accountNotFound: {
+                summary: 'Relayer account not found or not owned by user',
+                value: { statusCode: 500, message: 'Relayer account does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error (e.g. Hedera network issue)',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRelayerAccountBalance(
         @AuthUser() user: IAuthUser,
@@ -237,20 +345,51 @@ export class RelayerAccountsApi {
     @Auth()
     @ApiOperation({
         summary: 'Generate a new Relayer Account.',
-        description: 'Generate a new Relayer Account.',
+        description: 'Generates a new Hedera account on the network and registers it as a Relayer Account for the current user. The account is created and funded automatically.',
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        type: Object,
-        example: { result: 'ok' }
+        description: 'Successful operation. Returns the generated Hedera account ID and private key. Store the key securely — it is only returned once.',
+        schema: {
+            type: 'object',
+            properties: {
+                id: { type: 'string', description: 'Generated Hedera account ID' },
+                key: { type: 'string', description: 'Private key for the generated account (hex-encoded DER)' }
+            }
+        },
+        examples: {
+            generated: {
+                summary: 'Generated account',
+                value: {
+                    id: '0.0.8384973',
+                    key: '302e020100300506032b6570042204202f750d1cbc05a26d8e9abb556f7be9f03e552f2d76d621639633491548434352'
+                }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        examples: {
+            hederaAccountNotFound: {
+                summary: 'User has no Hedera account or DID',
+                value: { statusCode: 422, message: 'Hedera Account not found' }
+            },
+            generationFailed: {
+                summary: 'Account generation failed on Hedera network',
+                value: { statusCode: 422, message: 'Error message' }
+            }
+        }
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async generateRelayerAccount(
         @AuthUser() user: IAuthUser,
@@ -265,14 +404,13 @@ export class RelayerAccountsApi {
     }
 
     /**
-     * Get Relayer Accounts
+     * Get Relayer Accounts for all users
      */
     @Get('/accounts')
-    @Auth(
-    )
+    @Auth()
     @ApiOperation({
-        summary: 'Return the list of Relayer Accounts for the user. If the active user is a Standard Registry return the list of all Relayer Accounts of its users.',
-        description: 'Return the list of Relayer Accounts for the user. If the active user is a Standard Registry return the list of all Relayer Accounts of its users.'
+        summary: 'Return the list of Relayer Accounts for the user.',
+        description: 'If the active user is a Standard Registry, returns the list of all users (and their relayer accounts) under this SR. Each user appears once per relayer account plus once for the default account (with null relayer fields).'
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -291,23 +429,54 @@ export class RelayerAccountsApi {
     @ApiQuery({
         name: 'search',
         type: String,
-        description: 'Search filter',
+        description: 'Filter by username, Hedera account ID, relayer account ID or name (case-insensitive, partial match)',
         required: false,
-        example: 'search'
+        example: ''
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns users with their relayer accounts and total count in X-Total-Count header.',
         isArray: true,
         headers: pageHeader,
-        type: RelayerAccountDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'name', username: 'username', owner: 'string', parent: 'string', account: 'string' }]
+        examples: {
+            withAccounts: {
+                summary: 'User with default and relayer accounts',
+                value: [
+                    {
+                        _id: Examples.DB_ID,
+                        username: 'ExampleUser',
+                        did: Examples.DID,
+                        hederaAccountId: Examples.ACCOUNT_ID
+                    },
+                    {
+                        _id: Examples.DB_ID,
+                        username: 'ExampleUser',
+                        did: Examples.DID,
+                        hederaAccountId: Examples.ACCOUNT_ID,
+                        relayerAccountId: '0.0.6046500',
+                        relayerAccountName: 'New Test Account'
+                    }
+                ]
+            },
+            empty: {
+                summary: 'No accounts',
+                value: []
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            userNotFound: {
+                summary: 'User DID not found in the system',
+                value: { statusCode: 500, message: 'User does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(RelayerAccountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getUserRelayerAccounts(
         @AuthUser() user: IAuthUser,
@@ -334,18 +503,17 @@ export class RelayerAccountsApi {
      * Get relationships
      */
     @Get('/:relayerAccountId/relationships')
-    @Auth(
-    )
+    @Auth()
     @ApiOperation({
-        summary: 'Return the list of VC documents which are associated with the selected Relayer Account.',
-        description: 'Return the list of VC documents which are associated with the selected Relayer Account.'
+        summary: 'Return the list of VC documents associated with the selected Relayer Account.',
+        description: 'Returns paginated VC documents that were created using the specified relayer account. Each document is enriched with policyName, policyVersion, and schemaName.'
     })
     @ApiParam({
         name: 'relayerAccountId',
         type: String,
-        description: 'Relayer Account Id',
+        description: 'Hedera account ID of the Relayer Account (not the database ID)',
         required: true,
-        example: Examples.DB_ID
+        example: '0.0.6046500'
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -362,37 +530,35 @@ export class RelayerAccountsApi {
         example: 20
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns VC documents and total count in X-Total-Count header.',
         isArray: true,
         headers: pageHeader,
         type: VcDocumentDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            hash: 'hash',
-            signature: 0,
-            status: 'NEW',
-            tag: 'Block tag',
-            type: 'Document type',
-            createDate: 'string',
-            updateDate: 'string',
-            owner: 'string',
-            document: { id: 'f3b2a9c1e4d5678901234567',
-            type: ['string'],
-            credentialSubject: {},
-            issuer: {},
-            issuanceDate: 'string',
-            proof: { type: 'string',
-            created: 'string',
-            verificationMethod: 'string',
-            proofPurpose: 'string',
-            jws: 'string' } } }]
+        examples: {
+            withDocuments: {
+                summary: 'VC documents found',
+                value: [ObjectExamples.VC_DOCUMENT_1]
+            },
+            empty: {
+                summary: 'No VC documents for this relayer account',
+                value: []
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(VcDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRelayerAccountRelationships(
         @AuthUser() user: IAuthUser,

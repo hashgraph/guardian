@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { LocationType, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyRequestDTO, PolicyRequestCountDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyRequestDTO, PolicyRequestCountDTO, UnprocessableEntityErrorDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner, TaskManager, ServiceError, PolicyEngine } from '#helpers';
 import { AuthUser, Auth, AuthAndLocation } from '#auth';
 
@@ -39,12 +39,34 @@ export class ExternalPoliciesApi {
         isArray: true,
         headers: pageHeader,
         type: ExternalPolicyDTO,
-        example: [{ uuid: 'f3b2a9c1e4d5678901234567', name: 'Policy Name', description: 'Policy Description', version: '1.0.0', topicId: 'f3b2a9c1e4d5678901234567', instanceTopicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', policyTag: 'Tag', owner: 'string', status: 'string', username: 'Username' }]
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ uuid: Examples.UUID, name: 'Policy Name', description: 'Policy Description', version: '1.0.0', topicId: Examples.ACCOUNT_ID, instanceTopicId: Examples.ACCOUNT_ID, messageId: Examples.MESSAGE_ID, policyTag: 'Tag', owner: Examples.DID, status: 'DRAFT', username: 'Username' }]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(ExternalPolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -84,30 +106,65 @@ export class ExternalPoliciesApi {
     @ApiBody({
         description: 'Message.',
         type: ImportMessageDTO,
+        examples: {
+            previewPolicy: {
+                summary: 'Preview a remote policy by message ID',
+                value: {
+                    messageId: '1773670900.819264517'
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Policy preview.',
         type: PolicyPreviewDTO,
-        example: {
-            module: {
-                id: Examples.DB_ID,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: {
+            policy: {
                 uuid: Examples.UUID,
-                name: 'Policy name',
-                status: 'DRAFT',
+                name: 'Test policy',
+                version: '1.0.0',
+                description: '',
+                creator: Examples.DID,
                 owner: Examples.DID,
-                topicId: Examples.ACCOUNT_ID
+                topicId: Examples.ACCOUNT_ID,
+                instanceTopicId: Examples.ACCOUNT_ID,
+                policyTag: 'Tag_1773682447599',
+                codeVersion: '1.5.1',
+                tools: [],
+                id: Examples.DB_ID
             },
-            messageId: Examples.MESSAGE_ID,
+            tokens: [],
             schemas: [],
-            tags: [],
-            moduleTopicId: Examples.ACCOUNT_ID
+            systemSchemas: []
+        }
+            }
         }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, emptyMessageId: { summary: 'Empty message ID in request body', value: { statusCode: 422, message: 'Message ID in body is empty' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(ImportMessageDTO, PolicyPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -140,17 +197,47 @@ export class ExternalPoliciesApi {
     @ApiBody({
         description: 'Message.',
         type: ImportMessageDTO,
+        examples: {
+            importPolicy: {
+                summary: 'Import a remote policy by message ID',
+                value: {
+                    messageId: '1773670900.819264517'
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Policy.',
         type: ExternalPolicyDTO,
-        example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'Policy Name', description: 'Policy Description', version: '1.0.0', topicId: 'f3b2a9c1e4d5678901234567', instanceTopicId: 'f3b2a9c1e4d5678901234567', messageId: 'f3b2a9c1e4d5678901234567', policyTag: 'Tag', owner: 'string', status: 'string', username: 'Username' }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { uuid: Examples.UUID, name: 'Policy Name', description: 'Policy Description', version: '1.0.0', topicId: Examples.ACCOUNT_ID, instanceTopicId: Examples.ACCOUNT_ID, messageId: Examples.MESSAGE_ID, policyTag: 'Tag', owner: Examples.DID, status: 'DRAFT', username: 'Username' }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, emptyMessageId: { summary: 'Empty message ID in request body', value: { statusCode: 422, message: 'Message ID in body is empty' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(ImportMessageDTO, ExternalPolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -190,14 +277,36 @@ export class ExternalPoliciesApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { taskId: Examples.UUID, expectation: 0 }
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, emptyMessageId: { summary: 'Empty message ID in request body', value: { statusCode: 422, message: 'Message ID in body is empty' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -250,14 +359,36 @@ export class ExternalPoliciesApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { taskId: Examples.UUID, expectation: 0 }
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, emptyMessageId: { summary: 'Empty message ID in request body', value: { statusCode: 422, message: 'Message ID in body is empty' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -310,14 +441,36 @@ export class ExternalPoliciesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: true
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, emptyMessageId: { summary: 'Empty message ID in request body', value: { statusCode: 422, message: 'Message ID in body is empty' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -360,14 +513,36 @@ export class ExternalPoliciesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: true
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, emptyMessageId: { summary: 'Empty message ID in request body', value: { statusCode: 422, message: 'Message ID in body is empty' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -418,12 +593,34 @@ export class ExternalPoliciesApi {
         description: 'Successful operation.',
         isArray: true,
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: true
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -461,12 +658,34 @@ export class ExternalPoliciesApi {
         description: 'Successful operation.',
         isArray: true,
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: true
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -535,26 +754,48 @@ export class ExternalPoliciesApi {
         isArray: true,
         headers: pageHeader,
         type: PolicyRequestDTO,
-        example: [{ uuid: 'f3b2a9c1e4d5678901234567',
-            type: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            startMessageId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            lastStatus: 'string',
-            accountId: '0.0.1001',
-            sender: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ uuid: Examples.UUID,
+            type: 'ACTION',
+            messageId: Examples.MESSAGE_ID,
+            startMessageId: Examples.MESSAGE_ID,
+            status: 'NEW',
+            lastStatus: 'NEW',
+            accountId: Examples.ACCOUNT_ID,
+            sender: Examples.DID,
+            owner: Examples.DID,
+            topicId: Examples.ACCOUNT_ID,
             document: {},
-            policyId: 'f3b2a9c1e4d5678901234567',
+            policyId: Examples.DB_ID,
             blockTag: 'Tag',
-            policyMessageId: 'f3b2a9c1e4d5678901234567',
+            policyMessageId: Examples.MESSAGE_ID,
             loaded: true }]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -612,32 +853,66 @@ export class ExternalPoliciesApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: PolicyRequestDTO
+        type: PolicyRequestDTO,
+        examples: {
+            approveRequest: {
+                summary: 'Approve a remote policy request',
+                value: {
+                    uuid: '9db028d2-03ad-4d49-a178-cf4b67f8c147',
+                    type: 'ACTION',
+                    messageId: '1773670900.819264517',
+                    status: 'NEW',
+                    document: {}
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyRequestDTO,
-        example: { uuid: 'f3b2a9c1e4d5678901234567',
-            type: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            startMessageId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            lastStatus: 'string',
-            accountId: '0.0.1001',
-            sender: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { uuid: Examples.UUID,
+            type: 'ACTION',
+            messageId: Examples.MESSAGE_ID,
+            startMessageId: Examples.MESSAGE_ID,
+            status: 'NEW',
+            lastStatus: 'NEW',
+            accountId: Examples.ACCOUNT_ID,
+            sender: Examples.DID,
+            owner: Examples.DID,
+            topicId: Examples.ACCOUNT_ID,
             document: {},
-            policyId: 'f3b2a9c1e4d5678901234567',
+            policyId: Examples.DB_ID,
             blockTag: 'Tag',
-            policyMessageId: 'f3b2a9c1e4d5678901234567',
+            policyMessageId: Examples.MESSAGE_ID,
             loaded: true }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, emptyMessageId: { summary: 'Empty message ID in request body', value: { statusCode: 422, message: 'Message ID in body is empty' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -682,32 +957,66 @@ export class ExternalPoliciesApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: PolicyRequestDTO
+        type: PolicyRequestDTO,
+        examples: {
+            rejectRequest: {
+                summary: 'Reject a remote policy request',
+                value: {
+                    uuid: '9db028d2-03ad-4d49-a178-cf4b67f8c147',
+                    type: 'ACTION',
+                    messageId: '1773670900.819264517',
+                    status: 'NEW',
+                    document: {}
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyRequestDTO,
-        example: { uuid: 'f3b2a9c1e4d5678901234567',
-            type: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            startMessageId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            lastStatus: 'string',
-            accountId: '0.0.1001',
-            sender: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { uuid: Examples.UUID,
+            type: 'ACTION',
+            messageId: Examples.MESSAGE_ID,
+            startMessageId: Examples.MESSAGE_ID,
+            status: 'NEW',
+            lastStatus: 'NEW',
+            accountId: Examples.ACCOUNT_ID,
+            sender: Examples.DID,
+            owner: Examples.DID,
+            topicId: Examples.ACCOUNT_ID,
             document: {},
-            policyId: 'f3b2a9c1e4d5678901234567',
+            policyId: Examples.DB_ID,
             blockTag: 'Tag',
-            policyMessageId: 'f3b2a9c1e4d5678901234567',
+            policyMessageId: Examples.MESSAGE_ID,
             loaded: true }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, emptyMessageId: { summary: 'Empty message ID in request body', value: { statusCode: 422, message: 'Message ID in body is empty' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -752,32 +1061,66 @@ export class ExternalPoliciesApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: PolicyRequestDTO
+        type: PolicyRequestDTO,
+        examples: {
+            cancelRequest: {
+                summary: 'Cancel a remote policy request',
+                value: {
+                    uuid: '9db028d2-03ad-4d49-a178-cf4b67f8c147',
+                    type: 'ACTION',
+                    messageId: '1773670900.819264517',
+                    status: 'NEW',
+                    document: {}
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyRequestDTO,
-        example: { uuid: 'f3b2a9c1e4d5678901234567',
-            type: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            startMessageId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            lastStatus: 'string',
-            accountId: '0.0.1001',
-            sender: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { uuid: Examples.UUID,
+            type: 'ACTION',
+            messageId: Examples.MESSAGE_ID,
+            startMessageId: Examples.MESSAGE_ID,
+            status: 'NEW',
+            lastStatus: 'NEW',
+            accountId: Examples.ACCOUNT_ID,
+            sender: Examples.DID,
+            owner: Examples.DID,
+            topicId: Examples.ACCOUNT_ID,
             document: {},
-            policyId: 'f3b2a9c1e4d5678901234567',
+            policyId: Examples.DB_ID,
             blockTag: 'Tag',
-            policyMessageId: 'f3b2a9c1e4d5678901234567',
+            policyMessageId: Examples.MESSAGE_ID,
             loaded: true }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, emptyMessageId: { summary: 'Empty message ID in request body', value: { statusCode: 422, message: 'Message ID in body is empty' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -822,32 +1165,66 @@ export class ExternalPoliciesApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: PolicyRequestDTO
+        type: PolicyRequestDTO,
+        examples: {
+            reloadRequest: {
+                summary: 'Reload a remote policy request',
+                value: {
+                    uuid: '9db028d2-03ad-4d49-a178-cf4b67f8c147',
+                    type: 'ACTION',
+                    messageId: '1773670900.819264517',
+                    status: 'NEW',
+                    document: {}
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyRequestDTO,
-        example: { uuid: 'f3b2a9c1e4d5678901234567',
-            type: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            startMessageId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            lastStatus: 'string',
-            accountId: '0.0.1001',
-            sender: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { uuid: Examples.UUID,
+            type: 'ACTION',
+            messageId: Examples.MESSAGE_ID,
+            startMessageId: Examples.MESSAGE_ID,
+            status: 'NEW',
+            lastStatus: 'NEW',
+            accountId: Examples.ACCOUNT_ID,
+            sender: Examples.DID,
+            owner: Examples.DID,
+            topicId: Examples.ACCOUNT_ID,
             document: {},
-            policyId: 'f3b2a9c1e4d5678901234567',
+            policyId: Examples.DB_ID,
             blockTag: 'Tag',
-            policyMessageId: 'f3b2a9c1e4d5678901234567',
+            policyMessageId: Examples.MESSAGE_ID,
             loaded: true }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, emptyMessageId: { summary: 'Empty message ID in request body', value: { statusCode: 422, message: 'Message ID in body is empty' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -889,12 +1266,34 @@ export class ExternalPoliciesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyRequestCountDTO,
-        example: { requestsCount: 0, actionsCount: 0, delayCount: 0, total: 0 }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { requestsCount: 0, actionsCount: 0, delayCount: 0, total: 0 }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -943,12 +1342,34 @@ export class ExternalPoliciesApi {
             additionalProperties: true,
             description: 'Request document object',
         },
-        example: { result: 'ok' }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { result: 'ok' }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            policyPrivate: {
+                summary: 'Policy is private and cannot be imported',
+                value: { statusCode: 500, message: 'Policy is private.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

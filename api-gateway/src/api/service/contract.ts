@@ -17,7 +17,7 @@ import {
     ValidationPipe
 } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, } from '@nestjs/swagger';
-import { ContractConfigDTO, ContractDTO, ImportContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
+import { ContractConfigDTO, ContractDTO, Examples, ImportContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { Guardians, UseCache, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
 
@@ -69,12 +69,12 @@ export class ContractsApi {
         isArray: true,
         headers: pageHeader,
         type: ContractDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', description: 'string', owner: 'string', permissions: 0, topicId: 'f3b2a9c1e4d5678901234567', type: 'string', syncRequestsDate: 'string', syncPoolsDate: 'string', lastSyncEventTimeStamp: 'string', wipeContractIds: ['string'], wipeTokenIds: ['eyJhbGciOi...'] }]
+        example: [{ id: Examples.DB_ID, contractId: Examples.ACCOUNT_ID, description: 'Retire contract', owner: Examples.DID, permissions: 0, topicId: Examples.ACCOUNT_ID, type: 'RETIRE', syncRequestsDate: Examples.DATE, syncPoolsDate: Examples.DATE, lastSyncEventTimeStamp: Examples.DATE, wipeContractIds: [Examples.ACCOUNT_ID], wipeTokenIds: [Examples.ACCOUNT_ID] }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -119,12 +119,12 @@ export class ContractsApi {
     @ApiCreatedResponse({
         description: 'Created contract.',
         type: ContractDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', description: 'string', owner: 'string', permissions: 0, topicId: 'f3b2a9c1e4d5678901234567', type: 'string', syncRequestsDate: 'string', syncPoolsDate: 'string', lastSyncEventTimeStamp: 'string', wipeContractIds: ['string'], wipeTokenIds: ['eyJhbGciOi...'] }
+        example: { id: Examples.DB_ID, contractId: Examples.ACCOUNT_ID, description: 'Retire contract', owner: Examples.DID, permissions: 0, topicId: Examples.ACCOUNT_ID, type: 'RETIRE', syncRequestsDate: Examples.DATE, syncPoolsDate: Examples.DATE, lastSyncEventTimeStamp: Examples.DATE, wipeContractIds: [Examples.ACCOUNT_ID], wipeTokenIds: [Examples.ACCOUNT_ID] }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -164,12 +164,12 @@ export class ContractsApi {
     @ApiCreatedResponse({
         description: 'Created contract.',
         type: ContractDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', description: 'string', owner: 'string', permissions: 0, topicId: 'f3b2a9c1e4d5678901234567', type: 'string', syncRequestsDate: 'string', syncPoolsDate: 'string', lastSyncEventTimeStamp: 'string', wipeContractIds: ['string'], wipeTokenIds: ['eyJhbGciOi...'] }
+        example: { id: Examples.DB_ID, contractId: Examples.ACCOUNT_ID, description: 'Retire contract', owner: Examples.DID, permissions: 0, topicId: Examples.ACCOUNT_ID, type: 'RETIRE', syncRequestsDate: Examples.DATE, syncPoolsDate: Examples.DATE, lastSyncEventTimeStamp: Examples.DATE, wipeContractIds: [Examples.ACCOUNT_ID], wipeTokenIds: [Examples.ACCOUNT_ID] }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -211,12 +211,12 @@ export class ContractsApi {
     @ApiOkResponse({
         description: 'Imported contract.',
         type: ContractDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', description: 'string', owner: 'string', permissions: 0, topicId: 'f3b2a9c1e4d5678901234567', type: 'string', syncRequestsDate: 'string', syncPoolsDate: 'string', lastSyncEventTimeStamp: 'string', wipeContractIds: ['string'], wipeTokenIds: ['eyJhbGciOi...'] }
+        example: { id: Examples.DB_ID, contractId: Examples.ACCOUNT_ID, description: 'Retire contract', owner: Examples.DID, permissions: 0, topicId: Examples.ACCOUNT_ID, type: 'RETIRE', syncRequestsDate: Examples.DATE, syncPoolsDate: Examples.DATE, lastSyncEventTimeStamp: Examples.DATE, wipeContractIds: [Examples.ACCOUNT_ID], wipeTokenIds: [Examples.ACCOUNT_ID] }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(ImportContractDTO, ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -251,7 +251,7 @@ export class ContractsApi {
         type: 'string',
         required: true,
         description: 'Contract Identifier',
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Contract permissions.',
@@ -261,7 +261,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -295,7 +295,7 @@ export class ContractsApi {
         type: 'string',
         required: true,
         description: 'Contract Identifier',
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -305,7 +305,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -360,12 +360,12 @@ export class ContractsApi {
         isArray: true,
         headers: pageHeader,
         type: WiperRequestDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', user: 'string', token: 'eyJhbGciOi...' }]
+        example: [{ id: Examples.DB_ID, contractId: Examples.DB_ID, user: 'string', token: 'eyJhbGciOi...' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(WiperRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -408,7 +408,7 @@ export class ContractsApi {
         type: String,
         required: true,
         description: 'Contract identifier',
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -418,7 +418,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -452,7 +452,7 @@ export class ContractsApi {
         type: String,
         required: true,
         description: 'Contract identifier',
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -462,7 +462,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -496,7 +496,7 @@ export class ContractsApi {
         type: String,
         description: 'Request identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -506,7 +506,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -540,7 +540,7 @@ export class ContractsApi {
         type: String,
         description: 'Request identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiQuery({
         name: 'ban',
@@ -557,7 +557,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -596,7 +596,7 @@ export class ContractsApi {
         type: String,
         description: 'Contract identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -606,7 +606,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -640,7 +640,7 @@ export class ContractsApi {
         type: String,
         description: 'Contract identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiParam({
         name: 'hederaId',
@@ -657,7 +657,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -692,7 +692,7 @@ export class ContractsApi {
         description: 'Contract identifier',
         type: String,
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiParam({
         name: 'hederaId',
@@ -709,7 +709,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -744,7 +744,7 @@ export class ContractsApi {
         type: String,
         description: 'Contract identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiParam({
         name: 'hederaId',
@@ -761,7 +761,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -796,7 +796,7 @@ export class ContractsApi {
         type: String,
         description: 'Contract identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiParam({
         name: 'hederaId',
@@ -813,7 +813,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -848,7 +848,7 @@ export class ContractsApi {
         type: String,
         description: 'Contract identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiParam({
         name: 'hederaId',
@@ -865,7 +865,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -900,7 +900,7 @@ export class ContractsApi {
         type: String,
         description: 'Contract identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiParam({
         name: 'hederaId',
@@ -917,7 +917,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -952,7 +952,7 @@ export class ContractsApi {
         type: String,
         description: 'Contract identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiParam({
         name: 'hederaId',
@@ -976,7 +976,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1012,7 +1012,7 @@ export class ContractsApi {
         type: String,
         description: 'Contract identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiParam({
         name: 'hederaId',
@@ -1029,7 +1029,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1064,7 +1064,7 @@ export class ContractsApi {
         type: String,
         description: 'Contract identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiParam({
         name: 'hederaId',
@@ -1088,7 +1088,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1127,7 +1127,7 @@ export class ContractsApi {
         type: String,
         required: true,
         description: 'Contract identifier',
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Sync date.',
@@ -1137,7 +1137,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1192,12 +1192,12 @@ export class ContractsApi {
         isArray: true,
         headers: pageHeader,
         type: RetireRequestDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', tokenIds: ['eyJhbGciOi...'], user: 'string' }]
+        example: [{ id: Examples.DB_ID, contractId: Examples.DB_ID, tokenIds: ['eyJhbGciOi...'], user: 'string' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1266,12 +1266,12 @@ export class ContractsApi {
         isArray: true,
         headers: pageHeader,
         type: RetirePoolDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', tokenIds: ['eyJhbGciOi...'], immediately: true, enabled: 'string' }]
+        example: [{ id: Examples.DB_ID, contractId: Examples.DB_ID, tokenIds: ['eyJhbGciOi...'], immediately: true, enabled: 'string' }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1316,7 +1316,7 @@ export class ContractsApi {
         type: String,
         required: true,
         description: 'Contract identifier',
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1326,7 +1326,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1361,7 +1361,7 @@ export class ContractsApi {
         type: String,
         required: true,
         description: 'Contract identifier',
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1371,7 +1371,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1409,17 +1409,17 @@ export class ContractsApi {
         type: String,
         description: 'Contract identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: RetirePoolDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', contractId: 'f3b2a9c1e4d5678901234567', tokenIds: ['eyJhbGciOi...'], immediately: true, enabled: 'string' }
+        example: { id: Examples.DB_ID, contractId: Examples.DB_ID, tokenIds: ['eyJhbGciOi...'], immediately: true, enabled: 'string' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(RetirePoolDTO, RetirePoolTokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1455,7 +1455,7 @@ export class ContractsApi {
         type: String,
         description: 'Pool Identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1465,7 +1465,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1500,7 +1500,7 @@ export class ContractsApi {
         type: String,
         description: 'Request Identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1510,7 +1510,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1549,7 +1549,7 @@ export class ContractsApi {
         type: String,
         description: 'Pool Identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1559,7 +1559,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(RetireRequestTokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1600,7 +1600,7 @@ export class ContractsApi {
         type: String,
         description: 'Request identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1610,7 +1610,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1646,7 +1646,7 @@ export class ContractsApi {
         type: String,
         description: 'Request identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1656,7 +1656,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1691,7 +1691,7 @@ export class ContractsApi {
         type: String,
         description: 'Contract identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiParam({
         name: 'hederaId',
@@ -1708,7 +1708,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1744,7 +1744,7 @@ export class ContractsApi {
         type: String,
         description: 'Contract identifier',
         required: true,
-        example: '652745597a7b53526de37c05',
+        example: Examples.DB_ID,
     })
     @ApiParam({
         name: 'hederaId',
@@ -1761,7 +1761,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1821,7 +1821,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1876,7 +1876,7 @@ export class ContractsApi {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        example: { statusCode: 500, message: 'Error message' }
     })
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

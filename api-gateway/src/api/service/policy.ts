@@ -33,6 +33,7 @@ import {
     DeleteSavepointsDTO,
     DeleteSavepointsResultDTO,
     Examples,
+    ObjectExamples,
     ExportMessageDTO,
     ImportMessageDTO,
     InternalServerErrorDTO,
@@ -53,7 +54,8 @@ import {
     MigrationRunsResponseDTO,
     MigrationRunStatusDTO,
     MigrationStatusResponseDTO,
-    MigrationFailedItemDTO
+    MigrationFailedItemDTO,
+    UnprocessableEntityErrorDTO
 } from '#middlewares';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
@@ -114,90 +116,15 @@ export class PolicyApi {
         isArray: true,
         headers: pageHeader,
         type: PolicyDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
-        name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
-        owner: 'string',
-        status: 'string',
-        date: 'string',
-        duration: 0,
-        progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }]
+        examples: {
+            withPolicies: { summary: 'Policies found', value: [ObjectExamples.POLICY_1] },
+            empty: { summary: 'No policies', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -277,90 +204,15 @@ export class PolicyApi {
         isArray: true,
         headers: pageHeader,
         type: PolicyDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
-        name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
-        owner: 'string',
-        status: 'string',
-        date: 'string',
-        duration: 0,
-        progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }]
+        examples: {
+            withPolicies: { summary: 'Policies found', value: [ObjectExamples.POLICY_1] },
+            empty: { summary: 'No policies', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -422,12 +274,12 @@ export class PolicyApi {
         isArray: true,
         headers: pageHeader,
         type: BasePolicyDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'Policy name' }]
+        examples: { default: { summary: 'Default example', value: [{ id: Examples.DB_ID, name: 'Policy name' }] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(BasePolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -468,90 +320,15 @@ export class PolicyApi {
         description: 'Successful operation.',
         isArray: true,
         type: PolicyDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
-        name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
-        owner: 'string',
-        status: 'string',
-        date: 'string',
-        duration: 0,
-        progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }]
+        examples: {
+            withPolicies: { summary: 'Policies found', value: [ObjectExamples.POLICY_1] },
+            empty: { summary: 'No policies', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -605,12 +382,12 @@ export class PolicyApi {
                 }
             }
         },
-        example: { result: 'ok' }
+        examples: { default: { summary: 'No errors', value: [] }, withErrors: { summary: 'Migration errors', value: [{ error: 'Document not found', id: '000000000000000000000001' }] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(MigrationConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -645,12 +422,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Created task.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(TaskDTO, MigrationConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -696,12 +473,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Created task.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -757,12 +534,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Created task.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -818,9 +595,9 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Migration run status.',
         type: MigrationStatusResponseDTO,
-        example: { items: [{ runId: 'f3b2a9c1e4d5678901234567',
-            srcPolicyId: 'f3b2a9c1e4d5678901234567',
-            dstPolicyId: 'f3b2a9c1e4d5678901234567',
+        examples: { default: { summary: 'Default example', value: { items: [{ runId: Examples.DB_ID,
+            srcPolicyId: Examples.DB_ID,
+            dstPolicyId: Examples.DB_ID,
             status: 'string',
             isDryRun: true,
             startedAt: 'string',
@@ -835,12 +612,12 @@ export class PolicyApi {
             errorCode: {},
             errorMessage: {},
             firstFailedAt: {},
-            lastFailedAt: {} }] }] }
+            lastFailedAt: {} }] }] } } },
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(MigrationStatusResponseDTO, MigrationRunStatusDTO, MigrationFailedItemDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -894,9 +671,9 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Migration runs.',
         type: MigrationRunsResponseDTO,
-        example: { items: [{ runId: 'f3b2a9c1e4d5678901234567',
-            srcPolicyId: 'f3b2a9c1e4d5678901234567',
-            dstPolicyId: 'f3b2a9c1e4d5678901234567',
+        examples: { default: { summary: 'Default example', value: { items: [{ runId: Examples.DB_ID,
+            srcPolicyId: Examples.DB_ID,
+            dstPolicyId: Examples.DB_ID,
             status: 'string',
             isDryRun: true,
             startedAt: 'string',
@@ -914,12 +691,12 @@ export class PolicyApi {
             lastFailedAt: {} }] }],
             count: 0,
             pageIndex: 0,
-            pageSize: 0 }
+            pageSize: 0 } } },
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(MigrationRunsResponseDTO, MigrationRunStatusDTO, MigrationFailedItemDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -969,12 +746,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(TaskDTO, PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1025,12 +802,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(TaskDTO, PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1078,12 +855,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1138,12 +915,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1205,90 +982,12 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Policy configuration.',
         type: PolicyDTO,
-        example: { id: Examples.DB_ID,
-            uuid: Examples.UUID,
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'DRAFT',
-            creator: Examples.DID,
-            owner: Examples.DID,
-            topicId: Examples.ACCOUNT_ID,
-            messageId: Examples.MESSAGE_ID,
-            codeVersion: '1.0.0',
-            createDate: Examples.DATE,
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: Examples.UUID,
-        tests: [{ id: Examples.DB_ID,
-        uuid: Examples.UUID,
-        name: 'Test Name',
-        policyId: Examples.DB_ID,
-        owner: Examples.DID,
-        status: 'NEW',
-        date: Examples.DATE,
-        duration: 0,
-        progress: 0,
-        resultId: Examples.UUID,
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }
+        examples: { default: { summary: 'Default example', value: ObjectExamples.POLICY_1 } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1331,90 +1030,12 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Policy configuration.',
         type: PolicyDTO,
-        example: { id: Examples.DB_ID,
-            uuid: Examples.UUID,
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'DRAFT',
-            creator: Examples.DID,
-            owner: Examples.DID,
-            topicId: Examples.ACCOUNT_ID,
-            messageId: Examples.MESSAGE_ID,
-            codeVersion: '1.0.0',
-            createDate: Examples.DATE,
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: Examples.UUID,
-        tests: [{ id: Examples.DB_ID,
-        uuid: Examples.UUID,
-        name: 'Test Name',
-        policyId: Examples.DB_ID,
-        owner: Examples.DID,
-        status: 'NEW',
-        date: Examples.DATE,
-        duration: 0,
-        progress: 0,
-        resultId: Examples.UUID,
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }
+        examples: { default: { summary: 'Default example', value: ObjectExamples.POLICY_1 } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1463,91 +1084,13 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Policy configuration.',
         type: PolicyDTO,
-        example: { id: Examples.DB_ID,
-            uuid: Examples.UUID,
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'DRAFT',
-            creator: Examples.DID,
-            owner: Examples.DID,
-            topicId: Examples.ACCOUNT_ID,
-            messageId: Examples.MESSAGE_ID,
-            codeVersion: '1.0.0',
-            createDate: Examples.DATE,
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: Examples.UUID,
-        tests: [{ id: Examples.DB_ID,
-        uuid: Examples.UUID,
-        name: 'Test Name',
-        policyId: Examples.DB_ID,
-        owner: Examples.DID,
-        status: 'NEW',
-        date: Examples.DATE,
-        duration: 0,
-        progress: 0,
-        resultId: Examples.UUID,
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }
+        examples: { default: { summary: 'Default example', value: ObjectExamples.POLICY_1 } }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { notFound: { summary: 'Not found', value: { statusCode: 404, message: 'Not found' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1616,7 +1159,7 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PoliciesValidationDTO,
-        example: { policies: [{ id: Examples.DB_ID,
+        examples: { default: { summary: 'Default example', value: { policies: [{ id: Examples.DB_ID,
             uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
@@ -1696,7 +1239,7 @@ export class PolicyApi {
         contains: {},
         severity: {} }] }],
         isValid: true,
-        errors: { blocks: [{ id: 'f3b2a9c1e4d5678901234567',
+        errors: { blocks: [{ id: Examples.DB_ID,
         name: 'string',
         errors: [{}],
         warnings: [{}],
@@ -1704,12 +1247,12 @@ export class PolicyApi {
         isValid: true }],
         errors: ['string'],
         warnings: ['string'],
-        infos: ['string'] } }
+        infos: ['string'] } } } },
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PoliciesValidationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1759,12 +1302,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(TaskDTO, PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1812,7 +1355,7 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PoliciesValidationDTO,
-        example: { policies: [{ id: Examples.DB_ID,
+        examples: { default: { summary: 'Default example', value: { policies: [{ id: Examples.DB_ID,
             uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
@@ -1892,7 +1435,7 @@ export class PolicyApi {
         contains: {},
         severity: {} }] }],
         isValid: true,
-        errors: { blocks: [{ id: 'f3b2a9c1e4d5678901234567',
+        errors: { blocks: [{ id: Examples.DB_ID,
         name: 'string',
         errors: [{}],
         warnings: [{}],
@@ -1900,12 +1443,12 @@ export class PolicyApi {
         isValid: true }],
         errors: ['string'],
         warnings: ['string'],
-        infos: ['string'] } }
+        infos: ['string'] } } } },
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PoliciesValidationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1962,90 +1505,12 @@ export class PolicyApi {
         description: 'Successful operation.',
         isArray: true,
         type: PolicyDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
-        name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
-        owner: 'string',
-        status: 'string',
-        date: 'string',
-        duration: 0,
-        progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }]
+        examples: { default: { summary: 'Default example', value: [ObjectExamples.POLICY_1] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2091,90 +1556,15 @@ export class PolicyApi {
         description: 'Successful operation.',
         isArray: true,
         type: PolicyDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
-        name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
-        owner: 'string',
-        status: 'string',
-        date: 'string',
-        duration: 0,
-        progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }]
+        examples: {
+            withPolicies: { summary: 'Policies found', value: [ObjectExamples.POLICY_1] },
+            empty: { summary: 'No policies', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2216,7 +1606,7 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Validation result.',
         type: PolicyValidationDTO,
-        example: { policy: { id: Examples.DB_ID,
+        examples: { default: { summary: 'Default example', value: { policy: { id: Examples.DB_ID,
             uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
@@ -2291,11 +1681,11 @@ export class PolicyApi {
         resultId: Examples.UUID,
         result: {} }],
         ignoreRules: [{ code: 'string',
-        blockType: 'string',
+        blockType: 'interfaceContainerBlock',
         property: 'string',
         contains: 'string',
         severity: 'warning' }] },
-        results: { blocks: [{ id: 'f3b2a9c1e4d5678901234567',
+        results: { blocks: [{ id: Examples.DB_ID,
         name: 'string',
         errors: [{}],
         warnings: [{}],
@@ -2303,12 +1693,12 @@ export class PolicyApi {
         isValid: true }],
         errors: ['string'],
         warnings: ['string'],
-        infos: ['string'] } }
+        infos: ['string'] } } } },
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyDTO, PolicyValidationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2349,90 +1739,15 @@ export class PolicyApi {
         description: 'Successful operation.',
         isArray: true,
         type: PolicyDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
-        name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
-        owner: 'string',
-        status: 'string',
-        date: 'string',
-        duration: 0,
-        progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }]
+        examples: {
+            withPolicies: { summary: 'Policies found', value: [ObjectExamples.POLICY_1] },
+            empty: { summary: 'No policies', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2468,90 +1783,15 @@ export class PolicyApi {
         description: 'Successful operation.',
         isArray: true,
         type: PolicyDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
-        name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
-        owner: 'string',
-        status: 'string',
-        date: 'string',
-        duration: 0,
-        progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }]
+        examples: {
+            withPolicies: { summary: 'Policies found', value: [ObjectExamples.POLICY_1] },
+            empty: { summary: 'No policies', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2596,12 +1836,11 @@ export class PolicyApi {
         schema: {
             'type': 'object'
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache()
@@ -2647,12 +1886,11 @@ export class PolicyApi {
         schema: {
             'type': 'object'
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache()
@@ -2731,12 +1969,12 @@ export class PolicyApi {
                 type: 'object'
             }
         },
-        example: [{}]
+        examples: { default: { summary: 'Default example', value: [{}] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2843,12 +2081,12 @@ export class PolicyApi {
                 type: 'string'
             }
         },
-        example: ['string']
+        examples: { default: { summary: 'Default example', value: ['document_data'] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2950,12 +2188,12 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation. Response zip file.',
         type: String,
-        example: 'string'
+        examples: { default: { summary: 'Default example', value: 'response_data' } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3024,12 +2262,12 @@ export class PolicyApi {
                 type: 'string'
             }
         },
-        example: ['string']
+        examples: { default: { summary: 'Default example', value: ['document_data'] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3083,12 +2321,12 @@ export class PolicyApi {
                 type: 'string'
             }
         },
-        example: ['string']
+        examples: { default: { summary: 'Default example', value: ['document_data'] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3139,12 +2377,11 @@ export class PolicyApi {
             type: 'string',
             format: 'binary'
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3193,12 +2430,11 @@ export class PolicyApi {
         schema: {
             type: 'object'
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3244,12 +2480,11 @@ export class PolicyApi {
             type: 'string',
             format: 'binary'
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3306,12 +2541,11 @@ export class PolicyApi {
             type: 'object',
             additionalProperties: true
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3361,12 +2595,11 @@ export class PolicyApi {
         schema: {
             type: 'object'
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3410,12 +2643,12 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Object,
-        example: { result: 'ok' }
+        examples: { default: { summary: 'Group selected', value: { uuid: '00000000-0000-0000-0000-000000000001', role: 'Installer' } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3461,17 +2694,17 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BlockDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', blockType: 'string', blocks: [{}] }
+        examples: { default: { summary: 'Default example', value: { id: Examples.DB_ID, blockType: 'interfaceContainerBlock', blocks: [{}] } } }
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
         type: ServiceUnavailableErrorDTO,
-        example: { code: 503, message: 'Error message' }
+        examples: { default: { summary: 'Service unavailable', value: { statusCode: 503, message: 'Error message' } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3521,18 +2754,18 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BlockDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', blockType: 'string', blocks: [{}] }
+        examples: { default: { summary: 'Default example', value: { id: Examples.DB_ID, blockType: 'interfaceContainerBlock', blocks: [{}] } } }
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
         type: ServiceUnavailableErrorDTO,
-        example: { code: 503, message: 'Error message' }
+        examples: { default: { summary: 'Service unavailable', value: { statusCode: 503, message: 'Error message' } } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3604,18 +2837,18 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BlockDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', blockType: 'string', blocks: [{}] }
+        examples: { default: { summary: 'Default example', value: { id: Examples.DB_ID, blockType: 'interfaceContainerBlock', blocks: [{}] } } }
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
         type: ServiceUnavailableErrorDTO,
-        example: { code: 503, message: 'Error message' }
+        examples: { default: { summary: 'Service unavailable', value: { statusCode: 503, message: 'Error message' } } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3699,18 +2932,18 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: ResponseDTOWithSyncEvents,
-        example: { result: 'ok' }
+        examples: { default: { summary: 'Default example', value: { data: {}, syncEvents: [] } } }
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
         type: ServiceUnavailableErrorDTO,
-        example: { code: 503, message: 'Error message' }
+        examples: { default: { summary: 'Service unavailable', value: { statusCode: 503, message: 'Error message' } } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(ResponseDTOWithSyncEvents, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3788,18 +3021,18 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BlockDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', blockType: 'string', blocks: [{}] }
+        examples: { default: { summary: 'Default example', value: { id: Examples.DB_ID, blockType: 'interfaceContainerBlock', blocks: [{}] } } }
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
         type: ServiceUnavailableErrorDTO,
-        example: { code: 503, message: 'Error message' }
+        examples: { default: { summary: 'Service unavailable', value: { statusCode: 503, message: 'Error message' } } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3883,18 +3116,18 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: ResponseDTOWithSyncEvents,
-        example: { result: 'ok' }
+        examples: { default: { summary: 'Default example', value: { data: {}, syncEvents: [] } } }
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
         type: ServiceUnavailableErrorDTO,
-        example: { code: 503, message: 'Error message' }
+        examples: { default: { summary: 'Service unavailable', value: { statusCode: 503, message: 'Error message' } } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(ResponseDTOWithSyncEvents, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -3952,13 +3185,13 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BlockDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', blockType: 'string', blocks: [{}] }
+        examples: { default: { summary: 'Default example', value: { id: Examples.DB_ID, blockType: 'interfaceContainerBlock', blocks: [{}] } } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -4007,17 +3240,17 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BlockDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', blockType: 'string', blocks: [{}] }
+        examples: { default: { summary: 'Default example', value: { id: Examples.DB_ID, blockType: 'interfaceContainerBlock', blocks: [{}] } } }
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
         type: ServiceUnavailableErrorDTO,
-        example: { code: 503, message: 'Error message' }
+        examples: { default: { summary: 'Service unavailable', value: { statusCode: 503, message: 'Error message' } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -4069,12 +3302,12 @@ export class PolicyApi {
         description: 'Successful operation.',
         type: BlockDTO,
         isArray: true,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', blockType: 'string', blocks: [{}] }]
+        examples: { default: { summary: 'Default example', value: [{ id: Examples.DB_ID, blockType: 'interfaceContainerBlock', blocks: [{}] }] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -4112,12 +3345,11 @@ export class PolicyApi {
             type: 'object',
             additionalProperties: true
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
@@ -4162,12 +3394,11 @@ export class PolicyApi {
             type: 'string',
             format: 'binary'
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -4211,12 +3442,12 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Message.',
         type: ExportMessageDTO,
-        example: { uuid: 'f3b2a9c1e4d5678901234567', name: 'string', description: 'string', messageId: 'f3b2a9c1e4d5678901234567', owner: 'string' }
+        examples: { default: { summary: 'Default example', value: { uuid: Examples.UUID, name: 'Policy name', description: 'Policy description', messageId: Examples.MESSAGE_ID, owner: 'did:hedera:testnet:abc' } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(ExportMessageDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -4257,12 +3488,11 @@ export class PolicyApi {
             type: 'string',
             format: 'binary'
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -4329,91 +3559,13 @@ export class PolicyApi {
         description: 'Created policy.',
         type: PolicyDTO,
         isArray: true,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
-        name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
-        owner: 'string',
-        status: 'string',
-        date: 'string',
-        duration: 0,
-        progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }]
+        examples: { default: { summary: 'Default example', value: [ObjectExamples.POLICY_1] } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(ImportMessageDTO, PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -4484,13 +3636,13 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(ImportMessageDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -4550,7 +3702,7 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Policy preview.',
         type: PolicyPreviewDTO,
-        example: { module: { id: Examples.DB_ID,
+        examples: { default: { summary: 'Default example', value: { module: { id: Examples.DB_ID,
             uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
@@ -4625,20 +3777,20 @@ export class PolicyApi {
         resultId: Examples.UUID,
         result: {} }],
         ignoreRules: [{ code: 'string',
-        blockType: 'string',
+        blockType: 'interfaceContainerBlock',
         property: 'string',
         contains: 'string',
         severity: 'warning' }] },
         messageId: Examples.MESSAGE_ID,
         schemas: [{}],
         tags: [{}],
-        moduleTopicId: Examples.ACCOUNT_ID }
+        moduleTopicId: Examples.ACCOUNT_ID } } },
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(ImportMessageDTO, PolicyPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -4677,13 +3829,13 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(ImportMessageDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -4742,90 +3894,15 @@ export class PolicyApi {
         description: 'Created policy.',
         type: PolicyDTO,
         isArray: true,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
-        name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
-        owner: 'string',
-        status: 'string',
-        date: 'string',
-        duration: 0,
-        progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }]
+        examples: {
+            withPolicies: { summary: 'Policies found', value: [ObjectExamples.POLICY_1] },
+            empty: { summary: 'No policies', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -4897,90 +3974,12 @@ export class PolicyApi {
         description: 'Successful operation.',
         type: PolicyDTO,
         isArray: true,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
-        name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
-        owner: 'string',
-        status: 'string',
-        date: 'string',
-        duration: 0,
-        progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }]
+        examples: { default: { summary: 'Default example', value: [ObjectExamples.POLICY_1] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseInterceptors(AnyFilesInterceptor())
@@ -5053,12 +4052,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -5135,12 +4134,12 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @UseInterceptors(AnyFilesInterceptor())
@@ -5204,7 +4203,7 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Policy preview.',
         type: PolicyPreviewDTO,
-        example: { module: { id: Examples.DB_ID,
+        examples: { default: { summary: 'Default example', value: { module: { id: Examples.DB_ID,
             uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
@@ -5279,20 +4278,20 @@ export class PolicyApi {
         resultId: Examples.UUID,
         result: {} }],
         ignoreRules: [{ code: 'string',
-        blockType: 'string',
+        blockType: 'interfaceContainerBlock',
         property: 'string',
         contains: 'string',
         severity: 'warning' }] },
         messageId: Examples.MESSAGE_ID,
         schemas: [{}],
         tags: [{}],
-        moduleTopicId: Examples.ACCOUNT_ID }
+        moduleTopicId: Examples.ACCOUNT_ID } } },
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -5340,13 +4339,12 @@ export class PolicyApi {
         schema: {
             'type': 'object'
         },
-        example: { result: 'ok' }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -5398,13 +4396,13 @@ export class PolicyApi {
     @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
-        example: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+        examples: { default: { summary: 'Task started', value: { taskId: Examples.DB_ID, expectation: 0 } } }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -5463,13 +4461,12 @@ export class PolicyApi {
         schema: {
             'type': 'object'
         },
-        example: { result: 'ok' }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -5516,12 +4513,11 @@ export class PolicyApi {
                 additionalProperties: true
             }
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -5570,12 +4566,11 @@ export class PolicyApi {
                 additionalProperties: true
             }
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -5628,12 +4623,11 @@ export class PolicyApi {
             type: 'object',
             additionalProperties: true
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -5680,12 +4674,12 @@ export class PolicyApi {
     @ApiCreatedResponse({
         description: 'Result.',
         type: DebugBlockResultDTO,
-        example: { logs: ['string'], errors: ['string'], input: [{}], output: [{}] }
+        examples: { default: { summary: 'Default example', value: { logs: ['Block executed successfully'], errors: ['Validation failed'], input: [{}], output: [{}] } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(DebugBlockConfigDTO, DebugBlockResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -5730,12 +4724,12 @@ export class PolicyApi {
         description: 'Input data.',
         isArray: true,
         type: DebugBlockHistoryDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', createDate: 'string', document: {} }]
+        examples: { default: { summary: 'Default example', value: [{ id: Examples.DB_ID, createDate: '2024-01-01T00:00:00.000Z', document: {} }] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(DebugBlockHistoryDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -5777,10 +4771,9 @@ export class PolicyApi {
                 additionalProperties: true
             }
         },
-        example: { result: 'ok' }
     })
-    @ApiForbiddenResponse({ description: 'Policy is not in Dry Run mode.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiForbiddenResponse({ description: 'Policy is not in Dry Run mode.', type: InternalServerErrorDTO, examples: { forbidden: { summary: 'Forbidden', value: { statusCode: 403, message: 'Forbidden resource', error: 'Forbidden' } } }})
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO, examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }})
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getSavepoints(
@@ -5818,8 +4811,8 @@ export class PolicyApi {
             example: 5
         }
     })
-    @ApiForbiddenResponse({ description: 'Policy is not in Dry Run mode.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiForbiddenResponse({ description: 'Policy is not in Dry Run mode.', type: InternalServerErrorDTO, examples: { forbidden: { summary: 'Forbidden', value: { statusCode: 403, message: 'Forbidden resource', error: 'Forbidden' } } }})
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO, examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }})
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getSavepointsCount(
@@ -5868,17 +4861,16 @@ export class PolicyApi {
             type: 'object',
             additionalProperties: true
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiForbiddenResponse({
         description: 'Policy is not in Dry Run mode.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { default: { summary: 'Forbidden', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -5940,10 +4932,9 @@ export class PolicyApi {
             type: 'object',
             additionalProperties: true
         },
-        example: { result: 'ok' }
     })
-    @ApiForbiddenResponse({ description: 'Policy is not in Dry Run mode.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiForbiddenResponse({ description: 'Policy is not in Dry Run mode.', type: InternalServerErrorDTO, examples: { forbidden: { summary: 'Forbidden', value: { statusCode: 403, message: 'Forbidden resource', error: 'Forbidden' } } }})
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO, examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }})
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async createSavepoint(
@@ -5997,11 +4988,10 @@ export class PolicyApi {
             type: 'object',
             additionalProperties: true
         },
-        example: { result: 'ok' }
     })
-    @ApiBadRequestResponse({ description: 'Name is required.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiForbiddenResponse({ description: 'Policy is not in Dry Run mode.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiBadRequestResponse({ description: 'Name is required.', type: InternalServerErrorDTO, examples: { badRequest: { summary: 'Bad request', value: { statusCode: 400, message: 'Name is required', error: 'Bad Request' } } }})
+    @ApiForbiddenResponse({ description: 'Policy is not in Dry Run mode.', type: InternalServerErrorDTO, examples: { forbidden: { summary: 'Forbidden', value: { statusCode: 403, message: 'Forbidden resource', error: 'Forbidden' } } }})
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO, examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }})
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async renameSavepoint(
@@ -6055,17 +5045,17 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: DeleteSavepointsResultDTO,
-        example: 'string'
+        examples: { default: { summary: 'Default example', value: 'response_data' } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiForbiddenResponse({
         description: 'Policy is not in Dry Run mode.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { default: { summary: 'Forbidden', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(DeleteSavepointsDTO, DeleteSavepointsResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -6123,7 +5113,7 @@ export class PolicyApi {
         schema: {
             type: 'object',
             additionalProperties: true,
-            example: { result: 'ok' }
+            example: {}
         }
     })
     @ApiOkResponse({
@@ -6132,17 +5122,16 @@ export class PolicyApi {
             type: 'object',
             additionalProperties: true
         },
-        example: { result: 'ok' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiForbiddenResponse({
         description: 'Policy is not in Dry Run mode.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { default: { summary: 'Forbidden', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -6207,12 +5196,12 @@ export class PolicyApi {
         isArray: true,
         headers: pageHeader,
         type: Object,
-        example: [{}]
+        examples: { default: { summary: 'Default example', value: [{}] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -6272,12 +5261,12 @@ export class PolicyApi {
         isArray: true,
         headers: pageHeader,
         type: Object,
-        example: [{}]
+        examples: { default: { summary: 'Default example', value: [{}] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -6337,12 +5326,12 @@ export class PolicyApi {
         isArray: true,
         headers: pageHeader,
         type: Object,
-        example: [{}]
+        examples: { default: { summary: 'Default example', value: [{}] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -6393,12 +5382,12 @@ export class PolicyApi {
         description: 'Successful operation.',
         isArray: true,
         type: Object,
-        example: [{}]
+        examples: { default: { summary: 'Default example', value: [{}] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -6443,12 +5432,12 @@ export class PolicyApi {
         description: 'Successful operation.',
         isArray: true,
         type: Object,
-        example: [{}]
+        examples: { default: { summary: 'Default example', value: [{}] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -6511,13 +5500,13 @@ export class PolicyApi {
         description: 'Successful operation.',
         isArray: true,
         type: PolicyTestDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Test Name', policyId: 'f3b2a9c1e4d5678901234567', owner: 'string', status: 'string', date: 'string', duration: 0, progress: 0, resultId: 'f3b2a9c1e4d5678901234567', result: {} }]
+        examples: { default: { summary: 'Default example', value: [{ id: Examples.DB_ID, uuid: Examples.UUID, name: 'Test Name', policyId: Examples.DB_ID, owner: 'did:hedera:testnet:abc', status: 'Running', date: '2024-01-01T00:00:00.000Z', duration: 0, progress: 0, resultId: Examples.DB_ID, result: {} }] } }
     })
-    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, examples: { badRequest: { summary: 'Bad request', value: { statusCode: 400, message: 'Bad request', error: 'Bad Request' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(PolicyTestDTO, InternalServerErrorDTO)
     @UseInterceptors(AnyFilesInterceptor())
@@ -6571,12 +5560,12 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyTestDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Test Name', policyId: 'f3b2a9c1e4d5678901234567', owner: 'string', status: 'string', date: 'string', duration: 0, progress: 0, resultId: 'f3b2a9c1e4d5678901234567', result: {} }
+        examples: { default: { summary: 'Default example', value: { id: Examples.DB_ID, uuid: Examples.UUID, name: 'Test Name', policyId: Examples.DB_ID, owner: 'did:hedera:testnet:abc', status: 'Running', date: '2024-01-01T00:00:00.000Z', duration: 0, progress: 0, resultId: Examples.DB_ID, result: {} } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -6619,12 +5608,12 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyTestDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Test Name', policyId: 'f3b2a9c1e4d5678901234567', owner: 'string', status: 'string', date: 'string', duration: 0, progress: 0, resultId: 'f3b2a9c1e4d5678901234567', result: {} }
+        examples: { default: { summary: 'Default example', value: { id: Examples.DB_ID, uuid: Examples.UUID, name: 'Test Name', policyId: Examples.DB_ID, owner: 'did:hedera:testnet:abc', status: 'Running', date: '2024-01-01T00:00:00.000Z', duration: 0, progress: 0, resultId: Examples.DB_ID, result: {} } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -6667,12 +5656,12 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyTestDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567', uuid: 'f3b2a9c1e4d5678901234567', name: 'Test Name', policyId: 'f3b2a9c1e4d5678901234567', owner: 'string', status: 'string', date: 'string', duration: 0, progress: 0, resultId: 'f3b2a9c1e4d5678901234567', result: {} }
+        examples: { default: { summary: 'Default example', value: { id: Examples.DB_ID, uuid: Examples.UUID, name: 'Test Name', policyId: Examples.DB_ID, owner: 'did:hedera:testnet:abc', status: 'Running', date: '2024-01-01T00:00:00.000Z', duration: 0, progress: 0, resultId: Examples.DB_ID, result: {} } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -6715,12 +5704,12 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
-        example: true
+        examples: { default: { summary: 'Default example', value: true } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -6763,12 +5752,12 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: RunningDetailsDTO,
-        example: { left: {}, right: {}, total: 0, documents: {} }
+        examples: { default: { summary: 'Default example', value: { left: {}, right: {}, total: 0, documents: {} } } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(RunningDetailsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -6801,12 +5790,12 @@ export class PolicyApi {
         description: 'Successful operation.',
         isArray: true,
         type: PolicyCategoryDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567', name: 'Large-Scale', type: 'PROJECT_SCALE' }]
+        examples: { default: { summary: 'Default example', value: [{ id: Examples.DB_ID, name: 'Large-Scale', type: 'PROJECT_SCALE' }] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache()
@@ -6844,90 +5833,12 @@ export class PolicyApi {
         description: 'Successful operation.',
         type: PolicyDTO,
         isArray: true,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Policy name',
-            description: 'Description',
-            topicDescription: 'Description',
-            policyTag: 'Tag',
-            status: 'string',
-            creator: 'string',
-            owner: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            codeVersion: '1.0.0',
-            createDate: 'string',
-            version: '1.0.0',
-            originalChanged: true,
-            config: {},
-            userRole: 'Installer',
-            userRoles: ['Installer'],
-            userGroup: {
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }, userGroups: [{
-            uuid: Examples.UUID,
-            role: 'Installer',
-            groupLabel: 'Label',
-            groupName: 'Name',
-            active: true
-        }], policyRoles: ['Registrant'], policyNavigation: [{
-            role: 'Registrant',
-            steps: [{
-                block: 'Block tag',
-                level: 1,
-                name: 'Step name'
-            }]
-        }], policyTopics: [{
-            name: 'Project',
-            description: 'Project',
-            memoObj: 'topic',
-            static: false,
-            type: 'any'
-        }], policyTokens: [{
-            tokenName: 'Token name',
-            tokenSymbol: 'Token symbol',
-            tokenType: 'non-fungible',
-            decimals: '',
-            changeSupply: true,
-            enableAdmin: true,
-            enableFreeze: true,
-            enableKYC: true,
-            enableWipe: true,
-            templateTokenTag: 'token_template_0'
-        }], policyGroups: [{
-            name: 'Group name',
-            creator: 'Registrant',
-            groupAccessType: 'Private',
-            groupRelationshipType: 'Multiple',
-            members: ['Registrant']
-        }],
-        categories: ['string'],
-        projectSchema: 'string',
-        tests: [{ id: 'f3b2a9c1e4d5678901234567',
-        uuid: 'f3b2a9c1e4d5678901234567',
-        name: 'Test Name',
-        policyId: 'f3b2a9c1e4d5678901234567',
-        owner: 'string',
-        status: 'string',
-        date: 'string',
-        duration: 0,
-        progress: 0,
-        resultId: 'f3b2a9c1e4d5678901234567',
-        result: {} }],
-        ignoreRules: [{ code: 'string',
-        blockType: 'string',
-        property: 'string',
-        contains: 'string',
-        severity: 'warning' }] }]
+        examples: { default: { summary: 'Default example', value: [ObjectExamples.POLICY_1] } }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -6983,13 +5894,12 @@ export class PolicyApi {
             type: 'object',
             additionalProperties: true
         },
-        example: { result: 'ok' }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @HttpCode(HttpStatus.OK)
     async createNewVersionVcDocument(
@@ -7041,13 +5951,12 @@ export class PolicyApi {
                 additionalProperties: true
             }
         },
-        example: { result: 'ok' }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { unprocessable: { summary: 'Unprocessable entity', value: { statusCode: 422, message: 'Invalid parameters', error: 'Unprocessable Entity' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: { generic: { summary: 'Unexpected error', value: { statusCode: 500, message: 'Error message' } } }
     })
     @HttpCode(HttpStatus.OK)
     async getAllVersionVcDocuments(

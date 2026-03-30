@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req } from '@nestjs/
 import { ApiExtraModels, ApiNoContentResponse, ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
 import {Auth, AuthUser} from '#auth';
 import { Permissions } from '@guardian/interfaces';
-import { BrandingDTO, InternalServerErrorDTO } from '#middlewares';
+import { BrandingDTO, InternalServerErrorDTO, ObjectExamples } from '#middlewares';
 import { ONLY_SR, Guardians, UseCache, InternalException, getCacheKey, CacheService } from '#helpers';
 import {IAuthUser, PinoLogger} from '@guardian/common';
 
@@ -30,16 +30,26 @@ export class BrandingApi {
     @ApiBody({
         description: 'Object that contains config.',
         required: true,
-        type: BrandingDTO
+        type: BrandingDTO,
+        examples: {
+            default: {
+                summary: 'Update branding',
+                value: { headerColor: '#0031ff', headerColor1: '#8259ef', primaryColor: '#0031ff', companyName: 'GUARDIAN', companyLogoUrl: '/assets/images/logo.png', loginBannerUrl: '/assets/bg.jpg', faviconUrl: 'favicon.ico' }
+            }
+        }
     })
     @ApiNoContentResponse({
-        description: 'Branding updated successfully.',
-        example: { result: 'ok' }
+        description: 'Branding updated successfully. No response body.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
@@ -90,12 +100,22 @@ export class BrandingApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BrandingDTO,
-        example: { headerColor: 'string', primaryColor: 'string', companyName: 'string', companyLogoUrl: 'https://example.com', loginBannerUrl: 'https://example.com', faviconUrl: 'https://example.com', headerColor1: 'string', termsAndConditions: 'string' }
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.BRANDING
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
     @UseCache()

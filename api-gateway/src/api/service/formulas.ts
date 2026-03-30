@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, FormulaDTO, FormulaRelationshipsDTO, pageHeader, FormulasOptionsDTO, FormulasDataDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO, ObjectExamples, FormulaDTO, FormulaRelationshipsDTO, pageHeader, FormulasOptionsDTO, FormulasDataDTO, UnprocessableEntityErrorDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -18,34 +18,54 @@ export class FormulasApi {
     @Auth(Permissions.FORMULAS_FORMULA_CREATE)
     @ApiOperation({
         summary: 'Creates a new formula.',
-        description: 'Creates a new formula.',
+        description: 'Creates a new formula linked to a policy. The formula defines calculation logic using variables, constants, and mathematical expressions that reference schema fields.',
     })
     @ApiBody({
         description: 'Configuration.',
         type: FormulaDTO,
-        required: true
+        required: true,
+        examples: {
+            createFormula: {
+                value: {
+                    name: 'New Formula',
+                    description: 'Formula description',
+                    policyId: '69b83f18cd6b7c4adf4139bc'
+                }
+            }
+        }
     })
     @ApiCreatedResponse({
         description: 'Successful operation.',
         type: FormulaDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            creator: 'string',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.FORMULA
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -72,7 +92,7 @@ export class FormulasApi {
     @Auth(Permissions.FORMULAS_FORMULA_READ)
     @ApiOperation({
         summary: 'Return a list of all formulas.',
-        description: 'Returns all formulas.',
+        description: 'Returns a paginated list of formulas owned by the current user. Optionally filter by policy ID.',
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -96,27 +116,42 @@ export class FormulasApi {
         example: Examples.DB_ID
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns formulas array and total count in X-Total-Count header.',
         isArray: true,
         headers: pageHeader,
         type: FormulaDTO,
-        example: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            creator: 'string',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            config: {} }]
+        examples: {
+            withFormulas: {
+                summary: 'Formulas found (list returns fewer fields than GET /:id)',
+                value: [ObjectExamples.FORMULA_LIST_ITEM]
+            },
+            empty: {
+                summary: 'No formulas',
+                value: []
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -147,8 +182,8 @@ export class FormulasApi {
     @Get('/:formulaId')
     @Auth(Permissions.FORMULAS_FORMULA_READ)
     @ApiOperation({
-        summary: 'Retrieves formula.',
-        description: 'Retrieves formula for the specified ID.'
+        summary: 'Retrieves formula by ID.',
+        description: 'Returns the full formula object including config with variables, constants, and expressions. Returns additional fields compared to the list endpoint (uuid, createDate, updateDate, messageId, config).'
     })
     @ApiParam({
         name: 'formulaId',
@@ -160,24 +195,35 @@ export class FormulasApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: FormulaDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            creator: 'string',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.FORMULA
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -216,30 +262,51 @@ export class FormulasApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: FormulaDTO
+        type: FormulaDTO,
+        examples: {
+            updateFormula: {
+                summary: 'Update a formula',
+                value: {
+                    name: 'Updated Formula',
+                    description: 'Updated formula description',
+                    policyId: '69aeb71ef8c5b278e3bab4e5'
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: FormulaDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            creator: 'string',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.FORMULA
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -283,13 +350,35 @@ export class FormulasApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
-        example: true
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: true
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -328,7 +417,10 @@ export class FormulasApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: FormulaRelationshipsDTO,
-        example: { policy: { id: Examples.DB_ID,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { policy: { id: Examples.DB_ID,
             uuid: Examples.UUID,
             name: 'Policy name',
             description: 'Description',
@@ -425,7 +517,7 @@ export class FormulasApi {
         context: {} }],
         formulas: [{ id: Examples.DB_ID,
         uuid: Examples.UUID,
-        name: 'Tool name',
+        name: 'Emission Formula',
         description: 'Description',
         creator: Examples.DID,
         owner: Examples.DID,
@@ -435,12 +527,31 @@ export class FormulasApi {
         policyInstanceTopicId: Examples.ACCOUNT_ID,
         status: 'DRAFT',
         config: {} }] }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(FormulaRelationshipsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -477,29 +588,40 @@ export class FormulasApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'A zip file containing formula to be imported.',
+        description: 'A binary/zip file containing formula to be imported.',
         required: true
     })
     @ApiCreatedResponse({
         description: 'Successful operation.',
         type: FormulaDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            creator: 'string',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.FORMULA
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -540,12 +662,34 @@ export class FormulasApi {
             type: 'string',
             format: 'binary'
         },
-        example: { result: 'ok' }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { result: 'ok' }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -576,28 +720,39 @@ export class FormulasApi {
         description: 'Imports a zip file containing formula.',
     })
     @ApiBody({
-        description: 'File.',
+        description: 'A binary/zip file containing formula to preview.',
     })
     @ApiOkResponse({
         description: 'Formula preview.',
         type: FormulaDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            creator: 'string',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.FORMULA
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -633,25 +788,36 @@ export class FormulasApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: FormulaDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            creator: 'string',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.FORMULA
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -694,25 +860,36 @@ export class FormulasApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: FormulaDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            creator: 'string',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.FORMULA
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -755,25 +932,36 @@ export class FormulasApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: FormulaDTO,
-        example: { id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            creator: 'string',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            config: {} }
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: ObjectExamples.FORMULA
+            }
+        }
     })
-    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } }}})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -809,85 +997,106 @@ export class FormulasApi {
     @ApiBody({
         description: 'Options.',
         type: FormulasOptionsDTO,
-        required: true
+        required: true,
+        examples: {
+            getFormulasData: {
+                summary: 'Retrieve formulas data for a document',
+                value: {
+                    policyId: '69aeb71ef8c5b278e3bab4e5',
+                    schemaId: '69aeb71ef8c5b278e3bab4e5',
+                    documentId: '69aeb71ef8c5b278e3bab4e5'
+                }
+            }
+        }
     })
     @ApiCreatedResponse({
         description: 'Successful operation.',
         type: FormulasDataDTO,
-        example: { formulas: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
-            name: 'Tool name',
-            description: 'Description',
-            creator: 'string',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            policyTopicId: 'f3b2a9c1e4d5678901234567',
-            policyInstanceTopicId: 'f3b2a9c1e4d5678901234567',
-            status: 'string',
-            config: {} }],
-            document: { id: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            hash: 'hash',
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { formulas: [ObjectExamples.FORMULA],
+            document: { id: Examples.DB_ID,
+            policyId: Examples.DB_ID,
+            hash: Examples.HASH,
             signature: 0,
             status: 'NEW',
             tag: 'Block tag',
             type: 'Document type',
-            createDate: 'string',
-            updateDate: 'string',
-            owner: 'string',
-            document: { id: 'f3b2a9c1e4d5678901234567',
+            createDate: Examples.DATE,
+            updateDate: Examples.DATE,
+            owner: Examples.DID,
+            document: { id: Examples.DB_ID,
             type: ['string'],
             credentialSubject: {},
             issuer: {},
-            issuanceDate: 'string',
+            issuanceDate: Examples.DATE,
             proof: { type: 'string',
-            created: 'string',
+            created: Examples.DATE,
             verificationMethod: 'string',
             proofPurpose: 'string',
             jws: 'string' } } },
-            relationships: [{ id: 'f3b2a9c1e4d5678901234567',
-            policyId: 'f3b2a9c1e4d5678901234567',
-            hash: 'hash',
+            relationships: [{ id: Examples.DB_ID,
+            policyId: Examples.DB_ID,
+            hash: Examples.HASH,
             signature: 0,
             status: 'NEW',
             tag: 'Block tag',
             type: 'Document type',
-            createDate: 'string',
-            updateDate: 'string',
-            owner: 'string',
-            document: { id: 'f3b2a9c1e4d5678901234567',
+            createDate: Examples.DATE,
+            updateDate: Examples.DATE,
+            owner: Examples.DID,
+            document: { id: Examples.DB_ID,
             type: [{}],
             credentialSubject: {},
             issuer: {},
-            issuanceDate: 'string',
+            issuanceDate: Examples.DATE,
             proof: { type: {},
             created: {},
             verificationMethod: {},
             proofPurpose: {},
             jws: {} } } }],
-            schemas: [{ id: 'f3b2a9c1e4d5678901234567',
-            uuid: 'f3b2a9c1e4d5678901234567',
+            schemas: [{ id: Examples.DB_ID,
+            uuid: Examples.UUID,
             name: 'Schema name',
             description: 'Description',
-            entity: 'string',
-            iri: 'string',
-            status: 'string',
-            topicId: 'f3b2a9c1e4d5678901234567',
+            entity: 'POLICY',
+            iri: Examples.UUID,
+            status: 'DRAFT',
+            topicId: Examples.ACCOUNT_ID,
             version: '1.0.0',
-            owner: 'string',
-            messageId: 'f3b2a9c1e4d5678901234567',
-            category: 'string',
-            documentURL: 'https://example.com',
-            contextURL: 'https://example.com',
+            owner: Examples.DID,
+            messageId: Examples.MESSAGE_ID,
+            category: 'POLICY',
+            documentURL: Examples.IPFS,
+            contextURL: Examples.IPFS,
             document: {},
             context: {} }] }
+            }
+        }
     })
-    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
-        example: { code: 500, message: 'Error message' }
+        examples: {
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            itemPublished: {
+                summary: 'Item is already published or in wrong state',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            policyNotPublished: {
+                summary: 'Policy has not been published yet',
+                value: { statusCode: 500, message: 'The policy has not published yet.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(FormulasDataDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
