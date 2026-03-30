@@ -53,7 +53,7 @@ jobs:
           token_format: 'access_token'
 
       - name: Docker Login
-        uses: step-security/docker-login-action@c3e677aae8393bc9c81cfdf9709648720ea4bd4d # v3.6.0
+        uses: step-security/docker-login-action@6aa05fe688caf2c58e784663f01b3415ced503e8 # v3.7.0
         with:
           registry: 'gcr.io' # or REGION-docker.pkg.dev
           username: 'oauth2accesstoken'
