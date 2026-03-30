@@ -89,6 +89,7 @@ export class MockUpTopicTransactionDTO {
     })
     @IsOptional()
     @IsString()
+    // tslint:disable-next-line:variable-name
     payer_account_id?: string;
 
     @ApiProperty({
@@ -98,6 +99,7 @@ export class MockUpTopicTransactionDTO {
     })
     @IsOptional()
     @IsString()
+    // tslint:disable-next-line:variable-name
     topic_id?: string;
 }
 
@@ -109,6 +111,7 @@ export class MockUpMessageTransactionDTO {
     })
     @IsOptional()
     @IsString()
+    // tslint:disable-next-line:variable-name
     consensus_timestamp?: string;
 
     @ApiProperty({
@@ -136,6 +139,7 @@ export class MockUpMessageTransactionDTO {
     })
     @IsOptional()
     @IsString()
+    // tslint:disable-next-line:variable-name
     payer_account_id?: string;
 
     @ApiProperty({
@@ -145,6 +149,7 @@ export class MockUpMessageTransactionDTO {
     })
     @IsOptional()
     @IsNumber()
+    // tslint:disable-next-line:variable-name
     sequence_number?: number;
 
     @ApiProperty({
@@ -163,6 +168,7 @@ export class MockUpMessageTransactionDTO {
     })
     @IsOptional()
     @IsString()
+    // tslint:disable-next-line:variable-name
     topic_id?: string;
 }
 
@@ -212,6 +218,7 @@ export class MockUpTokenDataDTO {
     })
     @IsOptional()
     @IsString()
+    // tslint:disable-next-line:variable-name
     token_id?: string;
 
     @ApiProperty({
@@ -221,6 +228,7 @@ export class MockUpTokenDataDTO {
     })
     @IsOptional()
     @IsString()
+    // tslint:disable-next-line:variable-name
     treasury_account_id?: string;
 
     @ApiProperty({
@@ -266,6 +274,7 @@ export class MockUpTokenDataDTO {
     })
     @IsBoolean()
     @IsOptional()
+    // tslint:disable-next-line:variable-name
     admin_key?: boolean;
 
     @ApiProperty({
@@ -275,6 +284,7 @@ export class MockUpTokenDataDTO {
     })
     @IsBoolean()
     @IsOptional()
+    // tslint:disable-next-line:variable-name
     freeze_key?: boolean;
 
     @ApiProperty({
@@ -284,6 +294,7 @@ export class MockUpTokenDataDTO {
     })
     @IsBoolean()
     @IsOptional()
+    // tslint:disable-next-line:variable-name
     kyc_key?: boolean;
 
     @ApiProperty({
@@ -293,6 +304,7 @@ export class MockUpTokenDataDTO {
     })
     @IsBoolean()
     @IsOptional()
+    // tslint:disable-next-line:variable-name
     supply_key?: boolean;
 
     @ApiProperty({
@@ -302,6 +314,7 @@ export class MockUpTokenDataDTO {
     })
     @IsBoolean()
     @IsOptional()
+    // tslint:disable-next-line:variable-name
     wipe_key?: boolean;
 }
 
