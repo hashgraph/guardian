@@ -98,6 +98,7 @@ interface SchemaItem {
     blockType: 'externalTopicBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMockUp: true,
     about: {
         label: 'External Topic',
         title: `Add 'External Topic' Block`,
@@ -345,7 +346,11 @@ export class ExternalTopicBlock {
      */
     private async loadSchemaDocument(item: SchemaItem): Promise<void> {
         try {
-            const row = await IPFS.getFile(item.cid, 'str');
+            const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+            const row = await IPFS.getFile(item.cid, 'str', {
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
             let document: any;
             if (typeof row === 'string') {
                 document = JSON.parse(row);
@@ -417,7 +422,10 @@ export class ExternalTopicBlock {
         if (topicTree.count > 20) {
             throw new BlockActionError('Max attempts of 20 was reached for request: Get topic info', ref.blockType, ref.uuid);
         }
-        const topicMessage = await MessageServer.getTopic(topicId, userId);
+        const topicMessage = await MessageServer.getTopic(topicId, userId, {
+            dryRun: ref.dryRun,
+            mockId: ref.mockId
+        });
         if (!topicTree.root) {
             if (topicMessage && (
                 topicMessage.messageType === TopicType.InstancePolicyTopic ||
@@ -434,7 +442,12 @@ export class ExternalTopicBlock {
                     throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
                 }
                 topicTree.policyTopic = topicMessage;
-                const messages: any[] = await MessageServer.getTopicMessages({ topicId, userId });
+                const messages: any[] = await MessageServer.getTopicMessages({
+                    topicId,
+                    userId,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId
+                });
                 topicTree.schemas = messages.filter((m: SchemaMessage | SchemaPackageMessage) => (
                     m.action === MessageAction.PublishSchema ||
                     m.action === MessageAction.PublishSchemas
@@ -518,11 +531,15 @@ export class ExternalTopicBlock {
 
     private async parsePackage(message: SchemaPackageMessage): Promise<SchemaItem[]> {
         try {
+            const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
             const list: SchemaItem[] = [];
             const contextUrl = message.getContextUrl(UrlType.url);
             const metaCID = message.getMetadataUrl(UrlType.cid);
             const documentCID = message.getDocumentUrl(UrlType.cid);
-            const metaData = await IPFS.getFile(metaCID, 'str');
+            const metaData = await IPFS.getFile(metaCID, 'str', {
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
             const meta = JSON.parse(metaData);
             const schemas = meta.schemas;
             if (Array.isArray(schemas)) {
@@ -724,7 +741,10 @@ export class ExternalTopicBlock {
             return;
         }
 
-        await MessageServer.loadDocument(message, hederaAccount.hederaAccountKey);
+        await MessageServer.loadDocument(message, hederaAccount.hederaAccountKey, {
+            dryRun: ref.dryRun,
+            mockId: ref.mockId
+        });
 
         const document: IVC = message.getDocument();
         const error = await this.checkDocument(item, document);
@@ -776,7 +796,9 @@ export class ExternalTopicBlock {
         const messages: VCMessage[] = await MessageServer.getTopicMessages({
             topicId: item.documentTopicId,
             userId: user.id,
-            timeStamp: item.lastMessage
+            timeStamp: item.lastMessage,
+            dryRun: ref.dryRun,
+            mockId: ref.mockId
         });
         for (const message of messages) {
             await this.checkMessage(ref, item, hederaCred, user, message, actionStatus);

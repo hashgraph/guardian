@@ -133,7 +133,7 @@ export class XlsxEnum {
                     const buffer = Buffer.from(JSON.stringify({
                         enum: this.data,
                     }))
-                    const result = await IPFS.addFile(buffer);
+                    const result = await IPFS.addFile(buffer, IPFS.DEFAULT_OPTIONS);
                     if (result) {
                         this._link = `ipfs://${result.cid}`;
                         this._loaded = true;

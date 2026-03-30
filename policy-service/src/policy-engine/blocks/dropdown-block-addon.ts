@@ -23,6 +23,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'dropdownBlockAddon',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMockUp: false,
     about: {
         label: 'Dropdown',
         title: `Add 'Dropdown' Block`,

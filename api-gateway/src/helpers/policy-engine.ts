@@ -1,5 +1,5 @@
-import { BasePolicyDTO, ExportMessageDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
-import { IAuthUser, NatsService } from '@guardian/common';
+import { BasePolicyDTO, ExportMessageDTO, MockUpConfigDTO, MockUpDataDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
+import { IAuthUser, MockType, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
 import { NewTask } from './task-manager.js';
@@ -227,8 +227,9 @@ export class PolicyEngine extends NatsService {
     public async dryRunPolicy(
         policyId: string,
         owner: IOwner,
+        enableMockUp: boolean
     ): Promise<PoliciesValidationDTO> {
-        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_POLICIES, { policyId, owner });
+        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_POLICIES, { policyId, owner, enableMockUp });
     }
 
     /**
@@ -899,6 +900,92 @@ export class PolicyEngine extends NatsService {
             pageIndex,
             pageSize
         });
+    }
+
+    /**
+     * Get mockup config
+     * @param policyId
+     * @param owner
+     */
+    public async getMockupConfig(
+        policyId: string,
+        owner: IOwner,
+    ): Promise<MockUpConfigDTO> {
+        return await this.sendMessage(PolicyEngineEvents.GET_MOCK_UP_CONFIG, { policyId, owner });
+    }
+
+    /**
+     * Get mockup data
+     * @param policyId
+     * @param owner
+     */
+    public async getMockupData(
+        policyId: string,
+        owner: IOwner,
+    ): Promise<MockUpDataDTO> {
+        return await this.sendMessage(PolicyEngineEvents.GET_MOCK_UP_DATA, { policyId, owner });
+    }
+
+    /**
+     * Get mockup data
+     * @param policyId
+     * @param owner
+     * @param config
+     */
+    public async setMockupConfig(
+        policyId: string,
+        owner: IOwner,
+        config: MockUpConfigDTO,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.SET_MOCK_UP_CONFIG, { policyId, owner, config });
+    }
+
+    /**
+     * Update mockup data
+     * @param policyId
+     * @param owner
+     * @param data
+     */
+    public async updateMockData(
+        policyId: string,
+        owner: IOwner,
+        data: MockUpDataDTO,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.SET_MOCK_UP_DATA, { policyId, owner, data });
+    }
+
+    /**
+     * Load MockUp file for import
+     * @param zip
+     * @param owner
+     */
+    public async importMockup(policyId: string, owner: IOwner, zip: any): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.IMPORT_MOCK_UP_DATA, { zip, policyId, owner });
+    }
+
+    /**
+     * Get MockUp export file
+     * @param policyId
+     * @param owner
+     */
+    public async exportMockup(policyId: string, owner: IOwner) {
+        const file = await this.sendMessage(PolicyEngineEvents.EXPORT_MOCK_UP_DATA, { policyId, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Mock Request
+     * @param policyId
+     * @param owner
+     * @param config
+     */
+    public async mockRequest(
+        policyId: string,
+        owner: IOwner,
+        type: MockType,
+        config: any,
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.MOCK_UP_REQUEST, { policyId, owner, type, config });
     }
 
     /**

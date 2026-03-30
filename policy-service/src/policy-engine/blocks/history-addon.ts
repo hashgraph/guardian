@@ -8,6 +8,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 @SourceAddon({
     blockType: 'historyAddon',
     actionType: LocationType.LOCAL,
+    canMockUp: false,
     about: {
         label: 'History',
         title: `Add 'History' Addon`,

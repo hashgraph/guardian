@@ -905,44 +905,49 @@ export class PoliciesComponent implements OnInit {
 
     private dryRun(element: any) {
         this.loading = true;
-        this.policyEngineService.dryRun(element.id).pipe(takeUntil(this._destroy$)).subscribe(
-            (data: any) => {
-                const { policies, isValid, errors } = data;
-                if (!isValid) {
-                    let text = [];
-                    const blocks = errors.blocks;
-                    const invalidBlocks = blocks.filter(
-                        (block: any) => !block.isValid
-                    );
-                    for (let i = 0; i < invalidBlocks.length; i++) {
-                        const block = invalidBlocks[i];
-                        for (let j = 0; j < block.errors.length; j++) {
-                            const error = block.errors[j];
-                            if (block.id) {
-                                text.push(`<div>${block.id}: ${error}</div>`);
-                            } else {
-                                text.push(`<div>${error}</div>`);
+        this.policyEngineService
+            .dryRun(element.id, {
+                enableMockUp: true
+            })
+            .pipe(takeUntil(this._destroy$))
+            .subscribe(
+                (data: any) => {
+                    const { policies, isValid, errors } = data;
+                    if (!isValid) {
+                        let text = [];
+                        const blocks = errors.blocks;
+                        const invalidBlocks = blocks.filter(
+                            (block: any) => !block.isValid
+                        );
+                        for (let i = 0; i < invalidBlocks.length; i++) {
+                            const block = invalidBlocks[i];
+                            for (let j = 0; j < block.errors.length; j++) {
+                                const error = block.errors[j];
+                                if (block.id) {
+                                    text.push(`<div>${block.id}: ${error}</div>`);
+                                } else {
+                                    text.push(`<div>${error}</div>`);
+                                }
                             }
                         }
+                        this.informService.errorMessage(
+                            text.join(''),
+                            'The policy is invalid'
+                        );
+                        this._configurationErrors.set(element.id, errors);
+                        this.router.navigate(['policy-configuration'], {
+                            queryParams: {
+                                policyId: element.id,
+                            },
+                            replaceUrl: true,
+                        });
                     }
-                    this.informService.errorMessage(
-                        text.join(''),
-                        'The policy is invalid'
-                    );
-                    this._configurationErrors.set(element.id, errors);
-                    this.router.navigate(['policy-configuration'], {
-                        queryParams: {
-                            policyId: element.id,
-                        },
-                        replaceUrl: true,
-                    });
+                    this.loadAllPolicy();
+                },
+                (e) => {
+                    this.loading = false;
                 }
-                this.loadAllPolicy();
-            },
-            (e) => {
-                this.loading = false;
-            }
-        );
+            );
     }
 
     private draft(element: any) {

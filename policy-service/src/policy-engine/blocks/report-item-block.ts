@@ -14,6 +14,7 @@ import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.j
     blockType: 'reportItemBlock',
     commonBlock: true,
     actionType: LocationType.LOCAL,
+    canMockUp: false,
     about: {
         label: 'Report Item',
         title: `Add 'Report Item' Block`,

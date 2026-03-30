@@ -443,10 +443,20 @@ export async function createSchema(
             owner: user.creator,
             policyId: null,
             policyUUID: null
-        }, user.id);
+        }, {
+            admin: true,
+            submit: true
+        }, {
+            userId: user.id
+        });
         await topic.saveKeys(user.id);
         await DatabaseServer.saveTopic(topic.toObject());
-        await topicHelper.twoWayLink(topic, null, null, user.id);
+        await topicHelper.twoWayLink({
+            topic,
+            parent: null,
+            rationale: null,
+            userId: user.id
+        });
     }
     notifier.completeStep(STEP_RESOLVE_TOPIC);
 

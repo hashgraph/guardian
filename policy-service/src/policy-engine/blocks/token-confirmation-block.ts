@@ -18,6 +18,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'tokenConfirmationBlock',
     commonBlock: false,
     actionType: LocationType.CUSTOM,
+    canMockUp: true,
     about: {
         label: 'Token Confirmation',
         title: `Add 'Token Confirmation' Block`,

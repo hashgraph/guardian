@@ -17,6 +17,7 @@ import { PolicyUtils } from '../helpers/utils.js';
     blockType: 'tagsManager',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMockUp: true,
     about: {
         label: 'Tags Manager',
         title: `Add 'Tags Manager' Block`,
@@ -123,7 +124,7 @@ export class TagsManagerBlock {
      * @param user
      * @param blockData
      */
-    async setData(user: PolicyUser, blockData: any,  _, actionStatus): Promise<any> {
+    async setData(user: PolicyUser, blockData: any, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (!blockData) {
             throw new BlockActionError(`Operation is unknown`, ref.blockType, ref.uuid);
@@ -378,7 +379,13 @@ export class TagsManagerBlock {
         const messageServer = new MessageServer({
             dryRun: ref.dryRun
         });
-        const messages = await messageServer.getMessages<TagMessage>(topicId, userId, MessageType.Tag);
+        const messages = await messageServer.getMessages<TagMessage>({
+            topicId,
+            type: MessageType.Tag,
+            userId,
+            dryRun: ref.dryRun,
+            mockId: ref.mockId
+        });
         const map = new Map<string, any>();
         for (const message of messages) {
             if (message.target === target) {

@@ -12,6 +12,7 @@ import { LocationType } from '@guardian/interfaces';
 @SourceAddon({
     blockType: 'paginationAddon',
     actionType: LocationType.LOCAL,
+    canMockUp: false,
     about: {
         label: 'Pagination',
         title: `Add 'Pagination' Addon`,
