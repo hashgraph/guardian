@@ -6037,6 +6037,13 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
+      requestBody:
+        required: true
+        description: Options.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -8819,6 +8826,308 @@ paths:
       security:
         - bearer: []
       summary: Get dry-run details (Files).
+      tags:
+        - policies
+  /policies/{policyId}/dry-run/mockup/config:
+    get:
+      description: Get mockup config.
+      operationId: PolicyApi_getMockupConfig
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Config
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MockUpConfigDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get mockup config.
+      tags:
+        - policies
+    post:
+      description: Set mockup config.
+      operationId: PolicyApi_setMockupConfig
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Config
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockUpConfigDTO'
+      responses:
+        '200':
+          description: Config
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MockUpConfigDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Set mockup config.
+      tags:
+        - policies
+  /policies/{policyId}/dry-run/mockup/data:
+    get:
+      description: Get mockup data.
+      operationId: PolicyApi_getMockupData
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Config
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MockUpDataDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get mockup data.
+      tags:
+        - policies
+    post:
+      description: Set mockup data.
+      operationId: PolicyApi_updateMockData
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockUpDataDTO'
+      responses:
+        '200':
+          description: Data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MockUpDataDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Set mockup data.
+      tags:
+        - policies
+  /policies/{policyId}/dry-run/mockup/import:
+    post:
+      description: Import MockUp from a zip file.
+      operationId: PolicyApi_importMockup
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: A zip file containing MockUp to be imported.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Import MockUp from a zip file.
+      tags:
+        - policies
+  /policies/{policyId}/dry-run/mockup/export:
+    get:
+      description: Returns a zip file containing MockUp.
+      operationId: PolicyApi_exportFormula
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Response zip file.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns a zip file containing MockUp.
+      tags:
+        - policies
+  /policies/{policyId}/dry-run/mockup/request/api:
+    post:
+      description: Mockup request (API).
+      operationId: PolicyApi_mockApiRequest
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Config
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockUpApiRequestDTO'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Mockup request (API).
+      tags:
+        - policies
+  /policies/{policyId}/dry-run/mockup/request/ipfs:
+    post:
+      description: Mockup request (IPFS).
+      operationId: PolicyApi_mockIpfsRequest
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Config
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockUpIpfsRequestDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Mockup request (IPFS).
       tags:
         - policies
   /policies/{policyId}/multiple:
@@ -21341,6 +21650,9 @@ components:
           description: Record policy actions
       required:
         - policyVersion
+    Object:
+      type: object
+      properties: {}
     PolicyValidationDTO:
       type: object
       properties:
@@ -21351,9 +21663,6 @@ components:
       required:
         - policy
         - results
-    Object:
-      type: object
-      properties: {}
     ServiceUnavailableErrorDTO:
       type: object
       properties:
@@ -21513,6 +21822,202 @@ components:
             type: string
       required:
         - hardDeletedIds
+    MockUpBlockConfigDTO:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        enable:
+          type: boolean
+          example: true
+    MockUpConfigDTO:
+      type: object
+      properties:
+        enable:
+          type: boolean
+          example: true
+        blocks:
+          type: array
+          items:
+            $ref: '#/components/schemas/MockUpBlockConfigDTO'
+    MockUpIpfsDataDTO:
+      type: object
+      properties:
+        cid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        content:
+          type: string
+    MockUpTopicTransactionDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 0.0.1
+        memo:
+          type: string
+          example: memo
+        payer_account_id:
+          type: string
+          example: 0.0.1
+        topic_id:
+          type: string
+          example: 0.0.1
+    MockUpMessageTransactionDTO:
+      type: object
+      properties:
+        consensus_timestamp:
+          type: string
+          example: '0000000000.000000001'
+        id:
+          type: string
+          example: '0000000000.000000001'
+        message:
+          type: string
+          example: base64
+        payer_account_id:
+          type: string
+          example: 0.0.1
+        sequence_number:
+          type: number
+          example: 0.0.1
+        topicId:
+          type: string
+          example: 0.0.1
+        topic_id:
+          type: string
+          example: 0.0.1
+    MockUpTopicDataDTO:
+      type: object
+      properties:
+        topicId:
+          type: string
+          example: 0.0.1
+        topic:
+          $ref: '#/components/schemas/MockUpTopicTransactionDTO'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/MockUpMessageTransactionDTO'
+    MockUpTokenDataDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 0.0.1
+        token_id:
+          type: string
+          example: 0.0.1
+        treasury_account_id:
+          type: string
+          example: 0.0.1
+        name:
+          type: string
+          example: Name
+        symbol:
+          type: string
+          example: Symbol
+        decimals:
+          type: number
+          example: 1
+        type:
+          type: string
+          example: FUNGIBLE_COMMON
+        admin_key:
+          type: boolean
+          example: true
+        freeze_key:
+          type: boolean
+          example: true
+        kyc_key:
+          type: boolean
+          example: true
+        supply_key:
+          type: boolean
+          example: true
+        wipe_key:
+          type: boolean
+          example: true
+    MockUpRequestConfigDTO:
+      type: object
+      properties:
+        method:
+          type: string
+          example: GET
+        responseType:
+          type: string
+          example: JSON
+        url:
+          type: string
+          example: http://localhost:4200/
+    MockUpApiDataDTO:
+      type: object
+      properties:
+        request:
+          $ref: '#/components/schemas/MockUpRequestConfigDTO'
+        response:
+          type: string
+          example: JSON
+    MockUpUserDataDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          example: username
+        did:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        hederaAccountId:
+          type: string
+          example: 0.0.1
+        hederaAccountKey:
+          type: string
+        document:
+          $ref: '#/components/schemas/DidDocumentDTO'
+    MockUpDataDTO:
+      type: object
+      properties:
+        ipfs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MockUpIpfsDataDTO'
+        topics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MockUpTopicDataDTO'
+        tokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/MockUpTokenDataDTO'
+        api:
+          type: array
+          items:
+            $ref: '#/components/schemas/MockUpApiDataDTO'
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/MockUpUserDataDTO'
+    MockUpApiRequestDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          example: GET
+        url:
+          type: string
+          example: http://localhost/
+        body:
+          type: object
+        headers:
+          type: object
+    MockUpIpfsRequestDTO:
+      type: object
+      properties:
+        cid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
     RunningDetailsDTO:
       type: object
       properties:
