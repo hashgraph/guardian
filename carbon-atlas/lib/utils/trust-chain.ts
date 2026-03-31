@@ -229,6 +229,17 @@ export function deduplicateProjects(
   allVcs: VCListItem[]
 ): { vc: VCListItem; developerDid: string | undefined; stage: string }[] {
   const byTs = new Map(allVcs.map((vc) => [vc.consensusTimestamp, vc]))
+  const byUuid = new Map(allVcs.filter(vc => vc.uuid).map((vc) => [vc.uuid!, vc]))
+
+  // Build set of UUIDs that have been revoked.
+  // Revoke events are separate VCListItem entries with status="REVOKE" that share
+  // the same UUID as the original VC they revoke.
+  const revokedUuids = new Set<string>()
+  for (const vc of allVcs) {
+    if (vc.status === "REVOKE" && vc.uuid) {
+      revokedUuids.add(vc.uuid)
+    }
+  }
 
   const approvedProjects = allVcs.filter(
     (vc) => vc.options?.entityType === "approved_project"
@@ -236,11 +247,12 @@ export function deduplicateProjects(
   const projectForms = allVcs.filter(
     (vc) => vc.options?.entityType === "project_form"
   )
+  // Only include `project` (auto-calc) VCs whose UUID has NOT been revoked
   const calculatedProjects = allVcs.filter(
-    (vc) => vc.options?.entityType === "project"
+    (vc) => vc.options?.entityType === "project" && !revokedUuids.has(vc.uuid ?? "")
   )
 
-  // Build a set of project_form timestamps that are superseded by a companion
+  // Build a set of project_form timestamps that are superseded by an ACTIVE (non-revoked)
   // calculated `project` VC (project VC's relationships include the project_form).
   const formsWithCalculation = new Set<string>()
   for (const cp of calculatedProjects) {
@@ -248,6 +260,18 @@ export function deduplicateProjects(
       const rel = byTs.get(relTs)
       if (rel?.options?.entityType === "project_form") {
         formsWithCalculation.add(relTs)
+      }
+    }
+  }
+
+  // Build set of project_form timestamps whose companion `project` VC was revoked
+  const formsWithRevokedCalculation = new Set<string>()
+  for (const cp of allVcs.filter(vc => vc.options?.entityType === "project")) {
+    if (!cp.uuid || !revokedUuids.has(cp.uuid)) continue
+    for (const relTs of cp.options?.relationships ?? []) {
+      const rel = byTs.get(relTs)
+      if (rel?.options?.entityType === "project_form") {
+        formsWithRevokedCalculation.add(relTs)
       }
     }
   }
@@ -271,17 +295,6 @@ export function deduplicateProjects(
     }
   }
 
-  // De-duplicate project_forms by issuer DID: keep only the latest submission
-  // per developer. Re-submissions of the same project have the same issuer.
-  const latestFormByIssuer = new Map<string, VCListItem>()
-  for (const pf of projectForms) {
-    const issuer = pf.options?.issuer ?? "__unknown__"
-    const existing = latestFormByIssuer.get(issuer)
-    if (!existing || pf.consensusTimestamp > existing.consensusTimestamp) {
-      latestFormByIssuer.set(issuer, pf)
-    }
-  }
-
   const results: { vc: VCListItem; developerDid: string | undefined; stage: string }[] = []
 
   // 1. Approved projects — show as "Validated"
@@ -294,12 +307,18 @@ export function deduplicateProjects(
     })
   }
 
-  // 2. Uncovered forms (de-duplicated to latest per issuer) — "Submitted" or "Calculated"
-  for (const pf of latestFormByIssuer.values()) {
+  // 2. All uncovered project_forms — show each one individually.
+  // Stage priority: Calculated > Submitted > Revoked
+  for (const pf of projectForms) {
     if (coveredFormTs.has(pf.consensusTimestamp)) continue
-    const stage = formsWithCalculation.has(pf.consensusTimestamp)
-      ? "Calculated"
-      : "Submitted"
+    let stage: string
+    if (formsWithCalculation.has(pf.consensusTimestamp)) {
+      stage = "Calculated"
+    } else if (formsWithRevokedCalculation.has(pf.consensusTimestamp)) {
+      stage = "Revoked"
+    } else {
+      stage = "Submitted"
+    }
     results.push({
       vc: pf,
       developerDid: pf.options?.issuer,

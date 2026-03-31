@@ -16,6 +16,8 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { DeviceMap } from "@/components/device-map"
+import { ProjectGeographiesMap } from "@/components/project-geographies-map"
+import { VcuProjectionsChart } from "@/components/vcu-projections-chart"
 import { useDashboardStats, type IssuanceDataPoint } from "@/hooks/useDashboardStats"
 import { usePolicyNetwork } from "@/providers/PolicyNetworkProvider"
 import type { ChartSlot } from "@/lib/policies/types"
@@ -134,14 +136,22 @@ function IssuanceChart({ data }: { data: IssuanceDataPoint[] }) {
 }
 
 function ProjectOverviewChart() {
-  const { validationStage, projectFormCount, projectCount, issuanceCount } =
+  const { validationStage, activeProjectFormCount, revokedProjectCount, projectCount, issuanceCount } =
     useDashboardStats()
 
   const stages = [
-    { name: "Submitted", count: projectFormCount, active: true },
+    { name: "Submitted", count: activeProjectFormCount, active: activeProjectFormCount > 0 },
     { name: "Validated", count: projectCount, active: projectCount > 0 },
     { name: "Issued", count: issuanceCount, active: issuanceCount > 0 },
   ]
+
+  // Brief status description: show revoked count separately
+  const descParts: string[] = []
+  if (issuanceCount > 0) descParts.push(`${issuanceCount} issuing`)
+  if (projectCount > 0) descParts.push(`${projectCount} validated`)
+  if (activeProjectFormCount > 0) descParts.push(`${activeProjectFormCount} in progress`)
+  if (revokedProjectCount > 0) descParts.push(`${revokedProjectCount} revoked`)
+  const statusDesc = descParts.length > 0 ? descParts.join(", ") : "No projects yet"
 
   return (
     <Card>
@@ -149,6 +159,7 @@ function ProjectOverviewChart() {
         <CardTitle>Project Lifecycle</CardTitle>
         <CardDescription>
           Current stage: {validationStage}
+          <span className="ml-2 text-xs">· {statusDesc}</span>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -189,6 +200,10 @@ function ChartSlotRenderer({ slot }: { slot: ChartSlot }) {
       return <DeviceMap />
     case "project-overview":
       return <ProjectOverviewChart />
+    case "project-geographies":
+      return <ProjectGeographiesMap />
+    case "vcu-projections":
+      return <VcuProjectionsChart />
     case "none":
       return null
     default:

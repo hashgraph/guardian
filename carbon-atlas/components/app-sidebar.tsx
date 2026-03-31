@@ -56,11 +56,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const navSecondary = [
     {
-      title: "Methodology",
-      url: policy.links.methodology,
-      icon: IconExternalLink,
-    },
-    {
       title: "Guardian",
       url: "https://github.com/hashgraph/guardian",
       icon: IconExternalLink,

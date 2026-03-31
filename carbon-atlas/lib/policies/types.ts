@@ -44,6 +44,8 @@ export type ChartSlot =
   | "emission-timeline"
   | "device-map"
   | "project-overview"
+  | "project-geographies"
+  | "vcu-projections"
   | "none"
 
 export interface PolicyConfig {
@@ -71,6 +73,13 @@ export interface PolicyConfig {
   dashboard: {
     statCards: StatCardConfig[]
     charts: ChartSlot[]
+    /**
+     * What to show in the "recent activity" table at the bottom of the dashboard.
+     * "issuances" (default) — shows recent approved_report VCs.
+     * "projects"            — shows recent project submissions (better for
+     *                         early-stage policies with no issuances yet).
+     */
+    recentTable?: "issuances" | "projects"
   }
 
   /**
@@ -84,8 +93,18 @@ export interface PolicyConfig {
     eryPath?: string
     deviceCountPath?: string
     periodPath?: string
-    /** Path into project_form CS for estimated total VCUs (pre-issuance). */
+    /**
+     * Path into a project VC's credential subject for estimated total VCUs
+     * (pre-issuance). Pair with `vcuEntityType` to specify which entity type
+     * to fetch — defaults to "project_form" if unset.
+     */
     vcuEstimatePath?: string
+    /**
+     * Entity type to fetch when extracting vcuEstimatePath.
+     * Use "project" for policies where the policy engine computes VCU totals
+     * in the calculated project VC. Defaults to "project_form".
+     */
+    vcuEntityType?: EntityType
   }
 
   /**

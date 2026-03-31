@@ -41,11 +41,35 @@ export interface IssuanceDataPoint {
 
 export function useDashboardStats() {
   const { network, policy } = usePolicyNetwork()
-  const { eryPath, deviceCountPath, periodPath, vcuEstimatePath } = policy.statsExtractors
+  const { eryPath, deviceCountPath, periodPath, vcuEstimatePath, vcuEntityType } = policy.statsExtractors
   const { data: approvedReports, isLoading: loadingAR } = useAllPolicyVcs("approved_report")
   const { data: projects, isLoading: loadingProj } = useAllPolicyVcs("approved_project")
   const { data: projectForms, isLoading: loadingPF } = useAllPolicyVcs("project_form")
   const { data: mrvReports, isLoading: loadingMRV } = useAllPolicyVcs("daily_mrv_report")
+  // For policies where VCU totals are in the calculated project VC (e.g. VM0033)
+  const { data: calculatedProjects, isLoading: loadingCalc } = useAllPolicyVcs(
+    vcuEstimatePath && vcuEntityType === "project" ? "project" : undefined
+  )
+  // All VCs (unfiltered) — used for revoke detection
+  const { data: allVcsForRevoke } = useAllPolicyVcs()
+
+  // Build set of revoked project_form timestamps so we can exclude them from VCU estimates
+  const revokedFormTs = useMemo(() => {
+    if (!allVcsForRevoke) return new Set<string>()
+    const revokedUuids = new Set(
+      allVcsForRevoke.filter(vc => vc.status === "REVOKE" && vc.uuid).map(vc => vc.uuid!)
+    )
+    const byTs = new Map(allVcsForRevoke.map(vc => [vc.consensusTimestamp, vc]))
+    const result = new Set<string>()
+    for (const cp of allVcsForRevoke.filter(vc => vc.options?.entityType === "project")) {
+      if (!cp.uuid || !revokedUuids.has(cp.uuid)) continue
+      for (const relTs of cp.options?.relationships ?? []) {
+        const rel = byTs.get(relTs)
+        if (rel?.options?.entityType === "project_form") result.add(relTs)
+      }
+    }
+    return result
+  }, [allVcsForRevoke])
 
   // Fetch detail for each approved_report to get ER_y and device count
   const detailQueries = useQueries({
@@ -69,15 +93,19 @@ export function useDashboardStats() {
     })),
   })
 
-  // Fetch detail for project_forms to extract estimated VCUs.
-  // Only fires when the policy defines a vcuEstimatePath (e.g. VM0033).
+  // Fetch detail for VCU estimate VCs — active (non-revoked) project_forms only.
+  const vcuSourceVcs = useMemo(() => {
+    if (!vcuEstimatePath) return []
+    const base = (vcuEntityType === "project" ? calculatedProjects : projectForms) ?? []
+    return base.filter(vc => !revokedFormTs.has(vc.consensusTimestamp))
+  }, [vcuEstimatePath, vcuEntityType, calculatedProjects, projectForms, revokedFormTs])
   const projectFormQueries = useQueries({
-    queries: (vcuEstimatePath ? projectForms ?? [] : []).map((vc) => ({
+    queries: vcuSourceVcs.map((vc) => ({
       queryKey: ["vc-document", network, vc.consensusTimestamp],
       queryFn: () => getVcDocument(vc.consensusTimestamp, network),
       staleTime: 15 * 60 * 1000,
       retry: false,
-      enabled: !!projectForms,
+      enabled: vcuSourceVcs.length > 0,
     })),
   })
 
@@ -188,15 +216,19 @@ export function useDashboardStats() {
     })
   }, [reportData])
 
+  const revokedProjectCount = revokedFormTs.size
+
   return {
     issuanceCount: approvedReports?.length ?? 0,
     projectCount: projects?.length ?? 0,
     projectFormCount: projectForms?.length ?? 0,
+    revokedProjectCount,
+    activeProjectFormCount: Math.max(0, (projectForms?.length ?? 0) - revokedProjectCount),
     mrvBatchCount: mrvReports?.length ?? 0,
     totalERy: reportData?.totalERy ?? estimatedVCUs ?? null,
     totalDevices,
     chartData,
     validationStage,
-    isLoading: loadingAR || loadingProj || loadingPF || loadingMRV || loadingDetails,
+    isLoading: loadingAR || loadingProj || loadingPF || loadingMRV || loadingDetails || loadingCalc,
   }
 }

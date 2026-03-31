@@ -33,10 +33,10 @@ export const vm0033: PolicyConfig = {
       {
         key: "projects",
         label: "Registered Projects",
-        description: "Projects submitted to this policy",
+        description: "Active projects submitted to this policy",
         icon: "IconSitemap",
-        source: "count",
-        entityType: "project_form",
+        source: "computed",
+        valuePath: "activeProjectFormCount",
         format: "number",
       },
       {
@@ -68,11 +68,14 @@ export const vm0033: PolicyConfig = {
         format: "tco2e",
       },
     ],
-    charts: ["project-overview"],
+    charts: ["vcu-projections", "project-geographies"],
+    recentTable: "projects",
   },
 
   statsExtractors: {
-    vcuEstimatePath: "total_vcus",
+    // VCU total is in the project_form VC, under the net_ERR object computed
+    // by the policy engine and stored back into the project_form credential subject.
+    vcuEstimatePath: "project_data_per_instance.0.project_instance.net_ERR.total_VCU_per_instance",
   },
 
   lifecycleStages: [

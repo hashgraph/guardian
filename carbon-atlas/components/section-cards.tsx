@@ -135,6 +135,7 @@ export function SectionCards() {
     issuanceCount: stats.issuanceCount,
     projectCount: stats.projectCount,
     projectFormCount: stats.projectFormCount,
+    activeProjectFormCount: stats.activeProjectFormCount,
     mrvBatchCount: stats.mrvBatchCount,
   }
 

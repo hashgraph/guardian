@@ -92,6 +92,10 @@ export default function ProjectsPage() {
                         className={
                           stage === "Validated"
                             ? "text-green-700 border-green-300 bg-green-50 text-xs"
+                            : stage === "Calculated"
+                            ? "text-blue-700 border-blue-300 bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:bg-blue-950/30 text-xs"
+                            : stage === "Revoked"
+                            ? "text-destructive border-destructive/30 bg-destructive/5 text-xs"
                             : "text-muted-foreground text-xs"
                         }
                       >
