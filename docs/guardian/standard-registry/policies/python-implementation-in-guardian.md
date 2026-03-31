@@ -169,18 +169,17 @@ Runs Python code in an ephemeral Docker container using native CPython 3.12. Pro
 ```bash
 docker buildx build -t guardian/python-sandbox:latest policy-service/docker/python-sandbox
 ```
-Or via docker-compose:
+Or uncomment the `python-sandbox` image build definition in the compose file and run:
 ```bash
 docker compose -f docker-compose-build.yml build python-sandbox
 ```
 
-2. Set the environment variable in policy-service configuration:
-```
-PYTHON_SANDBOX_MODE=docker
-```
+2. Set `PYTHON_SANDBOX_MODE=docker` in `configs/.env..guardian.system` (or the corresponding system env file for your environment). The variable is present as a commented-out example in all env templates.
 
-3. Ensure the policy-service container has Docker socket access. For docker-compose deployments, uncomment the Docker socket volume mount and the `python-sandbox` image build definition in the relevant compose file:
-   - `docker-compose-build.yml`, `docker-compose.yml`, `docker-compose-production.yml`, `docker-compose-production-build.yml`, `docker-compose-quickstart.yml` — uncomment the Docker socket volume and `python-sandbox` image build
+3. For docker-compose deployments, uncomment the Docker socket volume mount for policy-service in the relevant compose file:
+   - `docker-compose-build.yml`, `docker-compose.yml`, `docker-compose-production.yml`, `docker-compose-production-build.yml`, `docker-compose-quickstart.yml`
+   - The socket must be mounted without `:ro` (policy-service needs read-write access to communicate with the Docker daemon)
+   - For non-Docker deployments (running services directly), skip this step — Docker socket is already accessible on the host
 
 {% hint style="warning" %}
 Docker mode requires the Docker daemon to be available. The policy-service needs access to the Docker socket to spawn sandbox containers. For production deployments, consider using a Docker API proxy to restrict operations to sandbox container management only.

@@ -134,7 +134,7 @@ services:
       - ./policy-service/tls:/usr/local/app/tls:ro
       - ./policy-service/configs:/usr/local/app/configs:ro
       # Uncomment for PYTHON_SANDBOX_MODE=docker:
-      # - /var/run/docker.sock:/var/run/docker.sock:ro
+      # - /var/run/docker.sock:/var/run/docker.sock
     <<: *service-template
     expose:
       - '5006'
