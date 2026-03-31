@@ -4,17 +4,14 @@ The Market Explorer extends Carbon Atlas with a comprehensive carbon market data
 
 ## Screenshots
 
-### Market Dashboard
-![Market Dashboard](screenshots/market-dashboard.png)
+### Market Overview
+![Market Overview](screenshots/market-overview.png)
 
-### Projects List
-![Projects List](screenshots/market-projects.png)
+### All Projects
+![All Projects](screenshots/market-projects-list.png)
 
 ### Project Detail
 ![Project Detail](screenshots/market-project-detail.png)
-
-### MECD Dashboard (existing Carbon Atlas)
-![MECD Dashboard](screenshots/mecd-dashboard.png)
 
 ## Architecture
 
