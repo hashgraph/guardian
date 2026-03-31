@@ -48068,6 +48068,508 @@ paths:
       summary: Delete task
       tags:
         - worker-tasks
+  /credentials/services:
+    get:
+      operationId: CredentialsApi_getServiceSchemas
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Get supported external service credential schemas.
+      tags:
+        - credentials
+  /credentials/user/global:
+    get:
+      operationId: CredentialsApi_getUserGlobalCredentials
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Get user global credentials.
+      tags:
+        - credentials
+    put:
+      operationId: CredentialsApi_setUserGlobalCredential
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Set user global credential.
+      tags:
+        - credentials
+    delete:
+      operationId: CredentialsApi_deleteUserGlobalCredential
+      parameters:
+        - name: serviceType
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: dryRun
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Delete user global credential.
+      tags:
+        - credentials
+  /credentials/user/policy/{policyId}:
+    get:
+      operationId: CredentialsApi_getUserPolicyCredentials
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Get user policy credentials.
+      tags:
+        - credentials
+    put:
+      operationId: CredentialsApi_setUserPolicyCredential
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Set user policy credential.
+      tags:
+        - credentials
+    delete:
+      operationId: CredentialsApi_deleteUserPolicyCredential
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: serviceType
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: dryRun
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Delete user policy credential.
+      tags:
+        - credentials
+  /credentials/user/sr-global:
+    get:
+      operationId: CredentialsApi_getSrGlobalCredentialsForUser
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Get SR global credentials visible to the current user (read-only).
+      tags:
+        - credentials
+  /credentials/user/sr-policy/{policyId}:
+    get:
+      operationId: CredentialsApi_getSrPolicyCredentialsForUser
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Get SR policy credentials visible to the current user (read-only).
+      tags:
+        - credentials
+  /credentials/sr/global:
+    get:
+      operationId: CredentialsApi_getSrGlobalCredentials
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Get SR global credentials.
+      tags:
+        - credentials
+    put:
+      operationId: CredentialsApi_setSrGlobalCredential
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Set SR global credential.
+      tags:
+        - credentials
+    delete:
+      operationId: CredentialsApi_deleteSrGlobalCredential
+      parameters:
+        - name: serviceType
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: dryRun
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Delete SR global credential.
+      tags:
+        - credentials
+  /credentials/sr/policy/{policyId}:
+    get:
+      operationId: CredentialsApi_getSrPolicyCredentials
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Get SR policy credentials.
+      tags:
+        - credentials
+    put:
+      operationId: CredentialsApi_setSrPolicyCredential
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Set SR policy credential.
+      tags:
+        - credentials
+    delete:
+      operationId: CredentialsApi_deleteSrPolicyCredential
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: serviceType
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: dryRun
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Delete SR policy credential.
+      tags:
+        - credentials
 info:
   title: Guardian
   description: >-
@@ -54916,6 +55418,10 @@ components:
               - ACCESS_POLICY_ASSIGNED
               - ACCESS_POLICY_PUBLISHED
               - ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
+              - CREDENTIALS_USER_READ
+              - CREDENTIALS_USER_WRITE
+              - CREDENTIALS_SR_READ
+              - CREDENTIALS_SR_WRITE
               - DELEGATION_ROLE_MANAGE
         default:
           type: boolean
@@ -55014,6 +55520,10 @@ components:
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
             - ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
+            - CREDENTIALS_USER_READ
+            - CREDENTIALS_USER_WRITE
+            - CREDENTIALS_SR_READ
+            - CREDENTIALS_SR_WRITE
             - DELEGATION_ROLE_MANAGE
           example: ANALYTIC_POLICY_READ
         category:
@@ -55044,6 +55554,7 @@ components:
             - STATISTICS
             - FORMULAS
             - WORKER_TASKS
+            - CREDENTIALS
           example: ANALYTIC
         entity:
           type: string
@@ -55087,6 +55598,7 @@ components:
             - FORMULA
             - EXTERNAL_POLICY
             - WORKER_TASK
+            - CREDENTIAL
           example: POLICY
         action:
           type: string
