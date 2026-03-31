@@ -25,7 +25,7 @@ import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/a
 import { MockDialog } from '../../dialogs/mock-dialog/mock-dialog.component';
 
 type MockItemType = 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
-const MockTabs = ['IPFS', 'Topics', 'API'];
+const MockTabs = ['API', 'IPFS', 'Topics'];
 
 /**
  * Component for choosing a policy and
