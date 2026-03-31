@@ -8828,10 +8828,10 @@ paths:
       summary: Get dry-run details (Files).
       tags:
         - policies
-  /policies/{policyId}/dry-run/mockup/config:
+  /policies/{policyId}/dry-run/mock/config:
     get:
-      description: Get mockup config.
-      operationId: PolicyApi_getMockupConfig
+      description: Get mock config.
+      operationId: PolicyApi_getMockConfig
       parameters:
         - name: policyId
           required: true
@@ -8846,7 +8846,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MockUpConfigDTO'
+                $ref: '#/components/schemas/MockConfigDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -8859,12 +8859,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Get mockup config.
+      summary: Get mock config.
       tags:
         - policies
     post:
-      description: Set mockup config.
-      operationId: PolicyApi_setMockupConfig
+      description: Set mock config.
+      operationId: PolicyApi_setMockConfig
       parameters:
         - name: policyId
           required: true
@@ -8879,14 +8879,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MockUpConfigDTO'
+              $ref: '#/components/schemas/MockConfigDTO'
       responses:
         '200':
           description: Config
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MockUpConfigDTO'
+                $ref: '#/components/schemas/MockConfigDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -8899,13 +8899,13 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Set mockup config.
+      summary: Set mock config.
       tags:
         - policies
-  /policies/{policyId}/dry-run/mockup/data:
+  /policies/{policyId}/dry-run/mock/data:
     get:
-      description: Get mockup data.
-      operationId: PolicyApi_getMockupData
+      description: Get mock data.
+      operationId: PolicyApi_getMockData
       parameters:
         - name: policyId
           required: true
@@ -8920,7 +8920,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MockUpDataDTO'
+                $ref: '#/components/schemas/MockDataDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -8933,11 +8933,11 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Get mockup data.
+      summary: Get mock data.
       tags:
         - policies
     post:
-      description: Set mockup data.
+      description: Set mock data.
       operationId: PolicyApi_updateMockData
       parameters:
         - name: policyId
@@ -8953,14 +8953,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MockUpDataDTO'
+              $ref: '#/components/schemas/MockDataDTO'
       responses:
         '200':
           description: Data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MockUpDataDTO'
+                $ref: '#/components/schemas/MockDataDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -8973,13 +8973,13 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Set mockup data.
+      summary: Set mock data.
       tags:
         - policies
-  /policies/{policyId}/dry-run/mockup/import:
+  /policies/{policyId}/dry-run/mock/import:
     post:
-      description: Import MockUp from a zip file.
-      operationId: PolicyApi_importMockup
+      description: Import Mock from a zip file.
+      operationId: PolicyApi_importMock
       parameters:
         - name: policyId
           required: true
@@ -8990,7 +8990,7 @@ paths:
             type: string
       requestBody:
         required: true
-        description: A zip file containing MockUp to be imported.
+        description: A zip file containing Mock to be imported.
         content:
           application/json:
             schema:
@@ -9014,12 +9014,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Import MockUp from a zip file.
+      summary: Import Mock from a zip file.
       tags:
         - policies
-  /policies/{policyId}/dry-run/mockup/export:
+  /policies/{policyId}/dry-run/mock/export:
     get:
-      description: Returns a zip file containing MockUp.
+      description: Returns a zip file containing Mock.
       operationId: PolicyApi_exportFormula
       parameters:
         - name: policyId
@@ -9044,12 +9044,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Returns a zip file containing MockUp.
+      summary: Returns a zip file containing Mock.
       tags:
         - policies
-  /policies/{policyId}/dry-run/mockup/request/api:
+  /policies/{policyId}/dry-run/mock/request/api:
     post:
-      description: Mockup request (API).
+      description: Mock request (API).
       operationId: PolicyApi_mockApiRequest
       parameters:
         - name: policyId
@@ -9065,7 +9065,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MockUpApiRequestDTO'
+              $ref: '#/components/schemas/MockApiRequestDTO'
       responses:
         '200':
           description: Successful operation
@@ -9085,12 +9085,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Mockup request (API).
+      summary: Mock request (API).
       tags:
         - policies
-  /policies/{policyId}/dry-run/mockup/request/ipfs:
+  /policies/{policyId}/dry-run/mock/request/ipfs:
     post:
-      description: Mockup request (IPFS).
+      description: Mock request (IPFS).
       operationId: PolicyApi_mockIpfsRequest
       parameters:
         - name: policyId
@@ -9106,7 +9106,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MockUpIpfsRequestDTO'
+              $ref: '#/components/schemas/MockIpfsRequestDTO'
       responses:
         '200':
           description: Successful operation.
@@ -9127,7 +9127,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Mockup request (IPFS).
+      summary: Mock request (IPFS).
       tags:
         - policies
   /policies/{policyId}/multiple:
@@ -21822,26 +21822,26 @@ components:
             type: string
       required:
         - hardDeletedIds
-    MockUpBlockConfigDTO:
+    MockBlockConfigDTO:
       type: object
       properties:
         uuid:
           type: string
           example: 00000000-0000-0000-0000-000000000000
-        enable:
+        enabled:
           type: boolean
           example: true
-    MockUpConfigDTO:
+    MockConfigDTO:
       type: object
       properties:
-        enable:
+        enabled:
           type: boolean
           example: true
         blocks:
           type: array
           items:
-            $ref: '#/components/schemas/MockUpBlockConfigDTO'
-    MockUpIpfsDataDTO:
+            $ref: '#/components/schemas/MockBlockConfigDTO'
+    MockIpfsDataDTO:
       type: object
       properties:
         cid:
@@ -21849,7 +21849,7 @@ components:
           example: 00000000-0000-0000-0000-000000000000
         content:
           type: string
-    MockUpTopicTransactionDTO:
+    MockTopicTransactionDTO:
       type: object
       properties:
         id:
@@ -21864,7 +21864,7 @@ components:
         topic_id:
           type: string
           example: 0.0.1
-    MockUpMessageTransactionDTO:
+    MockMessageTransactionDTO:
       type: object
       properties:
         consensus_timestamp:
@@ -21888,19 +21888,19 @@ components:
         topic_id:
           type: string
           example: 0.0.1
-    MockUpTopicDataDTO:
+    MockTopicDataDTO:
       type: object
       properties:
         topicId:
           type: string
           example: 0.0.1
         topic:
-          $ref: '#/components/schemas/MockUpTopicTransactionDTO'
+          $ref: '#/components/schemas/MockTopicTransactionDTO'
         messages:
           type: array
           items:
-            $ref: '#/components/schemas/MockUpMessageTransactionDTO'
-    MockUpTokenDataDTO:
+            $ref: '#/components/schemas/MockMessageTransactionDTO'
+    MockTokenDataDTO:
       type: object
       properties:
         id:
@@ -21939,7 +21939,7 @@ components:
         wipe_key:
           type: boolean
           example: true
-    MockUpRequestConfigDTO:
+    MockRequestConfigDTO:
       type: object
       properties:
         method:
@@ -21951,15 +21951,15 @@ components:
         url:
           type: string
           example: http://localhost:4200/
-    MockUpApiDataDTO:
+    MockApiDataDTO:
       type: object
       properties:
         request:
-          $ref: '#/components/schemas/MockUpRequestConfigDTO'
+          $ref: '#/components/schemas/MockRequestConfigDTO'
         response:
           type: string
           example: JSON
-    MockUpUserDataDTO:
+    MockUserDataDTO:
       type: object
       properties:
         username:
@@ -21976,30 +21976,30 @@ components:
           type: string
         document:
           $ref: '#/components/schemas/DidDocumentDTO'
-    MockUpDataDTO:
+    MockDataDTO:
       type: object
       properties:
         ipfs:
           type: array
           items:
-            $ref: '#/components/schemas/MockUpIpfsDataDTO'
+            $ref: '#/components/schemas/MockIpfsDataDTO'
         topics:
           type: array
           items:
-            $ref: '#/components/schemas/MockUpTopicDataDTO'
+            $ref: '#/components/schemas/MockTopicDataDTO'
         tokens:
           type: array
           items:
-            $ref: '#/components/schemas/MockUpTokenDataDTO'
+            $ref: '#/components/schemas/MockTokenDataDTO'
         api:
           type: array
           items:
-            $ref: '#/components/schemas/MockUpApiDataDTO'
+            $ref: '#/components/schemas/MockApiDataDTO'
         users:
           type: array
           items:
-            $ref: '#/components/schemas/MockUpUserDataDTO'
-    MockUpApiRequestDTO:
+            $ref: '#/components/schemas/MockUserDataDTO'
+    MockApiRequestDTO:
       type: object
       properties:
         type:
@@ -22012,7 +22012,7 @@ components:
           type: object
         headers:
           type: object
-    MockUpIpfsRequestDTO:
+    MockIpfsRequestDTO:
       type: object
       properties:
         cid:
