@@ -35,6 +35,7 @@
     "react-dom": "19.2.3",
     "react-leaflet": "^5.0.0",
     "react-leaflet-markercluster": "^5.0.0-rc.0",
+    "react-simple-maps": "^3.0.0",
     "recharts": "^2.15.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
