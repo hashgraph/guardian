@@ -79,11 +79,6 @@ import { PolicyCommentsUtils } from './policy-comments-utils.js';
 import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
 
 /**
- * Alias regex: lowercase alphanumeric and hyphens only
- */
-const ALIAS_REGEX = /^[a-z0-9-]+$/;
-
-/**
  * Build technical and DMRV URLs for user-configured documentation entries.
  * Called on policy save to enrich entries with generated URLs.
  */
