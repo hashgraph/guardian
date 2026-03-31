@@ -125,10 +125,14 @@ export function runPythonInDocker(
                 const msg = JSON.parse(line);
                 switch (msg.type) {
                     case 'done':
-                        if (!settled) callbacks.onDone(msg.result, msg.final);
+                        if (!settled) {
+                            callbacks.onDone(msg.result, msg.final);
+                        }
                         break;
                     case 'debug':
-                        if (!settled) callbacks.onDebug(msg.result);
+                        if (!settled) {
+                            callbacks.onDebug(msg.result);
+                        }
                         break;
                     case 'error':
                         settle(new Error(msg.error || 'Unknown error from Python sandbox'));
