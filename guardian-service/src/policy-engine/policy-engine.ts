@@ -711,6 +711,7 @@ export class PolicyEngine extends NatsService {
         const STEP_DELETE_SCHEMAS = 'Delete schemas';
         const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
         const STEP_DELETE_TESTS = 'Delete tests';
+        const STEP_DELETE_CREDENTIALS = 'Delete credentials';
         const STEP_DELETE_POLICY = 'Delete policy from DB';
         // Steps -->
 
@@ -718,6 +719,7 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_DELETE_SCHEMAS);
         notifier.addStep(STEP_DELETE_ARTIFACTS);
         notifier.addStep(STEP_DELETE_TESTS);
+        notifier.addStep(STEP_DELETE_CREDENTIALS);
         notifier.addStep(STEP_DELETE_POLICY);
         notifier.start();
 
@@ -764,6 +766,10 @@ export class PolicyEngine extends NatsService {
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_TESTS);
 
+        notifier.startStep(STEP_DELETE_CREDENTIALS);
+        await DatabaseServer.deletePolicyCredentials(policyToDelete.id, user.id);
+        notifier.completeStep(STEP_DELETE_CREDENTIALS);
+
         notifier.startStep(STEP_DELETE_POLICY);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
@@ -792,6 +798,7 @@ export class PolicyEngine extends NatsService {
         const STEP_DELETE_SCHEMAS = 'Delete schemas';
         const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
         const STEP_DELETE_TESTS = 'Delete tests';
+        const STEP_DELETE_CREDENTIALS = 'Delete credentials';
         const STEP_DELETE_POLICY = 'Delete policy from DB';
         // Steps -->
 
@@ -799,6 +806,7 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_DELETE_SCHEMAS);
         notifier.addStep(STEP_DELETE_ARTIFACTS);
         notifier.addStep(STEP_DELETE_TESTS);
+        notifier.addStep(STEP_DELETE_CREDENTIALS);
         notifier.addStep(STEP_DELETE_POLICY);
         notifier.start();
 
@@ -846,6 +854,10 @@ export class PolicyEngine extends NatsService {
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_TESTS);
 
+        notifier.startStep(STEP_DELETE_CREDENTIALS);
+        await DatabaseServer.deletePolicyCredentials(policyToDelete.id, user.id);
+        notifier.completeStep(STEP_DELETE_CREDENTIALS);
+
         notifier.startStep(STEP_DELETE_POLICY);
         await DatabaseServer.deletePolicy(policyToDelete.id);
         notifier.completeStep(STEP_DELETE_POLICY);
@@ -873,6 +885,7 @@ export class PolicyEngine extends NatsService {
         const STEP_DELETE_SCHEMAS = 'Delete schemas';
         const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
         const STEP_DELETE_TESTS = 'Delete tests';
+        const STEP_DELETE_CREDENTIALS = 'Delete credentials';
         const STEP_DELETE_POLICY_MESSAGE = 'Publishing delete policy message';
         const STEP_DELETE_POLICY = 'Delete policy from DB';
         // Steps -->
@@ -880,6 +893,7 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_DELETE_SCHEMAS);
         notifier.addStep(STEP_DELETE_ARTIFACTS);
         notifier.addStep(STEP_DELETE_TESTS);
+        notifier.addStep(STEP_DELETE_CREDENTIALS);
         notifier.addStep(STEP_DELETE_POLICY_MESSAGE);
         notifier.addStep(STEP_DELETE_POLICY);
         notifier.start();
@@ -945,6 +959,10 @@ export class PolicyEngine extends NatsService {
                 interception: null
             });
         notifier.completeStep(STEP_DELETE_POLICY_MESSAGE);
+
+        notifier.startStep(STEP_DELETE_CREDENTIALS);
+        await DatabaseServer.deletePolicyCredentials(policyToDelete.id, user.id);
+        notifier.completeStep(STEP_DELETE_CREDENTIALS);
 
         notifier.startStep(STEP_DELETE_POLICY);
         await DatabaseServer.deletePolicy(policyToDelete.id);

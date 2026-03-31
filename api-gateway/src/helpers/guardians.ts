@@ -4071,4 +4071,50 @@ export class Guardians extends NatsService {
     ): Promise<ResponseAndCount<any>> {
         return await this.sendMessage(MessageAPI.GET_RELAYER_ACCOUNT_RELATIONSHIPS, { relayerAccountId, user, filters });
     }
+
+    /**
+     * Set credential
+     */
+    public async setCredential(
+        user: IAuthUser,
+        policyId: string | null,
+        body: any
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.SET_CREDENTIAL, {
+            user,
+            policyId,
+            serviceType: body.serviceType,
+            dryRun: !!body.dryRun,
+            fields: body.fields,
+        });
+    }
+
+    /**
+     * Get credentials
+     */
+    public async getCredentials(
+        user: IAuthUser,
+        policyId: string | null,
+        ownerId?: string
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_CREDENTIALS, { user, policyId, ownerId });
+    }
+
+    /**
+     * Delete credential
+     */
+    public async deleteCredential(
+        user: IAuthUser,
+        policyId: string | null,
+        serviceType: string,
+        dryRun: boolean = false
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.DELETE_CREDENTIAL, {
+            user,
+            policyId,
+            serviceType,
+            dryRun,
+        });
+    }
+
 }

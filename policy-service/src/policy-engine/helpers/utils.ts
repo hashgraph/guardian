@@ -2012,4 +2012,52 @@ export class PolicyUtils {
             }
         }
     }
+
+    /**
+     * Get integration credentials for a user and service type.
+     * Priority: policyId-specific first, then global (null policyId).
+     * Returns token string or null if not found.
+     */
+    public static async getIntegrationUserCredentials(
+        ref: AnyBlockType,
+        user: PolicyUser,
+        serviceType: string
+    ): Promise<string | null> {
+        if (!user || !user.did) {
+            return null;
+        }
+
+        const dryRun = !!ref.dryRun;
+
+        // Precedence: user+policy → user+global → SR+policy → SR+global
+        const lookups = [
+            { ownerId: user.did, policyId: ref.policyId },
+            { ownerId: user.did, policyId: null },
+            { ownerId: ref.policyOwner, policyId: ref.policyId },
+            { ownerId: ref.policyOwner, policyId: null },
+        ];
+
+        let record: any = null;
+        for (const { ownerId, policyId } of lookups) {
+            record = await ref.databaseServer.getExternalCredential({ ownerId, serviceType, policyId, dryRun });
+            if (record) {
+                break;
+            }
+        }
+
+        if (!record) {
+            return null;
+        }
+
+        // Get secret key from Wallet
+        try {
+            const keyPath = `${record.serviceType}/${record.policyId || 'global'}/${record.dryRun ? 'dryrun' : 'production'}`;
+            const token = await PolicyUtils.getAccountKey(
+                ref, record.ownerId, KeyType.INTEGRATION_KEY, keyPath, user.userId
+            );
+            return token || null;
+        } catch (e) {
+            return null;
+        }
+    }
 }

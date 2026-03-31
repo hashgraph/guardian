@@ -5,15 +5,11 @@ import {
   MethodMap
 } from '../base-integration-service.js';
 
-type ServiceConfig = {
-  token?: string;
-}
-
 export class WorldBankService extends BaseIntegrationService {
   private readonly client: AxiosInstance;
   static readonly baseUrl: string = 'https://api.worldbank.org';
 
-  constructor(config: ServiceConfig = {}) {
+  constructor() {
     super();
 
     this.client = axios.create({
