@@ -8830,7 +8830,9 @@ paths:
         - policies
   /policies/{policyId}/dry-run/mock/config:
     get:
-      description: Get mock config.
+      description: >-
+        Returns the current mock configuration for the policy's dry-run session,
+        including the master enabled flag and the per-block enable/disable map.
       operationId: PolicyApi_getMockConfig
       parameters:
         - name: policyId
@@ -8859,11 +8861,13 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Get mock config.
+      summary: Get Mock Configuration.
       tags:
         - policies
     post:
-      description: Set mock config.
+      description: >-
+        Updates the mock configuration — master toggle and/or per-block
+        overrides.
       operationId: PolicyApi_setMockConfig
       parameters:
         - name: policyId
@@ -8899,12 +8903,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Set mock config.
+      summary: Update Mock Configuration.
       tags:
         - policies
   /policies/{policyId}/dry-run/mock/data:
     get:
-      description: Get mock data.
+      description: >-
+        Returns all currently stored mock entries (IPFS, Topics, Tokens, and
+        API) for this policy.
       operationId: PolicyApi_getMockData
       parameters:
         - name: policyId
@@ -8933,11 +8939,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Get mock data.
+      summary: Get Stored Mock Data.
       tags:
         - policies
     post:
-      description: Set mock data.
+      description: >-
+        Saves (creates or updates) mock data entries. The request body follows
+        the same schema as the GET response above. Existing entries for the same
+        key are overwritten; all other existing entries are preserved.
       operationId: PolicyApi_updateMockData
       parameters:
         - name: policyId
@@ -8973,12 +8982,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Set mock data.
+      summary: Save Mock Data.
       tags:
         - policies
   /policies/{policyId}/dry-run/mock/import:
     post:
-      description: Import Mock from a zip file.
+      description: >-
+        Imports mock data from a previously exported `.mock` file and merges it
+        into the current mock dataset.
       operationId: PolicyApi_importMock
       parameters:
         - name: policyId
@@ -9014,12 +9025,15 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Import Mock from a zip file.
+      summary: Import Mock Data.
       tags:
         - policies
   /policies/{policyId}/dry-run/mock/export:
     get:
-      description: Returns a zip file containing Mock.
+      description: >-
+        Exports all stored mock data as a downloadable compressed '.mock' file
+        (zip), which contains separate files for each data type. The response is
+        streamed with 'Content-Disposition: attachment'.
       operationId: PolicyApi_exportFormula
       parameters:
         - name: policyId
@@ -9044,12 +9058,16 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Returns a zip file containing Mock.
+      summary: Export Mock Data.
       tags:
         - policies
   /policies/{policyId}/dry-run/mock/request/api:
     post:
-      description: Mock request (API).
+      description: >-
+        Triggers a mocked external API call on behalf of a policy block whose
+        logic executes on the 'frontend' (client-side code blocks). The server
+        resolves the request against the stored API mock entries and returns the
+        configured response.
       operationId: PolicyApi_mockApiRequest
       parameters:
         - name: policyId
@@ -9085,12 +9103,15 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Mock request (API).
+      summary: Execute API Mock Request (Frontend Blocks).
       tags:
         - policies
   /policies/{policyId}/dry-run/mock/request/ipfs:
     post:
-      description: Mock request (IPFS).
+      description: >-
+        Triggers a mocked IPFS file retrieval on behalf of a policy block whose
+        logic executes on the 'frontend'. The server resolves the CID against
+        the stored IPFS mock entries and returns the configured payload.
       operationId: PolicyApi_mockIpfsRequest
       parameters:
         - name: policyId
@@ -9127,7 +9148,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Mock request (IPFS).
+      summary: Execute IPFS Mock Request (Frontend Blocks).
       tags:
         - policies
   /policies/{policyId}/multiple:
