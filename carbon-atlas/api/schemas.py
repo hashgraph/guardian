@@ -140,6 +140,7 @@ class MarketStats(BaseModel):
     num_registries: int
     by_registry: dict[str, int]
     by_category: dict[str, int]
+    last_synced_at: str | None = None
 
 
 class VintageDataPoint(BaseModel):

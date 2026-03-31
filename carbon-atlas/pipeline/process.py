@@ -76,8 +76,8 @@ REGISTRY_CONFIG = {
     "gold-standard": {
         "projects": "projects.csv",
         "credits": [
-            {"file": "GSF Registry Credits Export 2026-03-12-issuances.csv", "type": "issuance"},
-            {"file": "GSF Registry Credits Export 2026-03-12-retirements.csv", "type": "retirement"},
+            {"file": "GSF Registry Credits Export 2026-03-31-issuances.csv", "type": "issuance"},
+            {"file": "GSF Registry Credits Export 2026-03-31-retirements.csv", "type": "retirement"},
         ],
     },
     "american-carbon-registry": {
@@ -597,6 +597,13 @@ async def upsert_to_db(
         if all_events:
             print(f"\n── Inserting {len(all_events)} Events ──")
             session.add_all(all_events)
+
+        # Record pipeline sync timestamp
+        session.add(Event(
+            event_type="pipeline_sync",
+            project_id="__system__",
+            timestamp=datetime.utcnow(),
+        ))
 
         await session.commit()
         print("  Committed all changes")

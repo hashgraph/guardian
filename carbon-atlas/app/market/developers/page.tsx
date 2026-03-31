@@ -52,6 +52,7 @@ import {
 } from "@/components/ui/tooltip"
 import { useMarketDevelopers, useMarketDeveloperCountries } from "@/hooks/useMarketData"
 import { registryDisplayName } from "@/lib/types/market"
+import { DataFreshnessInfo } from "@/components/market/data-freshness-info"
 import type { DeveloperFilters } from "@/lib/types/market"
 
 const PAGE_SIZE = 25
@@ -167,6 +168,7 @@ export default function DevelopersPage() {
             Organizations developing carbon offset projects
             {data ? ` (${data.total.toLocaleString()} total)` : ""}
           </p>
+          <DataFreshnessInfo className="mt-1.5" />
         </div>
       </div>
 

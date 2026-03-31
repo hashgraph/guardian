@@ -1,5 +1,17 @@
+import type { Metadata } from "next"
 import * as React from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
+
+export const metadata: Metadata = {
+  title: "Market Explorer",
+  description:
+    "Browse 10,570+ carbon offset projects across Verra, Gold Standard, ACR, CAR and ART TREES. Filter by registry, country, category, and CORSIA eligibility. Explore 3,700+ project developers and 2.47B credits issued.",
+  openGraph: {
+    title: "Market Explorer · Carbon Atlas",
+    description:
+      "Browse 10,570+ carbon offset projects across Verra, Gold Standard, ACR, CAR and ART TREES. Filter by registry, country, category, and CORSIA eligibility.",
+  },
+}
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (

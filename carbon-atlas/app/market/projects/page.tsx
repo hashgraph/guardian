@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/table"
 import { useMarketProjects } from "@/hooks/useMarketData"
 import { registryDisplayName } from "@/lib/types/market"
+import { DataFreshnessInfo } from "@/components/market/data-freshness-info"
 import type { MarketProjectFilters } from "@/lib/types/market"
 
 const PAGE_SIZE = 25
@@ -140,6 +141,7 @@ export default function MarketProjectsPage() {
             Carbon offset projects across all registries
             {data ? ` (${data.total.toLocaleString()} total)` : ""}
           </p>
+          <DataFreshnessInfo className="mt-1.5" />
         </div>
       </div>
 

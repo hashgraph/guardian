@@ -101,7 +101,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         {/* Methodology selector */}
         <SidebarGroup>
-          <SidebarGroupLabel>Methodologies</SidebarGroupLabel>
+          <SidebarGroupLabel>Digitized Methodologies</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {policies.map((p) => {

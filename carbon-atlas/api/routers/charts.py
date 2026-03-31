@@ -66,6 +66,15 @@ async def get_stats(
     )
     by_category = {c: n for c, n in (await session.execute(cat_stmt)).all() if c}
 
+    # Most recent pipeline sync timestamp
+    from api.db.models import Event
+    sync_stmt = (
+        select(func.max(Event.timestamp))
+        .where(Event.event_type == "pipeline_sync")
+    )
+    last_sync_ts = (await session.execute(sync_stmt)).scalar_one_or_none()
+    last_synced_at = last_sync_ts.date().isoformat() if last_sync_ts else None
+
     return MarketStats(
         total_projects=row.total_projects,
         total_issued=total_issued,
@@ -75,6 +84,7 @@ async def get_stats(
         num_registries=row.num_registries,
         by_registry=by_registry,
         by_category=by_category,
+        last_synced_at=last_synced_at,
     )
 
 

@@ -16,11 +16,20 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Carbon Atlas",
+  title: {
+    default: "Carbon Atlas",
+    template: "%s · Carbon Atlas",
+  },
   description:
-    "Traceable record of verified emission reductions under Gold Standard MECD v1.2 — Metered & Measured Energy Cooking Devices, anchored on Hedera via Guardian",
+    "Carbon Atlas – Explore comprehensive voluntary carbon market data across major registries. Discover 10,000+ carbon credit projects from Verra, Gold Standard, ACR, CAR, and ART TREES, and access digitized methodologies with transparent, auditable trails on the Hedera blockchain.",
   icons: {
     icon: "/hedera-logo.png",
+  },
+  openGraph: {
+    title: "Carbon Atlas",
+    description:
+      "Carbon Atlas – Explore comprehensive voluntary carbon market data across major registries. Discover 10,000+ carbon credit projects from Verra, Gold Standard, ACR, CAR, and ART TREES, and access digitized methodologies with transparent, auditable trails on the Hedera blockchain.",
+    siteName: "Carbon Atlas · CarbonMarketsHQ",
   },
 }
 

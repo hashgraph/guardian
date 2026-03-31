@@ -94,6 +94,7 @@ export interface MarketStats {
   num_registries: number
   by_registry: Record<string, number>
   by_category: Record<string, number>
+  last_synced_at: string | null
 }
 
 export interface VintageDataPoint {
