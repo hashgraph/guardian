@@ -341,7 +341,7 @@ export class Worker extends NatsService {
                             type: MockType.ADD_FILE,
                             data: {
                                 type: MockEntityType.FILE,
-                                content: MockHelper.getBuffet(fileContent)
+                                content: MockHelper.getBuffer(fileContent)
                             }
                         });
                     } else if (task.dryRun) {

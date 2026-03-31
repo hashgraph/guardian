@@ -160,7 +160,7 @@ export class MockHelper {
         throw new Error('Invalid method');
     }
 
-    public static getBuffet(content: Buffer<ArrayBufferLike>): string {
+    public static getBuffer(content: Buffer<ArrayBufferLike>): string {
         return content.toString('binary');
     }
 
