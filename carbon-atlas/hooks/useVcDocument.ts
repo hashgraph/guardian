@@ -3,10 +3,10 @@
 import { useQuery } from "@tanstack/react-query"
 import { getVcDocument } from "@/lib/api/vc-documents"
 import type { VCDetail } from "@/lib/types/indexer"
-import { useNetwork } from "@/providers/NetworkProvider"
+import { usePolicyNetwork } from "@/providers/PolicyNetworkProvider"
 
 export function useVcDocument(id: string | undefined) {
-  const { network } = useNetwork()
+  const { network } = usePolicyNetwork()
 
   return useQuery<VCDetail, Error>({
     queryKey: ["vc-document", network, id],

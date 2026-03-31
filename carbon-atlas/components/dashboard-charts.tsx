@@ -16,7 +16,11 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { DeviceMap } from "@/components/device-map"
+import { ProjectGeographiesMap } from "@/components/project-geographies-map"
+import { VcuProjectionsChart } from "@/components/vcu-projections-chart"
 import { useDashboardStats, type IssuanceDataPoint } from "@/hooks/useDashboardStats"
+import { usePolicyNetwork } from "@/providers/PolicyNetworkProvider"
+import type { ChartSlot } from "@/lib/policies/types"
 
 const chartConfig = {
   ery: {
@@ -27,11 +31,6 @@ const chartConfig = {
 
 const START_YEAR = 2021
 
-/**
- * Build yearly bars from START_YEAR through current year + 2.
- * Years without issuances show as empty bars, giving historical
- * context and room for future issuances.
- */
 function buildTimelineData(raw: IssuanceDataPoint[]) {
   const currentYear = new Date().getFullYear()
   const endYear = Math.max(currentYear + 1, START_YEAR + 5)
@@ -53,31 +52,6 @@ function buildTimelineData(raw: IssuanceDataPoint[]) {
   return points
 }
 
-export function DashboardCharts() {
-  const { chartData, isLoading } = useDashboardStats()
-
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2">
-        {[0, 1].map((i) => (
-          <Card key={i}>
-            <CardContent className="flex items-center justify-center h-[340px]">
-              <IconLoader className="size-5 animate-spin text-muted-foreground" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    )
-  }
-
-  return (
-    <div className="grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2">
-      <IssuanceChart data={chartData} />
-      <DeviceMap />
-    </div>
-  )
-}
-
 function IssuanceChart({ data }: { data: IssuanceDataPoint[] }) {
   const timelineData = buildTimelineData(data)
 
@@ -85,7 +59,7 @@ function IssuanceChart({ data }: { data: IssuanceDataPoint[] }) {
     <Card className="@container/card">
       <CardHeader>
         <CardTitle>Projected Emission Reductions Over Time</CardTitle>
-        <CardDescription>tCO₂e per year from approved monitoring reports (partial issuances)</CardDescription>
+        <CardDescription>tCO₂e per year from approved monitoring reports</CardDescription>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <ChartContainer
@@ -158,5 +132,111 @@ function IssuanceChart({ data }: { data: IssuanceDataPoint[] }) {
         </ChartContainer>
       </CardContent>
     </Card>
+  )
+}
+
+function ProjectOverviewChart() {
+  const { validationStage, activeProjectFormCount, revokedProjectCount, projectCount, issuanceCount } =
+    useDashboardStats()
+
+  const stages = [
+    { name: "Submitted", count: activeProjectFormCount, active: activeProjectFormCount > 0 },
+    { name: "Validated", count: projectCount, active: projectCount > 0 },
+    { name: "Issued", count: issuanceCount, active: issuanceCount > 0 },
+  ]
+
+  // Brief status description: show revoked count separately
+  const descParts: string[] = []
+  if (issuanceCount > 0) descParts.push(`${issuanceCount} issuing`)
+  if (projectCount > 0) descParts.push(`${projectCount} validated`)
+  if (activeProjectFormCount > 0) descParts.push(`${activeProjectFormCount} in progress`)
+  if (revokedProjectCount > 0) descParts.push(`${revokedProjectCount} revoked`)
+  const statusDesc = descParts.length > 0 ? descParts.join(", ") : "No projects yet"
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Project Lifecycle</CardTitle>
+        <CardDescription>
+          Current stage: {validationStage}
+          <span className="ml-2 text-xs">· {statusDesc}</span>
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center gap-2">
+          {stages.map((stage, i) => (
+            <div key={stage.name} className="flex items-center gap-2">
+              <div
+                className={`px-3 py-2 rounded-lg border text-sm ${
+                  stage.active
+                    ? "bg-primary/10 border-primary text-primary font-medium"
+                    : "bg-muted border-border text-muted-foreground"
+                }`}
+              >
+                {stage.name}
+                {stage.count > 0 && (
+                  <span className="ml-1.5 text-xs opacity-70">
+                    ({stage.count})
+                  </span>
+                )}
+              </div>
+              {i < stages.length - 1 && (
+                <div className="w-6 h-0.5 bg-border" />
+              )}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function ChartSlotRenderer({ slot }: { slot: ChartSlot }) {
+  const { chartData } = useDashboardStats()
+  switch (slot) {
+    case "emission-timeline":
+      return <IssuanceChart data={chartData} />
+    case "device-map":
+      return <DeviceMap />
+    case "project-overview":
+      return <ProjectOverviewChart />
+    case "project-geographies":
+      return <ProjectGeographiesMap />
+    case "vcu-projections":
+      return <VcuProjectionsChart />
+    case "none":
+      return null
+    default:
+      return null
+  }
+}
+
+export function DashboardCharts() {
+  const { policy } = usePolicyNetwork()
+  const { isLoading } = useDashboardStats()
+  const charts = policy.dashboard.charts
+
+  if (charts.length === 0 || charts.every((c) => c === "none")) return null
+
+  if (isLoading) {
+    return (
+      <div className={`grid grid-cols-1 gap-4 px-4 lg:px-6 ${charts.length > 1 ? "@xl/main:grid-cols-2" : ""}`}>
+        {charts.filter((c) => c !== "none").map((_, i) => (
+          <Card key={i}>
+            <CardContent className="flex items-center justify-center h-[340px]">
+              <IconLoader className="size-5 animate-spin text-muted-foreground" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className={`grid grid-cols-1 gap-4 px-4 lg:px-6 ${charts.length > 1 ? "@xl/main:grid-cols-2" : ""}`}>
+      {charts.map((slot, i) => (
+        <ChartSlotRenderer key={`${slot}-${i}`} slot={slot} />
+      ))}
+    </div>
   )
 }

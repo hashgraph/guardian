@@ -229,24 +229,62 @@ export function deduplicateProjects(
   allVcs: VCListItem[]
 ): { vc: VCListItem; developerDid: string | undefined; stage: string }[] {
   const byTs = new Map(allVcs.map((vc) => [vc.consensusTimestamp, vc]))
+  const byUuid = new Map(allVcs.filter(vc => vc.uuid).map((vc) => [vc.uuid!, vc]))
+
+  // Build set of UUIDs that have been revoked.
+  // Revoke events are separate VCListItem entries with status="REVOKE" that share
+  // the same UUID as the original VC they revoke.
+  const revokedUuids = new Set<string>()
+  for (const vc of allVcs) {
+    if (vc.status === "REVOKE" && vc.uuid) {
+      revokedUuids.add(vc.uuid)
+    }
+  }
+
   const approvedProjects = allVcs.filter(
     (vc) => vc.options?.entityType === "approved_project"
   )
   const projectForms = allVcs.filter(
     (vc) => vc.options?.entityType === "project_form"
   )
+  // Only include `project` (auto-calc) VCs whose UUID has NOT been revoked
+  const calculatedProjects = allVcs.filter(
+    (vc) => vc.options?.entityType === "project" && !revokedUuids.has(vc.uuid ?? "")
+  )
 
-  // Trace approved_project → project → project_form to find covered forms
+  // Build a set of project_form timestamps that are superseded by an ACTIVE (non-revoked)
+  // calculated `project` VC (project VC's relationships include the project_form).
+  const formsWithCalculation = new Set<string>()
+  for (const cp of calculatedProjects) {
+    for (const relTs of cp.options?.relationships ?? []) {
+      const rel = byTs.get(relTs)
+      if (rel?.options?.entityType === "project_form") {
+        formsWithCalculation.add(relTs)
+      }
+    }
+  }
+
+  // Build set of project_form timestamps whose companion `project` VC was revoked
+  const formsWithRevokedCalculation = new Set<string>()
+  for (const cp of allVcs.filter(vc => vc.options?.entityType === "project")) {
+    if (!cp.uuid || !revokedUuids.has(cp.uuid)) continue
+    for (const relTs of cp.options?.relationships ?? []) {
+      const rel = byTs.get(relTs)
+      if (rel?.options?.entityType === "project_form") {
+        formsWithRevokedCalculation.add(relTs)
+      }
+    }
+  }
+
+  // Trace approved_project → project → project_form to find validated forms
   const coveredFormTs = new Set<string>()
   const formForApproved = new Map<string, VCListItem>()
 
   for (const ap of approvedProjects) {
-    const rels = ap.options?.relationships ?? []
-    for (const relTs of rels) {
+    for (const relTs of ap.options?.relationships ?? []) {
       const rel = byTs.get(relTs)
       if (rel?.options?.entityType === "project") {
-        const projectRels = rel.options?.relationships ?? []
-        for (const pRelTs of projectRels) {
+        for (const pRelTs of rel.options?.relationships ?? []) {
           const pRel = byTs.get(pRelTs)
           if (pRel?.options?.entityType === "project_form") {
             coveredFormTs.add(pRelTs)
@@ -259,7 +297,7 @@ export function deduplicateProjects(
 
   const results: { vc: VCListItem; developerDid: string | undefined; stage: string }[] = []
 
-  // Approved projects — show as "Validated" with the developer's DID
+  // 1. Approved projects — show as "Validated"
   for (const ap of approvedProjects) {
     const form = formForApproved.get(ap.consensusTimestamp)
     results.push({
@@ -269,15 +307,23 @@ export function deduplicateProjects(
     })
   }
 
-  // Uncovered project_forms — projects not yet validated
+  // 2. All uncovered project_forms — show each one individually.
+  // Stage priority: Calculated > Submitted > Revoked
   for (const pf of projectForms) {
-    if (!coveredFormTs.has(pf.consensusTimestamp)) {
-      results.push({
-        vc: pf,
-        developerDid: pf.options?.issuer,
-        stage: "Submitted",
-      })
+    if (coveredFormTs.has(pf.consensusTimestamp)) continue
+    let stage: string
+    if (formsWithCalculation.has(pf.consensusTimestamp)) {
+      stage = "Calculated"
+    } else if (formsWithRevokedCalculation.has(pf.consensusTimestamp)) {
+      stage = "Revoked"
+    } else {
+      stage = "Submitted"
     }
+    results.push({
+      vc: pf,
+      developerDid: pf.options?.issuer,
+      stage,
+    })
   }
 
   return results
