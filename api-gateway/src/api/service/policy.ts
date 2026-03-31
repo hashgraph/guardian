@@ -4711,8 +4711,8 @@ export class PolicyApi {
     @Get('/:policyId/dry-run/mock/config')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Get mock config.',
-        description: 'Get mock config.',
+        summary: 'Get Mock Configuration.',
+        description: `Returns the current mock configuration for the policy's dry-run session, including the master enabled flag and the per-block enable/disable map.`,
     })
     @ApiParam({
         name: 'policyId',
@@ -4751,8 +4751,8 @@ export class PolicyApi {
     @Get('/:policyId/dry-run/mock/data')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Get mock data.',
-        description: 'Get mock data.',
+        summary: 'Get Stored Mock Data.',
+        description: 'Returns all currently stored mock entries (IPFS, Topics, Tokens, and API) for this policy.',
     })
     @ApiParam({
         name: 'policyId',
@@ -4791,8 +4791,8 @@ export class PolicyApi {
     @Post('/:policyId/dry-run/mock/data')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Set mock data.',
-        description: 'Set mock data.',
+        summary: 'Save Mock Data.',
+        description: 'Saves (creates or updates) mock data entries. The request body follows the same schema as the GET response above. Existing entries for the same key are overwritten; all other existing entries are preserved.',
     })
     @ApiParam({
         name: 'policyId',
@@ -4836,8 +4836,8 @@ export class PolicyApi {
     @Post('/:policyId/dry-run/mock/config')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Set mock config.',
-        description: 'Set mock config.',
+        summary: 'Update Mock Configuration.',
+        description: 'Updates the mock configuration — master toggle and/or per-block overrides.',
     })
     @ApiParam({
         name: 'policyId',
@@ -4881,8 +4881,8 @@ export class PolicyApi {
     @Post('/:policyId/dry-run/mock/import')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Import Mock from a zip file.',
-        description: 'Import Mock from a zip file.',
+        summary: 'Import Mock Data.',
+        description: 'Imports mock data from a previously exported `.mock` file and merges it into the current mock dataset.',
     })
     @ApiParam({
         name: 'policyId',
@@ -4928,8 +4928,8 @@ export class PolicyApi {
     @Get('/:policyId/dry-run/mock/export')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Returns a zip file containing Mock.',
-        description: 'Returns a zip file containing Mock.',
+        summary: 'Export Mock Data.',
+        description: `Exports all stored mock data as a downloadable compressed '.mock' file (zip), which contains separate files for each data type. The response is streamed with 'Content-Disposition: attachment'.`,
     })
     @ApiParam({
         name: 'policyId',
@@ -4970,8 +4970,8 @@ export class PolicyApi {
     @Post('/:policyId/dry-run/mock/request/api')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Mock request (API).',
-        description: 'Mock request (API).',
+        summary: 'Execute API Mock Request (Frontend Blocks).',
+        description: `Triggers a mocked external API call on behalf of a policy block whose logic executes on the 'frontend' (client-side code blocks). The server resolves the request against the stored API mock entries and returns the configured response.`,
     })
     @ApiParam({
         name: 'policyId',
@@ -5015,8 +5015,8 @@ export class PolicyApi {
     @Post('/:policyId/dry-run/mock/request/ipfs')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Mock request (IPFS).',
-        description: 'Mock request (IPFS).',
+        summary: 'Execute IPFS Mock Request (Frontend Blocks).',
+        description: `Triggers a mocked IPFS file retrieval on behalf of a policy block whose logic executes on the 'frontend'. The server resolves the CID against the stored IPFS mock entries and returns the configured payload.`,
     })
     @ApiParam({
         name: 'policyId',
