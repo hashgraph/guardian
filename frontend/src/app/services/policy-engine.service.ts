@@ -293,6 +293,10 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/blocks/about`);
     }
 
+    public getPolicyDocumentation(policyId: string): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/${policyId}/about`);
+    }
+
     public getVirtualUsers(policyId: string, savepointIds: string[] | null): Observable<any[]> {
         let params = new HttpParams();
 

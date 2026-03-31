@@ -179,6 +179,7 @@ const API = {
     RegWorkflowSteps: "tag/registrants_workflow_steps/blocks",
     Savepoint: "savepoints/",
     SavepointDelete: "savepoints/delete",
+    PolicyDocumentation: (policyId) => `${BASE}policies/${policyId}/about`,
     BlockByTag: (policyId, tag) => `${BASE}policies/${policyId}/tag/${tag}/blocks`,
  
     //Records

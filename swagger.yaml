@@ -5932,6 +5932,44 @@ paths:
       summary: Checks whether the user is disconnected from the policy or not.
       tags:
         - policies
+  /policies/{policyId}/about:
+    get:
+      description: >-
+        Returns a list of documented API actions with relative URLs for the
+        specified policy.
+      operationId: PolicyApi_getPolicyDocumentation
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Policy documentation entries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns auto-generated API documentation for the policy.
+      tags:
+        - policies
   /policies/{policyId}/publish:
     put:
       description: >-
@@ -9620,6 +9658,295 @@ paths:
       summary: Get all version VC documents.
       tags:
         - policies
+  /dmrv/{policyId}/{alias}:
+    get:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_get
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    post:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_post
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    put:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_put
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    delete:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_delete
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    patch:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_patch
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    options:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_options
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    head:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_head
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    search:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_search
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
   /schema/{schemaId}:
     get:
       description: >-
@@ -9731,6 +10058,57 @@ paths:
       security:
         - bearer: []
       summary: Returns schema tree.
+      tags:
+        - schema
+  /schema/{schemaId}/tree/export/plantuml:
+    get:
+      description: Returns schema tree as exportable PlantUML code.
+      operationId: SingleSchemaApi_getSchemaTreePlantUML
+      parameters:
+        - name: schemaId
+          required: true
+          in: path
+          description: Schema identifier
+          schema:
+            type: string
+        - name: includeFields
+          required: false
+          in: query
+          description: Include field names and descriptions in classes
+          schema:
+            type: boolean
+        - name: includeFormulas
+          required: false
+          in: query
+          description: Include formula components and links
+          schema:
+            type: boolean
+        - name: includeDependencies
+          required: false
+          in: query
+          description: Include dependent formulas referenced by directly linked formulas
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns schema tree in PlantUML format.
       tags:
         - schema
   /schema/{schemaId}/sample-payload:
@@ -19167,6 +19545,283 @@ paths:
       summary: Delete task
       tags:
         - worker-tasks
+  /credentials/services:
+    get:
+      operationId: CredentialsApi_getServiceSchemas
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Get supported external service credential schemas.
+      tags:
+        - credentials
+  /credentials/user/global:
+    get:
+      operationId: CredentialsApi_getUserGlobalCredentials
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Get user global credentials.
+      tags:
+        - credentials
+    put:
+      operationId: CredentialsApi_setUserGlobalCredential
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Set user global credential.
+      tags:
+        - credentials
+    delete:
+      operationId: CredentialsApi_deleteUserGlobalCredential
+      parameters:
+        - name: serviceType
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: dryRun
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Delete user global credential.
+      tags:
+        - credentials
+  /credentials/user/policy/{policyId}:
+    get:
+      operationId: CredentialsApi_getUserPolicyCredentials
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Get user policy credentials.
+      tags:
+        - credentials
+    put:
+      operationId: CredentialsApi_setUserPolicyCredential
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Set user policy credential.
+      tags:
+        - credentials
+    delete:
+      operationId: CredentialsApi_deleteUserPolicyCredential
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: serviceType
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: dryRun
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Delete user policy credential.
+      tags:
+        - credentials
+  /credentials/user/sr-global:
+    get:
+      operationId: CredentialsApi_getSrGlobalCredentialsForUser
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Get SR global credentials visible to the current user (read-only).
+      tags:
+        - credentials
+  /credentials/user/sr-policy/{policyId}:
+    get:
+      operationId: CredentialsApi_getSrPolicyCredentialsForUser
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Get SR policy credentials visible to the current user (read-only).
+      tags:
+        - credentials
+  /credentials/sr/global:
+    get:
+      operationId: CredentialsApi_getSrGlobalCredentials
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Get SR global credentials.
+      tags:
+        - credentials
+    put:
+      operationId: CredentialsApi_setSrGlobalCredential
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Set SR global credential.
+      tags:
+        - credentials
+    delete:
+      operationId: CredentialsApi_deleteSrGlobalCredential
+      parameters:
+        - name: serviceType
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: dryRun
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Delete SR global credential.
+      tags:
+        - credentials
+  /credentials/sr/policy/{policyId}:
+    get:
+      operationId: CredentialsApi_getSrPolicyCredentials
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Get SR policy credentials.
+      tags:
+        - credentials
+    put:
+      operationId: CredentialsApi_setSrPolicyCredential
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Set SR policy credential.
+      tags:
+        - credentials
+    delete:
+      operationId: CredentialsApi_deleteSrPolicyCredential
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: serviceType
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: dryRun
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+      security:
+        - bearer: []
+      summary: Delete SR policy credential.
+      tags:
+        - credentials
 info:
   title: Guardian
   description: >-
@@ -19646,6 +20301,20 @@ components:
           type: array
           items:
             type: object
+        policyDocumentation:
+          additionalProperties: true
+          description: User-configured policy API documentation entries
+          example:
+            - name: create_device
+              description: Send event to create_device
+              target: create_device
+              method: POST
+              alias: create-device
+              url: /api/v1/policies/{policyId}/tag/create_device/blocks
+              dmrvUrl: /api/v1/dmrv/{policyId}/create-device
+          type: array
+          items:
+            type: object
         categories:
           type: array
           items:
@@ -19689,6 +20358,7 @@ components:
         - policyTopics
         - policyTokens
         - policyGroups
+        - policyDocumentation
         - categories
         - projectSchema
         - tests
@@ -20846,6 +21516,7 @@ components:
             - POLICY_DISCUSSION_V2
             - POLICY_COMMENT
             - POLICY_EXPORT_PROOF
+            - EVIDENCE_ATTACHMENTS
           example: POLICY
         iri:
           type: string
@@ -23126,6 +23797,10 @@ components:
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
             - ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
+            - CREDENTIALS_USER_READ
+            - CREDENTIALS_USER_WRITE
+            - CREDENTIALS_SR_READ
+            - CREDENTIALS_SR_WRITE
             - DELEGATION_ROLE_MANAGE
           example:
             - POLICIES_POLICY_READ
@@ -23213,6 +23888,10 @@ components:
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
             - ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
+            - CREDENTIALS_USER_READ
+            - CREDENTIALS_USER_WRITE
+            - CREDENTIALS_SR_READ
+            - CREDENTIALS_SR_WRITE
             - DELEGATION_ROLE_MANAGE
           example: ANALYTIC_POLICY_READ
         category:
@@ -23243,6 +23922,7 @@ components:
             - STATISTICS
             - FORMULAS
             - WORKER_TASKS
+            - CREDENTIALS
           example: ANALYTIC
         entity:
           type: string
@@ -23286,6 +23966,7 @@ components:
             - FORMULA
             - EXTERNAL_POLICY
             - WORKER_TASK
+            - CREDENTIAL
           example: POLICY
         action:
           type: string

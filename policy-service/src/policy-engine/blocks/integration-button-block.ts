@@ -112,7 +112,15 @@ export class IntegrationButtonBlock {
             }
         }
 
-        const integrationService = IntegrationServiceFactory.create(ref.options.integrationType);
+        // Resolve credentials: DB + Wallet first, then env-var fallback in service constructor
+        let token: string | undefined;
+        try {
+            token = await PolicyUtils.getIntegrationUserCredentials(ref, user, ref.options.integrationType) || undefined;
+        } catch (e) {
+            // No credentials found — let service use its own default (env-var in constructor)
+        }
+
+        const integrationService = IntegrationServiceFactory.create(ref.options.integrationType, token);
 
         const {
             data: responseFromRequest,

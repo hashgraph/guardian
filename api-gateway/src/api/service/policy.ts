@@ -961,6 +961,80 @@ export class PolicyApi {
     }
 
     /**
+     * Get policy documentation
+     */
+    @Get('/:policyId/about')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+        Permissions.POLICIES_POLICY_AUDIT,
+    )
+    @ApiOperation({
+        summary: 'Returns auto-generated API documentation for the policy.',
+        description: 'Returns a list of documented API actions with relative URLs for the specified policy.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Policy documentation entries.',
+        type: [Object]
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getPolicyDocumentation(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<any[]> {
+        try {
+            const engineService = new PolicyEngine();
+            const policy = await engineService.getPolicy({
+                filters: policyId,
+                userDid: user.did,
+            }, new EntityOwner(user));
+            if (!policy) {
+                throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND);
+            }
+            const entries = policy.policyDocumentation || [];
+            const postParams = [
+                { name: 'timeout', type: 'number', description: 'Request timeout in ms (default: 60000)' },
+                { name: 'waitRemotePolicy', type: 'boolean', description: 'Wait for remote policy response (default: true)' },
+            ];
+            const getParamsByBlockType: Record<string, any[]> = {
+                interfaceDocumentsSourceBlock: [
+                    { name: 'page', type: 'number', description: 'Page number (0-based)' },
+                    { name: 'itemsPerPage', type: 'number', description: 'Items per page' },
+                    { name: 'sortField', type: 'string', description: 'Field name to sort by' },
+                    { name: 'sortDirection', type: 'string', description: 'Sort direction (asc/desc)' },
+                    { name: 'filterByUUID', type: 'string', description: 'Filter by document UUID' },
+                    { name: 'savepointIds', type: 'string[]', description: 'Savepoint IDs filter (JSON array)' },
+                ],
+                dataTransformationAddon: [
+                    { name: 'filterByUUID', type: 'string', description: 'Filter by document UUID' },
+                ],
+            };
+            return entries.map((entry: any) => {
+                const getParams = getParamsByBlockType[entry.blockType] || [];
+                return {
+                    ...entry,
+                    getQueryParams: entry.method !== 'POST' ? getParams : [],
+                    postQueryParams: entry.method !== 'GET' ? postParams : [],
+                };
+            });
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Updates policy
      */
     @Put('/:policyId')
@@ -1018,6 +1092,7 @@ export class PolicyApi {
             model.policyGroups = policy.policyGroups;
             model.categories = policy.categories;
             model.projectSchema = policy.projectSchema;
+            model.policyDocumentation = policy.policyDocumentation;
 
             const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`, `${PREFIXES.SCHEMES}schema-with-sub-schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));

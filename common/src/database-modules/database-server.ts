@@ -62,13 +62,14 @@ import {
     MigrationFailedItem,
     DeleteCache,
     DocumentDraft,
-    PolicyDiff
+    PolicyDiff,
+    CredentialRecord
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
 import { PolicyTool } from '../entity/tool.js';
 import { Message } from '../hedera-modules/index.js';
-import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../helpers/index.js';
+import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS, Wallet, KeyType } from '../helpers/index.js';
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { BaseEntity } from '../models/index.js';
@@ -2093,6 +2094,55 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async deletePolicyTests(policyId: string): Promise<void> {
         await new DataBaseHelper(PolicyTest).delete({ policyId });
+    }
+
+    /**
+     * Delete credential records and their secrets for a policy
+     * @param policyId
+     * @param userId
+     */
+    public static async deletePolicyCredentials(policyId: string, userId?: string): Promise<number> {
+        const credentialDb = new DataBaseHelper(CredentialRecord);
+        const records = await credentialDb.find({ policyId });
+        if (records.length > 0) {
+            const wallet = new Wallet();
+            for (const record of records) {
+                try {
+                    const keyPath = `${record.serviceType}/${record.policyId || 'global'}/${record.dryRun ? 'dryrun' : 'production'}`;
+                    await wallet.setUserKey(record.ownerId, KeyType.INTEGRATION_KEY, keyPath, '', userId);
+                } catch (_) { /* best effort */ }
+            }
+            await credentialDb.delete({ policyId });
+        }
+        return records.length;
+    }
+
+    /**
+     * Save external credential metadata
+     */
+    public async saveExternalCredentials(item: any): Promise<any> {
+        return await this.save(CredentialRecord, item);
+    }
+
+    /**
+     * Get external credentials by filters
+     */
+    public async getExternalCredentials(filters: any): Promise<any[]> {
+        return await this.find(CredentialRecord, filters);
+    }
+
+    /**
+     * Get single external credential by filters
+     */
+    public async getExternalCredential(filters: any): Promise<any> {
+        return await this.findOne(CredentialRecord, filters);
+    }
+
+    /**
+     * Delete external credentials by filters
+     */
+    public async deleteExternalCredentials(filters: any): Promise<void> {
+        await new DataBaseHelper(CredentialRecord).delete(filters);
     }
 
     /**
@@ -5115,6 +5165,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         model.policyGroups = data.policyGroups;
         model.categories = data.categories;
         model.projectSchema = data.projectSchema;
+        model.policyDocumentation = data.policyDocumentation;
 
         return await new DataBaseHelper(Policy).save(model);
     }

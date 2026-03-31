@@ -1069,6 +1069,10 @@ export interface IPolicyDocument extends IPolicyDBDocument<any> {
      * sourceTag
      */
     __sourceTag__?: string;
+    /**
+     * Evidence entries from additional data step
+     */
+    evidence?: { dataType: string; data: string }[];
 }
 
 /**

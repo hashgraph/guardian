@@ -52,6 +52,8 @@ export class DocumentViewComponent implements OnInit {
     public subjects: any[] = [];
     public proofJson!: string;
     public evidenceJson!: string;
+    public evidenceEntries: { dataType: string; data: string }[] = [];
+    public hasStructuredEvidence: boolean = false;
     public pageIndex: number = 0;
     public pageSize: number = 5;
     public schemaMap: { [x: string]: Schema | null } = {};
@@ -85,6 +87,7 @@ export class DocumentViewComponent implements OnInit {
         this.issuerOptions = [];
         this.proofJson = this.document.proof ? JSON.stringify(this.document.proof, null, 4) : '';
         this.evidenceJson = this.document.evidence ? JSON.stringify(this.document.evidence, null, 4) : '';
+        this.parseEvidenceEntries();
         this.isIssuerObject = typeof this.document.issuer === 'object';
         if (this.isIssuerObject) {
             for (const key in this.document.issuer) {
@@ -129,6 +132,26 @@ export class DocumentViewComponent implements OnInit {
         }
         
         document.body.classList.remove('resizing');
+    }
+
+    private parseEvidenceEntries(): void {
+        const evidence = this.document?.evidence;
+        if (!Array.isArray(evidence) || evidence.length === 0) {
+            this.hasStructuredEvidence = false;
+            return;
+        }
+        const isStructured = evidence.every(
+            (e: any) => e && typeof e.dataType === 'string' && typeof e.data === 'string'
+        );
+        if (isStructured) {
+            this.hasStructuredEvidence = true;
+            this.evidenceEntries = evidence.map((e: any) => ({
+                dataType: e.dataType,
+                data: e.data,
+            }));
+        } else {
+            this.hasStructuredEvidence = false;
+        }
     }
 
     private loadData() {

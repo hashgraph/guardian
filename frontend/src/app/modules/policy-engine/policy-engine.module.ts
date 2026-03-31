@@ -132,6 +132,8 @@ import { SplitButtonModule } from 'primeng/splitbutton';
 import { TabViewModule } from 'primeng/tabview';
 import { DialogModule } from 'primeng/dialog';
 import { DeleteDialogComponent } from './dialogs/delete-dialog/delete-dialog.component';
+import { PolicyDocumentationDialogComponent } from './dialogs/policy-documentation-dialog/policy-documentation-dialog.component';
+import { PolicyApiConfigDialogComponent } from './dialogs/policy-api-config-dialog/policy-api-config-dialog.component';
 import { ProgressTrackerComponent } from './policy-viewer/progress-tracker/progress-tracker.component';
 import { PolicyProgressService } from './services/policy-progress.service';
 import { InputSwitchModule } from 'primeng/inputswitch';
@@ -274,6 +276,8 @@ import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
         ViewerDialog,
         SearchBlocksComponent,
         DeleteDialogComponent,
+        PolicyDocumentationDialogComponent,
+        PolicyApiConfigDialogComponent,
         ProgressTrackerComponent,
         RecordControllerComponent,
         RecordResultDialog,

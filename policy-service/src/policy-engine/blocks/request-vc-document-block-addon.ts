@@ -22,6 +22,7 @@ import {
     CheckResult,
     removeObjectProperties,
     LocationType,
+    SchemaEntity,
 } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/block-action-error.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -260,12 +261,22 @@ export class RequestVcDocumentBlockAddon {
                 const groupContext = await PolicyUtils.getGroupContext(ref, user);
                 const uuid = await ref.components.generateUUID(actionStatus?.id);
 
+                let evidenceOptions: { evidence?: { type: string[]; dataType: string; data: string }[]; evidenceContext?: string } = {};
+                if (ref.options.enableAdditionalData && _data.evidence?.length) {
+                    const evidenceSchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.EVIDENCE_ATTACHMENTS);
+                    const evidenceContext = PolicyUtils.getSchemaContext(ref, evidenceSchema);
+                    evidenceOptions = {
+                        evidence: _data.evidence.map((e: any) => ({ type: ['Evidence'], dataType: e.dataType, data: e.data })),
+                        evidenceContext,
+                    };
+                }
+
                 const vc = await PolicyActionsUtils.signVC({
                     ref,
                     subject: credentialSubject,
                     issuer: user.did,
                     relayerAccount,
-                    options: { uuid, group: groupContext },
+                    options: { uuid, group: groupContext, ...evidenceOptions },
                     userId: user.userId
                 });
                 let item = PolicyUtils.createVC(ref, documentOwner, vc, actionStatus?.id);

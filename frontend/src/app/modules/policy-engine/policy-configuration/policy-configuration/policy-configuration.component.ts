@@ -42,6 +42,7 @@ import { TagCreateDialog } from 'src/app/modules/tag-engine/tags-create-dialog/t
 import { TagsHistory } from 'src/app/modules/tag-engine/models/tags-history';
 import { TagsExplorerDialog } from 'src/app/modules/tag-engine/tags-explorer-dialog/tags-explorer-dialog.component';
 import { MultipleTagsExplorerDialog } from 'src/app/modules/tag-engine/multiple-tags-explorer-dialog/multiple-tags-explorer-dialog.component';
+import { PolicyApiConfigDialogComponent } from '../../dialogs/policy-api-config-dialog/policy-api-config-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -1793,6 +1794,25 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public savePolicy() {
         this.asyncUpdatePolicy().pipe(takeUntil(this._destroy$)).subscribe();
+    }
+
+    public openApiConfigDialog() {
+        const dialogRef = this.dialog.open(PolicyApiConfigDialogComponent, {
+            showHeader: false,
+            width: '70vw',
+            styleClass: 'guardian-dialog',
+            data: {
+                policyId: this.policyId,
+                blocks: this.policyTemplate.allBlocks,
+                root: this.policyTemplate,
+                entries: this.policyTemplate.policyDocumentation || [],
+            },
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: any) => {
+            if (Array.isArray(result)) {
+                this.policyTemplate.policyDocumentation = result;
+            }
+        });
     }
 
     public saveAsPolicy() {

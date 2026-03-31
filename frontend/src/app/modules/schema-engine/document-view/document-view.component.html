@@ -102,16 +102,32 @@
                             
                             <div *ngIf="evidenceJson" class="form-field-container">
                                 <div class="form-field">
-                                    <div class="label-field">Evidence</div>
-                                    <div class="form-field-value">
-                                        <div class="form-field-textarea guardian-textarea-container">
-                                            <textarea 
-                                                [readOnly]="true" 
-                                                [rows]="5" [value]="evidenceJson" 
-                                                pInputTextarea
-                                                type="text"></textarea>
+                                    <div class="label-field">Evidence Attachments</div>
+                                    <ng-container *ngIf="hasStructuredEvidence; else evidenceFallback">
+                                        <div class="evidence-entries">
+                                            <div *ngFor="let entry of evidenceEntries" class="evidence-entry">
+                                                <div *ngIf="entry.dataType === 'message'" class="evidence-entry-message">
+                                                    <svg-icon class="svg-icon-16" src="/assets/images/icons/16/text.svg" svgClass="icon-color-primary"></svg-icon>
+                                                    <span>{{ entry.data }}</span>
+                                                </div>
+                                                <div *ngIf="entry.dataType === 'file'" class="evidence-entry-file">
+                                                    <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="icon-color-primary"></svg-icon>
+                                                    <a [href]="entry.data" target="_blank" rel="noopener">{{ entry.data }}</a>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </ng-container>
+                                    <ng-template #evidenceFallback>
+                                        <div class="form-field-value">
+                                            <div class="form-field-textarea guardian-textarea-container">
+                                                <textarea
+                                                    [readOnly]="true"
+                                                    [rows]="5" [value]="evidenceJson"
+                                                    pInputTextarea
+                                                    type="text"></textarea>
+                                            </div>
+                                        </div>
+                                    </ng-template>
                                 </div>
                             </div>
 

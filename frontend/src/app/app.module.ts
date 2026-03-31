@@ -17,6 +17,7 @@ import { TokenService } from './services/token.service';
 import { SchemaService } from './services/schema.service';
 import { HandleErrorsService } from './services/handle-errors.service';
 import { AuditService } from './services/audit.service';
+import { CredentialsService } from './services/credentials.service';
 import { PolicyEngineService } from './services/policy-engine.service';
 import { PolicyStatisticsService } from './services/policy-statistics.service';
 import { DemoService } from './services/demo.service';
@@ -142,7 +143,8 @@ import { GeoJsonService } from './services/geo-json.service';
 import { PolicyRepositoryService } from './services/policy-repository.service';
 import { RelayerAccountsService } from './services/relayer-accounts.service';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
-import { TreeTableModule } from 'primeng/treetable'
+import { TreeTableModule } from 'primeng/treetable';
+import { CredentialsPanelComponent } from './components/credentials/credentials-panel/credentials-panel.component';
 
 @NgModule({
     declarations: [
@@ -191,6 +193,7 @@ import { TreeTableModule } from 'primeng/treetable'
         UsersManagementDetailComponent,
         WorkerTasksComponent,
         UserKeysDialog,
+        CredentialsPanelComponent,
         OtpDialogComponent,
         OtpConfigDialogComponent,
         OtpDisableDialogComponent,
@@ -249,6 +252,7 @@ import { TreeTableModule } from 'primeng/treetable'
         SchemaService,
         AnalyticsService,
         AuditService,
+        CredentialsService,
         PolicyEngineService,
         PolicyStatisticsService,
         SchemaRulesService,
