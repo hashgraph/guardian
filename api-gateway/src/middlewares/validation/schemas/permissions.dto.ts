@@ -1,7 +1,7 @@
 import { Examples } from '#middlewares';
 import { PermissionCategories, Permissions, PermissionsArray, PermissionEntities, PermissionActions } from '@guardian/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional } from 'class-validator';
 
 const permission = PermissionsArray.filter((p) => !p.disabled)[0];
 const permissions = PermissionsArray.filter((p) => !p.disabled).map((p) => p.name);
@@ -123,6 +123,7 @@ export class RoleDTO {
         description: 'Whether this is the default role for new users',
         example: false
     })
+    @IsOptional()
     @IsBoolean()
     default?: boolean;
 
@@ -131,6 +132,7 @@ export class RoleDTO {
         description: 'Whether the role is read-only (system role)',
         example: false
     })
+    @IsOptional()
     @IsBoolean()
     readonly?: boolean;
 }
