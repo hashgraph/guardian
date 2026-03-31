@@ -23,6 +23,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+from pipeline.developer_normalization import normalize_developer_name, pick_canonical_name
 from dotenv import load_dotenv
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -264,8 +266,71 @@ def process_projects(registry: str, credits: pd.DataFrame) -> pd.DataFrame | Non
     else:
         return None
 
+    # ACR: upstream mapping sets proponent=null but the raw CSV has
+    # "Project Developer".  Backfill it from the raw dataframe.
+    if registry == "american-carbon-registry" and "Project Developer" in df.columns:
+        raw_devs = df.set_index("Project ID")["Project Developer"]
+        missing = result["proponent"].isna()
+        filled = result.loc[missing, "project_id"].map(raw_devs)
+        result.loc[missing, "proponent"] = filled
+        n = filled.notna().sum()
+        if n:
+            print(f"  Backfilled {n} ACR proponents from raw 'Project Developer' column")
+
     print(f"  Processed: {len(result)} projects")
     return result
+
+
+# ── CORSIA eligibility ─────────────────────────────────────────────────
+
+
+def _apply_corsia_eligible(df: pd.DataFrame, registry: str) -> pd.DataFrame:
+    """Set corsia_eligible boolean from raw credit-level CORSIA flags.
+
+    Sources:
+    - Verra: derived from additional_certifications (already populated)
+    - ACR/CAR/ART TREES: 'CORSIA Eligible' column in raw credit CSVs
+    - Gold Standard: no data available
+    """
+    if registry == "verra":
+        def _has_corsia(certs):
+            if not isinstance(certs, list):
+                return None
+            return any("CORSIA" in str(c).upper() for c in certs)
+
+        df["corsia_eligible"] = df["additional_certifications"].apply(_has_corsia)
+        n = df["corsia_eligible"].sum()
+        if n:
+            print(f"  CORSIA eligible: {n} projects (from additional_certifications)")
+        return df
+
+    if registry in APX_REGISTRIES:
+        cfg = REGISTRY_CONFIG[registry]
+        pid_col = "Program ID" if registry == "art-trees" else "Project ID"
+        corsia_pids: set[str] = set()
+
+        for entry in cfg["credits"]:
+            credit_path = RAW_DIR / registry / entry["file"]
+            if not credit_path.exists():
+                continue
+            try:
+                raw = pd.read_csv(credit_path, dtype=str, usecols=[pid_col, "CORSIA Eligible"])
+            except (ValueError, KeyError):
+                continue
+            eligible = raw[raw["CORSIA Eligible"].str.strip().str.lower() == "yes"]
+            corsia_pids.update(eligible[pid_col].dropna().unique())
+
+        if corsia_pids:
+            df["corsia_eligible"] = df["project_id"].isin(corsia_pids)
+            n = df["corsia_eligible"].sum()
+            print(f"  CORSIA eligible: {n} projects (from raw credit CSVs)")
+        else:
+            df["corsia_eligible"] = None
+        return df
+
+    # Gold Standard / unknown — no CORSIA data
+    df["corsia_eligible"] = None
+    return df
 
 
 # ── Extended schema enrichment ──────────────────────────────────────────
@@ -307,6 +372,9 @@ def enrich_projects(df: pd.DataFrame, registry: str) -> pd.DataFrame:
     # Classify reduction vs removal from project_type
     df = apply_reduction_removal(df)
 
+    # Derive CORSIA eligibility from raw credit data or additional_certifications
+    df = _apply_corsia_eligible(df, registry)
+
     # Drop the temporary raw status column
     if "_raw_status" in df.columns:
         df = df.drop(columns=["_raw_status"])
@@ -320,12 +388,38 @@ def enrich_projects(df: pd.DataFrame, registry: str) -> pd.DataFrame:
 def aggregate_developers(projects_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Create developer entities and link table from project proponents.
+
+    Uses name normalization to merge variant spellings of the same entity
+    (e.g. "South Pole Ltd" and "South Pole Ltd SCV" → single developer).
+    The most common raw variant becomes the canonical display name.
+
     Returns (developers_df, links_df).
     """
     with_proponent = projects_df[projects_df["proponent"].notna()].copy()
     if with_proponent.empty:
         return pd.DataFrame(), pd.DataFrame()
 
+    # Phase 1: collect raw name frequencies for canonical name selection
+    name_freq: dict[str, dict[str, int]] = {}  # norm_key → {raw_name: count}
+
+    for _, row in with_proponent.iterrows():
+        proponent = str(row["proponent"]).strip()
+        if not proponent:
+            continue
+        norm_key = normalize_developer_name(proponent)
+        if not norm_key:
+            continue
+        name_freq.setdefault(norm_key, {})
+        name_freq[norm_key][proponent] = name_freq[norm_key].get(proponent, 0) + 1
+
+    # Phase 2: build canonical name map (norm_key → display name)
+    canonical_names: dict[str, str] = {}
+    for norm_key, variants in name_freq.items():
+        canonical_names[norm_key] = pick_canonical_name(
+            [(name, freq) for name, freq in variants.items()]
+        )
+
+    # Phase 3: aggregate developer stats using normalized keys
     developers: dict[str, dict] = {}
     links: list[dict] = []
 
@@ -334,14 +428,18 @@ def aggregate_developers(projects_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Da
         if not proponent:
             continue
 
-        dev_id = _slugify(proponent)
+        norm_key = normalize_developer_name(proponent)
+        if not norm_key:
+            continue
+
+        dev_id = _slugify(canonical_names[norm_key])
         if not dev_id:
             continue
 
         if dev_id not in developers:
             developers[dev_id] = {
                 "id": dev_id,
-                "name": proponent,
+                "name": canonical_names[norm_key],
                 "project_count": 0,
                 "total_issued": 0,
                 "total_retired": 0,
@@ -378,6 +476,10 @@ def aggregate_developers(projects_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Da
         for field in ("countries", "registries", "categories", "methodologies"):
             dev[field] = sorted(dev[field]) if dev[field] else None
 
+    merged = len(name_freq) - len(developers)
+    if merged:
+        print(f"  Developer normalization: merged {merged} duplicate variants")
+
     return pd.DataFrame(list(developers.values())), pd.DataFrame(links)
 
 
@@ -394,7 +496,7 @@ def _project_row_to_dict(row: pd.Series) -> dict:
 
         if col in ("issued", "retired", "estimated_annual_reductions"):
             data[col] = int(val) if val is not None else None
-        elif col == "is_compliance":
+        elif col in ("is_compliance", "corsia_eligible"):
             data[col] = bool(val) if val is not None else None
         elif col in ("protocol", "sdg_goals", "additional_certifications"):
             if isinstance(val, list):
@@ -635,6 +737,17 @@ async def _upsert_developers(session: AsyncSession, df: pd.DataFrame, links_df: 
             "developer_id": str(row["developer_id"]),
         })
         link_count += 1
+
+    # Clean up orphaned developer records (stale from previous runs)
+    result = await session.execute(
+        text(
+            "DELETE FROM project_developers "
+            "WHERE id NOT IN (SELECT DISTINCT developer_id FROM project_developer_links)"
+        )
+    )
+    orphaned = result.rowcount
+    if orphaned:
+        print(f"  Cleaned up {orphaned} orphaned developer records")
 
     print(f"  Upserted {count} developers, {link_count} links")
 

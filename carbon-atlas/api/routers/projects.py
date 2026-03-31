@@ -29,6 +29,7 @@ async def list_projects(
     country: str | None = None,
     is_compliance: bool | None = None,
     reduction_removal: str | None = None,
+    corsia_eligible: bool | None = None,
     search: str | None = None,
     sort: str | None = None,
 ):
@@ -46,6 +47,8 @@ async def list_projects(
         stmt = stmt.where(Project.is_compliance == is_compliance)
     if reduction_removal:
         stmt = stmt.where(Project.reduction_removal == reduction_removal)
+    if corsia_eligible is not None:
+        stmt = stmt.where(Project.corsia_eligible == corsia_eligible)
     if search:
         pattern = f"%{search}%"
         stmt = stmt.where(

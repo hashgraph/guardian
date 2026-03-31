@@ -14,8 +14,12 @@ import {
   getCreditsRemainingByVintage,
   getProjectsByCountryMap,
   getReductionRemovalBreakdown,
+  getMarketDevelopers,
+  getMarketDeveloper,
+  getMarketDeveloperProjects,
+  getMarketDeveloperCountries,
 } from "@/lib/api/market"
-import type { MarketProjectFilters, MarketCreditFilters } from "@/lib/types/market"
+import type { MarketProjectFilters, MarketCreditFilters, DeveloperFilters } from "@/lib/types/market"
 
 export function useMarketStats(filters?: { registry?: string; category?: string }) {
   return useQuery({
@@ -101,5 +105,40 @@ export function useReductionRemovalBreakdown(registry?: string) {
   return useQuery({
     queryKey: ["market-chart-reduction-removal", registry],
     queryFn: () => getReductionRemovalBreakdown(registry),
+  })
+}
+
+// ── Developers ──────────────────────────────────────────────────────────
+
+export function useMarketDevelopers(filters: DeveloperFilters = {}) {
+  return useQuery({
+    queryKey: ["market-developers", filters],
+    queryFn: () => getMarketDevelopers(filters),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useMarketDeveloperCountries() {
+  return useQuery({
+    queryKey: ["market-developer-countries"],
+    queryFn: getMarketDeveloperCountries,
+    staleTime: 1000 * 60 * 60, // 1 hour — country list rarely changes
+  })
+}
+
+export function useMarketDeveloper(id: string) {
+  return useQuery({
+    queryKey: ["market-developer", id],
+    queryFn: () => getMarketDeveloper(id),
+    enabled: !!id,
+  })
+}
+
+export function useMarketDeveloperProjects(id: string, page = 1, pageSize = 25) {
+  return useQuery({
+    queryKey: ["market-developer-projects", id, page, pageSize],
+    queryFn: () => getMarketDeveloperProjects(id, { page, page_size: pageSize }),
+    enabled: !!id,
+    placeholderData: keepPreviousData,
   })
 }

@@ -64,6 +64,7 @@ class Project(SQLModel, table=True):
         default=None, sa_column=Column(BigInteger)
     )
     reduction_removal: Optional[str] = Field(default=None, index=True)
+    corsia_eligible: Optional[bool] = Field(default=None, index=True)
 
     # --- Relationships ---
     credits: list["Credit"] = Relationship(back_populates="project")

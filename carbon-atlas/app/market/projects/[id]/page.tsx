@@ -241,6 +241,9 @@ export default function MarketProjectDetailPage() {
             <Field label="Is Compliance">
               {project.is_compliance ? "Yes" : "No"}
             </Field>
+            <Field label="CORSIA Eligible">
+              {project.corsia_eligible === null ? "—" : project.corsia_eligible ? "Yes" : "No"}
+            </Field>
             <Field label="First Issuance">
               {formatDate(project.first_issuance_at)}
             </Field>
@@ -316,10 +319,14 @@ export default function MarketProjectDetailPage() {
               <CardContent>
                 <div className="flex flex-col gap-2">
                   {project.developers.map((dev) => (
-                    <div key={dev.id} className="flex items-center gap-2 text-sm">
+                    <Link
+                      key={dev.id}
+                      href={`/market/developers/${dev.id}`}
+                      className="flex items-center gap-2 text-sm hover:underline"
+                    >
                       <IconUser className="size-3.5 text-muted-foreground shrink-0" />
                       <span className="truncate">{dev.name}</span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </CardContent>

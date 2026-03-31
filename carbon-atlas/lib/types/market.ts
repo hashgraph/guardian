@@ -32,6 +32,7 @@ export interface ProjectListItem {
   retired: number
   listed_at: string | null
   reduction_removal: string | null
+  corsia_eligible: boolean | null
 }
 
 export interface DeveloperBrief {
@@ -67,6 +68,7 @@ export interface ProjectDetail {
   registration_date: string | null
   estimated_annual_reductions: number | null
   reduction_removal: string | null
+  corsia_eligible: boolean | null
   developers: DeveloperBrief[] | null
 }
 
@@ -163,6 +165,16 @@ export interface MarketProjectFilters {
   country?: string
   reduction_removal?: string
   search?: string
+  sort?: string
+  page?: number
+  page_size?: number
+}
+
+export interface DeveloperFilters {
+  search?: string
+  registry?: string
+  country?: string
+  category?: string
   sort?: string
   page?: number
   page_size?: number

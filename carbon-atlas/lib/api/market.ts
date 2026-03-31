@@ -20,6 +20,7 @@ import type {
   CountryMapDataPoint,
   ReductionRemovalDataPoint,
   DeveloperItem,
+  DeveloperFilters,
   MarketProjectFilters,
   MarketCreditFilters,
 } from "@/lib/types/market"
@@ -103,10 +104,21 @@ export function getReductionRemovalBreakdown(registry?: string) {
 
 // ── Developers ─────────────────────────────────────────────────────────
 
-export function getMarketDevelopers(params?: { search?: string; sort?: string; page?: number; page_size?: number }) {
-  return fetchMarket<PaginatedResponse<DeveloperItem>>("/api/v1/developers", params as Record<string, string | number>)
+export function getMarketDevelopers(filters: DeveloperFilters = {}) {
+  return fetchMarket<PaginatedResponse<DeveloperItem>>("/api/v1/developers", filters as Record<string, string | number>)
+}
+
+export function getMarketDeveloperCountries() {
+  return fetchMarket<string[]>("/api/v1/developers/countries")
 }
 
 export function getMarketDeveloper(id: string) {
   return fetchMarket<DeveloperItem>(`/api/v1/developers/${encodeURIComponent(id)}`)
+}
+
+export function getMarketDeveloperProjects(id: string, params?: { page?: number; page_size?: number }) {
+  return fetchMarket<PaginatedResponse<ProjectListItem>>(
+    `/api/v1/developers/${encodeURIComponent(id)}/projects`,
+    params as Record<string, string | number>,
+  )
 }

@@ -60,6 +60,7 @@ class ProjectResponse(BaseModel):
     registration_date: date | None = None
     estimated_annual_reductions: int | None = None
     reduction_removal: str | None = None
+    corsia_eligible: bool | None = None
     # Linked developers
     developers: list[DeveloperBrief] | None = None
 
@@ -76,6 +77,7 @@ class ProjectListItem(BaseModel):
     retired: int | None = 0
     listed_at: date | None = None
     reduction_removal: str | None = None
+    corsia_eligible: bool | None = None
 
 
 # ---------------------------------------------------------------------------
