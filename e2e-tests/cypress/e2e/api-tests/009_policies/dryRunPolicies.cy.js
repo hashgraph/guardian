@@ -22,6 +22,16 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
             ...(opts.failOnStatusCode !== undefined ? { failOnStatusCode: opts.failOnStatusCode } : {}),
         });
 
+    const postWithAuth2 = (authorization, url, body = undefined, opts = {}) =>
+        cy.request({
+            method: METHOD.POST,
+            url,
+            headers: { authorization, "api-version": 2 },
+            ...(body ? { body } : {}),
+            ...(opts.timeout ? { timeout: opts.timeout } : {}),
+            ...(opts.failOnStatusCode !== undefined ? { failOnStatusCode: opts.failOnStatusCode } : {}),
+        });
+
     const putWithAuth = (authorization, url, opts = {}) =>
         cy.request({
             method: METHOD.PUT,
@@ -92,7 +102,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
 
     it("Create a new virtual account and login", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            postWithAuth(authorization, `${policiesUrl}${policyId}/dry-run/user`).then((response) => {
+            postWithAuth2(authorization, `${policiesUrl}${policyId}/dry-run/user`).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 expect(response.body).to.have.property('did');
                 const did = response.body.did;
@@ -107,7 +117,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
     it("Get virtual user by DID", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             // First create a user
-            postWithAuth(authorization, `${policiesUrl}${policyId}/dry-run/user`).then((response) => {
+            postWithAuth2(authorization, `${policiesUrl}${policyId}/dry-run/user`).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 const did = response.body.did;
 

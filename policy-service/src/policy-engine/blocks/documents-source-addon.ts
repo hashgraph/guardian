@@ -15,6 +15,7 @@ import { LocationType } from '@guardian/interfaces';
 @SourceAddon({
     blockType: 'documentsSourceAddon',
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Source',
         title: `Add 'DocumentsSourceAddon' Addon`,

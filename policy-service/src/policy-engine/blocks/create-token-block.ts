@@ -37,6 +37,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'createTokenBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Create Token',
         title: `Add 'Create Token' Block`,
@@ -199,7 +200,9 @@ export class CreateTokenBlock {
             sendToIPFS: true,
             memo: null,
             userId,
-            interception: null
+            interception: null,
+            dryRun: ref.dryRun,
+            mockId: ref.mockId
         });
         // #endregion
 

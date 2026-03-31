@@ -211,6 +211,18 @@
             >IPFS</div>
 
             <div class="delimiter"></div>
+
+            <div
+                (click)="onView('mock_config')"
+                [attr.action]="view === 'mock_config'"
+                class="dry-run-btn"
+            >Mock Config</div>
+
+            <div
+                (click)="onView('mock_data')"
+                [attr.action]="view === 'mock_data'"
+                class="dry-run-btn"
+            >Mock Data</div>
         </div>
 
         <div
@@ -369,7 +381,7 @@
 
         <div
             *ngIf="isDryRun"
-            [attr.hidden-container]="view === 'policy'"
+            [attr.hidden-container]="view === 'policy' || view === 'mock_config' || view === 'mock_data'"
             [attr.policy-status]="policyInfo.status"
             class="second-policy-container"
         >
@@ -429,7 +441,327 @@
                 [pageSize]="pageSize"
             ></app-paginator>
         </div>
+
+
+        <div
+            *ngIf="isDryRun"
+            [attr.hidden-container]="view !== 'mock_config'"
+            [attr.policy-status]="policyInfo.status"
+            class="second-policy-container"
+        > 
+            <div class="mock-container">
+                <div class="mock-config-container">
+                    <div class="mock-toggle">
+                        <input type="checkbox" [checked]="mockConfig.enabled">
+                            <label for="checkboxInput" class="toggleSwitch" (click)="enableMock()">
+                        </label>
+                        <span class="toggle-text" (click)="enableMock()">Enable Mock Data</span>
+                    </div>
+                    <div *ngIf="mockConfig.blocks?.length" class="dialog-grid-container" style="margin-top: 32px;max-height: calc(100vh - 380px);">
+                        <div class="dialog-grid-header">
+                            <div class="col-250">Type</div>
+                            <div class="col-auto">Tag</div>
+                            <div class="col-100">Enable</div>
+                        </div>
+                        <div class="dialog-grid-body">
+                            <div *ngFor="let block of mockConfig.blocks" class="dialog-grid-row row-52">
+                                <div class="col-250">
+                                    {{block.type}}
+                                </div>
+                                <div class="col-auto">
+                                    {{block.tag}}
+                                </div>
+                                <div class="col-100">
+                                    <div class="mock-toggle">
+                                        <input type="checkbox" [checked]="block.enabled">
+                                            <label for="checkboxInput" class="toggleSwitch" (click)="enableBlockMock(block)">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mock-config-toggle">
+                        <button 
+                            (click)="onSaveMockConfig()" 
+                            class="guardian-button guardian-button-primary">
+                            <div class="guardian-button-label">Save</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div
+            *ngIf="isDryRun"
+            [attr.hidden-container]="view !== 'mock_data'"
+            [attr.policy-status]="policyInfo.status"
+            class="second-policy-container"
+        >
+            <div class="mock-container">
+                <div class="mock-actions-buttons-container">
+                    <button
+                        *ngIf="mockTab === 'IPFS'"
+                        (click)="addMockData('IPFS')" 
+                        class="guardian-button guardian-button-primary">
+                        <div class="guardian-button-icon">
+                            <svg-icon class="icon-btn svg-icon"
+                                src="/assets/images/icons/add.svg"
+                                svgClass="icon-color-secondary">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Add IPFS File Mock</div>
+                    </button>
+                    <button
+                        *ngIf="mockTab === 'Topics'"
+                        (click)="addMockData('MESSAGE')" 
+                        class="guardian-button guardian-button-primary">
+                        <div class="guardian-button-icon">
+                            <svg-icon class="icon-btn svg-icon"
+                                src="/assets/images/icons/add.svg"
+                                svgClass="icon-color-secondary">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Add Topic / Message Mock</div>
+                    </button>
+                    <button
+                        *ngIf="mockTab === 'API'"
+                        (click)="addMockData('API')" 
+                        class="guardian-button guardian-button-primary">
+                        <div class="guardian-button-icon">
+                            <svg-icon class="icon-btn svg-icon"
+                                src="/assets/images/icons/add.svg"
+                                svgClass="icon-color-secondary">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Add API Mock</div>
+                    </button>
+
+                    <div class="delimiter"></div>
+
+                    <button 
+                        (click)="onImportMock()" 
+                        class="guardian-button guardian-button-primary">
+                        <div class="guardian-button-icon">
+                            <svg-icon class="icon-btn svg-icon"
+                                src="/assets/images/icons/import.svg"
+                                svgClass="icon-color-secondary">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Import</div>
+                    </button>
+                    <button 
+                        (click)="onExportMock()" 
+                        class="guardian-button guardian-button-primary">
+                        <div class="guardian-button-icon">
+                            <svg-icon class="icon-btn svg-icon"
+                                src="/assets/images/icons/export.svg"
+                                svgClass="icon-color-secondary">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Export</div>
+                    </button>
+                </div>
+                <div class="mock-tabs-nav">
+                    <p-tabView (onChange)="onMockTab($event)" class="guardian-header-tabs">
+                        <p-tabPanel [selected]="mockTab === 'API'">
+                            <ng-template pTemplate="header">
+                                <div class="tabview-label">API Mocks</div>
+                            </ng-template>
+                        </p-tabPanel>
+                        <p-tabPanel [selected]="mockTab === 'IPFS'">
+                            <ng-template pTemplate="header">
+                                <div class="tabview-label">IPFS Files</div>
+                            </ng-template>
+                        </p-tabPanel>
+                        <p-tabPanel [selected]="mockTab === 'Topics'">
+                            <ng-template pTemplate="header">
+                                <div class="tabview-label">Topics / Messages</div>
+                            </ng-template>
+                        </p-tabPanel>
+                    </p-tabView>
+                </div>  
+                <div *ngIf="mockTab === 'IPFS'" class="mock-grid-container">
+                    <div *ngIf="mockIpfs" class="dialog-grid-container">
+                        <div class="dialog-grid-header">
+                            <div class="col-auto">CID</div>
+                            <div class="col-200"></div>
+                        </div>
+                        <div class="dialog-grid-body">
+                            <div *ngFor="let file of mockIpfs" class="dialog-grid-row row-52">
+                                <div class="col-auto">
+                                    {{file.cid}}
+                                </div>
+                                <div class="col-200 col-toolbar">
+                                    <div class="input-document-edit">
+                                        <button 
+                                            class="guardian-icon-button big" 
+                                            (click)="editMockData('IPFS', file)">
+                                            <svg-icon
+                                                class="icon-btn svg-icon"
+                                                src="/assets/images/icons/edit.svg"
+                                                svgClass="icon-color-primary">
+                                            </svg-icon>
+                                        </button>
+                                    </div>
+                                    <div class="input-document-open">
+                                        <button 
+                                            class="guardian-icon-button big" 
+                                            (click)="openDocument(file)">
+                                            <svg-icon
+                                                class="icon-btn svg-icon"
+                                                src="/assets/images/icons/document.svg"
+                                                svgClass="icon-color-primary">
+                                            </svg-icon>
+                                        </button>
+                                    </div>
+                                    <div class="input-document-open">
+                                        <button 
+                                            class="guardian-icon-button big" 
+                                            (click)="deleteMockData('IPFS', file)">
+                                            <svg-icon
+                                                class="icon-btn svg-icon"
+                                                src="/assets/images/icons/delete.svg"
+                                                svgClass="icon-color-delete">
+                                            </svg-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="mockTab === 'Topics'" class="mock-grid-container">
+                    <div *ngIf="mockTopics" class="dialog-grid-container">
+                        <div class="dialog-grid-header">
+                            <div class="col-200">Topic ID</div>
+                            <div class="col-200">Consensus Timestamp</div>
+                            <div class="col-auto">Messages</div>
+                            <div class="col-200"></div>
+                        </div>
+                        <div class="dialog-grid-body">
+                            <ng-container *ngFor="let topic of mockTopics">
+                                <div class="dialog-grid-row row-52 grid-row-header">
+                                    <div
+                                        class="guardian-collapse collapse-24"
+                                        [attr.collapsed]="!expandGrid[topic.topicId]"
+                                        (click)="expandGrid[topic.topicId] = !expandGrid[topic.topicId]"
+                                    >
+                                    </div>
+                                    {{topic.topicId}}
+                                    <span>{{topic.messages?.length}} messages</span>
+                                </div>
+                                <ng-container *ngIf="topic.messages?.length">
+                                    <ng-container *ngFor="let message of topic.messages">
+                                        <div *ngIf="expandGrid[message.topic_id]" class="dialog-grid-row row-52">
+                                            <div class="col-200">
+                                                {{message.topic_id}}
+                                            </div>
+                                            <div class="col-200">
+                                                {{message.consensus_timestamp}}
+                                            </div>
+                                            <div class="col-auto">
+                                                {{message.__message}}
+                                            </div>
+                                            <div class="col-200 col-toolbar">
+                                                <div class="input-document-edit">
+                                                    <button 
+                                                        class="guardian-icon-button big" 
+                                                        (click)="editMockData('MESSAGE', message)">
+                                                        <svg-icon
+                                                            class="icon-btn svg-icon"
+                                                            src="/assets/images/icons/edit.svg"
+                                                            svgClass="icon-color-primary">
+                                                        </svg-icon>
+                                                    </button>
+                                                </div>
+                                                <div class="input-document-open">
+                                                    <button 
+                                                        class="guardian-icon-button big" 
+                                                        (click)="openDocument(message)">
+                                                        <svg-icon
+                                                            class="icon-btn svg-icon"
+                                                            src="/assets/images/icons/document.svg"
+                                                            svgClass="icon-color-primary">
+                                                        </svg-icon>
+                                                    </button>
+                                                </div>
+                                                <div class="input-document-open">
+                                                    <button 
+                                                        class="guardian-icon-button big" 
+                                                        (click)="deleteMockData('MESSAGE', message)">
+                                                        <svg-icon
+                                                            class="icon-btn svg-icon"
+                                                            src="/assets/images/icons/delete.svg"
+                                                            svgClass="icon-color-delete">
+                                                        </svg-icon>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                </ng-container>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="mockTab === 'API'" class="mock-grid-container">
+                    <div *ngIf="mockApi" class="dialog-grid-container">
+                        <div class="dialog-grid-header">
+                            <div class="col-200">Method</div>
+                            <div class="col-auto">URL</div>
+                            <div class="col-200"></div>
+                        </div>
+                        <div class="dialog-grid-body">
+                            <div *ngFor="let api of mockApi" class="dialog-grid-row row-52">
+                                <div class="col-200">
+                                    {{api.request?.method}}
+                                </div>
+                                <div class="col-auto">
+                                    {{api.request?.url}}
+                                </div>
+                                <div class="col-200 col-toolbar">
+                                    <div class="input-document-edit">
+                                        <button 
+                                            class="guardian-icon-button big" 
+                                            (click)="editMockData('API', api)">
+                                            <svg-icon
+                                                class="icon-btn svg-icon"
+                                                src="/assets/images/icons/edit.svg"
+                                                svgClass="icon-color-primary">
+                                            </svg-icon>
+                                        </button>
+                                    </div>
+                                    <div class="input-document-open">
+                                        <button 
+                                            class="guardian-icon-button big" 
+                                            (click)="openDocument(api)">
+                                            <svg-icon
+                                                class="icon-btn svg-icon"
+                                                src="/assets/images/icons/document.svg"
+                                                svgClass="icon-color-primary">
+                                            </svg-icon>
+                                        </button>
+                                    </div>
+                                    <div class="input-document-open">
+                                        <button 
+                                            class="guardian-icon-button big" 
+                                            (click)="deleteMockData('API', api)">
+                                            <svg-icon
+                                                class="icon-btn svg-icon"
+                                                src="/assets/images/icons/delete.svg"
+                                                svgClass="icon-color-delete">
+                                            </svg-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </ng-container>
+
 
     <app-record-controller
         #recordController

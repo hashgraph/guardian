@@ -254,14 +254,23 @@ export class PolicyImport {
                 step.addStep(STEP_LINK_TOPIC);
 
                 step.startStep(STEP_CREATE_POLICY_TOPIC);
-                this.topicRow = await this.topicHelper.create({
-                    type: TopicType.PolicyTopic,
-                    name: policy.name || TopicType.PolicyTopic,
-                    description: policy.topicDescription || TopicType.PolicyTopic,
-                    owner: user.owner,
-                    policyId: null,
-                    policyUUID: null
-                }, userId);
+                this.topicRow = await this.topicHelper.create(
+                    {
+                        type: TopicType.PolicyTopic,
+                        name: policy.name || TopicType.PolicyTopic,
+                        description: policy.topicDescription || TopicType.PolicyTopic,
+                        owner: user.owner,
+                        policyId: null,
+                        policyUUID: null
+                    },
+                    {
+                        admin: true,
+                        submit: true
+                    },
+                    {
+                        userId
+                    }
+                );
                 await this.topicRow.saveKeys(userId);
                 await DatabaseServer.saveTopic(this.topicRow.toObject());
 
@@ -282,12 +291,12 @@ export class PolicyImport {
                 step.completeStep(STEP_PUBLISH_POLICY);
 
                 step.startStep(STEP_LINK_TOPIC);
-                await this.topicHelper.twoWayLink(
-                    this.topicRow,
-                    this.parentTopic,
-                    createPolicyMessage.getId(),
-                    this.owner.id
-                );
+                await this.topicHelper.twoWayLink({
+                    topic: this.topicRow,
+                    parent: this.parentTopic,
+                    rationale: createPolicyMessage.getId(),
+                    userId: this.owner.id
+                });
                 step.completeStep(STEP_LINK_TOPIC);
             }
         }
@@ -888,7 +897,7 @@ export class PolicyImport {
 
             for (const msg of messages) {
                 try {
-                    await MessageServer.loadDocument(msg);
+                    await MessageServer.loadDocument(msg, null, {});
                 } catch (e: any) {
                     await logger.error(
                         `copyPolicyRecords: failed to load record zip from IPFS for recordId=${msg.recordId}: ${e?.message || e}`,

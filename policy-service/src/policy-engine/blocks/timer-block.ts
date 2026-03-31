@@ -17,6 +17,7 @@ import { LocationType, PolicyStatus } from '@guardian/interfaces';
     blockType: 'timerBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Timer',
         title: `Add 'Timer' Block`,

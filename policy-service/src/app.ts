@@ -1,4 +1,4 @@
-import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, entities, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet, OldSecretManager } from '@guardian/common';
+import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, entities, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet, OldSecretManager, MockService } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from './helpers/policy-container.js';
 import { BlockService } from './policy-engine/block-service.js';
@@ -49,6 +49,7 @@ Promise.all([
 
     await new Users().setConnection(cn).init();
     await new Wallet().setConnection(cn).init();
+    await new MockService().setConnection(cn).init();
 
     await (new PolicyContainer(logger)).setConnection(cn).init();
     await (new BlockService()).setConnection(cn).init();

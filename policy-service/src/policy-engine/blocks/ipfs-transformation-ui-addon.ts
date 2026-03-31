@@ -12,6 +12,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
     blockType: 'ipfsTransformationUIAddon',
     actionType: LocationType.REMOTE,
     commonBlock: false,
+    canMock: true,
     about: {
         label: 'IPFS Transformation UI Addon',
         title: `Add 'Transformation UI Addon' Block`,
@@ -73,7 +74,8 @@ export class IpfsTransformationUIAddon {
             readonly: (
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
-            )
+            ),
+            mockId: ref.mockId
         };
     }
 }

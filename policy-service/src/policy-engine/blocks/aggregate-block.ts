@@ -18,6 +18,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'aggregateDocumentBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Aggregate Data',
         title: `Add 'Aggregate' Block`,

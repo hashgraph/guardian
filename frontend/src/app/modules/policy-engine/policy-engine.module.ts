@@ -179,6 +179,7 @@ import { FieldLinkDialog } from './dialogs/field-link-dialog/field-link-dialog.c
 import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
 import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
 import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-dialog.component';
+import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
 
 @NgModule({
     declarations: [
@@ -314,7 +315,8 @@ import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-di
         FieldLinkDialog,
         AddDocumentDialog,
         ChangeBlockSettingsDialog,
-        ApproveUpdateVcDocumentDialogComponent
+        ApproveUpdateVcDocumentDialogComponent,
+        MockDialog
     ],
     imports: [
         CommonModule,

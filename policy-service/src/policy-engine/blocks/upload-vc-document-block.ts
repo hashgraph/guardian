@@ -19,6 +19,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'uploadVcDocumentBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Upload',
         title: `Add 'Upload' Block`,

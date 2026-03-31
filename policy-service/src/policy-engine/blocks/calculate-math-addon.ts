@@ -13,6 +13,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'calculateMathAddon',
     commonBlock: true,
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Math Addon',
         title: `Add 'Math' Addon`,
