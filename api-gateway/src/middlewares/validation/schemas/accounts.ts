@@ -223,6 +223,7 @@ export class AccountsSessionResponseDTO {
         example: 'local'
     })
     @IsString()
+    @IsOptional()
     location?: string;
 }
 

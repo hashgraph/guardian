@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsString, IsOptional } from 'class-validator';
 import { Expose } from 'class-transformer';
 
 export class InternalServerErrorDTO {
@@ -70,6 +70,7 @@ export class UnprocessableEntityErrorDTO {
     })
     @IsString()
     @Expose()
+    @IsOptional()
     error?: string;
 }
 
@@ -119,6 +120,7 @@ export class ForbiddenErrorDTO {
     })
     @IsString()
     @Expose()
+    @IsOptional()
     error?: string;
 }
 
@@ -190,5 +192,6 @@ export class BadRequestErrorDTO {
     })
     @IsString()
     @Expose()
+    @IsOptional()
     error?: string;
 }
