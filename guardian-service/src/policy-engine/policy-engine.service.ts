@@ -59,7 +59,8 @@ import {
     PolicyActionStatus,
     IgnoreRule,
     SchemaStatus,
-    MigrationConfig, MigrationRunStatus
+    MigrationConfig, MigrationRunStatus,
+    IPolicyDocumentationEntry
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
@@ -76,6 +77,38 @@ import { IPolicyUser } from './policy-user.js';
 import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
 import { PolicyCommentsUtils } from './policy-comments-utils.js';
 import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
+
+/**
+ * Alias regex: lowercase alphanumeric and hyphens only
+ */
+const ALIAS_REGEX = /^[a-z0-9-]+$/;
+
+/**
+ * Build technical and DMRV URLs for user-configured documentation entries.
+ * Called on policy save to enrich entries with generated URLs.
+ */
+function buildDocumentationUrls(
+    policyId: string,
+    entries: IPolicyDocumentationEntry[]
+): IPolicyDocumentationEntry[] {
+    if (!Array.isArray(entries)) {
+        return [];
+    }
+    return entries.map((entry) => {
+        const tag = entry.target;
+        const alias = entry.alias;
+        const method = entry.method;
+        const technicalUrl = method === 'POST'
+            ? `/api/v1/policies/${policyId}/tag/${tag}/blocks`
+            : `/api/v1/policies/${policyId}/tag/${tag}`;
+        const dmrvUrl = `/api/v1/dmrv/${policyId}/${alias}`;
+        return {
+            ...entry,
+            url: technicalUrl,
+            dmrvUrl,
+        };
+    });
+}
 
 /**
  * PolicyEngineChannel
@@ -1222,6 +1255,9 @@ export class PolicyEngineService {
                     if (policy.status !== PolicyStatus.DRAFT) {
                         throw new Error('Policy is not in draft status.');
                     }
+
+                    model.policyDocumentation = buildDocumentationUrls(policyId, model.policyDocumentation || []);
+
                     let result = await DatabaseServer.updatePolicyConfig(policyId, model);
                     result = await PolicyImportExportHelper.updatePolicyComponents(result, logger, owner.id);
 

@@ -16191,6 +16191,44 @@ paths:
       summary: Disconnected policy state for the current user.
       tags:
         - policies
+  /policies/{policyId}/about:
+    get:
+      description: >-
+        Returns a list of documented API actions with relative URLs for the
+        specified policy.
+      operationId: PolicyApi_getPolicyDocumentation
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Policy documentation entries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns auto-generated API documentation for the policy.
+      tags:
+        - policies
   /policies/{policyId}/publish:
     put:
       description: >-
@@ -23686,6 +23724,295 @@ paths:
       summary: Get all versions of a VC document.
       tags:
         - policies
+  /dmrv/{policyId}/{alias}:
+    get:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_get
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    post:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_post
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    put:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_put
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    delete:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_delete
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    patch:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_patch
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    options:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_options
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    head:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_head
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
+    search:
+      description: >-
+        Resolves a human-readable alias to a policy block and proxies the
+        request.
+      operationId: DmrvApi_proxyByAlias_search
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+        - name: alias
+          required: true
+          in: path
+          description: Human-readable alias for the block endpoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response from the block.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: DMRV proxy endpoint.
+      tags:
+        - dmrv
   /schema/{schemaId}:
     get:
       description: >-
@@ -48555,6 +48882,20 @@ components:
           type: array
           items:
             type: object
+        policyDocumentation:
+          additionalProperties: true
+          description: User-configured policy API documentation entries
+          example:
+            - name: create_device
+              description: Send event to create_device
+              target: create_device
+              method: POST
+              alias: create-device
+              url: /api/v1/policies/{policyId}/tag/create_device/blocks
+              dmrvUrl: /api/v1/dmrv/{policyId}/create-device
+          type: array
+          items:
+            type: object
         categories:
           type: array
           items:
@@ -48600,6 +48941,7 @@ components:
         - policyTopics
         - policyTokens
         - policyGroups
+        - policyDocumentation
         - categories
         - projectSchema
         - tests
@@ -51279,6 +51621,7 @@ components:
             - POLICY_DISCUSSION_V2
             - POLICY_COMMENT
             - POLICY_EXPORT_PROOF
+            - EVIDENCE_ATTACHMENTS
           example: POLICY
         iri:
           type: string

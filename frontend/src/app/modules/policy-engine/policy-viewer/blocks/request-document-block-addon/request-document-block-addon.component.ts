@@ -25,6 +25,7 @@ interface IRequestDocumentAddonData {
     schema: ISchema;
     active: boolean;
     relayerAccount: boolean;
+    enableAdditionalData: boolean;
     data: any;
     buttonName: string;
     hideWhenDiscontinued?: boolean;
@@ -79,6 +80,7 @@ export class RequestDocumentBlockAddonComponent
     public edit: boolean;
     public draft: boolean;
     public relayerAccount: boolean;
+    public enableAdditionalData: boolean = false;
     public isLocalUser: boolean = true;
 
     constructor(
@@ -132,6 +134,7 @@ export class RequestDocumentBlockAddonComponent
             this.disabled = active === false;
             this.isExist = true;
             this.relayerAccount = !!data.relayerAccount && !this.dryRun;
+            this.enableAdditionalData = !!data.enableAdditionalData && !this.dryRun;
             this.needPreset = data.preset;
             this.presetFields = data.presetFields || [];
             this.restoreData = data.restoreData;

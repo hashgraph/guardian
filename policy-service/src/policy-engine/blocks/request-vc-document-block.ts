@@ -1,4 +1,4 @@
-import { CheckResult, LocationType, removeObjectProperties, Schema, SchemaHelper } from '@guardian/interfaces';
+import { CheckResult, LocationType, removeObjectProperties, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { BlockActionError } from '../errors/index.js';
 import { ActionCallback, StateField } from '../helpers/decorators/index.js';
@@ -150,6 +150,7 @@ export class RequestVcDocumentBlock {
             presetFields: options.presetFields,
             editType: options.editType || 'new',
             relayerAccount: !!options.relayerAccount,
+            enableAdditionalData: !!options.enableAdditionalData,
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || [],
             data: sources && sources.length && sources[0] || null,
@@ -239,7 +240,7 @@ export class RequestVcDocumentBlock {
             }
 
             //Create Verifiable Credential
-            const item = await this.createVerifiableCredential(user, documentOwner, relayerAccount, credentialSubject, actionStatus?.id);
+            const item = await this.createVerifiableCredential(user, documentOwner, relayerAccount, credentialSubject, actionStatus?.id, data.evidence);
             PolicyUtils.setDocumentRef(item, documentRef);
 
             //Update metadata
@@ -432,21 +433,33 @@ export class RequestVcDocumentBlock {
         owner: PolicyUser,
         relayerAccount: string,
         credentialSubject: any,
-        actionStatusId: string
+        actionStatusId: string,
+        evidence?: { dataType: string; data: string }[]
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         const groupContext = await PolicyUtils.getGroupContext(ref, issuer);
         const uuid = await ref.components.generateUUID(actionStatusId);
 
+        let evidenceOptions: { evidence?: { type: string[]; dataType: string; data: string }[]; evidenceContext?: string } = {};
+        if (ref.options.enableAdditionalData && evidence?.length) {
+            const evidenceSchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.EVIDENCE_ATTACHMENTS);
+            const evidenceContext = PolicyUtils.getSchemaContext(ref, evidenceSchema);
+            evidenceOptions = {
+                evidence: evidence.map(e => ({ type: ['Evidence'], dataType: e.dataType, data: e.data })),
+                evidenceContext,
+            };
+        }
+
         const vc = await PolicyActionsUtils.signVC({
             ref,
             subject: credentialSubject,
             issuer: issuer.did,
             relayerAccount,
-            options: { uuid, group: groupContext },
+            options: { uuid, group: groupContext, ...evidenceOptions },
             userId: issuer.userId
         });
+
         const item = PolicyUtils.createVC(ref, owner, vc, actionStatusId);
 
         const tags = await PolicyUtils.getBlockTags(ref);
