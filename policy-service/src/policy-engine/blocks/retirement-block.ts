@@ -20,7 +20,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'retirementDocumentBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
-    canMockUp: true,
+    canMock: true,
     about: {
         label: 'Wipe',
         title: `Add 'Wipe' Block`,

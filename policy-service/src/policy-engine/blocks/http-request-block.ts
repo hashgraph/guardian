@@ -17,7 +17,7 @@ import { LocationType, WorkerTaskType } from '@guardian/interfaces';
     blockType: 'httpRequestBlock',
     actionType: LocationType.REMOTE,
     commonBlock: false,
-    canMockUp: true,
+    canMock: true,
     about: {
         label: 'Request data',
         title: `Add 'Request Data' Block`,

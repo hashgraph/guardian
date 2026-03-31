@@ -15,7 +15,7 @@ import { PolicyUtils } from '../helpers/utils.js';
     blockType: 'tool',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    canMockUp: false,
+    canMock: false,
     variables: []
 })
 export class ToolBlock {

@@ -17,7 +17,7 @@ import { PolicyUtils } from '../helpers/utils.js';
     blockType: 'tagsManager',
     commonBlock: true,
     actionType: LocationType.REMOTE,
-    canMockUp: true,
+    canMock: true,
     about: {
         label: 'Tags Manager',
         title: `Add 'Tags Manager' Block`,

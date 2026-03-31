@@ -22,10 +22,10 @@ import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.s
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
-import { MockUpDialog } from '../../dialogs/mock-up-dialog/mock-up-dialog.component';
+import { MockDialog } from '../../dialogs/mock-dialog/mock-dialog.component';
 
-type MockUpItemType = 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
-const MockUpTabs = ['IPFS', 'Topics', 'Tokens', 'API'];
+type MockItemType = 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
+const MockTabs = ['IPFS', 'Topics', 'API'];
 
 /**
  * Component for choosing a policy and
@@ -79,9 +79,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     private openedOnLoad = false;
     private forceAdminAfterReload = false;
 
-    public mockTab: string = 'IPFS';
+    public mockTab: string = 'API';
     public mockConfig: any = {
-        enable: false,
+        enabled: false,
         blocks: []
     };
     public mockIpfs: any[] = [];
@@ -453,12 +453,12 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     onView(view: string) {
         this.view = view;
         this.columns = this.columnsMap[this.view];
-        if (this.view === 'mockup_config' || this.view === 'mockup_data') {
+        if (this.view === 'mock_config' || this.view === 'mock_data') {
             this.loading = true;
 
             forkJoin([
-                this.policyEngineService.loadMockupConfig(this.policyInfo.id),
-                this.policyEngineService.loadMockupData(this.policyInfo.id)
+                this.policyEngineService.loadMockConfig(this.policyInfo.id),
+                this.policyEngineService.loadMockData(this.policyInfo.id)
             ]).subscribe(([config, data]) => {
 
                 this.mockConfig = config || {};
@@ -467,7 +467,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.mockTokens = data?.tokens || [];
                 this.mockApi = data?.api || [];
 
-                this.updateMockUpGrid();
+                this.updateMockGrid();
 
                 setTimeout(() => {
                     this.loading = false;
@@ -926,10 +926,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     public onMockTab(tab: any) {
-        this.mockTab = MockUpTabs[tab.index] || 'IPFS';
+        this.mockTab = MockTabs[tab.index] || 'IPFS';
     }
 
-    private serializeMockData(type: MockUpItemType, item: any) {
+    private serializeMockData(type: MockItemType, item: any) {
         if (type === 'IPFS') {
             return {
                 cid: item.cid,
@@ -970,7 +970,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
     }
 
-    private deserializeMockData(type: MockUpItemType, item: any) {
+    private deserializeMockData(type: MockItemType, item: any) {
         if (type === 'IPFS') {
             return {
                 cid: item.cid,
@@ -1017,13 +1017,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
     }
 
-    public editMockData(type: MockUpItemType, item: any) {
-        const dialogRef = this.dialogService.open(MockUpDialog, {
+    public editMockData(type: MockItemType, item: any) {
+        const dialogRef = this.dialogService.open(MockDialog, {
             showHeader: false,
             width: '80%',
             styleClass: 'guardian-dialog',
             data: {
-                title: 'Edit mockup data',
+                title: 'Edit mock data',
                 action: 'Save',
                 type,
                 item: this.serializeMockData(type, item)
@@ -1076,14 +1076,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         });
     }
 
-    public deleteMockData(type: MockUpItemType, item: any) {
+    public deleteMockData(type: MockItemType, item: any) {
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
                 header: 'Reconnect',
-                text: 'Are you sure want to delete mockup item?',
+                text: 'Are you sure want to delete mock item?',
                 buttons: [{
                     name: 'Close',
                     class: 'secondary'
@@ -1113,13 +1113,21 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         });
     }
 
-    public addMockData(type: MockUpItemType) {
-        const dialogRef = this.dialogService.open(MockUpDialog, {
+    public addMockData(type: MockItemType) {
+        const titles = {
+            'IPFS': 'Add IPFS File Mock',
+            'MESSAGE': 'Add Topic / Message Mock',
+            'TOKEN': '',
+            'ACCOUNT': '',
+            'API': 'Add API Mock',
+        };
+
+        const dialogRef = this.dialogService.open(MockDialog, {
             showHeader: false,
             width: '80%',
             styleClass: 'guardian-dialog',
             data: {
-                title: 'Add mockup data',
+                title: titles[type],
                 action: 'Add',
                 type
             }
@@ -1168,7 +1176,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.mockTopics = data?.topics || [];
                 this.mockTokens = data?.tokens || [];
                 this.mockApi = data?.api || [];
-                this.updateMockUpGrid();
+                this.updateMockGrid();
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -1183,7 +1191,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             width: '80%',
             styleClass: 'guardian-dialog',
             data: {
-                type: ImportEntityType.MockUp,
+                type: ImportEntityType.Mock,
                 policyId: this.policyInfo.id
             }
         });
@@ -1191,13 +1199,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             if (result) {
                 this.loading = true;
                 this.policyEngineService
-                    .importMockupData(this.policyInfo.id, result.data)
+                    .importMockData(this.policyInfo.id, result.data)
                     .subscribe((data: any) => {
                         this.mockIpfs = data?.ipfs || [];
                         this.mockTopics = data?.topics || [];
                         this.mockTokens = data?.tokens || [];
                         this.mockApi = data?.api || [];
-                        this.updateMockUpGrid();
+                        this.updateMockGrid();
                         setTimeout(() => {
                             this.loading = false;
                         }, 500);
@@ -1211,15 +1219,15 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public onExportMock() {
         this.loading = true;
         this.policyEngineService
-            .exportMockupData(this.policyInfo.id)
+            .exportMockData(this.policyInfo.id)
             .subscribe((fileBuffer: any) => {
                 const downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(
                     new Blob([new Uint8Array(fileBuffer)], {
-                        type: 'application/guardian-mockup'
+                        type: 'application/guardian-mock'
                     })
                 );
-                downloadLink.setAttribute('download', `mockup_${Date.now()}.mockup`);
+                downloadLink.setAttribute('download', `mock_${Date.now()}.mock`);
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 downloadLink.remove();
@@ -1234,24 +1242,24 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             });
     }
 
-    public enableMockUp() {
-        this.mockConfig.enable = !this.mockConfig.enable;
+    public enableMock() {
+        this.mockConfig.enabled = !this.mockConfig.enabled;
         for (const block of this.mockConfig.blocks) {
-            block.enable = this.mockConfig.enable
+            block.enabled = this.mockConfig.enabled
         }
     }
 
-    public enableBlockMockUp(block: any) {
-        block.enable = !block.enable;
-        if (block.enable) {
-            this.mockConfig.enable = true;
+    public enableBlockMock(block: any) {
+        block.enabled = !block.enabled;
+        if (block.enabled) {
+            this.mockConfig.enabled = true;
         }
     }
 
     public onSaveMockConfig() {
         this.loading = true;
         this.policyEngineService
-            .saveMockupConfig(this.policyInfo.id, this.mockConfig)
+            .saveMockConfig(this.policyInfo.id, this.mockConfig)
             .subscribe((config: any) => {
                 this.mockConfig = config || {};
                 setTimeout(() => {
@@ -1262,7 +1270,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             });
     }
 
-    private updateMockUpGrid() {
+    private updateMockGrid() {
         for (const topic of this.mockTopics) {
             if (topic.messages?.length) {
                 for (const message of topic.messages) {

@@ -24,7 +24,7 @@ import {
     MockEntityType,
     MockEvent,
     MockType,
-    MockUpHelper,
+    MockHelper,
     NatsService,
     NewNotifier,
     NotificationStep,
@@ -1322,10 +1322,10 @@ export class PolicyEngineService {
             async (msg: {
                 policyId: string,
                 owner: IOwner,
-                enableMockUp: boolean
+                enableMock: boolean
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { policyId, owner, enableMockUp } = msg;
+                    const { policyId, owner, enableMock } = msg;
 
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'publish');
@@ -1355,8 +1355,8 @@ export class PolicyEngineService {
                     const errors = await this.policyEngine.validateModel(policyId, true);
                     const isValid = !errors.blocks.some(block => !block.isValid);
                     if (isValid) {
-                        await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger, enableMockUp);
-                        await this.policyEngine.generateModel(model.id.toString(), enableMockUp);
+                        await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger, enableMock);
+                        await this.policyEngine.generateModel(model.id.toString(), enableMock);
                     }
 
                     const savepointsCount = await DatabaseServer.getSavepointsCount(policyId);
@@ -2632,14 +2632,14 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>('MOCK_EVENT_EXECUTE',
             async (event: MockEvent) => {
                 try {
-                    const result = await MockUpHelper.execute(event);
+                    const result = await MockHelper.execute(event);
                     return new MessageResponse(result);
                 } catch (error) {
                     return new MessageError(error);
                 }
             });
 
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MOCK_UP_CONFIG,
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MOCK_CONFIG,
             async (msg: {
                 policyId: string,
                 owner: IOwner,
@@ -2653,7 +2653,7 @@ export class PolicyEngineService {
                     }
 
                     const config = await new GuardiansService()
-                        .sendBlockMessage(PolicyEvents.GET_MOCK_UP_CONFIG, policyId, {}) as any
+                        .sendBlockMessage(PolicyEvents.GET_MOCK_CONFIG, policyId, {}) as any
 
                     return new MessageResponse(config);
                 } catch (error) {
@@ -2661,7 +2661,7 @@ export class PolicyEngineService {
                 }
             });
 
-        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_MOCK_UP_CONFIG,
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_MOCK_CONFIG,
             async (msg: {
                 policyId: string,
                 owner: IOwner,
@@ -2676,7 +2676,7 @@ export class PolicyEngineService {
                     }
 
                     const result = await new GuardiansService()
-                        .sendBlockMessage(PolicyEvents.SET_MOCK_UP_CONFIG, policyId, config) as any
+                        .sendBlockMessage(PolicyEvents.SET_MOCK_CONFIG, policyId, config) as any
 
                     return new MessageResponse(result);
                 } catch (error) {
@@ -2684,7 +2684,7 @@ export class PolicyEngineService {
                 }
             });
 
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MOCK_UP_DATA,
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MOCK_DATA,
             async (msg: {
                 policyId: string,
                 owner: IOwner,
@@ -2696,14 +2696,14 @@ export class PolicyEngineService {
                     if (!PolicyHelper.isDryRunMode(model)) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
-                    const data = await MockUpHelper.getMockUpData(policyId);
+                    const data = await MockHelper.getMockData(policyId);
                     return new MessageResponse(data);
                 } catch (error) {
                     return new MessageError(error);
                 }
             });
 
-        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_MOCK_UP_DATA,
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_MOCK_DATA,
             async (msg: {
                 policyId: string,
                 owner: IOwner,
@@ -2716,14 +2716,14 @@ export class PolicyEngineService {
                     if (!PolicyHelper.isDryRunMode(model)) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
-                    const result = await MockUpHelper.setMockUpData(policyId, data);
+                    const result = await MockHelper.setMockData(policyId, data);
                     return new MessageResponse(result);
                 } catch (error) {
                     return new MessageError(error);
                 }
             });
 
-        this.channel.getMessages<any, any>(PolicyEngineEvents.IMPORT_MOCK_UP_DATA,
+        this.channel.getMessages<any, any>(PolicyEngineEvents.IMPORT_MOCK_DATA,
             async (msg: {
                 policyId: string,
                 owner: IOwner,
@@ -2737,16 +2737,16 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
 
-                    await MockUpHelper.import(policyId, Buffer.from(zip.data));
+                    await MockHelper.import(policyId, Buffer.from(zip.data));
 
-                    const data = await MockUpHelper.getMockUpData(policyId);
+                    const data = await MockHelper.getMockData(policyId);
                     return new MessageResponse(data);
                 } catch (error) {
                     return new MessageError(error);
                 }
             });
 
-        this.channel.getMessages<any, any>(PolicyEngineEvents.EXPORT_MOCK_UP_DATA,
+        this.channel.getMessages<any, any>(PolicyEngineEvents.EXPORT_MOCK_DATA,
             async (msg: {
                 policyId: string,
                 owner: IOwner
@@ -2759,7 +2759,7 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
 
-                    const zip = await MockUpHelper.export(policyId);
+                    const zip = await MockHelper.export(policyId);
                     const file = await zip.generateAsync({
                         type: 'arraybuffer',
                         compression: 'DEFLATE',
@@ -2774,7 +2774,7 @@ export class PolicyEngineService {
                 }
             });
 
-        this.channel.getMessages<any, any>(PolicyEngineEvents.MOCK_UP_REQUEST,
+        this.channel.getMessages<any, any>(PolicyEngineEvents.MOCK_REQUEST,
             async (msg: {
                 policyId: string,
                 owner: IOwner,
@@ -2789,7 +2789,7 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
                     if (type === MockType.GET_FILE) {
-                        const result = await MockUpHelper.execute({
+                        const result = await MockHelper.execute({
                             mockId: policyId,
                             type: MockType.GET_FILE,
                             data: {
@@ -2799,7 +2799,7 @@ export class PolicyEngineService {
                         });
                         return new MessageResponse(result);
                     } else if (type === MockType.API) {
-                        const result = await MockUpHelper.execute({
+                        const result = await MockHelper.execute({
                             mockId: policyId,
                             type: MockType.API,
                             data: {

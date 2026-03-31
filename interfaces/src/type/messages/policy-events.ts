@@ -60,6 +60,6 @@ export enum PolicyEvents {
     RECORD_PERSIST_STEP = 'RECORD_PERSIST_STEP',
     CREATE_NEW_VERSION_VC_DOCUMENT = 'policy-event-create-new-version-vc-document',
     GET_ALL_NEW_VERSION_VC_DOCUMENTS = 'policy-event-get-all-new-version-vc-documents',
-    GET_MOCK_UP_CONFIG = 'policy-event-get-mockup-config',
-    SET_MOCK_UP_CONFIG = 'policy-event-set-mockup-config',
+    GET_MOCK_CONFIG = 'policy-event-get-mock-config',
+    SET_MOCK_CONFIG = 'policy-event-set-mock-config',
 }

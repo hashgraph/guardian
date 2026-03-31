@@ -4,7 +4,7 @@ import {
     MockEntityType,
     MockService,
     MockType,
-    MockUpHelper,
+    MockHelper,
     NatsService,
     NotificationHelper,
     PinoLogger,
@@ -341,7 +341,7 @@ export class Worker extends NatsService {
                             type: MockType.ADD_FILE,
                             data: {
                                 type: MockEntityType.FILE,
-                                content: MockUpHelper.getBuffet(fileContent)
+                                content: MockHelper.getBuffet(fileContent)
                             }
                         });
                     } else if (task.dryRun) {

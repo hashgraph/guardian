@@ -38,7 +38,7 @@ interface IMetadata {
     blockType: 'customLogicBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
-    canMockUp: false,
+    canMock: false,
     about: {
         label: 'Custom Logic',
         title: `Add 'Custom Logic' Block`,

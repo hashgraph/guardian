@@ -496,19 +496,19 @@ export class BlockTreeGenerator extends NatsService {
             }
         });
 
-        this.getPolicyMessages(PolicyEvents.GET_MOCK_UP_CONFIG, policyId, async (_: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_MOCK_CONFIG, policyId, async (_: any) => {
             try {
-                const config = PolicyComponentsUtils.GetMockUpConfig(policyId);
+                const config = PolicyComponentsUtils.GetMockConfig(policyId);
                 return new MessageResponse(config);
             } catch (error) {
                 return new MessageError(error, 500);
             }
         });
 
-        this.getPolicyMessages(PolicyEvents.SET_MOCK_UP_CONFIG, policyId, async (config: any) => {
+        this.getPolicyMessages(PolicyEvents.SET_MOCK_CONFIG, policyId, async (config: any) => {
             try {
-                PolicyComponentsUtils.SetMockUpConfig(policyId, config);
-                const result = PolicyComponentsUtils.GetMockUpConfig(policyId);
+                PolicyComponentsUtils.SetMockConfig(policyId, config);
+                const result = PolicyComponentsUtils.GetMockConfig(policyId);
                 return new MessageResponse(result);
             } catch (error) {
                 return new MessageError(error, 500);
@@ -631,7 +631,7 @@ export class BlockTreeGenerator extends NatsService {
         policyValidator: PolicyValidator,
         logger: PinoLogger,
         policyOwnerId: string | null,
-        enableMockUp: boolean
+        enableMock: boolean
     ): Promise<IPolicyBlock | { type: 'error', message: string }> {
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
@@ -670,8 +670,8 @@ export class BlockTreeGenerator extends NatsService {
 
             await PolicyComponentsUtils.RegisterNavigation(policyId, policy.policyNavigation);
 
-            if(enableMockUp) {
-                PolicyComponentsUtils.MockUpAll(policyId);
+            if(enableMock) {
+                PolicyComponentsUtils.MockAll(policyId);
             }
 
             return rootInstance;

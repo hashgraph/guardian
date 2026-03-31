@@ -37,7 +37,7 @@ import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.
     blockType: 'requestVcDocumentBlockAddon',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    canMockUp: false,
+    canMock: false,
     about: {
         label: 'Request',
         title: `Add 'Request' Block`,

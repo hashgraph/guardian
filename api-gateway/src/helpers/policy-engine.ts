@@ -1,4 +1,4 @@
-import { BasePolicyDTO, ExportMessageDTO, MockUpConfigDTO, MockUpDataDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
+import { BasePolicyDTO, ExportMessageDTO, MockConfigDTO, MockDataDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
 import { IAuthUser, MockType, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
@@ -227,9 +227,9 @@ export class PolicyEngine extends NatsService {
     public async dryRunPolicy(
         policyId: string,
         owner: IOwner,
-        enableMockUp: boolean
+        enableMock: boolean
     ): Promise<PoliciesValidationDTO> {
-        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_POLICIES, { policyId, owner, enableMockUp });
+        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_POLICIES, { policyId, owner, enableMock });
     }
 
     /**
@@ -903,45 +903,45 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
-     * Get mockup config
+     * Get mock config
      * @param policyId
      * @param owner
      */
-    public async getMockupConfig(
+    public async getMockConfig(
         policyId: string,
         owner: IOwner,
-    ): Promise<MockUpConfigDTO> {
-        return await this.sendMessage(PolicyEngineEvents.GET_MOCK_UP_CONFIG, { policyId, owner });
+    ): Promise<MockConfigDTO> {
+        return await this.sendMessage(PolicyEngineEvents.GET_MOCK_CONFIG, { policyId, owner });
     }
 
     /**
-     * Get mockup data
+     * Get mock data
      * @param policyId
      * @param owner
      */
-    public async getMockupData(
+    public async getMockData(
         policyId: string,
         owner: IOwner,
-    ): Promise<MockUpDataDTO> {
-        return await this.sendMessage(PolicyEngineEvents.GET_MOCK_UP_DATA, { policyId, owner });
+    ): Promise<MockDataDTO> {
+        return await this.sendMessage(PolicyEngineEvents.GET_MOCK_DATA, { policyId, owner });
     }
 
     /**
-     * Get mockup data
+     * Get mock data
      * @param policyId
      * @param owner
      * @param config
      */
-    public async setMockupConfig(
+    public async setMockConfig(
         policyId: string,
         owner: IOwner,
-        config: MockUpConfigDTO,
+        config: MockConfigDTO,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_MOCK_UP_CONFIG, { policyId, owner, config });
+        return await this.sendMessage(PolicyEngineEvents.SET_MOCK_CONFIG, { policyId, owner, config });
     }
 
     /**
-     * Update mockup data
+     * Update mock data
      * @param policyId
      * @param owner
      * @param data
@@ -949,27 +949,27 @@ export class PolicyEngine extends NatsService {
     public async updateMockData(
         policyId: string,
         owner: IOwner,
-        data: MockUpDataDTO,
+        data: MockDataDTO,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_MOCK_UP_DATA, { policyId, owner, data });
+        return await this.sendMessage(PolicyEngineEvents.SET_MOCK_DATA, { policyId, owner, data });
     }
 
     /**
-     * Load MockUp file for import
+     * Load Mock file for import
      * @param zip
      * @param owner
      */
-    public async importMockup(policyId: string, owner: IOwner, zip: any): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.IMPORT_MOCK_UP_DATA, { zip, policyId, owner });
+    public async importMock(policyId: string, owner: IOwner, zip: any): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.IMPORT_MOCK_DATA, { zip, policyId, owner });
     }
 
     /**
-     * Get MockUp export file
+     * Get Mock export file
      * @param policyId
      * @param owner
      */
-    public async exportMockup(policyId: string, owner: IOwner) {
-        const file = await this.sendMessage(PolicyEngineEvents.EXPORT_MOCK_UP_DATA, { policyId, owner }) as any;
+    public async exportMock(policyId: string, owner: IOwner) {
+        const file = await this.sendMessage(PolicyEngineEvents.EXPORT_MOCK_DATA, { policyId, owner }) as any;
         return Buffer.from(file, 'base64');
     }
 
@@ -985,7 +985,7 @@ export class PolicyEngine extends NatsService {
         type: MockType,
         config: any,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.MOCK_UP_REQUEST, { policyId, owner, type, config });
+        return await this.sendMessage(PolicyEngineEvents.MOCK_REQUEST, { policyId, owner, type, config });
     }
 
     /**

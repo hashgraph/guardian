@@ -4658,13 +4658,13 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Save MockUp
+     * Save Mock
      * @param dryRun
      * @param type
      * @param data
      *
      */
-    public static async saveMockUp(
+    public static async saveMock(
         dryRun: string,
         type: string,
         data: any
@@ -4672,27 +4672,27 @@ export class DatabaseServer extends AbstractDatabaseServer {
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
             ...data,
             type
-        }, dryRun, 'MockUp', false));
+        }, dryRun, 'Mock', false));
     }
 
     /**
-     * Save MockUp
+     * Save Mock
      * @param dryRun
      * @param type
      * @param data
      *
      */
-    public static async updateMockUp(item: DryRun): Promise<void> {
+    public static async updateMock(item: DryRun): Promise<void> {
         await new DataBaseHelper(DryRun).save(item);
     }
     /**
-     * Get MockUp
+     * Get Mock
      * @param dryRun
      * @param type
      * @param filters
      *
      */
-    public static async getMockUp(
+    public static async getMock(
         dryRun: string,
         type: string,
         filters: any
@@ -4700,19 +4700,19 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return (await new DataBaseHelper(DryRun).findOne({
             ...filters,
             dryRunId: dryRun,
-            dryRunClass: 'MockUp',
+            dryRunClass: 'Mock',
             type
         }));
     }
 
     /**
-     * Delete MockUp
+     * Delete Mock
      * @param dryRun
      * @param type
      * @param filters
      *
      */
-    public static async deleteMockUp(
+    public static async deleteMock(
         dryRun: string,
         type: string,
         filters: any
@@ -4720,23 +4720,23 @@ export class DatabaseServer extends AbstractDatabaseServer {
         (await new DataBaseHelper(DryRun).delete({
             ...filters,
             dryRunId: dryRun,
-            dryRunClass: 'MockUp',
+            dryRunClass: 'Mock',
             type
         }));
     }
 
     /**
-     * Get MockUps
+     * Get Mocks
      * @param dryRun
      */
-    public static async getMockUps(
+    public static async getMocks(
         dryRun: string,
         type?: string,
         filters?: any
     ): Promise<DryRun[]> {
         let query: any = {
             dryRunId: dryRun,
-            dryRunClass: 'MockUp',
+            dryRunClass: 'Mock',
         }
         if (type) {
             query.type = type
@@ -4751,15 +4751,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Delete MockUps
+     * Delete Mocks
      * @param dryRun
      */
-    public static async deleteMockUps(
+    public static async deleteMocks(
         dryRun: string
     ): Promise<void> {
         (await new DataBaseHelper(DryRun).delete({
             dryRunId: dryRun,
-            dryRunClass: 'MockUp'
+            dryRunClass: 'Mock'
         }));
     }
 

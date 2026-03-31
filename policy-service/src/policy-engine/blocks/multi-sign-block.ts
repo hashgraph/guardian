@@ -29,7 +29,7 @@ enum DocumentStatus {
     blockType: 'multiSignBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
-    canMockUp: true,
+    canMock: true,
     about: {
         label: 'Multiple Signature',
         title: `Add 'Multiple Signature' Block`,

@@ -107,7 +107,7 @@ interface IGroupConfig {
     blockType: 'policyRolesBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    canMockUp: true,
+    canMock: true,
     about: {
         label: 'Roles',
         title: `Add 'Choice Of Roles' Block`,

@@ -53,7 +53,7 @@ import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'process';
 import { FireblocksHelper } from './fireblocks-helper.js';
-import { Environment, MockEntityType, MockService, MockType, MockUpHelper } from '@guardian/common';
+import { Environment, MockEntityType, MockService, MockType, MockHelper } from '@guardian/common';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -1384,9 +1384,9 @@ export class HederaSDKHelper {
         const receipt = await (new MockService()).execute({
             mockId: this.mockId,
             type: MockType.EXECUTE_AND_RECEIPT,
-            data: MockUpHelper.getReceipt(type, accountId, transaction)
+            data: MockHelper.getReceipt(type, accountId, transaction)
         });
-        return MockUpHelper.deserializeTransaction(receipt);
+        return MockHelper.deserializeTransaction(receipt);
     }
 
     /**
@@ -1487,9 +1487,9 @@ export class HederaSDKHelper {
         const record = await (new MockService()).execute({
             mockId: this.mockId,
             type: MockType.EXECUTE_AND_RECORD,
-            data: MockUpHelper.getRecord(type, accountId, transaction)
+            data: MockHelper.getRecord(type, accountId, transaction)
         });
-        return MockUpHelper.deserializeTransaction(record);
+        return MockHelper.deserializeTransaction(record);
     }
 
     /**

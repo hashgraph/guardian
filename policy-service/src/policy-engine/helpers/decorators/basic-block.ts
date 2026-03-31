@@ -137,7 +137,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Enable Mock Up
              */
-            private readonly enableMockUp: boolean;
+            private readonly enableMock: boolean;
             /**
              * Block class name
              */
@@ -161,7 +161,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Can Mock Up
              */
-            public readonly canMockUp: boolean;
+            public readonly canMock: boolean;
 
             constructor(
                 _uuid: string,
@@ -221,7 +221,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
                 this.variables = defaultOptions.variables || [];
                 this.actionType = defaultOptions.actionType || LocationType.REMOTE;
-                this.canMockUp = !!defaultOptions.canMockUp;
+                this.canMock = !!defaultOptions.canMock;
             }
 
             /**
@@ -235,7 +235,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Dry Run id
              */
             public get mockId(): string {
-                if (this.canMockUp && this.enableMockUp && this.enableMockUpGlobal) {
+                if (this.canMock && this.enableMock && this.enableMockGlobal) {
                     return this._dryRun;
                 }
                 return null;
@@ -265,8 +265,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Policy location
              */
-            public get enableMockUpGlobal(): boolean {
-                return !!((this.policyInstance as any)?.enableMockUp);
+            public get enableMockGlobal(): boolean {
+                return !!((this.policyInstance as any)?.enableMock);
             }
 
             /**

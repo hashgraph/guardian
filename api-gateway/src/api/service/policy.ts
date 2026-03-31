@@ -54,10 +54,10 @@ import {
     MigrationRunStatusDTO,
     MigrationStatusResponseDTO,
     MigrationFailedItemDTO,
-    MockUpApiRequestDTO,
-    MockUpIpfsRequestDTO,
-    MockUpConfigDTO,
-    MockUpDataDTO
+    MockApiRequestDTO,
+    MockIpfsRequestDTO,
+    MockConfigDTO,
+    MockDataDTO
 } from '#middlewares';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
@@ -1181,8 +1181,8 @@ export class PolicyApi {
     ): Promise<PoliciesValidationDTO> {
         try {
             const engineService = new PolicyEngine();
-            const enableMockUp = !!body?.enableMockUp;
-            const result = await engineService.dryRunPolicy(policyId, new EntityOwner(user), enableMockUp);
+            const enableMock = !!body?.enableMock;
+            const result = await engineService.dryRunPolicy(policyId, new EntityOwner(user), enableMock);
             result.policies = await getOldResult(user);
 
             const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
@@ -4706,13 +4706,13 @@ export class PolicyApi {
     }
 
     /**
-     * Get mockup config
+     * Get mock config
      */
-    @Get('/:policyId/dry-run/mockup/config')
+    @Get('/:policyId/dry-run/mock/config')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Get mockup config.',
-        description: 'Get mockup config.',
+        summary: 'Get mock config.',
+        description: 'Get mock config.',
     })
     @ApiParam({
         name: 'policyId',
@@ -4723,15 +4723,15 @@ export class PolicyApi {
     })
     @ApiOkResponse({
         description: 'Config',
-        type: MockUpConfigDTO,
+        type: MockConfigDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(MockUpConfigDTO, InternalServerErrorDTO)
+    @ApiExtraModels(MockConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getMockupConfig(
+    async getMockConfig(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
     ) {
@@ -4739,20 +4739,20 @@ export class PolicyApi {
         const owner = new EntityOwner(user);
         await engineService.accessPolicy(policyId, owner, 'read');
         try {
-            return await engineService.getMockupConfig(policyId, owner)
+            return await engineService.getMockConfig(policyId, owner)
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
     }
 
     /**
-     * Get mockup data
+     * Get mock data
      */
-    @Get('/:policyId/dry-run/mockup/data')
+    @Get('/:policyId/dry-run/mock/data')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Get mockup data.',
-        description: 'Get mockup data.',
+        summary: 'Get mock data.',
+        description: 'Get mock data.',
     })
     @ApiParam({
         name: 'policyId',
@@ -4763,15 +4763,15 @@ export class PolicyApi {
     })
     @ApiOkResponse({
         description: 'Config',
-        type: MockUpDataDTO,
+        type: MockDataDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(MockUpDataDTO, InternalServerErrorDTO)
+    @ApiExtraModels(MockDataDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getMockupData(
+    async getMockData(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
     ) {
@@ -4779,20 +4779,20 @@ export class PolicyApi {
         const owner = new EntityOwner(user);
         await engineService.accessPolicy(policyId, owner, 'read');
         try {
-            return await engineService.getMockupData(policyId, owner)
+            return await engineService.getMockData(policyId, owner)
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
     }
 
     /**
-     * Update mockup data
+     * Update mock data
      */
-    @Post('/:policyId/dry-run/mockup/data')
+    @Post('/:policyId/dry-run/mock/data')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Set mockup data.',
-        description: 'Set mockup data.',
+        summary: 'Set mock data.',
+        description: 'Set mock data.',
     })
     @ApiParam({
         name: 'policyId',
@@ -4803,22 +4803,22 @@ export class PolicyApi {
     })
     @ApiBody({
         description: 'Data',
-        type: MockUpDataDTO,
+        type: MockDataDTO,
     })
     @ApiOkResponse({
         description: 'Data',
-        type: MockUpDataDTO,
+        type: MockDataDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(MockUpDataDTO, InternalServerErrorDTO)
+    @ApiExtraModels(MockDataDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async updateMockData(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: MockUpDataDTO,
+        @Body() body: MockDataDTO,
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
@@ -4831,13 +4831,13 @@ export class PolicyApi {
     }
 
     /**
-     * Update mockup config
+     * Update mock config
      */
-    @Post('/:policyId/dry-run/mockup/config')
+    @Post('/:policyId/dry-run/mock/config')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Set mockup config.',
-        description: 'Set mockup config.',
+        summary: 'Set mock config.',
+        description: 'Set mock config.',
     })
     @ApiParam({
         name: 'policyId',
@@ -4848,41 +4848,41 @@ export class PolicyApi {
     })
     @ApiBody({
         description: 'Config',
-        type: MockUpConfigDTO,
+        type: MockConfigDTO,
     })
     @ApiOkResponse({
         description: 'Config',
-        type: MockUpConfigDTO,
+        type: MockConfigDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(MockUpConfigDTO, InternalServerErrorDTO)
+    @ApiExtraModels(MockConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async setMockupConfig(
+    async setMockConfig(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: MockUpConfigDTO,
+        @Body() body: MockConfigDTO,
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
         await engineService.accessPolicy(policyId, owner, 'read');
         try {
-            return await engineService.setMockupConfig(policyId, owner, body)
+            return await engineService.setMockConfig(policyId, owner, body)
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
     }
 
     /**
-     * Import MockUp from a zip file
+     * Import Mock from a zip file
      */
-    @Post('/:policyId/dry-run/mockup/import')
+    @Post('/:policyId/dry-run/mock/import')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Import MockUp from a zip file.',
-        description: 'Import MockUp from a zip file.',
+        summary: 'Import Mock from a zip file.',
+        description: 'Import Mock from a zip file.',
     })
     @ApiParam({
         name: 'policyId',
@@ -4892,7 +4892,7 @@ export class PolicyApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'A zip file containing MockUp to be imported.',
+        description: 'A zip file containing Mock to be imported.',
         required: true
     })
     @ApiOkResponse({
@@ -4905,7 +4905,7 @@ export class PolicyApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async importMockup(
+    async importMock(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Body() zip: any
@@ -4916,20 +4916,20 @@ export class PolicyApi {
         }
         try {
             const owner = new EntityOwner(user);
-            return await engineService.importMockup(policyId, owner, zip);
+            return await engineService.importMock(policyId, owner, zip);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
     }
 
     /**
-     * Export MockUp
+     * Export Mock
      */
-    @Get('/:policyId/dry-run/mockup/export')
+    @Get('/:policyId/dry-run/mock/export')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Returns a zip file containing MockUp.',
-        description: 'Returns a zip file containing MockUp.',
+        summary: 'Returns a zip file containing Mock.',
+        description: 'Returns a zip file containing Mock.',
     })
     @ApiParam({
         name: 'policyId',
@@ -4955,8 +4955,8 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         try {
             const owner = new EntityOwner(user);
-            const file: any = await engineService.exportMockup(policyId, owner);
-            res.header('Content-disposition', `attachment; filename=mockup_${Date.now()}`);
+            const file: any = await engineService.exportMock(policyId, owner);
+            res.header('Content-disposition', `attachment; filename=mock_${Date.now()}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
@@ -4965,13 +4965,13 @@ export class PolicyApi {
     }
 
     /**
-     * Mockup request (API)
+     * Mock request (API)
      */
-    @Post('/:policyId/dry-run/mockup/request/api')
+    @Post('/:policyId/dry-run/mock/request/api')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Mockup request (API).',
-        description: 'Mockup request (API).',
+        summary: 'Mock request (API).',
+        description: 'Mock request (API).',
     })
     @ApiParam({
         name: 'policyId',
@@ -4982,7 +4982,7 @@ export class PolicyApi {
     })
     @ApiBody({
         description: 'Config',
-        type: MockUpApiRequestDTO,
+        type: MockApiRequestDTO,
     })
     @ApiOkResponse({
         description: 'Successful operation',
@@ -4992,12 +4992,12 @@ export class PolicyApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(MockUpApiRequestDTO, InternalServerErrorDTO)
+    @ApiExtraModels(MockApiRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async mockApiRequest(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: MockUpApiRequestDTO,
+        @Body() body: MockApiRequestDTO,
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
@@ -5010,13 +5010,13 @@ export class PolicyApi {
     }
 
     /**
-     * Mockup request (IPFS)
+     * Mock request (IPFS)
      */
-    @Post('/:policyId/dry-run/mockup/request/ipfs')
+    @Post('/:policyId/dry-run/mock/request/ipfs')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Mockup request (IPFS).',
-        description: 'Mockup request (IPFS).',
+        summary: 'Mock request (IPFS).',
+        description: 'Mock request (IPFS).',
     })
     @ApiParam({
         name: 'policyId',
@@ -5027,7 +5027,7 @@ export class PolicyApi {
     })
     @ApiBody({
         description: 'Config',
-        type: MockUpIpfsRequestDTO,
+        type: MockIpfsRequestDTO,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -5040,12 +5040,12 @@ export class PolicyApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(MockUpIpfsRequestDTO, InternalServerErrorDTO)
+    @ApiExtraModels(MockIpfsRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async mockIpfsRequest(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: MockUpIpfsRequestDTO,
+        @Body() body: MockIpfsRequestDTO,
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);

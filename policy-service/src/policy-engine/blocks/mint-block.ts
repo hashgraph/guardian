@@ -21,7 +21,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'mintDocumentBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
-    canMockUp: true,
+    canMock: true,
     about: {
         label: 'Mint',
         title: `Add 'Mint' Block`,

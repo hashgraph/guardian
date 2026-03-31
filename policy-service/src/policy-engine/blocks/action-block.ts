@@ -18,7 +18,7 @@ import { PolicyActionsUtils } from '../policy-actions/utils.js';
     blockType: 'interfaceActionBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    canMockUp: false,
+    canMock: false,
     about: {
         label: 'Action',
         title: `Add 'Action' Block`,

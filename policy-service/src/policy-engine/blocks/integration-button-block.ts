@@ -17,7 +17,7 @@ import { FilterQuery } from '@mikro-orm/core';
     blockType: 'integrationButtonBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    canMockUp: false,
+    canMock: false,
     about: generateConfigForIntegrationBlock(PropertyType, ChildrenType, ControlType, PolicyInputEventType, PolicyOutputEventType),
     variables: []
 })

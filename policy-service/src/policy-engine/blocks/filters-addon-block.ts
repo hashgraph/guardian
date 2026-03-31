@@ -15,7 +15,7 @@ import { PolicyUser } from '../policy-user.js';
 @DataSourceAddon({
     blockType: 'filtersAddon',
     actionType: LocationType.LOCAL,
-    canMockUp: false,
+    canMock: false,
     about: {
         label: 'Filters Addon',
         title: `Add 'Filters' Addon`,

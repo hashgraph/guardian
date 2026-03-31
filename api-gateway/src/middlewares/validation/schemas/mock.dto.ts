@@ -3,7 +3,7 @@ import { Examples } from '../examples.js';
 import { IsArray, IsBoolean, IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
 import { DidDocumentDTO } from './profiles.js';
 
-export class MockUpBlockConfigDTO {
+export class MockBlockConfigDTO {
     @ApiProperty({
         type: 'string',
         required: false,
@@ -20,11 +20,11 @@ export class MockUpBlockConfigDTO {
     })
     @IsBoolean()
     @IsOptional()
-    enable?: boolean;
+    enabled?: boolean;
 }
 
-@ApiExtraModels(MockUpBlockConfigDTO)
-export class MockUpConfigDTO {
+@ApiExtraModels(MockBlockConfigDTO)
+export class MockConfigDTO {
     @ApiProperty({
         type: Boolean,
         required: false,
@@ -32,19 +32,19 @@ export class MockUpConfigDTO {
     })
     @IsBoolean()
     @IsOptional()
-    enable?: boolean;
+    enabled?: boolean;
 
     @ApiProperty({
-        type: () => MockUpBlockConfigDTO,
+        type: () => MockBlockConfigDTO,
         required: false,
         isArray: true,
     })
     @IsOptional()
     @IsArray()
-    blocks?: MockUpBlockConfigDTO[];
+    blocks?: MockBlockConfigDTO[];
 }
 
-export class MockUpIpfsDataDTO {
+export class MockIpfsDataDTO {
     @ApiProperty({
         type: 'string',
         required: false,
@@ -63,7 +63,7 @@ export class MockUpIpfsDataDTO {
     content?: string;
 }
 
-export class MockUpTopicTransactionDTO {
+export class MockTopicTransactionDTO {
     @ApiProperty({
         type: 'string',
         required: false,
@@ -103,7 +103,7 @@ export class MockUpTopicTransactionDTO {
     topic_id?: string;
 }
 
-export class MockUpMessageTransactionDTO {
+export class MockMessageTransactionDTO {
     @ApiProperty({
         type: 'string',
         required: false,
@@ -172,8 +172,8 @@ export class MockUpMessageTransactionDTO {
     topic_id?: string;
 }
 
-@ApiExtraModels(MockUpTopicTransactionDTO, MockUpMessageTransactionDTO)
-export class MockUpTopicDataDTO {
+@ApiExtraModels(MockTopicTransactionDTO, MockMessageTransactionDTO)
+export class MockTopicDataDTO {
     @ApiProperty({
         type: 'string',
         required: false,
@@ -184,24 +184,24 @@ export class MockUpTopicDataDTO {
     topicId?: string;
 
     @ApiProperty({
-        type: () => MockUpTopicTransactionDTO,
+        type: () => MockTopicTransactionDTO,
         required: false,
     })
     @IsOptional()
     @IsObject()
-    topic?: MockUpTopicTransactionDTO;
+    topic?: MockTopicTransactionDTO;
 
     @ApiProperty({
-        type: () => MockUpMessageTransactionDTO,
+        type: () => MockMessageTransactionDTO,
         required: false,
         isArray: true
     })
     @IsOptional()
     @IsArray()
-    messages?: MockUpMessageTransactionDTO[];
+    messages?: MockMessageTransactionDTO[];
 }
 
-export class MockUpTokenDataDTO {
+export class MockTokenDataDTO {
     @ApiProperty({
         type: 'string',
         required: false,
@@ -318,7 +318,7 @@ export class MockUpTokenDataDTO {
     wipe_key?: boolean;
 }
 
-export class MockUpRequestConfigDTO {
+export class MockRequestConfigDTO {
     @ApiProperty({
         type: 'string',
         required: false,
@@ -347,15 +347,15 @@ export class MockUpRequestConfigDTO {
     url?: string;
 }
 
-@ApiExtraModels(MockUpRequestConfigDTO)
-export class MockUpApiDataDTO {
+@ApiExtraModels(MockRequestConfigDTO)
+export class MockApiDataDTO {
     @ApiProperty({
-        type: () => MockUpRequestConfigDTO,
+        type: () => MockRequestConfigDTO,
         required: false,
     })
     @IsOptional()
     @IsObject()
-    request?: MockUpRequestConfigDTO;
+    request?: MockRequestConfigDTO;
 
     @ApiProperty({
         type: 'string',
@@ -367,7 +367,7 @@ export class MockUpApiDataDTO {
     response?: string;
 }
 
-export class MockUpUserDataDTO {
+export class MockUserDataDTO {
     @ApiProperty({
         type: 'string',
         required: false,
@@ -413,60 +413,60 @@ export class MockUpUserDataDTO {
 }
 
 @ApiExtraModels(
-    MockUpIpfsDataDTO,
-    MockUpTopicDataDTO,
-    MockUpTokenDataDTO,
-    MockUpApiDataDTO,
-    MockUpUserDataDTO
+    MockIpfsDataDTO,
+    MockTopicDataDTO,
+    MockTokenDataDTO,
+    MockApiDataDTO,
+    MockUserDataDTO
 )
-export class MockUpDataDTO {
+export class MockDataDTO {
     @ApiProperty({
-        type: () => MockUpIpfsDataDTO,
+        type: () => MockIpfsDataDTO,
         required: false,
         isArray: true,
     })
     @IsOptional()
     @IsArray()
-    ipfs?: MockUpIpfsDataDTO[];
+    ipfs?: MockIpfsDataDTO[];
 
     @ApiProperty({
-        type: () => MockUpTopicDataDTO,
+        type: () => MockTopicDataDTO,
         required: false,
         isArray: true,
     })
     @IsOptional()
     @IsArray()
-    topics?: MockUpTopicDataDTO[];
+    topics?: MockTopicDataDTO[];
 
     @ApiProperty({
-        type: () => MockUpTokenDataDTO,
+        type: () => MockTokenDataDTO,
         required: false,
         isArray: true,
     })
     @IsOptional()
     @IsArray()
-    tokens?: MockUpTokenDataDTO[];
+    tokens?: MockTokenDataDTO[];
 
     @ApiProperty({
-        type: () => MockUpApiDataDTO,
+        type: () => MockApiDataDTO,
         required: false,
         isArray: true,
     })
     @IsOptional()
     @IsArray()
-    api?: MockUpApiDataDTO[];
+    api?: MockApiDataDTO[];
 
     @ApiProperty({
-        type: () => MockUpUserDataDTO,
+        type: () => MockUserDataDTO,
         required: false,
         isArray: true,
     })
     @IsOptional()
     @IsArray()
-    users?: MockUpUserDataDTO[];
+    users?: MockUserDataDTO[];
 }
 
-export class MockUpApiRequestDTO {
+export class MockApiRequestDTO {
     @ApiProperty({
         type: 'string',
         required: false,
@@ -498,7 +498,7 @@ export class MockUpApiRequestDTO {
     headers: any;
 }
 
-export class MockUpIpfsRequestDTO {
+export class MockIpfsRequestDTO {
     @ApiProperty({
         type: 'string',
         required: false,

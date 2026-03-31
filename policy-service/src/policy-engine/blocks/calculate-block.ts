@@ -31,7 +31,7 @@ interface IMetadata {
     blockType: 'calculateContainerBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
-    canMockUp: false,
+    canMock: false,
     about: {
         label: 'Calculate',
         title: `Add 'Calculate' Block`,

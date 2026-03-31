@@ -907,7 +907,7 @@ export class PoliciesComponent implements OnInit {
         this.loading = true;
         this.policyEngineService
             .dryRun(element.id, {
-                enableMockUp: true
+                enableMock: true
             })
             .pipe(takeUntil(this._destroy$))
             .subscribe(

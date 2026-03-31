@@ -15,7 +15,7 @@ import { BlockActionError } from '../errors/index.js';
     blockType: 'impactAddon',
     commonBlock: true,
     actionType: LocationType.REMOTE,
-    canMockUp: true,
+    canMock: true,
     about: {
         label: 'Impact',
         title: `Add 'Impact'`,

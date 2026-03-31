@@ -74,7 +74,7 @@ type WorkerTopicMessageRaw = {
     blockType: 'globalEventsReaderBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    canMockUp: true,
+    canMock: true,
     about: {
         label: 'Global Events Reader',
         title: `Add 'Global Events Reader' Block`,

@@ -24,7 +24,7 @@ export enum ImportEntityType {
     Statistic = 'statistic',
     PolicyLabel = 'policy-label',
     Formula = 'formula',
-    MockUp = 'mockup',
+    Mock = 'mock',
 }
 
 export interface IImportEntityArray {
@@ -208,13 +208,13 @@ export class ImportEntityDialog implements OnInit {
                 this.fileExtension = 'formula';
                 this.placeholder = 'Import Formula .formula file';
                 break;
-            case 'mockup':
-                this.type = ImportEntityType.MockUp;
+            case 'mock':
+                this.type = ImportEntityType.Mock;
                 this.canImportFile = true;
                 this.canImportMessage = false;
-                this.title = 'Import MockUp Data';
-                this.fileExtension = 'mockup';
-                this.placeholder = 'Import MockUp .mockup file';
+                this.title = 'Import Mock Data';
+                this.fileExtension = 'mock';
+                this.placeholder = 'Import Mock .mock file';
                 break;
             default:
                 this.type = ImportEntityType.Policy;
@@ -359,8 +359,8 @@ export class ImportEntityDialog implements OnInit {
                     this.formulaFromFile(arrayBuffer);
                     break;
                 }
-                case ImportEntityType.MockUp: {
-                    this.mockUpFromFile(arrayBuffer);
+                case ImportEntityType.Mock: {
+                    this.mockFromFile(arrayBuffer);
                     break;
                 }
                 default: {
@@ -410,7 +410,7 @@ export class ImportEntityDialog implements OnInit {
             case ImportEntityType.Formula: {
                 return;
             }
-            case ImportEntityType.MockUp: {
+            case ImportEntityType.Mock: {
                 return;
             }
             default: {
@@ -691,7 +691,7 @@ export class ImportEntityDialog implements OnInit {
             });
     }
 
-    private mockUpFromFile(arrayBuffer: any) {
+    private mockFromFile(arrayBuffer: any) {
         this.loading = true;
         this.setResult({
             type: 'file',

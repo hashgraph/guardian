@@ -13,7 +13,7 @@ import { IPolicyGetData } from '@policy-engine/policy-engine.interface.js';
     blockType: 'informationBlock',
     commonBlock: false,
     actionType: LocationType.LOCAL,
-    canMockUp: false,
+    canMock: false,
     about: {
         label: 'Information',
         title: `Add 'Information' Block`,

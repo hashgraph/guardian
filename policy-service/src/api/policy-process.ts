@@ -47,7 +47,7 @@ const {
     policyServiceName,
     skipRegistration,
     policyOwnerId,
-    enableMockUp
+    enableMock
 } = JSON.parse(process.env.POLICY_START_OPTIONS);
 
 process.env.SERVICE_CHANNEL = policyServiceName;
@@ -161,7 +161,7 @@ Promise.all([
         policyValidator,
         logger,
         policyOwnerId,
-        enableMockUp
+        enableMock
     );
     if ((policyModel as { type: 'error', message: string }).type === 'error') {
         await generator.publish(PolicyEvents.POLICY_READY, {

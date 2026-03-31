@@ -31,7 +31,7 @@ import {
     MessageAction,
     MessageServer,
     MessageType,
-    MockUpHelper,
+    MockHelper,
     MultiPolicy,
     NatsService,
     NotificationHelper, PinoLogger,
@@ -1142,7 +1142,7 @@ export class PolicyEngine extends NatsService {
                 const messageId = result.getId();
                 const contextCid = result.getContextUrl(UrlType.cid);
 
-                await MockUpHelper.replaceSchema(
+                await MockHelper.replaceSchema(
                     mockId,
                     messageId,
                     contextCid,
@@ -1664,7 +1664,7 @@ export class PolicyEngine extends NatsService {
         version: string,
         demo: boolean,
         logger: PinoLogger,
-        enableMockUp: boolean
+        enableMock: boolean
     ): Promise<Policy> {
         if (demo) {
             logger.info('Demo Policy', ['GUARDIAN_SERVICE'], user.id);
@@ -1679,7 +1679,7 @@ export class PolicyEngine extends NatsService {
             await DatabaseServer.getTopicById(model.topicId), !demo, user.id
         )
 
-        const mockId = enableMockUp ? dryRunId : null;
+        const mockId = enableMock ? dryRunId : null;
 
         // Create Services
         const messageServer = new MessageServer({
@@ -2079,7 +2079,7 @@ export class PolicyEngine extends NatsService {
      * Generate Model
      * @param policyId
      */
-    public async generateModel(policyId: string, enableMockUp: boolean): Promise<any> {
+    public async generateModel(policyId: string, enableMock: boolean): Promise<any> {
         const policy = await DatabaseServer.getPolicyById(policyId);
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
@@ -2095,7 +2095,7 @@ export class PolicyEngine extends NatsService {
                     policyId,
                     skipRegistration: false,
                     policyOwnerId: policy.ownerId,
-                    enableMockUp
+                    enableMock
                 });
                 confirmed = r.confirmed;
             } catch (e) {
@@ -2117,7 +2117,7 @@ export class PolicyEngine extends NatsService {
             } else {
                 await new Promise(resolve => setTimeout(resolve, 10000));
 
-                return this.generateModel(policyId, enableMockUp);
+                return this.generateModel(policyId, enableMock);
             }
         } else {
             return Promise.resolve();

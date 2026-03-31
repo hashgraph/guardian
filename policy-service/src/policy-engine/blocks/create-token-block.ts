@@ -37,7 +37,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'createTokenBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    canMockUp: true,
+    canMock: true,
     about: {
         label: 'Create Token',
         title: `Add 'Create Token' Block`,

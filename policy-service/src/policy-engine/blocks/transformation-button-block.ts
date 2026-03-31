@@ -14,7 +14,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
     blockType: 'transformationButtonBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    canMockUp: true,
+    canMock: true,
     about: {
         label: 'Transformation button',
         title: `Add 'Transformation button' Block`,

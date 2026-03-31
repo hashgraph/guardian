@@ -1229,8 +1229,11 @@ export class PolicyConfigurationComponent implements OnInit {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Enable MockUp',
-                text: `You want to enable saving mock data?`,
+                header: 'Enable Mock',
+                texts: [
+                    `Mock Data intercepts all external service calls (IPFS, Topics, Tokens, and API requests) and returns pre-configured test responses instead of making real network calls. This lets you run and test your policy in a fully self-contained offline environment.`,
+                    `You can change this setting and configure individual blocks at any time from the 'Mock Config' panel.`
+                ],
                 buttons: [{
                     name: 'Disable',
                     class: 'secondary'
@@ -1244,7 +1247,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.loading = true;
             this.policyEngineService
                 .dryRun(this.policyId, {
-                    enableMockUp: result === 'Enable'
+                    enableMock: result === 'Enable'
                 })
                 .pipe(takeUntil(this._destroy$))
                 .subscribe((data: any) => {

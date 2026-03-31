@@ -18,7 +18,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'documentValidatorBlock',
     commonBlock: false,
     actionType: LocationType.LOCAL,
-    canMockUp: false,
+    canMock: false,
     about: {
         label: 'Validator',
         title: `Add 'Validator' Block`,

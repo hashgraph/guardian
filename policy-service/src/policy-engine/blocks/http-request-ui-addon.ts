@@ -12,7 +12,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
     blockType: 'httpRequestUIAddon',
     actionType: LocationType.REMOTE,
     commonBlock: false,
-    canMockUp: true,
+    canMock: true,
     about: {
         label: 'Http Request UI Addon',
         title: `Add 'Http Request UI Addon' Block`,

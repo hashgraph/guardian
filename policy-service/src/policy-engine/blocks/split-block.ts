@@ -25,7 +25,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'splitBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    canMockUp: false,
+    canMock: false,
     about: {
         label: 'Split Block',
         title: `Add 'Split' Block`,

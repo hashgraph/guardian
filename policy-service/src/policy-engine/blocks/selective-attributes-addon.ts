@@ -8,7 +8,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 @SourceAddon({
     blockType: 'selectiveAttributes',
     actionType: LocationType.REMOTE,
-    canMockUp: false,
+    canMock: false,
     about: {
         label: 'Selective Attributes',
         title: `Add 'Selective Attributes' Addon`,

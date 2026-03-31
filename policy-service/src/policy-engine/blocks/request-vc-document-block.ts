@@ -22,7 +22,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'requestVcDocumentBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
-    canMockUp: false,
+    canMock: false,
     about: {
         label: 'Request',
         title: `Add 'Request' Block`,

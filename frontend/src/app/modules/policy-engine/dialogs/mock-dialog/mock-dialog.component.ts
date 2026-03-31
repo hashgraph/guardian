@@ -3,11 +3,11 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
-    selector: 'mock-up-dialog',
-    templateUrl: './mock-up-dialog.component.html',
-    styleUrls: ['./mock-up-dialog.component.scss'],
+    selector: 'mock-dialog',
+    templateUrl: './mock-dialog.component.html',
+    styleUrls: ['./mock-dialog.component.scss'],
 })
-export class MockUpDialog {
+export class MockDialog {
     public loading = true;
     public dataForm: FormGroup;
     public title: string;
@@ -52,7 +52,7 @@ export class MockUpDialog {
         public config: DynamicDialogConfig,
         private dialogService: DialogService,
     ) {
-        this.title = this.config.data?.title || 'Add mockup data';
+        this.title = this.config.data?.title || 'Add mock data';
         this.action = this.config.data?.action || 'Add';
         this.type = this.config.data?.type || 'IPFS';
 

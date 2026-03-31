@@ -128,34 +128,34 @@ export type MockEvent =
     GetAccountEvent |
     ApiEvent;
 
-export class MockUpHelper {
+export class MockHelper {
     public static async execute(event: MockEvent) {
         if (event.type === MockType.ADD_FILE) {
-            return await MockUpHelper.addFile(event.mockId, event.data.type, event.data.content);
+            return await MockHelper.addFile(event.mockId, event.data.type, event.data.content);
         }
         if (event.type === MockType.GET_FILE) {
-            return await MockUpHelper.getFile(event.mockId, event.data.type, event.data.cid);
+            return await MockHelper.getFile(event.mockId, event.data.type, event.data.cid);
         }
         if (event.type === MockType.DELETE_FILE) {
-            return await MockUpHelper.deleteCid(event.mockId, event.data.type, event.data.cid);
+            return await MockHelper.deleteCid(event.mockId, event.data.type, event.data.cid);
         }
         if (event.type === MockType.EXECUTE_AND_RECEIPT) {
-            return await MockUpHelper.executeAndReceipt(event.mockId, event.data.type, event.data.transaction);
+            return await MockHelper.executeAndReceipt(event.mockId, event.data.type, event.data.transaction);
         }
         if (event.type === MockType.EXECUTE_AND_RECORD) {
-            return await MockUpHelper.executeAndRecord(event.mockId, event.data.type, event.data.transaction);
+            return await MockHelper.executeAndRecord(event.mockId, event.data.type, event.data.transaction);
         }
         if (event.type === MockType.GET_TOKEN) {
-            return await MockUpHelper.getHederaToken(event.mockId, event.data);
+            return await MockHelper.getHederaToken(event.mockId, event.data);
         }
         if (event.type === MockType.GET_MESSAGE) {
-            return await MockUpHelper.getHederaMessage(event.mockId, event.data);
+            return await MockHelper.getHederaMessage(event.mockId, event.data);
         }
         if (event.type === MockType.GET_MESSAGES) {
-            return await MockUpHelper.getHederaMessages(event.mockId, event.data);
+            return await MockHelper.getHederaMessages(event.mockId, event.data);
         }
         if (event.type === MockType.API) {
-            return await MockUpHelper.api(event.mockId, event.data);
+            return await MockHelper.api(event.mockId, event.data);
         }
         throw new Error('Invalid method');
     }
@@ -170,7 +170,7 @@ export class MockUpHelper {
         fileContent: string
     ): Promise<string> {
         const cid = GenerateUUIDv4();
-        await DatabaseServer.saveMockUp(mockId, type, { cid, document: fileContent });
+        await DatabaseServer.saveMock(mockId, type, { cid, document: fileContent });
         return cid;
     }
 
@@ -179,7 +179,7 @@ export class MockUpHelper {
         type: MockEntityType,
         cid: string
     ): Promise<any> {
-        const row = await DatabaseServer.getMockUp(mockId, type, { cid });
+        const row = await DatabaseServer.getMock(mockId, type, { cid });
         if (row && row.document) {
             return row.document;
         } else {
@@ -192,7 +192,7 @@ export class MockUpHelper {
         type: MockEntityType,
         cid: string
     ): Promise<boolean> {
-        await DatabaseServer.deleteMockUp(mockId, type, { cid });
+        await DatabaseServer.deleteMock(mockId, type, { cid });
         return true;
     }
 
@@ -203,7 +203,7 @@ export class MockUpHelper {
     ): Promise<TransactionReceipt> {
         try {
             if (type) {
-                await DatabaseServer.saveMockUp(mockId, type, { transaction });
+                await DatabaseServer.saveMock(mockId, type, { transaction });
             }
             return transaction;
         } catch (error) {
@@ -221,13 +221,13 @@ export class MockUpHelper {
     ): Promise<TransactionRecord> {
         try {
             if (type) {
-                await DatabaseServer.saveMockUp(mockId, type, { transaction });
+                await DatabaseServer.saveMock(mockId, type, { transaction });
             }
             return transaction;
         } catch (error) {
             console.error(error);
             return {
-                consensusTimestamp: MockUpHelper.getTimestamp()
+                consensusTimestamp: MockHelper.getTimestamp()
             } as any;
         }
     }
@@ -236,7 +236,7 @@ export class MockUpHelper {
         mockId: string,
         params: { tokenId: string }
     ): Promise<any> {
-        const row = await DatabaseServer.getMockUp(mockId, MockEntityType.TOKEN, {
+        const row = await DatabaseServer.getMock(mockId, MockEntityType.TOKEN, {
             'transaction.token_id': params?.tokenId
         });
         if (row) {
@@ -258,7 +258,7 @@ export class MockUpHelper {
         message: string;
     }> {
         if (params.timeStamp) {
-            const row = await DatabaseServer.getMockUp(mockId, MockEntityType.MESSAGE, {
+            const row = await DatabaseServer.getMock(mockId, MockEntityType.MESSAGE, {
                 'transaction.consensus_timestamp': params.timeStamp
             });
             if (row) {
@@ -267,7 +267,7 @@ export class MockUpHelper {
                 return null;
             }
         } else if (params.topicId) {
-            let rows = await DatabaseServer.getMockUps(mockId, MockEntityType.MESSAGE, {
+            let rows = await DatabaseServer.getMocks(mockId, MockEntityType.MESSAGE, {
                 'transaction.topic_id': params.topicId
             });
             rows = rows.sort((a, b) => a.transaction.consensus_timestamp < b.transaction.consensus_timestamp ? -1 : 1);
@@ -294,14 +294,14 @@ export class MockUpHelper {
     }[]> {
         let result: any[];
         if (params.startTimestamp) {
-            let rows = await DatabaseServer.getMockUps(mockId, MockEntityType.MESSAGE, {
+            let rows = await DatabaseServer.getMocks(mockId, MockEntityType.MESSAGE, {
                 'transaction.topic_id': params.topicId,
                 'transaction.consensus_timestamp': { $gte: params.startTimestamp }
             });
             rows = rows.sort((a, b) => a.transaction.consensus_timestamp < b.transaction.consensus_timestamp ? -1 : 1);
             result = rows.map((row) => row.transaction);
         } else {
-            let rows = await DatabaseServer.getMockUps(mockId, MockEntityType.MESSAGE, {
+            let rows = await DatabaseServer.getMocks(mockId, MockEntityType.MESSAGE, {
                 'transaction.topic_id': params.topicId
             });
             rows = rows.sort((a, b) => a.transaction.consensus_timestamp < b.transaction.consensus_timestamp ? -1 : 1);
@@ -321,7 +321,7 @@ export class MockUpHelper {
         data: any
     }): Promise<any> {
         request.method = request.method?.toUpperCase();
-        const row = await DatabaseServer.getMockUp(mockId, MockEntityType.API, {
+        const row = await DatabaseServer.getMock(mockId, MockEntityType.API, {
             'request.url': request.url,
             'request.method': request.method,
         });
@@ -340,16 +340,16 @@ export class MockUpHelper {
     public static deserializeTransaction(transaction: any): any {
         transaction.status = Status.Success;
         if (transaction.consensus_timestamp) {
-            transaction.consensusTimestamp = MockUpHelper.stringToTimestamp(transaction.consensus_timestamp);
+            transaction.consensusTimestamp = MockHelper.stringToTimestamp(transaction.consensus_timestamp);
         }
         if (transaction.topic_id) {
-            transaction.topicId = MockUpHelper.stringToTopicId(transaction.topic_id);
+            transaction.topicId = MockHelper.stringToTopicId(transaction.topic_id);
         }
         if (transaction.token_id) {
-            transaction.tokenId = MockUpHelper.stringToTokenId(transaction.token_id);
+            transaction.tokenId = MockHelper.stringToTokenId(transaction.token_id);
         }
         if (transaction.account_id) {
-            transaction.accountId = MockUpHelper.stringToAccountId(transaction.account_id);
+            transaction.accountId = MockHelper.stringToAccountId(transaction.account_id);
         }
         return transaction;
     }
@@ -364,7 +364,7 @@ export class MockUpHelper {
     } {
         if (type === 'TokenCreateTransaction') {
             const t = transaction as TokenCreateTransaction;
-            const tokenId = MockUpHelper.getTokenId();
+            const tokenId = MockHelper.getTokenId();
 
             const treasuryAccountId = t.treasuryAccountId?.toString();
             const name = t.tokenName;
@@ -395,7 +395,7 @@ export class MockUpHelper {
             }
         }
         if (type === 'AccountCreateTransaction') {
-            const newAccountId = MockUpHelper.getAccountId();
+            const newAccountId = MockHelper.getAccountId();
             return {
                 type: MockEntityType.ACCOUNT,
                 transaction: {
@@ -407,7 +407,7 @@ export class MockUpHelper {
         if (type === 'TopicCreateTransaction') {
             const t = transaction as TopicCreateTransaction;
             const memo = t.getTopicMemo();
-            const topicId = MockUpHelper.getTopicId();
+            const topicId = MockHelper.getTopicId();
             return {
                 type: MockEntityType.TOPIC,
                 transaction: {
@@ -498,8 +498,8 @@ export class MockUpHelper {
     } {
         if (type === 'TopicMessageSubmitTransaction') {
             const t = transaction as TopicMessageSubmitTransaction;
-            const timestamp = MockUpHelper.getTimestamp();
-            const consensusTimestamp = MockUpHelper.timestampToString(timestamp);
+            const timestamp = MockHelper.getTimestamp();
+            const consensusTimestamp = MockHelper.timestampToString(timestamp);
             const topicId = t.topicId.toString();
             const message = t.getMessage().toString();
             const base64 = Buffer.from(message, 'utf8').toString('base64');
@@ -565,14 +565,14 @@ export class MockUpHelper {
         return new TokenId(i);
     }
 
-    public static async getMockUpData(mockId: string): Promise<{
+    public static async getMockData(mockId: string): Promise<{
         ipfs: any[],
         topics: any[],
         tokens: any[],
         api: any[],
         users: any[]
     }> {
-        const rows = await DatabaseServer.getMockUps(mockId);
+        const rows = await DatabaseServer.getMocks(mockId);
 
         const ipfsMap = new Map<string, any>();
         const topicMap = new Map<string, any>();
@@ -678,9 +678,7 @@ export class MockUpHelper {
         const api = apiString ? JSON.parse(apiString) : null;
         const users = usersString ? JSON.parse(usersString) : null;
 
-        // await DatabaseServer.deleteMockUps(mockId);
-
-        await MockUpHelper._setMockUpData(mockId, { ipfs, topics, tokens, api, users });
+        await MockHelper._setMockData(mockId, { ipfs, topics, tokens, api, users });
 
         return true;
     }
@@ -694,7 +692,7 @@ export class MockUpHelper {
             unixPermissions: 0o100644,
             dosPermissions: 0x20,
         };
-        const data = await MockUpHelper.getMockUpData(mockId);
+        const data = await MockHelper.getMockData(mockId);
         zip.file('ipfs.json', JSON.stringify(data.ipfs), ZIP_FILE_OPTIONS);
         zip.file('topics.json', JSON.stringify(data.topics), ZIP_FILE_OPTIONS);
         zip.file('tokens.json', JSON.stringify(data.tokens), ZIP_FILE_OPTIONS);
@@ -703,13 +701,13 @@ export class MockUpHelper {
         return zip;
     }
 
-    public static async setMockUpData(mockId: string, data: any): Promise<any> {
-        await DatabaseServer.deleteMockUps(mockId);
-        await MockUpHelper._setMockUpData(mockId, data);
-        return await MockUpHelper.getMockUpData(mockId);
+    public static async setMockData(mockId: string, data: any): Promise<any> {
+        await DatabaseServer.deleteMocks(mockId);
+        await MockHelper._setMockData(mockId, data);
+        return await MockHelper.getMockData(mockId);
     }
 
-    private static async _setMockUpData(mockId: string, data: {
+    private static async _setMockData(mockId: string, data: {
         ipfs: any[],
         topics: any[],
         tokens: any[],
@@ -718,7 +716,7 @@ export class MockUpHelper {
     }) {
         if (Array.isArray(data.ipfs)) {
             for (const file of data.ipfs) {
-                await DatabaseServer.saveMockUp(mockId, MockEntityType.FILE, {
+                await DatabaseServer.saveMock(mockId, MockEntityType.FILE, {
                     cid: file.cid,
                     document: file.content
                 });
@@ -726,14 +724,14 @@ export class MockUpHelper {
         }
         if (Array.isArray(data.topics)) {
             for (const topic of data.topics) {
-                await DatabaseServer.saveMockUp(mockId, MockEntityType.TOPIC, {
+                await DatabaseServer.saveMock(mockId, MockEntityType.TOPIC, {
                     transaction: topic.topic
                 });
                 if (topic.messages) {
                     for (let i = 0; i < topic.messages.length; i++) {
                         const message = topic.messages[i];
                         message.sequence_number = i + 1;
-                        await DatabaseServer.saveMockUp(mockId, MockEntityType.MESSAGE, {
+                        await DatabaseServer.saveMock(mockId, MockEntityType.MESSAGE, {
                             transaction: message
                         });
                     }
@@ -742,7 +740,7 @@ export class MockUpHelper {
         }
         if (Array.isArray(data.tokens)) {
             for (const token of data.tokens) {
-                await DatabaseServer.saveMockUp(mockId, MockEntityType.TOKEN, {
+                await DatabaseServer.saveMock(mockId, MockEntityType.TOKEN, {
                     transaction: token
                 });
             }
@@ -750,7 +748,7 @@ export class MockUpHelper {
         if (Array.isArray(data.api)) {
             for (const api of data.api) {
                 api.request.method = api.request.method?.toUpperCase();
-                await DatabaseServer.saveMockUp(mockId, MockEntityType.API, {
+                await DatabaseServer.saveMock(mockId, MockEntityType.API, {
                     request: api.request,
                     response: api.response
                 });
@@ -779,7 +777,7 @@ export class MockUpHelper {
         dryRunUrl: string,
     ) {
         try {
-            const row = await DatabaseServer.getMockUp(mockId, MockEntityType.MESSAGE, {
+            const row = await DatabaseServer.getMock(mockId, MockEntityType.MESSAGE, {
                 'transaction.consensus_timestamp': messageId
             });
             if (row) {
@@ -793,11 +791,11 @@ export class MockUpHelper {
                 const encodedJson = Buffer.from(json, 'utf8').toString('base64');
                 row.transaction.message = encodedJson;
 
-                const file = await DatabaseServer.getMockUp(mockId, MockEntityType.FILE, { cid: contextCid });
+                const file = await DatabaseServer.getMock(mockId, MockEntityType.FILE, { cid: contextCid });
                 file.cid = dryRunCid;
-                await DatabaseServer.updateMockUp(file);
+                await DatabaseServer.updateMock(file);
 
-                await DatabaseServer.updateMockUp(row);
+                await DatabaseServer.updateMock(row);
             }
         } catch (error) {
             console.error(error);

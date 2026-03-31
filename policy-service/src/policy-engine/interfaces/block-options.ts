@@ -23,7 +23,7 @@ export interface PolicyBlockDecoratorOptions {
     /**
      * Can Mock Up
      */
-    canMockUp?: boolean;
+    canMock?: boolean;
     /**
      * Block about
      */

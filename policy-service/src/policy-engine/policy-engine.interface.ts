@@ -133,7 +133,7 @@ export interface IPolicyBlock {
     /**
      * Enable Mock Up
      */
-    enableMockUp?: boolean;
+    enableMock?: boolean;
 
     /**
      * Block permissions
@@ -184,7 +184,7 @@ export interface IPolicyBlock {
     /**
      * Can Mock Up
      */
-    readonly canMockUp: boolean;
+    readonly canMock: boolean;
 
     /**
      * Policy status
@@ -1156,9 +1156,9 @@ export interface IPolicyInstance {
     readonly relayerAccount: boolean;
 
     /**
-     * Enable MockUp
+     * Enable Mock
      */
-    enableMockUp: boolean;
+    enableMock: boolean;
 }
 
 /**
