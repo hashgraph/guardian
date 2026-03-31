@@ -283,9 +283,9 @@ The "Project Crediting" step completes when an `approved_report` is reachable fr
 ### Entity Type Normalization
 
 On mainnet, the indexer may not populate `options.entityType`. `normalizeEntityTypes()` in `lib/api/vc-documents.ts` applies a 3-pass algorithm:
-1. Derive from `analytics.schemaName` + `options.documentStatus`
-2. Disambiguate `project` vs `project_form` using the relationship graph
-3. Infer remaining types from context
+1. **Pass 1** — Derive from `analytics.schemaName` + `options.documentStatus` (e.g. schema contains "monitoring report" + status "Verified" → `approved_report`)
+2. **Pass 2** — Disambiguate `project` vs `project_form` using the relationship graph (a PDD that references another PDD is the calculated `project`)
+3. **Pass 3** — Infer remaining unidentified VCs from context: `mint_token` references → `verification_report`; references to `project_form`/`project` → `daily_mrv_report`; `APPROVED` status → `approved_vvb`; remaining `NEW` status VCs inferred from what they reference
 
 If your policy uses non-standard schema names, extend the schema matching in Pass 1.
 
