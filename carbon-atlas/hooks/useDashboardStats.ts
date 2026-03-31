@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { useQueries } from "@tanstack/react-query"
 import { useAllPolicyVcs } from "./usePolicyVcDocuments"
 import { getVcDocument, parseCredentialSubject } from "@/lib/api/vc-documents"
-import { useNetwork } from "@/providers/NetworkProvider"
+import { usePolicyNetwork } from "@/providers/PolicyNetworkProvider"
 
 /** Safely traverse nested path like "emission_reduction.ER_y" */
 function get(obj: Record<string, unknown>, path: string): unknown {
@@ -14,10 +14,8 @@ function get(obj: Record<string, unknown>, path: string): unknown {
 /** Parse a date string that may be ISO, DD/MM/YYYY, or MM/DD/YYYY into YYYY-MM-DD. */
 function normalizeDate(value: string | undefined): string | null {
   if (!value) return null
-  // Try ISO / standard JS-parseable format first
   const d = new Date(value)
   if (!isNaN(d.getTime()) && d.getFullYear() > 2000) return d.toISOString().split("T")[0]
-  // Try DD/MM/YYYY (common in Gold Standard data)
   const parts = value.split("/")
   if (parts.length === 3) {
     const [a, b, c] = parts
@@ -42,10 +40,36 @@ export interface IssuanceDataPoint {
 }
 
 export function useDashboardStats() {
-  const { network } = useNetwork()
+  const { network, policy } = usePolicyNetwork()
+  const { eryPath, deviceCountPath, periodPath, vcuEstimatePath, vcuEntityType } = policy.statsExtractors
   const { data: approvedReports, isLoading: loadingAR } = useAllPolicyVcs("approved_report")
   const { data: projects, isLoading: loadingProj } = useAllPolicyVcs("approved_project")
+  const { data: projectForms, isLoading: loadingPF } = useAllPolicyVcs("project_form")
   const { data: mrvReports, isLoading: loadingMRV } = useAllPolicyVcs("daily_mrv_report")
+  // For policies where VCU totals are in the calculated project VC (e.g. VM0033)
+  const { data: calculatedProjects, isLoading: loadingCalc } = useAllPolicyVcs(
+    vcuEstimatePath && vcuEntityType === "project" ? "project" : undefined
+  )
+  // All VCs (unfiltered) — used for revoke detection
+  const { data: allVcsForRevoke } = useAllPolicyVcs()
+
+  // Build set of revoked project_form timestamps so we can exclude them from VCU estimates
+  const revokedFormTs = useMemo(() => {
+    if (!allVcsForRevoke) return new Set<string>()
+    const revokedUuids = new Set(
+      allVcsForRevoke.filter(vc => vc.status === "REVOKE" && vc.uuid).map(vc => vc.uuid!)
+    )
+    const byTs = new Map(allVcsForRevoke.map(vc => [vc.consensusTimestamp, vc]))
+    const result = new Set<string>()
+    for (const cp of allVcsForRevoke.filter(vc => vc.options?.entityType === "project")) {
+      if (!cp.uuid || !revokedUuids.has(cp.uuid)) continue
+      for (const relTs of cp.options?.relationships ?? []) {
+        const rel = byTs.get(relTs)
+        if (rel?.options?.entityType === "project_form") result.add(relTs)
+      }
+    }
+    return result
+  }, [allVcsForRevoke])
 
   // Fetch detail for each approved_report to get ER_y and device count
   const detailQueries = useQueries({
@@ -69,8 +93,25 @@ export function useDashboardStats() {
     })),
   })
 
+  // Fetch detail for VCU estimate VCs — active (non-revoked) project_forms only.
+  const vcuSourceVcs = useMemo(() => {
+    if (!vcuEstimatePath) return []
+    const base = (vcuEntityType === "project" ? calculatedProjects : projectForms) ?? []
+    return base.filter(vc => !revokedFormTs.has(vc.consensusTimestamp))
+  }, [vcuEstimatePath, vcuEntityType, calculatedProjects, projectForms, revokedFormTs])
+  const projectFormQueries = useQueries({
+    queries: vcuSourceVcs.map((vc) => ({
+      queryKey: ["vc-document", network, vc.consensusTimestamp],
+      queryFn: () => getVcDocument(vc.consensusTimestamp, network),
+      staleTime: 15 * 60 * 1000,
+      retry: false,
+      enabled: vcuSourceVcs.length > 0,
+    })),
+  })
+
   const loadingDetails = detailQueries.some((q) => q.isLoading)
   const loadingMrvDetails = mrvDetailQueries.some((q) => q.isLoading)
+  const loadingPFDetails = projectFormQueries.some((q) => q.isLoading)
 
   // Extract ER_y, device count, and chart data from approved reports
   const reportData = useMemo(() => {
@@ -86,13 +127,16 @@ export function useDashboardStats() {
       const cs = parseCredentialSubject(q.data)
       if (!cs) continue
 
-      const ery = get(cs, "emission_reduction.ER_y")
-      const numDevices = get(cs, "project_emission_electricity.total_usage.number_of_devices")
+      const ery = eryPath ? get(cs, eryPath) : get(cs, "emission_reduction.ER_y")
+      const numDevices = deviceCountPath
+        ? get(cs, deviceCountPath)
+        : get(cs, "project_emission_electricity.total_usage.number_of_devices")
       const field0 = get(cs, "project_emission_electricity.total_usage.field0")
-      const periodTo = get(cs, "monitoring_period.to") as string | undefined
+      const periodTo = periodPath
+        ? get(cs, periodPath) as string | undefined
+        : get(cs, "monitoring_period.to") as string | undefined
 
       const eryVal = typeof ery === "number" ? ery : 0
-      // Prefer number_of_devices, fall back to field0 array length
       const devVal = typeof numDevices === "number"
         ? numDevices
         : Array.isArray(field0) ? field0.length : 0
@@ -100,7 +144,6 @@ export function useDashboardStats() {
       totalERy += eryVal
       totalDevices += devVal
 
-      // Use monitoring period end date, fall back to consensus timestamp
       const ts = approvedReports?.[i]?.consensusTimestamp ?? ""
       const tsSeconds = parseInt(ts.split(".")[0], 10)
       const tsFallback = isNaN(tsSeconds) ? "" : new Date(tsSeconds * 1000).toISOString().split("T")[0]
@@ -114,7 +157,7 @@ export function useDashboardStats() {
     }
 
     return { totalERy, totalDevices, points }
-  }, [loadingDetails, detailQueries, approvedReports])
+  }, [loadingDetails, detailQueries, approvedReports, eryPath, deviceCountPath, periodPath])
 
   // Fallback: count devices from MRV reports if approved reports had none
   const mrvDeviceCount = useMemo(() => {
@@ -124,7 +167,6 @@ export function useDashboardStats() {
       if (!q.data) continue
       const cs = parseCredentialSubject(q.data)
       if (!cs) continue
-      // daily_mrv_report may have field0 at top level or nested
       const field0 = Array.isArray((cs as Record<string, unknown>).field0)
         ? (cs as Record<string, unknown>).field0
         : get(cs, "project_emission_electricity.total_usage.field0")
@@ -132,6 +174,32 @@ export function useDashboardStats() {
     }
     return count
   }, [loadingMrvDetails, mrvDetailQueries])
+
+  // Compute validation stage from project lifecycle presence
+  const validationStage = useMemo(() => {
+    if (approvedReports && approvedReports.length > 0) return "Issued"
+    if (projects && projects.length > 0) return "Validated"
+    if (projectForms && projectForms.length > 0) return "Submitted"
+    return "No Projects"
+  }, [approvedReports, projects, projectForms])
+
+  // Estimated VCUs from project forms — used as totalERy fallback when a policy
+  // has VCU projections but no approved reports yet.
+  // Only runs when the policy sets statsExtractors.vcuEstimatePath.
+  const estimatedVCUs = useMemo(() => {
+    if (!vcuEstimatePath) return null
+    if (loadingPFDetails) return null
+    let total = 0
+    for (const q of projectFormQueries) {
+      if (!q.data) continue
+      const cs = parseCredentialSubject(q.data)
+      if (!cs) continue
+      const vcus = get(cs, vcuEstimatePath)
+      if (typeof vcus === "number") total += vcus
+      else if (typeof vcus === "string") total += parseFloat(vcus) || 0
+    }
+    return total || null
+  }, [vcuEstimatePath, loadingPFDetails, projectFormQueries])
 
   const totalDevices = reportData?.totalDevices || mrvDeviceCount || null
 
@@ -148,13 +216,19 @@ export function useDashboardStats() {
     })
   }, [reportData])
 
+  const revokedProjectCount = revokedFormTs.size
+
   return {
     issuanceCount: approvedReports?.length ?? 0,
     projectCount: projects?.length ?? 0,
+    projectFormCount: projectForms?.length ?? 0,
+    revokedProjectCount,
+    activeProjectFormCount: Math.max(0, (projectForms?.length ?? 0) - revokedProjectCount),
     mrvBatchCount: mrvReports?.length ?? 0,
-    totalERy: reportData?.totalERy ?? null,
+    totalERy: reportData?.totalERy ?? estimatedVCUs ?? null,
     totalDevices,
     chartData,
-    isLoading: loadingAR || loadingProj || loadingMRV || loadingDetails,
+    validationStage,
+    isLoading: loadingAR || loadingProj || loadingPF || loadingMRV || loadingDetails || loadingCalc,
   }
 }

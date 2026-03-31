@@ -27,6 +27,7 @@ export enum PermissionCategories {
     STATISTICS = 'STATISTICS',
     FORMULAS = 'FORMULAS',
     WORKER_TASKS = 'WORKER_TASKS',
+    CREDENTIALS = 'CREDENTIALS',
 }
 
 /**
@@ -71,7 +72,8 @@ export enum PermissionEntities {
     LABEL = 'LABEL',
     FORMULA = 'FORMULA',
     EXTERNAL_POLICY = 'EXTERNAL_POLICY',
-    WORKER_TASK = 'WORKER_TASK'
+    WORKER_TASK = 'WORKER_TASK',
+    CREDENTIAL = 'CREDENTIAL',
 }
 
 /**
@@ -251,7 +253,12 @@ export enum Permissions {
     //WORKER_TASKS
     WORKER_TASKS_READ = 'WORKER_TASKS_READ',
     WORKER_TASKS_EXECUTE = 'WORKER_TASKS_EXECUTE',
-    WORKER_TASKS_DELETE = 'WORKER_TASKS_DELETE'
+    WORKER_TASKS_DELETE = 'WORKER_TASKS_DELETE',
+    //CREDENTIALS
+    CREDENTIALS_USER_READ = 'CREDENTIALS_USER_READ',
+    CREDENTIALS_USER_WRITE = 'CREDENTIALS_USER_WRITE',
+    CREDENTIALS_SR_READ = 'CREDENTIALS_SR_READ',
+    CREDENTIALS_SR_WRITE = 'CREDENTIALS_SR_WRITE',
 }
 
 /**
@@ -1361,6 +1368,41 @@ export const PermissionsArray: {
             action: PermissionActions.ASSIGNED_AND_PUBLISHED,
             disabled: false
         },
+        //CREDENTIALS
+        {
+            name: Permissions.CREDENTIALS_USER_READ,
+            category: PermissionCategories.CREDENTIALS,
+            entity: PermissionEntities.CREDENTIAL,
+            action: PermissionActions.READ,
+            disabled: false
+        },
+        {
+            name: Permissions.CREDENTIALS_USER_WRITE,
+            category: PermissionCategories.CREDENTIALS,
+            entity: PermissionEntities.CREDENTIAL,
+            action: PermissionActions.CREATE,
+            disabled: false,
+            dependOn: [
+                Permissions.CREDENTIALS_USER_READ
+            ]
+        },
+        {
+            name: Permissions.CREDENTIALS_SR_READ,
+            category: PermissionCategories.CREDENTIALS,
+            entity: PermissionEntities.CREDENTIAL,
+            action: PermissionActions.READ,
+            disabled: false
+        },
+        {
+            name: Permissions.CREDENTIALS_SR_WRITE,
+            category: PermissionCategories.CREDENTIALS,
+            entity: PermissionEntities.CREDENTIAL,
+            action: PermissionActions.CREATE,
+            disabled: false,
+            dependOn: [
+                Permissions.CREDENTIALS_SR_READ
+            ]
+        },
         //DELEGATION
         {
             name: Permissions.DELEGATION_ROLE_MANAGE,
@@ -1379,6 +1421,8 @@ export const UserDefaultPermission: Permissions[] = [
     Permissions.PROFILES_USER_READ,
     Permissions.PROFILES_USER_UPDATE,
     Permissions.PROFILES_BALANCE_READ,
+    Permissions.CREDENTIALS_USER_READ,
+    Permissions.CREDENTIALS_USER_WRITE,
 ];
 
 export const SRDefaultPermission: Permissions[] = [
@@ -1487,6 +1531,8 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.LOG_LOG_READ,
     Permissions.LOG_SYSTEM_READ,
     // Permissions.LOG_USERS_READ,
+    Permissions.CREDENTIALS_SR_READ,
+    Permissions.CREDENTIALS_SR_WRITE,
 ];
 
 export const AuditDefaultPermission: Permissions[] = [

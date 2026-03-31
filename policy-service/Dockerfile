@@ -54,10 +54,15 @@ COPY --link --from=deps /usr/local/app/node_modules node_modules/
 COPY --link --from=deps /usr/local/app/package.json ./
 COPY --link --from=build /usr/local/app/dist dist/
 
+# Docker CLI for PYTHON_SANDBOX_MODE=docker (spawns sandbox containers via docker.sock)
+RUN apk add --no-cache docker-cli su-exec
+
 # Allow node user to write Pyodide package cache (warmup downloads wheels at startup)
 RUN chown -R node:node node_modules/pyodide/ 2>/dev/null || true
 
-# Change the user to node
-USER node
+# Entrypoint: if docker.sock exists, match its GID so node user can access it, then drop to node
+COPY --link policy-service/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD [ "node", "dist/index.js" ]

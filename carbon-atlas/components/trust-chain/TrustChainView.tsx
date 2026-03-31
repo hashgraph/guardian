@@ -14,7 +14,7 @@ import { useAllPolicyVcs } from "@/hooks/usePolicyVcDocuments"
 import { useVcDocument } from "@/hooks/useVcDocument"
 import { buildChain } from "@/lib/utils/trust-chain"
 import { parseCredentialSubject } from "@/lib/api/vc-documents"
-import { useNetwork } from "@/providers/NetworkProvider"
+import { usePolicyNetwork } from "@/providers/PolicyNetworkProvider"
 import { hederaTokenUrl } from "@/lib/utils/hedera"
 
 interface TrustChainViewProps {
@@ -119,7 +119,7 @@ function CreditsIssuedCompleted({
 export function TrustChainView({ rootVcId }: TrustChainViewProps) {
   const { data: allVcs, isLoading, error } = useAllPolicyVcs()
   const { data: rootDetail } = useVcDocument(rootVcId)
-  const { network, activePolicy } = useNetwork()
+  const { network, deployment } = usePolicyNetwork()
 
   const chain = React.useMemo(() => {
     if (!allVcs) return []
@@ -152,7 +152,8 @@ export function TrustChainView({ rootVcId }: TrustChainViewProps) {
   }, [allVcs])
 
   const creditsIssued = rootEntityType === "approved_report" || hasMintToken
-  const tokenUrl = hederaTokenUrl(activePolicy.tokenId, network)
+  const tokenId = deployment?.tokenId ?? ""
+  const tokenUrl = hederaTokenUrl(tokenId, network)
 
   if (isLoading) {
     return (
@@ -191,7 +192,7 @@ export function TrustChainView({ rootVcId }: TrustChainViewProps) {
         <CreditsIssuedCompleted
           stepNumber={totalSteps}
           ery={ery}
-          tokenId={activePolicy.tokenId}
+          tokenId={tokenId}
           tokenUrl={tokenUrl}
         />
       ) : (

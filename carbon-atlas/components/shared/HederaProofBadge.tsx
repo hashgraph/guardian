@@ -4,7 +4,7 @@ import { IconExternalLink, IconShieldCheck } from "@tabler/icons-react"
 import { Badge } from "@/components/ui/badge"
 import { hederaExplorerUrl } from "@/lib/utils/hedera"
 import { formatTimestamp } from "@/lib/utils/format"
-import { useNetwork } from "@/providers/NetworkProvider"
+import { usePolicyNetwork } from "@/providers/PolicyNetworkProvider"
 
 interface HederaProofBadgeProps {
   consensusTimestamp: string
@@ -12,7 +12,7 @@ interface HederaProofBadgeProps {
 }
 
 export function HederaProofBadge({ consensusTimestamp, className }: HederaProofBadgeProps) {
-  const { network } = useNetwork()
+  const { network } = usePolicyNetwork()
   const url = hederaExplorerUrl(consensusTimestamp, network)
 
   return (

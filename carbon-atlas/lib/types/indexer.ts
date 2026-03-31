@@ -13,8 +13,13 @@ export type EntityType =
 
 export interface VCListItem {
   id: string
+  uuid?: string
   consensusTimestamp: string
   topicId: string
+  /** "ISSUE" for created VCs, "REVOKE" for revoked VCs */
+  status?: string
+  /** "create-vc-document" | "revoke-document" | etc. */
+  action?: string
   options: {
     entityType: EntityType
     relationships: string[]

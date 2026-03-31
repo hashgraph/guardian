@@ -7,17 +7,16 @@ import {
 import csvParse from 'papaparse';
 import { IntegrationDataTypes } from '@guardian/interfaces';
 
-type ServiceConfig = {
-  token?: string;
-}
-
 export class FIRMSService extends BaseIntegrationService {
   static readonly secretTokenParamName = 'firm_map_key';
   private readonly token: string;
   private readonly client: AxiosInstance;
   static readonly baseUrl: string = 'https://firms.modaps.eosdis.nasa.gov';
 
-  constructor({ token = process.env.FIRMS_AUTH_TOKEN || '' }: ServiceConfig = {}) {
+  constructor(token?: string) {
+    if (!token) {
+      token = process.env.FIRMS_AUTH_TOKEN || '';
+    }
     super();
     if (!token || token.length < 5) {
       throw new Error('API token is required.');

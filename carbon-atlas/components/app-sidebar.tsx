@@ -2,9 +2,12 @@
 
 import * as React from "react"
 import Image from "next/image"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useTheme } from "next-themes"
 import {
   IconChartBar,
+  IconChevronRight,
   IconDashboard,
   IconExternalLink,
   IconList,
@@ -18,26 +21,40 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { usePolicyNetwork } from "@/providers/PolicyNetworkProvider"
+import { getSupportedNetworks } from "@/lib/policies/registry"
 
-const data = {
-  navMain: [
-    { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
-    { title: "Issuances", url: "/issuances", icon: IconList },
-    { title: "Projects", url: "/projects", icon: IconSitemap },
-    { title: "Analytics", url: "/analytics", icon: IconChartBar },
-    { title: "Verify", url: "/verify", icon: IconSearch },
-  ],
-  navSecondary: [
-    {
-      title: "Methodology",
-      url: "https://globalgoals.goldstandard.org/431_ee_ics_methodology-for-metered-measured-energy-cooking-devices/",
-      icon: IconExternalLink,
-    },
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+  React.useEffect(() => setMounted(true), [])
+
+  const { policy, policies } = usePolicyNetwork()
+  const pathname = usePathname()
+  const base = `/policy/${policy.slug}`
+
+  const cmhqLogo =
+    mounted && resolvedTheme === "dark"
+      ? "/cmhq-logo-dark.png"
+      : "/cmhq-logo-light.png"
+
+  const navMain = [
+    { title: "Dashboard", url: `${base}/dashboard`, icon: IconDashboard },
+    { title: "Issuances", url: `${base}/issuances`, icon: IconList },
+    { title: "Projects", url: `${base}/projects`, icon: IconSitemap },
+    { title: "Analytics", url: `${base}/analytics`, icon: IconChartBar },
+    { title: "Verify", url: `${base}/verify`, icon: IconSearch },
+  ]
+
+  const navSecondary = [
     {
       title: "Guardian",
       url: "https://github.com/hashgraph/guardian",
@@ -45,20 +62,10 @@ const data = {
     },
     {
       title: "Hedera Policy",
-      url: "https://guardian.hedera.com/guardian/demo-guide/carbon-offsets/goldstandard-metered-energy-cooking",
+      url: policy.links.hederaPolicy,
       icon: IconExternalLink,
     },
-  ],
-}
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { resolvedTheme } = useTheme()
-  const [mounted, setMounted] = React.useState(false)
-  React.useEffect(() => setMounted(true), [])
-
-  const cmhqLogo = mounted && resolvedTheme === "dark"
-    ? "/cmhq-logo-dark.png"
-    : "/cmhq-logo-light.png"
+  ]
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -69,17 +76,69 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/dashboard">
-                <Image src="/hedera-logo.png" alt="Hedera" width={20} height={20} className="!size-5 rounded-full" />
+              <Link href={`${base}/dashboard`}>
+                <Image
+                  src="/hedera-logo.png"
+                  alt="Hedera"
+                  width={20}
+                  height={20}
+                  className="!size-5 rounded-full"
+                />
                 <span className="text-base font-semibold">Carbon Atlas</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* Methodology selector */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Methodologies</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {policies.map((p) => {
+                const isActive = policy.slug === p.slug
+                const nets = getSupportedNetworks(p)
+                return (
+                  <SidebarMenuItem key={p.slug}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={p.fullName}
+                    >
+                      <Link href={`/policy/${p.slug}/dashboard`}>
+                        <div className="flex items-center gap-2 w-full min-w-0">
+                          <span className="truncate font-medium">
+                            {p.name}
+                          </span>
+                          <div className="ml-auto flex items-center gap-1 shrink-0">
+                            {nets.map((n) => (
+                              <span
+                                key={n}
+                                className={`inline-flex size-1.5 rounded-full ${
+                                  n === "mainnet"
+                                    ? "bg-green-500"
+                                    : "bg-amber-500"
+                                }`}
+                                title={n}
+                              />
+                            ))}
+                            {isActive && (
+                              <IconChevronRight className="size-3 opacity-50" />
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <NavMain items={navMain} />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <div className="px-2 py-2 flex items-center gap-2">

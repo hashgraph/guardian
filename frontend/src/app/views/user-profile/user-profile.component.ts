@@ -133,9 +133,9 @@ export class UserProfileComponent implements OnInit {
     public remoteDidDocumentForm!: UntypedFormControl;
     public didKeys: any[] = [];
 
-    public tab: 'general' | 'keys' | 'relayerAccounts' = 'general';
+    public tab: 'general' | 'keys' | 'relayerAccounts' | 'credentials' = 'general';
     public tabIndex = 0;
-    public tabs: ['general', 'relayerAccounts', 'keys'] = ['general', 'relayerAccounts', 'keys'];
+    public tabs: ['general', 'relayerAccounts', 'keys', 'credentials'] = ['general', 'relayerAccounts', 'keys', 'credentials'];
 
     public keyPage: any[];
     public keyCount: number;

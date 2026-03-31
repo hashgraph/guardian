@@ -4,17 +4,15 @@ import {
   ExecuteParams,
   MethodMap
 } from '../base-integration-service.js';
-
-type ServiceConfig = {
-  token?: string;
-}
-
 export class KanopioService extends BaseIntegrationService {
   private readonly token: string;
   private readonly client: AxiosInstance;
   static readonly baseUrl: string = 'https://main.api.kanop.io';
 
-  constructor({ token = process.env.KANOP_IO_AUTH_TOKEN || '' }: ServiceConfig = {}) {
+  constructor(token?: string) {
+    if (!token) {
+      token = process.env.KANOP_IO_AUTH_TOKEN || '';
+    }
     super();
     if (!token || token.length < 5) {
       throw new Error('API token is required.');

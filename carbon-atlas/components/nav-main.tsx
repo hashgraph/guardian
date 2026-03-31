@@ -34,7 +34,8 @@ export function NavMain({
                 asChild
                 isActive={
                   pathname === item.url ||
-                  (item.url !== "/dashboard" && pathname.startsWith(item.url + "/"))
+                  (!item.url.endsWith("/dashboard") &&
+                    pathname.startsWith(item.url + "/"))
                 }
               >
                 <Link href={item.url}>
