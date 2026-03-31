@@ -69,8 +69,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: IconExternalLink,
     },
     {
-      title: "Hedera Policy",
-      url: policy.links.hederaPolicy,
+      title: "Digitize Methodologies",
+      url: "https://guardian.hedera.com/methodology-digitization/methodology-digitization-handbook",
       icon: IconExternalLink,
     },
   ]

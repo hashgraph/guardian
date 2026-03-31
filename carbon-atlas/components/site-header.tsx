@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { usePathname } from "next/navigation"
 import { useTheme } from "next-themes"
 import {
   IconBrandGithub,
@@ -99,6 +100,8 @@ function NetworkSelector() {
 
 export function SiteHeader() {
   const { policy } = usePolicyNetwork()
+  const pathname = usePathname()
+  const isMarket = pathname.startsWith("/market")
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -108,16 +111,27 @@ export function SiteHeader() {
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-4"
         />
-        <div className="flex flex-col min-w-0">
-          <h1 className="text-base font-medium leading-tight truncate">
-            {policy.fullName}
-          </h1>
-          <p className="text-xs text-muted-foreground hidden sm:block">
-            {policy.standard} {policy.name}
-          </p>
-        </div>
+        {isMarket ? (
+          <div className="flex flex-col">
+            <h1 className="text-base font-medium leading-tight">
+              Market Explorer
+            </h1>
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              Voluntary carbon market data across major registries
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-base font-medium leading-tight truncate">
+              {policy.fullName}
+            </h1>
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              {policy.standard} {policy.name}
+            </p>
+          </div>
+        )}
         <div className="ml-auto flex items-center gap-1">
-          <NetworkSelector />
+          {!isMarket && <NetworkSelector />}
           <ThemeToggle />
           <Button variant="ghost" size="icon" asChild className="h-8 w-8">
             <a

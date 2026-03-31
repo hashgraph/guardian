@@ -1,10 +1,18 @@
 "use client"
 
-import { registryDisplayName } from "@/lib/types/market"
+const REGISTRY_SHORT: Record<string, string> = {
+  "verra": "Verra",
+  "gold-standard": "GS",
+  "american-carbon-registry": "ACR",
+  "climate-action-reserve": "CAR",
+  "art-trees": "ART",
+}
+function registryShortName(slug: string): string {
+  return REGISTRY_SHORT[slug] ?? slug
+}
 import {
   IconArrowDown,
   IconArrowUp,
-  IconBuildingFactory,
   IconCertificate,
   IconGlobe,
   IconLoader,
@@ -99,10 +107,9 @@ export function MarketStatCards() {
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <IconBuildingFactory className="size-3.5" />
+          <div className="text-muted-foreground">
             {isLoading ? "…" : Object.keys(stats?.by_registry ?? {}).map(r =>
-              `${registryDisplayName(r)} (${stats?.by_registry[r].toLocaleString()})`
+              `${registryShortName(r)} (${stats?.by_registry[r].toLocaleString()})`
             ).join(", ")}
           </div>
         </CardFooter>

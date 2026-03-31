@@ -46,3 +46,8 @@ next-env.d.ts
 
 # pycache
 __pycache__/
+
+# remotion (demo videos — not committed upstream)
+/remotion/
+/out/videos/
+/public/remotion-assets/

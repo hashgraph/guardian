@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: carbon
       POSTGRES_DB: carbon_market
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: api/Dockerfile
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     environment:
       DATABASE_URL: postgresql+asyncpg://carbon:carbon@db:5432/carbon_market
       ALEMBIC_DATABASE_URL: postgresql://carbon:carbon@db:5432/carbon_market
