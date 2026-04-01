@@ -61,6 +61,7 @@ async function runIdempotent<T>(
     blockType: 'tokenActionBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Token Action',
         title: `Add 'Token Action' Block`,

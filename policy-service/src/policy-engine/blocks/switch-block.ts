@@ -16,6 +16,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'switchBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Switch',
         title: `Add 'Switch' Block`,

@@ -108,7 +108,9 @@ export class PolicyActionsService {
                 sendToIPFS: true,
                 memo: null,
                 userId: null,
-                interception: null
+                interception: null,
+                dryRun: this.policyInstance.dryRun,
+                mockId: null
             });
         row.messageId = messageResult.getId();
         row.startMessageId = messageResult.getId();
@@ -173,7 +175,9 @@ export class PolicyActionsService {
                 sendToIPFS: true,
                 memo: null,
                 userId: null,
-                interception: null
+                interception: null,
+                dryRun: block.dryRun,
+                mockId: null
             });
         row.messageId = messageResult.getId();
         row.startMessageId = messageResult.getId();
@@ -241,7 +245,9 @@ export class PolicyActionsService {
                 sendToIPFS: true,
                 memo: null,
                 userId: null,
-                interception: null
+                interception: null,
+                dryRun: this.policyInstance.dryRun,
+                mockId: null
             });
         row.messageId = messageResult.getId();
         row.startMessageId = messageResult.getId();
@@ -304,7 +310,9 @@ export class PolicyActionsService {
                 sendToIPFS: true,
                 memo: null,
                 userId: null,
-                interception: null
+                interception: null,
+                dryRun: null,
+                mockId: null
             });
 
         newRow.messageId = messageResult.getId();
@@ -382,7 +390,9 @@ export class PolicyActionsService {
                 sendToIPFS: true,
                 memo: null,
                 userId: null,
-                interception: null
+                interception: null,
+                dryRun: null,
+                mockId: null
             });
         newRow.messageId = messageResult.getId();
         newRow.sender = messageResult.payer;
@@ -529,7 +539,10 @@ export class PolicyActionsService {
         let loaded: boolean = false;
         try {
             const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, message.owner, null);
-            await MessageServer.loadDocument(message, userMessageKey);
+            await MessageServer.loadDocument(message, userMessageKey, {
+                dryRun: null,
+                mockId: null
+            });
             document = message.getDocument();
             loaded = true;
         } catch (error) {
@@ -728,7 +741,9 @@ export class PolicyActionsService {
                     sendToIPFS: true,
                     memo: null,
                     userId: null,
-                    interception: null
+                    interception: null,
+                    dryRun: null,
+                    mockId: null
                 });
             row.messageId = messageResult.getId();
             row.sender = messageResult.payer;
@@ -794,7 +809,9 @@ export class PolicyActionsService {
                     sendToIPFS: true,
                     memo: null,
                     userId: null,
-                    interception: null
+                    interception: null,
+                    dryRun: null,
+                    mockId: null
                 });
             row.messageId = messageResult.getId();
             row.sender = messageResult.payer;
@@ -902,7 +919,9 @@ export class PolicyActionsService {
                 sendToIPFS: true,
                 memo: null,
                 userId: null,
-                interception: null
+                interception: null,
+                dryRun: null,
+                mockId: null
             });
         newRow.messageId = messageResult.getId();
         newRow.sender = messageResult.payer;
@@ -927,11 +946,16 @@ export class PolicyActionsService {
             messageId,
             loadIPFS: false,
             type: MessageType.PolicyAction,
-            interception: null
+            interception: null,
+            dryRun: null,
+            mockId: null
         })
         if (message) {
             const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, message.owner, null);
-            await MessageServer.loadDocument(message, userMessageKey);
+            await MessageServer.loadDocument(message, userMessageKey, {
+                dryRun: null,
+                mockId: null
+            });
             row.document = message.getDocument();
             row.loaded = true;
             await collection.insertOrUpdate([row], 'messageId');

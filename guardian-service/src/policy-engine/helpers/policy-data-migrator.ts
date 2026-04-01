@@ -733,7 +733,7 @@ export class PolicyDataMigrator {
                 );
 
                 if (states?.length > 0) {
-                    const [{config: srcBlockTree}, {config: blockTree}] = await Promise.all([
+                    const [{ config: srcBlockTree }, { config: blockTree }] = await Promise.all([
                         DatabaseServer.getPolicyById(srcPolicyId),
                         DatabaseServer.getPolicyById(this._policyId)
                     ]);
@@ -889,7 +889,7 @@ export class PolicyDataMigrator {
                                 username: doc.username,
                             },
                             doc.status || '',
-                            doc .document
+                            doc.document
                         );
                     },
                     userId,
@@ -1418,10 +1418,12 @@ export class PolicyDataMigrator {
                 policyId: null,
                 policyUUID: null,
             },
-            userId,
             {
                 admin: true,
                 submit: false,
+            },
+            {
+                userId
             }
         );
 
@@ -3570,7 +3572,7 @@ export class PolicyDataMigrator {
         userId: string | null,
         notifier: INotificationStep,
         writeBatchSize: number = PolicyDataMigrator.migrationWriteBatchSize,
-        ): Promise<DocumentError[]> {
+    ): Promise<DocumentError[]> {
 
         const migrationConfig = run.config as MigrationConfig;
         if (!migrationConfig?.policies?.src || !migrationConfig?.policies?.dst) {

@@ -17,6 +17,7 @@ const filename = fileURLToPath(import.meta.url);
     blockType: 'dataTransformationAddon',
     commonBlock: true,
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Data Transformation Addon',
         title: `Add 'Data Transformation' Addon`,

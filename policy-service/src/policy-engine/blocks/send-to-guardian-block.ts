@@ -30,6 +30,7 @@ enum Operation {
     blockType: 'sendToGuardianBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Send',
         title: `Add 'Send' Block`,

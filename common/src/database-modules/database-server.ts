@@ -1972,7 +1972,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
         hederaAccountId: string,
         hederaAccountKey: string,
         active: boolean,
-        systemMode?: boolean
+        systemMode?: boolean,
+        document?: any
     ): Promise<void> {
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
             did,
@@ -1987,6 +1988,22 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 type: did,
                 hederaAccountKey
             }, policyId, 'VirtualKey', !!systemMode));
+        }
+
+        if (document) {
+            if (Array.isArray(document.keys)) {
+                for (const key of document.keys) {
+                    await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
+                        did: key.did,
+                        type: key.type,
+                        hederaAccountKey: key.key
+                    }, policyId, 'VirtualKey', !!systemMode));
+                }
+            }
+            delete document.keys;
+            await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId(
+                document,
+                policyId, 'DidDocumentCollection', !!systemMode));
         }
     }
 
@@ -4029,7 +4046,12 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param savepointIds
      * @virtual
      */
-    public static async getVirtualUsers(policyId: string, savepointIds?: string[]): Promise<DryRun[]> {
+    public static async getVirtualUsers(
+        policyId: string,
+        savepointIds?: string[],
+        virtualKey?: boolean,
+        document?: boolean,
+    ): Promise<DryRun[]> {
         const filter: any = {
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
@@ -4043,7 +4065,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
             filter.$or.push({ savepointId: { $in: savepointIds } });
         }
 
-        return await new DataBaseHelper(DryRun).find(filter, {
+        const users = await new DataBaseHelper(DryRun).find(filter, {
             fields: [
                 'id',
                 'did',
@@ -4055,6 +4077,54 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 createDate: 1
             }
         });
+
+        if (virtualKey) {
+            for (const user of users) {
+                const key = (await new DataBaseHelper(DryRun).findOne({
+                    dryRunId: policyId,
+                    dryRunClass: 'VirtualKey',
+                    did: user.did,
+                    type: user.did
+                }));
+                user.hederaAccountKey = key?.hederaAccountKey;
+            }
+        }
+        if (document) {
+            for (const user of users) {
+                const doc = (await new DataBaseHelper(DryRun).findOne({
+                    dryRunId: policyId,
+                    dryRunClass: 'DidDocumentCollection',
+                    did: user.did
+                }));
+                if (doc) {
+                    const keys: any[] = [];
+                    const methodIds = Object.values(doc.verificationMethods);
+                    for (const methodId of methodIds) {
+                        const methodKey = (await new DataBaseHelper(DryRun).findOne({
+                            dryRunId: policyId,
+                            dryRunClass: 'VirtualKey',
+                            did: user.did,
+                            type: methodId
+                        }));
+                        if (methodKey) {
+                            keys.push({
+                                did: doc.did,
+                                type: methodKey.type,
+                                key: methodKey.hederaAccountKey
+                            })
+                        }
+                    }
+                    user.document = {
+                        did: doc.did,
+                        document: doc.document,
+                        verificationMethods: doc.verificationMethods,
+                        keys
+                    };
+                }
+            }
+        }
+
+        return users;
     }
 
     /**
@@ -4635,6 +4705,112 @@ export class DatabaseServer extends AbstractDatabaseServer {
             topicId,
             messageId
         }, dryRun, 'Message', false));
+    }
+
+    /**
+     * Save Mock
+     * @param dryRun
+     * @param type
+     * @param data
+     *
+     */
+    public static async saveMock(
+        dryRun: string,
+        type: string,
+        data: any
+    ): Promise<void> {
+        await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
+            ...data,
+            type
+        }, dryRun, 'Mock', false));
+    }
+
+    /**
+     * Save Mock
+     * @param dryRun
+     * @param type
+     * @param data
+     *
+     */
+    public static async updateMock(item: DryRun): Promise<void> {
+        await new DataBaseHelper(DryRun).save(item);
+    }
+    /**
+     * Get Mock
+     * @param dryRun
+     * @param type
+     * @param filters
+     *
+     */
+    public static async getMock(
+        dryRun: string,
+        type: string,
+        filters: any
+    ): Promise<DryRun> {
+        return (await new DataBaseHelper(DryRun).findOne({
+            ...filters,
+            dryRunId: dryRun,
+            dryRunClass: 'Mock',
+            type
+        }));
+    }
+
+    /**
+     * Delete Mock
+     * @param dryRun
+     * @param type
+     * @param filters
+     *
+     */
+    public static async deleteMock(
+        dryRun: string,
+        type: string,
+        filters: any
+    ): Promise<void> {
+        (await new DataBaseHelper(DryRun).delete({
+            ...filters,
+            dryRunId: dryRun,
+            dryRunClass: 'Mock',
+            type
+        }));
+    }
+
+    /**
+     * Get Mocks
+     * @param dryRun
+     */
+    public static async getMocks(
+        dryRun: string,
+        type?: string,
+        filters?: any
+    ): Promise<DryRun[]> {
+        let query: any = {
+            dryRunId: dryRun,
+            dryRunClass: 'Mock',
+        }
+        if (type) {
+            query.type = type
+        }
+        if (filters) {
+            query = {
+                ...query,
+                ...filters
+            }
+        }
+        return (await new DataBaseHelper(DryRun).find(query));
+    }
+
+    /**
+     * Delete Mocks
+     * @param dryRun
+     */
+    public static async deleteMocks(
+        dryRun: string
+    ): Promise<void> {
+        (await new DataBaseHelper(DryRun).delete({
+            dryRunId: dryRun,
+            dryRunClass: 'Mock'
+        }));
     }
 
     /**

@@ -679,10 +679,9 @@ export async function findAndDryRunSchema(
     }
 
     item.context = generateSchemaContext(item);
-    // item.status = SchemaStatus.PUBLISHED;
-
     SchemaHelper.updateIRI(item);
     await DatabaseServer.updateSchema(item.id, item);
+
     return item;
 }
 

@@ -13,6 +13,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'setRelationshipsBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Set Relationships',
         title: `Add 'Relationships' Block`,

@@ -495,6 +495,25 @@ export class BlockTreeGenerator extends NatsService {
                 return new MessageError(error, 500);
             }
         });
+
+        this.getPolicyMessages(PolicyEvents.GET_MOCK_CONFIG, policyId, async (_: any) => {
+            try {
+                const config = PolicyComponentsUtils.GetMockConfig(policyId);
+                return new MessageResponse(config);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.SET_MOCK_CONFIG, policyId, async (config: any) => {
+            try {
+                PolicyComponentsUtils.SetMockConfig(policyId, config);
+                const result = PolicyComponentsUtils.GetMockConfig(policyId);
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
     }
 
     /**
@@ -611,7 +630,8 @@ export class BlockTreeGenerator extends NatsService {
         skipRegistration: boolean,
         policyValidator: PolicyValidator,
         logger: PinoLogger,
-        policyOwnerId: string | null
+        policyOwnerId: string | null,
+        enableMock: boolean
     ): Promise<IPolicyBlock | { type: 'error', message: string }> {
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
@@ -649,6 +669,10 @@ export class BlockTreeGenerator extends NatsService {
             await this.initPolicyRestore(policyId, rootInstance, policy, policyOwnerId);
 
             await PolicyComponentsUtils.RegisterNavigation(policyId, policy.policyNavigation);
+
+            if(enableMock) {
+                PolicyComponentsUtils.MockAll(policyId);
+            }
 
             return rootInstance;
         } catch (error) {

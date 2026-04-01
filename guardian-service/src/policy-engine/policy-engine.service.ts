@@ -21,6 +21,10 @@ import {
     MessageType,
     MigrationFailedItem,
     MigrationRun,
+    MockEntityType,
+    MockEvent,
+    MockType,
+    MockHelper,
     NatsService,
     NewNotifier,
     NotificationStep,
@@ -1346,9 +1350,13 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_POLICIES,
-            async (msg: { policyId: string, owner: IOwner }): Promise<IMessageResponse<any>> => {
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                enableMock: boolean
+            }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { policyId, owner } = msg;
+                    const { policyId, owner, enableMock } = msg;
 
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'publish');
@@ -1378,8 +1386,8 @@ export class PolicyEngineService {
                     const errors = await this.policyEngine.validateModel(policyId, true);
                     const isValid = !errors.blocks.some(block => !block.isValid);
                     if (isValid) {
-                        await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger);
-                        await this.policyEngine.generateModel(model.id.toString());
+                        await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger, enableMock);
+                        await this.policyEngine.generateModel(model.id.toString(), enableMock);
                     }
 
                     const savepointsCount = await DatabaseServer.getSavepointsCount(policyId);
@@ -2647,6 +2655,196 @@ export class PolicyEngineService {
                     const documents = await DatabaseServer
                         .getVirtualDocuments(policyId, type, pageIndex, pageSize);
                     return new MessageResponse(documents);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>('MOCK_EVENT_EXECUTE',
+            async (event: MockEvent) => {
+                try {
+                    const result = await MockHelper.execute(event);
+                    return new MessageResponse(result);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MOCK_CONFIG,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+            }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    const config = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.GET_MOCK_CONFIG, policyId, {}) as any
+
+                    return new MessageResponse(config);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_MOCK_CONFIG,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                config: any,
+            }) => {
+                try {
+                    const { policyId, owner, config } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    const result = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.SET_MOCK_CONFIG, policyId, config) as any
+
+                    return new MessageResponse(result);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MOCK_DATA,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+            }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+                    const data = await MockHelper.getMockData(policyId);
+                    return new MessageResponse(data);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_MOCK_DATA,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                data: any
+            }) => {
+                try {
+                    const { policyId, owner, data } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+                    const result = await MockHelper.setMockData(policyId, data);
+                    return new MessageResponse(result);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.IMPORT_MOCK_DATA,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                zip: any
+            }) => {
+                try {
+                    const { policyId, owner, zip } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    await MockHelper.import(policyId, Buffer.from(zip.data));
+
+                    const data = await MockHelper.getMockData(policyId);
+                    return new MessageResponse(data);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.EXPORT_MOCK_DATA,
+            async (msg: {
+                policyId: string,
+                owner: IOwner
+            }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    const zip = await MockHelper.export(policyId);
+                    const file = await zip.generateAsync({
+                        type: 'arraybuffer',
+                        compression: 'DEFLATE',
+                        compressionOptions: {
+                            level: 3,
+                        },
+                        platform: 'UNIX',
+                    });
+                    return new BinaryMessageResponse(file);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.MOCK_REQUEST,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                type: MockType,
+                config: any,
+            }) => {
+                try {
+                    const { policyId, owner, type, config } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+                    if (type === MockType.GET_FILE) {
+                        const result = await MockHelper.execute({
+                            mockId: policyId,
+                            type: MockType.GET_FILE,
+                            data: {
+                                type: MockEntityType.FILE,
+                                cid: config?.cid
+                            }
+                        });
+                        return new MessageResponse(result);
+                    } else if (type === MockType.API) {
+                        const result = await MockHelper.execute({
+                            mockId: policyId,
+                            type: MockType.API,
+                            data: {
+                                type: MockEntityType.API,
+                                method: config.type,
+                                url: config.url,
+                                headers: config.headers,
+                                data: config.body,
+                            }
+                        });
+                        return new MessageResponse(result);
+                    } else {
+                        return new MessageResponse(null);
+                    }
                 } catch (error) {
                     return new MessageError(error);
                 }

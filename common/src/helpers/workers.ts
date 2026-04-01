@@ -1,5 +1,15 @@
 import { Singleton } from '../decorators/singleton.js';
-import { ExternalMessageEvents, GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, ITaskOptions, QueueEvents, TimeoutError, WorkerEvents } from '@guardian/interfaces';
+import {
+    ExternalMessageEvents,
+    GenerateUUIDv4,
+    HederaResponseCode,
+    IActiveTask,
+    ITask,
+    ITaskOptions,
+    QueueEvents,
+    TimeoutError,
+    WorkerEvents
+} from '@guardian/interfaces';
 import { Environment } from '../hedera-modules/index.js';
 import { NatsService } from '../mq/index.js';
 
@@ -167,15 +177,17 @@ export class Workers extends NatsService {
         if (!task.data.localNodeProtocol) {
             task.data.localNodeProtocol = Environment.localNodeProtocol;
         }
-        return this.addTask(
+        return this.addTask({
             task,
-            options.priority,
-            options.attempts,
-            false,
-            options.registerCallback,
-            options.interception as string,
-            options.userId
-        )
+            priority: options.priority,
+            attempts: options.attempts,
+            isRetryableTask: false,
+            registerCallback: options.registerCallback,
+            interception: options.interception as string,
+            dryRun: options.dryRun,
+            mockId: options.mockId,
+            userId: options.userId
+        });
     }
 
     /**
@@ -206,15 +218,17 @@ export class Workers extends NatsService {
         if (!task.data.localNodeProtocol) {
             task.data.localNodeProtocol = Environment.localNodeProtocol;
         }
-        return this.addTask(
+        return this.addTask({
             task,
-            options.priority,
-            options.attempts,
-            true,
-            options.registerCallback,
-            options.interception as string,
-            options.userId
-        )
+            priority: options.priority,
+            attempts: options.attempts,
+            isRetryableTask: true,
+            registerCallback: options.registerCallback,
+            interception: options.interception as string,
+            dryRun: options.dryRun,
+            mockId: options.mockId,
+            userId: options.userId
+        });
     }
 
     /**
@@ -322,22 +336,27 @@ export class Workers extends NatsService {
      * @param registerCallback
      * @param userId
      */
-    private async addTask(
+    private async addTask(options: {
         task: ITask,
         priority: number,
         attempts: number,
         isRetryableTask: boolean,
         registerCallback: boolean,
         interception: string | null,
+        dryRun: string | null,
+        mockId: string | null,
         userId: string | null
-    ): Promise<any> {
+    }): Promise<any> {
+        const task = options.task;
         const taskId = task.id || GenerateUUIDv4();
         task.id = taskId;
-        task.priority = priority;
-        task.isRetryableTask = isRetryableTask;
-        task.attempts = attempts;
-        task.userId = userId;
-        task.interception = interception;
+        task.priority = options.priority;
+        task.isRetryableTask = options.isRetryableTask;
+        task.attempts = options.attempts;
+        task.userId = options.userId;
+        task.interception = options.interception;
+        task.dryRun = task.dryRun || options.dryRun || task.data?.dryRun;
+        task.mockId = task.mockId || options.mockId || task.data?.mockId;
 
         const addTaskToQueue = async (): Promise<void> => {
             const result = await this.sendMessage<any>(QueueEvents.ADD_TASK_TO_QUEUE, task);
@@ -348,7 +367,7 @@ export class Workers extends NatsService {
         await addTaskToQueue();
 
         return new Promise((resolve, reject) => {
-            if (registerCallback) {
+            if (options.registerCallback) {
                 this.tasksCallbacks.set(taskId, {
                     task,
                     number: 0,

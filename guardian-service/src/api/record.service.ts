@@ -121,7 +121,7 @@ export async function syncPolicyCopiedRecords(
 
         for (const msg of messages) {
             try {
-                await MessageServer.loadDocument(msg);
+                await MessageServer.loadDocument(msg, null, {});
             } catch (e: any) {
                 await logger.error(
                     `Failed to load copied record from IPFS for recordId=${msg.recordId}: ${e?.message || e}`,

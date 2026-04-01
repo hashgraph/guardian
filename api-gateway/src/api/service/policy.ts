@@ -1,7 +1,7 @@
 import { Auth, AuthUser } from '#auth';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson, FilenameSanitizer } from '#helpers';
-import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { IAuthUser, MockType, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, MigrationRunStatus, Permissions, PolicyHelper, PolicyStatus, TaskAction, UserRole } from '@guardian/interfaces';
 import {
     Body,
@@ -78,6 +78,10 @@ import {
     MigrationRunStatusDTO,
     MigrationStatusResponseDTO,
     MigrationFailedItemDTO,
+    MockApiRequestDTO,
+    MockIpfsRequestDTO,
+    MockConfigDTO,
+    MockDataDTO,
     ObjectExamples,
     UnprocessableEntityErrorDTO
 } from '#middlewares';
@@ -1879,6 +1883,10 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiBody({
+        description: 'Options.',
+        type: Object,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PoliciesValidationDTO,
@@ -1982,11 +1990,13 @@ export class PolicyApi {
     async dryRunPolicy(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
+        @Body() body: any,
         @Req() req
     ): Promise<PoliciesValidationDTO> {
         try {
             const engineService = new PolicyEngine();
-            const result = await engineService.dryRunPolicy(policyId, new EntityOwner(user));
+            const enableMock = !!body?.enableMock;
+            const result = await engineService.dryRunPolicy(policyId, new EntityOwner(user), enableMock);
             result.policies = await getOldResult(user);
 
             const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
@@ -6846,6 +6856,357 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * Get mock config
+     */
+    @Get('/:policyId/dry-run/mock/config')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Get Mock Configuration.',
+        description: `Returns the current mock configuration for the policy's dry-run session, including the master enabled flag and the per-block enable/disable map.`,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Config',
+        type: MockConfigDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(MockConfigDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getMockConfig(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+        try {
+            return await engineService.getMockConfig(policyId, owner)
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get mock data
+     */
+    @Get('/:policyId/dry-run/mock/data')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Get Stored Mock Data.',
+        description: 'Returns all currently stored mock entries (IPFS, Topics, Tokens, and API) for this policy.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Config',
+        type: MockDataDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(MockDataDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getMockData(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+        try {
+            return await engineService.getMockData(policyId, owner)
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Update mock data
+     */
+    @Post('/:policyId/dry-run/mock/data')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Save Mock Data.',
+        description: 'Saves (creates or updates) mock data entries. The request body follows the same schema as the GET response above. Existing entries for the same key are overwritten; all other existing entries are preserved.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Data',
+        type: MockDataDTO,
+    })
+    @ApiOkResponse({
+        description: 'Data',
+        type: MockDataDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(MockDataDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async updateMockData(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: MockDataDTO,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+        try {
+            return await engineService.updateMockData(policyId, owner, body)
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Update mock config
+     */
+    @Post('/:policyId/dry-run/mock/config')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Update Mock Configuration.',
+        description: 'Updates the mock configuration — master toggle and/or per-block overrides.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Config',
+        type: MockConfigDTO,
+    })
+    @ApiOkResponse({
+        description: 'Config',
+        type: MockConfigDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(MockConfigDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async setMockConfig(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: MockConfigDTO,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+        try {
+            return await engineService.setMockConfig(policyId, owner, body)
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Import Mock from a zip file
+     */
+    @Post('/:policyId/dry-run/mock/import')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Import Mock Data.',
+        description: 'Imports mock data from a previously exported `.mock` file and merges it into the current mock dataset.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'A zip file containing Mock to be imported.',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Object
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async importMock(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() zip: any
+    ): Promise<any> {
+        const engineService = new PolicyEngine();
+        if (!zip) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        try {
+            const owner = new EntityOwner(user);
+            return await engineService.importMock(policyId, owner, zip);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Export Mock
+     */
+    @Get('/:policyId/dry-run/mock/export')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Export Mock Data.',
+        description: `Exports all stored mock data as a downloadable compressed '.mock' file (zip), which contains separate files for each data type. The response is streamed with 'Content-Disposition: attachment'.`,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation. Response zip file.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async exportFormula(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Response() res: any
+    ): Promise<any> {
+        const engineService = new PolicyEngine();
+        try {
+            const owner = new EntityOwner(user);
+            const file: any = await engineService.exportMock(policyId, owner);
+            res.header('Content-disposition', `attachment; filename=mock_${Date.now()}`);
+            res.header('Content-type', 'application/zip');
+            return res.send(file);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Mock request (API)
+     */
+    @Post('/:policyId/dry-run/mock/request/api')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Execute API Mock Request (Frontend Blocks).',
+        description: `Triggers a mocked external API call on behalf of a policy block whose logic executes on the 'frontend' (client-side code blocks). The server resolves the request against the stored API mock entries and returns the configured response.`,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Config',
+        type: MockApiRequestDTO,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation',
+        type: Object,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(MockApiRequestDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async mockApiRequest(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: MockApiRequestDTO,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+        try {
+            return await engineService.mockRequest(policyId, owner, MockType.API, body);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Mock request (IPFS)
+     */
+    @Post('/:policyId/dry-run/mock/request/ipfs')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Execute IPFS Mock Request (Frontend Blocks).',
+        description: `Triggers a mocked IPFS file retrieval on behalf of a policy block whose logic executes on the 'frontend'. The server resolves the CID against the stored IPFS mock entries and returns the configured payload.`,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Config',
+        type: MockIpfsRequestDTO,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(MockIpfsRequestDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async mockIpfsRequest(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: MockIpfsRequestDTO,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+        try {
+            return await engineService.mockRequest(policyId, owner, MockType.GET_FILE, body);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
     //#endregion
 
     //#region Multiple

@@ -826,7 +826,8 @@ export class PolicyComponentsUtils {
             policyOwner: policy.owner,
             policyStatus: policy.status,
             locationType: policy.locationType,
-            relayerAccount
+            relayerAccount,
+            enableMock: false
         };
         PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
     }
@@ -1657,7 +1658,7 @@ export class PolicyComponentsUtils {
 
         const relayerAccountConfig = data.relayerAccount;
 
-        const balance = await PolicyUtils.checkAccountBalance(relayerAccountConfig, user.userId);
+        const balance = await PolicyUtils.checkAccountBalance(ref, relayerAccountConfig, user.userId);
         if (balance === false) {
             return 'The relayer account has insufficient balance.';
         }
@@ -1897,5 +1898,74 @@ export class PolicyComponentsUtils {
         await DatabaseServer.reconnectPolicy(policyId, user.did);
         await db.reconnectPolicyDocuments(policyId, user);
         return true;
+    }
+
+    public static GetMockConfig(policyId: string) {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        const instance = PolicyComponentsUtils.PolicyById.get(policyId)
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        const blocks: any[] = []
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component.canMock) {
+                blocks.push({
+                    uuid,
+                    tag: component.tag,
+                    type: component.blockType,
+                    enabled: component.enableMock,
+                })
+            }
+        }
+        const enabled = instance.enableMock;
+        return { enabled, blocks };
+    }
+
+    public static SetMockConfig(policyId: string, config: any) {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        const instance = PolicyComponentsUtils.PolicyById.get(policyId)
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+
+        const blockMap = new Map<string, boolean>();
+        if (Array.isArray(config.blocks)) {
+            for (const block of config.blocks) {
+                blockMap.set(block.uuid, block.enabled);
+            }
+        }
+
+        const enabled = !!config.enabled
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component.canMock) {
+                component.enableMock = !!blockMap.get(uuid);
+                if (component.policyInstance) {
+                    (component.policyInstance as any).enableMock = enabled;
+                }
+
+            }
+        }
+        instance.enableMock = enabled;
+        return true;
+    }
+
+    public static MockAll(policyId: string) {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        const instance = PolicyComponentsUtils.PolicyById.get(policyId)
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component.canMock) {
+                component.enableMock = true;
+                if (component.policyInstance) {
+                    (component.policyInstance as any).enableMock = true;
+                }
+            }
+        }
+        instance.enableMock = true;
     }
 }

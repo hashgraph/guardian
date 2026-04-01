@@ -29,7 +29,7 @@ import { OrderOption } from '../../structures/interfaces/order-option.interface'
 import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
 import { PolicyPropertiesComponent } from '../policy-properties/policy-properties.component';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
-import {takeUntil} from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { TestCodeDialog } from '../../dialogs/test-code-dialog/test-code-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
@@ -454,7 +454,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     this.toolsService.menuList(),
                     this.policyEngineService.getPolicyCategories(),
                     this.contractService.getContracts({ type: ContractType.WIPE }),
-                ]).pipe(takeUntil(this._destroy$)).subscribe( async (data) => {
+                ]).pipe(takeUntil(this._destroy$)).subscribe(async (data) => {
                     const tokens = data[0] || [];
                     const blockInformation = data[1] || {};
                     const schemas = data[2] || [];
@@ -525,7 +525,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 if (this.allBlocks) {
                     for (const block of this.allBlocks) {
                         (block as any)._tags = policyBlockTags?.tags.filter((tag: any) => tag.linkedItems.includes(block.id));
-                        
+
                         policyBlockTags?.tags.forEach((tag: any) => {
                             const totalTagOptions = [
                                 ...this.tagOptions,
@@ -686,7 +686,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
         await this.storage.load(root.id, {
             view: 'blocks',
-                value: this.objectToJson(root.getJSON())
+            value: this.objectToJson(root.getJSON())
         });
 
         const existing = await this.storage.getPolicyById(root.id);
@@ -1071,14 +1071,14 @@ export class PolicyConfigurationComponent implements OnInit {
             }
         };
 
-        collect(blocks,  'warnings', this.warningsMap, this.warningsListMap);
-        collect(blocks,  'infos',    this.infosMap,    this.infosListMap);
+        collect(blocks, 'warnings', this.warningsMap, this.warningsListMap);
+        collect(blocks, 'infos', this.infosMap, this.infosListMap);
 
         collect(modules, 'warnings', this.warningsMap, this.warningsListMap);
-        collect(modules, 'infos',    this.infosMap,    this.infosListMap);
+        collect(modules, 'infos', this.infosMap, this.infosListMap);
 
-        collect(tools,   'warnings', this.warningsMap, this.warningsListMap);
-        collect(tools,   'infos',    this.infosMap,    this.infosListMap);
+        collect(tools, 'warnings', this.warningsMap, this.warningsListMap);
+        collect(tools, 'infos', this.infosMap, this.infosListMap);
 
         this.errorMessage(commonErrors, type);
 
@@ -1225,23 +1225,49 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private dryRunPolicy() {
-        this.loading = true;
-        this.policyEngineService.dryRun(this.policyId).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
-            const { policies, isValid, errors } = data;
-            if (isValid) {
-                this.clearState();
-                this.loadData();
-            } else {
-                this.setErrors(errors, 'policy');
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Enable Mock',
+                texts: [
+                    `Mock Data intercepts all external service calls (IPFS, Topics, Tokens, and API requests) and returns pre-configured test responses instead of making real network calls. This lets you run and test your policy in a fully self-contained offline environment.`,
+                    `You can change this setting and configure individual blocks at any time from the 'Mock Config' panel.`
+                ],
+                buttons: [{
+                    name: 'Disable',
+                    class: 'secondary'
+                }, {
+                    name: 'Enable',
+                    class: 'primary'
+                }]
+            },
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
+            this.loading = true;
+            this.policyEngineService
+                .dryRun(this.policyId, {
+                    enableMock: result === 'Enable'
+                })
+                .pipe(takeUntil(this._destroy$))
+                .subscribe((data: any) => {
+                    const { policies, isValid, errors } = data;
+                    if (isValid) {
+                        this.clearState();
+                        this.loadData();
+                    } else {
+                        this.setErrors(errors, 'policy');
 
-                this.emptyWarningsStates()
-                this.emptyInfosStates()
+                        this.emptyWarningsStates()
+                        this.emptyInfosStates()
 
-                this.loading = false;
-            }
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
+                        this.loading = false;
+                    }
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
         });
     }
 
@@ -1386,7 +1412,7 @@ export class PolicyConfigurationComponent implements OnInit {
         if (this._lastUpdate) {
             clearTimeout(this._lastUpdate);
         }
-        this._lastUpdate = setTimeout( async () => {
+        this._lastUpdate = setTimeout(async () => {
             this._lastUpdate = null;
             this.changeDetector.detectChanges();
             this.saveState();
@@ -1413,7 +1439,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.options.save();
     }
 
-    
+
     public owner: string;
 
     public onSelect(event: { block?: PolicyItem, isMultiSelect: boolean }): boolean {
@@ -1540,14 +1566,14 @@ export class PolicyConfigurationComponent implements OnInit {
             nested ? this.currentBlock : this.currentBlock?.parent,
             type
         );
-        this.onSelect({ block: this.currentBlock, isMultiSelect: false});
+        this.onSelect({ block: this.currentBlock, isMultiSelect: false });
         this.updateMenuStatus();
     }
 
     public onSuggestionsClick() {
         this.isSuggestionsEnabled = !this.isSuggestionsEnabled;
         if (this.isSuggestionsEnabled && this.currentBlock) {
-            this.onSelect({ block: this.currentBlock, isMultiSelect: false});
+            this.onSelect({ block: this.currentBlock, isMultiSelect: false });
         }
     }
 
@@ -2513,10 +2539,10 @@ export class PolicyConfigurationComponent implements OnInit {
                 }
             });
             dialogRef
-            .onClose
-            .subscribe(async (result) =>
-                result ? this.tagsService.tagsUpdated$.next() : null
-            );
+                .onClose
+                .subscribe(async (result) =>
+                    result ? this.tagsService.tagsUpdated$.next() : null
+                );
         }
     }
 
@@ -2537,10 +2563,10 @@ export class PolicyConfigurationComponent implements OnInit {
                     }
                 });
                 dialogRef
-                .onClose
-                .subscribe(async (result) =>
-                    result ? this.tagsService.tagsUpdated$.next() : null
-                );
+                    .onClose
+                    .subscribe(async (result) =>
+                        result ? this.tagsService.tagsUpdated$.next() : null
+                    );
             } else {
                 const dialogRef = this.dialog.open(TagCreateDialog, {
                     width: '750px',
@@ -2562,7 +2588,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private onCreateTag(tag: any, id: string) {
         const history = this.blockTagHistories.get(id);
-        
+
         if (!history) {
             return;
         }

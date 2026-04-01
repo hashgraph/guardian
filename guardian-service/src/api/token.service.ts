@@ -25,10 +25,12 @@ export async function createHederaToken(
             policyId: null,
             policyUUID: null
         },
-        userId,
         {
             admin: true,
             submit: false
+        },
+        {
+            userId: user.id
         });
     await topic.saveKeys(userId);
     await DatabaseServer.saveTopic(topic.toObject());
