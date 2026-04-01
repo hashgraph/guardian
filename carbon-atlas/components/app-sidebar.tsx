@@ -10,9 +10,11 @@ import {
   IconChevronRight,
   IconDashboard,
   IconExternalLink,
+  IconGlobe,
   IconList,
   IconSearch,
   IconSitemap,
+  IconUsers,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -31,6 +33,12 @@ import {
 } from "@/components/ui/sidebar"
 import { usePolicyNetwork } from "@/providers/PolicyNetworkProvider"
 import { getSupportedNetworks } from "@/lib/policies/registry"
+
+const navMarket = [
+  { title: "Market Overview", url: "/market", icon: IconGlobe },
+  { title: "All Projects", url: "/market/projects", icon: IconSitemap },
+  { title: "Project Developers", url: "/market/developers", icon: IconUsers },
+]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { resolvedTheme } = useTheme()
@@ -61,8 +69,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: IconExternalLink,
     },
     {
-      title: "Hedera Policy",
-      url: policy.links.hederaPolicy,
+      title: "Digitize Methodologies",
+      url: "https://guardian.hedera.com/methodology-digitization/methodology-digitization-handbook",
       icon: IconExternalLink,
     },
   ]
@@ -93,7 +101,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         {/* Methodology selector */}
         <SidebarGroup>
-          <SidebarGroupLabel>Methodologies</SidebarGroupLabel>
+          <SidebarGroupLabel>Digitized Methodologies</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {policies.map((p) => {
@@ -138,6 +146,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
 
         <NavMain items={navMain} />
+
+        {/* Market Explorer section */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Market Explorer</SidebarGroupLabel>
+          <SidebarMenu>
+            {navMarket.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  asChild
+                  tooltip={item.title}
+                  isActive={pathname === item.url || (item.url !== "/market" && pathname.startsWith(item.url))}
+                >
+                  <Link href={item.url}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

@@ -6,10 +6,17 @@ Built on [Hedera Guardian](https://github.com/hashgraph/guardian), an open-sourc
 
 ## Screenshots
 
-<!-- TODO: Add screenshots from production deployment -->
+### Market Explorer
+![Market Overview](docs/screenshots/market-overview.png)
+
+![Projects List](docs/screenshots/market-projects-list.png)
+
+### MECD Dashboard
+![Dashboard](docs/screenshots/mecd-dashboard.png)
 
 ## Features
 
+### Policy Explorer (per-methodology views)
 - **Multi-Policy Support** — Config-driven architecture for any Guardian carbon methodology. Adding a new policy = 2 files.
 - **Trust Chain Explorer** — Trace any issuance back to its project origin through the full Verifiable Credential chain
 - **Project Lifecycle Timeline** — Visual progress through PDD → Validation → Monitoring → Verification → Crediting
@@ -19,6 +26,14 @@ Built on [Hedera Guardian](https://github.com/hashgraph/guardian), an open-sourc
 - **Device Data Table** — Browse metered cooking device records with search, sort, and pagination
 - **Hedera Proof Links** — Every document links to its on-chain Hedera Consensus Service message
 - **API Proxy** — Server-side auth proxy to the Guardian Indexer API (tokens never exposed to client)
+
+### Market Explorer (cross-registry analytics)
+- **10,570+ Projects** — Browse carbon offset projects across Verra, Gold Standard, ACR, CAR, and ART TREES
+- **Project Developers** — 3,700+ developer entities with portfolio views, cross-registry aggregation, and filters
+- **CORSIA Eligibility** — Derived from raw registry data for ACR, CAR, and ART TREES; from certifications for Verra
+- **Interactive World Map** — Global project distribution by country
+- **Credit Analytics** — Issuances and retirements over time, vintage analysis, category breakdown
+- **Deep Project Detail** — SDG goals, crediting periods, CCB certifications, reduction/removal classification, credit transactions
 
 ## Tech Stack
 
@@ -66,20 +81,27 @@ npm run build       # Type-check + production build
 app/
   api/proxy/[network]/  # Auth proxy — routes to mainnet or testnet indexer
   policy/[slug]/        # Per-policy pages (dashboard, projects, issuances, etc.)
+  market/               # Market Explorer pages (overview, projects, developers)
+api/                    # FastAPI backend for market data (Python)
+  routers/              # projects, credits, developers, charts, events endpoints
+alembic/                # Database migrations
+pipeline/               # ETL pipeline (offsets-db-data → PostgreSQL)
 components/
   vc-views/             # Entity-type-specific VC renderers
     vm0033/             # VM0033-specific views (PDDView, ProjectBoundaryMap)
   trust-chain/          # Trust chain visualization
   shared/               # Reusable (ProjectLifecycleTimeline, HederaProofBadge, etc.)
+  market/               # Market Explorer UI components
 lib/
   policies/             # Policy configs, registry, renderer map, types
-  api/                  # API client, auth, VC document fetching
+  api/                  # API client, auth, VC document fetching, market API
   types/                # TypeScript DTOs
   utils/                # Formatting, Hedera URLs, trust chain logic
-hooks/                  # TanStack Query hooks for policy VCs and stats
+hooks/                  # TanStack Query hooks for policy VCs, stats, and market data
 providers/              # PolicyNetworkProvider (policy + network context)
 docs/
   adding-a-new-policy.md  # Developer guide for adding new methodologies
+  market-explorer.md       # Market Explorer API and pipeline documentation
 ```
 
 ## Adding a New Policy
