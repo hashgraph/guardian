@@ -270,6 +270,7 @@
         * [Global Events Writer Block](guardian/standard-registry/policies/policy-creation/introduction/global-events-writer-block.md)
         * [Global Events Reader Block](guardian/standard-registry/policies/policy-creation/introduction/global-events-reader-block.md)
         * [mathBlock](guardian/standard-registry/policies/policy-creation/introduction/mathblock.md)
+        * [API Execution Payloads](../../../available-policy-workflow-blocks/api-execution-payloads.md)
       * [Creating Policy using UI](guardian/standard-registry/policies/policy-creation/policy-demo.md)
       * [Creating a Policy through Policy Configurator](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/README.md)
         * [Getting Started with the Policy Workflows](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows.md)
@@ -1050,6 +1051,30 @@
     * [🔗 VM0033 Integration](methodology-digitization-handbook/_shared/vm0033-integration/README.md)
     * [⚙️ Guardian Integration](methodology-digitization-handbook/_shared/guardian-integration/README.md)
     * [🗂️ Artifacts Collection](methodology-digitization-handbook/_shared/artifacts/README.md)
+
+***
+
+## API Reference
+
+* [Notifications APIs](notifications-apis/README.md)
+* [Permissions & Roles APIs](permissions-apis/README.md)
+* [Tags APIs](tags-apis/README.md)
+* [Branding APIs](branding-apis/README.md)
+* [Block Suggestions APIs](suggestions-apis/README.md)
+* [Analytics & Comparison APIs](analytics-apis/README.md)
+* [Contracts APIs](contracts-apis/README.md)
+* [IPFS APIs](ipfs-apis/README.md)
+* [Tools APIs](tools-apis/README.md)
+* [Wizard APIs](wizard-apis/README.md)
+* [Formulas APIs](formulas-apis/README.md)
+* [Policy Comments APIs](policy-comments-apis/README.md)
+* [Policy Labels APIs](policy-labels-apis/README.md)
+* [Policy Statistics APIs](policy-statistics-apis/README.md)
+* [Schema Rules APIs](schema-rules-apis/README.md)
+* [Projects APIs](projects-apis/README.md)
+* [Record APIs](record-apis/README.md)
+* [Dynamic Policy Fields Guide](policy-creation-using-the-guardian-apis/dynamic-policy-fields.md)
+* [Block API Execution Payloads](available-policy-workflow-blocks/api-execution-payloads.md)
 
 ***
 
