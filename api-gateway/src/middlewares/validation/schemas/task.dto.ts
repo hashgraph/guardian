@@ -12,9 +12,23 @@ export class TaskDTO {
     @ApiProperty({
         type: 'number',
         description: 'Expected count of task phases',
-        example: 0
+        example: 8
     })
     expectation: number;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Task action',
+        example: 'Create tool'
+    })
+    action: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'User Id',
+        example: '69bcfd90c98df6ceb05e8a78'
+    })
+    userId: string;
 }
 
 export class StatusDTO {

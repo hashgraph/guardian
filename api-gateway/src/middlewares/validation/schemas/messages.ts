@@ -18,7 +18,11 @@ export class ExportMessageDTO {
 }
 
 export class ImportMessageDTO {
-    @ApiProperty({ type: 'string' })
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        description: 'Hedera topic message id'
+    })
     messageId: string;
 
     @ApiProperty({ type: 'object', additionalProperties: true, nullable: true })

@@ -232,7 +232,8 @@ export class SearchPolicyDialog {
                 vpDocuments: false,
                 tokensCount: 1,
                 vcDocumentsCount: 1,
-                vpDocumentsCount: 1
+                vpDocumentsCount: 1,
+                toolMessageIds: []
             })
             this.load();
         }, 0);

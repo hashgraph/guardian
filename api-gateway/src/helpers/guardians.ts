@@ -2285,10 +2285,10 @@ export class Guardians extends NatsService {
      * Publish tool
      * @param id
      * @param owner
-     * @param tool
+     * @param body
      */
-    public async publishTool(id: string, owner: IOwner, tool: ToolVersionDTO): Promise<any> {
-        return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { id, owner, tool });
+    public async publishTool(id: string, owner: IOwner, body: ToolVersionDTO): Promise<any> {
+        return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { id, owner, body });
     }
 
     /**

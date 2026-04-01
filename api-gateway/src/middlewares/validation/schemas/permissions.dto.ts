@@ -1,7 +1,7 @@
 import { Examples } from '#middlewares';
 import { PermissionCategories, Permissions, PermissionsArray, PermissionEntities, PermissionActions } from '@guardian/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional } from 'class-validator';
 
 const permission = PermissionsArray.filter((p) => !p.disabled)[0];
 const permissions = PermissionsArray.filter((p) => !p.disabled).map((p) => p.name);
@@ -57,6 +57,28 @@ export class PermissionsDTO {
 export class RoleDTO {
     @ApiProperty({
         type: 'string',
+        description: 'Internal database identifier',
+        example: Examples.DB_ID
+    })
+    id?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Role creation date in ISO 8601 format',
+        example: Examples.DATE
+    })
+    createDate?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Last update date in ISO 8601 format',
+        example: Examples.DATE
+    })
+    updateDate?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Unique universal identifier',
         required: true,
         example: Examples.UUID
     })
@@ -64,20 +86,23 @@ export class RoleDTO {
 
     @ApiProperty({
         type: 'string',
+        description: 'Role name',
         required: true,
-        example: 'Name'
+        example: 'Policy User'
     })
     name: string;
 
     @ApiProperty({
         type: 'string',
+        description: 'Role description',
         required: true,
-        example: 'Description'
+        example: 'Role for standard policy users'
     })
     description: string;
 
     @ApiProperty({
         type: 'string',
+        description: 'DID of the Standard Registry who created this role',
         required: true,
         example: Examples.DID
     })
@@ -85,11 +110,31 @@ export class RoleDTO {
 
     @ApiProperty({
         type: 'string',
+        description: 'List of permission names assigned to this role',
         required: true,
+        isArray: true,
         enum: permissions,
-        example: [Permissions.POLICIES_POLICY_READ]
+        example: [Permissions.POLICIES_POLICY_READ, Permissions.TOKENS_TOKEN_READ]
     })
     permissions: string[];
+
+    @ApiProperty({
+        type: 'boolean',
+        description: 'Whether this is the default role for new users',
+        example: false
+    })
+    @IsOptional()
+    @IsBoolean()
+    default?: boolean;
+
+    @ApiProperty({
+        type: 'boolean',
+        description: 'Whether the role is read-only (system role)',
+        example: false
+    })
+    @IsOptional()
+    @IsBoolean()
+    readonly?: boolean;
 }
 
 export class AssignPolicyDTO {

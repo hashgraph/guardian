@@ -2,8 +2,34 @@ import { IAuthUser, NotificationHelper, PinoLogger } from '@guardian/common';
 import { Permissions, PolicyStatus, SchemaEntity, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, ChangePasswordDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO, GenerateOPTResponseDTO, EmptyResponseDTO, LoginSuccessResponseDTO, LoginOTPRequiredResponseDTO, OTPConfirmDTO, OTPConfirmResponseDTO, ObjectExamples, OTPStatusResponseDTO } from '#middlewares';
+import { ApiBearerAuth, ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+    AccessTokenRequestDTO,
+    AccessTokenResponseDTO,
+    AccountsLoginResponseDTO,
+    AccountsResponseDTO,
+    AccountsSessionResponseDTO,
+    AggregatedDTOItem,
+    BalanceResponseDTO,
+    ChangePasswordDTO,
+    ConflictErrorDTO,
+    Examples,
+    InternalServerErrorDTO,
+    LoginUserDTO,
+    RegisterUserDTO,
+    StandardRegistryAccountDTO,
+    UnauthorizedErrorDTO,
+    UnprocessableEntityErrorDTO,
+    UserAccountDTO,
+    GenerateOPTResponseDTO,
+    EmptyResponseDTO,
+    LoginSuccessResponseDTO,
+    LoginOTPRequiredResponseDTO,
+    OTPConfirmDTO,
+    OTPConfirmResponseDTO,
+    ObjectExamples,
+    OTPStatusResponseDTO
+} from '#middlewares';
 import { Auth, AuthUser, checkPermission } from '#auth';
 import { EntityOwner, Guardians, InternalException, PolicyEngine, UseCache, Users } from '#helpers';
 import { PolicyListResponse } from '../../entities/policy';
@@ -34,12 +60,26 @@ export class AccountApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: AccountsSessionResponseDTO,
+        examples: {
+            authorizedWithHederaId: {
+                summary: 'Authorized user with Hedera ID',
+                value: ObjectExamples.SESSION_RESPONSE_WITH_ID
+            },
+            authorizedWithoutHederaId: {
+                summary: 'Authorized user without Hedera ID',
+                value: ObjectExamples.SESSION_RESPONSE_WITHOUT_ID
+            },
+            Unauthorized: {
+                summary: 'Unauthorized request',
+                value: null
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getSession(
@@ -63,17 +103,50 @@ export class AccountApi {
     @Post('/register')
     @ApiOperation({
         summary: 'Registers a new user account.',
-        description: 'Object that contain username, password and role (optional) fields.',
+        description: 'Object that contain username, password and role fields.',
     })
-    @ApiOkResponse({
+    @ApiBody({
+        description: 'Register payload.',
+        required: true,
+        type: RegisterUserDTO,
+        examples: {
+            registerBody: {
+                value: {
+                    username: Examples.USER_NAME_SR_1,
+                    password: 'StrongPassword3#',
+                    password_confirmation: 'StrongPassword3#',
+                    role: Examples.ROLE_SR
+                }
+            }
+        }
+    })
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: AccountsResponseDTO
+        type: AccountsResponseDTO,
+        example: ObjectExamples.REGISTER_RESPONSE
+    })
+    @ApiConflictResponse({
+        description: 'Conflict.',
+        type: ConflictErrorDTO,
+        example: { statusCode: 409, message: 'An account with the same name already exists.' }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            message: ['password should not be empty',
+                'password must be a string',
+                'Passwords must match'
+            ],
+            error: 'Unprocessable Entity',
+            statusCode: 422
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async register(
         @Body() body: RegisterUserDTO,
@@ -92,7 +165,7 @@ export class AccountApi {
                 parentUser = null;
             }
             if (!parentUser) {
-                throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+                throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
             }
             try {
                 await checkPermission(UserRole.STANDARD_REGISTRY)(parentUser);
@@ -125,7 +198,22 @@ export class AccountApi {
     @ApiOperation({
         summary: 'Logs user into the system.',
     })
+    @ApiBody({
+        description: 'Login payload.',
+        required: true,
+        type: LoginUserDTO,
+        examples: {
+            loginBody: {
+                value: {
+                    username: Examples.USER_NAME_SR_1,
+                    password: 'test'
+                }
+            }
+        }
+    })
     @ApiOkResponse({
+        description: 'Successful operation.',
+        type: AccountsLoginResponseDTO,
         schema: {
             oneOf: [
                 { $ref: getSchemaPath(LoginSuccessResponseDTO) },
@@ -141,13 +229,33 @@ export class AccountApi {
                 summary: 'OTP required',
                 value: ObjectExamples.OTP_REQUIRED_RESPONSE
             }
+	}
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized request.',
+        type: UnauthorizedErrorDTO,
+        example: {
+            statusCode: 401,
+            message: 'Unauthorized request'
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            message: [
+                'password should not be empty',
+                'password must be a string'
+            ],
+            error: 'Unprocessable Entity',
+            statusCode: 422
         }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async login(
         @Body() body: LoginUserDTO
@@ -172,17 +280,42 @@ export class AccountApi {
     })
     @ApiBody({
         description: 'User credentials.',
-        type: ChangePasswordDTO
+        type: ChangePasswordDTO,
+        examples: {
+            changePasswordBody: {
+                value: {
+                    username: Examples.USER_NAME_SR_1,
+                    oldPassword: 'test',
+                    newPassword: 'AnotherStrongPassword3#'
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: AccountsSessionResponseDTO
+        type: AccountsLoginResponseDTO,
+        example: {
+            username: Examples.USER_NAME_SR_1,
+            did: Examples.DID,
+            role: Examples.ROLE_SR,
+            refreshToken: Examples.REFRESH_TOKEN
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            message: [
+                'Password must be at least 4 characters long.'
+            ],
+            statusCode: 422
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async changePassword(
         @AuthUser() user: IAuthUser,
@@ -206,24 +339,43 @@ export class AccountApi {
         summary: 'Returns access token.',
         description: 'Returns access token.'
     })
-    @ApiOkResponse({
-        description: 'Successful operation.'
+    @ApiBody({
+        description: 'Object that contains a refresh token.',
+        type: AccessTokenRequestDTO,
+        examples: {
+            accessTokenBody: {
+                value: {
+                    refreshToken: Examples.REFRESH_TOKEN
+                }
+            }
+        }
     })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: AccessTokenResponseDTO,
+        example: { accessToken: Examples.ACCESS_TOKEN }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.OK)
     async getAccessToken(
-        @Body() body: any
-    ): Promise<any> {
+        @Body() body: AccessTokenRequestDTO
+    ): Promise<AccessTokenResponseDTO> {
         try {
             const { refreshToken } = body;
             const users = new Users();
             const { accessToken } = await users.generateNewAccessToken(refreshToken);
             if (!accessToken) {
-                throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+                throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
             }
             return {
                 accessToken
             }
         } catch (e) {
-            throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -236,20 +388,32 @@ export class AccountApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Returns a list of users, excluding Standard Registry and Auditors.',
-        description: 'Returns all users except those with roles Standard ' +
-            'Registry and Auditor. Only users with the Standard ' +
+        summary: 'Returns a list of users, excluding Standard Registry.',
+        description: 'Returns all users except those with role Standard ' +
+            'Registry. Only users with the Standard ' +
             'Registry role are allowed to make the request.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: AccountsResponseDTO
+        isArray: true,
+        type: UserAccountDTO,
+        example:
+            [
+                {
+                    username: 'Installer',
+                    parent: Examples.DID,
+                    did: Examples.DID_2
+                },
+                {
+                    username: 'Installer2'
+                }
+            ]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getAllAccounts(
@@ -278,13 +442,24 @@ export class AccountApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: AccountsResponseDTO
+        isArray: true,
+        type: StandardRegistryAccountDTO,
+        example:
+            [
+                {
+                    username: Examples.USER_NAME_SR_1,
+                    did: Examples.DID
+                },
+                {
+                    username: Examples.USER_NAME_SR_2
+                }
+            ]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getStandardRegistries(
         @AuthUser() user: IAuthUser
@@ -313,13 +488,32 @@ export class AccountApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: AggregatedDTOItem
+        type: AggregatedDTOItem,
+        example: [
+            {
+                did: Examples.DID,
+                vcDocument: ObjectExamples.VC_DOCUMENT_1,
+                policies: [
+                    ObjectExamples.POLICY_1,
+                    ObjectExamples.POLICY_2
+                ],
+                username: Examples.USER_NAME_SR_1,
+                hederaAccountId: Examples.ACCOUNT_ID
+            },
+            {
+                did: 'did:hedera:testnet:AacaQZTo8bEEecUXTZMar5BvZjAkvsEAFcD6NmzgXt5K_0.0.8148963',
+                vcDocument: ObjectExamples.VC_DOCUMENT_2,
+                policies: [],
+                username: Examples.USER_NAME_SR_2,
+                hederaAccountId: '0.0.8148961'
+            }
+        ]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(AggregatedDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getAggregatedStandardRegistries(
         @AuthUser() userParent: IAuthUser
@@ -381,13 +575,30 @@ export class AccountApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: BalanceResponseDTO
+        type: BalanceResponseDTO,
+        examples: {
+            authorizedWithHederaId: {
+                summary: 'Authorized user with Hedera ID',
+                value: {
+                    balance: '833.88244301 ℏ',
+                    unit: 'Hbar',
+                    user: {
+                        username: Examples.USER_NAME_SR_1,
+                        did: Examples.DID
+                    }
+                }
+            },
+            authorizedWithoutHederaId: {
+                summary: 'Authorized user without Hedera ID',
+                value: null
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(BalanceResponseDTO, InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.SHORT_TTL })
     @HttpCode(HttpStatus.OK)
     async getBalance(

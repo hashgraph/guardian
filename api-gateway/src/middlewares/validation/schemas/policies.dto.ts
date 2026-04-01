@@ -7,7 +7,7 @@ import {Type} from 'class-transformer';
 
 export class PolicyTestDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
         description: 'Test ID',
         example: Examples.DB_ID
     })
@@ -16,7 +16,7 @@ export class PolicyTestDTO {
     id?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         description: 'Test UUID',
         example: Examples.UUID
     })
@@ -25,7 +25,7 @@ export class PolicyTestDTO {
     uuid?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         description: 'Test Name',
         example: 'Test Name'
     })
@@ -34,7 +34,7 @@ export class PolicyTestDTO {
     name?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         description: 'Policy ID',
         example: Examples.DB_ID
     })
@@ -43,7 +43,7 @@ export class PolicyTestDTO {
     policyId?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         description: 'Test owner',
         example: Examples.DID
     })
@@ -52,7 +52,7 @@ export class PolicyTestDTO {
     owner?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         description: 'Test status',
         enum: PolicyTestStatus,
         example: PolicyTestStatus.New
@@ -62,7 +62,7 @@ export class PolicyTestDTO {
     status?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         description: 'Last start date',
         example: Examples.DATE
     })
@@ -71,7 +71,7 @@ export class PolicyTestDTO {
     date?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         description: 'Test duration',
         example: 0
     })
@@ -80,7 +80,7 @@ export class PolicyTestDTO {
     duration?: number;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         description: 'Test progress',
         example: 0
     })
@@ -89,7 +89,7 @@ export class PolicyTestDTO {
     progress?: number;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         description: 'Test result',
         example: Examples.UUID
     })
@@ -98,7 +98,7 @@ export class PolicyTestDTO {
     resultId?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         description: 'Test result',
     })
     @IsOptional()
@@ -108,7 +108,7 @@ export class PolicyTestDTO {
 
 export class BasePolicyDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -116,7 +116,7 @@ export class BasePolicyDTO {
     id?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: 'Policy name'
     })
     @IsOptional()
@@ -124,10 +124,66 @@ export class BasePolicyDTO {
     name?: string;
 }
 
-@ApiExtraModels(PolicyTestDTO)
+export class PolicyToolDTO {
+    @ApiProperty({
+        type: String,
+        example: 'Tool 33'
+    })
+    @IsOptional()
+    @IsString()
+    name?: string;
+
+    @ApiProperty({
+        type: String,
+        required: false,
+        nullable: true,
+        example: '1.0.0'
+    })
+    @IsOptional()
+    @IsString()
+    version?: string | null;
+
+    @ApiProperty({
+        type: String,
+        example: Examples.ACCOUNT_ID
+    })
+    @IsOptional()
+    @IsString()
+    topicId?: string;
+
+    @ApiProperty({
+        type: String,
+        example: Examples.MESSAGE_ID
+    })
+    @IsOptional()
+    @IsString()
+    messageId?: string;
+}
+
+export class PolicyImportantParametersDTO {
+    @ApiProperty({
+        type: String,
+        required: false,
+        example: ''
+    })
+    @IsOptional()
+    @IsString()
+    atValidation?: string;
+
+    @ApiProperty({
+        type: String,
+        required: false,
+        example: ''
+    })
+    @IsOptional()
+    @IsString()
+    monitored?: string;
+}
+
+@ApiExtraModels(PolicyTestDTO, PolicyImportantParametersDTO)
 export class PolicyDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -135,7 +191,7 @@ export class PolicyDTO {
     id?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.UUID
     })
     @IsOptional()
@@ -143,7 +199,7 @@ export class PolicyDTO {
     uuid?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: 'Policy name'
     })
     @IsOptional()
@@ -151,7 +207,7 @@ export class PolicyDTO {
     name?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: 'Description'
     })
     @IsOptional()
@@ -159,7 +215,7 @@ export class PolicyDTO {
     description?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: 'Description'
     })
     @IsOptional()
@@ -167,7 +223,43 @@ export class PolicyDTO {
     topicDescription?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        required: false,
+        example: ''
+    })
+    @IsOptional()
+    @IsString()
+    applicabilityConditions?: string;
+
+    @ApiProperty({
+        type: String,
+        required: false,
+        example: ''
+    })
+    @IsOptional()
+    @IsString()
+    detailsUrl?: string;
+
+    @ApiProperty({
+        type: String,
+        required: false,
+        example: ''
+    })
+    @IsOptional()
+    @IsString()
+    typicalProjects?: string;
+
+    @ApiProperty({
+        type: () => PolicyImportantParametersDTO,
+        required: false
+    })
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => PolicyImportantParametersDTO)
+    importantParameters?: PolicyImportantParametersDTO;
+
+    @ApiProperty({
+        type: String,
         example: 'Tag'
     })
     @IsOptional()
@@ -175,7 +267,7 @@ export class PolicyDTO {
     policyTag?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         enum: PolicyStatus,
         example: PolicyStatus.DRAFT
     })
@@ -184,7 +276,7 @@ export class PolicyDTO {
     status?: PolicyStatus;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DID
     })
     @IsOptional()
@@ -192,7 +284,7 @@ export class PolicyDTO {
     creator?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DID
     })
     @IsOptional()
@@ -200,7 +292,7 @@ export class PolicyDTO {
     owner?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.ACCOUNT_ID
     })
     @IsOptional()
@@ -208,7 +300,15 @@ export class PolicyDTO {
     topicId?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        example: Examples.ACCOUNT_ID
+    })
+    @IsOptional()
+    @IsString()
+    instanceTopicId?: string;
+
+    @ApiProperty({
+        type: String,
         example: Examples.MESSAGE_ID
     })
     @IsOptional()
@@ -216,7 +316,17 @@ export class PolicyDTO {
     messageId?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
+        enum: PolicyAvailability,
+        required: false,
+        example: PolicyAvailability.PRIVATE
+    })
+    @IsOptional()
+    @IsString()
+    availability?: PolicyAvailability;
+
+    @ApiProperty({
+        type: String,
         example: '1.0.0'
     })
     @IsOptional()
@@ -224,7 +334,17 @@ export class PolicyDTO {
     codeVersion?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: () => PolicyToolDTO,
+        isArray: true
+    })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => PolicyToolDTO)
+    tools?: PolicyToolDTO[];
+
+    @ApiProperty({
+        type: String,
         example: Examples.DATE
     })
     @IsOptional()
@@ -232,7 +352,7 @@ export class PolicyDTO {
     createDate?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: '1.0.0'
     })
     @IsOptional()
@@ -240,7 +360,7 @@ export class PolicyDTO {
     version?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         required: false
     })
     @IsOptional()
@@ -256,7 +376,7 @@ export class PolicyDTO {
     config?: any;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: 'Installer'
     })
     @IsOptional()
@@ -264,7 +384,7 @@ export class PolicyDTO {
     userRole?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         isArray: true,
         example: ['Installer']
     })
@@ -275,6 +395,9 @@ export class PolicyDTO {
     @ApiProperty({
         type: 'object',
         additionalProperties: true,
+        nullable: true,
+        description:
+            'Last active group in iteration order (not a separate summary). Often shown via groupLabel or uuid.',
         example: {
             uuid: Examples.UUID,
             role: 'Installer',
@@ -291,6 +414,7 @@ export class PolicyDTO {
         type: 'object',
         additionalProperties: true,
         isArray: true,
+        description: 'Full list of group rows for this user in the policy (getGroupsByUser), including inactive.',
         example: [{
             uuid: Examples.UUID,
             role: 'Installer',
@@ -304,7 +428,7 @@ export class PolicyDTO {
     userGroups?: any[];
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         isArray: true,
         example: ['Registrant']
     })
@@ -402,7 +526,7 @@ export class PolicyDTO {
     policyDocumentation?: any[];
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         isArray: true
     })
     @IsOptional()
@@ -410,7 +534,7 @@ export class PolicyDTO {
     categories?: string[];
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.UUID
     })
     @IsOptional()
@@ -448,7 +572,7 @@ export class PolicyPreviewDTO {
     module: PolicyDTO;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         required: true,
         example: Examples.MESSAGE_ID
     })
@@ -474,7 +598,7 @@ export class PolicyPreviewDTO {
     tags?: any[];
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.ACCOUNT_ID
     })
     @IsOptional()
@@ -510,7 +634,7 @@ export class PoliciesValidationDTO {
     policies: PolicyDTO[];
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         required: true
     })
     @IsBoolean()
@@ -526,7 +650,7 @@ export class PoliciesValidationDTO {
 
 export class PolicyCategoryDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -534,7 +658,7 @@ export class PolicyCategoryDTO {
     id?: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         required: true,
         example: 'Large-Scale'
     })
@@ -542,7 +666,7 @@ export class PolicyCategoryDTO {
     name: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         required: true,
         example: 'PROJECT_SCALE'
     })
@@ -552,7 +676,7 @@ export class PolicyCategoryDTO {
 
 export class PolicyVersionDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
         required: true,
         example: '1.0.0'
     })
@@ -560,7 +684,7 @@ export class PolicyVersionDTO {
     policyVersion: string;
 
     @ApiProperty({
-        type: 'string',
+        type: String,
         required: false,
         enum: PolicyAvailability,
         example: 'private'
@@ -570,7 +694,7 @@ export class PolicyVersionDTO {
     policyAvailability?: PolicyAvailability;
 
     @ApiProperty({
-        type: 'boolean',
+        type: Boolean,
         required: false,
         example: false,
         description: 'Record policy actions',
@@ -583,7 +707,7 @@ export class PolicyVersionDTO {
 export class DebugBlockDataDTO {
     @ApiProperty({
         description: 'Input event',
-        type: 'string',
+        type: String,
         example: 'RunEvent'
     })
     @IsOptional()
@@ -592,7 +716,7 @@ export class DebugBlockDataDTO {
 
     @ApiProperty({
         description: 'Output event',
-        type: 'string',
+        type: String,
         example: 'RunEvent'
     })
     @IsOptional()
@@ -601,7 +725,7 @@ export class DebugBlockDataDTO {
 
     @ApiProperty({
         description: 'Document type',
-        type: 'string',
+        type: String,
         enum: ['schema', 'json', 'file', 'history'],
         example: 'json'
     })
@@ -642,7 +766,7 @@ export class DebugBlockConfigDTO {
 export class DebugBlockResultDTO {
     @ApiProperty({
         description: 'Logs',
-        type: 'string',
+        type: String,
         isArray: true,
     })
     @IsOptional()
@@ -651,7 +775,7 @@ export class DebugBlockResultDTO {
 
     @ApiProperty({
         description: 'Errors',
-        type: 'string',
+        type: String,
         isArray: true,
     })
     @IsOptional()
@@ -677,7 +801,7 @@ export class DebugBlockResultDTO {
 
 export class DebugBlockHistoryDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
         description: 'History ID',
         example: Examples.DB_ID
     })
@@ -687,7 +811,7 @@ export class DebugBlockHistoryDTO {
 
     @ApiProperty({
         description: 'Create date',
-        type: 'string',
+        type: String,
         example: Examples.DATE
     })
     @IsOptional()
@@ -739,7 +863,7 @@ export class IgnoreRuleDTO {
  */
 export class DeleteSavepointsDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
         isArray: true,
         required: true,
         example: [Examples.DB_ID]
@@ -750,10 +874,12 @@ export class DeleteSavepointsDTO {
     savepointIds!: string[];
 
     @ApiProperty({
-        type: 'boolean',
+        type: Boolean,
         required: false,
         example: false,
-        description: 'Skip protection for currently selected savepoint'
+        description:
+            'If `false`, and the policy has more than one savepoint, the current savepoint cannot be deleted. ' +
+            'If `true`, that guard is bypassed (used by the UI for deleting all savepoints).'
     })
     @IsOptional()
     @IsBoolean()
@@ -765,7 +891,7 @@ export class DeleteSavepointsDTO {
  */
 export class DeleteSavepointsResultDTO {
     @ApiProperty({
-        type: 'string',
+        type: String,
         isArray: true,
         required: true,
         example: [Examples.DB_ID]
