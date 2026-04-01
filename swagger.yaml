@@ -22675,7 +22675,7 @@ paths:
           in: path
           description: Policy Id
           schema:
-            example: '000000000000000000000001'
+            example: 69aeb71ef8c5b278e3bab4e5
             type: string
       responses:
         '200':
@@ -22685,9 +22685,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/MockConfigDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -22710,7 +22725,7 @@ paths:
           in: path
           description: Policy Id
           schema:
-            example: '000000000000000000000001'
+            example: 69aeb71ef8c5b278e3bab4e5
             type: string
       requestBody:
         required: true
@@ -22727,9 +22742,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/MockConfigDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -22753,7 +22783,7 @@ paths:
           in: path
           description: Policy Id
           schema:
-            example: '000000000000000000000001'
+            example: 69aeb71ef8c5b278e3bab4e5
             type: string
       responses:
         '200':
@@ -22763,9 +22793,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/MockDataDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -22789,7 +22834,7 @@ paths:
           in: path
           description: Policy Id
           schema:
-            example: '000000000000000000000001'
+            example: 69aeb71ef8c5b278e3bab4e5
             type: string
       requestBody:
         required: true
@@ -22806,9 +22851,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/MockDataDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -22832,7 +22892,7 @@ paths:
           in: path
           description: Policy Id
           schema:
-            example: '000000000000000000000001'
+            example: 69aeb71ef8c5b278e3bab4e5
             type: string
       requestBody:
         required: true
@@ -22849,9 +22909,24 @@ paths:
               schema:
                 type: object
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -22876,15 +22951,30 @@ paths:
           in: path
           description: Policy Id
           schema:
-            example: '000000000000000000000001'
+            example: 69aeb71ef8c5b278e3bab4e5
             type: string
       responses:
         '200':
           description: Successful operation. Response zip file.
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -22910,7 +23000,7 @@ paths:
           in: path
           description: Policy Id
           schema:
-            example: '000000000000000000000001'
+            example: 69aeb71ef8c5b278e3bab4e5
             type: string
       requestBody:
         required: true
@@ -22927,9 +23017,24 @@ paths:
               schema:
                 type: object
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -22954,7 +23059,7 @@ paths:
           in: path
           description: Policy Id
           schema:
-            example: '000000000000000000000001'
+            example: 69aeb71ef8c5b278e3bab4e5
             type: string
       requestBody:
         required: true
@@ -22972,9 +23077,24 @@ paths:
                 type: string
                 format: binary
         '401':
-          description: Unauthorized.
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
         '403':
-          description: Forbidden.
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
         '500':
           description: Internal server error.
           content:
@@ -54106,9 +54226,6 @@ components:
       required:
         - statusCode
         - message
-    Object:
-      type: object
-      properties: {}
     PolicyPreviewDTO:
       type: object
       properties:
@@ -54245,7 +54362,7 @@ components:
       properties:
         uuid:
           type: string
-          example: 00000000-0000-0000-0000-000000000000
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
         enabled:
           type: boolean
           example: true
@@ -54264,7 +54381,7 @@ components:
       properties:
         cid:
           type: string
-          example: 00000000-0000-0000-0000-000000000000
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
         content:
           type: string
     MockTopicTransactionDTO:
@@ -54272,46 +54389,46 @@ components:
       properties:
         id:
           type: string
-          example: 0.0.1
+          example: 0.0.6046379
         memo:
           type: string
           example: memo
         payer_account_id:
           type: string
-          example: 0.0.1
+          example: 0.0.6046379
         topic_id:
           type: string
-          example: 0.0.1
+          example: 0.0.6046379
     MockMessageTransactionDTO:
       type: object
       properties:
         consensus_timestamp:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         id:
           type: string
-          example: '0000000000.000000001'
+          example: '1773670900.819264517'
         message:
           type: string
           example: base64
         payer_account_id:
           type: string
-          example: 0.0.1
+          example: 0.0.6046379
         sequence_number:
           type: number
-          example: 0.0.1
+          example: 0.0.6046379
         topicId:
           type: string
-          example: 0.0.1
+          example: 0.0.6046379
         topic_id:
           type: string
-          example: 0.0.1
+          example: 0.0.6046379
     MockTopicDataDTO:
       type: object
       properties:
         topicId:
           type: string
-          example: 0.0.1
+          example: 0.0.6046379
         topic:
           $ref: '#/components/schemas/MockTopicTransactionDTO'
         messages:
@@ -54323,13 +54440,13 @@ components:
       properties:
         id:
           type: string
-          example: 0.0.1
+          example: 0.0.6046379
         token_id:
           type: string
-          example: 0.0.1
+          example: 0.0.6046379
         treasury_account_id:
           type: string
-          example: 0.0.1
+          example: 0.0.6046379
         name:
           type: string
           example: Name
@@ -54386,10 +54503,10 @@ components:
         did:
           type: string
           example: >-
-            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         hederaAccountId:
           type: string
-          example: 0.0.1
+          example: 0.0.6046379
         hederaAccountKey:
           type: string
         document:
@@ -54435,7 +54552,7 @@ components:
       properties:
         cid:
           type: string
-          example: 00000000-0000-0000-0000-000000000000
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
     RunningDetailsDTO:
       type: object
       properties:
