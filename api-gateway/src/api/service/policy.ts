@@ -3693,6 +3693,87 @@ export class PolicyApi {
     }
 
     /**
+     * Get mint requests for a policy
+     */
+    @Get('/:policyId/mint-requests')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Get mint requests for a policy.',
+        description: 'Returns paginated mint requests for the specified policy with optional filters.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        description: 'Status filter (error, pending, success)',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID filter',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Mint requests.',
+        isArray: true,
+        headers: pageHeader,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.OK)
+    async getMintRequests(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('policyId') policyId: string,
+        @Query('status') status?: string,
+        @Query('tokenId') tokenId?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            const [requests, count] = await engineService.getMintRequests(
+                new EntityOwner(user),
+                policyId,
+                status,
+                tokenId,
+                pageIndex,
+                pageSize,
+            );
+            return res.header('X-Total-Count', count).send(requests);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Retry mint for the specified VP message
      */
     @Post('/:policyId/mint/:vpMessageId/retry')

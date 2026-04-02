@@ -647,6 +647,58 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MINT_REQUESTS,
+            async (msg: {
+                owner: IOwner,
+                policyId: string,
+                status: string,
+                tokenId: string,
+                pageIndex: string,
+                pageSize: string
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { owner, policyId, status, tokenId, pageIndex, pageSize } = msg;
+
+                    const parsedPageSize = parseInt(pageSize, 10) || 10;
+                    const parsedPageIndex = parseInt(pageIndex, 10) || 0;
+                    const offset = parsedPageIndex * parsedPageSize;
+                    const limit = parsedPageSize;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+
+                    const filters: any = { policyId };
+
+                    if (tokenId) {
+                        filters.tokenId = tokenId;
+                    }
+
+                    if (status === 'error') {
+                        filters.error = { $ne: null };
+                    } else if (status === 'pending') {
+                        filters.error = null;
+                        filters.isMintNeeded = true;
+                    } else if (status === 'success') {
+                        filters.error = null;
+                        filters.isMintNeeded = false;
+                    }
+
+                    const [items, count] = await DatabaseServer.getMintRequestsAndCount(
+                        filters,
+                        {
+                            offset,
+                            limit,
+                            orderBy: { processDate: 'DESC' } as any
+                        }
+                    );
+
+                    return new MessageResponse([items, count]);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error, error.code);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.BLOCK_BY_TAG,
             async (msg: {
                 user: IAuthUser,

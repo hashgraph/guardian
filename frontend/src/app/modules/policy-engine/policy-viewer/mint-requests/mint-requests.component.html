@@ -1,0 +1,165 @@
+<div class="mint-requests-container">
+    <div class="guardian-user-page-toolbar">
+        <div class="guardian-user-page-filters">
+            <form [formGroup]="filtersForm" class="filters">
+                <div class="filter-row">
+                    <div class="filter-controls">
+                        <div class="filter">
+                            <p-dropdown
+                                formControlName="status"
+                                [options]="statusOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Status"
+                                class="status-dropdown"
+                            ></p-dropdown>
+                        </div>
+                        <div class="filter">
+                            <span class="p-input-icon-right">
+                                <input
+                                    formControlName="tokenId"
+                                    pInputText
+                                    placeholder="Token ID"
+                                    type="text"
+                                    class="token-input"
+                                />
+                            </span>
+                        </div>
+                    </div>
+                    <div class="filter-actions">
+                        <button
+                            (click)="applyFilters()"
+                            type="button"
+                            class="button"
+                            label="Apply"
+                            pButton
+                        ></button>
+                        <button
+                            (click)="clearFilters()"
+                            type="button"
+                            class="button secondary"
+                            label="Clear"
+                            pButton
+                        ></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="guardian-user-page-grid">
+        <ng-container *ngIf="page && page.length > 0; else noData">
+            <div class="guardian-grid-container">
+                <p-table
+                    class="guardian-grid-table"
+                    [value]="page"
+                    [scrollable]="true"
+                >
+                    <ng-template pTemplate="header">
+                        <tr class="guardian-grid-header">
+                            <th class="col-200">VP Message ID</th>
+                            <th class="col-150">Token ID</th>
+                            <th class="col-120">Token Type</th>
+                            <th class="col-100">Amount</th>
+                            <th class="col-200">Target</th>
+                            <th class="col-200">Owner</th>
+                            <th class="col-100">Status</th>
+                            <th class="col-auto">Error</th>
+                            <th class="col-150">Process Date</th>
+                            <th class="col-80">Actions</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template let-row pTemplate="body">
+                        <tr class="guardian-grid-row">
+                            <td
+                                class="col-200"
+                                pTooltip="{{row.vpMessageId}}"
+                                tooltipPosition="top"
+                                [showDelay]="1000"
+                            >
+                                <span class="text-truncate">{{row.vpMessageId}}</span>
+                            </td>
+                            <td
+                                class="col-150"
+                                pTooltip="{{row.tokenId}}"
+                                tooltipPosition="top"
+                                [showDelay]="1000"
+                            >
+                                <span class="text-truncate">{{row.tokenId}}</span>
+                            </td>
+                            <td class="col-120">{{row.tokenType}}</td>
+                            <td class="col-100">{{row.amount}}</td>
+                            <td
+                                class="col-200"
+                                pTooltip="{{row.target}}"
+                                tooltipPosition="top"
+                                [showDelay]="1000"
+                            >
+                                <span class="text-truncate">{{row.target}}</span>
+                            </td>
+                            <td
+                                class="col-200"
+                                pTooltip="{{row.owner}}"
+                                tooltipPosition="top"
+                                [showDelay]="1000"
+                            >
+                                <span class="text-truncate">{{row.owner}}</span>
+                            </td>
+                            <td class="col-100">
+                                <span
+                                    class="status-badge"
+                                    [ngClass]="getStatusClass(row)"
+                                >
+                                    {{getStatusLabel(row)}}
+                                </span>
+                            </td>
+                            <td
+                                class="col-auto"
+                                pTooltip="{{row.error}}"
+                                tooltipPosition="top"
+                                [showDelay]="1000"
+                            >
+                                <span class="text-truncate error-text">{{row.error}}</span>
+                            </td>
+                            <td class="col-150">{{row.processDate | date:'short'}}</td>
+                            <td class="col-80">
+                                <button
+                                    *ngIf="hasError(row)"
+                                    (click)="onRetry(row)"
+                                    pButton
+                                    icon="pi pi-refresh"
+                                    class="p-button-text p-button-sm"
+                                    pTooltip="Retry mint"
+                                    tooltipPosition="top"
+                                ></button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+                <div class="guardian-grid-paginator">
+                    <app-paginator
+                        [pageIndex]="pageIndex"
+                        [pageSize]="pageSize"
+                        [length]="pageCount"
+                        (page)="onPage($event)"
+                    ></app-paginator>
+                </div>
+            </div>
+        </ng-container>
+        <ng-template #noData>
+            <div class="guardian-user-not-data">
+                <svg-icon
+                    class="svg-icon-32"
+                    src="/assets/images/icons/32/list.svg"
+                    svgClass="icon-color-disabled"
+                ></svg-icon>
+                <span class="guardian-user-not-data__text-strong">No mint requests found</span>
+                <span class="guardian-user-not-data__text">Try adjusting your filters</span>
+            </div>
+        </ng-template>
+    </div>
+</div>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

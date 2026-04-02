@@ -384,6 +384,29 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Get mint requests
+     * @param owner Owner
+     * @param policyId Policy identifier
+     * @param status Status filter
+     * @param tokenId Token ID filter
+     * @param pageIndex Page index
+     * @param pageSize Page size
+     * @returns Mint requests and count
+     */
+    public async getMintRequests(
+        owner: IOwner,
+        policyId: string,
+        status?: string,
+        tokenId?: string,
+        pageIndex?: number | string,
+        pageSize?: number | string
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_MINT_REQUESTS, {
+            owner, policyId, status, tokenId, pageIndex, pageSize
+        });
+    }
+
+    /**
      * Set block data
      * @param user
      * @param policyId
