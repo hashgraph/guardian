@@ -18846,6 +18846,72 @@ paths:
       summary: Send data to block by UUID.
       tags:
         - policies
+  /policies/{policyId}/mint/{vpMessageId}/retry:
+    post:
+      description: >-
+        Retries failed mint/transfer operations for the specified VP message
+        within the given policy.
+      operationId: PolicyApi_retryMint
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: vpMessageId
+          required: true
+          in: path
+          description: VP Message Id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '422':
+          description: Unprocessable entity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityErrorDTO'
+              example:
+                statusCode: 422
+                message: Error message
+                error: Unprocessable Entity
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Retry mint by VP message ID.
+      tags:
+        - policies
   /policies/{policyId}/blocks/{uuid}/sync-events:
     post:
       description: >-
