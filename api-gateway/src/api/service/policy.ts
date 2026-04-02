@@ -3716,12 +3716,14 @@ export class PolicyApi {
         type: String,
         description: 'Status filter (error, pending, success)',
         required: false,
+        example: 'error'
     })
     @ApiQuery({
         name: 'tokenId',
         type: String,
         description: 'Token ID filter',
         required: false,
+        example: '0.0.6046500'
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -3741,12 +3743,36 @@ export class PolicyApi {
         description: 'Mint requests.',
         isArray: true,
         headers: pageHeader,
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    amount: { type: 'number', description: 'Amount to mint', example: 100 },
+                    tokenId: { type: 'string', description: 'Token identifier', example: '0.0.6046500' },
+                    tokenType: { type: 'string', enum: ['FUNGIBLE', 'NON_FUNGIBLE'], description: 'Token type' },
+                    target: { type: 'string', description: 'Target account', example: '0.0.6046379' },
+                    vpMessageId: { type: 'string', description: 'VP message identifier', example: '1774449622.177353801' },
+                    isMintNeeded: { type: 'boolean', description: 'Whether minting is still needed' },
+                    isTransferNeeded: { type: 'boolean', description: 'Whether transfer is needed' },
+                    memo: { type: 'string', description: 'Transaction memo' },
+                    metadata: { type: 'string', nullable: true, description: 'Metadata' },
+                    error: { type: 'string', nullable: true, description: 'Error message if mint failed' },
+                    processDate: { type: 'string', format: 'date-time', nullable: true, description: 'Last process date' },
+                    policyId: { type: 'string', description: 'Associated policy ID' },
+                    owner: { type: 'string', nullable: true, description: 'Owner DID' },
+                    id: { type: 'string', description: 'Mint request ID' },
+                }
+            }
+        },
+        example: ObjectExamples.MINT_REQUEST
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
         example: { statusCode: 500, message: 'Error message' }
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getMintRequests(
         @AuthUser() user: IAuthUser,
@@ -3798,9 +3824,11 @@ export class PolicyApi {
         type: String,
         description: 'VP Message Id',
         required: true,
+        example: '1774449700.283746192'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        example: {}
     })
     @ApiUnprocessableEntityResponse({
         description: 'Unprocessable entity.',
