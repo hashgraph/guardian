@@ -18846,6 +18846,89 @@ paths:
       summary: Send data to block by UUID.
       tags:
         - policies
+  /policies/{policyId}/mint-requests:
+    get:
+      description: >-
+        Returns paginated mint requests for the specified policy with optional
+        filters.
+      operationId: PolicyApi_getMintRequests
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: status
+          required: false
+          in: query
+          description: Status filter (error, pending, success)
+          schema:
+            type: string
+        - name: tokenId
+          required: false
+          in: query
+          description: Token ID filter
+          schema:
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+      responses:
+        '200':
+          description: Mint requests.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Get mint requests for a policy.
+      tags:
+        - policies
   /policies/{policyId}/mint/{vpMessageId}/retry:
     post:
       description: >-
