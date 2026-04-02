@@ -18865,12 +18865,14 @@ paths:
           in: query
           description: Status filter (error, pending, success)
           schema:
+            example: error
             type: string
         - name: tokenId
           required: false
           in: query
           description: Token ID filter
           schema:
+            example: 0.0.6046500
             type: string
         - name: pageIndex
           required: false
@@ -18896,6 +18898,100 @@ paths:
               schema:
                 type: integer
               description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    amount:
+                      type: number
+                      description: Amount to mint
+                      example: 100
+                    tokenId:
+                      type: string
+                      description: Token identifier
+                      example: 0.0.6046500
+                    tokenType:
+                      type: string
+                      enum:
+                        - FUNGIBLE
+                        - NON_FUNGIBLE
+                      description: Token type
+                    target:
+                      type: string
+                      description: Target account
+                      example: 0.0.6046379
+                    vpMessageId:
+                      type: string
+                      description: VP message identifier
+                      example: '1774449622.177353801'
+                    isMintNeeded:
+                      type: boolean
+                      description: Whether minting is still needed
+                    isTransferNeeded:
+                      type: boolean
+                      description: Whether transfer is needed
+                    memo:
+                      type: string
+                      description: Transaction memo
+                    metadata:
+                      type: string
+                      nullable: true
+                      description: Metadata
+                    error:
+                      type: string
+                      nullable: true
+                      description: Error message if mint failed
+                    processDate:
+                      type: string
+                      format: date-time
+                      nullable: true
+                      description: Last process date
+                    policyId:
+                      type: string
+                      description: Associated policy ID
+                    owner:
+                      type: string
+                      nullable: true
+                      description: Owner DID
+                    id:
+                      type: string
+                      description: Mint request ID
+              example:
+                - amount: 100
+                  tokenId: 0.0.6046500
+                  tokenType: FUNGIBLE
+                  target: 0.0.6046379
+                  vpMessageId: '1774449622.177353801'
+                  isMintNeeded: false
+                  isTransferNeeded: false
+                  wasTransferNeeded: false
+                  memo: f3b2a9c1e4d5678901234567
+                  metadata: null
+                  error: null
+                  processDate: '2026-03-25T14:40:28.853Z'
+                  policyId: 69b83f18cd6b7c4adf4139bc
+                  owner: >-
+                    did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                  id: 69c3ff9de85d8b6ef99ef870
+                - amount: 50
+                  tokenId: 0.0.6046500
+                  tokenType: NON_FUNGIBLE
+                  target: 0.0.6046379
+                  vpMessageId: '1774449700.283746192'
+                  isMintNeeded: true
+                  isTransferNeeded: false
+                  wasTransferNeeded: false
+                  memo: a1b2c3d4e5f6789012345678
+                  metadata: null
+                  error: INSUFFICIENT_PAYER_BALANCE
+                  processDate: '2026-03-25T15:30:37.191Z'
+                  policyId: 69b83f18cd6b7c4adf4139bc
+                  owner: >-
+                    did:hedera:testnet:EthnLQfQnh8x6vKyegyekhy72oSAok6cH59pfVssKLDw_0.0.8200599
+                  id: 69c3ff9de85d8b6ef99ef871
         '401':
           description: Unauthorized request.
           content:
@@ -18948,10 +19044,14 @@ paths:
           in: path
           description: VP Message Id
           schema:
+            example: '1774449700.283746192'
             type: string
       responses:
         '200':
           description: Successful operation.
+          content:
+            application/json:
+              example: {}
         '401':
           description: Unauthorized request.
           content:
