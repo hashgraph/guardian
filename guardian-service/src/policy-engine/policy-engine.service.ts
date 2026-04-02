@@ -623,6 +623,30 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RETRY_MINT,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                vpMessageId: string
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId, vpMessageId } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+
+                    const blockData = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.RETRY_MINT, policyId, {
+                            user,
+                            policyId,
+                            vpMessageId
+                        }, 5 * 60 * 1000) as any;
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.BLOCK_BY_TAG,
             async (msg: {
                 user: IAuthUser,

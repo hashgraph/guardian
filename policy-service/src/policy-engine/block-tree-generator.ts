@@ -11,6 +11,7 @@ import { RecordUtils } from './record-utils.js';
 import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
 import { PolicyActionsService } from './actions-service.js';
 import { RecordActionStep } from './record-action-step.js';
+import { MintService } from './mint/mint-service.js';
 import { PolicyVcDocumentsUtils } from './policy-vc-documents-utils.js';
 
 /**
@@ -273,6 +274,22 @@ export class BlockTreeGenerator extends NatsService {
                     }
                 } else {
                     return res;
+                }
+            });
+
+        this.getPolicyMessages(PolicyEvents.RETRY_MINT, policyId,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                vpMessageId: string
+            }) => {
+                try {
+                    const { user, vpMessageId } = msg;
+                    const userFull = await this.getUser(policyInstance, user);
+                    await MintService.retry(vpMessageId, userFull.did, policy.owner, null, user?.id);
+                    return new MessageResponse({});
+                } catch (error) {
+                    return new MessageError(error, error.code);
                 }
             });
 

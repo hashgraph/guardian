@@ -368,6 +368,22 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Retry mint
+     * @param user
+     * @param policyId
+     * @param vpMessageId
+     */
+    public async retryMint(
+        user: IAuthUser,
+        policyId: string,
+        vpMessageId: string
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.RETRY_MINT, {
+            user, policyId, vpMessageId
+        });
+    }
+
+    /**
      * Set block data
      * @param user
      * @param policyId

@@ -3693,6 +3693,60 @@ export class PolicyApi {
     }
 
     /**
+     * Retry mint for the specified VP message
+     */
+    @Post('/:policyId/mint/:vpMessageId/retry')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Retry mint by VP message ID.',
+        description:
+            'Retries failed mint/transfer operations for the specified VP message within the given policy.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'vpMessageId',
+        type: String,
+        description: 'VP Message Id',
+        required: true,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.OK)
+    async retryMint(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('vpMessageId') vpMessageId: string,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.retryMint(user, policyId, vpMessageId);
+        } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Sends data to the specified block
      */
     @Post('/:policyId/blocks/:uuid/sync-events')
