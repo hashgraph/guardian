@@ -1,0 +1,81 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    /* Base */
+    --color-background: hsl(210 20% 98%);
+    --color-foreground: hsl(220 14% 16%);
+
+    /* Cards */
+    --color-card: hsl(0 0% 100%);
+    --color-card-foreground: hsl(220 14% 16%);
+
+    /* Popover */
+    --color-popover: hsl(0 0% 100%);
+    --color-popover-foreground: hsl(220 14% 16%);
+
+    /* Primary — teal/green (Hedera brand-adjacent) */
+    --color-primary: hsl(162 63% 41%);
+    --color-primary-foreground: hsl(0 0% 100%);
+
+    /* Secondary — warm slate */
+    --color-secondary: hsl(215 16% 93%);
+    --color-secondary-foreground: hsl(220 14% 25%);
+
+    /* Muted */
+    --color-muted: hsl(215 16% 93%);
+    --color-muted-foreground: hsl(220 10% 46%);
+
+    /* Accent */
+    --color-accent: hsl(162 30% 93%);
+    --color-accent-foreground: hsl(162 63% 28%);
+
+    /* Destructive */
+    --color-destructive: hsl(0 72% 51%);
+    --color-destructive-foreground: hsl(0 0% 100%);
+
+    /* Borders & inputs */
+    --color-border: hsl(220 13% 88%);
+    --color-input: hsl(220 13% 88%);
+    --color-ring: hsl(162 63% 41%);
+
+    /* Sidebar — light, clean */
+    --color-sidebar: hsl(0 0% 100%);
+    --color-sidebar-foreground: hsl(220 10% 40%);
+    --color-sidebar-border: hsl(220 13% 90%);
+    --color-sidebar-accent: hsl(162 30% 93%);
+    --color-sidebar-accent-foreground: hsl(162 63% 28%);
+    --color-sidebar-primary: hsl(162 63% 41%);
+    --color-sidebar-primary-foreground: hsl(0 0% 100%);
+    --color-sidebar-muted: hsl(215 16% 93%);
+
+    /* Chart palette — distinct, vibrant, accessible */
+    --color-chart-1: hsl(162 63% 41%);
+    --color-chart-2: hsl(221 83% 53%);
+    --color-chart-3: hsl(38 92% 50%);
+    --color-chart-4: hsl(346 77% 50%);
+    --color-chart-5: hsl(271 76% 53%);
+
+    /* Semantic stat colors */
+    --color-stat-green: hsl(152 60% 42%);
+    --color-stat-blue: hsl(217 71% 53%);
+    --color-stat-amber: hsl(38 92% 50%);
+    --color-stat-rose: hsl(346 77% 50%);
+
+    --radius: 0.5rem;
+    --sidebar-width: 15rem;
+    --sidebar-width-collapsed: 3.5rem;
+}
+
+* {
+    border-color: var(--color-border);
+}
+
+body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}

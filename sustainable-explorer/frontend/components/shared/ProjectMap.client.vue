@@ -1,0 +1,144 @@
+<script setup lang="ts">
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+export interface CountryData {
+    country: string;
+    countryCode: string;
+    projects: number;
+    credits: string;
+}
+
+export interface ProjectPoint {
+    name: string;
+    lat: number;
+    lng: number;
+    credits?: string;
+}
+
+const props = defineProps<{
+    countries: CountryData[];
+    points?: ProjectPoint[];
+}>();
+
+const emit = defineEmits<{
+    'country-click': [countryCode: string];
+}>();
+
+const mapContainer = ref<HTMLElement | null>(null);
+let map: L.Map | null = null;
+let geoLayer: L.GeoJSON | null = null;
+
+const maxProjects = computed(() => Math.max(...props.countries.map(c => c.projects), 1));
+
+function getColor(projects: number): string {
+    const ratio = projects / maxProjects.value;
+    if (ratio > 0.7) return '#0f6b3a';
+    if (ratio > 0.5) return '#1a9850';
+    if (ratio > 0.3) return '#66bd63';
+    if (ratio > 0.15) return '#a6d96a';
+    if (ratio > 0) return '#d9ef8b';
+    return 'transparent';
+}
+
+function getFillOpacity(projects: number): number {
+    if (projects === 0) return 0;
+    const ratio = projects / maxProjects.value;
+    return 0.4 + ratio * 0.5;
+}
+
+function getCountryData(code: string): CountryData | undefined {
+    return props.countries.find(c => c.countryCode === code);
+}
+
+async function initMap() {
+    if (!mapContainer.value) return;
+
+    map = L.map(mapContainer.value, {
+        center: [20, 0],
+        zoom: 2,
+        zoomControl: true,
+        scrollWheelZoom: true,
+        minZoom: 2,
+        maxZoom: 10,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 18,
+    }).addTo(map);
+
+    try {
+        const response = await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
+        const geojson = await response.json();
+
+        geoLayer = L.geoJSON(geojson, {
+            style: (feature) => {
+                const code = feature?.properties?.['ISO3166-1-Alpha-3'] || '';
+                const data = getCountryData(code);
+                const projects = data?.projects ?? 0;
+
+                return {
+                    fillColor: projects > 0 ? getColor(projects) : 'transparent',
+                    fillOpacity: getFillOpacity(projects),
+                    color: projects > 0 ? '#2d6a4f' : '#ddd',
+                    weight: projects > 0 ? 1.5 : 0.5,
+                };
+            },
+            onEachFeature: (feature, layer) => {
+                const code = feature?.properties?.['ISO3166-1-Alpha-3'] || '';
+                const data = getCountryData(code);
+                if (data) {
+                    layer.on('click', () => {
+                        emit('country-click', code);
+                    });
+                    layer.on('mouseover', function () {
+                        (layer as any).setStyle({ fillOpacity: 0.85, weight: 2.5 });
+                    });
+                    layer.on('mouseout', function () {
+                        geoLayer?.resetStyle(layer);
+                    });
+                }
+            },
+        }).addTo(map);
+    } catch {
+        // GeoJSON failed — silent
+    }
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+        maxZoom: 18,
+        pane: 'overlayPane',
+    }).addTo(map);
+
+    if (props.points?.length) {
+        for (const pt of props.points) {
+            L.circleMarker([pt.lat, pt.lng], {
+                radius: 4,
+                fillColor: '#1a9850',
+                fillOpacity: 0.9,
+                color: '#fff',
+                weight: 1.5,
+            })
+                .bindPopup(`
+                    <div style="font-size:12px;line-height:1.6">
+                        <strong>${pt.name}</strong>
+                        ${pt.credits ? `<br><span style="color:#666">Issuances:</span> <strong>${pt.credits}</strong>` : ''}
+                    </div>
+                `)
+                .addTo(map);
+        }
+    }
+}
+
+onMounted(async () => {
+    await nextTick();
+    await initMap();
+    // Leaflet needs a size recalc after the container is laid out
+    setTimeout(() => { map?.invalidateSize(); }, 100);
+});
+onUnmounted(() => { map?.remove(); map = null; });
+</script>
+
+<template>
+    <div ref="mapContainer" class="h-full w-full" />
+</template>
