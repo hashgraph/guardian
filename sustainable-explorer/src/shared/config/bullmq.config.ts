@@ -1,0 +1,138 @@
+import { QueueOptions } from 'bullmq';
+
+/**
+ * Queue name constants for all worker queues.
+ * Hedera Mirror Node + IPFS pipeline only.
+ */
+export const QUEUE_NAMES = {
+    TOPIC_SYNC: 'mirror-node-topics',
+    MESSAGE_PARSE: 'mirror-node-messages',
+    IPFS_FETCH: 'ipfs-files',
+    TOKEN_SYNC: 'mirror-node-tokens',
+    MV_REFRESH: 'maintenance-refresh-mvs',
+    BUSINESS_VIEW_BUILD: 'maintenance-build-business-views',
+} as const;
+
+export type QueueName = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES];
+
+export interface QueueDefinition {
+    name: QueueName;
+    defaultJobOptions: {
+        attempts: number;
+        backoff: {
+            type: 'exponential' | 'fixed';
+            delay: number;
+        };
+        timeout: number;
+        removeOnComplete: boolean | number;
+        removeOnFail: boolean | number;
+    };
+    concurrency: number;
+}
+
+/**
+ * Returns queue definitions with their default job options and concurrency settings.
+ */
+export function getQueueConfigs(): QueueDefinition[] {
+    return [
+        {
+            name: QUEUE_NAMES.TOPIC_SYNC,
+            defaultJobOptions: {
+                attempts: 5,
+                backoff: { type: 'exponential', delay: 3000 },
+                timeout: 120000,
+                removeOnComplete: 1000,
+                removeOnFail: 5000,
+            },
+            concurrency: parseInt(process.env.WORKER_TOPIC_CONCURRENCY || '5', 10),
+        },
+        {
+            name: QUEUE_NAMES.MESSAGE_PARSE,
+            defaultJobOptions: {
+                attempts: 3,
+                backoff: { type: 'exponential', delay: 2000 },
+                timeout: 60000,
+                removeOnComplete: 1000,
+                removeOnFail: 5000,
+            },
+            concurrency: parseInt(process.env.WORKER_MESSAGE_CONCURRENCY || '10', 10),
+        },
+        {
+            name: QUEUE_NAMES.IPFS_FETCH,
+            defaultJobOptions: {
+                attempts: 5,
+                backoff: { type: 'exponential', delay: 5000 },
+                timeout: parseInt(process.env.IPFS_FETCH_TIMEOUT || '180000', 10),
+                removeOnComplete: 500,
+                removeOnFail: 2000,
+            },
+            concurrency: parseInt(process.env.WORKER_IPFS_CONCURRENCY || '3', 10),
+        },
+        {
+            name: QUEUE_NAMES.TOKEN_SYNC,
+            defaultJobOptions: {
+                attempts: 3,
+                backoff: { type: 'exponential', delay: 5000 },
+                timeout: 90000,
+                removeOnComplete: 500,
+                removeOnFail: 2000,
+            },
+            concurrency: parseInt(process.env.WORKER_TOKEN_CONCURRENCY || '2', 10),
+        },
+        {
+            name: QUEUE_NAMES.MV_REFRESH,
+            defaultJobOptions: {
+                attempts: 2,
+                backoff: { type: 'fixed', delay: 5000 },
+                timeout: 300000,
+                removeOnComplete: 100,
+                removeOnFail: 500,
+            },
+            concurrency: 1,
+        },
+        {
+            name: QUEUE_NAMES.BUSINESS_VIEW_BUILD,
+            defaultJobOptions: {
+                attempts: 2,
+                backoff: { type: 'fixed', delay: 1000 },
+                timeout: 60000,
+                removeOnComplete: 100,
+                removeOnFail: 500,
+            },
+            concurrency: 5,
+        },
+    ];
+}
+
+/**
+ * Returns queue registration objects for BullModule.registerQueue().
+ */
+export function getQueueRegistrations(): Array<{ name: string; defaultJobOptions?: object }> {
+    return getQueueConfigs().map((q) => ({
+        name: q.name,
+        defaultJobOptions: q.defaultJobOptions,
+    }));
+}
+
+/**
+ * Returns only the queue names that this worker instance should process.
+ * Controlled by WORKER_QUEUES env var (comma-separated).
+ * If not set, processes all queues (single-instance mode).
+ * Supports glob-like patterns: "mirror-node-*" matches all mirror-node queues.
+ */
+export function getActiveQueues(): string[] {
+    const envQueues = process.env.WORKER_QUEUES;
+    const allQueues = Object.values(QUEUE_NAMES);
+
+    if (!envQueues) return allQueues;
+
+    const patterns = envQueues.split(',').map(q => q.trim());
+    return allQueues.filter(queueName =>
+        patterns.some(pattern => {
+            if (pattern.endsWith('*')) {
+                return queueName.startsWith(pattern.slice(0, -1));
+            }
+            return queueName === pattern;
+        }),
+    );
+}

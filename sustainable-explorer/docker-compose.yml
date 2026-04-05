@@ -1,0 +1,71 @@
+version: '3.9'
+
+services:
+    postgres:
+        image: postgres:16-alpine
+        container_name: se-postgres
+        restart: unless-stopped
+        ports:
+            - '5432:5432'
+        environment:
+            POSTGRES_DB: postgres
+            POSTGRES_USER: explorer
+            POSTGRES_PASSWORD: explorer_password
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U explorer -d sustainable_explorer']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    redict:
+        image: registry.redict.io/redict:7.3.6-alpine
+        container_name: se-redict
+        restart: unless-stopped
+        ports:
+            - '6379:6379'
+        command: redict-server --appendonly yes
+        volumes:
+            - redict_data:/data
+        healthcheck:
+            test: ['CMD', 'redict-cli', 'ping']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: se-api
+        restart: unless-stopped
+        env_file:
+            - .env
+        ports:
+            - '3030:3030'
+        command: node dist/src/api/main.js
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redict:
+                condition: service_healthy
+
+    worker:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: se-worker
+        restart: unless-stopped
+        env_file:
+            - .env
+        command: node dist/src/worker/main.js
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redict:
+                condition: service_healthy
+
+volumes:
+    postgres_data:
+    redict_data:
