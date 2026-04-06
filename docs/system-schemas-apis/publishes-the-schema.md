@@ -1,71 +1,39 @@
-# Publishes the Schema
+# Publishes the Schema (Make Active)
 
-### PUBLISHES THE SCHEMA
+**`PUT /schemas/system/{schemaId}/active`**
 
-{% swagger method="put" path="" baseUrl="/schemas/{schemaId}/active" summary="Publishes the Schema" %}
-{% swagger-description %}
-Makes the selected schema active. Other schemas of the same type become inactive. Only suers with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Makes the selected system schema active. Other schemas of the same entity type become inactive. Only users with the Standard Registry role are allowed to make this request.
 
-{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
-schema ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="body" required="true" %}
-Object that contains Policy Version
-{% endswagger-parameter %}
+**Permission:** `Permissions.SCHEMAS_SYSTEM_SCHEMA_REVIEW`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-}
-```
-{% endswagger-response %}
+---
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+## Request
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-Schema is not system.
-```
-{% endswagger-response %}
+### Path Parameters
 
-{% swagger-response status="404: Not Found" description="Not Found" %}
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | string | Yes | The schema ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
 
+---
 
-```
-Schema not found.
-```
-{% endswagger-response %}
+## Response
 
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+### Success Response
 
+**Status:** `200 OK`
 
-```
-Schema is active.
-```
-{% endswagger-response %}
+No response body.
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Schema is not a system schema |
+| `404 Not Found` | Schema not found |
+| `422 Unprocessable Entity` | Schema is already active |
+| `500 Internal Server Error` | Unexpected server failure |

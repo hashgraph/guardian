@@ -1,57 +1,45 @@
-# Associating User with the Hedera Token
+# Associating User with the Hedera Token (Async)
 
-{% swagger method="put" path="" baseUrl="/tokens/push/{tokenId}/associate" summary="Associates the user with the provided Hedera token." %}
-{% swagger-description %}
-Associates the user with the provided Hedera token. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`PUT /tokens/push/{tokenId}/associate`**
 
-{% swagger-parameter in="path" name="tokenId" type="String" required="true" %}
-Token ID
-{% endswagger-parameter %}
+Associates the authenticated user with the specified Hedera token asynchronously.
 
-{% swagger-response status="202: Accepted" description="Accepted" %}
-```javascript
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.TOKENS_TOKEN_EXECUTE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tokenId` | string | Yes | The Hedera token ID (e.g. `0.0.5000001`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task' 
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Associate token"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthroized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+Poll `GET /tasks/{taskId}` to retrieve the result.
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
-
-
-```
-User not registered
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error' 
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | User not registered with Hedera |
+| `500 Internal Server Error` | Unexpected server failure |

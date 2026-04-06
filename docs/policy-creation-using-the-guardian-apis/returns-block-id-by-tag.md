@@ -1,57 +1,46 @@
-# Returns Block ID by tag
+# Returns Block ID by Tag
 
-### RETURNING BLOCK ID FROM POLICY BY TAG
+**`GET /policies/{policyId}/tag/{tagName}`**
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/tag/{tag}" summary="Requests block ID from a policy by tag" %}
-{% swagger-description %}
-Requests block ID from a policy by tag. Only users with the Standard Registry and Installer roles are allowed to make the request
-{% endswagger-description %}
+Returns the block configuration (including block ID) for the block matching the given tag name within the specified policy.
 
-{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
-Selected policy ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="path" name="tag" type="String" required="true" %}
-Tag from the selected policy
-{% endswagger-parameter %}
+**Permission:** `Permissions.POLICIES_POLICY_EXECUTE` or `Permissions.POLICIES_POLICY_MANAGE`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The policy ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
+| `tagName` | string | Yes | The block tag name (e.g. `submit_application`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "blockType": "requestVcDocumentBlock",
+  "tag": "submit_application"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Policy or block with given tag not found |
+| `422 Unprocessable Entity` | Tag lookup error |
+| `500 Internal Server Error` | Unexpected server failure |

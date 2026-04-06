@@ -270,7 +270,7 @@
         * [Global Events Writer Block](guardian/standard-registry/policies/policy-creation/introduction/global-events-writer-block.md)
         * [Global Events Reader Block](guardian/standard-registry/policies/policy-creation/introduction/global-events-reader-block.md)
         * [mathBlock](guardian/standard-registry/policies/policy-creation/introduction/mathblock.md)
-        * [API Execution Payloads](../../../available-policy-workflow-blocks/api-execution-payloads.md)
+        * [API Execution Payloads](guardian/available-policy-workflow-blocks/api-execution-payloads.md)
       * [Creating Policy using UI](guardian/standard-registry/policies/policy-creation/policy-demo.md)
       * [Creating a Policy through Policy Configurator](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/README.md)
         * [Getting Started with the Policy Workflows](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows.md)
@@ -1056,9 +1056,163 @@
 
 ## API Reference
 
-* [Notifications APIs](notifications-apis/README.md)
+### Accounts & Profiles
+
+* [Account APIs](account-apis/README.md)
+  * [Registering New Account](account-apis/registering-new-account.md)
+  * [User Login](account-apis/user-login.md)
+  * [User Session](account-apis/user-session.md)
+  * [User Listing](account-apis/user-listing-except-root-authority-and-auditor.md)
+  * [Returns All Root Authorities](account-apis/returns-all-root-authorities.md)
+  * [Standard Registries Aggregated](account-apis/standard-registries-aggregated.md)
+  * [User Balance](account-apis/user-balance.md)
+  * [Change Password](account-apis/change-password.md)
+  * [Refresh Access Token](account-apis/refresh-access-token.md)
+* [Profile APIs](profile-apis/README.md)
+  * [User Account Information](profile-apis/user-account-information.md)
+  * [Setting User Credentials](profile-apis/setting-user-credentials.md)
+  * [Setting User Credentials Asynchronously](profile-apis/setting-user-credentials-asynchronously.md)
+  * [User Account Balance](profile-apis/user-account-balance.md)
+  * [Restoring User Profile](profile-apis/restoring-user-profile.md)
+  * [List Recovery Topics](profile-apis/list-recovery-topics.md)
+  * [Validate DID Document](profile-apis/validate-did-document.md)
+  * [Validate DID Keys](profile-apis/validate-did-keys.md)
+  * [Returns List of Keys](profile-apis/returns-list-of-keys.md)
+  * [Creates a Key](profile-apis/creates-a-key.md)
+  * [Deletes a Key](profile-apis/deletes-a-key.md)
+
+### Settings & Logs
+
+* [Settings APIs](settings-apis/README.md)
+  * [Adding Settings](settings-apis/adding-settings.md)
+  * [Displaying Current Settings](settings-apis/displaying-current-settings.md)
+  * [Returns Environment Name](settings-apis/returns-environment-name.md)
+  * [Returns Package Version](settings-apis/returns-package-version.md)
+* [Logs APIs](logs-apis/README.md)
+  * [Returning Logs](logs-apis/returning-logs.md)
+  * [Returning Log Attributes](logs-apis/returning-log-attributes.md)
+  * [Returns Seq URL](logs-apis/returns-seq-url.md)
+
+### Tasks & External
+
+* [Task APIs](task-apis/README.md)
+  * [Returning Task Statuses](task-apis/returning-task-statuses.md)
+* [External APIs](external-apis/README.md)
+  * [Sends Data from External Source](external-apis/sends-data-from-external-source.md)
+  * [Sends Data from External Source (Generic)](external-apis/sends-data-from-external-source-generic.md)
+  * [Sends Data with Sync Events](external-apis/sends-data-with-sync-events.md)
+  * [Sends Data with Sync Events (Generic)](external-apis/sends-data-with-sync-events-generic.md)
+* [Trustchains APIs](trustchains-apis/README.md)
+  * [Requesting](trustchains-apis/requesting.md)
+  * [Building and Returning](trustchains-apis/building-and-returning.md)
+
+### Tokens
+
+* [Token APIs](token-apis/README.md)
+  * [Token Listing](token-apis/token-listing.md)
+  * [Returns Token by ID](token-apis/returns-token-by-id.md)
+  * [Token Creation](token-apis/token-listing-1.md)
+  * [Updating a Token](token-apis/updating-a-token.md)
+  * [Associates the User with Token](token-apis/associates-the-user-with-token.md)
+  * [Disassociates the User with Token](token-apis/disassociates-the-user-with-token.md)
+  * [Grants KYC for the User](token-apis/grants-kyc-for-the-user.md)
+  * [Revoke KYC of the User](token-apis/revoke-kyc-of-the-user.md)
+  * [Freeze Tokens of a User](token-apis/freeze-tokens-of-a-user.md)
+  * [Unfreeze Tokens of a User](token-apis/unfreeze-tokens-of-a-user.md)
+  * [User Info for Selected Token](token-apis/user-info-for-selected-token.md)
+* [Token APIs — Async](token-related-apis-for-asynchronous-execution/README.md)
+  * [Token Creation](token-related-apis-for-asynchronous-execution/token-creation.md)
+  * [Updating a Token](token-related-apis-for-asynchronous-execution/updating-a-token.md)
+  * [Deleting a Token](token-related-apis-for-asynchronous-execution/deleting-a-token.md)
+  * [Deleting Multiple Tokens](token-related-apis-for-asynchronous-execution/deleting-multiple-tokens.md)
+  * [Associating User with the Hedera Token](token-related-apis-for-asynchronous-execution/associating-user-with-the-hedera-token.md)
+  * [Disassociating User with the Hedera Token](token-related-apis-for-asynchronous-execution/disassociating-user-with-the-hedera-token.md)
+  * [Setting KYC for the User](token-related-apis-for-asynchronous-execution/setting-kyc-for-the-user.md)
+  * [Unsetting KYC for the User](token-related-apis-for-asynchronous-execution/unsetting-kyc-for-the-user.md)
+  * [Freezing Tokens of a User](token-related-apis-for-asynchronous-execution/freezing-tokens-of-a-user.md)
+  * [Unfreezing Tokens of a User](token-related-apis-for-asynchronous-execution/unfreezing-tokens-of-a-user.md)
+
+### Schemas
+
+* [Schema Creation APIs](schema-creation-using-the-guardian-apis/README.md)
+  * [Listing of Schema](schema-creation-using-the-guardian-apis/creation-of-a-schema-1.md)
+  * [Returning Schema by SchemaID](schema-creation-using-the-guardian-apis/returning-schema-by-schemaid.md)
+  * [Returns All Schemas Related to the Topic](schema-creation-using-the-guardian-apis/returns-all-schemas-related-to-the-topic.md)
+  * [Creation of Schema Related to the Topic](schema-creation-using-the-guardian-apis/creation-of-schema-related-to-the-topic.md)
+  * [Updating Schema](schema-creation-using-the-guardian-apis/updating-schema.md)
+  * [Deleting a Schema](schema-creation-using-the-guardian-apis/deleting-a-schema.md)
+  * [Publishing Schema Based on Schema ID](schema-creation-using-the-guardian-apis/publishing-schema-based-on-schema-id.md)
+  * [Export Schema Message IDs](schema-creation-using-the-guardian-apis/export-a-schema.md)
+  * [Export Schema as Zip](schema-creation-using-the-guardian-apis/export-a-schema-1.md)
+  * [Import Schema from IPFS](schema-creation-using-the-guardian-apis/importing-schema-from-ipfs.md)
+  * [Import Schema from Zip](schema-creation-using-the-guardian-apis/importing-zip-file-containing-schema.md)
+  * [Schema Preview from IPFS](schema-creation-using-the-guardian-apis/schema-preview-from-ipfs.md)
+  * [Schema Preview from Zip](schema-creation-using-the-guardian-apis/schema-preview-from-zip.md)
+* [System Schema APIs](system-schemas-apis/README.md)
+  * [Creates New System Schema](system-schemas-apis/creates-new-system-schema.md)
+  * [Returns Schema by Username](system-schemas-apis/returns-schema-by-username.md)
+  * [Updates the Schema](system-schemas-apis/updates-the-schema.md)
+  * [Activates the Schema](system-schemas-apis/publishes-the-schema.md)
+  * [Delete System Schema](system-schemas-apis/delete-system-schema.md)
+  * [Returns Schema by Type](system-schemas-apis/returns-schema-by-type.md)
+  * [Schema Type](system-schemas-apis/schema-type.md)
+* [Schema APIs — Async](schema-related-apis-for-asynchronous-execution/README.md)
+  * [Creation of Schema](schema-related-apis-for-asynchronous-execution/creation-of-schema.md)
+  * [Publishing Schema](schema-related-apis-for-asynchronous-execution/publishing-schema.md)
+  * [Importing Schema from IPFS](schema-related-apis-for-asynchronous-execution/importing-schema-from-ipfs.md)
+  * [Importing Schema from .zip](schema-related-apis-for-asynchronous-execution/importing-schema-from-.zip.md)
+  * [Previews the Schema from IPFS](schema-related-apis-for-asynchronous-execution/previews-the-schema-from-ipfs.md)
+
+### Policies
+
+* [Policy Creation APIs](policy-creation-using-the-guardian-apis/README.md)
+  * [Prerequisite Steps](policy-creation-using-the-guardian-apis/prerequesite-steps.md)
+  * [Policy Listing](policy-creation-using-the-guardian-apis/policy-listing.md)
+  * [Creation of a Policy](policy-creation-using-the-guardian-apis/creation-of-a-policy.md)
+  * [Retrieves Policy Configuration](policy-creation-using-the-guardian-apis/retrieves-policy-configuration.md)
+  * [Updates Policy Configuration](policy-creation-using-the-guardian-apis/updates-policy-configuration.md)
+  * [Publish a Policy](policy-creation-using-the-guardian-apis/publish-a-policy.md)
+  * [Policy Validation](policy-creation-using-the-guardian-apis/policy-validation.md)
+  * [Retrieval of Data from Root Policy Block](policy-creation-using-the-guardian-apis/retrieval-of-data-from-root-policy-block.md)
+  * [Request Block Data](policy-creation-using-the-guardian-apis/request-block-data.md)
+  * [Sends Data to Specified Block](policy-creation-using-the-guardian-apis/sends-data-to-specified-block.md)
+  * [Returns Block ID by Tag](policy-creation-using-the-guardian-apis/returns-block-id-by-tag.md)
+  * [Retrieves Block Data by Tag](policy-creation-using-the-guardian-apis/retrieves-block-data-by-tag.md)
+  * [Sends Data to Specified Block by Tag](policy-creation-using-the-guardian-apis/sends-data-to-specified-block-by-tag.md)
+  * [Returns List of Groups of a Particular User](policy-creation-using-the-guardian-apis/returns-list-of-groups-of-a-particular-user.md)
+  * [Make the Selected Group Active](policy-creation-using-the-guardian-apis/make-the-selected-group-active.md)
+  * [Export to Zip File](policy-creation-using-the-guardian-apis/export-to-zip-file.md)
+  * [Exporting Message ID](policy-creation-using-the-guardian-apis/exporting-message-id.md)
+  * [Import a Policy](policy-creation-using-the-guardian-apis/import-a-policy.md)
+  * [Import from Zip File](policy-creation-using-the-guardian-apis/import-from-zip-file.md)
+  * [Policy Preview from IPFS](policy-creation-using-the-guardian-apis/policy-preview-from-ipfs.md)
+  * [Dynamic Policy Fields Guide](policy-creation-using-the-guardian-apis/dynamic-policy-fields.md)
+* [Policy APIs — Async](policy-related-apis-for-asynchronous-execution/README.md)
+  * [Creates New Policy](policy-related-apis-for-asynchronous-execution/creates-new-policy.md)
+  * [Publishing a Policy](policy-related-apis-for-asynchronous-execution/publishing-a-policy.md)
+  * [Importing a Policy from File](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-file.md)
+  * [Importing a Policy from IPFS](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-ipfs.md)
+  * [Policy Review](policy-related-apis-for-asynchronous-execution/policy-review.md)
+
+### Permissions & Notifications
+
 * [Permissions & Roles APIs](permissions-apis/README.md)
+* [Notifications APIs](notifications-apis/README.md)
+
+### Policy Collaboration
+
+* [Policy Comments APIs](policy-comments-apis/README.md)
+* [Policy Labels APIs](policy-labels-apis/README.md)
+* [Policy Repository APIs](policy-repository-apis/README.md)
+* [Policy Statistics APIs](policy-statistics-apis/README.md)
+
+### Tagging & Projects
+
 * [Tags APIs](tags-apis/README.md)
+* [Projects APIs](projects-apis/README.md)
+
+### Other Platform APIs
+
 * [Branding APIs](branding-apis/README.md)
 * [Block Suggestions APIs](suggestions-apis/README.md)
 * [Analytics & Comparison APIs](analytics-apis/README.md)
@@ -1067,13 +1221,11 @@
 * [Tools APIs](tools-apis/README.md)
 * [Wizard APIs](wizard-apis/README.md)
 * [Formulas APIs](formulas-apis/README.md)
-* [Policy Comments APIs](policy-comments-apis/README.md)
-* [Policy Labels APIs](policy-labels-apis/README.md)
-* [Policy Statistics APIs](policy-statistics-apis/README.md)
 * [Schema Rules APIs](schema-rules-apis/README.md)
-* [Projects APIs](projects-apis/README.md)
 * [Record APIs](record-apis/README.md)
-* [Dynamic Policy Fields Guide](policy-creation-using-the-guardian-apis/dynamic-policy-fields.md)
+
+### Integration Guides
+
 * [Block API Execution Payloads](available-policy-workflow-blocks/api-execution-payloads.md)
 
 ***

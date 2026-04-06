@@ -1,39 +1,44 @@
-# Returns all Standard Registries
+# Returns All Standard Registries
 
-{% swagger method="get" path="" baseUrl="/accounts/standard-registries" summary="Returns an array of Standard Registries for user to select one during registration process" %}
-{% swagger-description %}
-Returns all Standard Registries
-{% endswagger-description %}
+**`GET /accounts/standard-registries`**
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Account'
-}
+Returns all Standard Registry accounts available in the system.
+
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.ACCOUNTS_STANDARD_REGISTRY_READ`
+
+---
+
+## Request
+
+No request body or parameters required.
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+[
+  {
+    "username": "registry_user",
+    "role": "STANDARD_REGISTRY",
+    "did": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+    "hederaAccountId": "0.0.4532001",
+    "confirmed": true,
+    "failed": false
+  }
+]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-  content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |
