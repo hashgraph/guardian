@@ -73,12 +73,49 @@ export async function ensureDatabaseExists(): Promise<void> {
     } finally {
         await client.end();
     }
+
+    // Ensure required extensions + TypeORM metadata table exist in the target database
+    const targetClient = new Client({
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '5432', 10),
+        user: process.env.DB_USER || 'explorer',
+        password: process.env.DB_PASSWORD || 'explorer_password',
+        database: dbName,
+    });
+    try {
+        await targetClient.connect();
+        await targetClient.query(`CREATE EXTENSION IF NOT EXISTS pg_trgm`);
+        // TypeORM expects this metadata table for tracking generated/view columns.
+        // Create it pre-emptively so synchronize doesn't fail when we have
+        // externally-managed generated columns (tsvector, etc.).
+        await targetClient.query(`
+            CREATE TABLE IF NOT EXISTS typeorm_metadata (
+                type varchar NOT NULL,
+                database varchar,
+                schema varchar,
+                "table" varchar,
+                name varchar,
+                value text
+            )
+        `);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`Failed to setup extensions/metadata: ${message}`);
+    } finally {
+        await targetClient.end();
+    }
 }
 
 /**
  * Returns TypeORM DataSource options for the Sustainable Explorer database.
+ *
+ * @param options.synchronize Override the default. The worker uses `true` to
+ *   manage schema. The API should use `false` since it only reads.
  */
-export function getDatabaseConfig(): TypeOrmModuleOptions {
+export function getDatabaseConfig(options: { synchronize?: boolean } = {}): TypeOrmModuleOptions {
+    const envSync = process.env.DB_SYNCHRONIZE;
+    const synchronize = options.synchronize ?? (envSync === undefined ? true : envSync === 'true');
+
     return {
         type: 'postgres',
         host: process.env.DB_HOST || 'localhost',
@@ -88,7 +125,7 @@ export function getDatabaseConfig(): TypeOrmModuleOptions {
         database: resolveDatabaseName(),
         entities: [join(__dirname, '..', 'entities', '*.{ts,js}')],
         migrations: [join(__dirname, '..', '..', '..', 'dist', 'db', 'migrations', '*.js')],
-        synchronize: (process.env.DB_SYNCHRONIZE ?? 'true') === 'true',
+        synchronize,
         logging: resolveLogging(),
         extra: {
             min: parseInt(process.env.DB_POOL_MIN || '2', 10),

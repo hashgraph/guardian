@@ -19,7 +19,7 @@ import { RegistriesService } from './services/registries.service';
         }),
 
         TypeOrmModule.forRootAsync({
-            useFactory: () => getDatabaseConfig(),
+            useFactory: () => getDatabaseConfig({ synchronize: false }),
         }),
 
         TypeOrmModule.forFeature([BusinessView]),

@@ -1,5 +1,6 @@
 import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Inject, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Job } from 'bullmq';
 import { DataSource } from 'typeorm';
 import Redis from 'ioredis';
@@ -18,16 +19,19 @@ const TYPE_MAPPINGS: Record<string, string> = {
 @Processor(QUEUE_NAMES.BUSINESS_VIEW_BUILD)
 export class BusinessViewBuilderProcessor extends WorkerHost {
     private readonly logger = new Logger(BusinessViewBuilderProcessor.name);
+    private readonly network: string;
 
     constructor(
         private readonly dataSource: DataSource,
+        private readonly configService: ConfigService,
         @Inject('REDICT_PUB') private readonly redis: Redis,
     ) {
         super();
+        this.network = this.configService.get<string>('app.hedera.network') || 'testnet';
     }
 
     async process(job: Job): Promise<void> {
-        this.logger.log('Building business views from raw messages...');
+        this.logger.log(`Building business views for ${this.network} network...`);
 
         const caseClauses = Object.entries(TYPE_MAPPINGS)
             .map(([msgType, viewType]) => `WHEN m.type = '${msgType}' THEN '${viewType}'`)
@@ -36,6 +40,7 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
 
         const result = await this.dataSource.query(`
             INSERT INTO business_view (
+                network,
                 "sourceTimestamp",
                 "viewType",
                 "displayName",
@@ -48,6 +53,7 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 "updatedAt"
             )
             SELECT
+                $1,
                 m."consensusTimestamp",
                 CASE ${caseClauses} END,
                 COALESCE(m.options->>'name', m.options->>'tokenName'),
@@ -71,6 +77,7 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 ON tc."tokenId" = m.options->>'tokenId'
             WHERE m.type IN (${typeFilter})
             ON CONFLICT ("sourceTimestamp", "viewType") DO UPDATE SET
+                network = EXCLUDED.network,
                 "displayName" = EXCLUDED."displayName",
                 "registryDid" = EXCLUDED."registryDid",
                 "policyId" = EXCLUDED."policyId",
@@ -78,7 +85,7 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 "searchText" = EXCLUDED."searchText",
                 "lastUpdate" = EXCLUDED."lastUpdate",
                 "updatedAt" = NOW()
-        `);
+        `, [this.network]);
 
         const totalUpserted = result?.rowCount ?? result?.length ?? 0;
 

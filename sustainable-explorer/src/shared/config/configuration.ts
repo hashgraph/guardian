@@ -68,7 +68,7 @@ export default registerAs('app', () => {
         mvRefreshInterval: parseInt(process.env.MV_REFRESH_INTERVAL || '60', 10),
 
         // Mirror node polling
-        mirrorNodePollDelay: parseInt(process.env.MIRROR_NODE_POLL_DELAY || '1000', 10),
+        mirrorNodePollDelay: parseInt(process.env.MIRROR_NODE_POLL_DELAY || '30000', 10),
 
         // Logging
         logLevel: process.env.LOG_LEVEL || 'info',
