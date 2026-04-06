@@ -3,26 +3,17 @@ import { Logger } from '@nestjs/common';
 import { Job, Queue } from 'bullmq';
 import { DataSource } from 'typeorm';
 import { QUEUE_NAMES } from '@shared/config/bullmq.config';
+import {
+    ParsedMessage,
+    decodeBase64Message,
+    parseMessageJson,
+    extractDiscoverableTopics,
+    extractTokenIds,
+} from '@shared/utils/message-parser';
 
 export interface MessageProcessJobData {
     consensusTimestamp: string;
     topicId: string;
-}
-
-interface ParsedMessage {
-    type: string;
-    action: string | null;
-    lang: string | null;
-    uuid: string | null;
-    owner: string | null;
-    status: string | null;
-    statusReason: string | null;
-    statusMessage: string | null;
-    responseType: string | null;
-    files: string[];
-    topics: string[];
-    tokens: string[];
-    options: Record<string, unknown>;
 }
 
 @Processor(QUEUE_NAMES.MESSAGE_PARSE)
@@ -55,21 +46,16 @@ export class MessageProcessProcessor extends WorkerHost {
         const cacheEntry = rows[0];
 
         // Base64 decode the message
-        let decoded: string;
-        try {
-            decoded = Buffer.from(cacheEntry.message, 'base64').toString('utf-8');
-        } catch {
+        const decoded = decodeBase64Message(cacheEntry.message);
+        if (!decoded) {
             this.logger.warn(`Failed to base64 decode message ${consensusTimestamp}`);
             await this.updateCacheStatus(consensusTimestamp, 'DECODE_ERROR');
             return;
         }
 
         // Parse JSON
-        let parsed: ParsedMessage;
-        try {
-            const json = JSON.parse(decoded);
-            parsed = this.extractFields(json);
-        } catch {
+        const parsed = parseMessageJson(decoded);
+        if (!parsed) {
             this.logger.warn(`Failed to parse JSON for message ${consensusTimestamp}`);
             await this.updateCacheStatus(consensusTimestamp, 'PARSE_ERROR');
             return;
@@ -151,33 +137,22 @@ export class MessageProcessProcessor extends WorkerHost {
             });
         }
 
-        // Discover and enqueue all child/related topics found in message options.
-        // Different message types use different fields to reference child topics:
-        //   Topic:             childId, topicId
-        //   Policy:            instanceTopicId, topicId
-        //   Standard Registry: registrantTopicId, topicId
-        // const topicFields = ['childId', 'instanceTopicId', 'registrantTopicId', 'topicId'];
-        // const discoveredTopics = new Set<string>();
-
-        // for (const field of topicFields) {
-        //     const value = parsed.options[field] as string | undefined;
-        //     if (value && !discoveredTopics.has(value) && value !== topicId) {
-        //         discoveredTopics.add(value);
-        //         const isOrg = field === 'registrantTopicId';
-        //         await this.topicQueue.add('sync', {
-        //             topicId: value,
-        //             fromSequenceNumber: 0,
-        //             isOrgTopic: isOrg,
-        //         }, {
-        //             jobId: `topic-${value}-0`,
-        //             priority: isOrg ? 1 : 10,
-        //         });
-        //     }
+        // Discover and enqueue child topics
+        const discoveredTopics = extractDiscoverableTopics(parsed, topicId);
+        // for (const topic of discoveredTopics) {
+            // await this.topicQueue.add('sync', {
+            //     topicId: topic.topicId,
+            //     fromSequenceNumber: 0,
+            //     isOrgTopic: topic.isOrgTopic,
+            // }, {
+            //     jobId: `topic-${topic.topicId}-0`,
+            //     priority: topic.isOrgTopic ? 1 : 10,
+            // });
         // }
 
-        // If options has tokenId, enqueue token-sync
-        // const tokenId = parsed.options['tokenId'] as string | undefined;
-        // if (tokenId) {
+        // Enqueue token sync for discovered tokens
+        // const tokenIds = extractTokenIds(parsed);
+        // for (const tokenId of tokenIds) {
         //     await this.tokenQueue.add('sync', {
         //         tokenId,
         //         fetchNfts: true,
@@ -191,146 +166,6 @@ export class MessageProcessProcessor extends WorkerHost {
         await this.updateCacheStatus(consensusTimestamp, 'PROCESSED');
 
         this.logger.debug(`Processed message ${consensusTimestamp}: type=${parsed.type} action=${parsed.action}`);
-    }
-
-    /**
-     * Simplified message parser. Extracts type, action, options, files
-     * from the parsed JSON based on the type field.
-     */
-    private extractFields(json: Record<string, unknown>): ParsedMessage {
-        const type = (json['type'] as string) || 'Unknown';
-        const action = (json['action'] as string) || null;
-
-        const result: ParsedMessage = {
-            type,
-            action,
-            lang: (json['lang'] as string) || null,
-            uuid: (json['id'] as string) || (json['uuid'] as string) || null,
-            owner: (json['did'] as string) || (json['owner'] as string) || null,
-            status: (json['status'] as string) || null,
-            statusReason: (json['statusReason'] as string) || null,
-            statusMessage: (json['statusMessage'] as string) || null,
-            responseType: (json['responseType'] as string) || null,
-            files: [],
-            topics: [],
-            tokens: [],
-            options: {},
-        };
-
-        // Extract CIDs from various locations
-        const cids = json['cid'] || json['urls'] || json['files'];
-        if (Array.isArray(cids)) {
-            result.files = cids.filter((c): c is string => typeof c === 'string');
-        } else if (typeof cids === 'string') {
-            result.files = [cids];
-        }
-
-        // Build options based on type
-        switch (type) {
-            case 'Topic':
-                result.options = {
-                    childId: json['childId'] || json['topicId'] || null,
-                    parentId: json['parentId'] || null,
-                    name: json['name'] || null,
-                    description: json['description'] || null,
-                    owner: json['owner'] || json['did'] || null,
-                    messageType: json['messageType'] || null,
-                };
-                break;
-
-            case 'Policy':
-                result.options = {
-                    name: json['name'] || null,
-                    description: json['description'] || null,
-                    topicDescription: json['topicDescription'] || null,
-                    version: json['version'] || null,
-                    policyTag: json['policyTag'] || null,
-                    owner: json['owner'] || null,
-                    topicId: json['topicId'] || null,
-                    instanceTopicId: json['instanceTopicId'] || null,
-                    synchronizationTopicId: json['synchronizationTopicId'] || null,
-                    hash: json['hash'] || null,
-                    hashMap: json['hashMap'] || null,
-                    tools: json['tools'] || null,
-                    registryId: json['registryId'] || null,
-                };
-                if (json['tokenId']) {
-                    result.tokens.push(json['tokenId'] as string);
-                }
-                if (Array.isArray(json['tokenIds'])) {
-                    result.tokens.push(...(json['tokenIds'] as string[]));
-                }
-                if (json['instanceTopicId']) {
-                    result.topics.push(json['instanceTopicId'] as string);
-                }
-                break;
-
-            case 'VC-Document':
-            case 'VP-Document':
-            case 'DID-Document':
-                result.options = {
-                    issuer: json['issuer'] || null,
-                    relationships: json['relationships'] || null,
-                    schema: json['schema'] || null,
-                    tokenId: json['tokenId'] || null,
-                    amount: json['amount'] || null,
-                    memo: json['memo'] || null,
-                };
-                if (json['tokenId']) {
-                    result.tokens.push(json['tokenId'] as string);
-                }
-                break;
-
-            case 'Standard Registry': {
-                const attributes = json['attributes'] as Record<string, unknown> | undefined;
-                result.options = {
-                    did: json['did'] || null,
-                    registrantTopicId: json['registrantTopicId'] || null,
-                    name: json['name'] || attributes?.['tags'] || null,
-                    description: json['description'] || null,
-                    lang: json['lang'] || null,
-                    topicId: json['topicId'] || null,
-                    action: json['action'] || null,
-                    geography: attributes?.['geography'] || null,
-                    law: attributes?.['law'] || null,
-                    tags: attributes?.['tags'] || null,
-                    attributes: attributes || null,
-                };
-                break;
-            }
-
-            case 'Token':
-                result.options = {
-                    tokenId: json['tokenId'] || null,
-                    tokenName: json['tokenName'] || null,
-                    tokenSymbol: json['tokenSymbol'] || null,
-                    tokenType: json['tokenType'] || null,
-                    memo: json['memo'] || null,
-                };
-                if (json['tokenId']) {
-                    result.tokens.push(json['tokenId'] as string);
-                }
-                break;
-
-            case 'Module':
-            case 'Tool':
-            case 'Schema':
-            case 'Role-Document':
-            case 'Contract':
-            default:
-                result.options = {
-                    name: json['name'] || null,
-                    description: json['description'] || null,
-                    topicId: json['topicId'] || null,
-                    tokenId: json['tokenId'] || null,
-                };
-                if (json['tokenId']) {
-                    result.tokens.push(json['tokenId'] as string);
-                }
-                break;
-        }
-
-        return result;
     }
 
     private async updateCacheStatus(consensusTimestamp: string, status: string): Promise<void> {
