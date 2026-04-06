@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import configuration from '@shared/config/configuration';
-import { getDatabaseConfig } from '@shared/config/database.config';
-import { BusinessView } from '@shared/entities/business-view.entity';
+
+// Database
+import { NetworkDataSourceRegistry } from './database/network-datasource.registry';
 
 // Controllers
 import { RegistriesController } from './controllers/registries.controller';
@@ -17,17 +17,12 @@ import { RegistriesService } from './services/registries.service';
             isGlobal: true,
             load: [configuration],
         }),
-
-        TypeOrmModule.forRootAsync({
-            useFactory: () => getDatabaseConfig({ synchronize: false }),
-        }),
-
-        TypeOrmModule.forFeature([BusinessView]),
     ],
     controllers: [
         RegistriesController,
     ],
     providers: [
+        NetworkDataSourceRegistry,
         RegistriesService,
     ],
 })

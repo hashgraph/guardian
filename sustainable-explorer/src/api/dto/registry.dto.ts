@@ -1,18 +1,8 @@
-import { IsOptional, IsString, IsIn } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
 
 export class RegistryQueryDto extends PaginationQueryDto {
-    @ApiPropertyOptional({
-        enum: ['mainnet', 'testnet', 'previewnet'],
-        default: 'mainnet',
-        description: 'Hedera network to query',
-    })
-    @IsOptional()
-    @IsString()
-    @IsIn(['mainnet', 'testnet', 'previewnet'])
-    network?: string = 'mainnet';
-
     @ApiPropertyOptional({ description: 'Filter by exact DID' })
     @IsOptional()
     @IsString()
@@ -42,7 +32,7 @@ export class RegistryResponseDto {
     @ApiProperty()
     id: string;
 
-    @ApiProperty({ enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiProperty({ description: 'Hedera network this data belongs to' })
     network: string;
 
     @ApiProperty({ nullable: true, description: 'Decentralized Identifier' })
@@ -54,22 +44,22 @@ export class RegistryResponseDto {
     @ApiProperty({ nullable: true, description: 'Hedera topic ID for the registry' })
     topicId: string | null;
 
-    @ApiProperty({ nullable: true, description: 'Geographic coverage' })
+    @ApiProperty({ nullable: true })
     geography: string | null;
 
-    @ApiProperty({ nullable: true, description: 'Jurisdiction / applicable law' })
+    @ApiProperty({ nullable: true })
     law: string | null;
 
-    @ApiProperty({ nullable: true, description: 'Tags / categories' })
+    @ApiProperty({ nullable: true })
     tags: string | null;
 
-    @ApiProperty({ nullable: true, description: 'Latest message action (e.g., Initialization)' })
+    @ApiProperty({ nullable: true })
     action: string | null;
 
     @ApiProperty({ nullable: true })
     lang: string | null;
 
-    @ApiProperty({ description: 'Consensus timestamp of the source HCS message' })
+    @ApiProperty()
     sourceTimestamp: string;
 
     @ApiProperty()
@@ -81,28 +71,23 @@ export class RegistryResponseDto {
     @ApiProperty({ type: RegistryStats })
     stats: RegistryStats;
 
-    static fromBusinessView(bv: any, stats?: RegistryStats): RegistryResponseDto {
-        const data = bv.businessData || {};
+    static fromRow(row: any, network: string, stats: RegistryStats): RegistryResponseDto {
+        const data = row.businessData || {};
         return {
-            id: bv.id,
-            network: bv.network,
-            did: bv.registryDid,
-            name: bv.displayName,
+            id: row.id,
+            network,
+            did: row.registryDid,
+            name: row.displayName,
             topicId: data.topicId || data.options?.topicId || null,
             geography: data.options?.geography || null,
             law: data.options?.law || null,
             tags: data.options?.tags || null,
             action: data.options?.action || null,
             lang: data.options?.lang || null,
-            sourceTimestamp: bv.sourceTimestamp,
-            createdAt: bv.createdAt,
-            updatedAt: bv.updatedAt,
-            stats: stats || {
-                policyCount: 0,
-                projectCount: 0,
-                issuanceCount: 0,
-                userCount: 0,
-            },
+            sourceTimestamp: row.sourceTimestamp,
+            createdAt: row.createdAt,
+            updatedAt: row.updatedAt,
+            stats,
         };
     }
 }

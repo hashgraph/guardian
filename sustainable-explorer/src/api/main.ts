@@ -3,12 +3,19 @@ import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ApiModule } from './api.module';
-import { ensureDatabaseExists } from '@shared/config/database.config';
+import {
+    ensureAllNetworkDatabasesExist,
+    getConfiguredNetworks,
+} from '@shared/config/database.config';
 
 async function bootstrap() {
     const logger = new Logger('SustainableExplorer:API');
+    const networks = getConfiguredNetworks();
 
-    await ensureDatabaseExists();
+    logger.log(`Configured networks: ${networks.join(', ')}`);
+
+    // Ensure every network's database exists before starting NestJS
+    await ensureAllNetworkDatabasesExist();
 
     const app = await NestFactory.create(ApiModule, {
         logger: ['error', 'warn', 'log', 'debug', 'verbose'],
@@ -47,7 +54,7 @@ async function bootstrap() {
 
     logger.log(`API server running on http://localhost:${port}`);
     logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
-    logger.log(`Registries endpoint: http://localhost:${port}/api/v1/registries`);
+    logger.log(`Example: http://localhost:${port}/api/v1/${networks[0]}/registries`);
 }
 
 bootstrap();

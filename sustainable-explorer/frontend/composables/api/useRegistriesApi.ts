@@ -78,7 +78,6 @@ export const useRegistriesApi = (opts: UseRegistriesApiOptions) => {
         const q: Record<string, string | number> = {
             page: opts.page.value,
             limit: opts.limit.value,
-            network: opts.network.value,
         };
         const search = opts.search.value?.trim();
         if (search) q.search = search;
@@ -91,17 +90,20 @@ export const useRegistriesApi = (opts: UseRegistriesApiOptions) => {
         return q;
     };
 
+    // Network is in the URL path, not a query param
+    const url = computed(() => `/api/v1/${opts.network.value}/registries`);
+
     // Use useAsyncData with a stable key so SSR payload is transferred to client
     const key = computed(() => {
         const q = buildQuery();
-        return `registries:${JSON.stringify(q)}`;
+        return `registries:${opts.network.value}:${JSON.stringify(q)}`;
     });
 
     const { data, pending, error, refresh } = useAsyncData<RegistriesResponse>(
         key.value,
         async () => {
             try {
-                const res = await $fetch<RegistriesResponse>('/api/v1/registries', {
+                const res = await $fetch<RegistriesResponse>(url.value, {
                     baseURL,
                     query: buildQuery(),
                 });

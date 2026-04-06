@@ -1,6 +1,57 @@
 # Sustainable Explorer — Data Pipeline Architecture
 
-This document describes how the Sustainable Explorer worker ingests data from the Hedera Mirror Node and IPFS, maps it to business entities, and supports horizontal scaling.
+This document describes how the Sustainable Explorer worker ingests data from the Hedera Mirror Node and IPFS, maps it to business entities, and supports horizontal scaling and multi-network querying.
+
+## High-Level Topology
+
+```
+                 ┌──────────────────────────────────────────┐
+                 │              FRONTEND (Nuxt 3)           │
+                 │  ┌──────────────────────────────────┐    │
+                 │  │  Network selector (topbar)       │    │
+                 │  │  → useNetwork()                  │    │
+                 │  └──────────────────────────────────┘    │
+                 └─────────────────┬────────────────────────┘
+                                   │ GET /api/v1/{network}/registries
+                                   ▼
+                 ┌──────────────────────────────────────────┐
+                 │        API (Single NestJS process)       │
+                 │                                          │
+                 │  - NetworkDataSourceRegistry             │
+                 │  - One TypeORM DataSource per network    │
+                 │  - Path param selects the DataSource     │
+                 │                                          │
+                 │  RegistryRepository (abstract)           │
+                 │    └── PgRegistryRepository (PG impl)    │
+                 └────┬─────────────────────────┬───────────┘
+                      │                         │
+                      ▼                         ▼
+       ┌──────────────────────────┐   ┌──────────────────────────┐
+       │ mainnet_sustainable_     │   │ testnet_sustainable_     │
+       │ explorer (PostgreSQL)    │   │ explorer (PostgreSQL)    │
+       └──────────▲───────────────┘   └──────────▲───────────────┘
+                  │                              │
+                  │ writes                       │ writes
+                  │                              │
+       ┌──────────┴──────────┐         ┌─────────┴───────────┐
+       │ Worker              │         │ Worker              │
+       │ HEDERA_NET=mainnet  │         │ HEDERA_NET=testnet  │
+       └─────────▲───────────┘         └─────────▲───────────┘
+                 │                               │
+                 │ Mirror Node REST              │ Mirror Node REST
+                 │ + IPFS gateways               │ + IPFS gateways
+                 ▼                               ▼
+          ┌─────────────┐                  ┌─────────────┐
+          │   Hedera    │                  │   Hedera    │
+          │   mainnet   │                  │   testnet   │
+          └─────────────┘                  └─────────────┘
+```
+
+**Key design decisions:**
+
+- **One database per network.** Each worker writes only to its own network's database (e.g., `mainnet_sustainable_explorer`). This provides physical isolation, trivial per-network backups, and perfect query latency (small per-network tables).
+- **One worker process per network.** Workers are scoped to a single `HEDERA_NET` and are completely isolated from each other.
+- **Single API serves all networks.** The API is configured with `HEDERA_NETWORKS=mainnet,testnet` and maintains one TypeORM DataSource per network, routing requests to the right database based on the URL path `/api/v1/{network}/...`.
 
 ## Pipeline Overview
 
@@ -350,7 +401,7 @@ The `BusinessViewBuilderProcessor` runs every 5 minutes and translates raw HCS m
 | HCS Message Type | Business View Type | What it represents |
 |-----------------|-------------------|-------------------|
 | `Policy` | `METHODOLOGY` | Carbon credit methodology |
-| `Standard Registry` | `ORGANIZATION` | Registry organization (Verra, Gold Standard, etc.) |
+| `Standard Registry` | `REGISTRY` | Registry organization (Verra, Gold Standard, etc.) |
 | `Token` | `CREDIT` | Carbon credit token |
 | `VC-Document` | `PROJECT` | Sustainability project |
 
@@ -366,7 +417,325 @@ This mapping is designed for extension. When Guardian API integration is added l
 | `guardian_api` | Data came from Guardian REST API |
 | `both` | Independently confirmed by both sources |
 
+## Multi-Network Architecture
+
+The system supports multiple Hedera networks simultaneously (mainnet, testnet, previewnet) by running **one worker process per network** and a **single API that connects to all configured networks' databases**.
+
+### Database naming
+
+Each network gets its own database:
+
+```
+{GUARDIAN_ENV}_{network}_{DB_DATABASE}
+```
+
+Example with `GUARDIAN_ENV=test`, `DB_DATABASE=sustainable_explorer`:
+
+| Network | Database name |
+|---------|---------------|
+| mainnet | `test_mainnet_sustainable_explorer` |
+| testnet | `test_testnet_sustainable_explorer` |
+| previewnet | `test_previewnet_sustainable_explorer` |
+
+Resolved by `resolveDatabaseName(network)` in `src/shared/config/database.config.ts`.
+
+### Worker: one process per network
+
+Each worker process is scoped to exactly one network via `HEDERA_NET`:
+
+```bash
+HEDERA_NET=mainnet yarn start:worker   # writes to mainnet DB
+HEDERA_NET=testnet yarn start:worker   # writes to testnet DB
+```
+
+Workers are completely isolated:
+- Different databases (no row-level contention)
+- Different seed root topics (`0.0.1368856` for mainnet, `0.0.1960` for testnet)
+- Different Mirror Node URLs
+- Independent BullMQ leader election per network's Redict namespace
+
+### API: one process, multiple DataSources
+
+The API is configured with `HEDERA_NETWORKS` (comma-separated):
+
+```bash
+HEDERA_NETWORKS=mainnet,testnet yarn start:api
+```
+
+At startup:
+
+1. `ensureAllNetworkDatabasesExist()` creates any missing databases and extensions
+2. `NetworkDataSourceRegistry.onModuleInit()` initializes **one TypeORM `DataSource` per network**:
+   ```typescript
+   for (const network of networks) {
+       const config = getDatabaseConfig(network, { synchronize: false });
+       const ds = new DataSource(config);
+       await ds.initialize();
+       this.dataSources.set(network, ds);
+   }
+   ```
+3. The first entry in `HEDERA_NETWORKS` is treated as the default network.
+
+### Path-based network routing
+
+Instead of a `?network=` query parameter, the network is part of the URL path:
+
+```
+GET  /api/v1/mainnet/registries
+GET  /api/v1/testnet/registries
+GET  /api/v1/mainnet/registries/did:hedera:mainnet:...
+```
+
+The controller extracts the network via `@Param('network')`, passes it to the service, which resolves the correct `DataSource`:
+
+```typescript
+@Controller('api/v1/:network/registries')
+export class RegistriesController {
+    @Get()
+    findAll(@Param('network') network: string, @Query() query: RegistryQueryDto) {
+        return this.registriesService.findAll(network, query);
+    }
+}
+
+// Service
+async findAll(network: string, query: RegistryQueryDto) {
+    const ds = this.dataSources.getDataSource(network);  // throws 404 if not configured
+    const repo = new PgRegistryRepository(ds);
+    return repo.findAll(query);
+}
+```
+
+Unknown networks return HTTP 404 with the list of available networks.
+
+### Why this approach
+
+| Concern | Per-network databases | Shared DB + partitioning |
+|---------|----------------------|--------------------------|
+| **Physical isolation** | Yes | Partial |
+| **Per-network backups** | Trivial (`pg_dump mainnet_*`) | Complex |
+| **Scale to separate hosts** | Trivial (change connection string) | Not possible without reshuffling |
+| **Query latency** | Optimal (small per-network tables) | Optimal (partition pruning) |
+| **TypeORM `synchronize` compatibility** | Works | Breaks |
+| **Schema migration complexity** | Standard | Custom per-partition handling |
+| **Application code complexity** | Resolve DataSource by network | Add `WHERE network = ?` everywhere |
+
+Per-network databases won because they provide perfect isolation with minimal added complexity (just one DataSource registry) and set the stage for future horizontal scaling across database hosts.
+
+## API Layer
+
+### Request flow
+
+```
+ HTTP Request
+ GET /api/v1/mainnet/registries?search=DOVU&page=1
+        │
+        ▼
+ ┌──────────────────────────────────────────┐
+ │ RegistriesController                     │
+ │   @Param('network') → 'mainnet'          │
+ │   @Query() → { search, page, ... }       │
+ └────────┬─────────────────────────────────┘
+          │
+          ▼
+ ┌──────────────────────────────────────────┐
+ │ RegistriesService                        │
+ │   dataSources.getDataSource('mainnet')   │
+ │   → returns mainnet's TypeORM DataSource │
+ │   new PgRegistryRepository(dataSource)   │
+ └────────┬─────────────────────────────────┘
+          │
+          ▼
+ ┌──────────────────────────────────────────┐
+ │ RegistryRepository (abstract)            │
+ │   findAll(query): RegistryListResult     │
+ │   findByDid(did): RegistryRow | null     │
+ └────────┬─────────────────────────────────┘
+          │ implemented by
+          ▼
+ ┌──────────────────────────────────────────┐
+ │ PgRegistryRepository                     │
+ │   - Raw SQL with jsonb operators         │
+ │   - tsvector @@ plainto_tsquery          │
+ │   - similarity() trigram fuzzy match     │
+ │   - LEFT JOIN mv_registry_stats          │
+ │   - ts_rank + similarity for ordering    │
+ └────────┬─────────────────────────────────┘
+          │
+          ▼
+ ┌──────────────────────────────────────────┐
+ │ PostgreSQL (mainnet database)            │
+ │   business_view + mv_registry_stats      │
+ └──────────────────────────────────────────┘
+```
+
+### Repository abstraction
+
+All PostgreSQL-specific features live in a concrete repository implementation. Services depend only on the abstract class:
+
+```
+src/api/repositories/
+├── registry.repository.ts      ← abstract class (interface)
+└── pg-registry.repository.ts   ← PostgreSQL implementation
+```
+
+The abstract `RegistryRepository` defines the contract:
+
+```typescript
+export abstract class RegistryRepository {
+    abstract findAll(query: RegistryListQuery): Promise<RegistryListResult>;
+    abstract findByDid(did: string): Promise<RegistryRow | null>;
+}
+```
+
+The `PgRegistryRepository` implementation encapsulates all PostgreSQL-specific SQL:
+
+| PG feature | Used for |
+|------------|----------|
+| `jsonb` operators (`->`, `->>`) | Extracting `businessData->'options'->>'geography'` |
+| `tsvector @@ plainto_tsquery` | Full-text search |
+| `similarity()` from `pg_trgm` | Fuzzy / typo-tolerant search |
+| `ts_rank()` | Relevance-based sorting |
+| `LEFT JOIN materialized view` | Single-query stats aggregation |
+| `ON CONFLICT ... DO UPDATE` | Idempotent upserts |
+| Generated `tsvector` columns | Auto-updating search index |
+| GIN indexes | O(log n) full-text + trigram search |
+
+**Benefits of the abstraction:**
+- Services are decoupled from the database implementation
+- New storage backends (e.g., read-only Elasticsearch cache) can be added by implementing the interface
+- Tests can mock the repository easily
+- Query performance tuning happens in one place
+
+### Full-text search with ranked results
+
+The `business_view` table has a generated `searchVector` column with weighted content:
+
+```sql
+searchVector tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("displayName", '')), 'A') ||
+    setweight(to_tsvector('english', coalesce("registryDid", '')), 'B') ||
+    setweight(to_tsvector('english', coalesce("searchText", '')), 'C')
+) STORED
+```
+
+Weight `A` > `B` > `C` means name matches rank higher than DID matches, which rank higher than free-text matches.
+
+Search combines four strategies (OR'd together):
+
+1. **Full-text match**: `searchVector @@ plainto_tsquery('english', $term)` (O(log n) via GIN)
+2. **Contains match**: `ILIKE '%term%'` on name, DID, tags, geography (trigram index helps)
+3. **Fuzzy match**: `similarity(displayName, $term) > 0.3` via `pg_trgm`
+4. **DID exact or partial**: `registryDid ILIKE '%term%'`
+
+Results are ranked by `ts_rank + similarity`, so the most relevant match appears first.
+
+### Aggregation via materialized views
+
+`mv_registry_stats` pre-computes per-registry counts from `business_view`:
+
+```sql
+CREATE MATERIALIZED VIEW mv_registry_stats AS
+SELECT
+    "registryDid",
+    COUNT(*) FILTER (WHERE "viewType" = 'METHODOLOGY') AS policy_count,
+    COUNT(*) FILTER (WHERE "viewType" = 'PROJECT') AS project_count,
+    COUNT(*) FILTER (WHERE "viewType" = 'CREDIT') AS issuance_count,
+    0::bigint AS user_count,
+    MAX("lastUpdate") AS last_update
+FROM business_view
+WHERE "registryDid" IS NOT NULL
+  AND "viewType" IN ('METHODOLOGY', 'PROJECT', 'CREDIT')
+GROUP BY "registryDid";
+```
+
+A unique index on `registryDid` enables `REFRESH MATERIALIZED VIEW CONCURRENTLY` (non-blocking refresh).
+
+The API joins the MV in the main query (single round trip, no N+1):
+
+```sql
+SELECT bv.*, s.policy_count, s.project_count, s.issuance_count, s.user_count
+FROM business_view bv
+LEFT JOIN mv_registry_stats s ON s."registryDid" = bv."registryDid"
+WHERE bv."viewType" = 'REGISTRY'
+ORDER BY ts_rank(...) DESC NULLS LAST;
+```
+
+The MV is refreshed every 60 seconds by `MvRefreshProcessor` on the worker.
+
+### Schema bootstrap
+
+TypeORM's `synchronize: true` can't express generated `tsvector` columns, GIN indexes, or extensions. These are applied by `bootstrapSchema()` in `src/shared/database/schema-bootstrap.ts` after TypeORM finishes syncing entities:
+
+1. Creates `pg_trgm` extension
+2. Adds `business_view.searchVector` as `GENERATED ALWAYS AS (...) STORED`
+3. Creates GIN index on `searchVector`
+4. Creates trigram GIN indexes on `displayName` and `searchText`
+
+The worker runs this bootstrap on startup (after TypeORM synchronize). The API does **not** run synchronize (`synchronize: false`) — it trusts the schema that the worker has created.
+
+## Frontend Integration
+
+### SSR-aware data fetching
+
+The Registry list uses Nuxt's `useAsyncData` wrapped in a custom composable (`useRegistriesApi`). This gives the page full SSR support:
+
+```typescript
+const { data, pending, error, refresh } = useAsyncData(
+    key,  // stable, derived from query params
+    async () => $fetch(`/api/v1/${network}/registries`, { baseURL, query }),
+    { default: () => emptyResponse(), watch: [...reactive refs] }
+);
+```
+
+**SSR flow:**
+
+1. Browser requests `GET /registries`
+2. Nuxt runs the page setup on the Node server
+3. `useAsyncData` fires `$fetch` — server calls `http://localhost:3030/api/v1/mainnet/registries` directly (no dev proxy loop)
+4. Awaits the response before rendering the template
+5. Renders complete HTML with data embedded
+6. Serializes the payload into `window.__NUXT__` inside the HTML
+7. Browser receives fully-populated HTML + payload
+8. Vue hydrates using the server payload — no client refetch
+9. Subsequent user interactions (sort, paginate, search) reactively trigger re-fetches via the `watch` array
+
+### Base URL switching
+
+```typescript
+const baseURL = import.meta.server
+    ? config.apiBaseUrl           // 'http://localhost:3030'
+    : config.public.apiBaseUrl;   // '' (relative path + dev proxy)
+```
+
+- **Server side:** calls the API directly by its full URL (avoids calling Nuxt itself)
+- **Client side:** uses relative path, routed through Nuxt's dev proxy in `nuxt.config.ts`
+
+### Network selection flow
+
+```
+┌──────────────────────────────────────────┐
+│ Topbar network selector                  │
+│   useNetwork() → ref('mainnet' | ...)    │
+└────────┬─────────────────────────────────┘
+         │ user clicks Testnet
+         ▼
+┌──────────────────────────────────────────┐
+│ network.value = 'testnet'                │
+└────────┬─────────────────────────────────┘
+         │ watched by useRegistriesApi
+         ▼
+┌──────────────────────────────────────────┐
+│ useAsyncData re-fetches:                 │
+│   url = /api/v1/testnet/registries       │
+│   new key → triggers SSR payload check   │
+└──────────────────────────────────────────┘
+```
+
+The path contains the network, so it changes every time the user switches networks, and `useAsyncData` treats each network as a separate cached query.
+
 ## Database Entities
+
+Each network has its own database containing the same set of tables. There is no `network` column anywhere — the database name is the network scope.
 
 ### Core pipeline entities
 
@@ -377,7 +746,45 @@ This mapping is designed for extension. When Guardian API integration is added l
 | `TopicCache` | `topic_cache` | Topic sync watermarks |
 | `TokenCache` | `token_cache` | Token metadata + NFT watermarks |
 | `NftCache` | `nft_cache` | Individual NFT serial tracking |
-| `IpfsFile` | `ipfs_files` | IPFS document content storage |
-| `BusinessView` | `business_view` | Materialized business entities |
+| `IpfsFile` | `ipfs_files` | IPFS document content storage (per-network, not deduped across networks) |
+| `BusinessView` | `business_view` | Materialized business entities + generated `searchVector` tsvector |
 | `SynchronizationTask` | `synchronization_task` | Data source sync timestamps |
 | `Log` | `log` | Error and event logging |
+
+### Materialized views
+
+| Name | Purpose | Refresh cadence |
+|------|---------|-----------------|
+| `mv_registry_stats` | Per-registry counts of policies, projects, issuances | Every 60s (MvRefreshProcessor) |
+
+### Indexes of note
+
+| Index | Purpose |
+|-------|---------|
+| `idx_business_view_search_vector` (GIN) | O(log n) full-text search |
+| `idx_business_view_display_name_trgm` (GIN, gin_trgm_ops) | Trigram fuzzy matches on name |
+| `idx_business_view_search_text_trgm` (GIN, gin_trgm_ops) | Trigram fuzzy matches on free text |
+| `idx_mv_registry_stats_registry_did` (UNIQUE) | Enables `REFRESH CONCURRENTLY` |
+
+## Running Multiple Networks Locally
+
+```bash
+# Terminal 1 — mainnet worker
+HEDERA_NET=mainnet yarn dev:worker
+
+# Terminal 2 — testnet worker
+HEDERA_NET=testnet yarn dev:worker
+
+# Terminal 3 — API (serves both)
+HEDERA_NETWORKS=mainnet,testnet yarn dev:api
+
+# Terminal 4 — frontend
+cd frontend && yarn dev
+```
+
+Then:
+
+- http://localhost:3030/api/docs — Swagger UI (pick network from path dropdown)
+- http://localhost:3030/api/v1/mainnet/registries
+- http://localhost:3030/api/v1/testnet/registries
+- http://localhost:3000/registries — frontend with topbar network switcher

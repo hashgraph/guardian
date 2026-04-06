@@ -11,14 +11,9 @@ import {
 @Entity('business_view')
 @Unique(['sourceTimestamp', 'viewType'])
 @Index(['viewType', 'registryDid'])
-@Index(['network', 'viewType'])
 export class BusinessView {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     id: string;
-
-    @Index()
-    @Column({ type: 'varchar', length: 20, default: 'mainnet' })
-    network: string;
 
     @Index()
     @Column({ type: 'varchar', length: 30 })
