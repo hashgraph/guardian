@@ -13,10 +13,12 @@ export function getDefaultMirrorNodeUrl(network: string): string {
 }
 
 export default registerAs('app', () => {
+    // Worker uses HEDERA_NET (single network). For the API, see
+    // getConfiguredNetworks() in database.config.ts which reads HEDERA_NETWORKS.
     const hederaNet = process.env.HEDERA_NET || 'testnet';
 
     return {
-        // Hedera
+        // Hedera (worker-scoped — the network this process syncs from)
         hedera: {
             network: hederaNet,
             mirrorNodeUrl:
@@ -68,7 +70,7 @@ export default registerAs('app', () => {
         mvRefreshInterval: parseInt(process.env.MV_REFRESH_INTERVAL || '60', 10),
 
         // Mirror node polling
-        mirrorNodePollDelay: parseInt(process.env.MIRROR_NODE_POLL_DELAY || '1000', 10),
+        mirrorNodePollDelay: parseInt(process.env.MIRROR_NODE_POLL_DELAY || '30000', 10),
 
         // Logging
         logLevel: process.env.LOG_LEVEL || 'info',

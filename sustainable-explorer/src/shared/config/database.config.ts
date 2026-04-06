@@ -4,20 +4,30 @@ import { join } from 'path';
 import { Client } from 'pg';
 
 /**
- * Resolves the database name based on GUARDIAN_ENV, HEDERA_NET, and DB_DATABASE.
- * If GUARDIAN_ENV is set, the database name follows the pattern:
- *   {GUARDIAN_ENV}_{HEDERA_NET}_{DB_DATABASE}
- * Otherwise, the raw DB_DATABASE value is used.
+ * Resolves the database name for a specific Hedera network.
+ * Pattern: `{GUARDIAN_ENV}_{network}_{DB_DATABASE}` when GUARDIAN_ENV is set,
+ * otherwise `{network}_{DB_DATABASE}`.
  */
-function resolveDatabaseName(): string {
+export function resolveDatabaseName(network?: string): string {
     const guardianEnv = process.env.GUARDIAN_ENV || '';
-    const hederaNet = process.env.HEDERA_NET || 'testnet';
+    const net = (network || process.env.HEDERA_NET || 'testnet').toLowerCase();
     const dbDatabase = process.env.DB_DATABASE || 'sustainable_explorer';
 
     if (guardianEnv) {
-        return `${guardianEnv}_${hederaNet}_${dbDatabase}`;
+        return `${guardianEnv}_${net}_${dbDatabase}`;
     }
-    return dbDatabase;
+    return `${net}_${dbDatabase}`;
+}
+
+/**
+ * Parses HEDERA_NETWORKS env var (comma-separated), or falls back to HEDERA_NET.
+ */
+export function getConfiguredNetworks(): string[] {
+    const raw = process.env.HEDERA_NETWORKS || process.env.HEDERA_NET || 'testnet';
+    return raw
+        .split(',')
+        .map(n => n.trim().toLowerCase())
+        .filter(n => n.length > 0);
 }
 
 /**
@@ -40,11 +50,12 @@ function resolveLogging(): DataSourceOptions['logging'] {
 }
 
 /**
- * Ensures the target database exists by connecting to the default 'postgres'
- * database and issuing CREATE DATABASE IF NOT EXISTS.
+ * Creates (if missing) a single database for the given network and ensures
+ * required extensions + TypeORM metadata tables exist.
  */
-export async function ensureDatabaseExists(): Promise<void> {
-    const dbName = resolveDatabaseName();
+export async function ensureDatabaseExistsForNetwork(network?: string): Promise<void> {
+    const dbName = resolveDatabaseName(network);
+
     const client = new Client({
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT || '5432', 10),
@@ -73,22 +84,77 @@ export async function ensureDatabaseExists(): Promise<void> {
     } finally {
         await client.end();
     }
+
+    // Extensions + TypeORM metadata table for generated/view columns
+    const targetClient = new Client({
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '5432', 10),
+        user: process.env.DB_USER || 'explorer',
+        password: process.env.DB_PASSWORD || 'explorer_password',
+        database: dbName,
+    });
+    try {
+        await targetClient.connect();
+        await targetClient.query(`CREATE EXTENSION IF NOT EXISTS pg_trgm`);
+        await targetClient.query(`
+            CREATE TABLE IF NOT EXISTS typeorm_metadata (
+                type varchar NOT NULL,
+                database varchar,
+                schema varchar,
+                "table" varchar,
+                name varchar,
+                value text
+            )
+        `);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`Failed to setup extensions/metadata for ${dbName}: ${message}`);
+    } finally {
+        await targetClient.end();
+    }
 }
 
 /**
- * Returns TypeORM DataSource options for the Sustainable Explorer database.
+ * Ensures all configured network databases exist.
+ * Used by the API, which needs DBs for every network in HEDERA_NETWORKS.
  */
-export function getDatabaseConfig(): TypeOrmModuleOptions {
+export async function ensureAllNetworkDatabasesExist(): Promise<void> {
+    for (const network of getConfiguredNetworks()) {
+        await ensureDatabaseExistsForNetwork(network);
+    }
+}
+
+/**
+ * Backwards-compatible single-network bootstrap. Used by the worker, which
+ * only deals with its own HEDERA_NET.
+ */
+export async function ensureDatabaseExists(): Promise<void> {
+    await ensureDatabaseExistsForNetwork(process.env.HEDERA_NET);
+}
+
+/**
+ * Returns TypeORM DataSource options for a specific network's database.
+ *
+ * @param network Target network (defaults to HEDERA_NET)
+ * @param options.synchronize Override the default sync behaviour
+ */
+export function getDatabaseConfig(
+    network?: string,
+    options: { synchronize?: boolean } = {},
+): TypeOrmModuleOptions {
+    const envSync = process.env.DB_SYNCHRONIZE;
+    const synchronize = options.synchronize ?? (envSync === undefined ? true : envSync === 'true');
+
     return {
         type: 'postgres',
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT || '5432', 10),
         username: process.env.DB_USER || 'explorer',
         password: process.env.DB_PASSWORD || 'explorer_password',
-        database: resolveDatabaseName(),
+        database: resolveDatabaseName(network),
         entities: [join(__dirname, '..', 'entities', '*.{ts,js}')],
         migrations: [join(__dirname, '..', '..', '..', 'dist', 'db', 'migrations', '*.js')],
-        synchronize: (process.env.DB_SYNCHRONIZE ?? 'true') === 'true',
+        synchronize,
         logging: resolveLogging(),
         extra: {
             min: parseInt(process.env.DB_POOL_MIN || '2', 10),

@@ -1,64 +1,54 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { BusinessView } from '@shared/entities/business-view.entity';
 import { RegistryQueryDto, RegistryResponseDto } from '../dto/registry.dto';
 import { PaginatedResponse } from '../dto/pagination.dto';
+import { NetworkDataSourceRegistry } from '../database/network-datasource.registry';
+import { PgRegistryRepository } from '../repositories/pg-registry.repository';
+import { RegistryRepository } from '../repositories/registry.repository';
 
 @Injectable()
 export class RegistriesService {
     constructor(
-        @InjectRepository(BusinessView)
-        private readonly businessViewRepo: Repository<BusinessView>,
+        private readonly dataSources: NetworkDataSourceRegistry,
     ) {}
 
-    async findAll(query: RegistryQueryDto): Promise<PaginatedResponse<RegistryResponseDto>> {
+    async findAll(
+        network: string,
+        query: RegistryQueryDto,
+    ): Promise<PaginatedResponse<RegistryResponseDto>> {
+        const repo = this.getRepository(network);
         const page = query.page ?? 1;
         const limit = query.limit ?? 20;
-        const skip = (page - 1) * limit;
 
-        const qb = this.businessViewRepo
-            .createQueryBuilder('bv')
-            .where('bv.viewType = :viewType', { viewType: 'REGISTRY' });
+        const result = await repo.findAll({
+            page,
+            limit,
+            search: query.search,
+            did: query.did,
+            geography: query.geography,
+            sortBy: query.sortBy,
+            sortDir: query.sortDir,
+        });
 
-        // Filters
-        if (query.did) {
-            qb.andWhere('bv.registryDid = :did', { did: query.did });
-        }
-
-        if (query.geography) {
-            qb.andWhere("bv.businessData->'options'->>'geography' ILIKE :geo", {
-                geo: `%${query.geography}%`,
-            });
-        }
-
-        if (query.search) {
-            qb.andWhere(
-                '(bv.displayName ILIKE :search OR bv.registryDid ILIKE :search OR bv.searchText ILIKE :search)',
-                { search: `%${query.search}%` },
-            );
-        }
-
-        // Sorting
-        const sortBy = query.sortBy || 'createdAt';
-        const sortDir = (query.sortDir?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC') as 'ASC' | 'DESC';
-        const allowedSortFields = ['displayName', 'registryDid', 'createdAt', 'updatedAt', 'sourceTimestamp'];
-        if (allowedSortFields.includes(sortBy)) {
-            qb.orderBy(`bv.${sortBy}`, sortDir);
-        } else {
-            qb.orderBy('bv.createdAt', 'DESC');
-        }
-
-        const [items, total] = await qb.skip(skip).take(limit).getManyAndCount();
-
-        const data = items.map(RegistryResponseDto.fromBusinessView);
-        return new PaginatedResponse(data, total, page, limit);
+        const data = result.rows.map(row =>
+            RegistryResponseDto.fromRow(row, network, row.stats),
+        );
+        return new PaginatedResponse(data, result.total, page, limit);
     }
 
-    async findByDid(did: string): Promise<RegistryResponseDto | null> {
-        const bv = await this.businessViewRepo.findOne({
-            where: { viewType: 'REGISTRY', registryDid: did },
-        });
-        return bv ? RegistryResponseDto.fromBusinessView(bv) : null;
+    async findByDid(network: string, did: string): Promise<RegistryResponseDto | null> {
+        const repo = this.getRepository(network);
+        const row = await repo.findByDid(did);
+        if (!row) return null;
+        return RegistryResponseDto.fromRow(row, network, row.stats);
+    }
+
+    /**
+     * Resolves the appropriate RegistryRepository for the given network.
+     * Currently only PostgreSQL is supported; add a factory here to swap
+     * in a different backend implementation.
+     */
+    private getRepository(network: string): RegistryRepository {
+        const ds = this.dataSources.getDataSource(network);
+        return new PgRegistryRepository(ds);
     }
 }

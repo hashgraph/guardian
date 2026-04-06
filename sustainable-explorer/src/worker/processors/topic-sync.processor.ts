@@ -1,5 +1,6 @@
 import { Processor, WorkerHost, OnWorkerEvent, InjectQueue } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Job, Queue } from 'bullmq';
 import { DataSource } from 'typeorm';
 import { QUEUE_NAMES } from '@shared/config/bullmq.config';
@@ -14,14 +15,20 @@ export interface TopicSyncJobData {
 @Processor(QUEUE_NAMES.TOPIC_SYNC)
 export class TopicSyncProcessor extends WorkerHost {
     private readonly logger = new Logger(TopicSyncProcessor.name);
+    private readonly pollDelay: number;
+    private readonly orgPollDelay: number;
 
     constructor(
         private readonly hederaService: HederaService,
         private readonly dataSource: DataSource,
+        private readonly configService: ConfigService,
         @InjectQueue(QUEUE_NAMES.MESSAGE_PARSE) private readonly messageQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOPIC_SYNC) private readonly topicQueue: Queue,
     ) {
         super();
+        this.pollDelay = this.configService.get<number>('app.mirrorNodePollDelay') ?? 30000;
+        // Org topics poll 3x faster for quicker visibility of org-specific events
+        this.orgPollDelay = Math.max(1000, Math.floor(this.pollDelay / 3));
     }
 
     async process(job: Job<TopicSyncJobData>): Promise<void> {
@@ -32,7 +39,19 @@ export class TopicSyncProcessor extends WorkerHost {
         const { messages } = await this.hederaService.getMessages(topicId, fromSequenceNumber);
 
         if (messages.length === 0) {
-            this.logger.debug(`No new messages for topic ${topicId}`);
+            // No new messages — re-enqueue with a delay to keep polling.
+            // Uses timestamp in jobId so each poll creates a fresh job
+            // (BullMQ dedupes completed/stale jobIds).
+            const delay = isOrgTopic ? this.orgPollDelay : this.pollDelay;
+            await this.topicQueue.add('sync', {
+                topicId,
+                fromSequenceNumber,
+                isOrgTopic,
+            }, {
+                jobId: `topic-${topicId}-poll-${Date.now()}`,
+                delay,
+            });
+            this.logger.debug(`No new messages for topic ${topicId}, re-polling in ${delay}ms`);
             return;
         }
 
@@ -68,17 +87,18 @@ export class TopicSyncProcessor extends WorkerHost {
             [maxSequence, hasNext, now, topicId],
         );
 
-        // 4. Self-enqueue for next page if full page received
-        if (hasNext) {
-            await this.topicQueue.add('sync', {
-                topicId,
-                fromSequenceNumber: maxSequence,
-                isOrgTopic,
-            }, {
-                jobId: `topic-${topicId}-${maxSequence}`,
-                delay: 100,
-            });
-        }
+        // 4. Self-enqueue for next page.
+        //    - If full page received: immediate next page (catching up)
+        //    - If partial page: delayed re-poll (caught up, waiting for new messages)
+        const nextDelay = hasNext ? 100 : (isOrgTopic ? this.orgPollDelay : this.pollDelay);
+        await this.topicQueue.add('sync', {
+            topicId,
+            fromSequenceNumber: maxSequence,
+            isOrgTopic,
+        }, {
+            jobId: `topic-${topicId}-${maxSequence}-${Date.now()}`,
+            delay: nextDelay,
+        });
 
         this.logger.log(
             `Topic ${topicId}: ${messages.length} messages, maxSeq=${maxSequence}, hasNext=${hasNext}`,

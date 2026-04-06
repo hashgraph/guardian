@@ -22,11 +22,11 @@ export function useRegistries(filters?: Ref<{ status?: string; network?: string;
         }
 
         // Known registries with their meta — derived from project data + pseudo details
-        const knownRegistries: Record<string, { fullName: string; did: string; status: 'Active' | 'Inactive'; network: 'Mainnet' | 'Testnet'; userMultiplier: number }> = {
-            'Verra': { fullName: 'Verra (VCS)', did: 'did:hedera:testnet:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK', status: 'Active', network: 'Mainnet', userMultiplier: 3 },
-            'Gold Standard': { fullName: 'Gold Standard', did: 'did:hedera:testnet:z6MkrHKR1DXg7k7Y2fh9H8VSrGaJ5YFhUMb25RkGqFMNS7eR', status: 'Active', network: 'Mainnet', userMultiplier: 2.9 },
-            'CAR': { fullName: 'Climate Action Reserve', did: 'did:hedera:testnet:z6MkvTZ4dXB3k9F2dMzQpJHN4T4H8nD8cEaJ7sRQV2yjKLR9', status: 'Active', network: 'Mainnet', userMultiplier: 2.3 },
-            'ACR': { fullName: 'American Carbon Registry', did: 'did:hedera:testnet:z6MknUfJGzFR5wZhJnYpSL2X9m4RqPCMTvk9J7WZd8KxFJSm', status: 'Active', network: 'Mainnet', userMultiplier: 2.1 },
+        const knownRegistries: Record<string, { fullName: string; did: string; status: 'Active' | 'Inactive'; network: 'Mainnet' | 'Testnet'; userMultiplier: number; geography: string; law: string; tags: string; createdAt: string }> = {
+            'Verra': { fullName: 'Verra (VCS)', did: 'did:hedera:testnet:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK', status: 'Active', network: 'Mainnet', userMultiplier: 3, geography: 'Global', law: 'USA', tags: 'VCS, REDD+, Agriculture', createdAt: '2007-11-19' },
+            'Gold Standard': { fullName: 'Gold Standard', did: 'did:hedera:testnet:z6MkrHKR1DXg7k7Y2fh9H8VSrGaJ5YFhUMb25RkGqFMNS7eR', status: 'Active', network: 'Mainnet', userMultiplier: 2.9, geography: 'Global', law: 'Switzerland', tags: 'Energy, Water, Health', createdAt: '2003-05-15' },
+            'CAR': { fullName: 'Climate Action Reserve', did: 'did:hedera:testnet:z6MkvTZ4dXB3k9F2dMzQpJHN4T4H8nD8cEaJ7sRQV2yjKLR9', status: 'Active', network: 'Mainnet', userMultiplier: 2.3, geography: 'North America', law: 'USA', tags: 'Forestry, Waste, Methane', createdAt: '2001-09-10' },
+            'ACR': { fullName: 'American Carbon Registry', did: 'did:hedera:testnet:z6MknUfJGzFR5wZhJnYpSL2X9m4RqPCMTvk9J7WZd8KxFJSm', status: 'Active', network: 'Mainnet', userMultiplier: 2.1, geography: 'USA', law: 'USA', tags: 'Forestry, Wetlands', createdAt: '1996-03-20' },
         };
 
         let result: Registry[] = [];
@@ -48,6 +48,10 @@ export function useRegistries(filters?: Ref<{ status?: string; network?: string;
                 credits: formatCredits(totalCredits),
                 status: meta?.status ?? 'Active',
                 network: meta?.network ?? 'Testnet',
+                geography: meta?.geography ?? null,
+                law: meta?.law ?? null,
+                tags: meta?.tags ?? null,
+                createdAt: meta?.createdAt ?? null,
             });
         }
 

@@ -107,26 +107,30 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     };
 
     /**
-     * Seeds the root topic into topic_cache if the table is empty.
-     * This bootstraps a fresh system — once the root topic is synced,
-     * child topics are discovered recursively from message content.
+     * Ensures the root topic for the current network exists in topic_cache.
+     * This bootstraps a fresh system and is also a safety net for cases where
+     * the cache has other topics but not the root (partial seed, manual edit, etc.).
+     * Once the root topic is synced, child topics are discovered recursively
+     * from message content.
      */
     private async seedRootTopicIfEmpty(): Promise<void> {
-        const [{ count }] = await this.dataSource.query(
-            `SELECT COUNT(*)::int AS count FROM topic_cache`,
-        );
-
-        if (count > 0) {
-            this.logger.debug(`topic_cache has ${count} entries, skipping seed`);
-            return;
-        }
-
         const network = this.configService.get<string>('app.hedera.network') || 'testnet';
         const seedTopicId = this.configService.get<string>('app.seedTopicId')
             || SyncSchedulerService.ROOT_TOPICS[network];
 
         if (!seedTopicId) {
-            this.logger.warn(`No seed topic ID for network "${network}" — topic_cache is empty, nothing to sync`);
+            this.logger.warn(`No seed topic ID for network "${network}" — cannot bootstrap`);
+            return;
+        }
+
+        // Check for the specific root topic (not just any row in the cache)
+        const rows = await this.dataSource.query(
+            `SELECT 1 FROM topic_cache WHERE "topicId" = $1 LIMIT 1`,
+            [seedTopicId],
+        );
+
+        if (rows.length > 0) {
+            this.logger.debug(`Root topic ${seedTopicId} already seeded for ${network}`);
             return;
         }
 
