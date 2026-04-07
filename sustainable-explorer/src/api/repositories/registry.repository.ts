@@ -10,8 +10,12 @@ export interface RegistryListQuery {
     page: number;
     limit: number;
     search?: string;
+    displayName?: string;
     did?: string;
+    id?: string;
+    tags?: string;
     geography?: string;
+    law?: string;
     sortBy?: string;
     sortDir?: 'asc' | 'desc';
 }
@@ -28,7 +32,7 @@ export interface RegistryRow {
     viewType: string;
     sourceTimestamp: string;
     registryDid: string | null;
-    policyId: string | null;
+    relatedTopicId: string | null;
     displayName: string | null;
     businessData: Record<string, unknown> | null;
     searchText: string | null;

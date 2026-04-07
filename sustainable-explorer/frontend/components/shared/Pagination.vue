@@ -10,7 +10,17 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     'update:currentPage': [page: number];
+    'update:pageSize': [size: number];
 }>();
+
+const pageSizeOptions = [10, 25, 50, 100];
+
+function onPageSizeChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const newSize = Number(target.value);
+    emit('update:pageSize', newSize);
+    emit('update:currentPage', 1);
+}
 
 const startItem = computed(() => (props.currentPage - 1) * props.pageSize + 1);
 const endItem = computed(() => Math.min(props.currentPage * props.pageSize, props.totalItems));
@@ -37,9 +47,21 @@ const visiblePages = computed(() => {
 
 <template>
     <div class="flex items-center justify-between pt-4">
-        <span class="text-xs text-muted-foreground">
-            Showing {{ startItem }}–{{ endItem }} of {{ totalItems }}
-        </span>
+        <div class="flex items-center gap-4">
+            <span class="text-xs text-muted-foreground">
+                Showing {{ startItem }}–{{ endItem }} of {{ totalItems }}
+            </span>
+            <label class="flex items-center gap-2 text-xs text-muted-foreground">
+                Rows per page:
+                <select
+                    :value="pageSize"
+                    class="h-7 rounded-md border bg-card px-2 text-xs text-foreground hover:bg-muted focus:outline-none focus:ring-1 focus:ring-ring"
+                    @change="onPageSizeChange"
+                >
+                    <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
+                </select>
+            </label>
+        </div>
 
         <div v-if="totalPages > 1" class="flex items-center gap-1">
             <button

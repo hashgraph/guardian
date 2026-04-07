@@ -4,17 +4,19 @@ import { Queue } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import Redis from 'ioredis';
-import { QUEUE_NAMES } from '@shared/config/bullmq.config';
+import { QUEUE_NAMES, getWorkerNetwork } from '@shared/config/bullmq.config';
 
 /**
  * Orchestrates initial sync jobs on startup.
- * Uses Redict-based leader election so only one instance schedules
- * repeating jobs when running multiple workers horizontally.
+ * Uses Redict-based leader election (scoped per network) so only one instance
+ * per network schedules repeating jobs when running multiple workers horizontally.
  */
 @Injectable()
 export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     private readonly logger = new Logger(SyncSchedulerService.name);
     private readonly instanceId = `worker-${process.pid}-${Date.now()}`;
+    private readonly network = getWorkerNetwork();
+    private readonly leaderKey = `se:scheduler:leader:${this.network}`;
     private leaderInterval: ReturnType<typeof setInterval> | null = null;
     private isLeader = false;
 
@@ -53,7 +55,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
             try {
                 this.isLeader = await this.tryAcquireLeader();
                 if (this.isLeader) {
-                    await this.redis.expire('se:scheduler:leader', 30);
+                    await this.redis.expire(this.leaderKey, 30);
                 }
             } catch {
                 // Silent — will retry next interval
@@ -68,7 +70,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         }
         // Release leadership
         if (this.isLeader) {
-            this.redis.del('se:scheduler:leader').catch(() => {});
+            this.redis.del(this.leaderKey).catch(() => {});
         }
     }
 
@@ -78,7 +80,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
      */
     private async tryAcquireLeader(): Promise<boolean> {
         const result = await this.redis.set(
-            'se:scheduler:leader',
+            this.leaderKey,
             this.instanceId,
             'EX', 30,
             'NX',
@@ -86,7 +88,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         if (result === 'OK') return true;
 
         // Check if we already hold the lock
-        const current = await this.redis.get('se:scheduler:leader');
+        const current = await this.redis.get(this.leaderKey);
         return current === this.instanceId;
     }
 

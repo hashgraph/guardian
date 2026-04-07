@@ -1,16 +1,46 @@
-import { QueueOptions } from 'bullmq';
-
 /**
- * Queue name constants for all worker queues.
- * Hedera Mirror Node + IPFS pipeline only.
+ * Base queue names (without network prefix).
+ * Actual queue names at runtime are `{baseName}-{network}` so that each
+ * Hedera network gets its own queue set and workers never pick up jobs
+ * belonging to another network.
  */
-export const QUEUE_NAMES = {
+export const BASE_QUEUE_NAMES = {
     TOPIC_SYNC: 'mirror-node-topics',
     MESSAGE_PARSE: 'mirror-node-messages',
     IPFS_FETCH: 'ipfs-files',
     TOKEN_SYNC: 'mirror-node-tokens',
     MV_REFRESH: 'maintenance-refresh-mvs',
     BUSINESS_VIEW_BUILD: 'maintenance-build-business-views',
+} as const;
+
+export type BaseQueueName = typeof BASE_QUEUE_NAMES[keyof typeof BASE_QUEUE_NAMES];
+
+/**
+ * Resolves the current worker's network from HEDERA_NET. Defaults to 'testnet'.
+ */
+export function getWorkerNetwork(): string {
+    return (process.env.HEDERA_NET || 'testnet').toLowerCase();
+}
+
+/**
+ * Appends the current worker's network to a base queue name.
+ * Example: "mirror-node-topics" + "mainnet" → "mirror-node-topics-mainnet"
+ */
+export function qname(base: BaseQueueName, network?: string): string {
+    return `${base}-${network || getWorkerNetwork()}`;
+}
+
+/**
+ * Fully-qualified queue names for the current worker process.
+ * Injectable via `@InjectQueue(QUEUE_NAMES.TOPIC_SYNC)` inside processors.
+ */
+export const QUEUE_NAMES = {
+    TOPIC_SYNC: qname(BASE_QUEUE_NAMES.TOPIC_SYNC),
+    MESSAGE_PARSE: qname(BASE_QUEUE_NAMES.MESSAGE_PARSE),
+    IPFS_FETCH: qname(BASE_QUEUE_NAMES.IPFS_FETCH),
+    TOKEN_SYNC: qname(BASE_QUEUE_NAMES.TOKEN_SYNC),
+    MV_REFRESH: qname(BASE_QUEUE_NAMES.MV_REFRESH),
+    BUSINESS_VIEW_BUILD: qname(BASE_QUEUE_NAMES.BUSINESS_VIEW_BUILD),
 } as const;
 
 export type QueueName = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES];
@@ -116,8 +146,8 @@ export function getQueueRegistrations(): Array<{ name: string; defaultJobOptions
 
 /**
  * Returns only the queue names that this worker instance should process.
- * Controlled by WORKER_QUEUES env var (comma-separated).
- * If not set, processes all queues (single-instance mode).
+ * Controlled by WORKER_QUEUES env var (comma-separated base names).
+ * If not set, processes all queues.
  * Supports glob-like patterns: "mirror-node-*" matches all mirror-node queues.
  */
 export function getActiveQueues(): string[] {
@@ -129,10 +159,16 @@ export function getActiveQueues(): string[] {
     const patterns = envQueues.split(',').map(q => q.trim());
     return allQueues.filter(queueName =>
         patterns.some(pattern => {
+            // Strip the network suffix for pattern matching
+            const network = getWorkerNetwork();
+            const baseName = queueName.endsWith(`-${network}`)
+                ? queueName.slice(0, -network.length - 1)
+                : queueName;
+
             if (pattern.endsWith('*')) {
-                return queueName.startsWith(pattern.slice(0, -1));
+                return baseName.startsWith(pattern.slice(0, -1));
             }
-            return queueName === pattern;
+            return baseName === pattern;
         }),
     );
 }

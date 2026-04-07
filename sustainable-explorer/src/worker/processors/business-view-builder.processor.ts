@@ -40,7 +40,7 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 "viewType",
                 "displayName",
                 "registryDid",
-                "policyId",
+                "relatedTopicId",
                 "businessData",
                 "searchText",
                 "lastUpdate",
@@ -62,7 +62,18 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                     'options', m.options,
                     'documents', m.documents
                 ),
-                COALESCE(m.options->>'name', '') || ' ' || COALESCE(m.options->>'description', '') || ' ' || COALESCE(m.owner, ''),
+                -- searchText: concatenation of all searchable fields. Picked up
+                -- by the searchVector tsvector generated column for full-text search.
+                CONCAT_WS(' ',
+                    m.options->>'name',
+                    m.options->>'description',
+                    m.options->>'tags',
+                    m.options->>'geography',
+                    m.options->>'law',
+                    m.options->>'tokenName',
+                    m.options->>'tokenSymbol',
+                    m.owner
+                ),
                 EXTRACT(EPOCH FROM NOW())::bigint,
                 NOW(),
                 NOW()
@@ -73,7 +84,7 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
             ON CONFLICT ("sourceTimestamp", "viewType") DO UPDATE SET
                 "displayName" = EXCLUDED."displayName",
                 "registryDid" = EXCLUDED."registryDid",
-                "policyId" = EXCLUDED."policyId",
+                "relatedTopicId" = EXCLUDED."relatedTopicId",
                 "businessData" = EXCLUDED."businessData",
                 "searchText" = EXCLUDED."searchText",
                 "lastUpdate" = EXCLUDED."lastUpdate",

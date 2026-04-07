@@ -3,6 +3,7 @@ import type { NetworkId } from '~/composables/useNetwork';
 export type RegistrySortKey =
     | 'displayName'
     | 'registryDid'
+    | 'relatedTopicId'
     | 'createdAt'
     | 'updatedAt'
     | 'sourceTimestamp'
@@ -28,6 +29,7 @@ export interface RegistryDto {
     did: string;
     name: string;
     topicId: string | null;
+    relatedTopicId: string | null;
     geography: string | null;
     law: string | null;
     tags: string | null;
@@ -58,9 +60,11 @@ export interface UseRegistriesApiOptions {
     network: Ref<NetworkId | string>;
     sortBy: Ref<RegistrySortKey | null>;
     sortDir: Ref<RegistrySortDir | null>;
-    geography?: Ref<string | null>;
-    did?: Ref<string | null>;
+    filters?: Ref<Record<string, any>>;
 }
+
+// Filter keys recognised by the backend registries endpoint.
+const REGISTRY_FILTER_KEYS = ['displayName', 'did', 'id', 'tags', 'geography', 'law'] as const;
 
 const emptyResponse = (limit: number): RegistriesResponse => ({
     data: [],
@@ -85,8 +89,17 @@ export const useRegistriesApi = (opts: UseRegistriesApiOptions) => {
             q.sortBy = opts.sortBy.value;
             q.sortDir = opts.sortDir.value;
         }
-        if (opts.geography?.value) q.geography = opts.geography.value;
-        if (opts.did?.value) q.did = opts.did.value;
+        const filters = opts.filters?.value ?? {};
+        for (const key of REGISTRY_FILTER_KEYS) {
+            const raw = filters[key];
+            if (raw === null || raw === undefined) continue;
+            if (typeof raw === 'string') {
+                const trimmed = raw.trim();
+                if (trimmed) q[key] = trimmed;
+            } else if (typeof raw === 'number') {
+                q[key] = raw;
+            }
+        }
         return q;
     };
 
@@ -122,6 +135,7 @@ export const useRegistriesApi = (opts: UseRegistriesApiOptions) => {
                 opts.network,
                 opts.sortBy,
                 opts.sortDir,
+                ...(opts.filters ? [opts.filters] : []),
             ],
         },
     );

@@ -29,7 +29,7 @@ export class BusinessView {
 
     @Index()
     @Column({ type: 'varchar', length: 30, nullable: true })
-    policyId: string | null;
+    relatedTopicId: string | null;
 
     @Column({ type: 'varchar', length: 500, nullable: true })
     displayName: string | null;

@@ -7,13 +7,15 @@ import {
     RegistryRow,
     RegistryStatsRow,
 } from './registry.repository';
+import { QueryBuilder } from './query-builder';
+import { REGISTRY_FIELD_SCHEMA } from './schemas/registry.schema';
 
 interface RawRow {
     id: string;
     viewType: string;
     sourceTimestamp: string;
     registryDid: string | null;
-    policyId: string | null;
+    relatedTopicId: string | null;
     displayName: string | null;
     businessData: Record<string, any> | null;
     searchText: string | null;
@@ -26,26 +28,16 @@ interface RawRow {
     user_count: string | null;
 }
 
-const ALLOWED_SORT_FIELDS: Record<string, string> = {
-    displayName: 'bv."displayName"',
-    registryDid: 'bv."registryDid"',
-    createdAt: 'bv."createdAt"',
-    updatedAt: 'bv."updatedAt"',
-    sourceTimestamp: 'bv."sourceTimestamp"',
-    geography: `bv."businessData"->'options'->>'geography'`,
-    law: `bv."businessData"->'options'->>'law'`,
-    tags: `bv."businessData"->'options'->>'tags'`,
-    policies: 's.policy_count',
-    projects: 's.project_count',
-    issuances: 's.issuance_count',
-};
-
 /**
  * PostgreSQL implementation of the RegistryRepository.
  *
- * All PostgreSQL-specific features (jsonb operators, tsvector, trigram
- * similarity, materialized view joins) are contained here. Services talk
- * only to the abstract RegistryRepository.
+ * Generic filter and sort logic is delegated to QueryBuilder + the field
+ * schema (REGISTRY_FIELD_SCHEMA). Adding a new filterable/sortable column
+ * only requires updating the schema — no SQL changes needed here.
+ *
+ * Special operations (full-text + fuzzy search, materialized view joins,
+ * search ranking) remain explicit because they don't fit the generic
+ * operator model.
  */
 export class PgRegistryRepository extends RegistryRepository {
     constructor(private readonly dataSource: DataSource) {
@@ -53,59 +45,64 @@ export class PgRegistryRepository extends RegistryRepository {
     }
 
     async findAll(query: RegistryListQuery): Promise<RegistryListResult> {
-        const { page, limit, search, did, geography, sortBy, sortDir } = query;
+        const { page, limit, search, sortBy, sortDir } = query;
         const offset = (page - 1) * limit;
 
-        const whereClauses: string[] = [`bv."viewType" = 'REGISTRY'`];
-        const params: any[] = [];
-        let paramIdx = 1;
+        const builder = new QueryBuilder(REGISTRY_FIELD_SCHEMA);
+        builder.addClause(`bv."viewType" = 'REGISTRY'`);
 
-        if (did) {
-            whereClauses.push(`bv."registryDid" = $${paramIdx++}`);
-            params.push(did);
-        }
+        // Generic filters: every filterable field defined in the schema
+        // is wired automatically. To add a new filter, edit registry.schema.ts.
+        builder.addFilters({
+            displayName: query.displayName,
+            did: query.did,
+            id: query.id,
+            tags: query.tags,
+            geography: query.geography,
+            law: query.law,
+        });
 
-        if (geography) {
-            whereClauses.push(`bv."businessData"->'options'->>'geography' ILIKE $${paramIdx++}`);
-            params.push(`%${geography}%`);
-        }
-
-        // Full-text search (tsvector) + trigram fuzzy fallback
+        // Special: full-text search with ranking. The tsvector index covers
+        // displayName (weight A), registryDid (B), and searchText (C) which
+        // includes name + description + tags + geography + law + token info.
+        // ILIKE on displayName is kept as a fast prefix fallback for partial
+        // word matches that tsquery doesn't catch (e.g. "DOV" → "DOVU").
+        // similarity() provides typo-tolerance via pg_trgm.
         let rankExpr = '0';
         if (search) {
             const term = search.trim();
-            const tsIdx = paramIdx++;
-            const likeIdx = paramIdx++;
-            const simIdx = paramIdx++;
+            const tsParam = builder.nextParam(term);
+            const likeParam = builder.nextParam(`%${term}%`);
+            const simParam = builder.nextParam(term);
 
-            whereClauses.push(`(
-                bv."searchVector" @@ plainto_tsquery('english', $${tsIdx})
-                OR bv."displayName" ILIKE $${likeIdx}
-                OR bv."searchText" ILIKE $${likeIdx}
-                OR bv."registryDid" ILIKE $${likeIdx}
-                OR bv."businessData"->'options'->>'tags' ILIKE $${likeIdx}
-                OR bv."businessData"->'options'->>'geography' ILIKE $${likeIdx}
-                OR similarity(COALESCE(bv."displayName", ''), $${simIdx}) > 0.3
+            builder.addClause(`(
+                bv."searchVector" @@ plainto_tsquery('english', ${tsParam})
+                OR bv."displayName" ILIKE ${likeParam}
+                OR bv."registryDid" ILIKE ${likeParam}
+                OR similarity(COALESCE(bv."displayName", ''), ${simParam}) > 0.3
             )`);
-            params.push(term, `%${term}%`, term);
 
             rankExpr = `
-                ts_rank(bv."searchVector", plainto_tsquery('english', $${tsIdx}))
-                + COALESCE(similarity(bv."displayName", $${simIdx}), 0)
+                ts_rank(bv."searchVector", plainto_tsquery('english', ${tsParam}))
+                + COALESCE(similarity(bv."displayName", ${simParam}), 0)
             `;
         }
 
-        // Sorting
-        let orderBy: string;
-        if (search) {
-            orderBy = `search_rank DESC, bv."createdAt" DESC`;
-        } else {
-            const dir = (sortDir?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC') as 'ASC' | 'DESC';
-            const sortCol = ALLOWED_SORT_FIELDS[sortBy ?? ''] || 'bv."createdAt"';
-            orderBy = `${sortCol} ${dir} NULLS LAST`;
-        }
+        // ORDER BY: search results rank by relevance; otherwise use schema sort
+        const orderBy = search
+            ? `search_rank DESC, bv."createdAt" DESC`
+            : builder.buildOrderBy({
+                sortBy,
+                sortDir,
+                defaultExpr: 'bv."createdAt" DESC NULLS LAST',
+            });
 
-        const whereSql = whereClauses.join(' AND ');
+        const whereSql = builder.getWhereClause();
+        const params = builder.getParams();
+
+        // Append LIMIT/OFFSET as the last two params
+        const limitParam = builder.nextParam(limit);
+        const offsetParam = builder.nextParam(offset);
 
         const rowsSql = `
             SELECT
@@ -120,19 +117,20 @@ export class PgRegistryRepository extends RegistryRepository {
                 ON s."registryDid" = bv."registryDid"
             WHERE ${whereSql}
             ORDER BY ${orderBy}
-            LIMIT $${paramIdx++} OFFSET $${paramIdx++}
+            LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
-        const rowsParams = [...params, limit, offset];
 
+        // Count query reuses the same WHERE but no LIMIT/OFFSET, so we slice
+        // the params back to before the limit/offset additions.
+        const countParams = params.slice(0, params.length - 2);
         const countSql = `
             SELECT COUNT(*)::int AS total
             FROM business_view bv
             WHERE ${whereSql}
         `;
-        const countParams = params;
 
         const [rawRows, countResult]: [RawRow[], Array<{ total: number }>] = await Promise.all([
-            this.dataSource.query(rowsSql, rowsParams),
+            this.dataSource.query(rowsSql, params),
             this.dataSource.query(countSql, countParams),
         ]);
 
@@ -178,7 +176,7 @@ export class PgRegistryRepository extends RegistryRepository {
             viewType: row.viewType,
             sourceTimestamp: row.sourceTimestamp,
             registryDid: row.registryDid,
-            policyId: row.policyId,
+            relatedTopicId: row.relatedTopicId,
             displayName: row.displayName,
             businessData: row.businessData,
             searchText: row.searchText,

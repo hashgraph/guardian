@@ -57,8 +57,8 @@ export class IpfsService {
                 return Buffer.from(response.data);
             } catch (error: unknown) {
                 const message = error instanceof Error ? error.message : String(error);
-                this.logger.warn(`IPFS gateway failed: ${gateway} - ${message}`);
-                errors.push(`${gateway}: ${message}`);
+                this.logger.warn(`IPFS gateway failed: ${gateway} - ${message} ${url} ${cid}`);
+                errors.push(`${gateway}: ${message} ${url} ${cid}`);
             }
         }
 

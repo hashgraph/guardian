@@ -138,19 +138,19 @@ export class MessageProcessProcessor extends WorkerHost {
         }
 
         // Discover and enqueue child topics
-        // const discoveredTopics = extractDiscoverableTopics(parsed, topicId);
-        // for (const topic of discoveredTopics) {
-        //     await this.topicQueue.add('sync', {
-        //         topicId: topic.topicId,
-        //         fromSequenceNumber: 0,
-        //         isOrgTopic: topic.isOrgTopic,
-        //     }, {
-        //         jobId: `topic-${topic.topicId}-0`,
-        //         priority: topic.isOrgTopic ? 1 : 10,
-        //     });
-        // }
+        const discoveredTopics = extractDiscoverableTopics(parsed, topicId);
+        for (const topic of discoveredTopics) {
+            await this.topicQueue.add('sync', {
+                topicId: topic.topicId,
+                fromSequenceNumber: 0,
+                isOrgTopic: topic.isOrgTopic,
+            }, {
+                jobId: `topic-${topic.topicId}-0`,
+                priority: topic.isOrgTopic ? 1 : 10,
+            });
+        }
 
-        // Enqueue token sync for discovered tokens
+        // // Enqueue token sync for discovered tokens
         // const tokenIds = extractTokenIds(parsed);
         // for (const tokenId of tokenIds) {
         //     await this.tokenQueue.add('sync', {

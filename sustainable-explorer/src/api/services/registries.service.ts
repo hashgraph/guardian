@@ -23,8 +23,12 @@ export class RegistriesService {
             page,
             limit,
             search: query.search,
+            displayName: query.displayName,
             did: query.did,
+            id: query.id,
+            tags: query.tags,
             geography: query.geography,
+            law: query.law,
             sortBy: query.sortBy,
             sortDir: query.sortDir,
         });

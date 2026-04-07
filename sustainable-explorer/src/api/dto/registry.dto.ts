@@ -3,15 +3,35 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
 
 export class RegistryQueryDto extends PaginationQueryDto {
+    @ApiPropertyOptional({ description: 'Filter by registry display name (partial match)' })
+    @IsOptional()
+    @IsString()
+    displayName?: string;
+
     @ApiPropertyOptional({ description: 'Filter by exact DID' })
     @IsOptional()
     @IsString()
     did?: string;
 
+    @ApiPropertyOptional({ description: 'Filter by Hedera topic ID (partial match)' })
+    @IsOptional()
+    @IsString()
+    id?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by tags (partial match)' })
+    @IsOptional()
+    @IsString()
+    tags?: string;
+
     @ApiPropertyOptional({ description: 'Filter by geography (partial match)' })
     @IsOptional()
     @IsString()
     geography?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by jurisdiction / law (partial match)' })
+    @IsOptional()
+    @IsString()
+    law?: string;
 }
 
 export class RegistryStats {
@@ -41,8 +61,14 @@ export class RegistryResponseDto {
     @ApiProperty({ nullable: true, description: 'Display name (falls back to tags)' })
     name: string | null;
 
-    @ApiProperty({ nullable: true, description: 'Hedera topic ID for the registry' })
+    @ApiProperty({ nullable: true, description: 'Source HCS topic where the registry was announced' })
     topicId: string | null;
+
+    @ApiProperty({
+        nullable: true,
+        description: "Registry's own Hedera topic ID where it publishes policies",
+    })
+    relatedTopicId: string | null;
 
     @ApiProperty({ nullable: true })
     geography: string | null;
@@ -79,6 +105,7 @@ export class RegistryResponseDto {
             did: row.registryDid,
             name: row.displayName,
             topicId: data.topicId || data.options?.topicId || null,
+            relatedTopicId: row.relatedTopicId ?? null,
             geography: data.options?.geography || null,
             law: data.options?.law || null,
             tags: data.options?.tags || null,
