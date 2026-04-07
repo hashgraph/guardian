@@ -9,23 +9,25 @@ import { networkOptions } from '~/composables/useNetwork';
 import { MOCK_PROJECTS, MOCK_CREDITS } from '~/data';
 import { formatCredits } from '~/lib/format';
 
+const { t, locale, locales, setLocale } = useI18n();
+
 const collapsed = useState('sidebar-collapsed', () => false);
 const { currentNetwork, setNetwork } = useNetwork();
 const router = useRouter();
 const route = useRoute();
 
 // --- Breadcrumbs ---
-const routeMeta: Record<string, { label: string; icon: any }> = {
-    '/': { label: 'Dashboard', icon: LayoutDashboard },
-    '/projects': { label: 'Projects', icon: FolderKanban },
-    '/credits': { label: 'Issuances', icon: Coins },
-    '/methodologies': { label: 'Methodologies', icon: BookOpen },
-    '/registries': { label: 'Registries', icon: Building2 },
-    '/developers': { label: 'Developers', icon: Users },
-    '/sdgs': { label: 'SDGs', icon: Target },
-    '/analytics': { label: 'Analytics', icon: BarChart3 },
-    '/status': { label: 'Sync Status', icon: Activity },
-};
+const routeMeta = computed<Record<string, { label: string; icon: any }>>(() => ({
+    '/': { label: t('nav.dashboard'), icon: LayoutDashboard },
+    '/projects': { label: t('nav.projects'), icon: FolderKanban },
+    '/credits': { label: t('nav.issuances'), icon: Coins },
+    '/methodologies': { label: t('nav.methodologies'), icon: BookOpen },
+    '/registries': { label: t('nav.registries'), icon: Building2 },
+    '/developers': { label: t('nav.developers'), icon: Users },
+    '/sdgs': { label: t('nav.sdgs'), icon: Target },
+    '/analytics': { label: t('nav.analytics'), icon: BarChart3 },
+    '/status': { label: t('nav.syncStatus'), icon: Activity },
+}));
 
 const breadcrumbs = computed(() => {
     const path = route.path;
@@ -33,15 +35,15 @@ const breadcrumbs = computed(() => {
 
     // Always start with Dashboard
     if (path === '/') {
-        crumbs.push({ label: 'Dashboard', icon: LayoutDashboard });
+        crumbs.push({ label: t('nav.dashboard'), icon: LayoutDashboard });
         return crumbs;
     }
-    crumbs.push({ label: 'Dashboard', icon: LayoutDashboard, to: '/' });
+    crumbs.push({ label: t('nav.dashboard'), icon: LayoutDashboard, to: '/' });
 
     // Split path into segments
     const segments = path.split('/').filter(Boolean);
     const parentPath = '/' + segments[0];
-    const meta = routeMeta[parentPath];
+    const meta = routeMeta.value[parentPath];
 
     if (meta) {
         if (segments.length === 1) {
@@ -56,7 +58,7 @@ const breadcrumbs = computed(() => {
             let detailLabel = paramId;
             if (parentPath === '/projects') {
                 const project = MOCK_PROJECTS.find(p => p.id === paramId);
-                detailLabel = project?.name || 'Not Found';
+                detailLabel = project?.name || t('common.notFound');
             }
             crumbs.push({ label: detailLabel });
         }
@@ -64,6 +66,26 @@ const breadcrumbs = computed(() => {
 
     return crumbs;
 });
+
+// --- Language dropdown ---
+const languageDropdownOpen = ref(false);
+const languageRef = ref<HTMLElement | null>(null);
+onClickOutside(languageRef, () => { languageDropdownOpen.value = false; });
+
+// Map locale codes to country codes for flag display
+const localeToCountry: Record<string, string> = {
+    en: 'us',
+    es: 'es',
+};
+
+function flagForLocale(code: string): string {
+    return localeToCountry[code] || code;
+}
+
+async function selectLanguage(code: string) {
+    await setLocale(code as any);
+    languageDropdownOpen.value = false;
+}
 
 // --- Network dropdown ---
 const networkDropdownOpen = ref(false);
@@ -90,7 +112,7 @@ const searchIndex = computed(() => {
     // Projects
     for (const p of MOCK_PROJECTS) {
         items.push({
-            type: 'Project',
+            type: t('topbar.itemType.project'),
             icon: FolderKanban,
             color: 'text-stat-amber',
             title: p.name,
@@ -102,11 +124,11 @@ const searchIndex = computed(() => {
     // Credits
     for (const c of MOCK_CREDITS) {
         items.push({
-            type: 'Issuance',
+            type: t('topbar.itemType.issuance'),
             icon: Coins,
             color: 'text-stat-rose',
             title: `${c.name} (${c.symbol})`,
-            sub: `Token ${c.tokenId} \u00b7 ${formatCredits(c.supply)}`,
+            sub: `${t('topbar.token')} ${c.tokenId} \u00b7 ${formatCredits(c.supply)}`,
             to: '/credits',
         });
     }
@@ -121,11 +143,11 @@ const searchIndex = computed(() => {
     }
     for (const m of Object.values(methMap)) {
         items.push({
-            type: 'Methodology',
+            type: t('topbar.itemType.methodology'),
             icon: BookOpen,
             color: 'text-stat-green',
             title: m.name,
-            sub: `${m.registry} \u00b7 ${m.projects} projects`,
+            sub: `${m.registry} \u00b7 ${m.projects} ${t('topbar.projectsLabel')}`,
             to: '/methodologies',
         });
     }
@@ -139,11 +161,11 @@ const searchIndex = computed(() => {
     }
     for (const [name, data] of Object.entries(regMap)) {
         items.push({
-            type: 'Registry',
+            type: t('topbar.itemType.registry'),
             icon: Building2,
             color: 'text-stat-blue',
             title: name,
-            sub: `${data.policies.size} policies \u00b7 ${data.projects} projects`,
+            sub: `${data.policies.size} ${t('topbar.policies')} \u00b7 ${data.projects} ${t('topbar.projectsLabel')}`,
             to: '/registries',
         });
     }
@@ -240,7 +262,7 @@ function onSearchKeydown(e: KeyboardEvent) {
                 <Search class="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <input
                     v-model="searchQuery"
-                    placeholder="Search projects, credits, registries..."
+                    :placeholder="$t('topbar.searchPlaceholder')"
                     class="w-full h-8 rounded-md border border-input bg-background pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                     @input="onSearchInput"
                     @focus="onSearchFocus"
@@ -283,6 +305,51 @@ function onSearchKeydown(e: KeyboardEvent) {
                     </div>
                 </Transition>
             </div>
+        </div>
+
+        <!-- Right: language selector -->
+        <div ref="languageRef" class="relative flex items-center">
+            <button
+                class="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted"
+                :class="languageDropdownOpen ? 'bg-muted text-foreground' : 'text-muted-foreground'"
+                :aria-label="$t('topbar.language')"
+                @click="languageDropdownOpen = !languageDropdownOpen"
+            >
+                <CountryFlag :code="flagForLocale(locale)" size="sm" />
+                <span class="uppercase">{{ locale }}</span>
+                <ChevronDown
+                    class="h-3 w-3 opacity-50 transition-transform"
+                    :class="languageDropdownOpen ? 'rotate-180' : ''"
+                />
+            </button>
+
+            <Transition
+                enter-active-class="transition ease-out duration-100"
+                enter-from-class="opacity-0 scale-95"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-75"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
+            >
+                <div
+                    v-if="languageDropdownOpen"
+                    class="absolute right-0 top-full mt-1 w-40 rounded-md border bg-popover p-1 shadow-md"
+                >
+                    <button
+                        v-for="lang in locales"
+                        :key="(lang as any).code"
+                        class="flex w-full items-center gap-2.5 rounded-sm px-2.5 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                        @click="selectLanguage((lang as any).code)"
+                    >
+                        <CountryFlag :code="flagForLocale((lang as any).code)" size="sm" />
+                        <span class="flex-1 text-left">{{ (lang as any).name }}</span>
+                        <Check
+                            v-if="locale === (lang as any).code"
+                            class="h-3.5 w-3.5 text-primary"
+                        />
+                    </button>
+                </div>
+            </Transition>
         </div>
 
         <!-- Right: network selector -->

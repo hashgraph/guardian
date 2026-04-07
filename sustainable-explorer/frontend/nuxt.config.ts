@@ -1,6 +1,23 @@
 export default defineNuxtConfig({
     ssr: true,
 
+    modules: ['@nuxtjs/i18n'],
+
+    i18n: {
+        strategy: 'no_prefix',
+        defaultLocale: 'en',
+        langDir: 'locales',
+        lazy: true,
+        locales: [
+            { code: 'en', name: 'English', file: 'en.json' },
+            { code: 'es', name: 'Español', file: 'es.json' },
+        ],
+        detectBrowserLanguage: false,
+        bundle: {
+            optimizeTranslationDirective: false,
+        },
+    },
+
     css: ['~/assets/css/main.css'],
 
     vite: {

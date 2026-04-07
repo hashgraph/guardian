@@ -49,10 +49,10 @@ const visiblePages = computed(() => {
     <div class="flex items-center justify-between pt-4">
         <div class="flex items-center gap-4">
             <span class="text-xs text-muted-foreground">
-                Showing {{ startItem }}–{{ endItem }} of {{ totalItems }}
+                {{ $t('common.showingRange', { start: startItem, end: endItem, total: totalItems }) }}
             </span>
             <label class="flex items-center gap-2 text-xs text-muted-foreground">
-                Rows per page:
+                {{ $t('common.rowsPerPage') }}
                 <select
                     :value="pageSize"
                     class="h-7 rounded-md border bg-card px-2 text-xs text-foreground hover:bg-muted focus:outline-none focus:ring-1 focus:ring-ring"

@@ -289,7 +289,7 @@ function clearAll() {
                     class="h-8 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                     @change="onSelect(field, $event)"
                 >
-                    <option value="">{{ field.placeholder || 'All' }}</option>
+                    <option value="">{{ field.placeholder || $t('common.all') }}</option>
                     <option v-for="opt in field.options || []" :key="opt.value" :value="opt.value">
                         {{ opt.label }}
                     </option>
@@ -329,7 +329,7 @@ function clearAll() {
                             <span>{{ opt.label }}</span>
                         </label>
                         <div v-if="!(field.options && field.options.length)" class="px-2 py-1 text-xs text-muted-foreground">
-                            No options
+                            {{ $t('common.noOptions') }}
                         </div>
                     </div>
                 </div>
@@ -348,7 +348,7 @@ function clearAll() {
                 <!-- daterange -->
                 <div v-else-if="field.type === 'daterange'" class="flex items-center gap-1">
                     <div class="flex flex-col">
-                        <span class="text-[10px] text-muted-foreground">From</span>
+                        <span class="text-[10px] text-muted-foreground">{{ $t('common.from') }}</span>
                         <input
                             type="date"
                             :value="(modelValue[field.key] && modelValue[field.key].from) || ''"
@@ -358,7 +358,7 @@ function clearAll() {
                         />
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-[10px] text-muted-foreground">To</span>
+                        <span class="text-[10px] text-muted-foreground">{{ $t('common.to') }}</span>
                         <input
                             type="date"
                             :value="(modelValue[field.key] && modelValue[field.key].to) || ''"
@@ -382,7 +382,7 @@ function clearAll() {
                         class="h-3.5 w-3.5 rounded border-input"
                         @change="onCheckbox(field, $event)"
                     />
-                    <span class="text-muted-foreground">{{ field.placeholder || 'Enabled' }}</span>
+                    <span class="text-muted-foreground">{{ field.placeholder || $t('common.enabled') }}</span>
                 </label>
 
                 <!-- custom -->
@@ -397,14 +397,14 @@ function clearAll() {
         </template>
 
         <div v-if="activeCount > 0" class="flex items-center gap-2 pb-0.5">
-            <span class="text-[11px] text-muted-foreground">({{ activeCount }} active)</span>
+            <span class="text-[11px] text-muted-foreground">{{ $t('common.activeCount', { count: activeCount }) }}</span>
             <button
                 type="button"
                 class="inline-flex h-8 items-center gap-1 rounded-md border border-input bg-background px-2 text-xs text-foreground hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-ring"
                 @click="clearAll"
             >
                 <X class="h-3.5 w-3.5" />
-                Clear all
+                {{ $t('common.clearAll') }}
             </button>
         </div>
     </div>

@@ -3,16 +3,18 @@ import { BarChart3, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-vue-
 import { MOCK_PROJECTS, MOCK_CREDITS } from '~/data';
 import { formatCredits } from '~/lib/format';
 
+const { t } = useI18n();
+
 const totalIssuance = computed(() => MOCK_CREDITS.reduce((sum, c) => sum + c.supply, 0));
 const activeProjects = computed(() => MOCK_PROJECTS.length);
 const totalRetirements = computed(() => Math.round(totalIssuance.value * 0.37));
 const avgProjectSize = computed(() => Math.round(totalIssuance.value / activeProjects.value));
 
 const metrics = computed(() => [
-    { label: 'Total Issuance', value: `${formatCredits(totalIssuance.value)}`, change: '+12.3%', trend: 'up' },
-    { label: 'Active Projects', value: activeProjects.value.toLocaleString(), change: `+${activeProjects.value}`, trend: 'up' },
-    { label: 'Retirements', value: `${formatCredits(totalRetirements.value)}`, change: '+8.7%', trend: 'up' },
-    { label: 'Avg. Project Size', value: `${formatCredits(avgProjectSize.value)}`, change: '-2.1%', trend: 'down' },
+    { label: t('analytics.metrics.totalIssuance'), value: `${formatCredits(totalIssuance.value)}`, change: '+12.3%', trend: 'up' },
+    { label: t('analytics.metrics.activeProjects'), value: activeProjects.value.toLocaleString(), change: `+${activeProjects.value}`, trend: 'up' },
+    { label: t('analytics.metrics.retirements'), value: `${formatCredits(totalRetirements.value)}`, change: '+8.7%', trend: 'up' },
+    { label: t('analytics.metrics.avgProjectSize'), value: `${formatCredits(avgProjectSize.value)}`, change: '-2.1%', trend: 'down' },
 ]);
 
 // Credits by category derived from projects
@@ -44,8 +46,8 @@ const byMethodology = computed(() => {
 <template>
     <div class="space-y-0">
         <div class="px-6 pt-6 pb-5">
-            <h1 class="text-2xl font-bold text-foreground">Analytics</h1>
-            <p class="text-sm text-muted-foreground mt-1">Network-wide sustainability metrics and trends</p>
+            <h1 class="text-2xl font-bold text-foreground">{{ $t('analytics.title') }}</h1>
+            <p class="text-sm text-muted-foreground mt-1">{{ $t('analytics.subtitle') }}</p>
         </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 px-6 pb-6">
@@ -64,8 +66,8 @@ const byMethodology = computed(() => {
 
         <div class="border-t">
             <div class="px-6 py-4">
-                <h2 class="text-base font-semibold text-foreground">Issuances by Methodology</h2>
-                <p class="text-xs text-muted-foreground mt-0.5">Distribution of issuances across methodology types</p>
+                <h2 class="text-base font-semibold text-foreground">{{ $t('analytics.issuancesByMethodology') }}</h2>
+                <p class="text-xs text-muted-foreground mt-0.5">{{ $t('analytics.issuancesByMethodologySub') }}</p>
             </div>
             <div class="px-6 pb-6">
                 <div class="rounded-xl border bg-card p-5">

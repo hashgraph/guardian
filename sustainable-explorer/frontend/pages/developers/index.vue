@@ -2,6 +2,7 @@
 import { Users, Globe, FolderKanban } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 
+const { t } = useI18n();
 const { developers, total, filterOptions } = useDevelopers();
 
 const allDevelopers = computed(() => developers.value);
@@ -16,8 +17,8 @@ const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, act
 const filters = computed<FilterOption[]>(() => [
     {
         key: 'status',
-        label: 'Status',
-        options: filterOptions.value.statuses.map(s => ({ value: s, label: s })),
+        label: t('developers.filters.status'),
+        options: filterOptions.value.statuses.map((s: string) => ({ value: s, label: s })),
     },
 ]);
 
@@ -30,8 +31,8 @@ const statusColor: Record<string, string> = {
 <template>
     <div class="space-y-0">
         <div class="px-6 pt-6 pb-4">
-            <h1 class="text-2xl font-bold text-foreground">Project Developers</h1>
-            <p class="text-sm text-muted-foreground mt-1">Organizations developing and managing carbon offset projects</p>
+            <h1 class="text-2xl font-bold text-foreground">{{ $t('developers.title') }}</h1>
+            <p class="text-sm text-muted-foreground mt-1">{{ $t('developers.subtitle') }}</p>
         </div>
 
         <div class="px-6 pb-3">
@@ -41,7 +42,7 @@ const statusColor: Record<string, string> = {
                 :active-filters="activeFilters"
                 :result-count="filtered.length"
                 :total-count="total"
-                search-placeholder="Search developers, categories, registries..."
+                :search-placeholder="$t('developers.searchPlaceholder')"
                 @filter="setFilter"
                 @clear="clearFilters"
             />
@@ -52,15 +53,15 @@ const statusColor: Record<string, string> = {
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b bg-muted/30">
-                            <SortableHeader label="Developer" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="HQ" sort-key="country" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Countries" sort-key="countries" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Projects" sort-key="projects" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Issued" sort-key="totalIssued" align="right" tooltip="Total issuances across all projects by this developer." :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Retired" sort-key="totalRetired" align="right" tooltip="Issuances permanently retired (used for offsetting). Retired issuances cannot be traded or reused." :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Categories</th>
-                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Registries</th>
-                            <SortableHeader label="Status" sort-key="status" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('developers.columns.developer')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('developers.columns.hq')" sort-key="country" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('developers.columns.countries')" sort-key="countries" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('developers.columns.projects')" sort-key="projects" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('developers.columns.issued')" sort-key="totalIssued" align="right" :tooltip="$t('developers.issuedTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('developers.columns.retired')" sort-key="totalRetired" align="right" :tooltip="$t('developers.retiredTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('developers.columns.categories') }}</th>
+                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('developers.columns.registries') }}</th>
+                            <SortableHeader :label="$t('developers.columns.status')" sort-key="status" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -115,7 +116,7 @@ const statusColor: Record<string, string> = {
                             </td>
                         </tr>
                         <tr v-if="paginated.length === 0">
-                            <td colspan="9" class="py-12 text-center text-sm text-muted-foreground">No developers match your filters</td>
+                            <td colspan="9" class="py-12 text-center text-sm text-muted-foreground">{{ $t('developers.noMatch') }}</td>
                         </tr>
                     </tbody>
                 </table>

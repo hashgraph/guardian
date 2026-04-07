@@ -135,7 +135,7 @@ const fullMethodologyName = computed(() => {
 
 <template>
     <div v-if="!project" class="p-6">
-        <h1 class="text-xl font-bold text-foreground">Project not found</h1>
+        <h1 class="text-xl font-bold text-foreground">{{ $t('projects.notFound') }}</h1>
     </div>
 
     <div v-else class="space-y-6 p-6">
@@ -156,14 +156,14 @@ const fullMethodologyName = computed(() => {
                         class="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                     >
                         <ExternalLink class="h-4 w-4 text-primary" />
-                        View on Explorer
+                        {{ $t('common.viewOnExplorer') }}
                     </a>
                     <button
                         class="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                         @click="viewProjectVc"
                     >
                         <FileJson class="h-4 w-4 text-primary" />
-                        View Raw Data
+                        {{ $t('common.viewRawData') }}
                     </button>
                 </div>
             </div>
@@ -174,7 +174,7 @@ const fullMethodologyName = computed(() => {
             <div class="px-5 py-3.5 border-b bg-muted/30">
                 <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                     <FolderKanban class="h-4 w-4 text-primary" />
-                    Project Details
+                    {{ $t('projects.details.projectDetails') }}
                 </h2>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border">

@@ -5,6 +5,8 @@ import type { RegistrySortKey, RegistrySortDir } from '~/composables/api/useRegi
 import type { SortDirection } from '~/composables/useFilteredPagination';
 
 
+const { t, locale } = useI18n();
+
 // Network from the topbar network selector
 const { network } = useNetwork();
 
@@ -33,13 +35,13 @@ const pageSize = ref(10);
 // All text filtering now flows through the `filters` object.
 const searchQuery = ref('');
 
-const filterFields: FilterField[] = [
-    { key: 'displayName', label: 'Name', type: 'text', placeholder: 'Search by name', width: 'md' },
-    { key: 'id', label: 'ID', type: 'text', placeholder: '0.0.xxxx', width: 'sm' },
-    { key: 'tags', label: 'Tags', type: 'text', width: 'sm' },
-    { key: 'geography', label: 'Geography', type: 'text', width: 'sm' },
-    { key: 'law', label: 'Law', type: 'text', width: 'sm' },
-];
+const filterFields = computed<FilterField[]>(() => [
+    { key: 'displayName', label: t('registries.filters.name'), type: 'text', placeholder: t('registries.filters.namePlaceholder'), width: 'md' },
+    { key: 'id', label: t('registries.filters.id'), type: 'text', placeholder: t('registries.filters.idPlaceholder'), width: 'sm' },
+    { key: 'tags', label: t('registries.filters.tags'), type: 'text', width: 'sm' },
+    { key: 'geography', label: t('registries.filters.geography'), type: 'text', width: 'sm' },
+    { key: 'law', label: t('registries.filters.law'), type: 'text', width: 'sm' },
+]);
 
 const sortKey = ref<ColumnKey | null>('createdAt');
 const sortDir = ref<SortDirection>('desc');
@@ -128,11 +130,13 @@ const copyValue = async (value: string) => {
     }
 };
 
+const localeTag = computed(() => (locale.value === 'es' ? 'es-ES' : 'en-US'));
+
 const formatDate = (d: string | null) => {
     if (!d) return '—';
     const dt = new Date(d);
     if (isNaN(dt.getTime())) return d;
-    return dt.toLocaleDateString();
+    return dt.toLocaleDateString(localeTag.value);
 };
 
 // Hedera consensus timestamps are "seconds.nanoseconds" strings.
@@ -141,7 +145,7 @@ const formatHederaTimestamp = (ts: string | null) => {
     if (!ts) return '—';
     const seconds = parseFloat(ts);
     if (isNaN(seconds)) return ts;
-    return new Date(seconds * 1000).toLocaleDateString();
+    return new Date(seconds * 1000).toLocaleDateString(localeTag.value);
 };
 
 const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i) => i));
@@ -155,8 +159,8 @@ const tagsAsList = (tags: string | null): string[] => {
 <template>
     <div class="space-y-0">
         <div class="px-6 pt-6 pb-4">
-            <h1 class="text-2xl font-bold text-foreground">Registries</h1>
-            <p class="text-sm text-muted-foreground mt-1">Standard Registries operating on the Guardian network</p>
+            <h1 class="text-2xl font-bold text-foreground">{{ $t('registries.title') }}</h1>
+            <p class="text-sm text-muted-foreground mt-1">{{ $t('registries.subtitle') }}</p>
         </div>
 
         <div class="px-6 pb-3">
@@ -168,16 +172,16 @@ const tagsAsList = (tags: string | null): string[] => {
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b bg-muted/30">
-                            <SortableHeader label="Registry" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader label="ID" sort-key="relatedTopicId" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader label="Geography" sort-key="geography" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader label="Law" sort-key="law" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader label="Methodologies" sort-key="policies" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader label="Projects" sort-key="projects" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader label="Users" sort-key="users" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader label="Issuances" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader label="Tags" sort-key="tags" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader label="Created" sort-key="createdAt" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.name')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.id')" sort-key="relatedTopicId" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.geography')" sort-key="geography" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.law')" sort-key="law" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.methodologies')" sort-key="policies" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.projects')" sort-key="projects" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.users')" sort-key="users" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.issuances')" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.tags')" sort-key="tags" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.created')" sort-key="createdAt" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -193,7 +197,7 @@ const tagsAsList = (tags: string | null): string[] => {
                         <!-- Error state -->
                         <tr v-else-if="error">
                             <td colspan="10" class="py-12 text-center text-sm text-destructive">
-                                Failed to load registries. <button class="underline" @click="() => refresh()">Retry</button>
+                                {{ $t('registries.errors.loadFailed') }} <button class="underline" @click="() => refresh()">{{ $t('common.retry') }}</button>
                             </td>
                         </tr>
 
@@ -218,7 +222,7 @@ const tagsAsList = (tags: string | null): string[] => {
                                         <button
                                             v-if="r.relatedTopicId"
                                             class="opacity-0 group-hover:opacity-100 transition-opacity flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-                                            title="Copy ID"
+                                            :title="$t('tooltips.copyId')"
                                             @click.stop="copyValue(r.relatedTopicId)"
                                         >
                                             <Check v-if="copiedValue === r.relatedTopicId" class="h-3.5 w-3.5 text-stat-green" />
@@ -253,7 +257,7 @@ const tagsAsList = (tags: string | null): string[] => {
                                 </td>
                             </tr>
                             <tr v-if="registries.length === 0">
-                                <td colspan="10" class="py-12 text-center text-sm text-muted-foreground">No registries match your filters</td>
+                                <td colspan="10" class="py-12 text-center text-sm text-muted-foreground">{{ $t('registries.noMatch') }}</td>
                             </tr>
                         </template>
                     </tbody>

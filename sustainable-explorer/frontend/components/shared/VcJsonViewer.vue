@@ -107,7 +107,7 @@ watch(() => props.open, (val) => {
                             </div>
                             <div>
                                 <h3 class="text-sm font-semibold text-foreground">{{ title }}</h3>
-                                <p class="text-[11px] text-muted-foreground">Raw Data on the blockchain</p>
+                                <p class="text-[11px] text-muted-foreground">{{ $t('vcViewer.rawDataOnBlockchain') }}</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-1">
@@ -117,14 +117,14 @@ watch(() => props.open, (val) => {
                             >
                                 <Check v-if="copied" class="h-3.5 w-3.5 text-stat-green" />
                                 <Copy v-else class="h-3.5 w-3.5" />
-                                {{ copied ? 'Copied' : 'Copy' }}
+                                {{ copied ? $t('common.copied') : $t('common.copy') }}
                             </button>
                             <button
                                 class="flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                                 @click="downloadJson"
                             >
                                 <Download class="h-3.5 w-3.5" />
-                                Download
+                                {{ $t('common.download') }}
                             </button>
                             <button
                                 class="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors ml-1"
@@ -143,7 +143,7 @@ watch(() => props.open, (val) => {
                             </svg>
                             <input
                                 v-model="searchQuery"
-                                placeholder="Search in JSON..."
+                                :placeholder="$t('vcViewer.searchInJson')"
                                 class="w-full h-7 rounded-md border border-input bg-background pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                             />
                         </div>
@@ -159,7 +159,7 @@ watch(() => props.open, (val) => {
 
                     <!-- Footer -->
                     <div class="flex items-center justify-between px-5 py-2.5 border-t shrink-0 text-[11px] text-muted-foreground">
-                        <span>{{ jsonString.split('\n').length }} lines</span>
+                        <span>{{ jsonString.split('\n').length }} {{ $t('common.lines') }}</span>
                         <span>{{ (jsonString.length / 1024).toFixed(1) }} KB</span>
                     </div>
                 </div>

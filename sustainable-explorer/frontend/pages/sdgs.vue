@@ -32,8 +32,8 @@ function sdgIcon(id: number): string {
 <template>
     <div class="space-y-0">
         <div class="px-6 pt-6 pb-4">
-            <h1 class="text-2xl font-bold text-foreground">Sustainable Development Goals</h1>
-            <p class="text-sm text-muted-foreground mt-1">Project contributions mapped to the UN SDGs</p>
+            <h1 class="text-2xl font-bold text-foreground">{{ $t('sdgs.title') }}</h1>
+            <p class="text-sm text-muted-foreground mt-1">{{ $t('sdgs.subtitle') }}</p>
         </div>
 
         <div class="px-6 pb-3">
@@ -43,7 +43,7 @@ function sdgIcon(id: number): string {
                 :active-filters="activeFilters"
                 :result-count="filtered.length"
                 :total-count="allSdgs.length"
-                search-placeholder="Search SDGs..."
+                :search-placeholder="$t('sdgs.searchPlaceholder')"
                 @filter="setFilter"
                 @clear="clearFilters"
             />
@@ -54,17 +54,17 @@ function sdgIcon(id: number): string {
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b bg-muted/30">
-                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">SDG</th>
-                            <SortableHeader label="Goal" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Projects" sort-key="projects" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Issuances" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Developers" sort-key="developers" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Countries" sort-key="countries" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Top Methodology" sort-key="topMethodology" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('sdgs.columns.sdg') }}</th>
+                            <SortableHeader :label="$t('sdgs.columns.goal')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.projects')" sort-key="projects" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.issuances')" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.developers')" sort-key="developers" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.countries')" sort-key="countries" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.topMethodology')" sort-key="topMethodology" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                 <span class="inline-flex items-center gap-1">
-                                    Coverage
-                                    <InfoTooltip text="Percentage of total projects that contribute to this SDG. A project can contribute to multiple SDGs." />
+                                    {{ $t('sdgs.columns.coverage') }}
+                                    <InfoTooltip :text="$t('sdgs.coverageTooltip')" />
                                 </span>
                             </th>
                         </tr>

@@ -92,7 +92,7 @@ if (import.meta.client) {
             <input
                 :value="modelValue"
                 @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-                :placeholder="searchPlaceholder || 'Search...'"
+                :placeholder="searchPlaceholder || $t('common.searchEllipsis')"
                 class="h-8 w-56 rounded-md border border-input bg-background pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
         </div>
@@ -134,7 +134,7 @@ if (import.meta.client) {
                         class="flex w-full items-center justify-start text-left rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent text-muted-foreground"
                         @click="emit('filter', filter.key, 'all')"
                     >
-                        Clear selection
+                        {{ $t('common.clearSelection') }}
                     </button>
                     <div class="my-1 border-t" />
                     <button
@@ -182,7 +182,7 @@ if (import.meta.client) {
             @click="emit('clear')"
         >
             <X class="h-3 w-3" />
-            Clear
+            {{ $t('common.clear') }}
         </button>
     </div>
     </div>

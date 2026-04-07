@@ -23,6 +23,8 @@ import {
 } from 'lucide-vue-next';
 import { formatCredits } from '~/lib/format';
 
+const { t } = useI18n();
+
 const viewMode = ref<'map' | 'table'>('map');
 const chartMode = ref<'projects' | 'credits'>('projects');
 const selectedCountry = ref<string | null>(null);
@@ -161,60 +163,60 @@ const activityColors: Record<string, string> = {
 const filteredStats = computed(() => {
     return [
         {
-            label: 'Registries',
+            label: t('dashboard.stats.registries'),
             value: String(stats.value.registries),
             change: hasActiveFilter.value ? '' : '+2',
             trend: 'up',
-            sub: 'Standard Registries',
-            tooltip: 'Number of unique Standard Registries (e.g., Verra, Gold Standard) matching the current filters. The change indicator shows how many new registries joined compared to the previous year.',
+            sub: t('dashboard.stats.registriesSub'),
+            tooltip: t('dashboard.stats.registriesTooltip'),
             icon: Shield,
             accent: 'text-stat-blue',
             accentBg: 'bg-stat-blue/10',
             to: '/registries',
         },
         {
-            label: 'Methodologies',
+            label: t('dashboard.stats.methodologies'),
             value: String(stats.value.methodologies),
             change: hasActiveFilter.value ? '' : '+5',
             trend: 'up',
-            sub: 'Published policies',
-            tooltip: 'Total number of unique published policy methodologies across all matching registries. The change indicator shows how many new methodologies were published compared to the previous year.',
+            sub: t('dashboard.stats.methodologiesSub'),
+            tooltip: t('dashboard.stats.methodologiesTooltip'),
             icon: FileText,
             accent: 'text-stat-green',
             accentBg: 'bg-stat-green/10',
             to: '/methodologies',
         },
         {
-            label: 'Projects',
+            label: t('dashboard.stats.projects'),
             value: stats.value.projects.toLocaleString(),
             change: hasActiveFilter.value ? '' : '+18',
             trend: 'up',
-            sub: 'Active verified projects',
-            tooltip: 'Count of sustainability projects registered and verified on the Guardian network matching the current filters. The change indicator shows the net increase in projects compared to the previous year.',
+            sub: t('dashboard.stats.projectsSub'),
+            tooltip: t('dashboard.stats.projectsTooltip'),
             icon: FolderKanban,
             accent: 'text-stat-amber',
             accentBg: 'bg-stat-amber/10',
             to: '/projects',
         },
         {
-            label: 'Total Issuances',
+            label: t('dashboard.stats.totalIssuances'),
             value: formatCredits(stats.value.totalCredits),
             change: hasActiveFilter.value ? '' : '+12.3%',
             trend: 'up',
-            sub: 'Issued on-chain',
-            tooltip: 'Sum of all issuances on-chain across matching projects. The change indicator shows the percentage growth in total issuances compared to the previous year.',
+            sub: t('dashboard.stats.totalIssuancesSub'),
+            tooltip: t('dashboard.stats.totalIssuancesTooltip'),
             icon: Coins,
             accent: 'text-stat-rose',
             accentBg: 'bg-stat-rose/10',
             to: '/credits',
         },
         {
-            label: 'Total Retired',
+            label: t('dashboard.stats.totalRetired'),
             value: formatCredits(totalRetired.value),
             change: hasActiveFilter.value ? '' : '+8.7%',
             trend: 'up',
-            sub: 'Permanently retired',
-            tooltip: 'Sum of all issuances permanently retired (burned) for offsetting purposes across matching projects.',
+            sub: t('dashboard.stats.totalRetiredSub'),
+            tooltip: t('dashboard.stats.totalRetiredTooltip'),
             icon: Flame,
             accent: 'text-orange-500',
             accentBg: 'bg-orange-500/10',
@@ -230,13 +232,13 @@ const filteredStats = computed(() => {
         <div class="px-6 pt-6 pb-5">
             <div class="flex items-start justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold text-foreground">Dashboard</h1>
-                    <p class="text-sm text-muted-foreground mt-1">Overview of the Hedera Guardian sustainability network</p>
+                    <h1 class="text-2xl font-bold text-foreground">{{ $t('dashboard.title') }}</h1>
+                    <p class="text-sm text-muted-foreground mt-1">{{ $t('dashboard.subtitle') }}</p>
                 </div>
 
                 <!-- Filter dropdowns (right-aligned) -->
                 <div class="flex items-center gap-2 shrink-0">
-                <InfoTooltip text="Filter all dashboard data by project developer and/or registry. All cards, charts, map, and tables update to show only matching projects." />
+                <InfoTooltip :text="$t('dashboard.filterTooltip')" />
                 <!-- Developer dropdown -->
                 <div ref="developerRef" class="relative">
                     <button
@@ -338,7 +340,7 @@ const filteredStats = computed(() => {
                         @click="clearFilters"
                     >
                         <X class="h-3 w-3" />
-                        <span>Clear</span>
+                        <span>{{ $t('common.clear') }}</span>
                     </button>
                 </Transition>
             </div>
@@ -378,10 +380,10 @@ const filteredStats = computed(() => {
             <div class="flex items-center justify-between px-6 py-4">
                 <div class="flex items-center gap-4">
                     <div>
-                        <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">Project Distribution <InfoTooltip text="Countries are colored by project count. Darker green = more projects. Click a country to see detailed breakdown. Small dots show individual project locations." /></h2>
-                        <p class="text-xs text-muted-foreground mt-0.5">Geographic spread of verified projects</p>
+                        <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">{{ $t('dashboard.projectDistribution') }} <InfoTooltip :text="$t('dashboard.projectDistributionTooltip')" /></h2>
+                        <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.projectDistributionSub') }}</p>
                     </div>
-                    <NuxtLink to="/projects" class="text-xs font-medium text-primary hover:underline">View all projects</NuxtLink>
+                    <NuxtLink to="/projects" class="text-xs font-medium text-primary hover:underline">{{ $t('dashboard.viewAllProjects') }}</NuxtLink>
                 </div>
                 <div class="flex items-center rounded-lg border p-0.5">
                     <button
@@ -392,7 +394,7 @@ const filteredStats = computed(() => {
                         @click="viewMode = 'map'"
                     >
                         <Globe class="h-3.5 w-3.5" />
-                        Map
+                        {{ $t('dashboard.map') }}
                     </button>
                     <button
                         class="flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors"
@@ -402,7 +404,7 @@ const filteredStats = computed(() => {
                         @click="viewMode = 'table'"
                     >
                         <Table2 class="h-3.5 w-3.5" />
-                        Table
+                        {{ $t('dashboard.table') }}
                     </button>
                 </div>
             </div>
@@ -443,23 +445,23 @@ const filteredStats = computed(() => {
                                     <!-- Key stats -->
                                     <div class="text-center">
                                         <div class="text-3xl font-bold text-primary">{{ activeDetail.projects.toLocaleString() }}</div>
-                                        <div class="text-[11px] text-muted-foreground mt-0.5">Active Projects</div>
+                                        <div class="text-[11px] text-muted-foreground mt-0.5">{{ $t('dashboard.activeProjects') }}</div>
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-3">
                                         <div class="text-center">
                                             <div class="text-lg font-bold text-primary">{{ activeDetail.totalReduction }}</div>
-                                            <div class="text-[10px] text-muted-foreground">MtCO2 Total Reduction</div>
+                                            <div class="text-[10px] text-muted-foreground">{{ $t('dashboard.mtco2TotalReduction') }}</div>
                                         </div>
                                         <div class="text-center">
                                             <div class="text-lg font-bold text-primary">{{ activeDetail.annualReduction }}</div>
-                                            <div class="text-[10px] text-muted-foreground">MtCO2 Annual Est.</div>
+                                            <div class="text-[10px] text-muted-foreground">{{ $t('dashboard.mtco2AnnualEst') }}</div>
                                         </div>
                                     </div>
 
                                     <!-- Sector donut -->
                                     <div>
-                                        <h4 class="text-xs font-semibold text-foreground mb-3">Sector</h4>
+                                        <h4 class="text-xs font-semibold text-foreground mb-3">{{ $t('dashboard.sector') }}</h4>
                                         <div class="flex items-start gap-3">
                                             <DonutChart :segments="activeDetail.sectors" :size="90" />
                                             <div class="space-y-1.5 flex-1 min-w-0">
@@ -475,7 +477,7 @@ const filteredStats = computed(() => {
 
                                     <!-- Registry breakdown -->
                                     <div>
-                                        <h4 class="text-xs font-semibold text-foreground mb-3">Registry</h4>
+                                        <h4 class="text-xs font-semibold text-foreground mb-3">{{ $t('dashboard.registry') }}</h4>
                                         <div class="flex items-center justify-between gap-2">
                                             <div v-for="r in activeDetail.registries" :key="r.name" class="text-center flex-1">
                                                 <div class="text-base font-bold text-primary">{{ r.pct }}<span class="text-xs text-muted-foreground">%</span></div>
@@ -487,7 +489,7 @@ const filteredStats = computed(() => {
                                     <!-- Issuances -->
                                     <div class="pt-2 border-t">
                                         <div class="flex items-center justify-between">
-                                            <span class="text-xs text-muted-foreground">Total Issuances</span>
+                                            <span class="text-xs text-muted-foreground">{{ $t('dashboard.totalIssuancesLabel') }}</span>
                                             <span class="text-sm font-bold text-foreground">{{ activeDetail.credits }}</span>
                                         </div>
                                     </div>
@@ -502,10 +504,10 @@ const filteredStats = computed(() => {
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b bg-muted/30">
-                                <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Country</th>
-                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Projects</th>
-                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Issuances</th>
-                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Methodologies</th>
+                                <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.country') }}</th>
+                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.projectsCol') }}</th>
+                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.issuancesCol') }}</th>
+                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.methodologiesCol') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">
@@ -525,7 +527,7 @@ const filteredStats = computed(() => {
                                 <td class="py-2.5 px-4 text-right tabular-nums">{{ c.methodologies }}</td>
                             </tr>
                             <tr v-if="countries.length === 0">
-                                <td colspan="4" class="py-8 text-center text-sm text-muted-foreground">No countries match the selected filters</td>
+                                <td colspan="4" class="py-8 text-center text-sm text-muted-foreground">{{ $t('dashboard.noCountries') }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -537,8 +539,8 @@ const filteredStats = computed(() => {
         <div class="border-t">
             <div class="flex items-center justify-between px-6 py-4">
                 <div>
-                    <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">Sector & Registry Breakdown <InfoTooltip text="Distribution of projects and issuances by sector and registry. Toggle between project count and issuance volume. Reflects current developer/registry filters." /></h2>
-                    <p class="text-xs text-muted-foreground mt-0.5">Distribution of projects and issuances by sector and registry</p>
+                    <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">{{ $t('dashboard.sectorRegistryBreakdown') }} <InfoTooltip :text="$t('dashboard.sectorRegistryBreakdownTooltip')" /></h2>
+                    <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.sectorRegistryBreakdownSub') }}</p>
                 </div>
                 <div class="flex items-center rounded-lg border p-0.5">
                     <button
@@ -548,7 +550,7 @@ const filteredStats = computed(() => {
                             : 'text-muted-foreground hover:text-foreground'"
                         @click="chartMode = 'projects'"
                     >
-                        Projects
+                        {{ $t('dashboard.projectsToggle') }}
                     </button>
                     <button
                         class="flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors"
@@ -557,7 +559,7 @@ const filteredStats = computed(() => {
                             : 'text-muted-foreground hover:text-foreground'"
                         @click="chartMode = 'credits'"
                     >
-                        Issuances
+                        {{ $t('dashboard.issuancesToggle') }}
                     </button>
                 </div>
             </div>
@@ -565,7 +567,7 @@ const filteredStats = computed(() => {
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Sector Breakdown -->
                     <div class="rounded-xl border bg-card p-5">
-                        <h3 class="text-sm font-semibold text-foreground mb-4">By Sector</h3>
+                        <h3 class="text-sm font-semibold text-foreground mb-4">{{ $t('dashboard.bySector') }}</h3>
                         <div class="flex items-start gap-5">
                             <DonutChart :segments="sectorChartSegments" :size="140" />
                             <div class="space-y-2 flex-1 min-w-0 pt-1">
@@ -585,7 +587,7 @@ const filteredStats = computed(() => {
 
                     <!-- Registry Breakdown -->
                     <div class="rounded-xl border bg-card p-5">
-                        <h3 class="text-sm font-semibold text-foreground mb-4">By Registry</h3>
+                        <h3 class="text-sm font-semibold text-foreground mb-4">{{ $t('dashboard.byRegistry') }}</h3>
                         <div class="flex items-start gap-5">
                             <DonutChart :segments="registryChartSegments" :size="140" />
                             <div class="space-y-2 flex-1 min-w-0 pt-1">
@@ -613,20 +615,20 @@ const filteredStats = computed(() => {
                 <div class="lg:border-r">
                     <div class="flex items-center justify-between px-6 py-4">
                         <div>
-                            <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">Top Registries <InfoTooltip text="Ranked by project count. Policies = unique methodologies published. Issuances = total issued on-chain by this registry." /></h2>
-                            <p class="text-xs text-muted-foreground mt-0.5">Most active by policy and project count</p>
+                            <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">{{ $t('dashboard.topRegistries') }} <InfoTooltip :text="$t('dashboard.topRegistriesTooltip')" /></h2>
+                            <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.topRegistriesSub') }}</p>
                         </div>
-                        <NuxtLink to="/registries" class="text-xs font-medium text-primary hover:underline">View all</NuxtLink>
+                        <NuxtLink to="/registries" class="text-xs font-medium text-primary hover:underline">{{ $t('common.viewAll') }}</NuxtLink>
                     </div>
                     <div class="px-6 pb-6">
                         <div class="rounded-xl border bg-card overflow-hidden">
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="border-b bg-muted/30">
-                                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</th>
-                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Policies</th>
-                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Projects</th>
-                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Issuances</th>
+                                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.name') }}</th>
+                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.policies') }}</th>
+                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.projectsCol') }}</th>
+                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.issuancesCol') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
@@ -643,7 +645,7 @@ const filteredStats = computed(() => {
                                         <td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground">{{ org.credits }}</td>
                                     </tr>
                                     <tr v-if="registries.length === 0">
-                                        <td colspan="4" class="py-8 text-center text-sm text-muted-foreground">No registries match the selected filters</td>
+                                        <td colspan="4" class="py-8 text-center text-sm text-muted-foreground">{{ $t('dashboard.noRegistries') }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -655,8 +657,8 @@ const filteredStats = computed(() => {
                 <div>
                     <div class="flex items-center justify-between px-6 py-4">
                         <div>
-                            <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">Issuance Trend <InfoTooltip text="Issuance volume over time derived from project creation dates." /></h2>
-                            <p class="text-xs text-muted-foreground mt-0.5">Volume (millions)</p>
+                            <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">{{ $t('dashboard.issuanceTrend') }} <InfoTooltip :text="$t('dashboard.issuanceTrendTooltip')" /></h2>
+                            <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.volumeMillions') }}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="flex items-center rounded-lg border p-0.5">
@@ -667,10 +669,10 @@ const filteredStats = computed(() => {
                                     :class="issuancePeriod === p ? 'bg-foreground text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'"
                                     @click="issuancePeriod = p"
                                 >
-                                    {{ p === 'monthly' ? 'Monthly' : p === 'quarterly' ? 'Quarterly' : 'Yearly' }}
+                                    {{ p === 'monthly' ? $t('dashboard.monthly') : p === 'quarterly' ? $t('dashboard.quarterly') : $t('dashboard.yearly') }}
                                 </button>
                             </div>
-                            <NuxtLink to="/analytics" class="text-xs font-medium text-primary hover:underline">Analytics</NuxtLink>
+                            <NuxtLink to="/analytics" class="text-xs font-medium text-primary hover:underline">{{ $t('dashboard.analytics') }}</NuxtLink>
                         </div>
                     </div>
                     <div class="px-6 pb-6">
@@ -679,11 +681,11 @@ const filteredStats = computed(() => {
                                 :data="issuanceSeriesData"
                                 color="hsl(142, 76%, 36%)"
                                 fill-color="hsl(142, 76%, 36%, 0.08)"
-                                empty-text="No issuance data matches the selected filters"
+                                :empty-text="$t('dashboard.noIssuanceData')"
                             />
                             <div class="flex items-center justify-between mt-4 pt-3 border-t">
-                                <span class="text-xs text-muted-foreground">{{ issuanceSeriesData.length }} {{ issuancePeriod === 'monthly' ? 'months' : issuancePeriod === 'quarterly' ? 'quarters' : 'years' }}</span>
-                                <span class="text-sm font-semibold text-foreground">{{ issuanceSeriesTotal }}M total</span>
+                                <span class="text-xs text-muted-foreground">{{ issuanceSeriesData.length }} {{ issuancePeriod === 'monthly' ? $t('dashboard.months') : issuancePeriod === 'quarterly' ? $t('dashboard.quarters') : $t('dashboard.years') }}</span>
+                                <span class="text-sm font-semibold text-foreground">{{ issuanceSeriesTotal }}{{ $t('dashboard.mTotal') }}</span>
                             </div>
                         </div>
                     </div>
@@ -698,8 +700,8 @@ const filteredStats = computed(() => {
                 <div class="lg:border-r">
                     <div class="flex items-center justify-between px-6 py-4">
                         <div>
-                            <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">Retirement Trend <InfoTooltip text="Retirement volume over time. Shows issuances permanently retired (burned) for offsetting." /></h2>
-                            <p class="text-xs text-muted-foreground mt-0.5">Volume (millions)</p>
+                            <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">{{ $t('dashboard.retirementTrend') }} <InfoTooltip :text="$t('dashboard.retirementTrendTooltip')" /></h2>
+                            <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.volumeMillions') }}</p>
                         </div>
                         <div class="flex items-center rounded-lg border p-0.5">
                             <button
@@ -719,11 +721,11 @@ const filteredStats = computed(() => {
                                 :data="retirementSeriesData"
                                 color="hsl(24, 95%, 53%)"
                                 fill-color="hsl(24, 95%, 53%, 0.08)"
-                                empty-text="No retirement data matches the selected filters"
+                                :empty-text="$t('dashboard.noRetirementData')"
                             />
                             <div class="flex items-center justify-between mt-4 pt-3 border-t">
-                                <span class="text-xs text-muted-foreground">{{ retirementSeriesData.length }} {{ retirementPeriod === 'monthly' ? 'months' : retirementPeriod === 'quarterly' ? 'quarters' : 'years' }}</span>
-                                <span class="text-sm font-semibold text-foreground">{{ retirementSeriesTotal }}M total</span>
+                                <span class="text-xs text-muted-foreground">{{ retirementSeriesData.length }} {{ retirementPeriod === 'monthly' ? $t('dashboard.months') : retirementPeriod === 'quarterly' ? $t('dashboard.quarters') : $t('dashboard.years') }}</span>
+                                <span class="text-sm font-semibold text-foreground">{{ retirementSeriesTotal }}{{ $t('dashboard.mTotal') }}</span>
                             </div>
                         </div>
                     </div>
@@ -733,8 +735,8 @@ const filteredStats = computed(() => {
                 <div>
                     <div class="flex items-center justify-between px-6 py-4">
                         <div>
-                            <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">Vintage Distribution <InfoTooltip text="Distribution of issuances by vintage year. Shows which years have the most credits issued across matching projects." /></h2>
-                            <p class="text-xs text-muted-foreground mt-0.5">Issuances by vintage year</p>
+                            <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">{{ $t('dashboard.vintageDistribution') }} <InfoTooltip :text="$t('dashboard.vintageDistributionTooltip')" /></h2>
+                            <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.vintageDistributionSub') }}</p>
                         </div>
                     </div>
                     <div class="px-6 pb-6">
@@ -754,11 +756,11 @@ const filteredStats = computed(() => {
                                 </div>
                             </div>
                             <div v-else class="flex items-center justify-center h-48 text-sm text-muted-foreground">
-                                No vintage data matches the selected filters
+                                {{ $t('dashboard.noVintageData') }}
                             </div>
                             <div class="flex items-center justify-between mt-4 pt-3 border-t">
-                                <span class="text-xs text-muted-foreground">{{ vintageDistribution.length }} vintages</span>
-                                <span class="text-sm font-semibold text-foreground">{{ vintageDistribution.reduce((s, v) => s + v.projects, 0) }} projects</span>
+                                <span class="text-xs text-muted-foreground">{{ vintageDistribution.length }} {{ $t('dashboard.vintages') }}</span>
+                                <span class="text-sm font-semibold text-foreground">{{ vintageDistribution.reduce((s, v) => s + v.projects, 0) }} {{ $t('dashboard.projectsSuffix') }}</span>
                             </div>
                         </div>
                     </div>
@@ -769,8 +771,8 @@ const filteredStats = computed(() => {
         <!-- Network Activity (moved to bottom) -->
         <div class="border-t">
             <div class="px-6 py-4">
-                <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">Network Activity <InfoTooltip text="Recent events on the Guardian network including new project registrations, credit issuances, policy publications, and verifications." /></h2>
-                <p class="text-xs text-muted-foreground mt-0.5">Recent changes across the Guardian network</p>
+                <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">{{ $t('dashboard.networkActivity') }} <InfoTooltip :text="$t('dashboard.networkActivityTooltip')" /></h2>
+                <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.networkActivitySub') }}</p>
             </div>
             <div class="px-6 pb-6">
                 <div v-if="recentActivity.length > 0" class="rounded-xl border bg-card divide-y">
@@ -793,7 +795,7 @@ const filteredStats = computed(() => {
                     </div>
                 </div>
                 <div v-else class="rounded-xl border bg-card py-8 text-center text-sm text-muted-foreground">
-                    No recent activity matches the selected filters
+                    {{ $t('dashboard.noActivity') }}
                 </div>
             </div>
         </div>

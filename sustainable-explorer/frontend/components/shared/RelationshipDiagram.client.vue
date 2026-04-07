@@ -32,15 +32,17 @@ const emit = defineEmits<{
     'view-vc': [data: { title: string; vc: Record<string, any> }];
 }>();
 
-const typeColors: Record<string, { fill: string; stroke: string; label: string }> = {
-    registry: { fill: '#4361ee', stroke: '#3a56d4', label: 'Registry' },
-    policy:   { fill: '#66bb6a', stroke: '#4caf50', label: 'Policy' },
-    schema:   { fill: '#ffa726', stroke: '#fb8c00', label: 'Schema' },
-    role:     { fill: '#ef5350', stroke: '#e53935', label: 'Role' },
-    vc:       { fill: '#81d4fa', stroke: '#4fc3f7', label: 'Raw Data' },
-    vp:       { fill: '#388e3c', stroke: '#2e7d32', label: 'VP' },
-    token:    { fill: '#ff8a65', stroke: '#ff7043', label: 'Token' },
-};
+const { t } = useI18n();
+
+const typeColors = computed<Record<string, { fill: string; stroke: string; label: string }>>(() => ({
+    registry: { fill: '#4361ee', stroke: '#3a56d4', label: t('relationshipDiagram.registry') },
+    policy:   { fill: '#66bb6a', stroke: '#4caf50', label: t('relationshipDiagram.policy') },
+    schema:   { fill: '#ffa726', stroke: '#fb8c00', label: t('relationshipDiagram.schema') },
+    role:     { fill: '#ef5350', stroke: '#e53935', label: t('relationshipDiagram.role') },
+    vc:       { fill: '#81d4fa', stroke: '#4fc3f7', label: t('relationshipDiagram.rawData') },
+    vp:       { fill: '#388e3c', stroke: '#2e7d32', label: t('relationshipDiagram.vp') },
+    token:    { fill: '#ff8a65', stroke: '#ff7043', label: t('relationshipDiagram.token') },
+}));
 
 const hoveredNode = ref<string | null>(null);
 const selectedNode = ref<string | null>(null);
@@ -106,7 +108,7 @@ function edgePath(edge: RelEdge): string {
 function edgeColor(edge: RelEdge): string {
     const from = nodeById(edge.from);
     if (!from) return '#ccc';
-    return typeColors[from.type]?.stroke || '#ccc';
+    return typeColors.value[from.type]?.stroke || '#ccc';
 }
 
 function isEdgeHighlighted(edge: RelEdge): boolean {
@@ -471,7 +473,7 @@ const nodeRadius = 36;
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/>
                                 <polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="2" points="14 2 14 8 20 8"/>
                             </svg>
-                            View Raw Data
+                            {{ $t('relationshipDiagram.viewRawData') }}
                         </button>
                         <a
                             :href="nodeHashscanUrl(selectedNodeData!)"
@@ -485,7 +487,7 @@ const nodeRadius = 36;
                                 <polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="2" points="15 3 21 3 21 9"/>
                                 <line stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="10" y1="14" x2="21" y2="3"/>
                             </svg>
-                            View on Explorer
+                            {{ $t('relationshipDiagram.viewOnExplorer') }}
                         </a>
                     </div>
                 </div>

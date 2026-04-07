@@ -2,6 +2,7 @@
 import { BookOpen } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 
+const { t } = useI18n();
 const { methodologies, total, filterOptions } = useMethodologies();
 
 const allMethodologies = computed(() => methodologies.value);
@@ -16,13 +17,13 @@ const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, act
 const filters = computed<FilterOption[]>(() => [
     {
         key: 'registry',
-        label: 'Registry',
-        options: filterOptions.value.registries.map(r => ({ value: r, label: r })),
+        label: t('methodologies.filters.registry'),
+        options: filterOptions.value.registries.map((r: string) => ({ value: r, label: r })),
     },
     {
         key: 'category',
-        label: 'Category',
-        options: filterOptions.value.categories.map(c => ({ value: c, label: c })),
+        label: t('methodologies.filters.category'),
+        options: filterOptions.value.categories.map((c: string) => ({ value: c, label: c })),
     },
 ]);
 
@@ -40,8 +41,8 @@ const categoryColor: Record<string, string> = {
 <template>
     <div class="space-y-0">
         <div class="px-6 pt-6 pb-4">
-            <h1 class="text-2xl font-bold text-foreground">Methodologies</h1>
-            <p class="text-sm text-muted-foreground mt-1">Published policy workflows for sustainability verification</p>
+            <h1 class="text-2xl font-bold text-foreground">{{ $t('methodologies.title') }}</h1>
+            <p class="text-sm text-muted-foreground mt-1">{{ $t('methodologies.subtitle') }}</p>
         </div>
 
         <div class="px-6 pb-3">
@@ -51,7 +52,7 @@ const categoryColor: Record<string, string> = {
                 :active-filters="activeFilters"
                 :result-count="filtered.length"
                 :total-count="total"
-                search-placeholder="Search methodologies..."
+                :search-placeholder="$t('methodologies.searchPlaceholder')"
                 @filter="setFilter"
                 @clear="clearFilters"
             />
@@ -62,12 +63,12 @@ const categoryColor: Record<string, string> = {
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b bg-muted/30">
-                            <SortableHeader label="Methodology" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Registry" sort-key="registry" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Category" sort-key="category" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Projects" sort-key="projects" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Issuances" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Schemas" sort-key="schemas" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('methodologies.columns.methodology')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('methodologies.columns.registry')" sort-key="registry" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('methodologies.columns.category')" sort-key="category" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('methodologies.columns.projects')" sort-key="projects" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('methodologies.columns.issuances')" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('methodologies.columns.schemas')" sort-key="schemas" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -86,7 +87,7 @@ const categoryColor: Record<string, string> = {
                             <td class="py-3 px-4 text-right tabular-nums">{{ m.schemas }}</td>
                         </tr>
                         <tr v-if="paginated.length === 0">
-                            <td colspan="6" class="py-12 text-center text-sm text-muted-foreground">No methodologies match your filters</td>
+                            <td colspan="6" class="py-12 text-center text-sm text-muted-foreground">{{ $t('methodologies.noMatch') }}</td>
                         </tr>
                     </tbody>
                 </table>

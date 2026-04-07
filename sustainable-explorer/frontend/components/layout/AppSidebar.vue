@@ -13,24 +13,31 @@ import {
     CheckCircle2,
 } from 'lucide-vue-next';
 
+const { t, locale } = useI18n();
+
 const collapsed = useState('sidebar-collapsed', () => false);
 
 // Mock last sync timestamp (e.g. 15 minutes ago)
 const lastSyncDate = new Date(Date.now() - 15 * 60 * 1000);
-const lastSyncFormatted = lastSyncDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-const lastSyncTime = lastSyncDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+const localeTag = computed(() => (locale.value === 'es' ? 'es-ES' : 'en-US'));
+const lastSyncFormatted = computed(() =>
+    lastSyncDate.toLocaleDateString(localeTag.value, { month: 'short', day: 'numeric', year: 'numeric' }),
+);
+const lastSyncTime = computed(() =>
+    lastSyncDate.toLocaleTimeString(localeTag.value, { hour: '2-digit', minute: '2-digit', hour12: true }),
+);
 
-const navItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, to: '/' },
-    { label: 'Projects', icon: FolderKanban, to: '/projects' },
-    { label: 'Issuances', icon: Coins, to: '/credits' },
-    { label: 'Methodologies', icon: BookOpen, to: '/methodologies' },
-    { label: 'Registries', icon: Building2, to: '/registries' },
-    { label: 'Developers', icon: Users, to: '/developers' },
-    { label: 'SDGs', icon: Target, to: '/sdgs' },
-    { label: 'Analytics', icon: BarChart3, to: '/analytics' },
-    { label: 'Sync Status', icon: Activity, to: '/status' },
-];
+const navItems = computed(() => [
+    { label: t('nav.dashboard'), icon: LayoutDashboard, to: '/' },
+    { label: t('nav.projects'), icon: FolderKanban, to: '/projects' },
+    { label: t('nav.issuances'), icon: Coins, to: '/credits' },
+    { label: t('nav.methodologies'), icon: BookOpen, to: '/methodologies' },
+    { label: t('nav.registries'), icon: Building2, to: '/registries' },
+    { label: t('nav.developers'), icon: Users, to: '/developers' },
+    { label: t('nav.sdgs'), icon: Target, to: '/sdgs' },
+    { label: t('nav.analytics'), icon: BarChart3, to: '/analytics' },
+    { label: t('nav.syncStatus'), icon: Activity, to: '/status' },
+]);
 </script>
 
 <template>
@@ -44,8 +51,8 @@ const navItems = [
                 <Leaf class="h-3.5 w-3.5 text-primary-foreground" />
             </div>
             <div v-if="!collapsed" class="flex items-baseline gap-1.5">
-                <span class="text-sm font-semibold text-foreground">Sustainable</span>
-                <span class="text-xs text-muted-foreground">Explorer</span>
+                <span class="text-sm font-semibold text-foreground">{{ $t('nav.sustainable') }}</span>
+                <span class="text-xs text-muted-foreground">{{ $t('nav.explorer') }}</span>
             </div>
         </div>
 
@@ -71,11 +78,11 @@ const navItems = [
             <div v-if="!collapsed" class="flex items-start gap-2">
                 <CheckCircle2 class="h-3.5 w-3.5 shrink-0 text-stat-green mt-0.5" />
                 <div>
-                    <div class="text-[11px] font-medium text-muted-foreground">Data synced up to</div>
+                    <div class="text-[11px] font-medium text-muted-foreground">{{ $t('nav.dataSyncedUpTo') }}</div>
                     <div class="text-[11px] text-foreground">{{ lastSyncFormatted }}, {{ lastSyncTime }}</div>
                 </div>
             </div>
-            <div v-else class="flex justify-center" :title="`Data synced up to: ${lastSyncFormatted}, ${lastSyncTime}`">
+            <div v-else class="flex justify-center" :title="`${$t('nav.dataSyncedUpTo')}: ${lastSyncFormatted}, ${lastSyncTime}`">
                 <CheckCircle2 class="h-4 w-4 text-stat-green" />
             </div>
         </div>

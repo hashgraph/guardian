@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { Activity, CheckCircle2, Clock, AlertCircle } from 'lucide-vue-next';
 
+const { locale } = useI18n();
+const localeTag = computed(() => (locale.value === 'es' ? 'es-ES' : 'en-US'));
+
 const queues = [
     { name: 'mirror-node-topics', waiting: 3, active: 2, completed: 1247, failed: 0 },
     { name: 'mirror-node-messages', waiting: 45, active: 10, completed: 52340, failed: 12 },
@@ -11,20 +14,24 @@ const queues = [
 ];
 
 const syncDate = new Date(Date.now() - 15 * 60 * 1000);
-const syncDateFormatted = syncDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-const syncTimeFormatted = syncDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+const syncDateFormatted = computed(() =>
+    syncDate.toLocaleDateString(localeTag.value, { month: 'short', day: 'numeric', year: 'numeric' }),
+);
+const syncTimeFormatted = computed(() =>
+    syncDate.toLocaleTimeString(localeTag.value, { hour: '2-digit', minute: '2-digit', hour12: true }),
+);
 </script>
 
 <template>
     <div class="space-y-0">
         <div class="px-6 pt-6 pb-5">
-            <h1 class="text-2xl font-bold text-foreground">Sync Status</h1>
-            <p class="text-sm text-muted-foreground mt-1">Data pipeline and worker queue metrics</p>
+            <h1 class="text-2xl font-bold text-foreground">{{ $t('status.title') }}</h1>
+            <p class="text-sm text-muted-foreground mt-1">{{ $t('status.subtitle') }}</p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-6 pb-6">
             <div class="rounded-xl border bg-card p-4">
-                <span class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Data Synced Up To</span>
+                <span class="text-xs font-medium uppercase tracking-wider text-muted-foreground">{{ $t('status.dataSyncedUpTo') }}</span>
                 <div class="text-lg font-bold text-foreground mt-2">{{ syncDateFormatted }}</div>
                 <div class="flex items-center gap-1.5 mt-1">
                     <CheckCircle2 class="h-3.5 w-3.5 text-stat-green" />
@@ -32,32 +39,32 @@ const syncTimeFormatted = syncDate.toLocaleTimeString('en-US', { hour: '2-digit'
                 </div>
             </div>
             <div class="rounded-xl border bg-card p-4">
-                <span class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Topics Indexed</span>
+                <span class="text-xs font-medium uppercase tracking-wider text-muted-foreground">{{ $t('status.topicsIndexed') }}</span>
                 <div class="text-2xl font-bold text-foreground mt-2">1,247</div>
-                <p class="text-xs text-muted-foreground mt-1">of ~1,700 discovered</p>
+                <p class="text-xs text-muted-foreground mt-1">{{ $t('status.topicsIndexedSub') }}</p>
             </div>
             <div class="rounded-xl border bg-card p-4">
-                <span class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Messages Processed</span>
+                <span class="text-xs font-medium uppercase tracking-wider text-muted-foreground">{{ $t('status.messagesProcessed') }}</span>
                 <div class="text-2xl font-bold text-foreground mt-2">52,340</div>
-                <p class="text-xs text-muted-foreground mt-1">45 pending in queue</p>
+                <p class="text-xs text-muted-foreground mt-1">{{ $t('status.messagesProcessedSub', { count: 45 }) }}</p>
             </div>
         </div>
 
         <div class="border-t">
             <div class="px-6 py-4">
-                <h2 class="text-base font-semibold text-foreground">Queue Status</h2>
-                <p class="text-xs text-muted-foreground mt-0.5">BullMQ worker queues</p>
+                <h2 class="text-base font-semibold text-foreground">{{ $t('status.queueStatus') }}</h2>
+                <p class="text-xs text-muted-foreground mt-0.5">{{ $t('status.queueStatusSub') }}</p>
             </div>
             <div class="px-6 pb-6">
                 <div class="rounded-xl border bg-card overflow-hidden">
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b bg-muted/30">
-                                <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Queue</th>
-                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Waiting</th>
-                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Active</th>
-                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Completed</th>
-                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Failed</th>
+                                <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.queue') }}</th>
+                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.waiting') }}</th>
+                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.active') }}</th>
+                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.completed') }}</th>
+                                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.failed') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">

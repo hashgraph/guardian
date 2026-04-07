@@ -8,6 +8,7 @@ import { MOCK_TRANSFERS, MOCK_RETIREMENTS } from '~/data';
 import { getMethodologyLongName } from '~/lib/methodologies';
 import type { Project } from '~/types/models';
 
+const { t } = useI18n();
 const { projects, total, filterOptions } = useProjects();
 
 
@@ -51,14 +52,14 @@ const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, act
         arrayFields: ['sdgs'],
     });
 
-const presets = [
-    { label: 'Issuing Forestry', filters: { status: 'Issuing', sector: 'Forestry and Land Use' } },
-    { label: 'Gold Standard', filters: { registry: 'Gold Standard' } },
-    { label: 'SDG 13: Climate Action', filters: { sdgs: '13' } },
-    { label: 'Under Validation', filters: { status: 'Under Validation' } },
-    { label: 'Vintage 2024', filters: { vintage: '2024' } },
-    { label: 'Blue Carbon', search: 'Blue Carbon' },
-];
+const presets = computed(() => [
+    { label: t('projects.presets.issuingForestry'), filters: { status: 'Issuing', sector: 'Forestry and Land Use' } },
+    { label: t('projects.presets.goldStandard'), filters: { registry: 'Gold Standard' } },
+    { label: t('projects.presets.sdg13'), filters: { sdgs: '13' } },
+    { label: t('projects.presets.underValidation'), filters: { status: 'Under Validation' } },
+    { label: t('projects.presets.vintage2024'), filters: { vintage: '2024' } },
+    { label: t('projects.presets.blueCarbon'), search: 'Blue Carbon' },
+]);
 
 // Summary statistics for filtered results
 const summaryStats = computed(() => {
@@ -72,32 +73,32 @@ const summaryStats = computed(() => {
 const filters = computed<FilterOption[]>(() => [
     {
         key: 'status',
-        label: 'Status',
+        label: t('projects.filters.status'),
         options: filterOptions.value.statuses.map(s => ({ value: s, label: s })),
     },
     {
         key: 'registry',
-        label: 'Registry',
+        label: t('projects.filters.registry'),
         options: filterOptions.value.registries.map(r => ({ value: r, label: r })),
     },
     {
         key: 'vintage',
-        label: 'Vintage',
+        label: t('projects.filters.vintage'),
         options: filterOptions.value.vintages.map(v => ({ value: v, label: v })),
     },
     {
         key: 'sector',
-        label: 'Sector',
+        label: t('projects.filters.sector'),
         options: filterOptions.value.sectors.map(s => ({ value: s, label: s })),
     },
     {
         key: 'sectoralScope',
-        label: 'Sectoral Scope',
+        label: t('projects.filters.sectoralScope'),
         options: filterOptions.value.sectoralScopes.map(s => ({ value: s, label: s })),
     },
     {
         key: 'sdgs',
-        label: 'SDGs',
+        label: t('projects.filters.sdgs'),
         multiSelect: true,
         options: SDG_LIST.map(s => ({
             value: String(s.id),
@@ -119,8 +120,8 @@ const statusColor: Record<string, string> = {
 <template>
     <div class="space-y-0">
         <div class="px-6 pt-6 pb-4">
-            <h1 class="text-2xl font-bold text-foreground">Projects</h1>
-            <p class="text-sm text-muted-foreground mt-1">Verified sustainability projects on the Guardian network</p>
+            <h1 class="text-2xl font-bold text-foreground">{{ $t('projects.title') }}</h1>
+            <p class="text-sm text-muted-foreground mt-1">{{ $t('projects.subtitle') }}</p>
         </div>
 
         <div class="px-6 pb-3">
@@ -130,7 +131,7 @@ const statusColor: Record<string, string> = {
                 :active-filters="activeFilters"
                 :result-count="filtered.length"
                 :total-count="total"
-                search-placeholder="Search projects..."
+                :search-placeholder="$t('projects.searchPlaceholder')"
                 @filter="setFilter"
                 @clear="clearFilters"
             />
@@ -138,7 +139,7 @@ const statusColor: Record<string, string> = {
             <!-- Preset Templates -->
             <div class="flex items-center gap-2 mt-2.5 flex-wrap">
                 <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <Sparkles class="h-3 w-3" /> Quick filters:
+                    <Sparkles class="h-3 w-3" /> {{ $t('projects.quickFilters') }}
                 </span>
                 <button
                     v-for="preset in presets"
@@ -154,13 +155,13 @@ const statusColor: Record<string, string> = {
         <!-- Summary Stats -->
         <div v-if="filtered.length !== total" class="px-6 pb-3">
             <div class="flex items-center gap-4 rounded-lg bg-muted/50 px-4 py-2.5 text-xs">
-                <span class="font-medium text-foreground">{{ filtered.length }} projects found</span>
+                <span class="font-medium text-foreground">{{ $t('projects.projectsFound', { count: filtered.length }) }}</span>
                 <span class="text-muted-foreground">&middot;</span>
-                <span class="text-muted-foreground">Total issuances: <strong class="text-foreground">{{ formatCredits(summaryStats.totalIssuances) }}</strong></span>
+                <span class="text-muted-foreground">{{ $t('projects.totalIssuances') }} <strong class="text-foreground">{{ formatCredits(summaryStats.totalIssuances) }}</strong></span>
                 <span class="text-muted-foreground">&middot;</span>
-                <span class="text-muted-foreground">Countries: <strong class="text-foreground">{{ summaryStats.uniqueCountries }}</strong></span>
+                <span class="text-muted-foreground">{{ $t('projects.countries') }} <strong class="text-foreground">{{ summaryStats.uniqueCountries }}</strong></span>
                 <span class="text-muted-foreground">&middot;</span>
-                <span class="text-muted-foreground">Registries: <strong class="text-foreground">{{ summaryStats.uniqueRegistries }}</strong></span>
+                <span class="text-muted-foreground">{{ $t('projects.registries') }} <strong class="text-foreground">{{ summaryStats.uniqueRegistries }}</strong></span>
             </div>
         </div>
 
@@ -169,22 +170,22 @@ const statusColor: Record<string, string> = {
                 <table class="w-full text-sm min-w-[900px]">
                     <thead>
                         <tr class="border-b bg-muted/30">
-                            <SortableHeader label="Project" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Country" sort-key="country" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Registry" sort-key="registry" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Methodology" sort-key="methodology" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Sector" sort-key="sector" tooltip="Includes Sectoral Scope as additional detail" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Issuances" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Transferred" sort-key="transferred" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Retired" sort-key="retired" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader label="Status" sort-key="status" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('projects.columns.project')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('projects.columns.country')" sort-key="country" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('projects.columns.registry')" sort-key="registry" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('projects.columns.methodology')" sort-key="methodology" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('projects.columns.sector')" sort-key="sector" :tooltip="$t('projects.sectorTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('projects.columns.issuances')" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('projects.columns.transferred')" sort-key="transferred" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('projects.columns.retired')" sort-key="retired" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('projects.columns.status')" sort-key="status" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[160px]">
                                 <span class="inline-flex items-center gap-1">
-                                    SDGs
-                                    <InfoTooltip text="UN Sustainable Development Goals this project contributes to. Hover over each icon for the full goal name." />
+                                    {{ $t('projects.columns.sdgs') }}
+                                    <InfoTooltip :text="$t('projects.sdgsTooltip')" />
                                 </span>
                             </th>
-                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider"><span class="inline-flex items-center gap-1">Raw Data <InfoTooltip text="Raw Data on the blockchain" /></span></th>
+                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider"><span class="inline-flex items-center gap-1">{{ $t('projects.columns.rawData') }} <InfoTooltip :text="$t('tooltips.viewRawData')" /></span></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -225,7 +226,7 @@ const statusColor: Record<string, string> = {
                                     <span class="text-xs text-muted-foreground cursor-default">{{ p.sector }}</span>
                                     <div class="pointer-events-none absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-[100] max-w-xs">
                                         <div class="whitespace-normal rounded-md bg-foreground px-2.5 py-1.5 text-[11px] text-background shadow-lg leading-snug">
-                                            Sectoral Scope: {{ p.sectoralScope }}
+                                            {{ $t('projects.sectoralScope', { scope: p.sectoralScope }) }}
                                         </div>
                                         <div class="ml-3 h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />
                                     </div>
@@ -245,7 +246,7 @@ const statusColor: Record<string, string> = {
                             <td class="py-3 px-3 text-center">
                                 <button
                                     class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                                    title="View Raw Data"
+                                    :title="$t('common.viewRawData')"
                                     @click.stop="viewVc(p)"
                                 >
                                     <FileJson class="h-3.5 w-3.5" />
@@ -253,7 +254,7 @@ const statusColor: Record<string, string> = {
                             </td>
                         </tr>
                         <tr v-if="paginated.length === 0">
-                            <td colspan="11" class="py-12 text-center text-sm text-muted-foreground">No projects match your filters</td>
+                            <td colspan="11" class="py-12 text-center text-sm text-muted-foreground">{{ $t('projects.noMatch') }}</td>
                         </tr>
                     </tbody>
                 </table>
