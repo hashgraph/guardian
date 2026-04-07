@@ -224,15 +224,35 @@
         "noMatch": "Ninguna metodología coincide con tus filtros",
         "columns": {
             "methodology": "Metodología",
+            "name": "Nombre",
             "registry": "Registro",
             "category": "Categoría",
             "projects": "Proyectos",
+            "issuance": "Emisión",
             "issuances": "Emisiones",
-            "schemas": "Esquemas"
+            "schemaCount": "Esquemas",
+            "schemas": "Esquemas",
+            "description": "Descripción",
+            "id": "ID",
+            "status": "Estado"
         },
         "filters": {
             "registry": "Registro",
-            "category": "Categoría"
+            "registryDid": "DID del Registro",
+            "registryName": "Nombre del Registro",
+            "registryNamePlaceholder": "Buscar por nombre del registro",
+            "category": "Categoría",
+            "name": "Nombre",
+            "namePlaceholder": "Buscar por nombre",
+            "id": "ID",
+            "description": "Descripción",
+            "status": "Estado"
+        },
+        "errors": {
+            "loadFailed": "Error al cargar las metodologías."
+        },
+        "tooltips": {
+            "copyId": "Copiar ID"
         }
     },
     "registries": {
@@ -258,10 +278,14 @@
             "idPlaceholder": "0.0.xxxx",
             "tags": "Etiquetas",
             "geography": "Geografía",
-            "law": "Ley"
+            "law": "Ley",
+            "registryDid": "DID del Registro"
         },
         "errors": {
             "loadFailed": "Error al cargar los registros."
+        },
+        "tooltips": {
+            "viewMethodologies": "Ver metodologías de este registro"
         }
     },
     "developers": {

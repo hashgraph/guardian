@@ -27,7 +27,12 @@ const columnToApiSort: Record<ColumnKey, RegistrySortKey | null> = {
 };
 
 // Reactive query state
-const filters = ref<Record<string, any>>({});
+const route = useRoute();
+const initialFilters: Record<string, any> = {};
+if (route.query.did && typeof route.query.did === 'string') {
+    initialFilters.did = route.query.did;
+}
+const filters = ref<Record<string, any>>(initialFilters);
 const currentPage = ref(1);
 const pageSize = ref(10);
 
@@ -38,6 +43,7 @@ const searchQuery = ref('');
 const filterFields = computed<FilterField[]>(() => [
     { key: 'displayName', label: t('registries.filters.name'), type: 'text', placeholder: t('registries.filters.namePlaceholder'), width: 'md' },
     { key: 'id', label: t('registries.filters.id'), type: 'text', placeholder: t('registries.filters.idPlaceholder'), width: 'sm' },
+    { key: 'did', label: t('registries.filters.registryDid'), type: 'text', width: 'md' },
     { key: 'tags', label: t('registries.filters.tags'), type: 'text', width: 'sm' },
     { key: 'geography', label: t('registries.filters.geography'), type: 'text', width: 'sm' },
     { key: 'law', label: t('registries.filters.law'), type: 'text', width: 'sm' },
@@ -236,7 +242,17 @@ const tagsAsList = (tags: string | null): string[] => {
                                 <td class="py-3 px-4">
                                     <span class="text-xs text-foreground">{{ r.law ?? '—' }}</span>
                                 </td>
-                                <td class="py-3 px-4 text-right tabular-nums font-medium">{{ r.stats.policyCount }}</td>
+                                <td class="py-3 px-4 text-right tabular-nums">
+                                    <NuxtLink
+                                        v-if="r.stats.policyCount > 0 && r.did"
+                                        :to="`/methodologies?registryDid=${encodeURIComponent(r.did)}`"
+                                        class="font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                                        :title="$t('registries.tooltips.viewMethodologies')"
+                                    >
+                                        {{ r.stats.policyCount }}
+                                    </NuxtLink>
+                                    <span v-else class="text-muted-foreground">{{ r.stats.policyCount }}</span>
+                                </td>
                                 <td class="py-3 px-4 text-right tabular-nums">{{ r.stats.projectCount }}</td>
                                 <td class="py-3 px-4 text-right tabular-nums">{{ r.stats.userCount }}</td>
                                 <td class="py-3 px-4 text-right tabular-nums font-medium">{{ r.stats.issuanceCount }}</td>

@@ -7,9 +7,11 @@ import { NetworkDataSourceRegistry } from './database/network-datasource.registr
 
 // Controllers
 import { RegistriesController } from './controllers/registries.controller';
+import { MethodologiesController } from './controllers/methodologies.controller';
 
 // Services
 import { RegistriesService } from './services/registries.service';
+import { MethodologiesService } from './services/methodologies.service';
 
 @Module({
     imports: [
@@ -20,10 +22,12 @@ import { RegistriesService } from './services/registries.service';
     ],
     controllers: [
         RegistriesController,
+        MethodologiesController,
     ],
     providers: [
         NetworkDataSourceRegistry,
         RegistriesService,
+        MethodologiesService,
     ],
 })
 export class ApiModule {}

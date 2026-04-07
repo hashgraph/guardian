@@ -224,15 +224,35 @@
         "noMatch": "No methodologies match your filters",
         "columns": {
             "methodology": "Methodology",
+            "name": "Name",
             "registry": "Registry",
             "category": "Category",
             "projects": "Projects",
+            "issuance": "Issuance",
             "issuances": "Issuances",
-            "schemas": "Schemas"
+            "schemaCount": "Schema Count",
+            "schemas": "Schemas",
+            "description": "Description",
+            "id": "ID",
+            "status": "Status"
         },
         "filters": {
             "registry": "Registry",
-            "category": "Category"
+            "registryDid": "Registry DID",
+            "registryName": "Registry Name",
+            "registryNamePlaceholder": "Search by registry name",
+            "category": "Category",
+            "name": "Name",
+            "namePlaceholder": "Search by name",
+            "id": "ID",
+            "description": "Description",
+            "status": "Status"
+        },
+        "errors": {
+            "loadFailed": "Failed to load methodologies."
+        },
+        "tooltips": {
+            "copyId": "Copy ID"
         }
     },
     "registries": {
@@ -258,10 +278,14 @@
             "idPlaceholder": "0.0.xxxx",
             "tags": "Tags",
             "geography": "Geography",
-            "law": "Law"
+            "law": "Law",
+            "registryDid": "Registry DID"
         },
         "errors": {
             "loadFailed": "Failed to load registries."
+        },
+        "tooltips": {
+            "viewMethodologies": "View methodologies for this registry"
         }
     },
     "developers": {
