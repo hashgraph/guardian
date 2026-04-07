@@ -28,4 +28,4 @@ USER appuser
 
 EXPOSE 3030
 
-CMD ["node", "dist/api/main.js"]
+CMD ["node", "dist/src/api/main.js"]
