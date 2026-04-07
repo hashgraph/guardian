@@ -103,6 +103,20 @@ export async function getGlobalTopic(): Promise<TopicConfig | null> {
 }
 
 /**
+ * Save global topic
+ */
+// tslint:disable-next-line:completed-docs
+export async function saveGlobalTopic(INITIALIZATION_TOPIC_ID: string): Promise<null> {
+    try {
+        const dataBaseServer = new DatabaseServer();
+        await dataBaseServer.save(Settings, { name: 'INITIALIZATION_TOPIC_ID', value: INITIALIZATION_TOPIC_ID });
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+/**
  * Set up user profile
  *
  * @param username
@@ -383,8 +397,18 @@ export async function createUserProfile({
             owner: null,
             policyId: null,
             policyUUID: null
-        }, logId);
-        await topicHelper.oneWayLink(topicConfig, globalTopic, user.id.toString());
+        }, {
+            admin: true,
+            submit: true
+        }, {
+            userId: logId
+        });
+        await topicHelper.oneWayLink({
+            topic: topicConfig,
+            parent: globalTopic,
+            rationale: null,
+            userId: user.id.toString()
+        });
         newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
     }
     messageServer.setTopicObject(topicConfig);

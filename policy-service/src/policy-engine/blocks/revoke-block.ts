@@ -18,6 +18,7 @@ export const RevokedStatus = 'Revoked';
 @EventBlock({
     blockType: 'revokeBlock',
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Revoke Document',
         title: `Add 'Revoke' Block`,
@@ -127,9 +128,10 @@ export class RevokeBlock {
         const policyTopicsMessages = [];
         for (const topic of policyTopics) {
             const topicMessages = await MessageServer.getMessages({
-                dryRun: ref.dryRun,
                 topicId: topic.topicId,
-                userId
+                userId,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
             policyTopicsMessages.push(...topicMessages);
         }

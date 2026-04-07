@@ -3,8 +3,8 @@ import { IOwner, IToken, Permissions, PolicyStatus, TaskAction, UserPermissions 
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiExtraModels, ApiTags, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, TaskDTO, TokenDTO, TokenInfoDTO, pageHeader } from '#middlewares';
+import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { Examples, InternalServerErrorDTO, ObjectExamples, TaskDTO, TokenDTO, TokenInfoDTO, UnprocessableEntityErrorDTO, pageHeader } from '#middlewares';
 import { TOKEN_REQUIRED_PROPS } from '#constants';
 
 /**
@@ -127,16 +127,31 @@ export class TokensApi {
         example: 'All'
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. For Standard Registry returns token definitions; for other users also includes balance, KYC, Freeze, and Association statuses.',
         isArray: true,
         headers: pageHeader,
-        type: TokenDTO
+        type: TokenInfoDTO,
+        examples: {
+            standardRegistry: {
+                summary: 'Standard Registry — token definitions only',
+                value: [ObjectExamples.TOKEN]
+            },
+            user: {
+                summary: 'User — tokens with balance and statuses',
+                value: [ObjectExamples.TOKEN_INFO]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
-    @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getTokens(
         @AuthUser() user: IAuthUser,
@@ -222,11 +237,23 @@ export class TokensApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: TokenDTO
+        type: TokenDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: [ObjectExamples.TOKEN_INFO]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -276,15 +303,39 @@ export class TokensApi {
         summary: 'Return a token by id.',
         description: 'Return the token.',
     })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'policyId',
+        type: String,
+        required: false,
+        description: 'Optional policy ID to filter linked policies in response',
+        example: Examples.DB_ID
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        isArray: true,
-        headers: pageHeader,
-        type: TokenDTO
+        type: TokenDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TOKEN
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -330,16 +381,33 @@ export class TokensApi {
     @ApiBody({
         description: 'Object that contains token information.',
         required: true,
-        type: TokenDTO
+        type: TokenDTO,
+        examples: {
+            createToken: {
+                value: ObjectExamples.TOKEN
+            }
+        }
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         type: TokenDTO,
-        isArray: true
+        isArray: true,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: [ObjectExamples.TOKEN_INFO]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -383,13 +451,26 @@ export class TokensApi {
         required: true,
         type: TokenDTO
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -431,13 +512,28 @@ export class TokensApi {
         required: true,
         type: TokenDTO
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Updated token.',
         type: TokenDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TOKEN
+            }
+        }
     })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, examples: { invalidCreator: { summary: 'Not the token creator', value: { statusCode: 403, message: 'Invalid creator.' } }, cannotDelete: { summary: 'Token linked to active policy', value: { statusCode: 403, message: 'Token cannot be deleted.' } } } })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } }, invalidTokenId: { summary: 'Missing token ID', value: { statusCode: 422, message: 'The field tokenId is required.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -492,13 +588,34 @@ export class TokensApi {
         required: true,
         type: TokenDTO
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
         type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+            }
+        }
+    })
+    @ApiForbiddenResponse({ description: 'Forbidden.', type: InternalServerErrorDTO, examples: { invalidCreator: { summary: 'Not the token creator', value: { statusCode: 403, message: 'Invalid creator.' } }, cannotDelete: { summary: 'Token linked to active policy', value: { statusCode: 403, message: 'Token cannot be deleted.' } } } })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO,
+        examples: {
+            userNotRegistered: { summary: 'User not registered', value: { statusCode: 422, message: 'User is not registered.' } },
+            invalidTokenId: { summary: 'Invalid token ID', value: { statusCode: 422, message: 'Invalid token id.' } }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -561,13 +678,38 @@ export class TokensApi {
         required: true,
         example: Examples.DB_ID
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
+    })
+    @ApiNotFoundResponse({
+        description: 'Token does not exist.',
+        type: InternalServerErrorDTO,
+        examples: { default: { summary: 'Token does not exist', value: { statusCode: 404, message: 'Token does not exist.' } } }
+    })
+    @ApiForbiddenResponse({
+        description: 'Token cannot be deleted by current user or token is used in a published policy.',
+        type: InternalServerErrorDTO,
+        examples: {
+            invalidCreator: { summary: 'Invalid creator', value: { statusCode: 403, message: 'Invalid creator.' } },
+            cannotDelete: { summary: 'Token cannot be deleted', value: { statusCode: 403, message: 'Token cannot be deleted.' } }
+        }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -623,20 +765,53 @@ export class TokensApi {
         summary: 'Delete multiple tokens.',
         description: 'Delete multiple tokens by their IDs.' + ONLY_SR,
     })
-    @ApiParam({
-        name: 'tokenIds',
-        type: [String],
-        description: 'Token Ids',
+    @ApiBody({
+        description: 'List of token IDs to delete.',
         required: true,
-        example: [Examples.DB_ID]
+        schema: {
+            type: 'object',
+            required: ['tokenIds'],
+            properties: {
+                tokenIds: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    example: [Examples.DB_ID]
+                }
+            }
+        }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
+    })
+    @ApiNotFoundResponse({
+        description: 'No tokens found for provided IDs.',
+        type: InternalServerErrorDTO,
+        examples: { default: { summary: 'Token does not exist', value: { statusCode: 404, message: 'Token does not exist.' } } }
+    })
+    @ApiForbiddenResponse({
+        description: 'One or more tokens cannot be deleted by current user or are used in published policies.',
+        type: InternalServerErrorDTO,
+        examples: {
+            invalidCreator: { summary: 'Invalid creator', value: { statusCode: 403, message: 'Invalid creator.' } },
+            cannotDelete: { summary: 'Token cannot be deleted', value: { statusCode: 403, message: 'Token <name> (<id>) cannot be deleted.' } }
+        }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -704,11 +879,25 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TOKEN_INFO
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -754,13 +943,26 @@ export class TokensApi {
         required: true,
         example: Examples.DB_ID
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -807,11 +1009,25 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TOKEN_INFO
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -857,13 +1073,26 @@ export class TokensApi {
         required: true,
         example: Examples.DB_ID
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -915,11 +1144,25 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TOKEN_INFO
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -973,13 +1216,26 @@ export class TokensApi {
         required: true,
         example: 'username'
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1032,11 +1288,25 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TOKEN_INFO
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1090,13 +1360,26 @@ export class TokensApi {
         required: true,
         example: 'username'
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1149,11 +1432,25 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TOKEN_INFO
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1209,11 +1506,25 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TOKEN_INFO
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1267,13 +1578,26 @@ export class TokensApi {
         required: true,
         example: 'username'
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1324,13 +1648,26 @@ export class TokensApi {
         required: true,
         example: 'username'
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1383,11 +1720,25 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TOKEN_INFO
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1439,10 +1790,23 @@ export class TokensApi {
         description: 'Token serials.',
         isArray: true,
         type: Number,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: 0
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1484,10 +1848,22 @@ export class TokensApi {
         description: 'Modules.',
         isArray: true,
         type: TokenDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: [ObjectExamples.TOKEN_INFO]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1537,11 +1913,25 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TOKEN_INFO
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1601,11 +1991,25 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TOKEN_INFO
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1659,13 +2063,26 @@ export class TokensApi {
         required: true,
         example: Examples.ACCOUNT_ID
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1720,11 +2137,25 @@ export class TokensApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TokenInfoDTO
+        type: TokenInfoDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TOKEN_INFO
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, examples: { tokenNotFound: { summary: 'Token not found', value: { statusCode: 404, message: 'Token not found.' } }, userNotFound: { summary: 'User not found', value: { statusCode: 404, message: 'User not found.' } } } })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -1778,13 +2209,26 @@ export class TokensApi {
         required: true,
         example: Examples.ACCOUNT_ID
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: 'f3b2a9c1e4d5678901234567', expectation: 0 }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { userNotRegistered: { summary: 'User Hedera profile not registered', value: { statusCode: 422, message: 'User is not registered.' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)

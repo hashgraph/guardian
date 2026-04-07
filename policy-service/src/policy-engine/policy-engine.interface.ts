@@ -131,6 +131,11 @@ export interface IPolicyBlock {
      */
     actionType?: LocationType;
     /**
+     * Enable Mock Up
+     */
+    enableMock?: boolean;
+
+    /**
      * Block permissions
      */
     readonly permissions: string[];
@@ -170,6 +175,16 @@ export interface IPolicyBlock {
      * Dry-run
      */
     readonly dryRun: string;
+
+    /**
+     * Mock ID
+     */
+    readonly mockId: string;
+
+    /**
+     * Can Mock Up
+     */
+    readonly canMock: boolean;
 
     /**
      * Policy status
@@ -1056,6 +1071,10 @@ export interface IPolicyDocument extends IPolicyDBDocument<any> {
      * sourceTag
      */
     __sourceTag__?: string;
+    /**
+     * Evidence entries from additional data step
+     */
+    evidence?: { dataType: string; data: string }[];
 }
 
 /**
@@ -1141,6 +1160,11 @@ export interface IPolicyInstance {
      * Relayer Account
      */
     readonly relayerAccount: boolean;
+
+    /**
+     * Enable Mock
+     */
+    enableMock: boolean;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, entities, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet, OldSecretManager } from '@guardian/common';
+import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, entities, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet, OldSecretManager, MockService } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from './helpers/policy-container.js';
 import { BlockService } from './policy-engine/block-service.js';
@@ -7,6 +7,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { DEFAULT_MONGO } from '#constants';
 import { BlockTreeGenerator } from './policy-engine/block-tree-generator.js';
+import { warmupPyodideCache } from './policy-engine/helpers/workers/pyodide-warmup.js';
 
 export const obj = {};
 
@@ -48,6 +49,7 @@ Promise.all([
 
     await new Users().setConnection(cn).init();
     await new Wallet().setConnection(cn).init();
+    await new MockService().setConnection(cn).init();
 
     await (new PolicyContainer(logger)).setConnection(cn).init();
     await (new BlockService()).setConnection(cn).init();
@@ -62,6 +64,9 @@ Promise.all([
     await state.updateState(ApplicationStates.READY);
 
     startMetricsServer();
+
+    // Pre-cache Pyodide packages in background (non-blocking)
+    warmupPyodideCache().catch(() => { /* errors logged inside */ });
 }, (reason) => {
     console.log(reason);
     process.exit(0);

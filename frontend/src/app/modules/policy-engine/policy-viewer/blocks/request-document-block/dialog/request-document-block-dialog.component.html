@@ -50,23 +50,27 @@
                 <div class="guardian-button-label">Test</div>
             </button>
         </div>
-        <div *ngIf="relayerAccount" class="relayer-account-steps">
+        <div *ngIf="relayerAccount || enableAdditionalData" class="relayer-account-steps">
             <div class="guardian-step-container">
                 <div class="guardian-stepper horizontal-stepper">
                     <div class="guardian-step" [attr.action]="isActionStep(0)" [attr.disabled]="isStep(0)" (click)="setStep(0)">
                         <div class="guardian-step-marker">1</div>
                         <div class="guardian-step-name">Fill Form</div>
                     </div>
-                    <div class="guardian-step-separator"></div>
-                    <div class="guardian-step" [attr.action]="isActionStep(1)" [attr.disabled]="!isStep(2)" (click)="setStep(1)">
-                        <div class="guardian-step-marker">2</div>
-                        <div class="guardian-step-name">Configure Relayer Account</div>
-                    </div>
-                    <!-- <div class="guardian-step-separator"></div>
-                    <div class="guardian-step" [attr.action]="isActionStep(2)" [attr.disabled]="true">
-                        <div class="guardian-step-marker">3</div>
-                        <div class="guardian-step-name">Validation Results</div>
-                    </div> -->
+                    <ng-container *ngIf="enableAdditionalData">
+                        <div class="guardian-step-separator"></div>
+                        <div class="guardian-step" [attr.action]="isActionStep(1)" [attr.disabled]="!isStep(1) && !isStep(2)" (click)="isStep(2) && setStep(1)">
+                            <div class="guardian-step-marker">2</div>
+                            <div class="guardian-step-name">Add Evidence Attachments</div>
+                        </div>
+                    </ng-container>
+                    <ng-container *ngIf="relayerAccount">
+                        <div class="guardian-step-separator"></div>
+                        <div class="guardian-step" [attr.action]="isActionStep(enableAdditionalData ? 2 : 1)" [attr.disabled]="!isStep(enableAdditionalData ? 3 : 2)" (click)="isStep(enableAdditionalData ? 3 : 2) && setStep(enableAdditionalData ? 2 : 1)">
+                            <div class="guardian-step-marker">{{enableAdditionalData ? 3 : 2}}</div>
+                            <div class="guardian-step-name">Configure Relayer Account</div>
+                        </div>
+                    </ng-container>
                 </div>
             </div>
         </div>
@@ -100,7 +104,32 @@
                     </app-schema-form-root>
                 </div>
             </form>
-            <div class="relayer-account-container" [attr.visibility]="isStep(1)">
+            <div class="evidence-container" [attr.visibility]="isStep(evidenceStepIndex)" *ngIf="enableAdditionalData">
+                <div class="toolbar-textarea guardian-textarea-container">
+                    <textarea
+                        placeholder="Add a comment (optional)"
+                        rows="3"
+                        [(ngModel)]="evidenceText"
+                        [maxlength]="600">
+                    </textarea>
+                </div>
+                <div class="toolbar-files">
+                    <div *ngFor="let file of evidenceFiles" class="toolbar-file">
+                        <div *ngIf="!file.loaded && !file.error" class="toolbar-file-loading guardian-loading"></div>
+                        <div *ngIf="file.loaded || file.error" class="toolbar-file-name">{{ file.name }}</div>
+                        <div class="toolbar-file-action" (click)="onDeleteEvidenceFile(file)">
+                            <svg-icon
+                                class="svg-icon-16"
+                                src="/assets/images/icons/16/close.svg"
+                                svgClass="icon-color-close"></svg-icon>
+                        </div>
+                    </div>
+                </div>
+                <div class="toolbar-actions" (drop)="onEvidenceDrop($event)" (dragover)="$event.preventDefault()">
+                    <button pButton class="guardian-button guardian-button-secondary" (click)="onEvidenceAttach($event)">Attach</button>
+                </div>
+            </div>
+            <div class="relayer-account-container" [attr.visibility]="isStep(enableAdditionalData ? 2 : 1)">
                 <div class="relayer-account-type-values">
                     <div *ngIf="needRemoteWarning" class="account-warning">
                         <svg-icon
@@ -200,7 +229,7 @@
 
                 </div>
             </div>
-            <div class="result-container" [attr.visibility]="isStep(2)"></div>
+            <div class="result-container" [attr.visibility]="isStep(enableAdditionalData && relayerAccount ? 3 : 2)"></div>
             <ng-template #preloader>
                 <div class="preloader-image"></div>
             </ng-template>

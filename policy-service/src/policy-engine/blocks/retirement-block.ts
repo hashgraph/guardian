@@ -20,6 +20,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'retirementDocumentBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Wipe',
         title: `Add 'Wipe' Block`,
@@ -249,7 +250,9 @@ export class RetirementBlock {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
 
         const vcDocument = PolicyUtils.createVC(ref, user, wipeVC, actionStatus?.id);
@@ -278,7 +281,9 @@ export class RetirementBlock {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
 
         const vpDocument = PolicyUtils.createVP(ref, user, vp, actionStatus?.id);

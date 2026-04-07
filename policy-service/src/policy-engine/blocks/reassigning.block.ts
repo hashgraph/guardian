@@ -9,7 +9,7 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
-import { LocationType } from '@guardian/interfaces';
+import { LocationType, SchemaEntity } from '@guardian/interfaces';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { RecordActionStep } from '../record-action-step.js';
 
@@ -20,6 +20,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'reassigningBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Reassigning',
         title: `Add 'Reassigning' Block`,
@@ -120,12 +121,22 @@ export class ReassigningBlock {
 
         const uuid = await ref.components.generateUUID(actionStatus?.id);
         const credentialSubject = document.document.credentialSubject[0];
+        const originalEvidence = document.document.evidence;
+        let evidenceOptions: { evidence?: any[]; evidenceContext?: string } = {};
+        if (originalEvidence?.length) {
+            const evidenceSchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.EVIDENCE_ATTACHMENTS);
+            const evidenceContext = PolicyUtils.getSchemaContext(ref, evidenceSchema);
+            evidenceOptions = {
+                evidence: (Array.isArray(originalEvidence) ? originalEvidence : [originalEvidence]),
+                evidenceContext,
+            };
+        }
         const vc = await PolicyActionsUtils.signVC({
             ref,
             subject: credentialSubject,
             issuer,
             relayerAccount,
-            options: { uuid, group: groupContext },
+            options: { uuid, group: groupContext, ...evidenceOptions },
             userId: user.userId
         });
 

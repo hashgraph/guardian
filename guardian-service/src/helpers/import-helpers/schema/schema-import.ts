@@ -117,17 +117,30 @@ export class SchemaImport {
             } else if (topicId) {
                 this.topicRow = await TopicConfig.fromObject(await DatabaseServer.getTopicById(topicId), true, userId);
             } else {
-                this.topicRow = await this.topicHelper.create({
-                    type: TopicType.SchemaTopic,
-                    name: TopicType.SchemaTopic,
-                    description: TopicType.SchemaTopic,
-                    owner: user.creator,
-                    policyId: null,
-                    policyUUID: null
-                }, userId);
+                this.topicRow = await this.topicHelper.create(
+                    {
+                        type: TopicType.SchemaTopic,
+                        name: TopicType.SchemaTopic,
+                        description: TopicType.SchemaTopic,
+                        owner: user.creator,
+                        policyId: null,
+                        policyUUID: null
+                    },
+                    {
+                        admin: true,
+                        submit: true
+                    },
+                    {
+                        userId
+                    });
                 await this.topicRow.saveKeys(userId);
                 await DatabaseServer.saveTopic(this.topicRow.toObject());
-                await this.topicHelper.twoWayLink(this.topicRow, null, null, this.owner.id);
+                await this.topicHelper.twoWayLink({
+                    topic: this.topicRow,
+                    parent: null,
+                    rationale: null,
+                    userId: this.owner.id
+                });
             }
         }
         this.topicId = this.topicRow?.topicId || 'draft';
@@ -445,12 +458,12 @@ export class SchemaImport {
         const tags: any[] = [];
         const messageServer = new MessageServer(null);
         for (const id of topics) {
-            const tagMessages = await messageServer.getMessages<TagMessage>(
-                id,
-                userId,
-                MessageType.Tag,
-                MessageAction.PublishTag
-            );
+            const tagMessages = await messageServer.getMessages<TagMessage>({
+                topicId: id,
+                type: MessageType.Tag,
+                action: MessageAction.PublishTag,
+                userId
+            });
             for (const tag of tagMessages) {
                 tags.push({
                     uuid: tag.uuid,

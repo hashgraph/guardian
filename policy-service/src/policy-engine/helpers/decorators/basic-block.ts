@@ -136,6 +136,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             private _dryRun: string;
             /**
+             * Enable Mock Up
+             */
+            private readonly enableMock: boolean;
+            /**
              * Block class name
              */
             public readonly blockClassName = 'BasicBlock';
@@ -155,6 +159,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block about
              */
             public readonly actionType: LocationType;
+            /**
+             * Can Mock Up
+             */
+            public readonly canMock: boolean;
 
             constructor(
                 _uuid: string,
@@ -214,6 +222,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
                 this.variables = defaultOptions.variables || [];
                 this.actionType = defaultOptions.actionType || LocationType.REMOTE;
+                this.canMock = !!defaultOptions.canMock;
             }
 
             /**
@@ -221,6 +230,16 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public get dryRun(): string {
                 return this._dryRun;
+            }
+
+            /**
+             * Dry Run id
+             */
+            public get mockId(): string {
+                if (this.canMock && this.enableMock && this.enableMockGlobal) {
+                    return this._dryRun;
+                }
+                return null;
             }
 
             /**
@@ -242,6 +261,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public get locationType(): LocationType | null {
                 return this.policyInstance?.locationType || null;
+            }
+
+            /**
+             * Policy location
+             */
+            public get enableMockGlobal(): boolean {
+                return !!((this.policyInstance as any)?.enableMock);
             }
 
             /**
@@ -367,7 +393,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
                         if (output === PolicyOutputEventType.RunEvent && actionStatus) {
-                           actionStatus.checkCycle(link);
+                            actionStatus.checkCycle(link);
                         }
 
                         if (actionStatus?.syncActions) {

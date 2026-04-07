@@ -16,6 +16,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'interfaceStepBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Step',
         title: `Add 'Step' Block`,

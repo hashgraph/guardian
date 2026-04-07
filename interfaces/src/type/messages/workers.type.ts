@@ -24,6 +24,7 @@ export enum WorkerTaskType {
     TRANSFER_NFT = 'transfer-nft',
     TRANSFER_FT = 'transfer-ft',
     NEW_TOPIC = 'new-topic',
+    NEW_INIT_TOPIC = 'new-init-topic',
     CHECK_ACCOUNT = 'check-account',
     GET_TOPIC_MESSAGE = 'get-topic-message',
     GET_TOPIC_MESSAGES = 'get-topic-messages',
@@ -126,6 +127,16 @@ export interface ITask {
      * UserId
      */
     interception?: string | null | undefined;
+
+    /**
+     * MockId
+     */
+    mockId?: string | null;
+
+    /**
+     * DryRunId
+     */
+    dryRun?: string | null;
 }
 
 /**
@@ -193,4 +204,12 @@ export interface ITaskOptions {
      * Default value = null
      */
     userId?: string,
+    /**
+     * Default value = null
+     */
+    dryRun?: string,
+    /**
+     * Default value = null
+     */
+    mockId?: string,
 }

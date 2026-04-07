@@ -1,4 +1,4 @@
-import { ApplicationState, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
+import { ApplicationState, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, MockService, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
 import { Worker } from './api/worker.js';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper.js';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
@@ -46,6 +46,8 @@ Promise.all([
     const state = new ApplicationState();
     await state.setServiceName('WORKER').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
+
+    await new MockService().setConnection(cn).init();
 
     const validator = new ValidateConfiguration();
 

@@ -26,6 +26,7 @@ interface SetDataPayload {
     blockType: 'globalEventsWriterBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Global Events Writer',
         title: 'Publish VC reference to a global Hedera topics',
@@ -304,6 +305,8 @@ export class GlobalEventsWriterBlock {
                 memo: 'GlobalEvent',
                 userId: user.userId,
                 interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
 
             ref.log(`Publish to global topic ${currentTopicId} was successfully.`);
@@ -366,10 +369,13 @@ export class GlobalEventsWriterBlock {
                         blockId: ref.uuid,
                     },
                 },
-                user.userId,
                 {
                     admin: true,
                     submit: false,
+                },
+                {
+                    userId: user.userId,
+                    mockId: ref.mockId
                 }
             );
             if (!created?.topicId) {

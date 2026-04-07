@@ -33,7 +33,9 @@ export class SendMessage {
                 sendToIPFS: updateIpfs,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
 
         return messageResult;
@@ -99,7 +101,9 @@ export class SendMessage {
                 sendToIPFS: updateIpfs,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: null
             });
 
         return {
@@ -144,7 +148,9 @@ export class SendMessage {
                     loadIPFS: updateIpfs,
                     encryptKey: userMessageKey,
                     userId,
-                    interception: null
+                    interception: null,
+                    dryRun: null,
+                    mockId: null
                 });
 
             data.message = message;

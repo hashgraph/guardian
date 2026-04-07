@@ -33,6 +33,7 @@ import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
 import { DeleteDialogComponent } from '../dialogs/delete-dialog/delete-dialog.component';
+import { PolicyDocumentationDialogComponent } from '../dialogs/policy-documentation-dialog/policy-documentation-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
 import { MigrateData, MigrationActionResult } from '../dialogs/migrate-data/migrate-data.component';
@@ -616,6 +617,21 @@ export class PoliciesComponent implements OnInit {
                     })
                 ]
             }, {
+                tooltip: 'API Documentation',
+                group: false,
+                visible: true,
+                color: 'primary-color',
+                buttons: [
+                    new MenuButton({
+                        visible: true,
+                        disabled: false,
+                        tooltip: 'API Documentation',
+                        icon: 'document',
+                        color: 'primary-color',
+                        click: () => this.showPolicyDocumentation(policy)
+                    })
+                ]
+            }, {
                 tooltip: 'Users',
                 group: false,
                 visible: true,
@@ -923,44 +939,49 @@ export class PoliciesComponent implements OnInit {
 
     private dryRun(element: any) {
         this.loading = true;
-        this.policyEngineService.dryRun(element.id).pipe(takeUntil(this._destroy$)).subscribe(
-            (data: any) => {
-                const { policies, isValid, errors } = data;
-                if (!isValid) {
-                    let text = [];
-                    const blocks = errors.blocks;
-                    const invalidBlocks = blocks.filter(
-                        (block: any) => !block.isValid
-                    );
-                    for (let i = 0; i < invalidBlocks.length; i++) {
-                        const block = invalidBlocks[i];
-                        for (let j = 0; j < block.errors.length; j++) {
-                            const error = block.errors[j];
-                            if (block.id) {
-                                text.push(`<div>${block.id}: ${error}</div>`);
-                            } else {
-                                text.push(`<div>${error}</div>`);
+        this.policyEngineService
+            .dryRun(element.id, {
+                enableMock: true
+            })
+            .pipe(takeUntil(this._destroy$))
+            .subscribe(
+                (data: any) => {
+                    const { policies, isValid, errors } = data;
+                    if (!isValid) {
+                        let text = [];
+                        const blocks = errors.blocks;
+                        const invalidBlocks = blocks.filter(
+                            (block: any) => !block.isValid
+                        );
+                        for (let i = 0; i < invalidBlocks.length; i++) {
+                            const block = invalidBlocks[i];
+                            for (let j = 0; j < block.errors.length; j++) {
+                                const error = block.errors[j];
+                                if (block.id) {
+                                    text.push(`<div>${block.id}: ${error}</div>`);
+                                } else {
+                                    text.push(`<div>${error}</div>`);
+                                }
                             }
                         }
+                        this.informService.errorMessage(
+                            text.join(''),
+                            'The policy is invalid'
+                        );
+                        this._configurationErrors.set(element.id, errors);
+                        this.router.navigate(['policy-configuration'], {
+                            queryParams: {
+                                policyId: element.id,
+                            },
+                            replaceUrl: true,
+                        });
                     }
-                    this.informService.errorMessage(
-                        text.join(''),
-                        'The policy is invalid'
-                    );
-                    this._configurationErrors.set(element.id, errors);
-                    this.router.navigate(['policy-configuration'], {
-                        queryParams: {
-                            policyId: element.id,
-                        },
-                        replaceUrl: true,
-                    });
+                    this.loadAllPolicy();
+                },
+                (e) => {
+                    this.loading = false;
                 }
-                this.loadAllPolicy();
-            },
-            (e) => {
-                this.loading = false;
-            }
-        );
+            );
     }
 
     private draft(element: any) {
@@ -1172,6 +1193,22 @@ export class PoliciesComponent implements OnInit {
                     styleClass: 'guardian-dialog',
                     data: {
                         policy: exportedPolicy,
+                    },
+                });
+            });
+    }
+
+    public showPolicyDocumentation(policy: any) {
+        this.policyEngineService
+            .getPolicyDocumentation(policy?.id)
+            .pipe(takeUntil(this._destroy$)).subscribe((entries) => {
+                this.dialogService.open(PolicyDocumentationDialogComponent, {
+                    showHeader: false,
+                    header: 'API Documentation',
+                    width: '90vw',
+                    styleClass: 'guardian-dialog',
+                    data: {
+                        entries: entries || [],
                     },
                 });
             });

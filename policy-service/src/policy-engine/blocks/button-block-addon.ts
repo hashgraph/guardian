@@ -21,6 +21,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'buttonBlockAddon',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Button',
         title: `Add 'Button' Block`,

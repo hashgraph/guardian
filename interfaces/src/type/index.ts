@@ -54,3 +54,4 @@ export * from './policy-action.type.js';
 export * from './script-language-option.type.js';
 export * from './integration-data.type.js';
 export * from './record.type.js';
+export * from './integration-type.type.js';

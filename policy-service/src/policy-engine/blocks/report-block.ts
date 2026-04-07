@@ -18,6 +18,7 @@ import { FilterObject } from '@mikro-orm/core';
     blockType: 'reportBlock',
     commonBlock: false,
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Report',
         title: `Add 'Report' Block`,

@@ -1,0 +1,16 @@
+<div class="dialog-body">
+    <div>Please confirm that you want to deactivate two-factor authentication.</div>
+    <div>
+        Turning off 2-Step Verification will remove the extra security on your account, and you'll only use your
+        password to sign in.</div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onCancelClick()" class="button secondary" label="Close" pButton></button>
+        </div>
+        <div>
+            <button (click)="onDisableClick()" class="button red" label="Deactivate" pButton></button>
+        </div>
+    </div>
+</div>

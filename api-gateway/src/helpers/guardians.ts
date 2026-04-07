@@ -701,6 +701,24 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Get schema tree in PlantUML format
+     * @param id Id
+     * @param owner Owner
+     * @returns PlantUML string
+     */
+    public async getSchemaTreePlantUML(
+        id: string,
+        owner: IOwner,
+        includeFields: boolean = true,
+        includeFormulas: boolean = false,
+        includeDependencies: boolean = false
+    ): Promise<string> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_TREE_PLANTUML, {
+            id, owner, includeFields, includeFormulas, includeDependencies
+        });
+    }
+
+    /**
      * Import schema
      *
      * @param {string[]} messageIds - schema uuid
@@ -2267,10 +2285,10 @@ export class Guardians extends NatsService {
      * Publish tool
      * @param id
      * @param owner
-     * @param tool
+     * @param body
      */
-    public async publishTool(id: string, owner: IOwner, tool: ToolVersionDTO): Promise<any> {
-        return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { id, owner, tool });
+    public async publishTool(id: string, owner: IOwner, body: ToolVersionDTO): Promise<any> {
+        return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { id, owner, body });
     }
 
     /**
@@ -4053,4 +4071,50 @@ export class Guardians extends NatsService {
     ): Promise<ResponseAndCount<any>> {
         return await this.sendMessage(MessageAPI.GET_RELAYER_ACCOUNT_RELATIONSHIPS, { relayerAccountId, user, filters });
     }
+
+    /**
+     * Set credential
+     */
+    public async setCredential(
+        user: IAuthUser,
+        policyId: string | null,
+        body: any
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.SET_CREDENTIAL, {
+            user,
+            policyId,
+            serviceType: body.serviceType,
+            dryRun: !!body.dryRun,
+            fields: body.fields,
+        });
+    }
+
+    /**
+     * Get credentials
+     */
+    public async getCredentials(
+        user: IAuthUser,
+        policyId: string | null,
+        ownerId?: string
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_CREDENTIALS, { user, policyId, ownerId });
+    }
+
+    /**
+     * Delete credential
+     */
+    public async deleteCredential(
+        user: IAuthUser,
+        policyId: string | null,
+        serviceType: string,
+        dryRun: boolean = false
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.DELETE_CREDENTIAL, {
+            user,
+            policyId,
+            serviceType,
+            dryRun,
+        });
+    }
+
 }

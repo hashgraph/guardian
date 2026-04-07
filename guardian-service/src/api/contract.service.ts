@@ -1599,10 +1599,12 @@ export async function contractAPI(
                     policyId: null,
                     policyUUID: null,
                 },
-                userId,
                 {
                     admin: true,
                     submit: false,
+                },
+                {
+                    userId
                 }
             );
 
@@ -1660,7 +1662,12 @@ export async function contractAPI(
                 true, userId
             );
 
-            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
+            await topicHelper.twoWayLink({
+                topic,
+                parent: userTopic,
+                rationale: contractMessageResult.getId(),
+                userId
+            });
 
             return new MessageResponse(contract);
         } catch (error) {
@@ -1707,10 +1714,12 @@ export async function contractAPI(
                     policyId: null,
                     policyUUID: null,
                 },
-                userId,
                 {
                     admin: true,
                     submit: false,
+                },
+                {
+                    userId
                 }
             );
 
@@ -1768,7 +1777,12 @@ export async function contractAPI(
                 true, userId
             );
 
-            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
+            await topicHelper.twoWayLink({
+                topic,
+                parent: userTopic,
+                rationale: contractMessageResult.getId(),
+                userId
+            });
 
             return new MessageResponse(contract);
         } catch (error) {
@@ -2355,27 +2369,65 @@ export async function contractAPI(
                     owner.creator
                 );
 
-                await contractCall(
-                    ContractAPI.CLEAR_WIPE_REQUESTS,
-                    workers,
-                    contractId,
-                    root.hederaAccountId,
-                    rootKey,
-                    'clear',
-                    contract.version !== '1.0.0' ? [{
-                        type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
-                    }] : null
-                );
-
-                await dataBaseServer.deleteEntity(WiperRequest, contract.version !== '1.0.0' ? {
-                    contractId,
-                    user: hederaId
-                } : {
-                    contractId,
-                });
+                if (contract.version !== '1.0.0') {
+                    if (hederaId) {
+                        await contractCall(
+                            ContractAPI.CLEAR_WIPE_REQUESTS,
+                            workers,
+                            contractId,
+                            root.hederaAccountId,
+                            rootKey,
+                            'clear',
+                            [{
+                                type: ContractParamType.ADDRESS,
+                                value: AccountId.fromString(
+                                    hederaId
+                                ).toSolidityAddress(),
+                            }]
+                        );
+                        await dataBaseServer.deleteEntity(WiperRequest, {
+                            contractId,
+                            user: hederaId
+                        });
+                    } else {
+                        const requests = await dataBaseServer.find(WiperRequest, {
+                            contractId,
+                        }, { fields: ['user'] });
+                        const uniqueUsers = [...new Set(requests.map((r) => r.user))];
+                        for (const userHederaId of uniqueUsers) {
+                            await contractCall(
+                                ContractAPI.CLEAR_WIPE_REQUESTS,
+                                workers,
+                                contractId,
+                                root.hederaAccountId,
+                                rootKey,
+                                'clear',
+                                [{
+                                    type: ContractParamType.ADDRESS,
+                                    value: AccountId.fromString(
+                                        userHederaId
+                                    ).toSolidityAddress(),
+                                }]
+                            );
+                        }
+                        await dataBaseServer.deleteEntity(WiperRequest, {
+                            contractId,
+                        });
+                    }
+                } else {
+                    await contractCall(
+                        ContractAPI.CLEAR_WIPE_REQUESTS,
+                        workers,
+                        contractId,
+                        root.hederaAccountId,
+                        rootKey,
+                        'clear',
+                        null
+                    );
+                    await dataBaseServer.deleteEntity(WiperRequest, {
+                        contractId,
+                    });
+                }
 
                 return new MessageResponse(true);
             } catch (error) {
@@ -3022,11 +3074,9 @@ export async function contractAPI(
                 });
             }
             if (Array.isArray(tokens) && tokens.length > 0) {
-                filters.$and.push(
-                    ...tokens.map((token) => ({
-                        tokenIds: token,
-                    }))
-                );
+                filters.$and.push({
+                    tokenIds: { $in: tokens },
+                });
             }
 
             return new MessageResponse(

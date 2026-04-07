@@ -66,6 +66,10 @@ export async function setDefaultSchema() {
         throw new Error(`You need to fill ${SchemaEntity.POLICY_EXPORT_PROOF} field in system-schemas.json file`);
     }
 
+    if (!map.hasOwnProperty(SchemaEntity.EVIDENCE_ATTACHMENTS)) {
+        throw new Error(`You need to fill ${SchemaEntity.EVIDENCE_ATTACHMENTS} field in system-schemas.json file`);
+    }
+
     const fn = async (schema: any) => {
         const existingSchemas = await DatabaseServer.getSchema({
             uuid: schema.uuid,
@@ -101,4 +105,5 @@ export async function setDefaultSchema() {
     await fn(map[SchemaEntity.POLICY_DISCUSSION]);
     await fn(map[SchemaEntity.POLICY_COMMENT]);
     await fn(map[SchemaEntity.POLICY_EXPORT_PROOF]);
+    await fn(map[SchemaEntity.EVIDENCE_ATTACHMENTS]);
 }

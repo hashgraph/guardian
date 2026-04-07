@@ -14,6 +14,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'module',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: false,
     variables: []
 })
 export class ModuleBlock {

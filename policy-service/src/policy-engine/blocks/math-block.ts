@@ -34,6 +34,7 @@ interface IMetadata {
     blockType: 'mathBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Math',
         title: `Add 'Math' Block`,

@@ -4,7 +4,7 @@ import { CacheService, getCacheKey, InternalException, PolicyEngine, UseCache } 
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Permissions, UserPermissions } from '@guardian/interfaces';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Query, Req, Response, StreamableFile } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import {
     Examples,
     InternalServerErrorDTO,
@@ -18,7 +18,8 @@ import {
     PolicyCommentUserDTO,
     PolicyDiscussionDTO,
     SchemaDTO,
-    ServiceUnavailableErrorDTO
+    ServiceUnavailableErrorDTO,
+    UnprocessableEntityErrorDTO
 } from '#middlewares';
 
 @Controller('policy-comments')
@@ -55,13 +56,47 @@ export class PolicyCommentsApi {
         example: Examples.DB_ID
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns mix of broadcast target ("all"), role targets, and individual user targets with their roles.',
         isArray: true,
-        type: PolicyCommentUserDTO
+        type: PolicyCommentUserDTO,
+        examples: {
+            withUsers: {
+                summary: 'Users and roles found',
+                value: [
+                    { label: 'All', value: 'all', type: 'all' },
+                    { label: 'Administrator', value: 'Administrator', type: 'role' },
+                    { label: 'Project_Proponent', value: 'Project_Proponent', type: 'role' },
+                    { label: 'ExampleUser', value: Examples.DID, roles: ['Document Owner', 'Administrator'], type: 'user' }
+                ]
+            },
+            empty: {
+                summary: 'No users',
+                value: []
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            documentNotFound: {
+                summary: 'Document not found or does not belong to this policy',
+                value: { statusCode: 500, message: 'Document not found.' }
+            },
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            insufficientPermissions: {
+                summary: 'No access to this policy',
+                value: { statusCode: 500, message: 'Insufficient permissions to execute the policy.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyCommentUserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -111,11 +146,36 @@ export class PolicyCommentsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: PolicyCommentRelationshipDTO
+        type: PolicyCommentRelationshipDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ label: 'Parent VC Document', value: Examples.MESSAGE_ID }]
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            documentNotFound: {
+                summary: 'Document not found or does not belong to this policy',
+                value: { statusCode: 500, message: 'Document not found.' }
+            },
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            insufficientPermissions: {
+                summary: 'No access to this policy',
+                value: { statusCode: 500, message: 'Insufficient permissions to execute the policy.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyCommentRelationshipDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -165,11 +225,51 @@ export class PolicyCommentsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    name: 'Schema name',
+                    description: 'Description',
+                    entity: 'POLICY',
+                    iri: Examples.UUID,
+                    status: 'DRAFT',
+                    topicId: Examples.ACCOUNT_ID,
+                    version: '1.0.0',
+                    owner: Examples.DID,
+                    messageId: Examples.MESSAGE_ID,
+                    category: 'POLICY',
+                    documentURL: Examples.IPFS,
+                    contextURL: Examples.IPFS,
+                    document: {},
+                    context: {} }]
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            documentNotFound: {
+                summary: 'Document not found or does not belong to this policy',
+                value: { statusCode: 500, message: 'Document not found.' }
+            },
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            insufficientPermissions: {
+                summary: 'No access to this policy',
+                value: { statusCode: 500, message: 'Insufficient permissions to execute the policy.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -233,18 +333,72 @@ export class PolicyCommentsApi {
     @ApiQuery({
         name: 'readonly',
         type: Boolean,
-        description: 'Readonly',
+        description: 'When true and user has POLICIES_POLICY_AUDIT permission, enables audit mode — bypasses privacy filters and shows all discussions.',
         required: false,
         example: false
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns discussions linked to the document, filtered by privacy settings unless in audit mode.',
         isArray: true,
-        type: PolicyDiscussionDTO
+        type: PolicyDiscussionDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    policyId: Examples.DB_ID,
+                    target: 'string',
+                    targetId: Examples.DB_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    parent: 'string',
+                    hash: 'QmExampleHash',
+                    name: 'Common',
+                    field: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1',
+                    fieldName: 'Field name',
+                    relationships: [Examples.MESSAGE_ID],
+                    relationshipIds: [Examples.DB_ID],
+                    privacy: 'public',
+                    roles: ['string'],
+                    users: ['string'],
+                    system: true,
+                    count: 0,
+                    document: { id: Examples.DB_ID,
+                    type: ['string'],
+                    credentialSubject: {},
+                    issuer: {},
+                    issuanceDate: Examples.DATE,
+                    proof: { type: 'string',
+                    created: Examples.DATE,
+                    verificationMethod: 'string',
+                    proofPurpose: 'string',
+                    jws: 'string' } } }]
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            documentNotFound: {
+                summary: 'Document not found or does not belong to this policy',
+                value: { statusCode: 500, message: 'Document not found.' }
+            },
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            insufficientPermissions: {
+                summary: 'No access to this policy',
+                value: { statusCode: 500, message: 'Insufficient permissions to execute the policy.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyDiscussionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -301,15 +455,88 @@ export class PolicyCommentsApi {
     })
     @ApiBody({
         description: 'Config',
-        type: NewPolicyDiscussionDTO
+        type: NewPolicyDiscussionDTO,
+        examples: {
+            publicDiscussion: {
+                summary: 'Create a public discussion',
+                value: {
+                    name: 'Common',
+                    field: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1',
+                    fieldName: 'Field name',
+                    privacy: 'public'
+                }
+            },
+            roleBasedDiscussion: {
+                summary: 'Create a role-based discussion',
+                value: {
+                    name: 'Review Discussion',
+                    privacy: 'roles',
+                    roles: ['Installer']
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyDiscussionDTO
+        type: PolicyDiscussionDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    policyId: Examples.DB_ID,
+                    target: 'string',
+                    targetId: Examples.DB_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    parent: 'string',
+                    hash: 'QmExampleHash',
+                    name: 'Common',
+                    field: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1',
+                    fieldName: 'Field name',
+                    relationships: [Examples.MESSAGE_ID],
+                    relationshipIds: [Examples.DB_ID],
+                    privacy: 'public',
+                    roles: ['string'],
+                    users: ['string'],
+                    system: true,
+                    count: 0,
+                    document: { id: Examples.DB_ID,
+                    type: ['string'],
+                    credentialSubject: {},
+                    issuer: {},
+                    issuanceDate: Examples.DATE,
+                    proof: { type: 'string',
+                    created: Examples.DATE,
+                    verificationMethod: 'string',
+                    proofPurpose: 'string',
+                    jws: 'string' } } }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            documentNotFound: {
+                summary: 'Document not found or does not belong to this policy',
+                value: { statusCode: 500, message: 'Document not found.' }
+            },
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            insufficientPermissions: {
+                summary: 'No access to this policy',
+                value: { statusCode: 500, message: 'Insufficient permissions to execute the policy.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyDiscussionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -363,19 +590,97 @@ export class PolicyCommentsApi {
     })
     @ApiBody({
         description: 'Message',
-        type: NewPolicyCommentDTO
+        type: NewPolicyCommentDTO,
+        examples: {
+            textComment: {
+                summary: 'Create a text comment',
+                value: {
+                    text: 'This field needs review.',
+                    fields: ['#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1']
+                }
+            },
+            commentWithRecipients: {
+                summary: 'Create a comment with recipients',
+                value: {
+                    text: 'Please review this document.',
+                    recipients: ['did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599'],
+                    fields: ['#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1']
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyCommentDTO
+        type: PolicyCommentDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    policyId: Examples.DB_ID,
+                    topicId: Examples.ACCOUNT_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    target: 'string',
+                    targetId: Examples.DB_ID,
+                    discussionMessageId: Examples.MESSAGE_ID,
+                    discussionId: Examples.DB_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    timestamp: 1759493933458,
+                    hash: 'QmExampleHash',
+                    sender: Examples.DID,
+                    senderRole: 'Administrator',
+                    senderName: 'StandardRegistry',
+                    recipients: [Examples.DID],
+                    fields: ['#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'],
+                    text: 'text',
+                    document: { id: Examples.DB_ID,
+                    type: ['string'],
+                    credentialSubject: {},
+                    issuer: {},
+                    issuanceDate: Examples.DATE,
+                    proof: { type: 'string',
+                    created: Examples.DATE,
+                    verificationMethod: 'string',
+                    proofPurpose: 'string',
+                    jws: 'string' } } }
+            }
+        }
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
         type: ServiceUnavailableErrorDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { statusCode: 503, message: 'Error message' }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            documentNotFound: {
+                summary: 'Document not found or does not belong to this policy',
+                value: { statusCode: 500, message: 'Document not found.' }
+            },
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            insufficientPermissions: {
+                summary: 'No access to this policy',
+                value: { statusCode: 500, message: 'Insufficient permissions to execute the policy.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyCommentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -432,23 +737,93 @@ export class PolicyCommentsApi {
     @ApiQuery({
         name: 'readonly',
         type: Boolean,
-        description: 'Readonly.',
+        description: 'When true and user has POLICIES_POLICY_AUDIT permission, enables audit mode — bypasses privacy filters.',
         required: false,
         example: false
     })
     @ApiBody({
         description: 'Search params',
-        type: PolicyCommentSearchDTO
+        type: PolicyCommentSearchDTO,
+        examples: {
+            searchComments: {
+                summary: 'Search comments by text',
+                value: {
+                    search: 'review',
+                    field: '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'
+                }
+            },
+            paginatedSearch: {
+                summary: 'Paginated search',
+                value: {
+                    search: 'text',
+                    lt: '69aeb71ef8c5b278e3bab4e5'
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
         type: PolicyCommentDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    policyId: Examples.DB_ID,
+                    topicId: Examples.ACCOUNT_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    target: 'string',
+                    targetId: Examples.DB_ID,
+                    discussionMessageId: Examples.MESSAGE_ID,
+                    discussionId: Examples.DB_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    timestamp: 1759493933458,
+                    hash: 'QmExampleHash',
+                    sender: Examples.DID,
+                    senderRole: 'Administrator',
+                    senderName: 'StandardRegistry',
+                    recipients: [Examples.DID],
+                    fields: ['#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1'],
+                    text: 'text',
+                    document: { id: Examples.DB_ID,
+                    type: ['string'],
+                    credentialSubject: {},
+                    issuer: {},
+                    issuanceDate: Examples.DATE,
+                    proof: { type: 'string',
+                    created: Examples.DATE,
+                    verificationMethod: 'string',
+                    proofPurpose: 'string',
+                    jws: 'string' } } }]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            documentNotFound: {
+                summary: 'Document not found or does not belong to this policy',
+                value: { statusCode: 500, message: 'Document not found.' }
+            },
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            insufficientPermissions: {
+                summary: 'No access to this policy',
+                value: { statusCode: 500, message: 'Insufficient permissions to execute the policy.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyCommentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -499,15 +874,46 @@ export class PolicyCommentsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyCommentCountDTO
+        type: PolicyCommentCountDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { fields: { '#150e3357-f6d2-4cd6-a69e-f9d911f8bbc7&1.0.0/field1.field1': 3, '#85c18385-e371-44ad-8155-57a834ba185a/projectTitle': 1 }, count: 4 }
+            }
+        }
     })
     @ApiServiceUnavailableResponse({
         description: 'Block Unavailable.',
         type: ServiceUnavailableErrorDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { statusCode: 503, message: 'Error message' }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            documentNotFound: {
+                summary: 'Document not found or does not belong to this policy',
+                value: { statusCode: 500, message: 'Document not found.' }
+            },
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            insufficientPermissions: {
+                summary: 'No access to this policy',
+                value: { statusCode: 500, message: 'Insufficient permissions to execute the policy.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyCommentCountDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -559,18 +965,47 @@ export class PolicyCommentsApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Binary data.',
+        description: 'Binary file data to encrypt and upload to IPFS. The file is linked to the target discussion.',
         required: true,
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: String
+        type: String,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: 'bafkreihj7gclc4qgem27tre5je6a3t7tpdrk4li6oamdl6bnflwnoyfs5i'
+            }
+        }
     })
+    @ApiBadRequestResponse({ description: 'Bad request.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 400, message: 'File is not uploaded' } } }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 422, message: 'Body content in request is empty' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            documentNotFound: {
+                summary: 'Document not found or does not belong to this policy',
+                value: { statusCode: 500, message: 'Document not found.' }
+            },
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            insufficientPermissions: {
+                summary: 'No access to this policy',
+                value: { statusCode: 500, message: 'Insufficient permissions to execute the policy.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async postFile(
         @Body() body: any,
@@ -637,21 +1072,40 @@ export class PolicyCommentsApi {
     @ApiParam({
         name: 'cid',
         type: String,
-        description: 'File cid',
+        description: 'IPFS Content Identifier of the uploaded file',
         required: true,
+        example: 'bafkreihj7gclc4qgem27tre5je6a3t7tpdrk4li6oamdl6bnflwnoyfs5i'
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns the decrypted file as binary stream.',
         schema: {
             type: 'string',
             format: 'binary'
         },
     })
+    @ApiNotFoundResponse({ description: 'File not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'File is not found' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            documentNotFound: {
+                summary: 'Document not found or does not belong to this policy',
+                value: { statusCode: 500, message: 'Document not found.' }
+            },
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            insufficientPermissions: {
+                summary: 'No access to this policy',
+                value: { statusCode: 500, message: 'Insufficient permissions to execute the policy.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
     async getFile(
@@ -681,8 +1135,8 @@ export class PolicyCommentsApi {
         Permissions.POLICIES_POLICY_AUDIT,
     )
     @ApiOperation({
-        summary: 'Returns the list of private keys for the target document',
-        description: 'Returns the list of private keys for the target document',
+        summary: 'Returns the encryption key for the target document discussions.',
+        description: 'Returns the encryption key as a binary file for decrypting discussion content linked to the target document. Optionally filter by specific discussion ID.',
     })
     @ApiParam({
         name: 'policyId',
@@ -712,11 +1166,29 @@ export class PolicyCommentsApi {
             format: 'binary'
         },
     })
+    @ApiNotFoundResponse({ description: 'Key file not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'File is not found' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            documentNotFound: {
+                summary: 'Document not found or does not belong to this policy',
+                value: { statusCode: 500, message: 'Document not found.' }
+            },
+            policyNotFound: {
+                summary: 'Policy does not exist',
+                value: { statusCode: 500, message: 'Policy does not exist.' }
+            },
+            insufficientPermissions: {
+                summary: 'No access to this policy',
+                value: { statusCode: 500, message: 'Insufficient permissions to execute the policy.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
     async getKey(

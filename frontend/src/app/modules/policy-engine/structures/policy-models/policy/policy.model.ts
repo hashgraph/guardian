@@ -37,6 +37,7 @@ export class PolicyTemplate {
     public readonly version!: string;
     public readonly previousVersion!: string;
     public readonly tests!: any;
+    public policyDocumentation!: any[];
 
     private _editableParametersSettings?: PolicyEditableFieldDTO[];
     private _policyTag!: string;
@@ -101,6 +102,7 @@ export class PolicyTemplate {
         this.previousVersion = policy.previousVersion;
         this.tests = policy.tests;
         this.editableParametersSettings = policy.editableParametersSettings;
+        this.policyDocumentation = policy.policyDocumentation;
 
         this.buildPolicy(policy);
         this.buildBlock(policy.config);
@@ -658,6 +660,7 @@ export class PolicyTemplate {
             policyTopics: Array<any>(),
             policyTokens: Array<any>(),
             policyGroups: Array<any>(),
+            policyDocumentation: this.policyDocumentation || [],
             config: null,
             editableParametersSettings: this.editableParametersSettings
         };

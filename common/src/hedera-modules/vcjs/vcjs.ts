@@ -80,6 +80,14 @@ export interface IDocumentOptions {
      * UUID
      */
     uuid?: string;
+    /**
+     * Evidence entries to embed in the VC before signing
+     */
+    evidence?: { type: string[]; dataType: string; data: string }[];
+    /**
+     * JSON-LD context URL for evidence entries
+     */
+    evidenceContext?: string;
 }
 
 /**
@@ -406,7 +414,8 @@ export class VCJS {
                     Buffer.from(
                         await IPFS.getFile(
                             (cidMatches && cidMatches[0]) || '',
-                            'raw'
+                            'raw',
+                            IPFS.DEFAULT_OPTIONS
                         )
                     ).toString()
                 );
@@ -679,6 +688,14 @@ export class VCJS {
             vc.addContext(documentOptions.group.context);
         } else {
             vc.setIssuer(new Issuer(didDocument.getDid()));
+        }
+        if (documentOptions?.evidenceContext) {
+            vc.addContext(documentOptions.evidenceContext);
+        }
+        if (documentOptions?.evidence?.length) {
+            for (const entry of documentOptions.evidence) {
+                vc.addEvidence(entry);
+            }
         }
         return await this.issueVerifiableCredential(vc, didDocument, signatureType, documentOptions);
     }

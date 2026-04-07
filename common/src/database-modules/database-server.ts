@@ -63,13 +63,14 @@ import {
     MigrationFailedItem,
     DeleteCache,
     DocumentDraft,
-    PolicyDiff
+    PolicyDiff,
+    CredentialRecord
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
 import { PolicyTool } from '../entity/tool.js';
 import { Message } from '../hedera-modules/index.js';
-import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../helpers/index.js';
+import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS, Wallet, KeyType } from '../helpers/index.js';
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { BaseEntity } from '../models/index.js';
@@ -2032,7 +2033,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
         hederaAccountId: string,
         hederaAccountKey: string,
         active: boolean,
-        systemMode?: boolean
+        systemMode?: boolean,
+        document?: any
     ): Promise<void> {
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
             did,
@@ -2047,6 +2049,22 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 type: did,
                 hederaAccountKey
             }, policyId, 'VirtualKey', !!systemMode));
+        }
+
+        if (document) {
+            if (Array.isArray(document.keys)) {
+                for (const key of document.keys) {
+                    await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
+                        did: key.did,
+                        type: key.type,
+                        hederaAccountKey: key.key
+                    }, policyId, 'VirtualKey', !!systemMode));
+                }
+            }
+            delete document.keys;
+            await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId(
+                document,
+                policyId, 'DidDocumentCollection', !!systemMode));
         }
     }
 
@@ -2137,6 +2155,55 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async deletePolicyTests(policyId: string): Promise<void> {
         await new DataBaseHelper(PolicyTest).delete({ policyId });
+    }
+
+    /**
+     * Delete credential records and their secrets for a policy
+     * @param policyId
+     * @param userId
+     */
+    public static async deletePolicyCredentials(policyId: string, userId?: string): Promise<number> {
+        const credentialDb = new DataBaseHelper(CredentialRecord);
+        const records = await credentialDb.find({ policyId });
+        if (records.length > 0) {
+            const wallet = new Wallet();
+            for (const record of records) {
+                try {
+                    const keyPath = `${record.serviceType}/${record.policyId || 'global'}/${record.dryRun ? 'dryrun' : 'production'}`;
+                    await wallet.setUserKey(record.ownerId, KeyType.INTEGRATION_KEY, keyPath, '', userId);
+                } catch (_) { /* best effort */ }
+            }
+            await credentialDb.delete({ policyId });
+        }
+        return records.length;
+    }
+
+    /**
+     * Save external credential metadata
+     */
+    public async saveExternalCredentials(item: any): Promise<any> {
+        return await this.save(CredentialRecord, item);
+    }
+
+    /**
+     * Get external credentials by filters
+     */
+    public async getExternalCredentials(filters: any): Promise<any[]> {
+        return await this.find(CredentialRecord, filters);
+    }
+
+    /**
+     * Get single external credential by filters
+     */
+    public async getExternalCredential(filters: any): Promise<any> {
+        return await this.findOne(CredentialRecord, filters);
+    }
+
+    /**
+     * Delete external credentials by filters
+     */
+    public async deleteExternalCredentials(filters: any): Promise<void> {
+        await new DataBaseHelper(CredentialRecord).delete(filters);
     }
 
     /**
@@ -4040,7 +4107,12 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param savepointIds
      * @virtual
      */
-    public static async getVirtualUsers(policyId: string, savepointIds?: string[]): Promise<DryRun[]> {
+    public static async getVirtualUsers(
+        policyId: string,
+        savepointIds?: string[],
+        virtualKey?: boolean,
+        document?: boolean,
+    ): Promise<DryRun[]> {
         const filter: any = {
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
@@ -4054,7 +4126,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
             filter.$or.push({ savepointId: { $in: savepointIds } });
         }
 
-        return await new DataBaseHelper(DryRun).find(filter, {
+        const users = await new DataBaseHelper(DryRun).find(filter, {
             fields: [
                 'id',
                 'did',
@@ -4066,6 +4138,77 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 createDate: 1
             }
         });
+
+        if (virtualKey) {
+            for (const user of users) {
+                const key = (await new DataBaseHelper(DryRun).findOne({
+                    dryRunId: policyId,
+                    dryRunClass: 'VirtualKey',
+                    did: user.did,
+                    type: user.did
+                }));
+                user.hederaAccountKey = key?.hederaAccountKey;
+            }
+        }
+        if (document) {
+            for (const user of users) {
+                const doc = (await new DataBaseHelper(DryRun).findOne({
+                    dryRunId: policyId,
+                    dryRunClass: 'DidDocumentCollection',
+                    did: user.did
+                }));
+                if (doc) {
+                    const keys: any[] = [];
+                    const methodIds = Object.values(doc.verificationMethods);
+                    for (const methodId of methodIds) {
+                        const methodKey = (await new DataBaseHelper(DryRun).findOne({
+                            dryRunId: policyId,
+                            dryRunClass: 'VirtualKey',
+                            did: user.did,
+                            type: methodId
+                        }));
+                        if (methodKey) {
+                            keys.push({
+                                did: doc.did,
+                                type: methodKey.type,
+                                key: methodKey.hederaAccountKey
+                            })
+                        }
+                    }
+                    user.document = {
+                        did: doc.did,
+                        document: doc.document,
+                        verificationMethods: doc.verificationMethods,
+                        keys
+                    };
+                }
+            }
+        }
+
+        return users;
+    }
+
+    /**
+     * Count Virtual Users
+     * @param policyId
+     * @param savepointIds
+     * @virtual
+     */
+    public static async countVirtualUsers(policyId: string, savepointIds?: string[]): Promise<number> {
+        const filter: any = {
+            dryRunId: policyId,
+            dryRunClass: 'VirtualUsers',
+            $or: [
+                { savepointId: null },
+                { savepointId: { $exists: false } }
+            ]
+        };
+
+        if (savepointIds) {
+            filter.$or.push({ savepointId: { $in: savepointIds } });
+        }
+
+        return await new DataBaseHelper(DryRun).count(filter);
     }
 
     /**
@@ -4626,6 +4769,112 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Save Mock
+     * @param dryRun
+     * @param type
+     * @param data
+     *
+     */
+    public static async saveMock(
+        dryRun: string,
+        type: string,
+        data: any
+    ): Promise<void> {
+        await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
+            ...data,
+            type
+        }, dryRun, 'Mock', false));
+    }
+
+    /**
+     * Save Mock
+     * @param dryRun
+     * @param type
+     * @param data
+     *
+     */
+    public static async updateMock(item: DryRun): Promise<void> {
+        await new DataBaseHelper(DryRun).save(item);
+    }
+    /**
+     * Get Mock
+     * @param dryRun
+     * @param type
+     * @param filters
+     *
+     */
+    public static async getMock(
+        dryRun: string,
+        type: string,
+        filters: any
+    ): Promise<DryRun> {
+        return (await new DataBaseHelper(DryRun).findOne({
+            ...filters,
+            dryRunId: dryRun,
+            dryRunClass: 'Mock',
+            type
+        }));
+    }
+
+    /**
+     * Delete Mock
+     * @param dryRun
+     * @param type
+     * @param filters
+     *
+     */
+    public static async deleteMock(
+        dryRun: string,
+        type: string,
+        filters: any
+    ): Promise<void> {
+        (await new DataBaseHelper(DryRun).delete({
+            ...filters,
+            dryRunId: dryRun,
+            dryRunClass: 'Mock',
+            type
+        }));
+    }
+
+    /**
+     * Get Mocks
+     * @param dryRun
+     */
+    public static async getMocks(
+        dryRun: string,
+        type?: string,
+        filters?: any
+    ): Promise<DryRun[]> {
+        let query: any = {
+            dryRunId: dryRun,
+            dryRunClass: 'Mock',
+        }
+        if (type) {
+            query.type = type
+        }
+        if (filters) {
+            query = {
+                ...query,
+                ...filters
+            }
+        }
+        return (await new DataBaseHelper(DryRun).find(query));
+    }
+
+    /**
+     * Delete Mocks
+     * @param dryRun
+     */
+    public static async deleteMocks(
+        dryRun: string
+    ): Promise<void> {
+        (await new DataBaseHelper(DryRun).delete({
+            dryRunId: dryRun,
+            dryRunClass: 'Mock'
+        }));
+    }
+
+    /**
      * Set Active Group
      *
      * @param policyId
@@ -4978,6 +5227,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         model.categories = data.categories;
         model.projectSchema = data.projectSchema;
         model.editableParametersSettings = data.editableParametersSettings;
+        model.policyDocumentation = data.policyDocumentation;
 
         return await new DataBaseHelper(Policy).save(model);
     }

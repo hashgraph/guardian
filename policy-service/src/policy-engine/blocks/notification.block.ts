@@ -36,6 +36,7 @@ import { PolicyUser } from '@policy-engine/policy-user.js';
 @BasicBlock({
     blockType: 'notificationBlock',
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Notification',
         title: `Add 'Notification' Block`,

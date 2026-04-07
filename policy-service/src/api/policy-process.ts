@@ -11,6 +11,7 @@ import {
     LargePayloadContainer,
     MessageBrokerChannel,
     MessageServer,
+    MockService,
     mongoForLoggingInitialization,
     NotificationService,
     OldSecretManager,
@@ -45,7 +46,8 @@ const {
     policyId,
     policyServiceName,
     skipRegistration,
-    policyOwnerId
+    policyOwnerId,
+    enableMock
 } = JSON.parse(process.env.POLICY_START_OPTIONS);
 
 process.env.SERVICE_CHANNEL = policyServiceName;
@@ -88,6 +90,7 @@ Promise.all([
     JwtServicesValidator.setServiceName(jwtServiceName);
 
     await new OldSecretManager().setConnection(cn).init();
+    await new MockService().setConnection(cn).init();
 
     const policyConfig = await DatabaseServer.getPolicyById(policyId);
 
@@ -152,7 +155,14 @@ Promise.all([
     const generator = new BlockTreeGenerator();
     const policyValidator = new PolicyValidator(policyConfig);
 
-    const policyModel = await generator.generate(policyConfig, skipRegistration, policyValidator, logger, policyOwnerId);
+    const policyModel = await generator.generate(
+        policyConfig,
+        skipRegistration,
+        policyValidator,
+        logger,
+        policyOwnerId,
+        enableMock
+    );
     if ((policyModel as { type: 'error', message: string }).type === 'error') {
         await generator.publish(PolicyEvents.POLICY_READY, {
             policyId: policyId.toString(),

@@ -586,7 +586,27 @@
     padding: 1px 16px;
 }
 
+.evidence-container {
+    @import '../../../../common/policy-comments/toolbar-files';
 
+    .toolbar-files {
+        margin-top: 12px;
+        flex-direction: column;
+
+        .toolbar-file {
+            display: flex;
+            width: 100%;
+        }
+    }
+
+    .toolbar-actions {
+        margin-top: 8px;
+    }
+}
+
+.evidence-buttons {
+    gap: 8px;
+}
 
 .account-warning {
     display: flex;
