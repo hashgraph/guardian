@@ -24189,6 +24189,110 @@ paths:
       summary: Get all versions of a VC document.
       tags:
         - policies
+  /policies/{policyId}/parameters:
+    post:
+      description: Save policy config with values to the PolicyParameters tale
+      operationId: PolicyApi_savePolicyParametersValues
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Policy parameters.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PolicyEditableFieldDTO'
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Save policy config with values
+      tags:
+        - policies
+  /policies/{policyId}/parameters/config:
+    get:
+      description: Get policy parameters.
+      operationId: PolicyApi_getPolicyParametersConfig
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Policy parameters.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PolicyEditableFieldDTO'
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get policy parameters.
+      tags:
+        - policies
   /dmrv/{policyId}/{alias}:
     get:
       description: >-
@@ -49743,9 +49847,6 @@ components:
         - progress
         - resultId
         - result
-    PolicyEditableFieldDTO:
-      type: object
-      properties: {}
     PolicyImportantParametersDTO:
       type: object
       properties:
@@ -49775,6 +49876,9 @@ components:
         - name
         - topicId
         - messageId
+    PolicyEditableFieldDTO:
+      type: object
+      properties: {}
     IgnoreRuleDTO:
       type: object
       properties:
@@ -54606,10 +54710,10 @@ components:
       properties:
         userId:
           type: string
-          example: '000000000000000000000001'
+          example: 69aeb71ef8c5b278e3bab4e5
         policyId:
           type: string
-          example: 00000000-0000-0000-0000-000000000000
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
         config:
           type: array
           items:
