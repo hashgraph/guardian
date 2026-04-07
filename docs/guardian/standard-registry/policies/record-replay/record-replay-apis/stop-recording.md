@@ -1,42 +1,54 @@
 # Stop Recording
 
-{% swagger method="post" path="" baseUrl=" /record/{policyId}/recording/stop" summary="Stop recording." %}
-{% swagger-description %}
-Stop recording. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/record/{policyId}/recording/stop`**
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
+Stops the active recording session for a policy and returns the captured recording as a ZIP file.
 
-{% swagger-parameter in="body" type="Object" required="true" %}
-Object that contains options
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Permission:** `Permissions.POLICIES_RECORD_ALL`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The ID of the policy whose recording is being stopped |
+
+### Request Body
+
+```json
+{}
 ```
-content:
-            application/json:
-              schema:
-                type: string
-                format: binary
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `options` | object | No | Optional stop configuration options |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+Returns the completed recording packaged as a binary ZIP file.
+
 ```
-{% endswagger-response %}
+Content-Disposition: attachment; filename=<timestamp>
+Content-Type: application/zip
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+<binary zip content>
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

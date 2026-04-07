@@ -1,41 +1,51 @@
-# Get Recording
+# Get Recording or Running Status
 
-{% swagger method="get" path="" baseUrl="/record/{policyId}/status" summary="Get recording or running status." %}
-{% swagger-description %}
-Get recording or running status. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`GET /api/v1/record/{policyId}/status`**
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-policy ID
-{% endswagger-parameter %}
+Returns the current recording or running status for a policy.
 
-{% swagger-parameter in="body" type="Object" required="true" %}
-Object that contains options
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Permission:** `Permissions.POLICIES_RECORD_ALL`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The ID of the policy whose record status is being queried |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "type": "RECORDING",
+  "policyId": "63e3e5e8a01b3c001234abcd",
+  "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "status": "STOPPED"
+}
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RecordStatusDTO'
-```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | string | Current mode: `RECORDING` or `RUNNING` |
+| `policyId` | string | The policy identifier |
+| `uuid` | string | Unique identifier for the current recording or run session |
+| `status` | string | Session status: `NONE`, `RECORDING`, `RUNNING`, or `STOPPED` |
 
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

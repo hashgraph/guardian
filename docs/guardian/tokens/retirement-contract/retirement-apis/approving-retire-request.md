@@ -1,32 +1,39 @@
 # Approving Retire Request
 
-{% swagger method="post" path="" baseUrl="/contracts/retire/requests/{requestId}/approve" summary="Approve retire request." %}
-{% swagger-description %}
-Approve retire contract request. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/contracts/retire/requests/{requestId}/approve`**
 
-{% swagger-parameter in="path" name="requestId" type="String" required="true" %}
-Request Identifier
-{% endswagger-parameter %}
+Approves a retire contract request. Only Standard Registry users are allowed to make this request.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% endswagger-response %}
+**Permission:** `Permissions.CONTRACTS_RETIRE_REQUEST_REVIEW`
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+---
 
-{% endswagger-response %}
+## Request
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+### Path Parameters
 
-{% endswagger-response %}
+| Parameter   | Type   | Required | Description        |
+|-------------|--------|----------|--------------------|
+| `requestId` | string | Yes      | Request identifier |
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+true
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

@@ -1,54 +1,82 @@
-# Searching Tag
+# Searching Tags
 
-{% swagger method="post" path="" baseUrl="/tags/search" summary="Search tags." %}
-{% swagger-description %}
-Search tags.
-{% endswagger-description %}
+**`POST /api/v1/tags/search`**
 
-{% swagger-parameter in="body" type="String" required="true" name="entity" %}
-\[Schema, Policy, Token, Module, Contract, PolicyDocument]
-{% endswagger-parameter %}
+Searches for tags associated with one or more target entities of the given type.
 
-{% swagger-parameter in="body" name="target" type="String" required="true" %}
-targetId1
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="body" name="entity" type="String" required="true" %}
-\[Schema, Policy, Token, Module, Contract, PolicyDocument]
-{% endswagger-parameter %}
+**Permission:** `Permissions.TAGS_TAG_READ`
 
-{% swagger-parameter in="body" name="targets" type="String" required="true" %}
-\[targetId1, targetId2]
-{% endswagger-parameter %}
+---
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+## Request
+
+### Request Body
+
+Search for tags on a single target:
+
+```json
+{
+  "entity": "PolicyDocument",
+  "target": "1706823489.123456789"
+}
 ```
-content:
-            application/json:
-              schema:
-                description: a (targetId, Tags) map. `targetId1` is an example key
-                properties:
-                  targetId1:
-                    $ref: "#/components/schemas/TagMap"
-                additionalProperties:
-                  $ref: "#/components/schemas/TagMap"
+
+Search for tags on multiple targets:
+
+```json
+{
+  "entity": "PolicyDocument",
+  "targets": [
+    "1706823489.123456789",
+    "1706823490.987654321"
+  ]
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `entity` | string | Yes | Entity type to search tags for. One of: `Schema`, `Policy`, `Token`, `Module`, `Contract`, `PolicyDocument` |
+| `target` | string | No | Single target message ID. Required if `targets` is not provided |
+| `targets` | string[] | No | Array of target message IDs. Required if `target` is not provided |
+| `linkedItems` | boolean | No | Whether to include linked items in the result |
 
-{% endswagger-response %}
+---
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+## Response
 
-{% endswagger-response %}
+### Success Response
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+**Status:** `200 OK`
+
+Returns a map of target IDs to their associated tag data:
+
+```json
+{
+  "1706823489.123456789": {
+    "entity": "PolicyDocument",
+    "target": "1706823489.123456789",
+    "refreshDate": "2024-02-01T12:00:00.000Z",
+    "tags": [
+      {
+        "id": "63e3e5e8a01b3c001234abcd",
+        "name": "example-tag",
+        "entity": "PolicyDocument",
+        "target": "1706823489.123456789",
+        "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+        "status": "Published"
+      }
+    ]
+  }
+}
 ```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Missing or invalid `entity`, `target`, or `targets` field |
+| `500 Internal Server Error` | Unexpected server failure |

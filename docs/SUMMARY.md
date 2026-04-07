@@ -1186,7 +1186,6 @@
   * [Import a Policy](policy-creation-using-the-guardian-apis/import-a-policy.md)
   * [Import from Zip File](policy-creation-using-the-guardian-apis/import-from-zip-file.md)
   * [Policy Preview from IPFS](policy-creation-using-the-guardian-apis/policy-preview-from-ipfs.md)
-  * [Dynamic Policy Fields Guide](policy-creation-using-the-guardian-apis/dynamic-policy-fields.md)
 * [Policy APIs — Async](policy-related-apis-for-asynchronous-execution/README.md)
   * [Creates New Policy](policy-related-apis-for-asynchronous-execution/creates-new-policy.md)
   * [Publishing a Policy](policy-related-apis-for-asynchronous-execution/publishing-a-policy.md)
@@ -1194,39 +1193,7 @@
   * [Importing a Policy from IPFS](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-ipfs.md)
   * [Policy Review](policy-related-apis-for-asynchronous-execution/policy-review.md)
 
-### Permissions & Notifications
-
-* [Permissions & Roles APIs](permissions-apis/README.md)
-* [Notifications APIs](notifications-apis/README.md)
-
-### Policy Collaboration
-
-* [Policy Comments APIs](policy-comments-apis/README.md)
-* [Policy Labels APIs](policy-labels-apis/README.md)
 * [Policy Repository APIs](policy-repository-apis/README.md)
-* [Policy Statistics APIs](policy-statistics-apis/README.md)
-
-### Tagging & Projects
-
-* [Tags APIs](tags-apis/README.md)
-* [Projects APIs](projects-apis/README.md)
-
-### Other Platform APIs
-
-* [Branding APIs](branding-apis/README.md)
-* [Block Suggestions APIs](suggestions-apis/README.md)
-* [Analytics & Comparison APIs](analytics-apis/README.md)
-* [Contracts APIs](contracts-apis/README.md)
-* [IPFS APIs](ipfs-apis/README.md)
-* [Tools APIs](tools-apis/README.md)
-* [Wizard APIs](wizard-apis/README.md)
-* [Formulas APIs](formulas-apis/README.md)
-* [Schema Rules APIs](schema-rules-apis/README.md)
-* [Record APIs](record-apis/README.md)
-
-### Integration Guides
-
-* [Block API Execution Payloads](available-policy-workflow-blocks/api-execution-payloads.md)
 
 ***
 
