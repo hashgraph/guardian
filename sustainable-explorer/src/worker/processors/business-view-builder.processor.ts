@@ -7,9 +7,15 @@ import { QUEUE_NAMES } from '@shared/config/bullmq.config';
 
 /**
  * Mapping from HCS message types to business domain view types.
+ *
+ * Note on methodologies: Guardian publishes a draft "Policy" message and a
+ * canonical "Instance-Policy" message (with action='PublishPolicy'). The
+ * existing Guardian indexer treats Instance-Policy as the canonical
+ * methodology entity. We mirror that here by mapping ONLY Instance-Policy
+ * messages to METHODOLOGY view rows.
  */
 const TYPE_MAPPINGS: Record<string, string> = {
-    'Policy': 'METHODOLOGY',
+    'Instance-Policy': 'METHODOLOGY',
     'Standard Registry': 'REGISTRY',
     'Token': 'CREDIT',
     'VC-Document': 'PROJECT',
@@ -81,6 +87,9 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
             LEFT JOIN token_cache tc
                 ON tc."tokenId" = m.options->>'tokenId'
             WHERE m.type IN (${typeFilter})
+              -- For Instance-Policy, only canonical 'publish-policy' actions
+              -- count as a real methodology. Other types pass through.
+              AND (m.type != 'Instance-Policy' OR m.action = 'publish-policy')
             ON CONFLICT ("sourceTimestamp", "viewType") DO UPDATE SET
                 "displayName" = EXCLUDED."displayName",
                 "registryDid" = EXCLUDED."registryDid",

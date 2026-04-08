@@ -89,8 +89,14 @@ export function extractFields(json: Record<string, unknown>): ParsedMessage {
             };
             break;
 
+        // Policy is the draft message; Instance-Policy is the published version.
+        // They share the same field structure — the indexer treats Instance-Policy
+        // as the canonical methodology entity (filtered by action='PublishPolicy').
         case 'Policy':
+        case 'Instance-Policy':
             result.options = {
+                uuid: json['uuid'] || null,
+                originalMessageId: json['originalMessageId'] || null,
                 name: json['name'] || null,
                 description: json['description'] || null,
                 topicDescription: json['topicDescription'] || null,
@@ -98,6 +104,7 @@ export function extractFields(json: Record<string, unknown>): ParsedMessage {
                 policyTag: json['policyTag'] || null,
                 owner: json['owner'] || null,
                 topicId: json['topicId'] || null,
+                policyTopicId: json['topicId'] || null,
                 instanceTopicId: json['instanceTopicId'] || null,
                 synchronizationTopicId: json['synchronizationTopicId'] || null,
                 hash: json['hash'] || null,
