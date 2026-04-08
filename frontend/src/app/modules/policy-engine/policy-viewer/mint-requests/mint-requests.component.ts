@@ -41,6 +41,11 @@ export class MintRequestsComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.loadData();
+        this.subscription.add(
+            this.filtersForm.get('status')!.valueChanges.subscribe(() => {
+                this.applyFilters();
+            })
+        );
     }
 
     ngOnDestroy(): void {
