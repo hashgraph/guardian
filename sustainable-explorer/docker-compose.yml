@@ -131,8 +131,8 @@ services:
             - .env
         environment:
             # Comma-separated list of networks this API instance exposes.
-            # Add 'testnet' here when you enable the testnet worker above.
-            HEDERA_NETWORKS: mainnet
+            # Must include every network that has a running worker.
+            HEDERA_NETWORKS: mainnet,testnet
             DB_HOST: postgres
             DB_PORT: '5432'
             REDICT_HOST: redict
