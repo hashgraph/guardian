@@ -9,7 +9,7 @@
 # =============================================================================
 
 # ---- 1. Deps ----
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /app
 
 COPY package.json yarn.lock* ./
@@ -17,7 +17,7 @@ RUN yarn install --frozen-lockfile || yarn install
 
 
 # ---- 2. Builder ----
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -30,7 +30,7 @@ RUN yarn build
 
 
 # ---- 3. Runner ----
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 RUN addgroup -S nuxt && adduser -S nuxt -G nuxt
