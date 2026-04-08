@@ -120,17 +120,10 @@ export class MintRequestsComponent implements OnInit, OnDestroy {
         });
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Retry') {
-                this.loading = true;
                 this.policyEngineService
                     .retryMint(this.policyId, row.vpMessageId)
-                    .subscribe({
-                        next: () => {
-                            this.loadData();
-                        },
-                        error: () => {
-                            this.loading = false;
-                        },
-                    });
+                    .subscribe();
+                this.loadData();
             }
         });
     }
