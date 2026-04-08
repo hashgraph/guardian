@@ -29,6 +29,7 @@ export class MintRequestsComponent implements OnInit, OnDestroy {
     public filtersForm = new UntypedFormGroup({
         status: new UntypedFormControl(''),
         tokenId: new UntypedFormControl(''),
+        vpMessageId: new UntypedFormControl(''),
     });
 
     private subscription = new Subscription();
@@ -51,11 +52,15 @@ export class MintRequestsComponent implements OnInit, OnDestroy {
         const filters: any = {};
         const status = this.filtersForm.get('status')?.value;
         const tokenId = this.filtersForm.get('tokenId')?.value;
+        const vpMessageId = this.filtersForm.get('vpMessageId')?.value;
         if (status) {
             filters.status = status;
         }
         if (tokenId) {
             filters.tokenId = tokenId;
+        }
+        if (vpMessageId) {
+            filters.vpMessageId = vpMessageId;
         }
 
         this.subscription.add(
@@ -94,7 +99,7 @@ export class MintRequestsComponent implements OnInit, OnDestroy {
     }
 
     public clearFilters() {
-        this.filtersForm.reset({ status: '', tokenId: '' });
+        this.filtersForm.reset({ status: '', tokenId: '', vpMessageId: '' });
         this.pageIndex = 0;
         this.loadData();
     }
@@ -142,15 +147,48 @@ export class MintRequestsComponent implements OnInit, OnDestroy {
 
     public getStatusClass(row: any): string {
         if (row.error) {
-            return 'status-error';
+            return 'chip chip-color-red';
         }
         if (row.isMintNeeded) {
-            return 'status-pending';
+            return 'chip chip-color-yellow';
         }
-        return 'status-success';
+        return 'chip chip-color-green';
     }
 
     public hasError(row: any): boolean {
         return !!row.error;
+    }
+
+    public getTokenTypeLabel(tokenType: string): string {
+        if (tokenType === 'non-fungible') {
+            return 'NFT';
+        }
+        if (tokenType === 'fungible') {
+            return 'FT';
+        }
+        return tokenType || '';
+    }
+
+    public getFormattedAmount(row: any): string {
+        if (row.amount == null) {
+            return '-';
+        }
+        return row.decimals > 0
+            ? String(row.amount / Math.pow(10, row.decimals))
+            : String(row.amount);
+    }
+
+    public getMintedDisplay(row: any): string {
+        if (row.mintedExpected == null) {
+            return '-';
+        }
+        return `${row.mintedAmount} / ${row.mintedExpected}`;
+    }
+
+    public getTransferredDisplay(row: any): string {
+        if (!row.wasTransferNeeded) {
+            return 'N/A';
+        }
+        return `${row.transferredAmount} / ${row.transferredExpected}`;
     }
 }

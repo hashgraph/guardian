@@ -41,6 +41,7 @@ import {
     TopicConfig,
     Users,
     VcHelper,
+    MintTransaction,
     XlsxToJson
 } from '@guardian/common';
 import {
@@ -64,6 +65,8 @@ import {
     IgnoreRule,
     SchemaStatus,
     MigrationConfig, MigrationRunStatus,
+    MintTransactionStatus,
+    TokenType,
     IPolicyDocumentationEntry
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
@@ -653,11 +656,12 @@ export class PolicyEngineService {
                 policyId: string,
                 status: string,
                 tokenId: string,
+                vpMessageId: string,
                 pageIndex: string,
                 pageSize: string
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { owner, policyId, status, tokenId, pageIndex, pageSize } = msg;
+                    const { owner, policyId, status, tokenId, vpMessageId, pageIndex, pageSize } = msg;
 
                     const parsedPageSize = parseInt(pageSize, 10) || 10;
                     const parsedPageIndex = parseInt(pageIndex, 10) || 0;
@@ -671,6 +675,10 @@ export class PolicyEngineService {
 
                     if (tokenId) {
                         filters.tokenId = tokenId;
+                    }
+
+                    if (vpMessageId) {
+                        filters.vpMessageId = vpMessageId;
                     }
 
                     if (status === 'error') {
@@ -692,7 +700,69 @@ export class PolicyEngineService {
                         }
                     );
 
-                    return new MessageResponse([items, count]);
+                    const requestIds = items.map((item: any) => item.id);
+                    const allTransactions = requestIds.length > 0
+                        ? await new DataBaseHelper(MintTransaction).find({ mintRequestId: { $in: requestIds } } as any)
+                        : [];
+
+                    const txByRequest = new Map<string, any[]>();
+                    for (const tx of allTransactions) {
+                        const key = tx.mintRequestId;
+                        if (!txByRequest.has(key)) {
+                            txByRequest.set(key, []);
+                        }
+                        txByRequest.get(key)!.push(tx);
+                    }
+
+                    const enrichedItems = items.map((item: any) => {
+                        const plain = typeof item.toJSON === 'function' ? item.toJSON() : { ...item };
+                        const transactions = txByRequest.get(plain.id) || [];
+
+                        let mintedAmount = 0;
+                        let transferredAmount = 0;
+
+                        if (plain.tokenType === TokenType.NON_FUNGIBLE) {
+                            for (const tx of transactions) {
+                                if (tx.mintStatus === MintTransactionStatus.SUCCESS && tx.serials) {
+                                    mintedAmount += tx.serials.length;
+                                }
+                                if (tx.transferStatus === MintTransactionStatus.SUCCESS && tx.serials) {
+                                    transferredAmount += tx.serials.length;
+                                }
+                            }
+                        } else {
+                            const hasSuccessMint = transactions.some(
+                                (tx: any) => tx.mintStatus === MintTransactionStatus.SUCCESS
+                            );
+                            if (hasSuccessMint) {
+                                mintedAmount = plain.decimals > 0
+                                    ? plain.amount / Math.pow(10, plain.decimals)
+                                    : plain.amount;
+                            }
+
+                            const hasSuccessTransfer = transactions.some(
+                                (tx: any) => tx.transferStatus === MintTransactionStatus.SUCCESS
+                            );
+                            if (hasSuccessTransfer) {
+                                transferredAmount = plain.decimals > 0
+                                    ? plain.amount / Math.pow(10, plain.decimals)
+                                    : plain.amount;
+                            }
+                        }
+
+                        const expectedAmount = plain.tokenType === TokenType.NON_FUNGIBLE
+                            ? plain.amount
+                            : (plain.decimals > 0 ? plain.amount / Math.pow(10, plain.decimals) : plain.amount);
+
+                        plain.mintedAmount = mintedAmount;
+                        plain.mintedExpected = expectedAmount;
+                        plain.transferredAmount = transferredAmount;
+                        plain.transferredExpected = plain.wasTransferNeeded ? expectedAmount : 0;
+
+                        return plain;
+                    });
+
+                    return new MessageResponse([enrichedItems, count]);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error, error.code);

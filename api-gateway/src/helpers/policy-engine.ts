@@ -398,11 +398,12 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         status?: string,
         tokenId?: string,
+        vpMessageId?: string,
         pageIndex?: number | string,
         pageSize?: number | string
     ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.GET_MINT_REQUESTS, {
-            owner, policyId, status, tokenId, pageIndex, pageSize
+            owner, policyId, status, tokenId, vpMessageId, pageIndex, pageSize
         });
     }
 

@@ -3726,6 +3726,13 @@ export class PolicyApi {
         example: '0.0.6046500'
     })
     @ApiQuery({
+        name: 'vpMessageId',
+        type: String,
+        description: 'VP Message ID filter',
+        required: false,
+        example: '1775659196.584626142'
+    })
+    @ApiQuery({
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
@@ -3762,6 +3769,11 @@ export class PolicyApi {
                     policyId: { type: 'string', description: 'Associated policy ID' },
                     owner: { type: 'string', nullable: true, description: 'Owner DID' },
                     id: { type: 'string', description: 'Mint request ID' },
+                    mintedAmount: { type: 'number', description: 'Minted amount from successful transactions' },
+                    mintedExpected: { type: 'number', description: 'Expected total mint amount' },
+                    transferredAmount: { type: 'number', description: 'Transferred amount from successful transactions' },
+                    transferredExpected: { type: 'number', description: 'Expected total transfer amount' },
+                    wasTransferNeeded: { type: 'boolean', description: 'Whether transfer was needed' },
                 }
             }
         },
@@ -3780,6 +3792,7 @@ export class PolicyApi {
         @Param('policyId') policyId: string,
         @Query('status') status?: string,
         @Query('tokenId') tokenId?: string,
+        @Query('vpMessageId') vpMessageId?: string,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
     ): Promise<any> {
@@ -3790,6 +3803,7 @@ export class PolicyApi {
                 policyId,
                 status,
                 tokenId,
+                vpMessageId,
                 pageIndex,
                 pageSize,
             );

@@ -53,7 +53,8 @@
             }
         }
 
-        .token-input {
+        .token-input,
+        .vp-message-id-input {
             width: 220px;
             height: 40px;
             border: 1px solid #e1e7ef;
@@ -117,8 +118,10 @@
     }
 }
 
-.col-auto {
-    width: 100%;
+.col-220 {
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -133,6 +136,15 @@
     text-overflow: ellipsis;
 }
 
+.col-180 {
+    width: 180px;
+    min-width: 180px;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .col-150 {
     width: 150px;
     min-width: 150px;
@@ -142,19 +154,19 @@
     text-overflow: ellipsis;
 }
 
-.col-120 {
-    width: 120px;
-    min-width: 120px;
-    max-width: 120px;
+.col-140 {
+    width: 140px;
+    min-width: 140px;
+    max-width: 140px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.col-100 {
-    width: 100px;
-    min-width: 100px;
-    max-width: 100px;
+.col-120 {
+    width: 120px;
+    min-width: 120px;
+    max-width: 120px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -174,31 +186,30 @@
     display: block;
 }
 
-.error-text {
-    color: var(--color-error, #D32F2F);
-}
-
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+.chip {
+    display: inline;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
     font-weight: 500;
-    white-space: nowrap;
+    line-height: 16px;
 }
 
-.status-error {
-    background: #FFE0E0;
-    color: #D32F2F;
+.chip-color-green {
+    color: #19be47;
+    background: #cafdd9;
 }
 
-.status-pending {
-    background: #FFF3E0;
-    color: #F57C00;
+.chip-color-red {
+    color: var(--color-accent-red-1, #FF432A);
+    background: var(--color-accent-red-2, #F5D7D7);
 }
 
-.status-success {
-    background: #E8F5E9;
-    color: #388E3C;
+.chip-color-yellow {
+    color: var(--color-accent-yellow-1, #DA9B22);
+    background: var(--color-accent-yellow-2, #FFF2D8);
 }
 
 .guardian-grid-container {

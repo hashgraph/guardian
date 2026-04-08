@@ -25,6 +25,17 @@
                                 />
                             </span>
                         </div>
+                        <div class="filter">
+                            <span class="p-input-icon-right">
+                                <input
+                                    formControlName="vpMessageId"
+                                    pInputText
+                                    placeholder="VP Message ID"
+                                    type="text"
+                                    class="vp-message-id-input"
+                                />
+                            </span>
+                        </div>
                     </div>
                     <div class="filter-actions">
                         <button
@@ -57,22 +68,22 @@
                 >
                     <ng-template pTemplate="header">
                         <tr class="guardian-grid-header">
-                            <th class="col-200">VP Message ID</th>
-                            <th class="col-150">Token ID</th>
-                            <th class="col-120">Token Type</th>
-                            <th class="col-100">Amount</th>
-                            <th class="col-200">Target</th>
-                            <th class="col-200">Owner</th>
-                            <th class="col-100">Status</th>
-                            <th class="col-auto">Error</th>
-                            <th class="col-150">Process Date</th>
+                            <th class="col-220">VP Message ID</th>
+                            <th class="col-150">Token</th>
+                            <th class="col-80">Token Type</th>
+                            <th class="col-140">Amount</th>
+                            <th class="col-150">Account</th>
+                            <th class="col-200">Minted</th>
+                            <th class="col-200">Transferred</th>
+                            <th class="col-120">Status</th>
+                            <th class="col-180">Process Date</th>
                             <th class="col-80">Actions</th>
                         </tr>
                     </ng-template>
                     <ng-template let-row pTemplate="body">
                         <tr class="guardian-grid-row">
                             <td
-                                class="col-200"
+                                class="col-220"
                                 pTooltip="{{row.vpMessageId}}"
                                 tooltipPosition="top"
                                 [showDelay]="1000"
@@ -85,43 +96,35 @@
                                 tooltipPosition="top"
                                 [showDelay]="1000"
                             >
-                                <span class="text-truncate">{{row.tokenId}}</span>
+                                <span class="text-truncate">
+                                    <hedera-explorer [params]="row.tokenId" type="tokens">{{row.tokenId}}</hedera-explorer>
+                                </span>
                             </td>
-                            <td class="col-120">{{row.tokenType}}</td>
-                            <td class="col-100">{{row.amount}}</td>
+                            <td class="col-80">{{getTokenTypeLabel(row.tokenType)}}</td>
+                            <td class="col-140">{{getFormattedAmount(row)}}</td>
                             <td
-                                class="col-200"
+                                class="col-150"
                                 pTooltip="{{row.target}}"
                                 tooltipPosition="top"
                                 [showDelay]="1000"
                             >
-                                <span class="text-truncate">{{row.target}}</span>
+                                <span class="text-truncate">
+                                    <hedera-explorer [params]="row.target" type="accounts">{{row.target}}</hedera-explorer>
+                                </span>
                             </td>
-                            <td
-                                class="col-200"
-                                pTooltip="{{row.owner}}"
-                                tooltipPosition="top"
-                                [showDelay]="1000"
-                            >
-                                <span class="text-truncate">{{row.owner}}</span>
-                            </td>
-                            <td class="col-100">
+                            <td class="col-200">{{getMintedDisplay(row)}}</td>
+                            <td class="col-200">{{getTransferredDisplay(row)}}</td>
+                            <td class="col-120">
                                 <span
-                                    class="status-badge"
                                     [ngClass]="getStatusClass(row)"
+                                    [pTooltip]="row.error"
+                                    tooltipPosition="top"
+                                    [showDelay]="500"
                                 >
                                     {{getStatusLabel(row)}}
                                 </span>
                             </td>
-                            <td
-                                class="col-auto"
-                                pTooltip="{{row.error}}"
-                                tooltipPosition="top"
-                                [showDelay]="1000"
-                            >
-                                <span class="text-truncate error-text">{{row.error}}</span>
-                            </td>
-                            <td class="col-150">{{row.processDate | date:'short'}}</td>
+                            <td class="col-180">{{row.processDate | date:'short'}}</td>
                             <td class="col-80">
                                 <button
                                     *ngIf="hasError(row)"
