@@ -37,6 +37,9 @@ export default defineNuxtConfig({
         dirs: ['composables/**'],
     },
 
+    // Dev-only proxy so `yarn dev` can use relative /api/v1 paths.
+    // In production, the frontend calls the API directly via
+    // `runtimeConfig.public.apiBaseUrl` (set by NUXT_PUBLIC_API_BASE_URL).
     routeRules: {
         '/api/v1/**': {
             proxy: 'http://localhost:3030/api/v1/**',
@@ -44,11 +47,15 @@ export default defineNuxtConfig({
     },
 
     runtimeConfig: {
-        // Server-side API base URL — used during SSR `useFetch` calls so they
-        // bypass the dev proxy and hit the API directly.
+        // Server-side API base URL — used during SSR `useFetch` calls.
+        // In Docker: set to `http://api:3030` via NUXT_API_BASE_URL.
         apiBaseUrl: process.env.NUXT_API_BASE_URL || 'http://localhost:3030',
         public: {
-            // Empty → client uses relative /api/v1 paths and dev proxy kicks in
+            // Client-side API base URL — the URL the browser will hit.
+            // In dev: leave empty, Vite proxies /api/v1 via routeRules.
+            // In prod: set to the externally-reachable API URL
+            //   (e.g., `http://<host>:3030`) via NUXT_PUBLIC_API_BASE_URL.
+            //   Nuxt automatically overrides public.* from NUXT_PUBLIC_* env vars.
             apiBaseUrl: '',
         },
     },

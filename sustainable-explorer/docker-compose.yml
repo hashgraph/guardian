@@ -159,9 +159,13 @@ services:
             NODE_ENV: production
             NITRO_HOST: 0.0.0.0
             NITRO_PORT: '3000'
-            # Server-side API base URL (used during SSR fetch).
-            # The frontend calls the API via Docker DNS, not through a proxy.
+            # Server-side API base URL (used during SSR fetches).
+            # Uses Docker DNS so the frontend container reaches the API container.
             NUXT_API_BASE_URL: http://api:3030
+            # Client-side API base URL (used by the browser after hydration).
+            # Must be externally reachable from end-user machines.
+            # Example: http://3.93.78.104:3030 or https://api.yourdomain.com
+            NUXT_PUBLIC_API_BASE_URL: ${NUXT_PUBLIC_API_BASE_URL:-http://localhost:3030}
         ports:
             - '${FRONTEND_PORT:-3000}:3000'
         depends_on:
