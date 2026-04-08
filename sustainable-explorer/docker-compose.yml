@@ -163,7 +163,7 @@ services:
             # The frontend calls the API via Docker DNS, not through a proxy.
             NUXT_API_BASE_URL: http://api:3030
         ports:
-            - '${FRONTEND_PORT:-3000}:3000'
+            - '${FRONTEND_PORT:-3000}:3300'
         depends_on:
             api:
                 condition: service_started
