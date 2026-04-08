@@ -9,6 +9,7 @@
 #   - worker-mainnet  : Hedera mainnet sync worker
 #   - worker-testnet  : Hedera testnet sync worker (commented out — uncomment to enable)
 #   - api             : REST API serving all configured networks
+#   - frontend        : Nuxt 3 SSR frontend
 #   - bull-board      : BullMQ dashboard (optional, useful for monitoring)
 #
 # Usage:
@@ -146,6 +147,26 @@ services:
                 condition: service_healthy
             redict:
                 condition: service_healthy
+
+    # ─── Frontend ───────────────────────────────────────────────────────────
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: se-frontend
+        restart: unless-stopped
+        environment:
+            NODE_ENV: production
+            NITRO_HOST: 0.0.0.0
+            NITRO_PORT: '3000'
+            # Server-side API base URL (used during SSR fetch).
+            # The frontend calls the API via Docker DNS, not through a proxy.
+            NUXT_API_BASE_URL: http://api:3030
+        ports:
+            - '${FRONTEND_PORT:-3000}:3000'
+        depends_on:
+            api:
+                condition: service_started
 
     # ─── Monitoring (optional) ──────────────────────────────────────────────
     bull-board:
