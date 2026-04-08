@@ -95,30 +95,30 @@ services:
                 condition: service_started
 
     # Uncomment to enable testnet syncing:
-    #
-    # worker-testnet:
-    #     build:
-    #         context: .
-    #         dockerfile: Dockerfile
-    #     container_name: se-worker-testnet
-    #     restart: unless-stopped
-    #     env_file:
-    #         - .env
-    #     environment:
-    #         HEDERA_NET: testnet
-    #         DB_HOST: postgres
-    #         DB_PORT: '5432'
-    #         REDICT_HOST: redict
-    #         REDICT_PORT: '6379'
-    #         IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://${cid}.ipfs.w3s.link
-    #     command: node dist/src/worker/main.js
-    #     depends_on:
-    #         postgres:
-    #             condition: service_healthy
-    #         redict:
-    #             condition: service_healthy
-    #         ipfs:
-    #             condition: service_started
+    
+    worker-testnet:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: se-worker-testnet
+        restart: unless-stopped
+        env_file:
+            - .env
+        environment:
+            HEDERA_NET: testnet
+            DB_HOST: postgres
+            DB_PORT: '5432'
+            REDICT_HOST: redict
+            REDICT_PORT: '6379'
+            IPFS_GATEWAYS: http://ipfs:8080/ipfs/,https://${cid}.ipfs.w3s.link
+        command: node dist/src/worker/main.js
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redict:
+                condition: service_healthy
+            ipfs:
+                condition: service_started
 
     # ─── API ────────────────────────────────────────────────────────────────
     api:
