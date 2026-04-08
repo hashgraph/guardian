@@ -52,7 +52,7 @@ export class MintService {
             treasuryKey: null,
             tokenName: token.tokenName,
         };
-        if (ref.dryRun) {
+        if (ref?.dryRun) {
             const tokenPK = PrivateKey.generate().toString();
             tokenConfig.supplyKey = tokenPK;
             tokenConfig.treasuryKey = tokenPK;
