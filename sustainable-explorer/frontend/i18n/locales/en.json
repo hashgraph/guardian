@@ -260,7 +260,7 @@
         "subtitle": "Standard Registries operating on the Guardian network",
         "noMatch": "No registries match your filters",
         "columns": {
-            "name": "Registry",
+            "name": "Name",
             "id": "ID",
             "geography": "Geography",
             "law": "Law",

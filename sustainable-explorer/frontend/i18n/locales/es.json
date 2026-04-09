@@ -260,7 +260,7 @@
         "subtitle": "Registros Estándar que operan en la red de Guardian",
         "noMatch": "Ningún registro coincide con tus filtros",
         "columns": {
-            "name": "Registro",
+            "name": "Nombre",
             "id": "ID",
             "geography": "Geografía",
             "law": "Ley",
