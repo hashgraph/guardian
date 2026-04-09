@@ -3719,11 +3719,11 @@ export class PolicyApi {
         example: 'error'
     })
     @ApiQuery({
-        name: 'tokenId',
+        name: 'target',
         type: String,
-        description: 'Token ID filter',
+        description: 'Account ID filter',
         required: false,
-        example: '0.0.6046500'
+        example: '0.0.6046379'
     })
     @ApiQuery({
         name: 'vpMessageId',
@@ -3791,7 +3791,7 @@ export class PolicyApi {
         @Response() res: any,
         @Param('policyId') policyId: string,
         @Query('status') status?: string,
-        @Query('tokenId') tokenId?: string,
+        @Query('target') target?: string,
         @Query('vpMessageId') vpMessageId?: string,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
@@ -3802,7 +3802,7 @@ export class PolicyApi {
                 new EntityOwner(user),
                 policyId,
                 status,
-                tokenId,
+                target,
                 vpMessageId,
                 pageIndex,
                 pageSize,

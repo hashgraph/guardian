@@ -17,11 +17,11 @@
                         <div class="filter">
                             <span class="p-input-icon-right">
                                 <input
-                                    formControlName="tokenId"
+                                    formControlName="target"
                                     pInputText
-                                    placeholder="Token ID"
+                                    placeholder="Account ID"
                                     type="text"
-                                    class="token-input"
+                                    class="account-input"
                                 />
                             </span>
                         </div>
@@ -68,11 +68,11 @@
                 >
                     <ng-template pTemplate="header">
                         <tr class="guardian-grid-header">
-                            <th class="col-220">VP Message ID</th>
-                            <th class="col-150">Token</th>
-                            <th class="col-80">Token Type</th>
+                            <th class="col-230">VP Message ID</th>
+                            <th class="col-140">Token</th>
+                            <th class="col-110">Token Type</th>
                             <th class="col-140">Amount</th>
-                            <th class="col-150">Account</th>
+                            <th class="col-140">Account</th>
                             <th class="col-200">Minted</th>
                             <th class="col-200">Transferred</th>
                             <th class="col-120">Status</th>
@@ -83,7 +83,7 @@
                     <ng-template let-row pTemplate="body">
                         <tr class="guardian-grid-row">
                             <td
-                                class="col-220"
+                                class="col-230"
                                 pTooltip="{{row.vpMessageId}}"
                                 tooltipPosition="top"
                                 [showDelay]="1000"
@@ -91,7 +91,7 @@
                                 <span class="text-truncate">{{row.vpMessageId}}</span>
                             </td>
                             <td
-                                class="col-150"
+                                class="col-140"
                                 pTooltip="{{row.tokenId}}"
                                 tooltipPosition="top"
                                 [showDelay]="1000"
@@ -100,10 +100,10 @@
                                     <hedera-explorer [params]="row.tokenId" type="tokens">{{row.tokenId}}</hedera-explorer>
                                 </span>
                             </td>
-                            <td class="col-80">{{getTokenTypeLabel(row.tokenType)}}</td>
+                            <td class="col-110">{{getTokenTypeLabel(row.tokenType)}}</td>
                             <td class="col-140">{{getFormattedAmount(row)}}</td>
                             <td
-                                class="col-150"
+                                class="col-140"
                                 pTooltip="{{row.target}}"
                                 tooltipPosition="top"
                                 [showDelay]="1000"

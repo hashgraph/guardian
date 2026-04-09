@@ -655,13 +655,13 @@ export class PolicyEngineService {
                 owner: IOwner,
                 policyId: string,
                 status: string,
-                tokenId: string,
+                target: string,
                 vpMessageId: string,
                 pageIndex: string,
                 pageSize: string
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { owner, policyId, status, tokenId, vpMessageId, pageIndex, pageSize } = msg;
+                    const { owner, policyId, status, target, vpMessageId, pageIndex, pageSize } = msg;
 
                     const parsedPageSize = parseInt(pageSize, 10) || 10;
                     const parsedPageIndex = parseInt(pageIndex, 10) || 0;
@@ -673,8 +673,8 @@ export class PolicyEngineService {
 
                     const filters: any = { policyId };
 
-                    if (tokenId) {
-                        filters.tokenId = tokenId;
+                    if (target) {
+                        filters.target = target;
                     }
 
                     if (vpMessageId) {
@@ -696,7 +696,7 @@ export class PolicyEngineService {
                         {
                             offset,
                             limit,
-                            orderBy: { processDate: 'DESC' } as any
+                            orderBy: { vpMessageId: 'DESC' } as any
                         }
                     );
 

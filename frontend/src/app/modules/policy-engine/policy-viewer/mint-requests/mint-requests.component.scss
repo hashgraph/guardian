@@ -53,7 +53,7 @@
             }
         }
 
-        .token-input,
+        .account-input,
         .vp-message-id-input {
             width: 220px;
             height: 40px;
@@ -118,10 +118,10 @@
     }
 }
 
-.col-220 {
-    width: 220px;
-    min-width: 220px;
-    max-width: 220px;
+.col-230 {
+    width: 230px;
+    min-width: 230px;
+    max-width: 230px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -145,15 +145,6 @@
     text-overflow: ellipsis;
 }
 
-.col-150 {
-    width: 150px;
-    min-width: 150px;
-    max-width: 150px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .col-140 {
     width: 140px;
     min-width: 140px;
@@ -167,6 +158,15 @@
     width: 120px;
     min-width: 120px;
     max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.col-110 {
+    width: 110px;
+    min-width: 110px;
+    max-width: 110px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

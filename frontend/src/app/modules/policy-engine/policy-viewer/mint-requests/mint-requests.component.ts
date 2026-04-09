@@ -28,7 +28,7 @@ export class MintRequestsComponent implements OnInit, OnDestroy {
 
     public filtersForm = new UntypedFormGroup({
         status: new UntypedFormControl(''),
-        tokenId: new UntypedFormControl(''),
+        target: new UntypedFormControl(''),
         vpMessageId: new UntypedFormControl(''),
     });
 
@@ -56,13 +56,13 @@ export class MintRequestsComponent implements OnInit, OnDestroy {
         this.loading = true;
         const filters: any = {};
         const status = this.filtersForm.get('status')?.value;
-        const tokenId = this.filtersForm.get('tokenId')?.value;
+        const target = this.filtersForm.get('target')?.value;
         const vpMessageId = this.filtersForm.get('vpMessageId')?.value;
         if (status) {
             filters.status = status;
         }
-        if (tokenId) {
-            filters.tokenId = tokenId;
+        if (target) {
+            filters.target = target;
         }
         if (vpMessageId) {
             filters.vpMessageId = vpMessageId;
@@ -104,7 +104,7 @@ export class MintRequestsComponent implements OnInit, OnDestroy {
     }
 
     public clearFilters() {
-        this.filtersForm.reset({ status: '', tokenId: '', vpMessageId: '' });
+        this.filtersForm.reset({ status: '', target: '', vpMessageId: '' });
         this.pageIndex = 0;
         this.loadData();
     }
