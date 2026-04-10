@@ -144,7 +144,6 @@ In practice, VCs are always **1–2 hops** below the instance policy topic:
 
 - **Topic messages come in pairs**: one on the parent (announcing `childId`) and one on the child (declaring `parentId`). Either can be used to build the tree.
 - **`options.topicId`** on an `Instance-Policy` message points to the instance policy topic. This is the primary key for resolving VCs to policies.
-- **Older Guardian versions** (pre-2024) don't include `instanceTopicId` in the message JSON. The `topicId` field serves the same purpose.
 - **Multiple policy versions** can exist under the same user topic. Each publish creates a new instance policy topic, so VCs are naturally scoped to the correct version.
 - **The seed topic** is the only topic you need to bootstrap the entire tree. From there, Standard Registry messages reveal user topics, which reveal policy topics, and so on.
 
