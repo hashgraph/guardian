@@ -33,7 +33,7 @@
         "fs-extra": "^10.0.0",
         "imurmurhash": "^0.1.4",
         "jszip": "^3.7.1",
-        "mathjs": "^14.4.0",
+        "mathjs": "^15.2.0",
         "module-alias": "^2.2.2",
         "mongodb": "6.16.0",
         "prom-client": "^14.1.1",
