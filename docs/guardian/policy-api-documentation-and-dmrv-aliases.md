@@ -58,7 +58,7 @@ Errors appear below the corresponding row.
 
 <figure><img src="../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
 
-<table><thead><tr><th width="187.7109375">Column</th><th>Description</th></tr></thead><tbody><tr><td>Name</td><td>Endpoint name</td></tr><tr><td>Description</td><td>User-provided description</td></tr><tr><td>Method</td><td><code>BOTH</code> (blue), <code>GET</code> (green) or <code>POST</code> (orange)</td></tr><tr><td>URL</td><td>Technical URL to block by tag</td></tr><tr><td>Alias URL</td><td>External DMRV URL</td></tr><tr><td>Query Params</td><td>The endpoing parameters</td></tr><tr><td>Copy</td><td>Copies Alias URL to clipboard</td></tr></tbody></table>
+<table><thead><tr><th width="187.7109375">Column</th><th>Description</th></tr></thead><tbody><tr><td>Name</td><td>Endpoint name</td></tr><tr><td>Description</td><td>User-provided description</td></tr><tr><td>Method</td><td><code>BOTH</code> (blue), <code>GET</code> (green) or <code>POST</code> (orange)</td></tr><tr><td>URL</td><td>Technical URL to block by tag</td></tr><tr><td>Alias URL</td><td>External DMRV URL</td></tr><tr><td>Query Params</td><td>The endpoint parameters</td></tr><tr><td>Copy</td><td>Copies Alias URL to clipboard</td></tr></tbody></table>
 
 ***
 
