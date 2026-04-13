@@ -42,7 +42,7 @@ The VM0033 policy demonstrates production-grade data transformation in the proje
 }
 ```
 
-![Data transformation block in VM0033](<../../../.gitbook/assets/image (190).png>)
+![Data transformation block in VM0033](<../../../.gitbook/assets/image (190) (1).png>)
 
 ### Transformation Code Structure
 
@@ -169,7 +169,7 @@ if (credentialSubject.projectLocations) {
 
 Guardian's `externalDataBlock` enables reception of monitoring data from external devices, IoT sensors, and third-party MRV systems. This pattern can be used for automated monitoring reports and real-time project tracking. It is the approaches used in Gold standard's metered energy cooking policy implemented on Guardian.
 
-![External MRV data integration flow in metered policy](<../../../.gitbook/assets/image-1 (11).png>)
+![External MRV data integration flow in metered policy](<../../../.gitbook/assets/image-1 (11) (1).png>)
 
 **External Data Flow:**
 

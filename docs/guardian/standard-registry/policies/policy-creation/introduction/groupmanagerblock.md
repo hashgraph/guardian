@@ -20,7 +20,7 @@ This block allows to manage group membership, add and remove users from the grou
 
 #### 2.1 **List of the groups in which the user is included:**
 
-<figure><img src="../../../../../.gitbook/assets/image (13) (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (13) (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### **2.2 List of the users included in the group**
 

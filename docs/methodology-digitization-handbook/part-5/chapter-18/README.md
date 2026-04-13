@@ -39,7 +39,7 @@ You can write your calculations in **JavaScript** or **Python** - Guardian suppo
 }
 ```
 
-![customLogicBlock in VM0033's PDD submission flow](<../../../.gitbook/assets/image (151).png>)
+![customLogicBlock in VM0033's PDD submission flow](<../../../.gitbook/assets/image (151) (1).png>)
 
 ### Understanding Your Input Data
 

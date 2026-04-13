@@ -16,7 +16,7 @@ Once enabled:
 * All future modifications can be compared against this original baseline
 
 {% hint style="danger" %}
-&#x20;If the checkbox is not selected, the policy will behave as a standard imported policy with no tamper-tracking enabled.
+If the checkbox is not selected, the policy will behave as a standard imported policy with no tamper-tracking enabled.
 {% endhint %}
 
 <figure><img src="../../../../.gitbook/assets/image (12) (1) (1).png" alt=""><figcaption></figcaption></figure>
@@ -59,7 +59,7 @@ Possible States
 
 This helps users quickly understand _what_ changed and _where_.
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 4. Indexer
 
@@ -77,11 +77,11 @@ The comparison functionality remains consistent with the Guardian one, providing
 
 Once a policy has been used to create other policies, the Derivations tab is displayed
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 The Derivations tab contains a table with all derivations of the current policy
 
-<figure><img src="../../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## Demo Video
 

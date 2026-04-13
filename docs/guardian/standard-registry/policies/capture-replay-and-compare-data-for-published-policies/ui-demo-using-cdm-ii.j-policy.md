@@ -5,7 +5,7 @@
 
 ## 1. Step by Step
 
-1. Import the VM0042 and publish the policy.&#x20;
+1. Import the VM0042 and publish the policy.
 
 In the **Publish Policy modal**, highlight **☑ Record policy actions** (enabled by default)
 
@@ -27,11 +27,11 @@ These steps are timestamped, ordered, and linked to IPFS payloads.”
 
 3. Login as Standard Registry and approve the Project Proponent:
 
-<figure><img src="../../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 4. Login as VVB and submit VVB Registration:
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 5. Login as Standard Registry and approve the VVB:
 
@@ -83,7 +83,7 @@ Optional: Also, include newly recorded steps (steps that were recorded after pol
 
 14. We should be able to see all the recorded steps when clicked on "Run"
 
-<figure><img src="../../../../.gitbook/assets/image (17) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (17) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 15. We can also view the Playback information:
 
