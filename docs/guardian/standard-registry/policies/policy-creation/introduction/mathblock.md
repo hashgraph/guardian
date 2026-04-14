@@ -1,6 +1,6 @@
 # mathBlock
 
-The _mathBlock_ lets you to define calculations on document data in mathematical notation to be performed directly, without the need or optionally with limited use of coding.
+The _mathBlock_ (also known as _formula calculation block_) lets you to define calculations on document data in mathematical notation to be performed directly, without the need or optionally with limited use of coding.
 
 <figure><img src="../../../../../.gitbook/assets/image (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -68,7 +68,7 @@ You can reuse defined formulas in other formulas (by name) and in the code on th
 
 **2.2 Variables**
 
-When parentheses are not included after the name (e.g., x vs. x()), it is treated as a variable definition. The variable value is calculated at initialization time.&#x20;
+When parentheses are not included after the name (e.g., x vs. x()), it is treated as a variable definition. The variable value is calculated at initialization time.
 
 <figure><img src="../../../../../.gitbook/assets/image (6) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
