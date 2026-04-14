@@ -1,6 +1,6 @@
 # mathBlock
 
-The _mathBlock_ (also known as _formula calculation block_) lets you to define calculations on document data in mathematical notation to be performed directly, without the need or optionally with limited use of coding.
+The _mathBlock_ (also known as _formula calculation block or FCB_) lets you to define calculations on document data in mathematical notation to be performed directly, without the need or optionally with limited use of coding.
 
 <figure><img src="../../../../../.gitbook/assets/image (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
