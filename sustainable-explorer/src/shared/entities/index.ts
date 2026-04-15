@@ -5,5 +5,6 @@ export { TokenCache } from './token-cache.entity.js';
 export { NftCache } from './nft-cache.entity.js';
 export { IpfsFile } from './ipfs-file.entity.js';
 export { BusinessView } from './business-view.entity.js';
+export { PolicySchema } from './policy-schema.entity.js';
 export { SynchronizationTask } from './synchronization-task.entity.js';
 export { Log } from './log.entity.js';
