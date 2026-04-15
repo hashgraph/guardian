@@ -1117,6 +1117,157 @@ export class TokensApi {
     }
 
     /**
+     * Transfer token
+     */
+    @Post('/:tokenId/transfer')
+    @Auth(
+        Permissions.TOKENS_TOKEN_EXECUTE,
+    )
+    @ApiOperation({
+        summary: 'Transfers tokens from the authenticated user to the target account.',
+        description: 'Transfers fungible or non-fungible tokens from the authenticated user\'s Hedera account to the specified target account. For FT, specify amount. For NFT, specify serialNumbers or amount (picks from end).',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Transfer details',
+        schema: {
+            type: 'object',
+            properties: {
+                targetAccount: { type: 'string', description: 'Hedera account ID to transfer to', example: '0.0.12345' },
+                amount: { type: 'number', description: 'Amount for FT; number of serials from end for NFT if serialNumbers not provided' },
+                serialNumbers: { type: 'array', items: { type: 'number' }, description: 'Specific NFT serial numbers to transfer' },
+                memo: { type: 'string', description: 'Optional transaction memo' },
+            },
+            required: ['targetAccount'],
+        },
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async transferToken(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Body() body: {
+            targetAccount: string,
+            amount?: number,
+            serialNumbers?: number[],
+            memo?: string
+        }
+    ): Promise<any> {
+        try {
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            if (!body || !body.targetAccount) {
+                throw new HttpException('targetAccount is required.', HttpStatus.BAD_REQUEST);
+            }
+            if (!body.amount && (!body.serialNumbers || body.serialNumbers.length === 0)) {
+                throw new HttpException('Either amount or serialNumbers is required.', HttpStatus.BAD_REQUEST);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.transferToken(tokenId, body, owner);
+        } catch (error) {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            if (error?.message?.toLowerCase().includes('user not found')) {
+                throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
+            }
+            if (error?.message?.toLowerCase().includes('token not found')) {
+                throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND);
+            }
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Transfer token (async)
+     */
+    @Post('/push/:tokenId/transfer')
+    @Auth(
+        Permissions.TOKENS_TOKEN_EXECUTE,
+    )
+    @ApiOperation({
+        summary: 'Transfers tokens from the authenticated user to the target account.',
+        description: 'Transfers fungible or non-fungible tokens asynchronously. Returns a task ID for tracking.',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Transfer details',
+        schema: {
+            type: 'object',
+            properties: {
+                targetAccount: { type: 'string', description: 'Hedera account ID to transfer to', example: '0.0.12345' },
+                amount: { type: 'number', description: 'Amount for FT; number of serials from end for NFT if serialNumbers not provided' },
+                serialNumbers: { type: 'array', items: { type: 'number' }, description: 'Specific NFT serial numbers to transfer' },
+                memo: { type: 'string', description: 'Optional transaction memo' },
+            },
+            required: ['targetAccount'],
+        },
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async transferTokenAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Body() body: {
+            targetAccount: string,
+            amount?: number,
+            serialNumbers?: number[],
+            memo?: string
+        }
+    ): Promise<TaskDTO> {
+        if (!user.did) {
+            throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        if (!body || !body.targetAccount) {
+            throw new HttpException('targetAccount is required.', HttpStatus.BAD_REQUEST);
+        }
+        if (!body.amount && (!body.serialNumbers || body.serialNumbers.length === 0)) {
+            throw new HttpException('Either amount or serialNumbers is required.', HttpStatus.BAD_REQUEST);
+        }
+        const owner = new EntityOwner(user);
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.TRANSFER_TOKEN, user.id);
+        RunFunctionAsync<ServiceError>(async () => {
+            const guardians = new Guardians();
+            await guardians.transferTokenAsync(tokenId, body, owner, task);
+        }, async (error) => {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+        });
+        return task;
+    }
+
+    /**
      * KYC
      */
     @Put('/:tokenId/:username/grant-kyc')

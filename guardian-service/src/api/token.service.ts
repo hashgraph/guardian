@@ -1,6 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { ArrayMessageResponse, DatabaseServer, IAuthUser, INotificationStep, KeyType, MessageError, MessageResponse, NewNotifier, NotificationStep, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
-import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TokenType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';
 import { publishTokenTags } from '../helpers/import-helpers/index.js'
 
@@ -1400,5 +1400,239 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
+        });
+
+    /**
+     * Transfer token
+     * @param tokenId
+     * @param targetAccount
+     * @param amount
+     * @param serialNumbers
+     * @param memo
+     * @param owner
+     * @param notifier
+     */
+    async function transferToken(
+        tokenId: string,
+        targetAccount: string,
+        amount: number | undefined,
+        serialNumbers: number[] | undefined,
+        memo: string | undefined,
+        owner: IOwner,
+        notifier: INotificationStep
+    ): Promise<{ status: boolean; serials?: number[] }> {
+        // <-- Steps
+        const STEP_FIND_TOKEN = 'Find token data';
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_RESOLVE_SERIALS = 'Resolve NFT serial numbers';
+        const STEP_TRANSFER = 'Transfer tokens';
+        // Steps -->
+
+        notifier.addStep(STEP_FIND_TOKEN);
+        notifier.addStep(STEP_RESOLVE_ACCOUNT);
+        notifier.addStep(STEP_RESOLVE_SERIALS);
+        notifier.addStep(STEP_TRANSFER);
+        notifier.start();
+
+        // 1. Find token
+        notifier.startStep(STEP_FIND_TOKEN);
+        const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
+        if (!token) {
+            throw new Error('Token not found');
+        }
+        if (token.draftToken) {
+            throw new Error('Cannot transfer a draft token');
+        }
+        notifier.completeStep(STEP_FIND_TOKEN);
+
+        // 2. Resolve sender credentials (same pattern as associateToken)
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
+        const users = new Users();
+        const user = await users.getUserById(owner.creator, owner.id);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const account: any = await users.getUserRelayerAccount(owner.creator, null, owner.id);
+        if (!account) {
+            throw new Error('Hedera Account not found');
+        }
+        if (account.default) {
+            account.key = await (new Wallet()).getKey(user.walletToken, KeyType.KEY, user.did);
+        } else {
+            account.key = await (new Wallet()).getKey(user.walletToken, KeyType.RELAYER_ACCOUNT, `${user.did}/${account.account}`);
+        }
+        if (!account.key) {
+            throw new Error('Hedera account key not found');
+        }
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
+
+        // 3. Branch by token type
+        const workers = new Workers();
+
+        if (token.tokenType === TokenType.FUNGIBLE) {
+            // FT transfer
+            notifier.startStep(STEP_RESOLVE_SERIALS);
+            if (!amount || amount <= 0) {
+                throw new Error('Amount is required for fungible token transfers and must be greater than 0');
+            }
+            notifier.completeStep(STEP_RESOLVE_SERIALS);
+
+            notifier.startStep(STEP_TRANSFER);
+            const decimals = token.decimals || 0;
+            const tokenValue = amount * Math.pow(10, decimals);
+
+            const result = await workers.addRetryableTask({
+                type: WorkerTaskType.TRANSFER_FT,
+                data: {
+                    hederaAccountId: account.account,
+                    hederaAccountKey: account.key,
+                    tokenId: token.tokenId,
+                    targetAccount,
+                    treasuryId: account.account,
+                    treasuryKey: account.key,
+                    tokenValue,
+                    transactionMemo: memo || '',
+                    payload: { userId: user.id }
+                }
+            }, {
+                priority: 20,
+                attempts: 3,
+                userId: user.id
+            });
+            notifier.completeStep(STEP_TRANSFER);
+
+            notifier.complete();
+            return { status: !!result };
+
+        } else if (token.tokenType === TokenType.NON_FUNGIBLE) {
+            // NFT transfer
+            notifier.startStep(STEP_RESOLVE_SERIALS);
+            let resolvedSerials: number[];
+
+            if (serialNumbers && serialNumbers.length > 0) {
+                // Validate serial numbers
+                for (const serial of serialNumbers) {
+                    if (!Number.isInteger(serial) || serial < 1) {
+                        throw new Error('Serial numbers must be positive integers');
+                    }
+                }
+                resolvedSerials = serialNumbers;
+            } else if (amount && amount > 0) {
+                // Resolve serials from the end of the sender's owned serials
+                const serials = await workers.addNonRetryableTask({
+                    type: WorkerTaskType.GET_USER_NFTS_SERIALS,
+                    data: {
+                        hederaAccountId: account.account,
+                        tokenId: token.tokenId,
+                        payload: { userId: user.id }
+                    }
+                }, {
+                    priority: 20
+                });
+
+                const ownedSerials: number[] = (serials && serials[token.tokenId]) ? serials[token.tokenId] : [];
+                if (ownedSerials.length < amount) {
+                    throw new Error(
+                        `Insufficient NFT serials: requested ${amount}, but sender owns ${ownedSerials.length}`
+                    );
+                }
+
+                // Sort descending and take from the end
+                ownedSerials.sort((a, b) => b - a);
+                resolvedSerials = ownedSerials.slice(0, amount);
+            } else {
+                throw new Error('Either serialNumbers or amount is required for non-fungible token transfers');
+            }
+            notifier.completeStep(STEP_RESOLVE_SERIALS);
+
+            notifier.startStep(STEP_TRANSFER);
+            const result = await workers.addRetryableTask({
+                type: WorkerTaskType.TRANSFER_NFT,
+                data: {
+                    hederaAccountId: account.account,
+                    hederaAccountKey: account.key,
+                    tokenId: token.tokenId,
+                    targetAccount,
+                    treasuryId: account.account,
+                    treasuryKey: account.key,
+                    element: resolvedSerials,
+                    transactionMemo: memo || '',
+                    payload: { userId: user.id }
+                }
+            }, {
+                priority: 20,
+                attempts: 3,
+                userId: user.id
+            });
+            notifier.completeStep(STEP_TRANSFER);
+
+            notifier.complete();
+            return { status: !!result, serials: resolvedSerials };
+
+        } else {
+            throw new Error(`Unsupported token type: ${token.tokenType}`);
+        }
+    }
+
+    /**
+     * Transfer token (sync)
+     */
+    ApiResponse(MessageAPI.TRANSFER_TOKEN,
+        async (msg: {
+            tokenId: string,
+            body: {
+                targetAccount: string,
+                amount?: number,
+                serialNumbers?: number[],
+                memo?: string
+            },
+            owner: IOwner
+        }) => {
+            try {
+                const { tokenId, body, owner } = msg;
+                const { targetAccount, amount, serialNumbers, memo } = body;
+                const result = await transferToken(
+                    tokenId, targetAccount, amount, serialNumbers, memo,
+                    owner, NewNotifier.empty()
+                );
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error, 400);
+            }
+        });
+
+    /**
+     * Transfer token (async)
+     */
+    ApiResponse(MessageAPI.TRANSFER_TOKEN_ASYNC,
+        async (msg: {
+            tokenId: string,
+            body: {
+                targetAccount: string,
+                amount?: number,
+                serialNumbers?: number[],
+                memo?: string
+            },
+            owner: IOwner,
+            task: any
+        }) => {
+            const { tokenId, body, owner, task } = msg;
+            const notifier = await NewNotifier.create(task);
+
+            RunFunctionAsync(async () => {
+                const { targetAccount, amount, serialNumbers, memo } = body;
+                const result = await transferToken(
+                    tokenId, targetAccount, amount, serialNumbers, memo,
+                    owner, notifier
+                );
+                notifier.result(result);
+            }, async (error) => {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                notifier.fail(error);
+            });
+
+            return new MessageResponse(task);
         });
 }
