@@ -8,6 +8,7 @@ export const BASE_QUEUE_NAMES = {
     TOPIC_SYNC: 'mirror-node-topics',
     MESSAGE_PARSE: 'mirror-node-messages',
     IPFS_FETCH: 'ipfs-files',
+    POLICY_SCHEMA_IMPORT: 'policy-schema-import',
     TOKEN_SYNC: 'mirror-node-tokens',
     MV_REFRESH: 'maintenance-refresh-mvs',
     BUSINESS_VIEW_BUILD: 'maintenance-build-business-views',
@@ -38,6 +39,7 @@ export const QUEUE_NAMES = {
     TOPIC_SYNC: qname(BASE_QUEUE_NAMES.TOPIC_SYNC),
     MESSAGE_PARSE: qname(BASE_QUEUE_NAMES.MESSAGE_PARSE),
     IPFS_FETCH: qname(BASE_QUEUE_NAMES.IPFS_FETCH),
+    POLICY_SCHEMA_IMPORT: qname(BASE_QUEUE_NAMES.POLICY_SCHEMA_IMPORT),
     TOKEN_SYNC: qname(BASE_QUEUE_NAMES.TOKEN_SYNC),
     MV_REFRESH: qname(BASE_QUEUE_NAMES.MV_REFRESH),
     BUSINESS_VIEW_BUILD: qname(BASE_QUEUE_NAMES.BUSINESS_VIEW_BUILD),
@@ -97,6 +99,17 @@ export function getQueueConfigs(): QueueDefinition[] {
                 removeOnFail: 2000,
             },
             concurrency: parseInt(process.env.WORKER_IPFS_CONCURRENCY || '3', 10),
+        },
+        {
+            name: QUEUE_NAMES.POLICY_SCHEMA_IMPORT,
+            defaultJobOptions: {
+                attempts: 5,
+                backoff: { type: 'exponential', delay: 5000 },
+                timeout: parseInt(process.env.POLICY_SCHEMA_IMPORT_TIMEOUT || '300000', 10),
+                removeOnComplete: 500,
+                removeOnFail: 2000,
+            },
+            concurrency: parseInt(process.env.WORKER_POLICY_SCHEMA_CONCURRENCY || '2', 10),
         },
         {
             name: QUEUE_NAMES.TOKEN_SYNC,
