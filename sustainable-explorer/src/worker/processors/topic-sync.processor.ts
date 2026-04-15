@@ -81,9 +81,13 @@ export class TopicSyncProcessor extends WorkerHost {
         //    the watermark stays at the old value and messages
         //    will be re-fetched on restart (idempotent via ON CONFLICT)
         await this.dataSource.query(
-            `UPDATE topic_cache
-             SET messages = $1, "hasNext" = $2, "lastUpdate" = $3, status = 'SYNCED'
-             WHERE "topicId" = $4`,
+            `INSERT INTO topic_cache ("topicId", messages, "hasNext", "lastUpdate", status)
+             VALUES ($4, $1, $2, $3, 'SYNCED')
+             ON CONFLICT ("topicId") DO UPDATE SET
+                 messages = EXCLUDED.messages,
+                 "hasNext" = EXCLUDED."hasNext",
+                 "lastUpdate" = EXCLUDED."lastUpdate",
+                 status = 'SYNCED'`,
             [maxSequence, hasNext, now, topicId],
         );
 
