@@ -17,16 +17,27 @@ export const MV_METHODOLOGY_STATS_NAME = 'mv_methodology_stats';
 
 export const MV_METHODOLOGY_STATS_CREATE_SQL = `
     CREATE MATERIALIZED VIEW IF NOT EXISTS ${MV_METHODOLOGY_STATS_NAME} AS
+    WITH methodology_base AS (
+        SELECT
+            "relatedTopicId",
+            MAX("businessData"->>'topicId') AS policy_topic_id,
+            MAX("lastUpdate") AS last_update
+        FROM business_view
+        WHERE "viewType" = 'METHODOLOGY'
+          AND "relatedTopicId" IS NOT NULL
+        GROUP BY "relatedTopicId"
+    )
     SELECT
-        "relatedTopicId",
+        mb."relatedTopicId",
         0::bigint AS project_count,
         0::bigint AS issuance_count,
-        0::bigint AS schema_count,
-        MAX("lastUpdate") AS last_update
-    FROM business_view
-    WHERE "viewType" = 'METHODOLOGY'
-      AND "relatedTopicId" IS NOT NULL
-    GROUP BY "relatedTopicId";
+        COALESCE((
+            SELECT COUNT(DISTINCT ps."schemaId")
+            FROM policy_schema ps
+            WHERE ps."policyTopicId" = mb.policy_topic_id
+        ), 0)::bigint AS schema_count,
+        mb.last_update
+    FROM methodology_base mb;
 `;
 
 // Unique index required for REFRESH MATERIALIZED VIEW CONCURRENTLY

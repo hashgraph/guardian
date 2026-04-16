@@ -1,9 +1,9 @@
-import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
-import { Inject, Logger } from '@nestjs/common';
-import { Job } from 'bullmq';
-import { DataSource } from 'typeorm';
-import Redis from 'ioredis';
-import { QUEUE_NAMES } from '@shared/config/bullmq.config';
+import { Processor, WorkerHost, OnWorkerEvent } from "@nestjs/bullmq";
+import { Inject, Logger } from "@nestjs/common";
+import { Job } from "bullmq";
+import { DataSource } from "typeorm";
+import Redis from "ioredis";
+import { QUEUE_NAMES } from "@shared/config/bullmq.config";
 
 /**
  * Mapping from HCS message types to business domain view types.
@@ -27,18 +27,23 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
 
     constructor(
         private readonly dataSource: DataSource,
-        @Inject('REDICT_PUB') private readonly redis: Redis,
+        @Inject("REDICT_PUB") private readonly redis: Redis,
     ) {
         super();
     }
 
     async process(job: Job): Promise<void> {
-        this.logger.log('Building business views from raw messages...');
+        this.logger.log("Building business views from raw messages...");
 
         const caseClauses = Object.entries(TYPE_MAPPINGS)
-            .map(([msgType, viewType]) => `WHEN m.type = '${msgType}' THEN '${viewType}'`)
-            .join(' ');
-        const typeFilter = Object.keys(TYPE_MAPPINGS).map((t) => `'${t}'`).join(', ');
+            .map(
+                ([msgType, viewType]) =>
+                    `WHEN m.type = '${msgType}' THEN '${viewType}'`,
+            )
+            .join(" ");
+        const typeFilter = Object.keys(TYPE_MAPPINGS)
+            .map((t) => `'${t}'`)
+            .join(", ");
 
         const result = await this.dataSource.query(`
             INSERT INTO business_view (
@@ -58,7 +63,10 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 CASE ${caseClauses} END,
                 COALESCE(m.options->>'name', m.options->>'tokenName'),
                 COALESCE(m.owner, m.options->>'did'),
-                m.options->>'topicId',
+                CASE
+                    WHEN m.type = 'Instance-Policy' THEN m.options->>'instanceTopicId'
+                    ELSE m.options->>'topicId'
+                END,
                 jsonb_build_object(
                     'description', m.options->>'description',
                     'status', m.status,
@@ -91,27 +99,29 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
               -- count as a real methodology. Other types pass through.
               AND (m.type != 'Instance-Policy' OR m.action = 'publish-policy')
             ON CONFLICT ("sourceTimestamp", "viewType") DO UPDATE SET
-                "displayName" = EXCLUDED."displayName",
                 "registryDid" = EXCLUDED."registryDid",
                 "relatedTopicId" = EXCLUDED."relatedTopicId",
-                "businessData" = EXCLUDED."businessData",
-                "searchText" = EXCLUDED."searchText",
                 "lastUpdate" = EXCLUDED."lastUpdate",
                 "updatedAt" = NOW()
         `);
 
         const totalUpserted = result?.rowCount ?? result?.length ?? 0;
 
-        await this.redis.publish('se:events', JSON.stringify({
-            type: 'business-views-updated',
-            totalUpserted,
-            timestamp: new Date().toISOString(),
-        }));
+        await this.redis.publish(
+            "se:events",
+            JSON.stringify({
+                type: "business-views-updated",
+                totalUpserted,
+                timestamp: new Date().toISOString(),
+            }),
+        );
 
-        this.logger.log(`Business views built: ${totalUpserted} records upserted`);
+        this.logger.log(
+            `Business views built: ${totalUpserted} records upserted`,
+        );
     }
 
-    @OnWorkerEvent('failed')
+    @OnWorkerEvent("failed")
     onFailed(job: Job, error: Error): void {
         this.logger.error(
             `Business view builder job ${job.id} failed: ${error.message}`,

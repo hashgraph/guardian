@@ -177,6 +177,7 @@ const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i
                             <SortableHeader :label="$t('methodologies.columns.schemaCount')" sort-key="schemas" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('methodologies.columns.description')" sort-key="description" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('methodologies.columns.id')" sort-key="id" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <SortableHeader label="Version" sort-key="version" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('methodologies.columns.status')" sort-key="status" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                         </tr>
                     </thead>
@@ -184,7 +185,7 @@ const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i
                         <!-- Loading skeleton -->
                         <template v-if="pending && methodologies.length === 0">
                             <tr v-for="i in skeletonRows" :key="`sk-${i}`">
-                                <td v-for="col in 8" :key="col" class="py-3 px-4">
+                                <td v-for="col in 9" :key="col" class="py-3 px-4">
                                     <Skeleton class="h-4 w-full max-w-[120px]" />
                                 </td>
                             </tr>
@@ -192,7 +193,7 @@ const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i
 
                         <!-- Error state -->
                         <tr v-else-if="error">
-                            <td colspan="8" class="py-12 text-center text-sm text-destructive">
+                            <td colspan="9" class="py-12 text-center text-sm text-destructive">
                                 {{ $t('methodologies.errors.loadFailed') }} <button class="underline" @click="() => refresh()">{{ $t('common.retry') }}</button>
                             </td>
                         </tr>
@@ -203,6 +204,7 @@ const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i
                                 v-for="r in methodologies"
                                 :key="r.id"
                                 class="hover:bg-muted/30 transition-colors cursor-pointer"
+                                @click="navigateTo('/methodologies/' + r.id)"
                             >
                                 <td class="py-3 px-4">
                                     <div class="flex items-center gap-2.5">
@@ -244,13 +246,17 @@ const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i
                                     </div>
                                 </td>
                                 <td class="py-3 px-4">
+                                    <span v-if="r.version" class="text-xs font-mono text-muted-foreground bg-muted rounded px-1.5 py-0.5">{{ r.version }}</span>
+                                    <span v-else class="text-xs text-muted-foreground">—</span>
+                                </td>
+                                <td class="py-3 px-4">
                                     <span :class="[statusBadgeClass(r.status), 'text-xs font-medium rounded-full px-2 py-0.5']">
                                         {{ r.status ?? '—' }}
                                     </span>
                                 </td>
                             </tr>
                             <tr v-if="methodologies.length === 0">
-                                <td colspan="8" class="py-12 text-center text-sm text-muted-foreground">{{ $t('methodologies.noMatch') }}</td>
+                                <td colspan="9" class="py-12 text-center text-sm text-muted-foreground">{{ $t('methodologies.noMatch') }}</td>
                             </tr>
                         </template>
                     </tbody>
