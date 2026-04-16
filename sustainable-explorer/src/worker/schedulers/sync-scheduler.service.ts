@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import Redis from 'ioredis';
 import { QUEUE_NAMES, getWorkerNetwork } from '@shared/config/bullmq.config';
+import { PolicySchemaImportJobData } from '../processors/policy-schema-import.processor';
 
 /**
  * Orchestrates initial sync jobs on startup.
@@ -28,6 +29,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         @InjectQueue(QUEUE_NAMES.TOKEN_SYNC) private readonly tokenQueue: Queue,
         @InjectQueue(QUEUE_NAMES.MV_REFRESH) private readonly mvRefreshQueue: Queue,
         @InjectQueue(QUEUE_NAMES.BUSINESS_VIEW_BUILD) private readonly businessViewQueue: Queue,
+        @InjectQueue(QUEUE_NAMES.POLICY_SCHEMA_IMPORT) private readonly policySchemaQueue: Queue,
     ) {}
 
     async onModuleInit(): Promise<void> {
@@ -49,6 +51,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         // Always schedule initial topic/token syncs (idempotent via jobId)
         await this.scheduleTopicSyncs();
         await this.scheduleTokenSyncs();
+        await this.schedulePolicySchemaImports();
 
         // Renew leadership periodically
         this.leaderInterval = setInterval(async () => {
@@ -207,6 +210,53 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         }
 
         this.logger.log(`Enqueued ${tokens.length} token sync jobs from cache`);
+    }
+
+    /**
+     * Finds Instance-Policy messages that have a ZIP CID but no imported schemas
+     * and re-enqueues them for the PolicySchemaImportProcessor.
+     *
+     * This catches two cases:
+     *  1. Messages processed before the policy-schema pipeline existed.
+     *  2. IPFS fetch failures from a previous run.
+     *
+     * The processor itself deduplicates via (policyTopicId, sourceCid), so
+     * already-imported ZIPs are skipped cheaply on subsequent restarts.
+     */
+    private async schedulePolicySchemaImports(): Promise<void> {
+        const rows: Array<{ policy_topic_id: string; consensus_timestamp: string; cid: string }> =
+            await this.dataSource.query(`
+                SELECT
+                    m."topicId"            AS policy_topic_id,
+                    m."consensusTimestamp" AS consensus_timestamp,
+                    f.cid
+                FROM message m
+                CROSS JOIN LATERAL UNNEST(m.files) AS f(cid)
+                WHERE m.type = 'Instance-Policy'
+                  AND m.action ILIKE 'publish-policy'
+                  AND m.files IS NOT NULL
+                  AND array_length(m.files, 1) > 0
+                  AND NOT EXISTS (
+                      SELECT 1 FROM policy_schema ps
+                      WHERE ps."policyTopicId" = m."topicId"
+                        AND ps."sourceCid" = f.cid
+                  )
+            `);
+
+        for (const row of rows) {
+            const jobData: PolicySchemaImportJobData = {
+                cid: row.cid,
+                messageTimestamp: row.consensus_timestamp,
+                policyTopicId: row.policy_topic_id,
+            };
+            // Timestamp suffix ensures a fresh job even if an old completed/failed
+            // job with the same logical ID exists in BullMQ history.
+            await this.policySchemaQueue.add('import', jobData, {
+                jobId: `policy-schema-${row.policy_topic_id}-${row.cid}-${Date.now()}`,
+            });
+        }
+
+        this.logger.log(`Enqueued ${rows.length} missing policy schema import job(s)`);
     }
 
     private async scheduleMvRefresh(): Promise<void> {

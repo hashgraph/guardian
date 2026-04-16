@@ -1,15 +1,20 @@
-import { Processor, WorkerHost, OnWorkerEvent, InjectQueue } from '@nestjs/bullmq';
-import { Logger } from '@nestjs/common';
-import { Job, Queue } from 'bullmq';
-import { DataSource } from 'typeorm';
-import { QUEUE_NAMES } from '@shared/config/bullmq.config';
+import {
+    Processor,
+    WorkerHost,
+    OnWorkerEvent,
+    InjectQueue,
+} from "@nestjs/bullmq";
+import { Logger } from "@nestjs/common";
+import { Job, Queue } from "bullmq";
+import { DataSource } from "typeorm";
+import { QUEUE_NAMES } from "@shared/config/bullmq.config";
 import {
     ParsedMessage,
     decodeBase64Message,
     parseMessageJson,
     extractDiscoverableTopics,
     extractTokenIds,
-} from '@shared/utils/message-parser';
+} from "@shared/utils/message-parser";
 
 export interface MessageProcessJobData {
     consensusTimestamp: string;
@@ -40,7 +45,9 @@ export class MessageProcessProcessor extends WorkerHost {
         );
 
         if (rows.length === 0) {
-            this.logger.warn(`Message cache entry not found for ${consensusTimestamp}`);
+            this.logger.warn(
+                `Message cache entry not found for ${consensusTimestamp}`,
+            );
             return;
         }
 
@@ -49,16 +56,20 @@ export class MessageProcessProcessor extends WorkerHost {
         // Base64 decode the message
         const decoded = decodeBase64Message(cacheEntry.message);
         if (!decoded) {
-            this.logger.warn(`Failed to base64 decode message ${consensusTimestamp}`);
-            await this.updateCacheStatus(consensusTimestamp, 'DECODE_ERROR');
+            this.logger.warn(
+                `Failed to base64 decode message ${consensusTimestamp}`,
+            );
+            await this.updateCacheStatus(consensusTimestamp, "DECODE_ERROR");
             return;
         }
 
         // Parse JSON
         const parsed = parseMessageJson(decoded);
         if (!parsed) {
-            this.logger.warn(`Failed to parse JSON for message ${consensusTimestamp}`);
-            await this.updateCacheStatus(consensusTimestamp, 'PARSE_ERROR');
+            this.logger.warn(
+                `Failed to parse JSON for message ${consensusTimestamp}`,
+            );
+            await this.updateCacheStatus(consensusTimestamp, "PARSE_ERROR");
             return;
         }
 
@@ -121,7 +132,9 @@ export class MessageProcessProcessor extends WorkerHost {
                 parsed.responseType,
                 cacheEntry.sequenceNumber,
                 parsed.files.length > 0 ? parsed.files : null,
-                Object.keys(parsed.options).length > 0 ? JSON.stringify(parsed.options) : null,
+                Object.keys(parsed.options).length > 0
+                    ? JSON.stringify(parsed.options)
+                    : null,
                 parsed.topics.length > 0 ? parsed.topics : null,
                 parsed.tokens.length > 0 ? parsed.tokens : null,
                 Date.now().toString(),
@@ -151,53 +164,70 @@ export class MessageProcessProcessor extends WorkerHost {
 
         // Enqueue IPFS fetch jobs for each CID in files
         for (const cid of parsed.files) {
-            await this.ipfsQueue.add('fetch', {
-                cid,
-                messageTimestamp: consensusTimestamp,
-            }, {
-                jobId: `ipfs-${cid}`,
-            });
+            await this.ipfsQueue.add(
+                "fetch",
+                {
+                    cid,
+                    messageTimestamp: consensusTimestamp,
+                },
+                {
+                    jobId: `ipfs-${cid}`,
+                },
+            );
         }
 
         // Discover and enqueue child topics
         const discoveredTopics = extractDiscoverableTopics(parsed, topicId);
         for (const topic of discoveredTopics) {
-            await this.topicQueue.add('sync', {
-                topicId: topic.topicId,
-                fromSequenceNumber: 0,
-                isOrgTopic: topic.isOrgTopic,
-            }, {
-                jobId: `topic-${topic.topicId}-0`,
-                priority: topic.isOrgTopic ? 1 : 10,
-            });
+            await this.topicQueue.add(
+                "sync",
+                {
+                    topicId: topic.topicId,
+                    fromSequenceNumber: 0,
+                    isOrgTopic: topic.isOrgTopic,
+                },
+                {
+                    jobId: `topic-${topic.topicId}-0`,
+                    priority: topic.isOrgTopic ? 1 : 10,
+                },
+            );
         }
 
         // // Enqueue token sync for discovered tokens
-        // const tokenIds = extractTokenIds(parsed);
-        // for (const tokenId of tokenIds) {
-        //     await this.tokenQueue.add('sync', {
-        //         tokenId,
-        //         fetchNfts: true,
-        //         fromSerial: 0,
-        //     }, {
-        //         jobId: `token-${tokenId}`,
-        //     });
-        // }
+        const tokenIds = extractTokenIds(parsed);
+        for (const tokenId of tokenIds) {
+            await this.tokenQueue.add(
+                "sync",
+                {
+                    tokenId,
+                    fetchNfts: true,
+                    fromSerial: 0,
+                },
+                {
+                    jobId: `token-${tokenId}`,
+                },
+            );
+        }
 
         // Update cache status
-        await this.updateCacheStatus(consensusTimestamp, 'PROCESSED');
+        await this.updateCacheStatus(consensusTimestamp, "PROCESSED");
 
-        this.logger.debug(`Processed message ${consensusTimestamp}: type=${parsed.type} action=${parsed.action}`);
+        this.logger.debug(
+            `Processed message ${consensusTimestamp}: type=${parsed.type} action=${parsed.action}`,
+        );
     }
 
-    private async updateCacheStatus(consensusTimestamp: string, status: string): Promise<void> {
+    private async updateCacheStatus(
+        consensusTimestamp: string,
+        status: string,
+    ): Promise<void> {
         await this.dataSource.query(
             `UPDATE message_cache SET status = $1, "lastUpdate" = $2 WHERE "consensusTimestamp" = $3`,
             [status, Date.now().toString(), consensusTimestamp],
         );
     }
 
-    @OnWorkerEvent('failed')
+    @OnWorkerEvent("failed")
     onFailed(job: Job<MessageProcessJobData>, error: Error): void {
         this.logger.error(
             `Message process job ${job.id} failed for ${job.data.consensusTimestamp}: ${error.message}`,
