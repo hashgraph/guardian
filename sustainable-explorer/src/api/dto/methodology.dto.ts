@@ -38,6 +38,11 @@ export class MethodologyQueryDto extends PaginationQueryDto {
     @IsOptional()
     @IsString()
     version?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by Policy Topic ID (exact match) — returns all versions of the same policy' })
+    @IsOptional()
+    @IsString()
+    policyTopicId?: string;
 }
 
 export class MethodologyStats {
@@ -82,6 +87,12 @@ export class MethodologyResponseDto {
     @ApiProperty({ nullable: true, description: 'Methodology version' })
     version: string | null;
 
+    @ApiProperty({
+        nullable: true,
+        description: 'Policy Topic ID (businessData.topicId) — shared across all versions of the same policy',
+    })
+    policyTopicId: string | null;
+
     @ApiProperty({ description: 'HCS consensus timestamp of the source message' })
     sourceTimestamp: string;
 
@@ -103,6 +114,8 @@ export class MethodologyResponseDto {
         const options = (data.options || {}) as Record<string, any>;
         const version = typeof options.version === 'string' ? options.version : null;
 
+        const policyTopicId = typeof data.topicId === 'string' ? data.topicId : null;
+
         return {
             id: row.id,
             network,
@@ -113,6 +126,7 @@ export class MethodologyResponseDto {
             registryDid: row.registryDid,
             registryName: row.registryName,
             version,
+            policyTopicId,
             sourceTimestamp: row.sourceTimestamp,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,

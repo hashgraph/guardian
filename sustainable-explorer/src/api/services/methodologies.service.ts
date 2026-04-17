@@ -30,6 +30,7 @@ export class MethodologiesService {
             registryDid: query.registryDid,
             registryName: query.registryName,
             version: query.version,
+            policyTopicId: query.policyTopicId,
             sortBy: query.sortBy,
             sortDir: query.sortDir,
         });

@@ -30,7 +30,13 @@ export const MV_METHODOLOGY_STATS_CREATE_SQL = `
     SELECT
         mb."relatedTopicId",
         0::bigint AS project_count,
-        0::bigint AS issuance_count,
+        COALESCE((
+            SELECT COUNT(*)
+            FROM message m
+            WHERE m."topicId" = mb.policy_topic_id
+              AND m.type = 'Token'
+              AND m.options->>'tokenId' IS NOT NULL
+        ), 0)::bigint AS issuance_count,
         COALESCE((
             SELECT COUNT(DISTINCT ps."schemaId")
             FROM policy_schema ps
