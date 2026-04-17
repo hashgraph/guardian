@@ -216,10 +216,6 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
      * Finds Instance-Policy messages that have a ZIP CID but no imported schemas
      * and re-enqueues them for the PolicySchemaImportProcessor.
      *
-     * This catches two cases:
-     *  1. Messages processed before the policy-schema pipeline existed.
-     *  2. IPFS fetch failures from a previous run.
-     *
      * The processor itself deduplicates via (policyTopicId, sourceCid), so
      * already-imported ZIPs are skipped cheaply on subsequent restarts.
      */
