@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 import fieldsValidation from '../fields-validation.js'
-import { Examples, ObjectExamples } from '../examples.js';
+import { IsArray, IsBoolean, Examples, ObjectExamples } from '../examples.js';
 import {
     IsArray,
     IsBoolean,
@@ -8,12 +8,13 @@ import {
     IsNotEmpty,
     IsNumber,
     IsOptional,
-    IsString
+    IsOptional, IsString
 } from 'class-validator';
 import { UserRole } from '@guardian/interfaces';
 import { Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Match } from '../../../helpers/decorators/match.validator.js';
+import { DidDocumentDTO, DidKeyDTO, SubjectDTO } from './profiles.js';
 
 export class PermissionGroupResponseDTO {
     @ApiProperty({
@@ -409,6 +410,56 @@ export class UserAccountDTO {
     @IsOptional()
     @IsString()
     did?: string;
+}
+
+export class OnboardingDTO extends RegisterUserDTO {
+    @ApiProperty({
+        required: false,
+        description: 'Hedera account ID (e.g. 0.0.12345). Auto-generated from the operator account if omitted.',
+        example: '0.0.12345'
+    })
+    @IsOptional()
+    @IsString()
+    hederaAccountId?: string;
+
+    @ApiProperty({
+        required: false,
+        description: 'Hedera account private key. Required when hederaAccountId is provided; auto-generated if omitted.',
+    })
+    @IsOptional()
+    @IsString()
+    hederaAccountKey?: string;
+
+    @ApiProperty({
+        required: false,
+        description: 'Standard Registry username or DID. Required for USER role accounts to link them to their registry.',
+        example: 'registry_username'
+    })
+    @IsOptional()
+    @IsString()
+    parent?: string;
+
+    @ApiProperty({ required: false, description: 'VC document to publish during profile setup.', type: () => SubjectDTO })
+    @IsOptional()
+    vcDocument?: SubjectDTO;
+
+    @ApiProperty({ required: false, description: 'Pre-created DID document. Auto-generated if omitted.', type: () => DidDocumentDTO })
+    @IsOptional()
+    didDocument?: DidDocumentDTO;
+
+    @ApiProperty({ required: false, description: 'Private keys for the DID document methods.', isArray: true, type: () => DidKeyDTO })
+    @IsOptional()
+    @IsArray()
+    didKeys?: DidKeyDTO[];
+
+    @ApiProperty({ required: false, default: false, description: 'Use Fireblocks signing instead of local key.' })
+    @IsOptional()
+    @IsBoolean()
+    useFireblocksSigning?: boolean;
+
+    @ApiProperty({ required: false, description: 'Fireblocks configuration (required when useFireblocksSigning is true).' })
+    @IsOptional()
+    fireblocksConfig?: any;
 }
 
 export class CredentialSubjectDTO {

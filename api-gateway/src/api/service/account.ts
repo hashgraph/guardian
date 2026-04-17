@@ -1,5 +1,5 @@
-import { IAuthUser, NotificationHelper, PinoLogger } from '@guardian/common';
-import { Permissions, PolicyStatus, SchemaEntity, UserRole } from '@guardian/interfaces';
+import { IAuthUser, NotificationHelper, PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { Permissions, PolicyStatus, SchemaEntity, TaskAction, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse, getSchemaPath } from '@nestjs/swagger';
@@ -16,7 +16,7 @@ import {
     Examples,
     InternalServerErrorDTO,
     LoginUserDTO,
-    RegisterUserDTO,
+    OnboardingDTO, RegisterUserDTO, TaskDTO,
     StandardRegistryAccountDTO,
     UnauthorizedErrorDTO,
     UnprocessableEntityErrorDTO,
@@ -31,7 +31,7 @@ import {
     OTPStatusResponseDTO
 } from '#middlewares';
 import { Auth, AuthUser, checkPermission } from '#auth';
-import { EntityOwner, Guardians, InternalException, PolicyEngine, UseCache, Users } from '#helpers';
+import { EntityOwner, Guardians, InternalException, PolicyEngine, ServiceError, TaskManager, UseCache, Users } from '#helpers';
 import { PolicyListResponse } from '../../entities/policy';
 import { StandardRegistryAccountResponse } from '../../entities/account';
 import { ApplicationEnvironment } from '../../environment.js';
@@ -189,6 +189,139 @@ export class AccountApi {
             }
             throw new HttpException(error.message, error.code || HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * Registers and fully onboards a new user in a single async call.
+     *
+     * @param body.username           - Username for the new account
+     * @param body.password           - Password
+     * @param body.password_confirmation - Must match password
+     * @param body.role               - UserRole.USER or UserRole.STANDARD_REGISTRY
+     * @param body.hederaAccountId    - Optional. Auto-generated from operator if omitted
+     * @param body.hederaAccountKey   - Required when hederaAccountId is provided
+     * @param body.parent             - Optional. Standard Registry username/DID (USER role only)
+     * @param body.vcDocument         - Optional. VC subject to publish during setup
+     * @param body.didDocument        - Optional. Custom DID document; auto-generated if omitted
+     * @param body.didKeys            - Optional. Keys for the custom DID document
+     * @param body.useFireblocksSigning - Optional. Use Fireblocks instead of local key
+     * @param body.fireblocksConfig   - Optional. Fireblocks configuration
+     *
+     * @returns TaskDTO — poll GET /tasks/:taskId for result
+     */
+    @Post('/push/onboard')
+    @ApiOperation({
+        summary: 'Registers and fully onboards a new user account.',
+        description:
+            'Creates a user account, ' +
+            'Hedera account, DID, and cryptographic keys on behalf of the user. ' +
+            'If hederaAccountId / hederaAccountKey are omitted the platform generates them. ',
+    })
+    @ApiBody({
+        description: 'Registration and optional Hedera / DID credentials.',
+        type: OnboardingDTO,
+    })
+    @ApiOkResponse({
+        description: 'Task created — poll for completion.',
+        type: TaskDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(OnboardingDTO, TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async registerAndOnboard(
+        @Body() body: OnboardingDTO,
+        @Req() req: any,
+    ): Promise<TaskDTO> {
+        const users = new Users();
+        let parentUser: IAuthUser | null = null;
+
+        if (!ApplicationEnvironment.demoMode) {
+            const authHeader = req.headers.authorization;
+            const token = authHeader?.split(' ')[1];
+            try {
+                parentUser = await users.getUserByToken(token) as IAuthUser;
+            } catch (_) {
+                parentUser = null;
+            }
+            if (!parentUser) {
+                throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+            }
+            try {
+                await checkPermission(UserRole.STANDARD_REGISTRY)(parentUser);
+            } catch (error) {
+                await InternalException(error, this.logger, parentUser?.id);
+            }
+        }
+
+        if (body.hederaAccountId && !body.hederaAccountKey) {
+            throw new HttpException(
+                'hederaAccountKey is required when hederaAccountId is provided',
+                HttpStatus.UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        // USER role must have a Standard Registry parent
+        if (body.role === UserRole.USER) {
+            if (!body.parent?.trim()) {
+                throw new HttpException(
+                    'parent (Standard Registry username) is required for USER role accounts',
+                    HttpStatus.BAD_REQUEST,
+                );
+            }
+            const parentSR = await users.getUser(body.parent.trim(), parentUser?.id ?? null);
+            if (!parentSR) {
+                throw new HttpException(
+                    `Standard Registry '${body.parent}' not found`,
+                    HttpStatus.BAD_REQUEST,
+                );
+            }
+            if (parentSR.role !== UserRole.STANDARD_REGISTRY) {
+                throw new HttpException(
+                    `'${body.parent}' is not a Standard Registry`,
+                    HttpStatus.BAD_REQUEST,
+                );
+            }
+            body.parent = parentSR.did;
+        }
+
+        const existingUser = await users.getUser(body.username, parentUser?.id ?? null);
+        if (existingUser) {
+            throw new HttpException(
+                `Username '${body.username}' is already taken`,
+                HttpStatus.CONFLICT,
+            );
+        }
+
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.ONBOARD_USER, parentUser?.id ?? null);
+
+        // After the task completes, transfer ownership to the newly created user
+        taskManager.registerCallback(task, async (completedTask) => {
+            if (completedTask.result?.username) {
+                try {
+                    const users = new Users();
+                    const newUser = await users.getUser(completedTask.result.username, parentUser?.id ?? null);
+                    if (newUser?.id) {
+                        taskManager.transferOwnership(task.taskId, newUser.id);
+                    }
+                } catch (_) {
+                    // Non-fatal — ownership transfer best-effort
+                }
+            }
+        });
+
+        RunFunctionAsync<ServiceError>(async () => {
+            const guardians = new Guardians();
+            await guardians.onboardUserAsync(parentUser, body, task);
+        }, async (error) => {
+            await this.logger.error(error, ['API_GATEWAY'], parentUser?.id);
+            taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+        });
+
+        return task;
     }
 
     /**

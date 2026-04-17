@@ -1,4 +1,4 @@
-import { DidDocumentStatus, MessageAPI, SchemaEntity, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { DidDocumentStatus, LocationType, MessageAPI, SchemaEntity, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     CommonDidDocument,
@@ -14,6 +14,7 @@ import {
     NewNotifier,
     PinoLogger,
     RunFunctionAsync,
+    SecretManager,
     Users,
     VcHelper,
     Wallet,
@@ -162,6 +163,118 @@ export function profileAPI(logger: PinoLogger) {
                 notifier.result(did);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], user.id);
+                notifier.fail(error);
+            });
+
+            return new MessageResponse(task);
+        });
+
+    ApiResponse(MessageAPI.ONBOARD_USER_ASYNC,
+        async (msg: {
+            parentUser: IAuthUser | null,
+            payload: any,
+            task: any
+        }) => {
+            const { parentUser, payload, task } = msg;
+            const notifier = await NewNotifier.create(task);
+            const logId: string | null = parentUser?.id?.toString() ?? null;
+
+            RunFunctionAsync(async () => {
+                const STEP_CREATE_HEDERA = 'Create Hedera account';
+                const STEP_REGISTER = 'Register user';
+
+                notifier.start();
+
+                let hederaAccountId: string = payload.hederaAccountId ?? null;
+                let hederaAccountKey: string = payload.hederaAccountKey ?? null;
+
+                if (!hederaAccountId) {
+                    notifier.addStep(STEP_CREATE_HEDERA);
+                    notifier.startStep(STEP_CREATE_HEDERA);
+
+                    const secretManager = SecretManager.New();
+                    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
+
+                    let initialBalance: number = null;
+                    try {
+                        initialBalance = payload.role === UserRole.STANDARD_REGISTRY
+                            ? parseInt(process.env.INITIAL_STANDARD_REGISTRY_BALANCE, 10)
+                            : parseInt(process.env.INITIAL_BALANCE, 10);
+                        if (!Number.isFinite(initialBalance)) {
+                            initialBalance = null;
+                        }
+                    } catch (_) {
+                        initialBalance = null;
+                    }
+
+                    const workers = new Workers();
+                    const treasury = await workers.addNonRetryableTask({
+                        type: WorkerTaskType.CREATE_ACCOUNT,
+                        data: {
+                            operatorId: OPERATOR_ID,
+                            operatorKey: OPERATOR_KEY,
+                            initialBalance,
+                            payload: { userId: logId }
+                        }
+                    }, {
+                        priority: 20,
+                        attempts: 0,
+                        userId: logId,
+                        interception: logId,
+                        registerCallback: true
+                    });
+
+                    hederaAccountId = treasury.id;
+                    hederaAccountKey = treasury.key;
+                    notifier.completeStep(STEP_CREATE_HEDERA);
+                }
+
+                notifier.addStep(STEP_REGISTER);
+                notifier.startStep(STEP_REGISTER);
+                const users = new Users();
+                await users.registerNewUser(
+                    payload.username,
+                    payload.password,
+                    payload.role,
+                    logId
+                );
+                notifier.completeStep(STEP_REGISTER);
+
+                const profile = {
+                    ...payload,
+                    hederaAccountId,
+                    hederaAccountKey,
+                    type: LocationType.LOCAL,
+                    entity: payload.role === UserRole.STANDARD_REGISTRY
+                        ? SchemaEntity.STANDARD_REGISTRY
+                        : SchemaEntity.USER,
+                    parent: payload.parent ?? parentUser?.did ?? null,
+                };
+
+                const did = await setupUserProfile({
+                    username: payload.username,
+                    profile,
+                    logger,
+                    notifier,
+                    logId
+                });
+
+                let publicKey: string | null = null;
+                try {
+                    publicKey = PrivateKey.fromStringDer(hederaAccountKey).publicKey.toString();
+                } catch (_) {
+                    publicKey = null;
+                }
+
+                notifier.result({
+                    username: payload.username,
+                    role: payload.role,
+                    did,
+                    hederaAccountId,
+                    publicKey
+                });
+            }, async (error) => {
+                await logger.error(error, ['GUARDIAN_SERVICE'], logId);
                 notifier.fail(error);
             });
 
