@@ -16,7 +16,7 @@
         "@guardian/common": "3.5.1",
         "@guardian/interfaces": "3.5.1",
         "@nestjs/common": "^11.0.11",
-        "@nestjs/core": "^11.0.11",
+        "@nestjs/core": "^11.1.18",
         "@nestjs/microservices": "^11.0.11",
         "@nestjs/platform-express": "^11.0.11",
         "@nestjs/swagger": "^11.0.6",

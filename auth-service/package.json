@@ -16,7 +16,7 @@
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
         "@nestjs/common": "^11.0.11",
-        "@nestjs/core": "^11.0.11",
+        "@nestjs/core": "^11.1.18",
         "@nestjs/microservices": "^11.0.11",
         "axios": "^1.8.3",
         "base-x": "^4.0.0",
