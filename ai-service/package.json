@@ -4,8 +4,8 @@
     "main": "dist/app.js",
     "license": "Apache-2.0",
     "dependencies": {
-        "@guardian/common": "3.5.0",
-        "@guardian/interfaces": "3.5.0",
+        "@guardian/common": "3.5.1",
+        "@guardian/interfaces": "3.5.1",
         "@langchain/classic": "1.0.2",
         "@langchain/community": "1.0.2",
         "@langchain/core": "1.0.4",

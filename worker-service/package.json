@@ -2,8 +2,8 @@
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@filebase/client": "^0.0.5",
-        "@guardian/common": "3.5.0",
-        "@guardian/interfaces": "3.5.0",
+        "@guardian/common": "3.5.1",
+        "@guardian/interfaces": "3.5.1",
         "@hiero-ledger/sdk": "2.78.0",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
