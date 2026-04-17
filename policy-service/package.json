@@ -21,7 +21,7 @@
         "@mikro-orm/mongodb": "6.4.16",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
-        "@nestjs/microservices": "^11.0.11",
+        "@nestjs/microservices": "^11.1.19",
         "@cortex-js/compute-engine": "^0.27.0",
         "cron": "^4.3.0",
         "deep-equal": "^2.0.5",
