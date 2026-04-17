@@ -17,6 +17,7 @@ export interface MethodologyListQuery {
     registryDid?: string;
     registryName?: string;
     version?: string;
+    policyTopicId?: string;
     sortBy?: string;
     sortDir?: 'asc' | 'desc';
 }

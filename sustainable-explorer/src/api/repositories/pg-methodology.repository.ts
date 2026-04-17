@@ -77,6 +77,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             registryDid: query.registryDid,
             registryName: query.registryName,
             version: query.version,
+            policyTopicId: query.policyTopicId,
         });
 
         // Special: full-text search with ranking. The tsvector index covers
