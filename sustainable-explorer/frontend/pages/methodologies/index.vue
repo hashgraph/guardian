@@ -143,7 +143,7 @@ const totalCount = computed(() => meta.value.total || 0);
 // Stats bar — reuses the same composable as the table but with a fixed
 // limit=1000 and no filters, so the key is always distinct from the table key.
 const statsPage = ref(1);
-const statsLimit = ref(100);
+const statsLimit = ref(1);
 const statsSearch = ref("");
 const statsSortBy = ref<MethodologySortKey | null>(null);
 const statsSortDir = ref<MethodologySortDir | null>(null);
@@ -161,29 +161,6 @@ const { data: statsData } = useMethodologiesApi({
 
 const statTotal = computed(() => statsData.value?.meta.total ?? 0);
 
-// Group by whatever status values actually exist in the data.
-const statsByStatus = computed<[string, number][]>(() => {
-  const items = statsData.value?.data ?? [];
-  const counts: Record<string, number> = {};
-  for (const item of items) {
-    const s = item.status ?? "Unknown";
-    counts[s] = (counts[s] ?? 0) + 1;
-  }
-  return Object.entries(counts).sort((a, b) => b[1] - a[1]);
-});
-
-const statusDotClass = (status: string) => {
-  const s = status.toUpperCase();
-  if (s === "PUBLISHED") return "bg-stat-green";
-  if (s === "DRAFT") return "bg-stat-amber";
-  return "bg-muted-foreground";
-};
-const statusCountClass = (status: string) => {
-  const s = status.toUpperCase();
-  if (s === "PUBLISHED") return "text-stat-green";
-  if (s === "DRAFT") return "text-stat-amber";
-  return "text-foreground";
-};
 
 // Reset to page 1 when search, network, or filters change
 watch(searchQuery, () => {
@@ -266,23 +243,6 @@ const skeletonRows = computed(() =>
         <span class="font-bold tabular-nums text-foreground text-base">{{
           statTotal
         }}</span>
-      </div>
-      <div
-        v-for="[status, count] in statsByStatus"
-        :key="status"
-        class="flex items-center gap-3 rounded-lg border bg-card px-4 py-2.5 text-sm"
-      >
-        <span
-          :class="[statusDotClass(status), 'h-2 w-2 rounded-full shrink-0']"
-        />
-        <span class="text-muted-foreground font-medium">{{ status }}</span>
-        <span
-          :class="[
-            'font-bold tabular-nums text-base',
-            statusCountClass(status),
-          ]"
-          >{{ count }}</span
-        >
       </div>
     </div>
 
