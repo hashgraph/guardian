@@ -248,6 +248,11 @@
             "description": "Description",
             "status": "Status"
         },
+        "stats": {
+            "total": "Total Methodologies",
+            "active": "Published",
+            "draft": "Draft / Other"
+        },
         "errors": {
             "loadFailed": "Failed to load methodologies."
         },

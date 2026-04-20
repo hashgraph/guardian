@@ -65,6 +65,11 @@ export const METHODOLOGY_FIELD_SCHEMA: FieldSchema = {
         filter: 'ilike',
         sortable: true,
     },
+    policyTopicId: {
+        sql: `bv."businessData"->>'topicId'`,
+        filter: 'eq',
+        sortable: true,
+    },
 
     // ── Joined materialized view columns ────────────────────────────────
     projects: {

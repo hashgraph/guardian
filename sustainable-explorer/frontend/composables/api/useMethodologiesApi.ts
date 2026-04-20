@@ -33,6 +33,7 @@ export interface MethodologyDto {
     registryDid: string | null;
     registryName: string | null;
     version: string | null;
+    policyTopicId: string | null;
     sourceTimestamp: string | null;
     createdAt: string;
     updatedAt: string;
@@ -62,7 +63,7 @@ export interface UseMethodologiesApiOptions {
 }
 
 // Filter keys recognised by the backend methodologies endpoint.
-const METHODOLOGY_FILTER_KEYS = ['name', 'id', 'description', 'status', 'registryDid', 'registryName', 'version'] as const;
+const METHODOLOGY_FILTER_KEYS = ['name', 'id', 'description', 'status', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
 
 const emptyResponse = (limit: number): MethodologiesResponse => ({
     data: [],
@@ -135,6 +136,39 @@ export const useMethodologiesApi = (opts: UseMethodologiesApiOptions) => {
                 opts.sortDir,
                 ...(opts.filters ? [opts.filters] : []),
             ],
+        },
+    );
+
+    return { data, pending, error, refresh };
+};
+
+export interface UseMethodologyApiOptions {
+    id: Ref<string>;
+    network: Ref<string>;
+}
+
+export const useMethodologyApi = (opts: UseMethodologyApiOptions) => {
+    const config = useRuntimeConfig();
+    const baseURL = import.meta.server
+        ? (config.apiBaseUrl as string)
+        : (config.public.apiBaseUrl as string);
+
+    const url = computed(() => `/api/v1/${opts.network.value}/methodologies/${opts.id.value}`);
+    const key = computed(() => `methodology:${opts.network.value}:${opts.id.value}`);
+
+    const { data, pending, error, refresh } = useAsyncData<MethodologyDto | null>(
+        key.value,
+        async () => {
+            try {
+                return await $fetch<MethodologyDto>(url.value, { baseURL });
+            } catch (err) {
+                console.error('[useMethodologyApi] fetch failed:', err);
+                return null;
+            }
+        },
+        {
+            default: () => null,
+            watch: [opts.id, opts.network],
         },
     );
 
