@@ -673,6 +673,10 @@ export class PolicyEngineService {
 
                     const filters: any = { policyId };
 
+                    if (!policy || owner.creator !== policy.creator) {
+                        filters.owner = owner.creator;
+                    }
+
                     if (target) {
                         filters.target = target;
                     }
