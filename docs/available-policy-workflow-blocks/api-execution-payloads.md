@@ -239,23 +239,135 @@ Assigns a role to the current user within the policy.
 
 ### `mintDocumentBlock`
 
-Mints environmental asset tokens after document approval. Typically triggered automatically by the policy engine — no direct PUT needed.
+Mints environmental asset tokens after document approval. This is a server-side block (`post: false`, `get: false`) — it is triggered automatically by the policy engine when an upstream block fires a `RunEvent`. There is no direct GET or PUT available from the API.
 
-**GET response — minting status:**
+The block calculates a token amount by evaluating the configured rule expression against the incoming VC documents, creates a mint VC and VP, publishes both to HCS, and calls the Hedera token service to mint the tokens to the target account.
+
+To observe mint outcomes, query the `interfaceDocumentsSourceBlock` that follows the mint block in the policy flow — documents there will carry a `type` of `"MINT"` once minting completes.
+
+---
+
+### `retirementDocumentBlock`
+
+Retires (wipes) tokens from a holder account. This is a server-side block (`post: false`, `get: false`) — it is triggered automatically by the policy engine when an upstream block fires a `RunEvent`. There is no direct GET or PUT available from the API.
+
+The block evaluates the configured rule expression (fungible tokens) or serial number expression (non-fungible tokens) against the incoming VC documents, creates a wipe VC and VP, publishes both to HCS, and calls the Hedera token wipe service.
+
+---
+
+### `createTokenBlock`
+
+Presents a token configuration form that allows a user to define and create a new Hedera token within the policy's token template. The block can also be set to `autorun`, in which case it creates the token automatically without user interaction.
+
+**GET response — token template:**
 
 ```json
 {
   "id": "block-uuid",
-  "blockType": "mintDocumentBlock",
+  "blockType": "createTokenBlock",
+  "title": "Create Token",
+  "description": "Define the token parameters",
   "data": {
-    "tokenId": "0.0.1234567",
-    "amount": 1250,
-    "serials": [1, 2, 3],
-    "mintDate": "2026-03-31T12:00:00.000Z",
-    "transactionId": "0.0.1234567@1711800000.000000000"
+    "tokenName": "iREC Token",
+    "tokenSymbol": "iREC",
+    "tokenType": "fungible",
+    "decimals": "2",
+    "initialSupply": "0",
+    "enableAdmin": true,
+    "changeSupply": true,
+    "enableFreeze": false,
+    "enableKYC": false,
+    "enableWipe": true,
+    "wipeContractId": null
   }
 }
 ```
+
+Fields already locked by the policy template will be returned in `data` but cannot be overridden in the PUT — submit only the fields the policy leaves editable.
+
+**PUT request — submit token configuration:**
+
+```json
+{
+  "tokenName": "iREC Token",
+  "tokenSymbol": "iREC",
+  "tokenType": "fungible",
+  "decimals": "2",
+  "initialSupply": "0",
+  "enableAdmin": true,
+  "changeSupply": true,
+  "enableFreeze": false,
+  "enableKYC": false,
+  "enableWipe": true,
+  "wipeContractId": null
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| tokenName | string | Human-readable token name |
+| tokenSymbol | string | Short token symbol (e.g. `"iREC"`) |
+| tokenType | string | `"fungible"` or `"non-fungible"` |
+| decimals | string | Decimal precision for fungible tokens (e.g. `"2"`) |
+| initialSupply | string | Initial supply for fungible tokens (e.g. `"0"`) |
+| enableAdmin | boolean | Enables admin key on the token |
+| changeSupply | boolean | Enables supply key (required for minting) |
+| enableFreeze | boolean | Enables freeze key |
+| enableKYC | boolean | Enables KYC key |
+| enableWipe | boolean | Enables wipe key (required for retirement) |
+| wipeContractId | string \| null | Optional Hedera contract ID to use as wipe key |
+
+On success the block publishes the new token to HCS, stores the resulting `tokenId` in the policy document's `tokens` map, and fires a `RunEvent` to the next block.
+
+---
+
+### `tokenConfirmationBlock`
+
+Prompts the current user to associate (or dissociate) their Hedera account with a specific token, or to skip the step. This is required before a user can receive minted tokens.
+
+**GET response:**
+
+```json
+{
+  "id": "block-uuid",
+  "blockType": "tokenConfirmationBlock",
+  "action": "associate",
+  "accountId": "0.0.1234567",
+  "tokenName": "iREC Token",
+  "tokenId": "0.0.9876543"
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| action | string | `"associate"` or `"dissociate"` — the operation the user is being asked to confirm |
+| accountId | string | The user's Hedera account ID that will be associated |
+| tokenName | string | Display name of the token |
+| tokenId | string | Hedera token ID to associate |
+
+**PUT request — confirm association:**
+
+```json
+{
+  "action": "confirm",
+  "hederaAccountKey": "302e020100300506032b657004220420..."
+}
+```
+
+**PUT request — skip:**
+
+```json
+{
+  "action": "skip"
+}
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| action | string | Yes | `"confirm"` to proceed with the association/dissociation, `"skip"` to bypass |
+| hederaAccountKey | string | Only when `action` is `"confirm"` | The user's Hedera ED25519 private key (hex or DER-encoded) used to sign the association transaction |
+
+> **Security note:** `hederaAccountKey` is transmitted over HTTPS and used in-process to sign the Hedera association transaction. It is not stored by Guardian.
 
 ---
 
