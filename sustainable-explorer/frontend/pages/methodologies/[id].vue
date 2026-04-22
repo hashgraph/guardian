@@ -117,6 +117,91 @@ const publishedAt = computed(() => {
   if (!ts) return null;
   return new Date(parseFloat(ts) * 1000).toLocaleString();
 });
+
+// Version comparison
+const compareTopicId = ref<string | null>(null);
+const compareTarget = computed(() =>
+  versions.value.find((v) => v.topicId === compareTopicId.value) ?? null,
+);
+const otherVersions = computed(() =>
+  versions.value.filter((v) => v.topicId !== id.value),
+);
+
+interface CompareRow {
+  label: string;
+  a: string;
+  b: string;
+  changed: boolean;
+}
+
+const fmtDate = (ts: string | null | undefined) =>
+  ts ? new Date(parseFloat(ts) * 1000).toLocaleDateString() : "—";
+const fmtVal = (v: string | null | undefined) => v ?? "—";
+const fmtScopes = (s: string[] | null | undefined) =>
+  s && s.length ? s.join(", ") : "—";
+
+const compareRows = computed((): CompareRow[] => {
+  const cur = methodology.value;
+  const target = compareTarget.value;
+  if (!cur || !target) return [];
+  return [
+    {
+      label: "Version",
+      a: fmtVal(cur.version),
+      b: fmtVal(target.version),
+      changed: cur.version !== target.version,
+    },
+    {
+      label: "Status",
+      a: fmtVal(cur.status),
+      b: fmtVal(target.status),
+      changed: cur.status !== target.status,
+    },
+    {
+      label: "Published",
+      a: fmtDate(cur.sourceTimestamp),
+      b: fmtDate(target.sourceTimestamp),
+      changed: cur.sourceTimestamp !== target.sourceTimestamp,
+    },
+    {
+      label: "Description",
+      a: fmtVal(cur.description),
+      b: fmtVal(target.description),
+      changed: cur.description !== target.description,
+    },
+    {
+      label: "Sectoral Scopes",
+      a: fmtScopes(cur.sectoralScopes),
+      b: fmtScopes(target.sectoralScopes),
+      changed:
+        JSON.stringify(cur.sectoralScopes) !==
+        JSON.stringify(target.sectoralScopes),
+    },
+    {
+      label: "Emission Reduction Approach",
+      a: fmtVal(cur.emissionReductionApproach),
+      b: fmtVal(target.emissionReductionApproach),
+      changed:
+        cur.emissionReductionApproach !== target.emissionReductionApproach,
+    },
+    {
+      label: "Schema Count",
+      a: String(cur.stats.schemaCount),
+      b: String(target.stats.schemaCount),
+      changed: cur.stats.schemaCount !== target.stats.schemaCount,
+    },
+    {
+      label: "Issuances",
+      a: String(cur.stats.issuanceCount),
+      b: String(target.stats.issuanceCount),
+      changed: cur.stats.issuanceCount !== target.stats.issuanceCount,
+    },
+  ];
+});
+
+const changedCount = computed(
+  () => compareRows.value.filter((r) => r.changed).length,
+);
 </script>
 
 <template>
@@ -710,21 +795,81 @@ const publishedAt = computed(() => {
                 >
               </p>
             </div>
-            <div class="border-t pt-4">
-              <h3 class="text-sm font-semibold text-foreground mb-2">
-                Compare Methodologies
-              </h3>
-              <p class="text-sm text-muted-foreground mb-3">
-                Select another methodology to compare side-by-side against this
-                one.
-              </p>
-              <button
-                disabled
-                class="inline-flex items-center gap-2 rounded-lg border bg-muted/30 px-4 py-2 text-sm font-medium text-muted-foreground cursor-not-allowed"
-              >
-                <GitBranch class="h-4 w-4" />
-                Compare (Coming Soon)
-              </button>
+            <div class="border-t pt-4 space-y-4">
+              <div>
+                <h3 class="text-sm font-semibold text-foreground mb-1">
+                  Compare Versions
+                </h3>
+                <p class="text-sm text-muted-foreground mb-3">
+                  Select another version to compare side-by-side against this one.
+                </p>
+                <div v-if="otherVersions.length === 0" class="text-sm text-muted-foreground italic">
+                  No other versions available for this methodology.
+                </div>
+                <select
+                  v-else
+                  v-model="compareTopicId"
+                  class="w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <option :value="null">— Select a version to compare —</option>
+                  <option
+                    v-for="v in otherVersions"
+                    :key="v.topicId ?? v.id"
+                    :value="v.topicId"
+                  >
+                    {{ v.version ?? v.topicId }} · {{ fmtDate(v.sourceTimestamp) }} · {{ v.status ?? "—" }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Comparison table -->
+              <div v-if="compareTarget" class="rounded-xl border bg-card overflow-hidden">
+                <div class="px-5 py-3 border-b bg-muted/30 flex items-center justify-between">
+                  <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <GitBranch class="h-4 w-4 text-primary" />
+                    Comparison
+                  </h4>
+                  <span v-if="changedCount > 0" class="text-xs font-medium bg-stat-amber/10 text-stat-amber rounded-full px-2 py-0.5">
+                    {{ changedCount }} field{{ changedCount > 1 ? 's' : '' }} changed
+                  </span>
+                  <span v-else class="text-xs font-medium bg-stat-green/10 text-stat-green rounded-full px-2 py-0.5">
+                    No differences
+                  </span>
+                </div>
+
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="border-b bg-muted/20">
+                      <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider w-1/4">Field</th>
+                      <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider w-[37.5%]">
+                        Current
+                        <span class="ml-1 font-mono font-normal normal-case bg-primary/10 text-primary rounded px-1.5 py-0.5">{{ methodology.version ?? id }}</span>
+                      </th>
+                      <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider w-[37.5%]">
+                        Compare
+                        <span class="ml-1 font-mono font-normal normal-case bg-muted rounded px-1.5 py-0.5">{{ compareTarget.version ?? compareTarget.topicId }}</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y">
+                    <tr
+                      v-for="row in compareRows"
+                      :key="row.label"
+                      :class="row.changed ? 'bg-stat-amber/5' : ''"
+                    >
+                      <td class="py-2.5 px-4 text-xs font-medium text-muted-foreground">
+                        {{ row.label }}
+                      </td>
+                      <td class="py-2.5 px-4 text-sm text-foreground">
+                        <span :class="row.changed ? 'text-stat-amber font-medium' : ''">{{ row.a }}</span>
+                      </td>
+                      <td class="py-2.5 px-4 text-sm text-foreground">
+                        <span :class="row.changed ? 'text-stat-amber font-medium' : ''">{{ row.b }}</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>

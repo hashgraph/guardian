@@ -93,6 +93,12 @@ export class MethodologyResponseDto {
     })
     policyTopicId: string | null;
 
+    @ApiProperty({ nullable: true, type: [String], description: 'Sectoral scopes extracted from policy categoriesExport' })
+    sectoralScopes: string[] | null;
+
+    @ApiProperty({ nullable: true, description: 'Emission reduction approach: Avoidance, Removal, or Avoidance & Removal' })
+    emissionReductionApproach: string | null;
+
     @ApiProperty({ description: 'HCS consensus timestamp of the source message' })
     sourceTimestamp: string;
 
@@ -127,6 +133,8 @@ export class MethodologyResponseDto {
             registryName: row.registryName,
             version,
             policyTopicId,
+            sectoralScopes: row.sectoralScopes,
+            emissionReductionApproach: row.emissionReductionApproach,
             sourceTimestamp: row.sourceTimestamp,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,

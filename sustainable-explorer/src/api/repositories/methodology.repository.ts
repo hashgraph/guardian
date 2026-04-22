@@ -41,6 +41,8 @@ export interface MethodologyRow {
     // Named `statusValue` to avoid colliding with the HTTP-level `status` concept.
     statusValue: string | null;
     businessData: Record<string, unknown> | null;
+    sectoralScopes: string[] | null;
+    emissionReductionApproach: string | null;
     searchText: string | null;
     lastUpdate: string;
     createdAt: Date;

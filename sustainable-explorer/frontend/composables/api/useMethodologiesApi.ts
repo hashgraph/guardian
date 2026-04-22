@@ -34,6 +34,8 @@ export interface MethodologyDto {
     registryName: string | null;
     version: string | null;
     policyTopicId: string | null;
+    sectoralScopes: string[] | null;
+    emissionReductionApproach: string | null;
     sourceTimestamp: string | null;
     createdAt: string;
     updatedAt: string;
