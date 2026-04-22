@@ -635,7 +635,14 @@ export class PolicyEngineService {
                 try {
                     const { user, policyId, vpMessageId } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
-                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const owner = new EntityOwner(user);
+                    await this.policyEngine.accessPolicy(policy, owner, 'execute');
+
+                    if (!policy || owner.creator !== policy.creator) {
+                        const err: any = new Error('Only the policy owner can retry mint requests.');
+                        err.code = 403;
+                        throw err;
+                    }
 
                     const blockData = await new GuardiansService()
                         .sendBlockMessage(PolicyEvents.RETRY_MINT, policyId, {

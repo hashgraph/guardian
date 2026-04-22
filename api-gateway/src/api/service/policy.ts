@@ -3844,6 +3844,10 @@ export class PolicyApi {
         description: 'Successful operation.',
         example: {}
     })
+    @ApiForbiddenResponse({
+        description: 'Forbidden. Only the policy owner can retry mint requests.',
+        example: { statusCode: 403, message: 'Only the policy owner can retry mint requests.', error: 'Forbidden' }
+    })
     @ApiUnprocessableEntityResponse({
         description: 'Unprocessable entity.',
         type: UnprocessableEntityErrorDTO,
@@ -3864,7 +3868,9 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.retryMint(user, policyId, vpMessageId);
         } catch (error) {
-            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            if (!error.code) {
+                error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            }
             await InternalException(error, this.logger, user.id);
         }
     }
