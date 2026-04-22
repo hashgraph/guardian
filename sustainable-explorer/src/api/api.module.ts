@@ -9,11 +9,13 @@ import { NetworkDataSourceRegistry } from './database/network-datasource.registr
 import { RegistriesController } from './controllers/registries.controller';
 import { MethodologiesController } from './controllers/methodologies.controller';
 import { PolicySchemasController } from './controllers/policy-schemas.controller';
+import { ProjectsController } from './controllers/project.controller';
 
 // Services
 import { RegistriesService } from './services/registries.service';
 import { MethodologiesService } from './services/methodologies.service';
 import { PolicySchemasService } from './services/policy-schemas.service';
+import { ProjectsService } from './services/project.service';
 
 @Module({
     imports: [
@@ -26,12 +28,14 @@ import { PolicySchemasService } from './services/policy-schemas.service';
         RegistriesController,
         MethodologiesController,
         PolicySchemasController,
+        ProjectsController,
     ],
     providers: [
         NetworkDataSourceRegistry,
         RegistriesService,
         MethodologiesService,
         PolicySchemasService,
+        ProjectsService,
     ],
 })
 export class ApiModule {}

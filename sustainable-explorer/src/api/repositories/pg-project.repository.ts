@@ -1,18 +1,15 @@
 import { DataSource } from 'typeorm';
-import { MV_METHODOLOGY_STATS_NAME } from '@shared/materialized-views';
 import {
-    MethodologyRepository,
-    MethodologyListQuery,
-    MethodologyListResult,
-    MethodologyRow,
-    MethodologyStatsRow,
-} from './methodology.repository';
+    ProjectRepository,
+    ProjectListQuery,
+    ProjectListResult,
+    ProjectRow,
+} from './project.repository';
 import { QueryBuilder } from './query-builder';
-import { METHODOLOGY_FIELD_SCHEMA } from './schemas/methodology.schema';
+import { PROJECT_FIELD_SCHEMA } from './schemas/project.schema';
 
 interface RawRow {
     id: string;
-    viewType: string;
     sourceTimestamp: string;
     registryDid: string | null;
     relatedTopicId: string | null;
@@ -22,9 +19,6 @@ interface RawRow {
     lastUpdate: string;
     createdAt: Date;
     updatedAt: Date;
-    project_count: string | null;
-    issuance_count: string | null;
-    schema_count: string | null;
     registry_name: string | null;
 }
 
@@ -45,39 +39,37 @@ const REGISTRY_NAME_JOIN = `
 `;
 
 /**
- * PostgreSQL implementation of the MethodologyRepository.
+ * PostgreSQL implementation of the ProjectRepository.
  *
  * Generic filter and sort logic is delegated to QueryBuilder + the field
- * schema (METHODOLOGY_FIELD_SCHEMA). Adding a new filterable/sortable
- * column only requires updating the schema — no SQL changes needed here.
+ * schema (PROJECT_FIELD_SCHEMA). Adding a new filterable/sortable column
+ * only requires updating the schema — no SQL changes needed here.
  *
- * Special operations (full-text + fuzzy search, materialized view joins,
- * search ranking) remain explicit because they don't fit the generic
- * operator model.
+ * Special operations (full-text + fuzzy search, search ranking) remain
+ * explicit because they don't fit the generic operator model.
  */
-export class PgMethodologyRepository extends MethodologyRepository {
+export class PgProjectRepository extends ProjectRepository {
     constructor(private readonly dataSource: DataSource) {
         super();
     }
 
-    async findAll(query: MethodologyListQuery): Promise<MethodologyListResult> {
+    async findAll(query: ProjectListQuery): Promise<ProjectListResult> {
         const { page, limit, search, sortBy, sortDir } = query;
         const offset = (page - 1) * limit;
 
-        const builder = new QueryBuilder(METHODOLOGY_FIELD_SCHEMA);
-        builder.addClause(`bv."viewType" = 'METHODOLOGY'`);
+        const builder = new QueryBuilder(PROJECT_FIELD_SCHEMA);
+        builder.addClause(`bv."viewType" = 'PROJECT'`);
 
         // Generic filters: every filterable field defined in the schema
-        // is wired automatically. To add a new filter, edit methodology.schema.ts.
+        // is wired automatically. To add a new filter, edit project.schema.ts.
         builder.addFilters({
             name: query.name,
-            id: query.id,
-            description: query.description,
+            country: query.country,
+            methodology: query.methodology,
+            registry: query.registry,
+            developer: query.developer,
+            vintage: query.vintage,
             status: query.status,
-            registryDid: query.registryDid,
-            registryName: query.registryName,
-            version: query.version,
-            policyTopicId: query.policyTopicId,
         });
 
         // Special: full-text search with ranking. The tsvector index covers
@@ -109,10 +101,10 @@ export class PgMethodologyRepository extends MethodologyRepository {
         const orderBy = search
             ? `search_rank DESC, bv."createdAt" DESC`
             : builder.buildOrderBy({
-                sortBy,
-                sortDir,
-                defaultExpr: 'bv."createdAt" DESC NULLS LAST',
-            });
+                  sortBy,
+                  sortDir,
+                  defaultExpr: 'bv."createdAt" DESC NULLS LAST',
+              });
 
         const whereSql = builder.getWhereClause();
         const params = builder.getParams();
@@ -124,14 +116,9 @@ export class PgMethodologyRepository extends MethodologyRepository {
         const rowsSql = `
             SELECT
                 bv.*,
-                s.project_count,
-                s.issuance_count,
-                s.schema_count,
                 reg.registry_name,
                 ${rankExpr} AS search_rank
             FROM business_view bv
-            LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} s
-                ON s."relatedTopicId" = bv."relatedTopicId"
             ${REGISTRY_NAME_JOIN}
             WHERE ${whereSql}
             ORDER BY ${orderBy}
@@ -139,8 +126,8 @@ export class PgMethodologyRepository extends MethodologyRepository {
         `;
 
         // Count query reuses the same WHERE and LATERAL join (so filters that
-        // reference `reg.registry_name` resolve correctly), but skips the stats
-        // MV join and the LIMIT/OFFSET params.
+        // reference `reg.registry_name` resolve correctly), but skips the
+        // LIMIT/OFFSET params.
         const countParams = params.slice(0, params.length - 2);
         const countSql = `
             SELECT COUNT(*)::int AS total
@@ -155,67 +142,43 @@ export class PgMethodologyRepository extends MethodologyRepository {
         ]);
 
         return {
-            rows: rawRows.map(PgMethodologyRepository.mapRow),
+            rows: rawRows.map(PgProjectRepository.mapRow),
             total: countResult[0]?.total ?? 0,
         };
     }
 
-    async findById(id: string): Promise<MethodologyRow | null> {
+    async findById(id: string): Promise<ProjectRow | null> {
         const rawRows: RawRow[] = await this.dataSource.query(
             `
             SELECT
                 bv.*,
-                s.project_count,
-                s.issuance_count,
-                s.schema_count,
                 reg.registry_name
             FROM business_view bv
-            LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} s
-                ON s."relatedTopicId" = bv."relatedTopicId"
             ${REGISTRY_NAME_JOIN}
-            WHERE bv."viewType" = 'METHODOLOGY'
-              AND bv."relatedTopicId" = $1
-            ORDER BY bv."createdAt" DESC NULLS LAST
+            WHERE bv."viewType" = 'PROJECT'
+              AND bv."sourceTimestamp" = $1
             LIMIT 1
             `,
             [id],
         );
 
         if (rawRows.length === 0) return null;
-        return PgMethodologyRepository.mapRow(rawRows[0]);
+        return PgProjectRepository.mapRow(rawRows[0]);
     }
 
-    private static mapRow(row: RawRow): MethodologyRow {
-        const stats: MethodologyStatsRow = {
-            projectCount: parseInt(row.project_count || '0', 10),
-            issuanceCount: parseInt(row.issuance_count || '0', 10),
-            schemaCount: parseInt(row.schema_count || '0', 10),
-        };
-
-        const data = row.businessData || {};
-        const description = typeof data.description === 'string' ? data.description : null;
-        const statusValue = typeof data.status === 'string' ? data.status : null;
-        const sectoralScopes = Array.isArray(data.sectoralScopes) ? (data.sectoralScopes as string[]) : null;
-        const emissionReductionApproach = typeof data.emissionReductionApproach === 'string' ? data.emissionReductionApproach : null;
-
+    private static mapRow(row: RawRow): ProjectRow {
         return {
             id: row.id,
-            viewType: row.viewType,
             sourceTimestamp: row.sourceTimestamp,
             registryDid: row.registryDid,
             registryName: row.registry_name,
             relatedTopicId: row.relatedTopicId,
             displayName: row.displayName,
-            description,
-            statusValue,
-            sectoralScopes,
-            emissionReductionApproach,
             businessData: row.businessData,
             searchText: row.searchText,
             lastUpdate: row.lastUpdate,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
-            stats,
         };
     }
 }
