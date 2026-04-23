@@ -18867,12 +18867,19 @@ paths:
           schema:
             example: error
             type: string
-        - name: tokenId
+        - name: target
           required: false
           in: query
-          description: Token ID filter
+          description: Account ID filter
           schema:
-            example: 0.0.6046500
+            example: 0.0.6046379
+            type: string
+        - name: vpMessageId
+          required: false
+          in: query
+          description: VP Message ID filter
+          schema:
+            example: '1775659196.584626142'
             type: string
         - name: pageIndex
           required: false
@@ -18959,6 +18966,21 @@ paths:
                     id:
                       type: string
                       description: Mint request ID
+                    mintedAmount:
+                      type: number
+                      description: Minted amount from successful transactions
+                    mintedExpected:
+                      type: number
+                      description: Expected total mint amount
+                    transferredAmount:
+                      type: number
+                      description: Transferred amount from successful transactions
+                    transferredExpected:
+                      type: number
+                      description: Expected total transfer amount
+                    wasTransferNeeded:
+                      type: boolean
+                      description: Whether transfer was needed
               example:
                 - amount: 100
                   tokenId: 0.0.6046500
@@ -19029,7 +19051,11 @@ paths:
     post:
       description: >-
         Retries failed mint/transfer operations for the specified VP message
-        within the given policy.
+        within the given policy. Fire-and-forget: the endpoint performs
+        synchronous validation (policy access, owner check, per-request cooldown
+        / in-progress checks) and returns as soon as validation passes; the
+        actual Hedera mint/transfer runs in the background. Poll GET
+        /policies/{policyId}/mint-requests to observe progress and final state.
       operationId: PolicyApi_retryMint
       parameters:
         - name: policyId
@@ -19048,10 +19074,34 @@ paths:
             type: string
       responses:
         '200':
-          description: Successful operation.
+          description: >-
+            Validation passed; retry has been queued (fire-and-forget).
+            `warnings` contains any per-request messages surfaced synchronously
+            during validation (e.g. cooldown or already-in-progress); an empty
+            array means every request was accepted for background processing.
+            `message` is set only when no retry was needed because every mint
+            request for the VP is already fully minted and transferred.
           content:
             application/json:
-              example: {}
+              examples:
+                queued:
+                  summary: Fresh retry accepted and queued
+                  value:
+                    warnings: []
+                cooldown:
+                  summary: Request is on cooldown after a recent attempt
+                  value:
+                    warnings:
+                      - >-
+                        Mint process for 1776887993.927747137 can't be retried.
+                        Try after 6 minutes
+                allMinted:
+                  summary: No retry needed — every mint request is complete
+                  value:
+                    warnings: []
+                    message: >-
+                      All tokens for 1776887993.927747137 are minted and
+                      transferred
         '401':
           description: Unauthorized request.
           content:
