@@ -238,6 +238,10 @@ export class AccountApi {
         const users = new Users();
         let parentUser: IAuthUser | null = null;
 
+        const HEDERA_ACCOUNT_ID_REGEX = /^\d+\.\d+\.\d+$/;
+        const HEDERA_ACCOUNT_KEY_REGEX =
+            /^(?:302e020100300506032b657004220420[0-9a-fA-F]{64}|[0-9a-fA-F]{64})$/;
+
         if (!ApplicationEnvironment.demoMode) {
             const authHeader = req.headers.authorization;
             const token = authHeader?.split(' ')[1];
@@ -256,9 +260,16 @@ export class AccountApi {
             }
         }
 
-        if (body.hederaAccountId && !body.hederaAccountKey) {
+        if (body.hederaAccountKey && !HEDERA_ACCOUNT_ID_REGEX.test(body.hederaAccountId)) {
             throw new HttpException(
-                'hederaAccountKey is required when hederaAccountId is provided',
+                'Invalid hederaAccountId format. Expected format: 0.0.XXXXX',
+                HttpStatus.UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        if (body.hederaAccountId && !HEDERA_ACCOUNT_KEY_REGEX.test(body.hederaAccountKey)) {
+            throw new HttpException(
+                'Invalid hederaAccountKey format. Expected a valid Hedera private key',
                 HttpStatus.UNPROCESSABLE_ENTITY,
             );
         }
