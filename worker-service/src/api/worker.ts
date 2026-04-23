@@ -1166,7 +1166,7 @@ export class Worker extends NatsService {
                 case WorkerTaskType.GET_USER_NFTS_SERIALS: {
                     const {hederaAccountId, tokenId} = task.data;
 
-                    const nfts = (await HederaSDKHelper.getSerialsNFT(hederaAccountId, tokenId)) || [];
+                    const nfts = (await HederaSDKHelper.setNetwork(networkOptions).getSerialsNFT(hederaAccountId, tokenId)) || [];
                     const serials = {};
                     nfts.forEach(item => {
                         if (serials[item.token_id]) {
