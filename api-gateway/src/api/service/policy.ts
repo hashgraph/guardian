@@ -3824,7 +3824,9 @@ export class PolicyApi {
     @ApiOperation({
         summary: 'Retry mint by VP message ID.',
         description:
-            'Retries failed mint/transfer operations for the specified VP message within the given policy.',
+            'Retries failed mint/transfer operations for the specified VP message within the given policy. ' +
+            'Fire-and-forget: the endpoint performs synchronous validation (policy access, owner check, per-request cooldown / in-progress checks) and returns as soon as validation passes; the actual Hedera mint/transfer runs in the background. ' +
+            'Poll GET /policies/{policyId}/mint-requests to observe progress and final state.',
     })
     @ApiParam({
         name: 'policyId',
@@ -3841,8 +3843,28 @@ export class PolicyApi {
         example: '1774449700.283746192'
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        example: {}
+        description: 'Validation passed; retry has been queued (fire-and-forget). `warnings` contains any per-request messages surfaced synchronously during validation (e.g. cooldown or already-in-progress); an empty array means every request was accepted for background processing. `message` is set only when no retry was needed because every mint request for the VP is already fully minted and transferred.',
+        examples: {
+            queued: {
+                summary: 'Fresh retry accepted and queued',
+                value: { warnings: [] }
+            },
+            cooldown: {
+                summary: 'Request is on cooldown after a recent attempt',
+                value: {
+                    warnings: [
+                        'Mint process for 1776887993.927747137 can\'t be retried. Try after 6 minutes'
+                    ]
+                }
+            },
+            allMinted: {
+                summary: 'No retry needed — every mint request is complete',
+                value: {
+                    warnings: [],
+                    message: 'All tokens for 1776887993.927747137 are minted and transferred'
+                }
+            }
+        }
     })
     @ApiForbiddenResponse({
         description: 'Forbidden. Only the policy owner can retry mint requests.',

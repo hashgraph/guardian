@@ -286,8 +286,8 @@ export class BlockTreeGenerator extends NatsService {
                 try {
                     const { user, vpMessageId } = msg;
                     const userFull = await this.getUser(policyInstance, user);
-                    await MintService.retry(vpMessageId, userFull.did, policy.owner, null, user?.id);
-                    return new MessageResponse({});
+                    const result = await MintService.retry(vpMessageId, userFull.did, policy.owner, null, user?.id, true);
+                    return new MessageResponse(result);
                 } catch (error) {
                     return new MessageError(error, error.code);
                 }
