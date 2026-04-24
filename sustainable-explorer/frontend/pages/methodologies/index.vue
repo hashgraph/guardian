@@ -269,6 +269,9 @@ const skeletonRows = computed(() =>
                 :sort-dir="sortDir"
                 @sort="toggleSort($event)"
               />
+              <th class="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {{ $t('methodologies.columns.type') }}
+              </th>
               <SortableHeader
                 :label="$t('methodologies.columns.projects')"
                 sort-key="projects"
@@ -308,7 +311,7 @@ const skeletonRows = computed(() =>
                 @sort="toggleSort($event)"
               />
               <SortableHeader
-                label="Version"
+                :label="$t('methodologies.columns.version')"
                 sort-key="version"
                 :active-sort-key="sortKey as string"
                 :sort-dir="sortDir"
@@ -327,7 +330,7 @@ const skeletonRows = computed(() =>
             <!-- Loading skeleton -->
             <template v-if="pending && methodologies.length === 0">
               <tr v-for="i in skeletonRows" :key="`sk-${i}`">
-                <td v-for="col in 9" :key="col" class="py-3 px-4">
+                <td v-for="col in 10" :key="col" class="py-3 px-4">
                   <Skeleton class="h-4 w-full max-w-[120px]" />
                 </td>
               </tr>
@@ -336,7 +339,7 @@ const skeletonRows = computed(() =>
             <!-- Error state -->
             <tr v-else-if="error">
               <td
-                colspan="9"
+                colspan="10"
                 class="py-12 text-center text-sm text-destructive"
               >
                 {{ $t("methodologies.errors.loadFailed") }}
@@ -376,6 +379,15 @@ const skeletonRows = computed(() =>
                   >
                     {{ r.registryName || r.registryDid }}
                   </NuxtLink>
+                  <span v-else class="text-xs text-muted-foreground">—</span>
+                </td>
+                <td class="py-3 px-4">
+                  <span
+                    v-if="r.emissionReductionApproach"
+                    class="inline-flex items-center rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 text-xs font-medium text-sky-700"
+                  >
+                    {{ r.emissionReductionApproach }}
+                  </span>
                   <span v-else class="text-xs text-muted-foreground">—</span>
                 </td>
                 <td class="py-3 px-4 text-right tabular-nums">
@@ -435,7 +447,7 @@ const skeletonRows = computed(() =>
               </tr>
               <tr v-if="methodologies.length === 0">
                 <td
-                  colspan="9"
+                  colspan="10"
                   class="py-12 text-center text-sm text-muted-foreground"
                 >
                   {{ $t("methodologies.noMatch") }}

@@ -1,5 +1,5 @@
 import { MOCK_PROJECTS } from '~/data'; // kept aside — not used for live data
-import type { Project } from '~/types/models';
+import type { Project, ProjectIssuance } from '~/types/models';
 
 // country display name → ISO 3166-1 alpha-3 for CountryFlag component
 const COUNTRY_ALPHA3: Record<string, string> = {
@@ -42,7 +42,7 @@ function mapApiProject(raw: Record<string, any>): Project {
         lng: raw.lng ?? 0,
         methodology: raw.methodology ?? '',
         methodologyId: raw.methodologyId ?? '',
-        registry: raw.registryName ?? raw.registry ?? 'Unknown Registry',
+        registry: raw.registryName ?? raw.registry ?? raw.registryDid ?? 'Unknown Registry',
         developer: raw.developer ?? '',
         credits: raw.credits ?? 0,
         status: raw.status ?? 'Issuing',
@@ -52,6 +52,20 @@ function mapApiProject(raw: Record<string, any>): Project {
         sector: raw.sector ?? '',
         sectoralScope: raw.sectoralScope ?? '',
         createdAt: raw.createdAt ?? '',
+        topicId: raw.topicId ?? undefined,
+        policyTopicId: raw.policyTopicId ?? undefined,
+        registryDid: raw.registryDid ?? undefined,
+        sourceTimestamp: raw.sourceTimestamp ?? undefined,
+        issuances: Array.isArray(raw.issuances)
+            ? (raw.issuances as Array<Record<string, any>>).map((i): ProjectIssuance => ({
+                tokenId: i['tokenId'] ?? '',
+                name: i['name'] ?? null,
+                symbol: i['symbol'] ?? null,
+                type: i['type'] ?? null,
+                supply: typeof i['supply'] === 'number' ? i['supply'] : 0,
+                mintDate: i['mintDate'] ?? null,
+            }))
+            : [],
     };
 }
 
@@ -59,14 +73,17 @@ export function useProjects() {
     const { network } = useNetwork();
     const config = useRuntimeConfig();
 
-    const apiBase = process.server
+    const baseURL = import.meta.server
         ? (config.apiBaseUrl as string)
         : (config.public.apiBaseUrl as string);
 
-    const { data, pending, error } = useFetch<{ data: Record<string, any>[]; meta: { total: number } }>(
-        () => `${apiBase}/api/v1/${network.value}/projects`,
+    const key = computed(() => `projects:${network.value}`);
+    const url = computed(() => `/api/v1/${network.value}/projects`);
+
+    const { data, pending, error } = useAsyncData<{ data: Record<string, any>[]; meta: { total: number } }>(
+        key.value,
+        () => $fetch(url.value, { baseURL, query: { limit: 500 } }),
         {
-            query: { limit: 500 },
             watch: [network],
             default: () => ({ data: [], meta: { total: 0 } }),
         },
@@ -93,4 +110,32 @@ export function useProjects() {
 
 export function useMockProjects() {
     return MOCK_PROJECTS;
+}
+
+export function useProjectDetail(id: Ref<string>) {
+    const { network } = useNetwork();
+    const config = useRuntimeConfig();
+
+    const baseURL = import.meta.server
+        ? (config.apiBaseUrl as string)
+        : (config.public.apiBaseUrl as string);
+
+    const key = computed(() => `project:${network.value}:${id.value}`);
+    const url = computed(() => `/api/v1/${network.value}/projects/${id.value}`);
+
+    const { data, pending, error } = useAsyncData<Record<string, any>>(
+        key.value,
+        () => $fetch(url.value, { baseURL }),
+        {
+            watch: [network, id],
+            default: () => null,
+        },
+    );
+
+    const project = computed<Project | null>(() => {
+        if (!data.value) return null;
+        return mapApiProject(data.value);
+    });
+
+    return { project, pending, error };
 }

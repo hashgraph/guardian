@@ -6,6 +6,15 @@
  * so swapping to a different storage backend only requires a new implementation.
  */
 
+export interface IssuanceRow {
+    tokenId: string;
+    name: string | null;
+    symbol: string | null;
+    type: string | null;
+    supply: number;
+    mintDate: string | null;
+}
+
 export interface ProjectRow {
     id: string;
     sourceTimestamp: string;
@@ -18,6 +27,7 @@ export interface ProjectRow {
     lastUpdate: string;
     createdAt: Date;
     updatedAt: Date;
+    issuances?: IssuanceRow[];
 }
 
 export interface ProjectListQuery {
@@ -33,6 +43,7 @@ export interface ProjectListQuery {
     developer?: string;
     vintage?: string;
     status?: string;
+    policyTopicId?: string;
 }
 
 export interface ProjectListResult {

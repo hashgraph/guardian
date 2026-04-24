@@ -3,6 +3,26 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
 import { ProjectRow } from '../repositories/project.repository';
 
+export class IssuanceDto {
+    @ApiProperty({ description: 'Hedera token ID (e.g. 0.0.12345)' })
+    tokenId: string;
+
+    @ApiProperty({ nullable: true, description: 'Token name' })
+    name: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Token symbol' })
+    symbol: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Token type (FUNGIBLE_COMMON or NON_FUNGIBLE_UNIQUE)' })
+    type: string | null;
+
+    @ApiProperty({ description: 'Total supply of the token' })
+    supply: number;
+
+    @ApiProperty({ nullable: true, description: 'Date the token was minted (YYYY-MM-DD)' })
+    mintDate: string | null;
+}
+
 export class ProjectQueryDto extends PaginationQueryDto {
     @ApiPropertyOptional({ description: 'Filter by project name (partial match)' })
     @IsOptional()
@@ -38,6 +58,11 @@ export class ProjectQueryDto extends PaginationQueryDto {
     @IsOptional()
     @IsString()
     status?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by policy topic ID (exact match) — returns all projects under the same Guardian policy' })
+    @IsOptional()
+    @IsString()
+    policyTopicId?: string;
 }
 
 export class ProjectResponseDto {
@@ -104,6 +129,9 @@ export class ProjectResponseDto {
     @ApiProperty({ nullable: true, description: 'Hedera topic ID of the first project VC' })
     topicId: string | null;
 
+    @ApiProperty({ nullable: true, description: 'Hedera policy topic ID (parent of the instance topic)' })
+    policyTopicId: string | null;
+
     @ApiProperty({ description: 'Number of VC-Document messages that contributed to this project row' })
     vcCount: number;
 
@@ -112,6 +140,9 @@ export class ProjectResponseDto {
 
     @ApiProperty({ description: 'Last time this row was written to the database' })
     updatedAt: Date;
+
+    @ApiProperty({ type: [IssuanceDto], description: 'Linked token issuances for this project' })
+    issuances: IssuanceDto[];
 
     static fromRow(row: ProjectRow, network: string): ProjectResponseDto {
         const data = (row.businessData ?? {}) as Record<string, unknown>;
@@ -138,9 +169,18 @@ export class ProjectResponseDto {
             sectoralScope: typeof data['sectoralScope'] === 'string' ? data['sectoralScope'] : null,
             createdAt: typeof data['createdAt'] === 'string' ? data['createdAt'] : null,
             topicId: typeof data['topicId'] === 'string' ? data['topicId'] : null,
+            policyTopicId: typeof data['policyTopicId'] === 'string' ? data['policyTopicId'] : null,
             vcCount: typeof data['vcCount'] === 'number' ? data['vcCount'] : 0,
             sourceTimestamp: row.sourceTimestamp,
             updatedAt: row.updatedAt,
+            issuances: (row.issuances ?? []).map(i => ({
+                tokenId: i.tokenId,
+                name: i.name,
+                symbol: i.symbol,
+                type: i.type,
+                supply: i.supply,
+                mintDate: i.mintDate,
+            })),
         };
     }
 }

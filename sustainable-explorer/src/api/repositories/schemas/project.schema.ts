@@ -48,6 +48,11 @@ export const PROJECT_FIELD_SCHEMA: FieldSchema = {
         filter: 'eq',
         sortable: false,
     },
+    policyTopicId: {
+        sql: `bv."businessData"->>'policyTopicId'`,
+        filter: 'eq',
+        sortable: false,
+    },
     credits: {
         sql: `(bv."businessData"->>'credits')::float`,
         filter: 'eq',

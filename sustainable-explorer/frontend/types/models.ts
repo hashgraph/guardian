@@ -1,3 +1,12 @@
+export interface ProjectIssuance {
+    tokenId: string;
+    name: string | null;
+    symbol: string | null;
+    type: string | null;
+    supply: number;
+    mintDate: string | null;
+}
+
 export interface Project {
     id: string;
     name: string;
@@ -18,6 +27,11 @@ export interface Project {
     sector: string;
     sectoralScope: string;
     createdAt: string;
+    topicId?: string;
+    policyTopicId?: string;
+    registryDid?: string;
+    sourceTimestamp?: string;
+    issuances?: ProjectIssuance[];
     rawVc?: Record<string, any>;
 }
 

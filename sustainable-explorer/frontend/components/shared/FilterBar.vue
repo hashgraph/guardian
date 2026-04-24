@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { Search, X } from 'lucide-vue-next';
 import { onClickOutside } from '@vueuse/core';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 export interface FilterOption {
     key: string;
@@ -163,7 +166,7 @@ if (import.meta.client) {
                     class="absolute left-0 top-full mt-1 z-50 min-w-[10rem] rounded-md border bg-popover p-1 shadow-md text-left"
                 >
                     <button
-                        v-for="opt in [{ value: 'all', label: `All ${filter.label}` }, ...filter.options]"
+                        v-for="opt in [{ value: 'all', label: `${t('common.all')} ${filter.label}` }, ...filter.options]"
                         :key="opt.value"
                         class="flex w-full items-center justify-start text-left rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent"
                         :class="(activeFilters[filter.key] || 'all') === opt.value ? 'font-medium text-foreground' : 'text-muted-foreground'"

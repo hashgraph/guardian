@@ -4,6 +4,7 @@ import {
     ProjectListQuery,
     ProjectListResult,
     ProjectRow,
+    IssuanceRow,
 } from './project.repository';
 import { QueryBuilder } from './query-builder';
 import { PROJECT_FIELD_SCHEMA } from './schemas/project.schema';
@@ -70,6 +71,7 @@ export class PgProjectRepository extends ProjectRepository {
             developer: query.developer,
             vintage: query.vintage,
             status: query.status,
+            policyTopicId: query.policyTopicId,
         });
 
         // Special: full-text search with ranking. The tsvector index covers
@@ -142,7 +144,7 @@ export class PgProjectRepository extends ProjectRepository {
         ]);
 
         return {
-            rows: rawRows.map(PgProjectRepository.mapRow),
+            rows: rawRows.map((row) => PgProjectRepository.mapRow(row)),
             total: countResult[0]?.total ?? 0,
         };
     }
@@ -163,10 +165,60 @@ export class PgProjectRepository extends ProjectRepository {
         );
 
         if (rawRows.length === 0) return null;
-        return PgProjectRepository.mapRow(rawRows[0]);
+
+        const row = rawRows[0];
+        const policyTopicId = (row.businessData as Record<string, any> | null)?.['policyTopicId'] as string | null;
+        const instanceTopicId = row.relatedTopicId;
+
+        // Fetch CREDIT rows linked to this project. Credit rows have relatedTopicId equal
+        // to the policy topic ID (where the Instance-Policy message was published).
+        // We also fall back to the instance topic ID in case policyTopicId is not yet
+        // stored (projects built before this field was added).
+        const topicIds = [...new Set([policyTopicId, instanceTopicId].filter((t): t is string => !!t))];
+
+        let issuances: IssuanceRow[] = [];
+        if (topicIds.length > 0) {
+            const placeholders = topicIds.map((_, i) => `$${i + 1}`).join(', ');
+            const creditRows: Array<{
+                tokenId: string | null;
+                name: string | null;
+                symbol: string | null;
+                type: string | null;
+                supply: string | null;
+                mintDate: Date | null;
+            }> = await this.dataSource.query(
+                `
+                SELECT
+                    COALESCE(tc."tokenId", bv."businessData"->>'tokenId') AS "tokenId",
+                    COALESCE(tc.name,      bv."displayName")              AS name,
+                    COALESCE(tc.symbol,    bv."businessData"->>'symbol')  AS symbol,
+                    tc.type,
+                    tc."totalSupply"                                      AS supply,
+                    bv."createdAt"                                        AS "mintDate"
+                FROM business_view bv
+                LEFT JOIN token_cache tc
+                    ON tc."tokenId" = bv."businessData"->>'tokenId'
+                WHERE bv."viewType" = 'CREDIT'
+                  AND bv."relatedTopicId" IN (${placeholders})
+                ORDER BY bv."createdAt" ASC
+                `,
+                topicIds,
+            );
+
+            issuances = creditRows.map(r => ({
+                tokenId: r.tokenId ?? '',
+                name: r.name ?? null,
+                symbol: r.symbol ?? null,
+                type: r.type ?? null,
+                supply: r.supply != null ? parseFloat(r.supply) : 0,
+                mintDate: r.mintDate ? r.mintDate.toISOString().split('T')[0] : null,
+            }));
+        }
+
+        return PgProjectRepository.mapRow(row, issuances);
     }
 
-    private static mapRow(row: RawRow): ProjectRow {
+    private static mapRow(row: RawRow, issuances?: IssuanceRow[]): ProjectRow {
         return {
             id: row.id,
             sourceTimestamp: row.sourceTimestamp,
@@ -179,6 +231,7 @@ export class PgProjectRepository extends ProjectRepository {
             lastUpdate: row.lastUpdate,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
+            issuances,
         };
     }
 }

@@ -31,7 +31,10 @@
         "viewRawData": "Ver datos brutos",
         "lines": "líneas",
         "mdash": "—",
-        "total": "total"
+        "total": "total",
+        "field": "campo",
+        "fields": "campos",
+        "changed": "cambiado"
     },
     "nav": {
         "dashboard": "Panel",
@@ -234,7 +237,9 @@
             "schemas": "Esquemas",
             "description": "Descripción",
             "id": "ID",
-            "status": "Estado"
+            "status": "Estado",
+            "type": "Tipo",
+            "version": "Versión"
         },
         "filters": {
             "registry": "Registro",
@@ -248,11 +253,114 @@
             "description": "Descripción",
             "status": "Estado"
         },
+        "stats": {
+            "total": "Total de metodologías",
+            "active": "Publicadas",
+            "draft": "Borrador / Otros"
+        },
         "errors": {
             "loadFailed": "Error al cargar las metodologías."
         },
         "tooltips": {
             "copyId": "Copiar ID"
+        },
+        "detail": {
+            "breadcrumb": "Metodologías",
+            "backLink": "Volver a metodologías",
+            "notFound": "Metodología no encontrada",
+            "notFoundDesc": "No se encontró ninguna metodología con el ID {id} en {network}.",
+            "viewOnHashScan": "Ver en HashScan",
+            "tabs": {
+                "overview": "Resumen",
+                "versionHistory": "Historial de versiones",
+                "linkedProjects": "Proyectos vinculados",
+                "hederaPolicy": "Política de Hedera",
+                "analytics": "Analíticas",
+                "actions": "Acciones"
+            },
+            "summary": {
+                "registry": "Registro",
+                "version": "Versión",
+                "schemas": "Esquemas",
+                "status": "Estado"
+            },
+            "overview": {
+                "description": "Descripción",
+                "noDescription": "No hay descripción disponible.",
+                "keyFacts": "Datos clave",
+                "publishedAt": "Publicada el",
+                "network": "Red",
+                "emissionReductionApproach": "Enfoque de reducción de emisiones",
+                "applicableSectoralScopes": "Alcances sectoriales aplicables"
+            },
+            "versions": {
+                "title": "Historial de versiones",
+                "columns": {
+                    "version": "Versión",
+                    "instancePolicyTopic": "Tópico de la instancia de política",
+                    "published": "Publicada",
+                    "schemas": "Esquemas",
+                    "status": "Estado"
+                },
+                "currentBadge": "Actual",
+                "noVersions": "No se encontraron versiones."
+            },
+            "linkedProjects": {
+                "title": "Proyectos vinculados",
+                "noTopicId": "No hay ID de tópico de política disponible para esta metodología.",
+                "columns": {
+                    "project": "Proyecto",
+                    "country": "País",
+                    "registry": "Registro",
+                    "credits": "Créditos",
+                    "status": "Estado"
+                },
+                "noProjects": "No se encontraron proyectos bajo esta política."
+            },
+            "policy": {
+                "title": "Política on-chain",
+                "verifiedOnHedera": "Verificada en Hedera",
+                "governedBy": "Esta metodología se rige por una política de Guardian on-chain.",
+                "instancePolicyTopic": "Tópico de la instancia de política",
+                "publishedAt": "Publicada el",
+                "registryDid": "DID del Registro",
+                "network": "Red"
+            },
+            "analytics": {
+                "schemaCount": "Conteo de esquemas",
+                "schemaCountSub": "Formularios de datos en esta política",
+                "projects": "Proyectos",
+                "projectsSub": "Registrados bajo esta metodología",
+                "issuances": "Emisiones",
+                "issuancesSub": "Créditos emitidos",
+                "trends": "Tendencias",
+                "trendsComingSoon": "Los gráficos de emisiones a lo largo del tiempo, tendencia de retiros y geografía estarán disponibles una vez que los datos de los documentos VC en vivo estén completamente sincronizados."
+            },
+            "actions": {
+                "aboutTitle": "Acerca de esta metodología",
+                "instancePolicyTopicLabel": "Tópico de la instancia de política:",
+                "compareVersions": "Comparar versiones",
+                "compareVersionsDesc": "Selecciona otra versión para compararla en paralelo con esta.",
+                "noOtherVersions": "No hay otras versiones disponibles para esta metodología.",
+                "selectVersionPlaceholder": "— Selecciona una versión para comparar —",
+                "comparison": "Comparación",
+                "noDifferences": "Sin diferencias",
+                "compareColumns": {
+                    "field": "Campo",
+                    "current": "Actual",
+                    "compare": "Comparar"
+                },
+                "compareRows": {
+                    "version": "Versión",
+                    "status": "Estado",
+                    "published": "Publicada",
+                    "description": "Descripción",
+                    "sectoralScopes": "Alcances sectoriales",
+                    "emissionReductionApproach": "Enfoque de reducción de emisiones",
+                    "schemaCount": "Conteo de esquemas",
+                    "issuances": "Emisiones"
+                }
+            }
         }
     },
     "registries": {

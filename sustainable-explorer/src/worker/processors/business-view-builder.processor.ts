@@ -31,16 +31,18 @@ const TYPE_MAPPINGS: Record<string, string> = {
  * policy-topic map, then user-topic map (with fuzzy developer-name matching
  * as a tie-breaker when multiple policies exist under the same user topic).
  */
+type MethodEntry = { name: string; registryDid: string; policyTopicId: string };
+
 function resolveMethod(
     topicId: string,
     developer: string,
     maps: {
-        instToMethod: Record<string, { name: string; registryDid: string }>;
-        policyTopicToMethod: Record<string, { name: string; registryDid: string }>;
+        instToMethod: Record<string, MethodEntry>;
+        policyTopicToMethod: Record<string, MethodEntry>;
         parentMap: Record<string, string>;
-        userMethods: Record<string, Array<{ name: string; registryDid: string }>>;
+        userMethods: Record<string, MethodEntry[]>;
     },
-): { name: string; registryDid: string } {
+): MethodEntry {
     let tid: string | undefined = topicId;
     const visited: string[] = [];
     for (let i = 0; i < 12; i++) {
@@ -60,7 +62,7 @@ function resolveMethod(
             if (cands.length === 1) return cands[0];
         }
     }
-    return { name: '', registryDid: '' };
+    return { name: '', registryDid: '', policyTopicId: '' };
 }
 
 /**
@@ -68,6 +70,187 @@ function resolveMethod(
  */
 function slugify(s: string): string {
     return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+const SECTOR_KEYWORD_MAP: Array<{ sector: string; keywords: string[] }> = [
+    { sector: 'Energy', keywords: ['energy'] },
+    { sector: 'Transport', keywords: ['transport'] },
+    { sector: 'Waste', keywords: ['waste'] },
+    {
+        sector: 'Nature Based Solutions',
+        keywords: [
+            'afforestation', 'reforestation', 'redd', 'forest', 'agriculture',
+            'land use', 'blue carbon', 'wetland', 'coastal', 'marine',
+            'grassland', 'peatland', 'restoration',
+        ],
+    },
+    {
+        sector: 'Industrial Process',
+        keywords: [
+            'manufacturing', 'chemical', 'construction', 'mining',
+            'metal', 'fugitive', 'solvent', 'industrial',
+        ],
+    },
+];
+
+function normalizeSector(inputs: string[]): string {
+    for (const input of inputs) {
+        const lower = input.toLowerCase();
+        for (const { sector, keywords } of SECTOR_KEYWORD_MAP) {
+            if (keywords.some(kw => lower.includes(kw))) return sector;
+        }
+    }
+    return inputs.length > 0 ? 'Others' : '';
+}
+
+// ---------------------------------------------------------------------------
+// Schema-first GeoJSON detection helpers
+// ---------------------------------------------------------------------------
+
+type FieldDef = { title: string; isGeoJson: boolean };
+
+type SchemaEntry = {
+    schemaUuid: string;
+    policyTopicId: string;
+    geoKey: string;
+    section: string | null;   // wrapper key like 'project_details', or null if top-level
+    fieldMap: Record<string, FieldDef>;
+};
+
+function parseSchemaDoc(doc: unknown): Record<string, any> {
+    if (!doc) return {};
+    if (typeof doc === 'string') {
+        try { return JSON.parse(doc); } catch { return {}; }
+    }
+    return typeof doc === 'object' ? (doc as Record<string, any>) : {};
+}
+
+function findGeoJsonDefKey(doc: Record<string, any>): string | null {
+    const defs = doc['$defs'] ?? doc['definitions'] ?? {};
+    for (const [k, v] of Object.entries(defs)) {
+        if (v && typeof v === 'object') {
+            const props = (v as any).properties ?? {};
+            if ('type' in props && 'coordinates' in props) return k;
+        }
+    }
+    return null;
+}
+
+function isGeoJsonProperty(fdef: Record<string, any>, geoDefKey?: string | null): boolean {
+    const ref: string = fdef['$ref'] ?? '';
+    // Guardian uses "#GeoJSON" (non-standard) — check string directly
+    if (ref && ref.includes('GeoJSON')) return true;
+    if (geoDefKey && ref.includes(geoDefKey)) return true;
+    if (['geojson', 'geo-json'].includes((fdef['format'] ?? '').toLowerCase())) return true;
+    const props = fdef['properties'] ?? {};
+    if ('type' in props && 'coordinates' in props) return true;
+    for (const key of ['oneOf', 'anyOf'] as const) {
+        for (const item of (fdef[key] ?? []) as Record<string, any>[]) {
+            if (isGeoJsonProperty(item, geoDefKey)) return true;
+        }
+    }
+    const comment: string = fdef['$comment'] ?? '';
+    if (typeof comment === 'string' && comment.replace(/\s/g, '').includes('"customType":"geo"')) return true;
+    return false;
+}
+
+/**
+ * Builds a SchemaEntry for a schema document.
+ * Handles two layout shapes:
+ *   Shape A — GeoJSON field is directly in doc.properties
+ *   Shape B — GeoJSON field is one level deeper inside a wrapper property (e.g. project_details)
+ * Returns null if no GeoJSON field is found.
+ */
+function buildSchemaEntry(
+    schemaUuid: string,
+    policyTopicId: string,
+    doc: Record<string, any>,
+): SchemaEntry | null {
+    const geoDefKey = findGeoJsonDefKey(doc);
+    const topProps: Record<string, any> = doc['properties'] ?? {};
+
+    // Shape A — GeoJSON at top level
+    for (const [fk, fdef] of Object.entries(topProps)) {
+        if (fdef && typeof fdef === 'object' && isGeoJsonProperty(fdef as Record<string, any>, geoDefKey)) {
+            const fieldMap: Record<string, FieldDef> = {};
+            for (const [k, v] of Object.entries(topProps)) {
+                if (v && typeof v === 'object') {
+                    fieldMap[k] = {
+                        title: (v as any).title ?? k,
+                        isGeoJson: isGeoJsonProperty(v as Record<string, any>, geoDefKey),
+                    };
+                }
+            }
+            return { schemaUuid, policyTopicId, geoKey: fk, section: null, fieldMap };
+        }
+    }
+
+    // Shape B — GeoJSON one level deeper (handles credentialSubject / project_details wrapper)
+    for (const [wrapKey, wrapDef] of Object.entries(topProps)) {
+        if (!wrapDef || typeof wrapDef !== 'object') continue;
+        const nested: Record<string, any> = (wrapDef as any).properties ?? {};
+        for (const [fk, fdef] of Object.entries(nested)) {
+            if (fdef && typeof fdef === 'object' && isGeoJsonProperty(fdef as Record<string, any>, geoDefKey)) {
+                const fieldMap: Record<string, FieldDef> = {};
+                for (const [k, v] of Object.entries(nested)) {
+                    if (v && typeof v === 'object') {
+                        fieldMap[k] = {
+                            title: (v as any).title ?? k,
+                            isGeoJson: isGeoJsonProperty(v as Record<string, any>, geoDefKey),
+                        };
+                    }
+                }
+                return { schemaUuid, policyTopicId, geoKey: fk, section: wrapKey, fieldMap };
+            }
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Returns true only when a schema has a GeoJSON field DIRECTLY in its top-level
+ * properties (Shape A). Shape B schemas — where GeoJSON is nested one level deeper
+ * inside a wrapper property like project_details — return false.
+ *
+ * This distinction is used for project-schema confirmation: wrapper/form schemas
+ * that embed a project sub-schema also declare GeoJSON (via their nested
+ * properties), which would create false ambiguity if we counted them. Only the
+ * leaf "Project Details" schema has a direct Shape A declaration and should count
+ * toward the "exactly 1 GeoJSON schema per methodology" check.
+ */
+function hasDirectGeoJson(doc: Record<string, any>): boolean {
+    const geoDefKey = findGeoJsonDefKey(doc);
+    const topProps: Record<string, any> = doc['properties'] ?? {};
+    for (const fdef of Object.values(topProps)) {
+        if (fdef && typeof fdef === 'object' &&
+            isGeoJsonProperty(fdef as Record<string, any>, geoDefKey)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Finds the first field in fieldMap whose title contains any of the given keywords
+ * (case-insensitive) and whose value in subject is non-empty.
+ */
+function findFieldByTitle(
+    subject: Record<string, any>,
+    fieldMap: Record<string, FieldDef>,
+    ...keywords: string[]
+): string {
+    for (const [fk, fd] of Object.entries(fieldMap)) {
+        const titleLower = fd.title.toLowerCase();
+        if (keywords.some(kw => titleLower.includes(kw.toLowerCase()))) {
+            const val = subject[fk];
+            if (val !== null && val !== undefined) {
+                const s = String(val).trim();
+                if (s) return s;
+            }
+        }
+    }
+    return '';
 }
 
 @Processor(QUEUE_NAMES.BUSINESS_VIEW_BUILD)
@@ -110,7 +293,19 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
             SELECT
                 m."consensusTimestamp",
                 CASE ${caseClauses} END,
-                COALESCE(m.options->>'name', m.options->>'tokenName'),
+                COALESCE(
+                    m.options->>'name',
+                    m.options->>'tokenName',
+                    CASE WHEN m.type = 'Standard Registry' THEN (
+                        SELECT vc.documents -> 'credentialSubject' -> 0 ->> 'OrganizationName'
+                        FROM message vc
+                        WHERE vc."topicId" = m.options->>'topicId'
+                          AND vc.type = 'VC-Document'
+                          AND vc.documents -> 'credentialSubject' -> 0 ->> 'OrganizationName' IS NOT NULL
+                        ORDER BY vc."consensusTimestamp" DESC
+                        LIMIT 1
+                    ) END
+                ),
                 COALESCE(m.owner, m.options->>'did'),
                 CASE
                     WHEN m.type = 'Instance-Policy' THEN m.options->>'instanceTopicId'
@@ -148,10 +343,11 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
               -- count as a real methodology. Other types pass through.
               AND (m.type != 'Instance-Policy' OR m.action = 'publish-policy')
             ON CONFLICT ("sourceTimestamp", "viewType") DO UPDATE SET
-                "registryDid" = EXCLUDED."registryDid",
+                "displayName"    = COALESCE(EXCLUDED."displayName", business_view."displayName"),
+                "registryDid"    = EXCLUDED."registryDid",
                 "relatedTopicId" = EXCLUDED."relatedTopicId",
-                "lastUpdate" = EXCLUDED."lastUpdate",
-                "updatedAt" = NOW()
+                "lastUpdate"     = EXCLUDED."lastUpdate",
+                "updatedAt"      = NOW()
         `);
 
         const totalUpserted = result?.rowCount ?? result?.length ?? 0;
@@ -173,16 +369,105 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
     }
 
     /**
-     * Builds PROJECT rows in business_view from VC-Document messages that
-     * carry geo-coordinates. Each unique (name, lat, lng) tuple produces one
-     * row. Methodology and registry are resolved by walking the topic parent
-     * chain so that multiple VC versions of the same project collapse into a
-     * single, up-to-date row.
+     * Builds PROJECT rows in business_view from VC-Document messages whose
+     * credentialSubject type UUID matches a confirmed project-registration schema
+     * (i.e. a schema from policy_schema that is the ONLY schema in its
+     * methodology with a GeoJSON field). Field names are resolved from the
+     * schema's JSON-Schema title annotations — no hardcoded field positions.
      */
     private async buildProjectViews(): Promise<void> {
         this.logger.log("Building project views from VC-Document messages...");
 
-        // Step A — fetch all project VCs that contain a Point geometry
+        // Step A — per methodology, confirm the ONE schema that declares a GeoJSON field.
+        // Exactly 1 GeoJSON schema per policy topic → confirmed project registration schema.
+        // 0 or >1 → skip that methodology entirely (no fallback to raw VC scanning).
+        const allSchemaRows: Array<{
+            schemaId: string;
+            policyTopicId: string;
+            document: unknown;
+        }> = await this.dataSource.query(`
+            SELECT "schemaId", "policyTopicId", document
+            FROM policy_schema
+            WHERE "schemaId" IS NOT NULL AND document IS NOT NULL
+        `);
+
+        // Confirmation uses Shape A only: a schema counts toward the "exactly 1"
+        // check only if its GeoJSON field is directly in top-level properties.
+        // Wrapper/form schemas that embed a project sub-schema also declare GeoJSON
+        // one level deeper (Shape B), which would otherwise create false ambiguity.
+        const directGeoByTopic = new Map<string, SchemaEntry[]>();
+        for (const row of allSchemaRows) {
+            const doc = parseSchemaDoc(row.document);
+            if (!hasDirectGeoJson(doc)) continue;          // Shape B → skip for confirmation
+            const entry = buildSchemaEntry(row.schemaId, row.policyTopicId, doc);
+            if (!entry) continue;
+            const list = directGeoByTopic.get(row.policyTopicId) ?? [];
+            list.push(entry);
+            directGeoByTopic.set(row.policyTopicId, list);
+        }
+
+        // Confirmed: exactly 1 direct-GeoJSON schema per policy topic
+        const confirmedByTopic = new Map<string, SchemaEntry>();  // policyTopicId → entry
+        const confirmedTopics = new Set<string>();
+        for (const [topicId, entries] of directGeoByTopic) {
+            if (entries.length === 1) {
+                confirmedByTopic.set(topicId, entries[0]);
+                confirmedTopics.add(topicId);
+            }
+        }
+
+        if (confirmedTopics.size === 0) {
+            this.logger.warn('No confirmed project schemas found in policy_schema — no project views built.');
+            await this.dataSource.query(`DELETE FROM business_view WHERE "viewType" = 'PROJECT'`);
+            return;
+        }
+
+        this.logger.log(`Confirmed project schemas: ${confirmedTopics.size}`);
+
+        // Step B — build sibling-schema map: every schema on a confirmed policy topic
+        // whose structure allows us to extract GeoJSON coordinates from a VC.
+        // Three shapes are handled:
+        //   Shape A — GeoJSON directly in top-level properties (confirmed leaf schema)
+        //   Shape B — GeoJSON one level deeper inside a wrapper property
+        //   Shape C — wrapper property is $ref to the confirmed (Shape A) schema UUID;
+        //             the fieldMap/geoKey is borrowed from the confirmed entry with the
+        //             wrapper property name as the section.
+        //
+        // Shape C covers the Guardian pattern where the project registration VC carries
+        // the UUID of a form wrapper schema whose project_details property references the
+        // leaf schema via $ref rather than inlining the field definitions.
+        const siblingSchemaMap = new Map<string, SchemaEntry>(); // schemaUuid → entry
+        for (const row of allSchemaRows) {
+            if (!confirmedTopics.has(row.policyTopicId)) continue;
+            const doc = parseSchemaDoc(row.document);
+
+            // Shape A or B
+            const entry = buildSchemaEntry(row.schemaId, row.policyTopicId, doc);
+            if (entry) {
+                siblingSchemaMap.set(row.schemaId, entry);
+                continue;
+            }
+
+            // Shape C — look for wrapper properties whose $ref points to the confirmed schema
+            const confirmedEntry = confirmedByTopic.get(row.policyTopicId)!;
+            const topProps: Record<string, any> = doc['properties'] ?? {};
+            for (const [wrapKey, wrapDef] of Object.entries(topProps)) {
+                if (!wrapDef || typeof wrapDef !== 'object') continue;
+                const ref: string = (wrapDef as Record<string, any>)['$ref'] ?? '';
+                if (ref && ref.includes(confirmedEntry.schemaUuid)) {
+                    siblingSchemaMap.set(row.schemaId, {
+                        schemaUuid: row.schemaId,
+                        policyTopicId: row.policyTopicId,
+                        geoKey: confirmedEntry.geoKey,
+                        section: wrapKey,
+                        fieldMap: confirmedEntry.fieldMap,
+                    });
+                    break;
+                }
+            }
+        }
+
+        const acceptableUuids = Array.from(siblingSchemaMap.keys());
         const projectVcs: Array<{
             consensusTimestamp: string;
             topicId: string;
@@ -192,21 +477,20 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
             FROM message
             WHERE type = 'VC-Document'
               AND documents IS NOT NULL
-              AND documents::text LIKE '%"Point"%'
-              AND documents -> 'credentialSubject' -> 0 -> 'project_details' -> 'field6' ->> 'type' = 'Point'
+              AND split_part(
+                    documents -> 'credentialSubject' -> 0 ->> 'type',
+                    '&', 1
+                  ) = ANY($1)
             ORDER BY "consensusTimestamp"
-        `);
+        `, [acceptableUuids]);
 
         if (projectVcs.length === 0) {
-            // Remove any stale PROJECT rows if there are no project VCs
-            await this.dataSource.query(
-                `DELETE FROM business_view WHERE "viewType" = 'PROJECT'`,
-            );
-            this.logger.log("No project VCs found; cleared stale PROJECT rows.");
+            await this.dataSource.query(`DELETE FROM business_view WHERE "viewType" = 'PROJECT'`);
+            this.logger.log('No project VCs found matching confirmed schemas; cleared stale PROJECT rows.');
             return;
         }
 
-        // Step B — fetch methodology resolution maps
+        // Step C — fetch methodology resolution maps (unchanged)
         const [instPolicies, parentRows]: [
             Array<{
                 instance_topic: string | null;
@@ -232,25 +516,19 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
             `),
         ]);
 
-        // Step C — build resolution maps
-        const instToMethod: Record<string, { name: string; registryDid: string }> = {};
-        const policyTopicToMethod: Record<string, { name: string; registryDid: string }> = {};
+        const instToMethod: Record<string, MethodEntry> = {};
+        const policyTopicToMethod: Record<string, MethodEntry> = {};
         const parentMap: Record<string, string> = {};
-        const userMethods: Record<string, Array<{ name: string; registryDid: string }>> = {};
+        const userMethods: Record<string, MethodEntry[]> = {};
 
         for (const r of instPolicies) {
-            if (r.instance_topic) {
-                instToMethod[r.instance_topic] = {
-                    name: r.policy_name ?? '',
-                    registryDid: r.registry_did ?? '',
-                };
-            }
-            if (r.policy_topic) {
-                policyTopicToMethod[r.policy_topic] = {
-                    name: r.policy_name ?? '',
-                    registryDid: r.registry_did ?? '',
-                };
-            }
+            const entry: MethodEntry = {
+                name: r.policy_name ?? '',
+                registryDid: r.registry_did ?? '',
+                policyTopicId: r.policy_topic,
+            };
+            if (r.instance_topic) instToMethod[r.instance_topic] = entry;
+            if (r.policy_topic) policyTopicToMethod[r.policy_topic] = entry;
         }
         for (const r of parentRows) {
             if (r.parent_id) parentMap[r.topicId] = r.parent_id;
@@ -262,18 +540,46 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 userMethods[ut].push({
                     name: r.policy_name ?? '',
                     registryDid: r.registry_did ?? '',
+                    policyTopicId: r.policy_topic,
                 });
             }
         }
 
         const maps = { instToMethod, policyTopicToMethod, parentMap, userMethods };
 
+        // Step D — sectoralScopes map from METHODOLOGY rows (unchanged)
+        const methScopeRows: Array<{ topicId: string; sectoralScopes: unknown }> =
+            await this.dataSource.query(`
+                SELECT
+                    "businessData"->>'topicId'       AS "topicId",
+                    "businessData"->'sectoralScopes' AS "sectoralScopes"
+                FROM business_view
+                WHERE "viewType" = 'METHODOLOGY'
+                  AND "businessData"->>'topicId' IS NOT NULL
+                  AND "businessData"->'sectoralScopes' IS NOT NULL
+            `);
+
+        const methodScopeMap: Record<string, string[]> = {};
+        for (const row of methScopeRows) {
+            if (!row.topicId) continue;
+            try {
+                const parsed = typeof row.sectoralScopes === 'string'
+                    ? JSON.parse(row.sectoralScopes)
+                    : row.sectoralScopes;
+                if (Array.isArray(parsed)) {
+                    methodScopeMap[row.topicId] = parsed.filter(
+                        (s): s is string => typeof s === 'string',
+                    );
+                }
+            } catch { /* ignore malformed */ }
+        }
+
         // Step F — deduplicate and build project records
-        // Key: name|lat(4dp)|lng(4dp) — collapses multiple VC versions of the same project
         type ProjectRecord = {
             key: string;
             sourceTimestamp: string;
             topicId: string;
+            policyTopicId: string;
             name: string;
             country: string | null;
             lat: number;
@@ -285,9 +591,13 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
             credits: number;
             vintage: string | null;
             createdAt: string | null;
+            creditingPeriodEnd: string | null;
             cobenefits: string | null;
+            sdgs: number[];
+            scale: string | null;
             category: string | null;
-            sector: string | null;
+            sector: string;
+            sectoralScope: string;
             vcCount: number;
         };
 
@@ -300,50 +610,73 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 : null;
             if (!cs) continue;
 
-            const pd = cs['project_details'] as Record<string, any> | undefined;
-            if (!pd) continue;
+            // Resolve schema entry from the VC's type UUID
+            const rawType: string = cs['type'] ?? '';
+            const vcUuid = rawType.split('&')[0].trim().replace(/^#/, '');
+            const schemaEntry = siblingSchemaMap.get(vcUuid);
+            if (!schemaEntry) continue;
 
-            const geoField = pd['field6'] as Record<string, any> | undefined;
-            if (!geoField || geoField['type'] !== 'Point') continue;
+            // Subject is either directly cs (Shape A) or cs[section] (Shape B)
+            const subject: Record<string, any> | null = schemaEntry.section
+                ? (cs[schemaEntry.section] as Record<string, any> | null) ?? null
+                : cs;
+            if (!subject || typeof subject !== 'object') continue;
 
-            const coords = geoField['coordinates'] as [number, number] | undefined;
+            // Verify GeoJSON Point at the confirmed geo key
+            const geoVal = subject[schemaEntry.geoKey] as Record<string, any> | undefined;
+            if (!geoVal || geoVal['type'] !== 'Point') continue;
+
+            const coords = geoVal['coordinates'] as [number, number] | undefined;
             if (!Array.isArray(coords) || coords.length < 2) continue;
 
-            const lat = coords[1] as number;
             const lng = coords[0] as number;
-            const name: string = typeof pd['field0'] === 'string' ? pd['field0'] : '';
+            const lat = coords[1] as number;
 
+            // Field extraction via schema title keywords — no hardcoded positions
+            const fm = schemaEntry.fieldMap;
+
+            const name = findFieldByTitle(subject, fm, 'project name', 'name', 'title');
             if (!name) continue;
 
-            const dedupKey = `${name}|${Math.round(lat * 10000) / 10000}|${Math.round(lng * 10000) / 10000}`;
+            const country = findFieldByTitle(subject, fm, 'country');
+            const developer = findFieldByTitle(subject, fm,
+                'developer', 'proponent', 'organization', 'project developer', 'applicant');
+            const category = findFieldByTitle(subject, fm, 'category', 'project type');
+            const scale = findFieldByTitle(subject, fm, 'scale', 'project scale');
+            const rawSector = findFieldByTitle(subject, fm, 'sector', 'activity');
+            const vintageRaw = findFieldByTitle(subject, fm, 'start date', 'commencement');
 
-            // country: field12 is always the country name; field11 is address in MECD schema
-            const country: string | null =
-                typeof pd['field12'] === 'string' && pd['field12']
-                    ? pd['field12']
-                    : typeof pd['field11'] === 'string' && pd['field11']
-                      ? pd['field11']
-                      : null;
+            // Crediting period — find field whose title contains "crediting period"
+            let createdAt: string | null = null;
+            let creditingPeriodEnd: string | null = null;
+            for (const [fk, fd] of Object.entries(fm)) {
+                if (fd.title.toLowerCase().includes('crediting period')) {
+                    const f = subject[fk];
+                    if (f && typeof f === 'object') {
+                        createdAt = typeof f['from'] === 'string' ? f['from'] : null;
+                        creditingPeriodEnd = typeof f['to'] === 'string' ? f['to'] : null;
+                    }
+                    break;
+                }
+            }
+            if (!createdAt) createdAt = vintageRaw || null;
+            const vintage: string | null = (createdAt ?? vintageRaw)?.slice(0, 4) ?? null;
 
-            const developer: string = typeof pd['field8'] === 'string' ? pd['field8'] : '';
-            const vintageRaw: string = typeof pd['field20'] === 'string' ? pd['field20'] : '';
-            const vintage: string | null = vintageRaw ? vintageRaw.slice(0, 4) : null;
+            // SDGs when all-numeric tokens, else cobenefits
+            const field25Key = Object.entries(fm).find(([, fd]) =>
+                fd.title.toLowerCase().includes('co-benefit') ||
+                fd.title.toLowerCase().includes('sustainable') ||
+                fd.title.toLowerCase().includes('sdg')
+            )?.[0];
+            const field25Raw = field25Key ? String(subject[field25Key] ?? '').trim() : '';
+            const field25Tokens = field25Raw.split(',').map(s => s.trim()).filter(Boolean);
+            const allNumeric = field25Tokens.length > 0 && field25Tokens.every(t => /^\d+$/.test(t));
+            const sdgs: number[] = allNumeric
+                ? field25Tokens.map(Number).filter(n => n >= 1 && n <= 17)
+                : [];
+            const cobenefits: string | null = !allNumeric && field25Raw ? field25Raw : null;
 
-            const createdAt: string | null =
-                pd['field28'] && typeof (pd['field28'] as Record<string, any>)['from'] === 'string'
-                    ? (pd['field28'] as Record<string, any>)['from']
-                    : vintageRaw || null;
-
-            const cobenefits: string | null =
-                typeof pd['field25'] === 'string' && pd['field25'] ? pd['field25'] : null;
-
-            const category: string | null =
-                typeof pd['field1'] === 'string' && pd['field1'] ? pd['field1'] : null;
-
-            const sector: string | null =
-                typeof pd['field2'] === 'string' && pd['field2'] ? pd['field2'] : null;
-
-            // ER_y from emission_reduction — only count if > 1
+            // emission_reduction
             const emissionReduction = cs['emission_reduction'] as Record<string, any> | undefined;
             const erY = emissionReduction
                 ? parseFloat(String(emissionReduction['ER_y'] ?? '0'))
@@ -352,14 +685,25 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
 
             const resolved = resolveMethod(vc.topicId, developer, maps);
 
+            const methScopes = resolved.policyTopicId
+                ? (methodScopeMap[resolved.policyTopicId] ?? [])
+                : [];
+            const sectoralScope = methScopes[0] ?? '';
+            const sector = normalizeSector(methScopes)
+                || (rawSector ? normalizeSector([rawSector]) : '')
+                || '';
+
+            const dedupKey = `${name}|${Math.round(lat * 10000) / 10000}|${Math.round(lng * 10000) / 10000}`;
+
             const existing = projectMap.get(dedupKey);
             if (!existing) {
                 projectMap.set(dedupKey, {
                     key: dedupKey,
                     sourceTimestamp: vc.consensusTimestamp,
                     topicId: vc.topicId,
+                    policyTopicId: resolved.policyTopicId,
                     name,
-                    country,
+                    country: country || null,
                     lat,
                     lng,
                     methodology: resolved.name,
@@ -369,25 +713,28 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                     credits: creditsToAdd,
                     vintage,
                     createdAt,
+                    creditingPeriodEnd,
                     cobenefits,
-                    category,
+                    sdgs,
+                    scale: scale || null,
+                    category: category || null,
                     sector,
+                    sectoralScope,
                     vcCount: 1,
                 });
             } else {
-                // Accumulate credits; keep earliest consensusTimestamp; bump vc count
                 existing.credits += creditsToAdd;
                 existing.vcCount += 1;
-                // Freshen methodology resolution if we got a better match
                 if (!existing.methodology && resolved.name) {
                     existing.methodology = resolved.name;
                     existing.methodologyId = slugify(resolved.name);
                     existing.registryDid = resolved.registryDid || null;
+                    existing.policyTopicId = resolved.policyTopicId;
                 }
             }
         }
 
-        // Step G — upsert each project row and then delete stale PROJECT rows
+        // Step G — upsert each project row and delete stale PROJECT rows (unchanged)
         const validTimestamps: string[] = [];
 
         for (const proj of projectMap.values()) {
@@ -402,13 +749,16 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 credits: proj.credits,
                 status: 'Issuing',
                 vintage: proj.vintage,
-                sdgs: [] as number[],
+                sdgs: proj.sdgs,
                 cobenefits: proj.cobenefits,
+                scale: proj.scale,
                 category: proj.category,
                 sector: proj.sector,
-                sectoralScope: '',
+                sectoralScope: proj.sectoralScope,
                 createdAt: proj.createdAt,
+                creditingPeriodEnd: proj.creditingPeriodEnd,
                 topicId: proj.topicId,
+                policyTopicId: proj.policyTopicId,
                 vcCount: proj.vcCount,
             };
 
@@ -459,8 +809,6 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
             validTimestamps.push(proj.sourceTimestamp);
         }
 
-        // Targeted cleanup: remove PROJECT rows whose source timestamp is no
-        // longer represented in the current VC set (e.g. after a re-index).
         if (validTimestamps.length > 0) {
             const placeholders = validTimestamps.map((_, i) => `$${i + 1}`).join(', ');
             await this.dataSource.query(
@@ -468,9 +816,7 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 validTimestamps,
             );
         } else {
-            await this.dataSource.query(
-                `DELETE FROM business_view WHERE "viewType" = 'PROJECT'`,
-            );
+            await this.dataSource.query(`DELETE FROM business_view WHERE "viewType" = 'PROJECT'`);
         }
 
         this.logger.log(

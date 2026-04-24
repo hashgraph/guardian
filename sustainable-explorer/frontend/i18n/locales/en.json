@@ -31,7 +31,10 @@
         "viewRawData": "View Raw Data",
         "lines": "lines",
         "mdash": "—",
-        "total": "total"
+        "total": "total",
+        "field": "field",
+        "fields": "fields",
+        "changed": "changed"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -234,7 +237,9 @@
             "schemas": "Schemas",
             "description": "Description",
             "id": "ID",
-            "status": "Status"
+            "status": "Status",
+            "type": "Type",
+            "version": "Version"
         },
         "filters": {
             "registry": "Registry",
@@ -258,6 +263,104 @@
         },
         "tooltips": {
             "copyId": "Copy ID"
+        },
+        "detail": {
+            "breadcrumb": "Methodologies",
+            "backLink": "Back to Methodologies",
+            "notFound": "Methodology not found",
+            "notFoundDesc": "No methodology with ID {id} on {network}.",
+            "viewOnHashScan": "View on HashScan",
+            "tabs": {
+                "overview": "Overview",
+                "versionHistory": "Version History",
+                "linkedProjects": "Linked Projects",
+                "hederaPolicy": "Hedera Policy",
+                "analytics": "Analytics",
+                "actions": "Actions"
+            },
+            "summary": {
+                "registry": "Registry",
+                "version": "Version",
+                "schemas": "Schemas",
+                "status": "Status"
+            },
+            "overview": {
+                "description": "Description",
+                "noDescription": "No description available.",
+                "keyFacts": "Key Facts",
+                "publishedAt": "Published At",
+                "network": "Network",
+                "emissionReductionApproach": "Emission Reduction Approach",
+                "applicableSectoralScopes": "Applicable Sectoral Scopes"
+            },
+            "versions": {
+                "title": "Version History",
+                "columns": {
+                    "version": "Version",
+                    "instancePolicyTopic": "Instance Policy Topic",
+                    "published": "Published",
+                    "schemas": "Schemas",
+                    "status": "Status"
+                },
+                "currentBadge": "Current",
+                "noVersions": "No versions found."
+            },
+            "linkedProjects": {
+                "title": "Linked Projects",
+                "noTopicId": "No policy topic ID available for this methodology.",
+                "columns": {
+                    "project": "Project",
+                    "country": "Country",
+                    "registry": "Registry",
+                    "credits": "Credits",
+                    "status": "Status"
+                },
+                "noProjects": "No projects found under this policy."
+            },
+            "policy": {
+                "title": "On-Chain Policy",
+                "verifiedOnHedera": "Verified on Hedera",
+                "governedBy": "This methodology is governed by an on-chain Guardian policy.",
+                "instancePolicyTopic": "Instance Policy Topic",
+                "publishedAt": "Published At",
+                "registryDid": "Registry DID",
+                "network": "Network"
+            },
+            "analytics": {
+                "schemaCount": "Schema Count",
+                "schemaCountSub": "Data forms in this policy",
+                "projects": "Projects",
+                "projectsSub": "Registered under this methodology",
+                "issuances": "Issuances",
+                "issuancesSub": "Credits issued",
+                "trends": "Trends",
+                "trendsComingSoon": "Issuance over time, retirement trend, and geography charts will be available once live VC-Document data is fully synced."
+            },
+            "actions": {
+                "aboutTitle": "About this Methodology",
+                "instancePolicyTopicLabel": "Instance Policy Topic:",
+                "compareVersions": "Compare Versions",
+                "compareVersionsDesc": "Select another version to compare side-by-side against this one.",
+                "noOtherVersions": "No other versions available for this methodology.",
+                "selectVersionPlaceholder": "— Select a version to compare —",
+                "comparison": "Comparison",
+                "noDifferences": "No differences",
+                "compareColumns": {
+                    "field": "Field",
+                    "current": "Current",
+                    "compare": "Compare"
+                },
+                "compareRows": {
+                    "version": "Version",
+                    "status": "Status",
+                    "published": "Published",
+                    "description": "Description",
+                    "sectoralScopes": "Sectoral Scopes",
+                    "emissionReductionApproach": "Emission Reduction Approach",
+                    "schemaCount": "Schema Count",
+                    "issuances": "Issuances"
+                }
+            }
         }
     },
     "registries": {
