@@ -465,8 +465,7 @@ export async function createUserProfile({
         await dataBaseServer.update(DidDocumentCollection, null, didRow);
     } catch (error) {
         logger.error(error, ['GUARDIAN_SERVICE'], logId);
-        // didRow.status = DidDocumentStatus.FAILED;
-        // await new DataBaseHelper(DidDocumentCollection).update(didRow);
+        throw error;
     }
     notifier.completeStep(STEP_PUBLISH_DID);
     // ------------------------
