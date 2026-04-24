@@ -29,12 +29,15 @@ interface MeecoApproveSubmissionResponse {
 @Injectable()
 export class WebSocketService {
     private static HEARTBEAT_DELAY = 30 * 1000;
+    private static RECONNECT_NOTIFY_AFTER_MS = 15 * 1000;
     private socket: WebSocketSubject<string> | null;
     private wsSubjectConfig: WebSocketSubjectConfig<string>;
     private socketSubscription: Subscription | null = null;
     private heartbeatTimeout: any = null;
     private reconnectInterval: number = 5000;  /// pause between connections
     private reconnectAttempts: number = 10;  /// number of connection attempts
+    private reconnectingToastId: number | null = null;
+    private reconnectNotifyTimeout: any = null;
     private servicesReady: Subject<boolean>;
     private profileSubject: Subject<{ type: string, data: any }>;
     private recordUpdateSubject: Subject<any>;
@@ -124,16 +127,54 @@ export class WebSocketService {
         this.socketSubscription = null;
         this.heartbeatTimeout = null;
         this.socket = null;
+
+        this.scheduleReconnectingNotice();
         this.reconnect();
-        this.toastr.error(this.getBaseUrl(), 'Close Web Socket', {
-            timeOut: 10000,
-            closeButton: true,
-            positionClass: 'toast-bottom-right',
-            enableHtml: true
-        });
+    }
+
+    private scheduleReconnectingNotice() {
+        if (this.reconnectNotifyTimeout !== null || this.reconnectingToastId !== null) {
+            return;
+        }
+        this.reconnectNotifyTimeout = setTimeout(() => {
+            this.reconnectNotifyTimeout = null;
+            if (this.socket) {
+                return;
+            }
+            const toast = this.toastr.info(
+                'Trying to reconnect…',
+                'Connection lost',
+                {
+                    disableTimeOut: true,
+                    tapToDismiss: false,
+                    closeButton: false,
+                    positionClass: 'toast-bottom-right',
+                }
+            );
+            this.reconnectingToastId = toast ? toast.toastId : null;
+        }, WebSocketService.RECONNECT_NOTIFY_AFTER_MS);
+    }
+
+    private clearReconnectingNotice() {
+        if (this.reconnectNotifyTimeout !== null) {
+            clearTimeout(this.reconnectNotifyTimeout);
+            this.reconnectNotifyTimeout = null;
+        }
+        if (this.reconnectingToastId !== null) {
+            this.toastr.clear(this.reconnectingToastId);
+            this.reconnectingToastId = null;
+        }
     }
 
     private openWebSocket() {
+        const wasNotified = this.reconnectingToastId !== null;
+        this.clearReconnectingNotice();
+        if (wasNotified) {
+            this.toastr.success('Connection restored', '', {
+                timeOut: 2000,
+                positionClass: 'toast-bottom-right',
+            });
+        }
         this.reconnectAttempts = 10;
     }
 
@@ -174,11 +215,25 @@ export class WebSocketService {
     private reconnect(): void {
         setTimeout(() => {
             if (this.reconnectAttempts < 0) {
+                this.notifyReconnectFailed();
                 return;
             }
             this.reconnectAttempts--;
             this.connect();
         }, this.reconnectInterval);
+    }
+
+    private notifyReconnectFailed(): void {
+        this.clearReconnectingNotice();
+        this.toastr.error(
+            'Unable to reconnect to the server. Please check your network connection and refresh the page.',
+            'Connection lost',
+            {
+                disableTimeOut: true,
+                closeButton: true,
+                positionClass: 'toast-bottom-right',
+            }
+        );
     }
 
     private _send(data: string): Promise<void> {
