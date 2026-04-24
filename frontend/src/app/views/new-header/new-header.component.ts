@@ -31,6 +31,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     public policyRequests = 0;
     public newPolicyRequests = 0;
     public showDocWidget: boolean = true;
+    public readonly docWidgetAvailable: boolean = window.location.protocol === 'https:';
 
     private commonLinksDisabled: boolean = false;
     private balanceType: string;
@@ -256,6 +257,9 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     }
 
     public toggleDocWidget() {
+        if (!this.docWidgetAvailable) {
+            return;
+        }
         this.showDocWidget = !this.showDocWidget;
 
         try {

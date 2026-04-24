@@ -394,6 +394,11 @@
     cursor: pointer;
     background: #FFFFFF3D;
     border: 1px solid #FFFFFF52;
+
+    &--disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
 }
 
 .doc-toggle {
