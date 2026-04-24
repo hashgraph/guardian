@@ -5,6 +5,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
+import { SILENT_HTTP_ERRORS } from '../constants';
 // import { AuthService } from './auth.service';
 // import { AuthStateService } from './auth-state.service';
 
@@ -142,6 +143,9 @@ export class HandleErrorsService implements HttpInterceptor {
                 //     this.router.navigate(['/login']);
                 //     return throwError(error);
                 // }
+                if (req.context.get(SILENT_HTTP_ERRORS)) {
+                    return throwError(error);
+                }
                 this.getMessage(error).then((result) => {
                     this.createMessage(result, error);
                 })

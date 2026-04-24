@@ -1,8 +1,9 @@
-import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISession, IStandardRegistryResponse, IUser, UserCategory, UserRole } from '@guardian/interfaces';
 import { Observable, of, Subject, Subscription } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { SILENT_HTTP_ERRORS } from '../constants';
 import { map } from 'rxjs/operators';
 
 /**
@@ -46,7 +47,11 @@ export class AuthService {
     }
 
     public updateAccessToken(): Observable<any> {
-        return this.http.post<any>(`${this.url}/access-token`, { refreshToken: this.getRefreshToken() }).pipe(
+        return this.http.post<any>(
+            `${this.url}/access-token`,
+            { refreshToken: this.getRefreshToken() },
+            { context: new HttpContext().set(SILENT_HTTP_ERRORS, true) }
+        ).pipe(
             map(result => {
                 const { accessToken } = result;
                 this.setAccessToken(accessToken);
