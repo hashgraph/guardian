@@ -64,6 +64,32 @@ export class PolicyApiConfigDialogComponent {
         });
     }
 
+    addAllEntries(): void {
+        const existingTargets = new Set(
+            this.entries
+                .map((entry) => entry.target)
+                .filter((target): target is string => !!target)
+        );
+
+        const newEntries = this.blocks
+            .filter((block: any) => block?.tag && !existingTargets.has(block.tag))
+            .map((block: any) => ({
+                name: block.tag,
+                description: '',
+                target: block.tag,
+                method: 'GET',
+                alias: block.tag.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
+                url: '',
+                dmrvUrl: '',
+                blockType: block.blockType || '',
+            }));
+
+        if (newEntries.length > 0) {
+            this.entries.push(...newEntries);
+            this.revalidate();
+        }
+    }
+
     removeEntry(index: number): void {
         this.entries.splice(index, 1);
         this.validationErrors.delete(index);
