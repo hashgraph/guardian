@@ -32,7 +32,7 @@
                         <label>Block</label>
                         <select-block
                             [(value)]="entry.target"
-                            [blocks]="blocks"
+                            [blocks]="eligibleBlocks"
                             [root]="root"
                             (change)="onTargetChange(i)"
                         ></select-block>
@@ -42,6 +42,7 @@
                         <p-dropdown
                             [(ngModel)]="entry.method"
                             [options]="methods"
+                            (onChange)="onMethodChange()"
                             appendTo="body"
                             class="guardian-dropdown"
                         ></p-dropdown>

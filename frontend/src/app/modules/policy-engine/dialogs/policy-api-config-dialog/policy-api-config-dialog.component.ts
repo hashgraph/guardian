@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { IPolicyDocumentationEntry } from '@guardian/interfaces';
+import { RegisteredService } from '../../services/registered.service';
 
 @Component({
     selector: 'app-policy-api-config-dialog',
@@ -10,6 +11,7 @@ import { IPolicyDocumentationEntry } from '@guardian/interfaces';
 export class PolicyApiConfigDialogComponent {
     public entries: IPolicyDocumentationEntry[] = [];
     public blocks: any[] = [];
+    public eligibleBlocks: any[] = [];
     public root: any;
     public policyId: string;
     public methods = [
@@ -43,12 +45,14 @@ export class PolicyApiConfigDialogComponent {
 
     constructor(
         public ref: DynamicDialogRef,
-        public config: DynamicDialogConfig
+        public config: DynamicDialogConfig,
+        private registeredService: RegisteredService
     ) {
-        this.policyId = this.config.data?.policyId || '';
-        this.blocks = this.config.data?.blocks || [];
+        this.policyId = this.config.data?.policyId ?? '';
+        this.blocks = this.config.data?.blocks ?? [];
         this.root = this.config.data?.root;
-        const existing: IPolicyDocumentationEntry[] = this.config.data?.entries || [];
+        this.eligibleBlocks = this.blocks.filter((block: any) => this.isApiCapableBlock(block));
+        const existing: IPolicyDocumentationEntry[] = this.config.data?.entries ?? [];
         this.entries = existing.map((e) => ({ ...e }));
     }
 
@@ -71,13 +75,13 @@ export class PolicyApiConfigDialogComponent {
                 .filter((target): target is string => !!target)
         );
 
-        const newEntries = this.blocks
+        const newEntries = this.eligibleBlocks
             .filter((block: any) => block?.tag && !existingTargets.has(block.tag))
             .map((block: any) => ({
                 name: block.tag,
                 description: '',
                 target: block.tag,
-                method: 'GET',
+                method: this.getDefaultMethod(block),
                 alias: block.tag.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
                 url: '',
                 dmrvUrl: '',
@@ -99,7 +103,7 @@ export class PolicyApiConfigDialogComponent {
     onTargetChange(index: number): void {
         const entry = this.entries[index];
         if (entry.target) {
-            const block = this.blocks.find((b: any) => b.tag === entry.target);
+            const block = this.getBlockByTag(entry.target);
             entry.blockType = block?.blockType || '';
             if (!entry.name) {
                 entry.name = entry.target;
@@ -117,6 +121,10 @@ export class PolicyApiConfigDialogComponent {
         this.revalidate();
     }
 
+    onMethodChange(): void {
+        this.revalidate();
+    }
+
     getPreviewUrl(entry: IPolicyDocumentationEntry): string {
         if (!entry.alias) {
             return '';
@@ -124,9 +132,36 @@ export class PolicyApiConfigDialogComponent {
         return `/api/v1/dmrv/${this.policyId}/${entry.alias}`;
     }
 
+    private isApiCapableBlock(block: any): boolean {
+        if (!block?.tag) {
+            return false;
+        }
+        const about = this.registeredService.getAbout(block, this.root);
+        return !!(about?.get || about?.post);
+    }
+
+    private getBlockAbout(block: any): any {
+        return this.registeredService.getAbout(block, this.root);
+    }
+
+    private getBlockByTag(tag: string): any {
+        return this.blocks.find((block: any) => block.tag === tag);
+    }
+
+    private getDefaultMethod(block: any): string {
+        const about = this.getBlockAbout(block);
+        if (about?.get && about?.post) {
+            return 'Both';
+        }
+        if (about?.post) {
+            return 'POST';
+        }
+        return 'GET';
+    }
+
     private revalidate(): void {
         this.validationErrors.clear();
-        const targetSet = new Map<string, number>();
+        const targetMethods = new Map<string, { index: number; method: string }[]>();
         for (let i = 0; i < this.entries.length; i++) {
             const entry = this.entries[i];
             if (!entry.target) {
@@ -141,11 +176,41 @@ export class PolicyApiConfigDialogComponent {
                 this.validationErrors.set(i, 'Alias: only lowercase letters, digits and hyphens');
                 continue;
             }
-            if (targetSet.has(entry.target)) {
-                this.validationErrors.set(i, `Duplicate block (same as row ${(targetSet.get(entry.target) as number) + 1})`);
+            const block = this.getBlockByTag(entry.target);
+            const about = block ? this.getBlockAbout(block) : null;
+            if (!block || !about || (!about.get && !about.post)) {
+                this.validationErrors.set(i, 'Selected block does not support API aliases');
                 continue;
             }
-            targetSet.set(entry.target, i);
+            if (entry.method === 'GET' && !about.get) {
+                this.validationErrors.set(i, 'Selected block does not support GET');
+                continue;
+            }
+            if (entry.method === 'POST' && !about.post) {
+                this.validationErrors.set(i, 'Selected block does not support POST');
+                continue;
+            }
+            if (entry.method === 'Both' && (!about.get || !about.post)) {
+                this.validationErrors.set(i, 'Selected block must support both GET and POST for Both');
+                continue;
+            }
+
+            const existingMethods = targetMethods.get(entry.target) ?? [];
+            const conflictingEntry = existingMethods.find((item) =>
+                item.method === entry.method ||
+                item.method === 'Both' ||
+                entry.method === 'Both'
+            );
+            if (conflictingEntry) {
+                this.validationErrors.set(i, `Conflicting block/method (same as row ${conflictingEntry.index + 1})`);
+                continue;
+            }
+
+            existingMethods.push({
+                index: i,
+                method: entry.method,
+            });
+            targetMethods.set(entry.target, existingMethods);
         }
     }
 
