@@ -272,13 +272,14 @@ export class Worker extends NatsService {
             }
         });
 
-        HederaSDKHelper.setTransactionResponseCallback(async (operatorAccountId: string) => {
+        HederaSDKHelper.setTransactionResponseCallback(async (operatorAccountId: string, userId: string | null) => {
             try {
                 const balance = await HederaSDKHelper.balanceRest(operatorAccountId, HederaSDKHelper.DEFAULT_API_OPTIONS);
                 await this.sendMessage('update-user-balance', {
                     balance,
                     unit: 'Hbar',
-                    operatorAccountId
+                    operatorAccountId,
+                    userId
                 }, false);
             } catch (error) {
                 throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
