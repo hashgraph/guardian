@@ -171,85 +171,157 @@ export class PgProjectRepository extends ProjectRepository {
         const policyTopicId = (row.businessData as Record<string, any> | null)?.['policyTopicId'] as string | null;
         const instanceTopicId = row.relatedTopicId;
 
-        // Fetch CREDIT rows linked to this project. Credit rows have relatedTopicId equal
-        // to the policy topic ID (where the Instance-Policy message was published).
-        // We also fall back to the instance topic ID in case policyTopicId is not yet
-        // stored (projects built before this field was added).
-        const topicIds = [...new Set([policyTopicId, instanceTopicId].filter((t): t is string => !!t))];
-
+        // Step 1 — try per-project attribution via MintToken VCs published back to
+        // the project's instance topic by Guardian after each mint event.
+        // Each MintToken VC has: { type: "MintToken", tokenId, amount, date }
         let issuances: IssuanceRow[] = [];
-        if (topicIds.length > 0) {
-            const placeholders = topicIds.map((_, i) => `$${i + 1}`).join(', ');
-            const creditRows: Array<{
-                tokenId: string | null;
-                name: string | null;
-                symbol: string | null;
-                type: string | null;
-                supply: string | null;
-                mintDate: Date | null;
-            }> = await this.dataSource.query(
-                `
-                SELECT
-                    COALESCE(tc."tokenId", bv."businessData"->>'tokenId') AS "tokenId",
-                    COALESCE(tc.name,      bv."displayName")              AS name,
-                    COALESCE(tc.symbol,    bv."businessData"->>'symbol')  AS symbol,
-                    tc.type,
-                    tc."totalSupply"                                      AS supply,
-                    bv."createdAt"                                        AS "mintDate"
-                FROM business_view bv
-                LEFT JOIN token_cache tc
-                    ON tc."tokenId" = bv."businessData"->>'tokenId'
-                WHERE bv."viewType" = 'CREDIT'
-                  AND bv."relatedTopicId" IN (${placeholders})
-                ORDER BY bv."createdAt" ASC
-                `,
-                topicIds,
-            );
-
-            issuances = creditRows.map(r => ({
-                tokenId: r.tokenId ?? '',
-                name: r.name ?? null,
-                symbol: r.symbol ?? null,
-                type: r.type ?? null,
-                supply: r.supply != null ? parseFloat(r.supply) : 0,
-                mintDate: r.mintDate ? r.mintDate.toISOString().split('T')[0] : null,
-            }));
-        }
-
-        // Aggregate lifecycle stats for NFT tokens: total minted (all serials) and
-        // total retired (serials marked deleted by Mirror Node).
-        // Fungible tokens don't have per-serial tracking so their supply is used as-is.
-        const nftTokenIds = issuances
-            .filter(i => i.type === 'NON_FUNGIBLE_UNIQUE')
-            .map(i => i.tokenId)
-            .filter((id): id is string => !!id);
-
         let totalIssued = 0;
         let totalRetired = 0;
 
-        if (nftTokenIds.length > 0) {
-            const nftStats: Array<{ tokenId: string; total_minted: string; total_retired: string }> =
-                await this.dataSource.query(
+        const mintTokenRows: Array<{
+            token_id: string | null;
+            amount: string | null;
+            mint_date: string | null;
+        }> = instanceTopicId
+            ? await this.dataSource.query(
+                `SELECT
+                    m.documents -> 'credentialSubject' -> 0 ->> 'tokenId' AS token_id,
+                    m.documents -> 'credentialSubject' -> 0 ->> 'amount'  AS amount,
+                    m.documents -> 'credentialSubject' -> 0 ->> 'date'    AS mint_date
+                 FROM message m
+                 WHERE m."topicId" = $1
+                   AND m.type = 'VC-Document'
+                   AND m.documents -> 'credentialSubject' -> 0 ->> 'type' = 'MintToken'
+                 ORDER BY m."consensusTimestamp" ASC`,
+                [instanceTopicId],
+            )
+            : [];
+
+        if (mintTokenRows.length > 0) {
+            // Aggregate minted amount per token
+            const mintsByToken = new Map<string, { total: number; mintDate: string | null }>();
+            for (const r of mintTokenRows) {
+                if (!r.token_id) continue;
+                const existing = mintsByToken.get(r.token_id) ?? { total: 0, mintDate: r.mint_date };
+                existing.total += parseInt(r.amount ?? '0', 10);
+                mintsByToken.set(r.token_id, existing);
+            }
+
+            // Enrich with token metadata from token_cache
+            const distinctTokenIds = Array.from(mintsByToken.keys());
+            const tokenMeta: Array<{
+                tokenId: string;
+                name: string | null;
+                symbol: string | null;
+                type: string | null;
+            }> = await this.dataSource.query(
+                `SELECT "tokenId", name, symbol, type
+                 FROM token_cache
+                 WHERE "tokenId" = ANY($1::varchar[])`,
+                [distinctTokenIds],
+            );
+            const metaMap = new Map(tokenMeta.map(t => [t.tokenId, t]));
+
+            issuances = [...mintsByToken.entries()].map(([tokenId, data]) => {
+                const meta = metaMap.get(tokenId);
+                return {
+                    tokenId,
+                    name: meta?.name ?? null,
+                    symbol: meta?.symbol ?? null,
+                    type: meta?.type ?? null,
+                    supply: data.total,
+                    mintDate: data.mintDate
+                        ? new Date(data.mintDate).toISOString().split('T')[0]
+                        : null,
+                };
+            });
+
+            // totalIssued = sum of MintToken amounts (project-specific)
+            totalIssued = [...mintsByToken.values()].reduce((s, v) => s + v.total, 0);
+
+            // totalRetired = NFT serials marked deleted for tokens this project minted
+            const nftTokenIds = issuances
+                .filter(i => i.type === 'NON_FUNGIBLE_UNIQUE')
+                .map(i => i.tokenId)
+                .filter((tid): tid is string => !!tid);
+
+            if (nftTokenIds.length > 0) {
+                const nftStats: Array<{ tokenId: string; total_retired: string }> =
+                    await this.dataSource.query(
+                        `SELECT "tokenId",
+                                COUNT(*) FILTER (WHERE deleted = true)::text AS total_retired
+                         FROM nft_cache
+                         WHERE "tokenId" = ANY($1::varchar[])
+                         GROUP BY "tokenId"`,
+                        [nftTokenIds],
+                    );
+                for (const s of nftStats) {
+                    totalRetired += parseInt(s.total_retired, 10);
+                }
+            }
+        } else {
+            // Step 2 — fallback: use policy-topic CREDIT rows (methodology-level,
+            // shared across all projects under the same policy).
+            const topicIds = [...new Set([policyTopicId, instanceTopicId].filter((t): t is string => !!t))];
+            if (topicIds.length > 0) {
+                const placeholders = topicIds.map((_, i) => `$${i + 1}`).join(', ');
+                const creditRows: Array<{
+                    tokenId: string | null;
+                    name: string | null;
+                    symbol: string | null;
+                    type: string | null;
+                    supply: string | null;
+                    mintDate: Date | null;
+                }> = await this.dataSource.query(
                     `SELECT
-                        "tokenId",
-                        COUNT(*)::text                              AS total_minted,
-                        COUNT(*) FILTER (WHERE deleted = true)::text AS total_retired
-                     FROM nft_cache
-                     WHERE "tokenId" = ANY($1::varchar[])
-                     GROUP BY "tokenId"`,
-                    [nftTokenIds],
+                        COALESCE(tc."tokenId", bv."businessData"->>'tokenId') AS "tokenId",
+                        COALESCE(tc.name,      bv."displayName")              AS name,
+                        COALESCE(tc.symbol,    bv."businessData"->>'symbol')  AS symbol,
+                        tc.type,
+                        tc."totalSupply"                                      AS supply,
+                        bv."createdAt"                                        AS "mintDate"
+                     FROM business_view bv
+                     LEFT JOIN token_cache tc
+                         ON tc."tokenId" = bv."businessData"->>'tokenId'
+                     WHERE bv."viewType" = 'CREDIT'
+                       AND bv."relatedTopicId" IN (${placeholders})
+                     ORDER BY bv."createdAt" ASC`,
+                    topicIds,
                 );
 
-            for (const s of nftStats) {
-                totalIssued += parseInt(s.total_minted, 10);
-                totalRetired += parseInt(s.total_retired, 10);
-            }
-        }
+                issuances = creditRows.map(r => ({
+                    tokenId: r.tokenId ?? '',
+                    name: r.name ?? null,
+                    symbol: r.symbol ?? null,
+                    type: r.type ?? null,
+                    supply: r.supply != null ? parseFloat(r.supply) : 0,
+                    mintDate: r.mintDate ? r.mintDate.toISOString().split('T')[0] : null,
+                }));
 
-        // Add fungible token supply to totalIssued (retirement not tracked for fungible)
-        for (const i of issuances) {
-            if (i.type !== 'NON_FUNGIBLE_UNIQUE') {
-                totalIssued += i.supply;
+                const nftTokenIds = issuances
+                    .filter(i => i.type === 'NON_FUNGIBLE_UNIQUE')
+                    .map(i => i.tokenId)
+                    .filter((tid): tid is string => !!tid);
+
+                if (nftTokenIds.length > 0) {
+                    const nftStats: Array<{ tokenId: string; total_minted: string; total_retired: string }> =
+                        await this.dataSource.query(
+                            `SELECT "tokenId",
+                                    COUNT(*)::text                               AS total_minted,
+                                    COUNT(*) FILTER (WHERE deleted = true)::text AS total_retired
+                             FROM nft_cache
+                             WHERE "tokenId" = ANY($1::varchar[])
+                             GROUP BY "tokenId"`,
+                            [nftTokenIds],
+                        );
+                    for (const s of nftStats) {
+                        totalIssued += parseInt(s.total_minted, 10);
+                        totalRetired += parseInt(s.total_retired, 10);
+                    }
+                }
+                for (const i of issuances) {
+                    if (i.type !== 'NON_FUNGIBLE_UNIQUE') totalIssued += i.supply;
+                }
             }
         }
 
