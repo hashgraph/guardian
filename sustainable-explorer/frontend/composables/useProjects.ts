@@ -30,7 +30,7 @@ function parseSdgs(sdgs: unknown): number[] {
     return [];
 }
 
-function mapApiProject(raw: Record<string, any>): Project {
+export function mapApiProject(raw: Record<string, any>): Project {
     const countryCode = COUNTRY_ALPHA3[raw.country] || 'UNK';
     return {
         id: raw.sourceTimestamp || raw.id,

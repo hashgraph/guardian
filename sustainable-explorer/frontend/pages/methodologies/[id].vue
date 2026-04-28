@@ -27,6 +27,7 @@ import type {
   MethodologyDto,
   MethodologiesResponse,
 } from "~/composables/api/useMethodologiesApi";
+import { mapApiProject } from "~/composables/useProjects";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -127,6 +128,9 @@ const publishedAt = computed(() => {
 const linkedProjects = ref<Record<string, any>[]>([]);
 const linkedProjectsPending = ref(false);
 const linkedProjectsLoaded = ref(false);
+
+const linkedProjectsMapped = computed(() => linkedProjects.value.map(mapApiProject));
+const { resolvedCode: resolvedProjectCode } = useGeocodedCountries(linkedProjectsMapped);
 
 if (import.meta.client) {
   const config = useRuntimeConfig();
@@ -717,10 +721,10 @@ const lifecycleSummary = computed(() => {
             </thead>
             <tbody class="divide-y">
               <tr
-                v-for="p in linkedProjects"
-                :key="p.sourceTimestamp ?? p.id"
+                v-for="p in linkedProjectsMapped"
+                :key="p.id"
                 class="hover:bg-muted/30 transition-colors cursor-pointer"
-                @click="navigateTo('/projects/' + (p.sourceTimestamp ?? p.id))"
+                @click="navigateTo('/projects/' + p.id)"
               >
                 <td class="py-3 px-5">
                   <div class="font-medium text-foreground truncate max-w-[280px]">
@@ -728,9 +732,15 @@ const lifecycleSummary = computed(() => {
                   </div>
                   <div v-if="p.developer" class="text-xs text-muted-foreground mt-0.5">{{ p.developer }}</div>
                 </td>
-                <td class="py-3 px-4 text-sm text-muted-foreground">{{ p.country || '—' }}</td>
+                <td class="py-3 px-4 text-sm text-muted-foreground">
+                  <div v-if="p.country || (p.lat && p.lng)" class="flex items-center gap-1.5">
+                    <CountryFlag :code="resolvedProjectCode(p)" size="sm" />
+                    <span>{{ p.country || '' }}</span>
+                  </div>
+                  <span v-else>—</span>
+                </td>
                 <td class="py-3 px-4 text-sm text-muted-foreground truncate max-w-[160px]">
-                  {{ p.registryName || p.registryDid || '—' }}
+                  {{ p.registry || '—' }}
                 </td>
                 <td class="py-3 px-4 text-right tabular-nums text-sm font-medium text-foreground">
                   {{ p.credits != null ? p.credits.toLocaleString() : '—' }}
