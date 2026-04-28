@@ -73,6 +73,7 @@ import { policyLabelsAPI } from './api/policy-labels.service.js';
 import { initMathjs } from './utils/formula.js';
 import { formulasAPI } from './api/formulas.service.js';
 import { externalPoliciesAPI } from './api/external-policies.service.js';
+import { policyDataAPI } from './api/policy-data.service.js';
 
 export const obj = {};
 
@@ -192,6 +193,7 @@ Promise.all([
         await formulasAPI(logger);
         await externalPoliciesAPI(logger);
         await credentialAPI(logger);
+        await policyDataAPI(dataBaseServer, logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);

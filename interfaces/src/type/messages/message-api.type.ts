@@ -313,6 +313,9 @@ export enum MessageAPI {
     SET_CREDENTIAL = 'SET_CREDENTIAL',
     GET_CREDENTIALS = 'GET_CREDENTIALS',
     DELETE_CREDENTIAL = 'DELETE_CREDENTIAL',
+
+    // Policy data query — read-only dynamic query for policy-committed documents
+    GET_POLICY_DATA_DOCUMENTS = 'GET_POLICY_DATA_DOCUMENTS',
 }
 
 /**

@@ -404,6 +404,8 @@
       * [Document Comparison APIs](guardian/standard-registry/policies/document-comparison/document-comparison-apis/README.md)
         * [Compare Documents](guardian/standard-registry/policies/document-comparison/document-comparison-apis/compare-documents.md)
         * [Export Comparison Results](guardian/standard-registry/policies/document-comparison/document-comparison-apis/export-comparison-results.md)
+    * [Dynamic Data Query](guardian/standard-registry/policies/dynamic-data-query/README.md)
+      * [Query Policy Data Documents](guardian/standard-registry/policies/dynamic-data-query/query-policy-data-documents.md)
     * [Tools](guardian/standard-registry/policies/tools/README.md)
       * [Tools using UI](guardian/standard-registry/policies/tools/tools-using-ui.md)
       * [Tools APIs](guardian/standard-registry/policies/tools/tools-apis/README.md)
