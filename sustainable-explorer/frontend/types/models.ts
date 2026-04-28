@@ -5,6 +5,7 @@ export interface ProjectIssuance {
     type: string | null;
     supply: number;
     mintDate: string | null;
+    rawVc?: Record<string, any> | null;
 }
 
 export interface Project {
@@ -27,11 +28,13 @@ export interface Project {
     sector: string;
     sectoralScope: string;
     createdAt: string;
+    creditingPeriodEnd?: string | null;
     topicId?: string;
     policyTopicId?: string;
     registryDid?: string;
     sourceTimestamp?: string;
     issuances?: ProjectIssuance[];
+    issuanceCount?: number;
     totalIssued?: number;
     totalRetired?: number;
     totalActive?: number;

@@ -159,6 +159,7 @@ export class MethodologyResponseDto {
                 type: i.type,
                 supply: i.supply,
                 mintDate: i.mintDate,
+                rawVc: i.rawVc ?? null,
             })),
             totalIssued: row.totalIssued ?? 0,
             totalRetired: row.totalRetired ?? 0,

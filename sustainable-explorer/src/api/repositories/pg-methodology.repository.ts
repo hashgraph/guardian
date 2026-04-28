@@ -204,6 +204,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 type: string | null;
                 supply: string | null;
                 mintDate: Date | null;
+                raw_vc: Record<string, any> | null;
             }> = await this.dataSource.query(
                 `
                 SELECT
@@ -212,10 +213,13 @@ export class PgMethodologyRepository extends MethodologyRepository {
                     COALESCE(tc.symbol,    bv."businessData"->>'symbol')  AS symbol,
                     tc.type,
                     tc."totalSupply"                                      AS supply,
-                    bv."createdAt"                                        AS "mintDate"
+                    bv."createdAt"                                        AS "mintDate",
+                    m.documents                                           AS raw_vc
                 FROM business_view bv
                 LEFT JOIN token_cache tc
                     ON tc."tokenId" = bv."businessData"->>'tokenId'
+                LEFT JOIN message m
+                    ON m."consensusTimestamp" = bv."sourceTimestamp"
                 WHERE bv."viewType" = 'CREDIT'
                   AND bv."relatedTopicId" IN (${placeholders})
                 ORDER BY bv."createdAt" ASC
@@ -230,6 +234,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 type: r.type ?? null,
                 supply: r.supply != null ? parseFloat(r.supply) : 0,
                 mintDate: r.mintDate ? r.mintDate.toISOString().split('T')[0] : null,
+                rawVc: r.raw_vc ?? null,
             }));
         }
 

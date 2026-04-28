@@ -30,6 +30,7 @@ export interface MethodologyIssuance {
     type: string | null;
     supply: number;
     mintDate: string | null;
+    rawVc?: Record<string, any> | null;
 }
 
 export interface MethodologyDto {

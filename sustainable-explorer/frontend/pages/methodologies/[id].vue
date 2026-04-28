@@ -13,6 +13,7 @@ import {
   Layers,
   ChevronRight,
   FileText,
+  FileJson,
   Copy,
   Check,
   Hash,
@@ -255,8 +256,19 @@ const linkedCredits = computed(() => {
     type: i.type === 'FUNGIBLE_COMMON' ? 'Fungible' : 'Non-Fungible',
     supply: i.supply,
     mintDate: i.mintDate ?? '',
+    rawVc: i.rawVc ?? null,
   }));
 });
+
+const vcViewerOpen = ref(false);
+const vcViewerTitle = ref('');
+const vcViewerData = ref<Record<string, any> | null>(null);
+
+function viewIssuanceVc(c: { tokenId: string; name: string; rawVc: Record<string, any> | null }) {
+  vcViewerTitle.value = c.name || c.tokenId;
+  vcViewerData.value = c.rawVc;
+  vcViewerOpen.value = true;
+}
 
 // Lifecycle summary — sourced from backend-computed totals on the methodology
 const lifecycleSummary = computed(() => {
@@ -959,6 +971,7 @@ const lifecycleSummary = computed(() => {
                   <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
                   <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Supply</th>
                   <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Mint Date</th>
+                  <th class="text-center py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Raw Data</th>
                 </tr>
               </thead>
               <tbody class="divide-y">
@@ -988,6 +1001,15 @@ const lifecycleSummary = computed(() => {
                   </td>
                   <td class="py-3 px-4 text-right tabular-nums font-medium">{{ formatNumber(c.supply) }}</td>
                   <td class="py-3 px-4 text-muted-foreground">{{ c.mintDate }}</td>
+                  <td class="py-3 px-4 text-center">
+                    <button
+                      class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      title="View Raw Data"
+                      @click="viewIssuanceVc(c)"
+                    >
+                      <FileJson class="h-3.5 w-3.5" />
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -1168,4 +1190,6 @@ const lifecycleSummary = computed(() => {
       </div>
     </template>
   </div>
+
+  <VcJsonViewer :open="vcViewerOpen" :title="vcViewerTitle" :data="vcViewerData" @close="vcViewerOpen = false" />
 </template>

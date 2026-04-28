@@ -65,6 +65,9 @@ export class IssuanceDto {
 
     @ApiProperty({ nullable: true, description: 'Date the token was minted (YYYY-MM-DD)' })
     mintDate: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Raw MintToken VC document from the Hedera message' })
+    rawVc: Record<string, any> | null;
 }
 
 export class ProjectQueryDto extends PaginationQueryDto {
@@ -170,6 +173,9 @@ export class ProjectResponseDto {
     @ApiProperty({ nullable: true, description: 'Project creation / start date (ISO string or year)' })
     createdAt: string | null;
 
+    @ApiProperty({ nullable: true, description: 'Crediting period end date (ISO string) extracted from the project registration VC' })
+    creditingPeriodEnd: string | null;
+
     @ApiProperty({ nullable: true, description: 'Hedera topic ID of the first project VC' })
     topicId: string | null;
 
@@ -184,6 +190,9 @@ export class ProjectResponseDto {
 
     @ApiProperty({ description: 'Last time this row was written to the database' })
     updatedAt: Date;
+
+    @ApiProperty({ description: 'Number of distinct token issuances for this project (from MintToken VCs)' })
+    issuanceCount: number;
 
     @ApiProperty({ type: [IssuanceDto], description: 'Linked token issuances for this project' })
     issuances: IssuanceDto[];
@@ -221,6 +230,7 @@ export class ProjectResponseDto {
             sector: typeof data['sector'] === 'string' ? data['sector'] : null,
             sectoralScope: typeof data['sectoralScope'] === 'string' ? data['sectoralScope'] : null,
             createdAt: typeof data['createdAt'] === 'string' ? data['createdAt'] : null,
+            creditingPeriodEnd: typeof data['creditingPeriodEnd'] === 'string' ? data['creditingPeriodEnd'] : null,
             topicId: typeof data['topicId'] === 'string' ? data['topicId'] : null,
             policyTopicId: typeof data['policyTopicId'] === 'string' ? data['policyTopicId'] : null,
             vcCount: typeof data['vcCount'] === 'number' ? data['vcCount'] : 0,
@@ -233,7 +243,9 @@ export class ProjectResponseDto {
                 type: i.type,
                 supply: i.supply,
                 mintDate: i.mintDate,
+                rawVc: i.rawVc ?? null,
             })),
+            issuanceCount: row.issuanceCount ?? 0,
             totalIssued: row.totalIssued ?? 0,
             totalRetired: row.totalRetired ?? 0,
             totalActive: row.totalActive ?? 0,

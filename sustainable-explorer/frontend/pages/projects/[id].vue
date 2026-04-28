@@ -81,7 +81,8 @@ function viewProjectVc() {
 
 function viewCreditVc(c: Credit) {
     vcViewerTitle.value = c.name;
-    vcViewerData.value = generateCreditVc(c, project.value?.name);
+    const issuance = project.value?.issuances?.find(i => i.tokenId === c.tokenId);
+    vcViewerData.value = issuance?.rawVc ?? generateCreditVc(c, project.value?.name);
     vcViewerOpen.value = true;
 }
 
@@ -94,12 +95,14 @@ const statusColor: Record<string, { bg: string; text: string; dot: string }> = {
 };
 
 const creditingPeriodStart = computed(() => {
+    if (project.value?.createdAt) return project.value.createdAt.slice(0, 10);
     if (!project.value?.vintage) return '-';
     const yr = parseInt(project.value.vintage);
     return isNaN(yr) ? '-' : `${yr - 1}-01-01`;
 });
 
 const creditingPeriodEnd = computed(() => {
+    if (project.value?.creditingPeriodEnd) return project.value.creditingPeriodEnd.slice(0, 10);
     if (!project.value?.vintage) return '-';
     const yr = parseInt(project.value.vintage);
     return isNaN(yr) ? '-' : `${yr + 9}-12-31`;

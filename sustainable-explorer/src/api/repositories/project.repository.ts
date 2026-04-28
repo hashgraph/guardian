@@ -13,6 +13,7 @@ export interface IssuanceRow {
     type: string | null;
     supply: number;
     mintDate: string | null;
+    rawVc?: Record<string, any> | null;
 }
 
 export interface ProjectRow {
@@ -28,6 +29,7 @@ export interface ProjectRow {
     createdAt: Date;
     updatedAt: Date;
     issuances?: IssuanceRow[];
+    issuanceCount?: number;
     totalIssued?: number;
     totalRetired?: number;
     totalActive?: number;

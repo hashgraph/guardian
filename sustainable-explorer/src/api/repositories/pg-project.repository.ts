@@ -22,6 +22,7 @@ interface RawRow {
     createdAt: Date;
     updatedAt: Date;
     registry_name: string | null;
+    issuance_count: number | null;
 }
 
 /**
@@ -38,6 +39,20 @@ const REGISTRY_NAME_JOIN = `
         ORDER BY "createdAt" DESC NULLS LAST
         LIMIT 1
     ) reg ON true
+`;
+
+/**
+ * LATERAL subquery joined into findAll to count per-project MintToken VCs
+ * published back to the project's instance topic by Guardian after each mint.
+ */
+const ISSUANCE_COUNT_JOIN = `
+    LEFT JOIN LATERAL (
+        SELECT COUNT(*)::int AS issuance_count
+        FROM message m
+        WHERE m."topicId" = bv."relatedTopicId"
+          AND m.type = 'VC-Document'
+          AND m.documents -> 'credentialSubject' -> 0 ->> 'type' = 'MintToken'
+    ) mint ON true
 `;
 
 /**
@@ -120,9 +135,11 @@ export class PgProjectRepository extends ProjectRepository {
             SELECT
                 bv.*,
                 reg.registry_name,
+                COALESCE(mint.issuance_count, 0) AS issuance_count,
                 ${rankExpr} AS search_rank
             FROM business_view bv
             ${REGISTRY_NAME_JOIN}
+            ${ISSUANCE_COUNT_JOIN}
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
@@ -182,12 +199,14 @@ export class PgProjectRepository extends ProjectRepository {
             token_id: string | null;
             amount: string | null;
             mint_date: string | null;
+            documents: Record<string, any> | null;
         }> = instanceTopicId
             ? await this.dataSource.query(
                 `SELECT
                     m.documents -> 'credentialSubject' -> 0 ->> 'tokenId' AS token_id,
                     m.documents -> 'credentialSubject' -> 0 ->> 'amount'  AS amount,
-                    m.documents -> 'credentialSubject' -> 0 ->> 'date'    AS mint_date
+                    m.documents -> 'credentialSubject' -> 0 ->> 'date'    AS mint_date,
+                    m.documents
                  FROM message m
                  WHERE m."topicId" = $1
                    AND m.type = 'VC-Document'
@@ -198,12 +217,13 @@ export class PgProjectRepository extends ProjectRepository {
             : [];
 
         if (mintTokenRows.length > 0) {
-            // Aggregate minted amount per token
-            const mintsByToken = new Map<string, { total: number; mintDate: string | null }>();
+            // Aggregate minted amount per token; keep last MintToken VC as raw data
+            const mintsByToken = new Map<string, { total: number; mintDate: string | null; rawVc: Record<string, any> | null }>();
             for (const r of mintTokenRows) {
                 if (!r.token_id) continue;
-                const existing = mintsByToken.get(r.token_id) ?? { total: 0, mintDate: r.mint_date };
+                const existing = mintsByToken.get(r.token_id) ?? { total: 0, mintDate: r.mint_date, rawVc: r.documents };
                 existing.total += parseInt(r.amount ?? '0', 10);
+                existing.rawVc = r.documents;
                 mintsByToken.set(r.token_id, existing);
             }
 
@@ -233,6 +253,7 @@ export class PgProjectRepository extends ProjectRepository {
                     mintDate: data.mintDate
                         ? new Date(data.mintDate).toISOString().split('T')[0]
                         : null,
+                    rawVc: data.rawVc,
                 };
             });
 
@@ -392,6 +413,7 @@ export class PgProjectRepository extends ProjectRepository {
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
             issuances,
+            issuanceCount: row.issuance_count ?? undefined,
             totalIssued: lifecycle?.totalIssued,
             totalRetired: lifecycle?.totalRetired,
             totalActive: lifecycle?.totalActive,

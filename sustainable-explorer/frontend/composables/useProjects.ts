@@ -52,10 +52,12 @@ export function mapApiProject(raw: Record<string, any>): Project {
         sector: raw.sector ?? '',
         sectoralScope: raw.sectoralScope ?? '',
         createdAt: raw.createdAt ?? '',
+        creditingPeriodEnd: raw.creditingPeriodEnd ?? null,
         topicId: raw.topicId ?? undefined,
         policyTopicId: raw.policyTopicId ?? undefined,
         registryDid: raw.registryDid ?? undefined,
         sourceTimestamp: raw.sourceTimestamp ?? undefined,
+        issuanceCount: typeof raw.issuanceCount === 'number' ? raw.issuanceCount : 0,
         issuances: Array.isArray(raw.issuances)
             ? (raw.issuances as Array<Record<string, any>>).map((i): ProjectIssuance => ({
                 tokenId: i['tokenId'] ?? '',
@@ -64,6 +66,7 @@ export function mapApiProject(raw: Record<string, any>): Project {
                 type: i['type'] ?? null,
                 supply: typeof i['supply'] === 'number' ? i['supply'] : 0,
                 mintDate: i['mintDate'] ?? null,
+                rawVc: i['rawVc'] ?? null,
             }))
             : [],
         totalIssued: typeof raw.totalIssued === 'number' ? raw.totalIssued : 0,

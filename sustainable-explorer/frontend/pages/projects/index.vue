@@ -49,7 +49,7 @@ const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, act
     useFilteredPagination(allProjects, {
         searchFields: ['name', 'country', 'methodology', 'registry', 'sector', 'sectoralScope'],
         pageSize: 8,
-        defaultSort: { key: 'credits', dir: 'desc' },
+        defaultSort: { key: 'createdAt', dir: 'desc' },
         arrayFields: ['sdgs'],
     });
 
@@ -65,7 +65,7 @@ const presets = computed(() => [
 // Summary statistics for filtered results
 const summaryStats = computed(() => {
     const f = filtered.value;
-    const totalIssuances = f.reduce((sum, p) => sum + p.credits, 0);
+    const totalIssuances = f.reduce((sum, p) => sum + (p.issuanceCount ?? 0), 0);
     const uniqueCountries = new Set(f.map(p => p.country)).size;
     const uniqueRegistries = new Set(f.map(p => p.registry)).size;
     return { totalIssuances, uniqueCountries, uniqueRegistries };
@@ -176,7 +176,7 @@ const statusColor: Record<string, string> = {
                             <SortableHeader :label="$t('projects.columns.registry')" sort-key="registry" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.methodology')" sort-key="methodology" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.sector')" sort-key="sector" :tooltip="$t('projects.sectorTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('projects.columns.issuances')" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('projects.columns.issuances')" sort-key="issuanceCount" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.transferred')" sort-key="transferred" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.retired')" sort-key="retired" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.status')" sort-key="status" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
@@ -233,7 +233,7 @@ const statusColor: Record<string, string> = {
                                     </div>
                                 </div>
                             </td>
-                            <td class="py-3 px-4 text-right tabular-nums font-medium">{{ p.creditsFormatted }}</td>
+                            <td class="py-3 px-4 text-right tabular-nums font-medium">{{ p.issuanceCount ?? 0 }}</td>
                             <td class="py-3 px-4 text-right tabular-nums text-muted-foreground">{{ p.transferredFormatted }}</td>
                             <td class="py-3 px-4 text-right tabular-nums text-muted-foreground">{{ p.retiredFormatted }}</td>
                             <td class="py-3 px-4">
