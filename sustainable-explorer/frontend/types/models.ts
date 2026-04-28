@@ -32,6 +32,9 @@ export interface Project {
     registryDid?: string;
     sourceTimestamp?: string;
     issuances?: ProjectIssuance[];
+    totalIssued?: number;
+    totalRetired?: number;
+    totalActive?: number;
     rawVc?: Record<string, any>;
 }
 

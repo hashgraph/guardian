@@ -5,6 +5,7 @@ import {
     ProjectListResult,
     ProjectRow,
     IssuanceRow,
+    ActivityEventRow,
 } from './project.repository';
 import { QueryBuilder } from './query-builder';
 import { PROJECT_FIELD_SCHEMA } from './schemas/project.schema';
@@ -215,10 +216,97 @@ export class PgProjectRepository extends ProjectRepository {
             }));
         }
 
-        return PgProjectRepository.mapRow(row, issuances);
+        // Aggregate lifecycle stats for NFT tokens: total minted (all serials) and
+        // total retired (serials marked deleted by Mirror Node).
+        // Fungible tokens don't have per-serial tracking so their supply is used as-is.
+        const nftTokenIds = issuances
+            .filter(i => i.type === 'NON_FUNGIBLE_UNIQUE')
+            .map(i => i.tokenId)
+            .filter((id): id is string => !!id);
+
+        let totalIssued = 0;
+        let totalRetired = 0;
+
+        if (nftTokenIds.length > 0) {
+            const nftStats: Array<{ tokenId: string; total_minted: string; total_retired: string }> =
+                await this.dataSource.query(
+                    `SELECT
+                        "tokenId",
+                        COUNT(*)::text                              AS total_minted,
+                        COUNT(*) FILTER (WHERE deleted = true)::text AS total_retired
+                     FROM nft_cache
+                     WHERE "tokenId" = ANY($1::varchar[])
+                     GROUP BY "tokenId"`,
+                    [nftTokenIds],
+                );
+
+            for (const s of nftStats) {
+                totalIssued += parseInt(s.total_minted, 10);
+                totalRetired += parseInt(s.total_retired, 10);
+            }
+        }
+
+        // Add fungible token supply to totalIssued (retirement not tracked for fungible)
+        for (const i of issuances) {
+            if (i.type !== 'NON_FUNGIBLE_UNIQUE') {
+                totalIssued += i.supply;
+            }
+        }
+
+        const totalActive = totalIssued - totalRetired;
+
+        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive });
     }
 
-    private static mapRow(row: RawRow, issuances?: IssuanceRow[]): ProjectRow {
+    async findActivity(sourceTimestamp: string): Promise<ActivityEventRow[]> {
+        const projectRows: Array<{ relatedTopicId: string | null }> = await this.dataSource.query(
+            `SELECT "relatedTopicId"
+             FROM business_view
+             WHERE "viewType" = 'PROJECT'
+               AND "sourceTimestamp" = $1
+             LIMIT 1`,
+            [sourceTimestamp],
+        );
+
+        if (projectRows.length === 0 || !projectRows[0].relatedTopicId) return [];
+
+        const topicId = projectRows[0].relatedTopicId;
+
+        const rows: Array<{
+            consensusTimestamp: string;
+            type: string;
+            schema_name: string | null;
+        }> = await this.dataSource.query(
+            `SELECT
+                m."consensusTimestamp",
+                m.type,
+                ps.name AS schema_name
+             FROM message m
+             LEFT JOIN policy_schema ps
+                ON ps."schemaId" = split_part(
+                    m.documents -> 'credentialSubject' -> 0 ->> 'type',
+                    '&', 1
+                )
+             WHERE m."topicId" = $1
+               AND m.type IN ('VC-Document', 'VP-Document')
+               AND m.documents IS NOT NULL
+             ORDER BY m."consensusTimestamp" ASC
+             LIMIT 100`,
+            [topicId],
+        );
+
+        return rows.map(r => ({
+            consensusTimestamp: r.consensusTimestamp,
+            messageType: r.type,
+            schemaName: r.schema_name ?? null,
+        }));
+    }
+
+    private static mapRow(
+        row: RawRow,
+        issuances?: IssuanceRow[],
+        lifecycle?: { totalIssued: number; totalRetired: number; totalActive: number },
+    ): ProjectRow {
         return {
             id: row.id,
             sourceTimestamp: row.sourceTimestamp,
@@ -232,6 +320,9 @@ export class PgProjectRepository extends ProjectRepository {
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
             issuances,
+            totalIssued: lifecycle?.totalIssued,
+            totalRetired: lifecycle?.totalRetired,
+            totalActive: lifecycle?.totalActive,
         };
     }
 }

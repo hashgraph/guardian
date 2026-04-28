@@ -1,7 +1,51 @@
 import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
-import { ProjectRow } from '../repositories/project.repository';
+import { ProjectRow, ActivityEventRow } from '../repositories/project.repository';
+
+export class ActivityEventDto {
+    @ApiProperty({ description: 'Date of the activity (YYYY-MM-DD)' })
+    date: string;
+
+    @ApiProperty({ description: 'Human-readable description of the activity' })
+    action: string;
+
+    @ApiProperty({ description: 'Activity category: document | verification | registry | monitoring | credit' })
+    type: string;
+
+    static fromRow(row: ActivityEventRow): ActivityEventDto {
+        const seconds = parseFloat(row.consensusTimestamp);
+        const date = new Date(seconds * 1000).toISOString().split('T')[0];
+
+        const name = (row.schemaName ?? '').toLowerCase();
+        const isVP = row.messageType === 'VP-Document';
+
+        let type: string;
+        let action: string;
+
+        if (isVP) {
+            type = 'verification';
+            action = row.schemaName ? `${row.schemaName} approved` : 'Document approved';
+        } else if (name.includes('monitor') || name.includes('mrv') || name.includes('measurement')) {
+            type = 'monitoring';
+            action = row.schemaName ? `${row.schemaName} submitted` : 'Monitoring report submitted';
+        } else if (name.includes('verif') || name.includes('audit')) {
+            type = 'verification';
+            action = row.schemaName ? `${row.schemaName} submitted` : 'Verification document submitted';
+        } else if (name.includes('token') || name.includes('credit') || name.includes('mint') || name.includes('issuance')) {
+            type = 'credit';
+            action = row.schemaName ? `${row.schemaName} issued` : 'Credits issued';
+        } else if (name.includes('registr') || name.includes('registry')) {
+            type = 'registry';
+            action = row.schemaName ? `${row.schemaName} submitted` : 'Registry document submitted';
+        } else {
+            type = 'document';
+            action = row.schemaName ? `${row.schemaName} submitted` : 'Document submitted';
+        }
+
+        return { date, action, type };
+    }
+}
 
 export class IssuanceDto {
     @ApiProperty({ description: 'Hedera token ID (e.g. 0.0.12345)' })
@@ -144,6 +188,15 @@ export class ProjectResponseDto {
     @ApiProperty({ type: [IssuanceDto], description: 'Linked token issuances for this project' })
     issuances: IssuanceDto[];
 
+    @ApiProperty({ description: 'Total credits ever minted (NFT serials + fungible supply)' })
+    totalIssued: number;
+
+    @ApiProperty({ description: 'Total credits retired (NFT serials marked deleted by Mirror Node)' })
+    totalRetired: number;
+
+    @ApiProperty({ description: 'Credits currently in circulation (totalIssued - totalRetired)' })
+    totalActive: number;
+
     static fromRow(row: ProjectRow, network: string): ProjectResponseDto {
         const data = (row.businessData ?? {}) as Record<string, unknown>;
 
@@ -181,6 +234,9 @@ export class ProjectResponseDto {
                 supply: i.supply,
                 mintDate: i.mintDate,
             })),
+            totalIssued: row.totalIssued ?? 0,
+            totalRetired: row.totalRetired ?? 0,
+            totalActive: row.totalActive ?? 0,
         };
     }
 }

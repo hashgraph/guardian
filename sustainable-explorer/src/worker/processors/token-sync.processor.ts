@@ -87,12 +87,13 @@ export class TokenSyncProcessor extends WorkerHost {
 
         for (const nft of nfts) {
             await this.dataSource.query(
-                `INSERT INTO nft_cache ("tokenId", "serialNumber", "lastUpdate", metadata)
-                 VALUES ($1, $2, $3, $4)
+                `INSERT INTO nft_cache ("tokenId", "serialNumber", "lastUpdate", metadata, deleted)
+                 VALUES ($1, $2, $3, $4, $5)
                  ON CONFLICT ("tokenId", "serialNumber") DO UPDATE SET
                     "lastUpdate" = EXCLUDED."lastUpdate",
-                    metadata = EXCLUDED.metadata`,
-                [tokenId, nft.serial_number, now, nft.metadata || null],
+                    metadata = EXCLUDED.metadata,
+                    deleted = EXCLUDED.deleted`,
+                [tokenId, nft.serial_number, now, nft.metadata || null, nft.deleted ?? false],
             );
 
             if (nft.serial_number > maxSerial) {

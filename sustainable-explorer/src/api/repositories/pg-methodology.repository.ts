@@ -6,6 +6,7 @@ import {
     MethodologyListResult,
     MethodologyRow,
     MethodologyStatsRow,
+    IssuanceRow,
 } from './methodology.repository';
 import { QueryBuilder } from './query-builder';
 import { METHODOLOGY_FIELD_SCHEMA } from './schemas/methodology.schema';
@@ -155,7 +156,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
         ]);
 
         return {
-            rows: rawRows.map(PgMethodologyRepository.mapRow),
+            rows: rawRows.map(row => PgMethodologyRepository.mapRow(row)),
             total: countResult[0]?.total ?? 0,
         };
     }
@@ -182,10 +183,103 @@ export class PgMethodologyRepository extends MethodologyRepository {
         );
 
         if (rawRows.length === 0) return null;
-        return PgMethodologyRepository.mapRow(rawRows[0]);
+
+        const row = rawRows[0];
+
+        // Resolve the topic IDs to look up CREDIT rows.
+        // businessData.policyTopicId is the Guardian policy topic; relatedTopicId is the
+        // instance topic stored on the business_view row. We union both and deduplicate
+        // so that credits linked to either topic are captured.
+        const policyTopicId = (row.businessData as Record<string, any> | null)?.['topicId'] as string | null;
+        const instanceTopicId = row.relatedTopicId;
+        const topicIds = [...new Set([policyTopicId, instanceTopicId].filter((t): t is string => !!t))];
+
+        let issuances: IssuanceRow[] = [];
+        if (topicIds.length > 0) {
+            const placeholders = topicIds.map((_, i) => `$${i + 1}`).join(', ');
+            const creditRows: Array<{
+                tokenId: string | null;
+                name: string | null;
+                symbol: string | null;
+                type: string | null;
+                supply: string | null;
+                mintDate: Date | null;
+            }> = await this.dataSource.query(
+                `
+                SELECT
+                    COALESCE(tc."tokenId", bv."businessData"->>'tokenId') AS "tokenId",
+                    COALESCE(tc.name,      bv."displayName")              AS name,
+                    COALESCE(tc.symbol,    bv."businessData"->>'symbol')  AS symbol,
+                    tc.type,
+                    tc."totalSupply"                                      AS supply,
+                    bv."createdAt"                                        AS "mintDate"
+                FROM business_view bv
+                LEFT JOIN token_cache tc
+                    ON tc."tokenId" = bv."businessData"->>'tokenId'
+                WHERE bv."viewType" = 'CREDIT'
+                  AND bv."relatedTopicId" IN (${placeholders})
+                ORDER BY bv."createdAt" ASC
+                `,
+                topicIds,
+            );
+
+            issuances = creditRows.map(r => ({
+                tokenId: r.tokenId ?? '',
+                name: r.name ?? null,
+                symbol: r.symbol ?? null,
+                type: r.type ?? null,
+                supply: r.supply != null ? parseFloat(r.supply) : 0,
+                mintDate: r.mintDate ? r.mintDate.toISOString().split('T')[0] : null,
+            }));
+        }
+
+        // Aggregate lifecycle stats for NFT tokens: total minted (all serials) and
+        // total retired (serials marked deleted by Mirror Node).
+        // Fungible tokens don't have per-serial tracking so their supply is used as-is.
+        const nftTokenIds = issuances
+            .filter(i => i.type === 'NON_FUNGIBLE_UNIQUE')
+            .map(i => i.tokenId)
+            .filter((id): id is string => !!id);
+
+        let totalIssued = 0;
+        let totalRetired = 0;
+
+        if (nftTokenIds.length > 0) {
+            const nftStats: Array<{ tokenId: string; total_minted: string; total_retired: string }> =
+                await this.dataSource.query(
+                    `SELECT
+                        "tokenId",
+                        COUNT(*)::text                              AS total_minted,
+                        COUNT(*) FILTER (WHERE deleted = true)::text AS total_retired
+                     FROM nft_cache
+                     WHERE "tokenId" = ANY($1::varchar[])
+                     GROUP BY "tokenId"`,
+                    [nftTokenIds],
+                );
+
+            for (const s of nftStats) {
+                totalIssued += parseInt(s.total_minted, 10);
+                totalRetired += parseInt(s.total_retired, 10);
+            }
+        }
+
+        // Add fungible token supply to totalIssued (retirement not tracked for fungible)
+        for (const i of issuances) {
+            if (i.type !== 'NON_FUNGIBLE_UNIQUE') {
+                totalIssued += i.supply;
+            }
+        }
+
+        const totalActive = totalIssued - totalRetired;
+
+        return PgMethodologyRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive });
     }
 
-    private static mapRow(row: RawRow): MethodologyRow {
+    private static mapRow(
+        row: RawRow,
+        issuances?: IssuanceRow[],
+        lifecycle?: { totalIssued: number; totalRetired: number; totalActive: number },
+    ): MethodologyRow {
         const stats: MethodologyStatsRow = {
             projectCount: parseInt(row.project_count || '0', 10),
             issuanceCount: parseInt(row.issuance_count || '0', 10),
@@ -216,6 +310,10 @@ export class PgMethodologyRepository extends MethodologyRepository {
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
             stats,
+            issuances,
+            totalIssued: lifecycle?.totalIssued,
+            totalRetired: lifecycle?.totalRetired,
+            totalActive: lifecycle?.totalActive,
         };
     }
 }

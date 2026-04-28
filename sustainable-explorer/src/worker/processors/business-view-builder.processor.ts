@@ -155,6 +155,58 @@ function isGeoJsonProperty(fdef: Record<string, any>, geoDefKey?: string | null)
 }
 
 /**
+ * Extracts a representative [lng, lat] pair from any GeoJSON geometry.
+ * Point → coordinates directly.
+ * Polygon / MultiLineString → centroid of the first ring.
+ * MultiPolygon → centroid of the first polygon's outer ring.
+ * LineString / MultiPoint → midpoint coordinate.
+ */
+function extractLatLng(geo: Record<string, any>): [number, number] | null {
+    const type: string = geo['type'] ?? '';
+    const coords: unknown = geo['coordinates'];
+
+    if (type === 'Point') {
+        const c = coords as number[];
+        if (!Array.isArray(c) || c.length < 2) return null;
+        return [c[0], c[1]];
+    }
+
+    if (type === 'LineString' || type === 'MultiPoint') {
+        const ring = coords as number[][];
+        if (!Array.isArray(ring) || ring.length === 0) return null;
+        const mid = ring[Math.floor(ring.length / 2)];
+        return Array.isArray(mid) && mid.length >= 2 ? [mid[0], mid[1]] : null;
+    }
+
+    if (type === 'Polygon' || type === 'MultiLineString') {
+        const rings = coords as number[][][];
+        if (!Array.isArray(rings) || rings.length === 0) return null;
+        return ringCentroid(rings[0]);
+    }
+
+    if (type === 'MultiPolygon') {
+        const polys = coords as number[][][][];
+        if (!Array.isArray(polys) || polys.length === 0) return null;
+        return ringCentroid(polys[0][0]);
+    }
+
+    return null;
+}
+
+function ringCentroid(ring: number[][]): [number, number] | null {
+    if (!Array.isArray(ring) || ring.length === 0) return null;
+    let sumLng = 0, sumLat = 0, count = 0;
+    for (const pt of ring) {
+        if (Array.isArray(pt) && pt.length >= 2) {
+            sumLng += pt[0];
+            sumLat += pt[1];
+            count++;
+        }
+    }
+    return count > 0 ? [sumLng / count, sumLat / count] : null;
+}
+
+/**
  * Builds a SchemaEntry for a schema document.
  * Handles two layout shapes:
  *   Shape A — GeoJSON field is directly in doc.properties
@@ -309,6 +361,7 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 COALESCE(m.owner, m.options->>'did'),
                 CASE
                     WHEN m.type = 'Instance-Policy' THEN m.options->>'instanceTopicId'
+                    WHEN m.type = 'Token'           THEN m."topicId"
                     ELSE m.options->>'topicId'
                 END,
                 jsonb_build_object(
@@ -622,15 +675,15 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 : cs;
             if (!subject || typeof subject !== 'object') continue;
 
-            // Verify GeoJSON Point at the confirmed geo key
+            // Extract a representative coordinate from any GeoJSON geometry type
             const geoVal = subject[schemaEntry.geoKey] as Record<string, any> | undefined;
-            if (!geoVal || geoVal['type'] !== 'Point') continue;
+            if (!geoVal || typeof geoVal !== 'object' || !('type' in geoVal)) continue;
 
-            const coords = geoVal['coordinates'] as [number, number] | undefined;
-            if (!Array.isArray(coords) || coords.length < 2) continue;
+            const lngLat = extractLatLng(geoVal);
+            if (!lngLat) continue;
 
-            const lng = coords[0] as number;
-            const lat = coords[1] as number;
+            const lng = lngLat[0];
+            const lat = lngLat[1];
 
             // Field extraction via schema title keywords — no hardcoded positions
             const fm = schemaEntry.fieldMap;
@@ -681,7 +734,7 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
             const erY = emissionReduction
                 ? parseFloat(String(emissionReduction['ER_y'] ?? '0'))
                 : 0;
-            const creditsToAdd = erY > 1 ? erY : 0;
+            const creditsToAdd = erY > 0 ? erY : 0;
 
             const resolved = resolveMethod(vc.topicId, developer, maps);
 

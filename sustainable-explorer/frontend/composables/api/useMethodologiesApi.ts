@@ -23,6 +23,15 @@ export interface MethodologyStats {
     schemaCount: number;
 }
 
+export interface MethodologyIssuance {
+    tokenId: string;
+    name: string | null;
+    symbol: string | null;
+    type: string | null;
+    supply: number;
+    mintDate: string | null;
+}
+
 export interface MethodologyDto {
     id: string;
     network: string;
@@ -40,6 +49,10 @@ export interface MethodologyDto {
     createdAt: string;
     updatedAt: string;
     stats: MethodologyStats;
+    issuances?: MethodologyIssuance[];
+    totalIssued?: number;
+    totalRetired?: number;
+    totalActive?: number;
 }
 
 export interface MethodologiesMeta {

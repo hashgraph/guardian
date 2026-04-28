@@ -17,8 +17,12 @@ import {
   Check,
   Hash,
   AlertCircle,
+  Coins,
+  Repeat,
+  Flame,
+  ArrowRight,
 } from "lucide-vue-next";
-import { formatCredits } from "~/lib/format";
+import { formatCredits, formatNumber } from "~/lib/format";
 import type {
   MethodologyDto,
   MethodologiesResponse,
@@ -130,8 +134,10 @@ if (import.meta.client) {
 
   watch(
     [activeTab, policyTopicId],
-    async ([tab, pid]) => {
-      if (tab !== 'projects' || !pid || linkedProjectsLoaded.value) return;
+    async ([tab, pid], [, oldPid]) => {
+      if (tab !== 'projects' || !pid) return;
+      if (pid === oldPid && linkedProjectsLoaded.value) return;
+      linkedProjectsLoaded.value = false;
       linkedProjectsPending.value = true;
       try {
         const res = await $fetch<{ data: Record<string, any>[]; meta: { total: number } }>(
@@ -234,6 +240,27 @@ const compareRows = computed((): CompareRow[] => {
 const changedCount = computed(
   () => compareRows.value.filter((r) => r.changed).length,
 );
+
+// Linked Issuances — sourced from methodology.issuances returned by the API
+const linkedCredits = computed(() => {
+  if (!methodology.value?.issuances?.length) return [];
+  return methodology.value.issuances.map((i) => ({
+    tokenId: i.tokenId,
+    name: i.name ?? '',
+    symbol: i.symbol ?? '',
+    type: i.type === 'FUNGIBLE_COMMON' ? 'Fungible' : 'Non-Fungible',
+    supply: i.supply,
+    mintDate: i.mintDate ?? '',
+  }));
+});
+
+// Lifecycle summary — sourced from backend-computed totals on the methodology
+const lifecycleSummary = computed(() => {
+  const totalIssued = methodology.value?.totalIssued ?? 0;
+  const totalRetired = methodology.value?.totalRetired ?? 0;
+  const active = methodology.value?.totalActive ?? 0;
+  return { totalIssued, totalRetired, active };
+});
 </script>
 
 <template>
@@ -901,6 +928,124 @@ const changedCount = computed(
             <p>
               {{ $t('methodologies.detail.analytics.trendsComingSoon') }}
             </p>
+          </div>
+        </div>
+
+        <!-- Linked Issuances -->
+        <div class="rounded-xl border bg-card overflow-hidden">
+          <div class="px-5 py-3.5 border-b bg-muted/30 flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Coins class="h-4 w-4 text-primary" />
+              Linked Issuances
+            </h2>
+            <span class="text-xs text-muted-foreground">{{ linkedCredits.length }} issuance(s)</span>
+          </div>
+          <div v-if="linkedCredits.length > 0">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b bg-muted/20">
+                  <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token</th>
+                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token ID</th>
+                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
+                  <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Supply</th>
+                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Mint Date</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y">
+                <tr
+                  v-for="c in linkedCredits"
+                  :key="c.tokenId"
+                  class="hover:bg-muted/30 transition-colors"
+                >
+                  <td class="py-3 px-5">
+                    <div class="font-medium text-foreground">{{ c.name }}</div>
+                    <div class="text-[11px] text-muted-foreground">{{ c.symbol }}</div>
+                  </td>
+                  <td class="py-3 px-4">
+                    <code class="text-xs bg-muted rounded px-1.5 py-0.5 font-mono">{{ c.tokenId }}</code>
+                  </td>
+                  <td class="py-3 px-4">
+                    <span
+                      :class="[
+                        c.type === 'Fungible'
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-chart-4/10 text-chart-4',
+                        'text-xs font-medium rounded-full px-2 py-0.5',
+                      ]"
+                    >
+                      {{ c.type }}
+                    </span>
+                  </td>
+                  <td class="py-3 px-4 text-right tabular-nums font-medium">{{ formatNumber(c.supply) }}</td>
+                  <td class="py-3 px-4 text-muted-foreground">{{ c.mintDate }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div v-else class="px-5 py-8 text-center text-sm text-muted-foreground">
+            No issuances have been recorded for this methodology yet.
+          </div>
+        </div>
+
+        <!-- Credit Lifecycle -->
+        <div class="rounded-xl border bg-card overflow-hidden">
+          <div class="px-5 py-3.5 border-b bg-muted/30">
+            <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+              <GitBranch class="h-4 w-4 text-primary" />
+              Credit Lifecycle
+            </h2>
+            <p class="text-[11px] text-muted-foreground mt-0.5">Issuance → Transfers → Retirements</p>
+          </div>
+
+          <!-- Lifecycle Summary Grid -->
+          <div class="grid grid-cols-3 gap-px bg-border">
+            <div class="bg-card px-5 py-4 text-center">
+              <div class="text-lg font-semibold text-foreground tabular-nums">{{ formatNumber(lifecycleSummary.totalIssued) }}</div>
+              <div class="text-[11px] text-muted-foreground">Total Issued</div>
+            </div>
+            <div class="bg-card px-5 py-4 text-center">
+              <div class="text-lg font-semibold text-stat-rose tabular-nums">{{ formatNumber(lifecycleSummary.totalRetired) }}</div>
+              <div class="text-[11px] text-muted-foreground">Retired</div>
+            </div>
+            <div class="bg-card px-5 py-4 text-center">
+              <div class="text-lg font-semibold text-stat-green tabular-nums">{{ formatNumber(lifecycleSummary.active) }}</div>
+              <div class="text-[11px] text-muted-foreground">Active</div>
+            </div>
+          </div>
+
+          <!-- Lifecycle progress bar -->
+          <div class="px-5 py-3 border-t">
+            <div class="flex h-2.5 rounded-full overflow-hidden bg-muted">
+              <div
+                v-if="lifecycleSummary.totalIssued > 0"
+                class="bg-stat-rose transition-all"
+                :style="{ width: `${(lifecycleSummary.totalRetired / lifecycleSummary.totalIssued) * 100}%` }"
+                title="Retired"
+              />
+              <div
+                v-if="lifecycleSummary.totalIssued > 0"
+                class="bg-stat-green transition-all"
+                :style="{ width: `${(lifecycleSummary.active / lifecycleSummary.totalIssued) * 100}%` }"
+                title="Active"
+              />
+            </div>
+            <div class="flex items-center justify-between mt-1.5">
+              <div class="flex items-center gap-3">
+                <span class="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <span class="h-2 w-2 rounded-full bg-stat-rose" /> Retired
+                </span>
+                <span class="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <span class="h-2 w-2 rounded-full bg-stat-green" /> Active
+                </span>
+              </div>
+              <span v-if="lifecycleSummary.totalIssued > 0" class="text-[10px] text-muted-foreground">
+                {{ ((lifecycleSummary.totalRetired / lifecycleSummary.totalIssued) * 100).toFixed(1) }}% retired
+              </span>
+            </div>
+          </div>
+
+          <div v-if="lifecycleSummary.totalIssued === 0" class="border-t px-5 py-6 text-center text-sm text-muted-foreground">
+            No transfers or retirements recorded for this methodology yet.
           </div>
         </div>
       </div>

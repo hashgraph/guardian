@@ -66,6 +66,9 @@ function mapApiProject(raw: Record<string, any>): Project {
                 mintDate: i['mintDate'] ?? null,
             }))
             : [],
+        totalIssued: typeof raw.totalIssued === 'number' ? raw.totalIssued : 0,
+        totalRetired: typeof raw.totalRetired === 'number' ? raw.totalRetired : 0,
+        totalActive: typeof raw.totalActive === 'number' ? raw.totalActive : 0,
     };
 }
 
@@ -138,4 +141,39 @@ export function useProjectDetail(id: Ref<string>) {
     });
 
     return { project, pending, error };
+}
+
+export interface ActivityEvent {
+    date: string;
+    action: string;
+    type: string;
+}
+
+export function useProjectActivity(id: Ref<string>) {
+    const { network } = useNetwork();
+    const config = useRuntimeConfig();
+
+    const baseURL = import.meta.server
+        ? (config.apiBaseUrl as string)
+        : (config.public.apiBaseUrl as string);
+
+    const key = computed(() => `project-activity:${network.value}:${id.value}`);
+    const url = computed(() => `/api/v1/${network.value}/projects/${id.value}/activity`);
+
+    const { data, pending, error } = useAsyncData<ActivityEvent[]>(
+        key.value,
+        async () => {
+            try {
+                return await $fetch<ActivityEvent[]>(url.value, { baseURL });
+            } catch {
+                return [];
+            }
+        },
+        {
+            watch: [network, id],
+            default: () => [],
+        },
+    );
+
+    return { activity: data, pending, error };
 }

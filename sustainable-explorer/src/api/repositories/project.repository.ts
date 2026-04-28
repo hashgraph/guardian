@@ -28,6 +28,9 @@ export interface ProjectRow {
     createdAt: Date;
     updatedAt: Date;
     issuances?: IssuanceRow[];
+    totalIssued?: number;
+    totalRetired?: number;
+    totalActive?: number;
 }
 
 export interface ProjectListQuery {
@@ -51,10 +54,17 @@ export interface ProjectListResult {
     total: number;
 }
 
+export interface ActivityEventRow {
+    consensusTimestamp: string;
+    messageType: string;
+    schemaName: string | null;
+}
+
 /**
  * Storage-agnostic repository contract.
  */
 export abstract class ProjectRepository {
     abstract findAll(query: ProjectListQuery): Promise<ProjectListResult>;
     abstract findById(id: string): Promise<ProjectRow | null>;
+    abstract findActivity(sourceTimestamp: string): Promise<ActivityEventRow[]>;
 }

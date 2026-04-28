@@ -16,6 +16,7 @@ const route = useRoute();
 const { network } = useNetwork();
 const projectId = computed(() => route.params.id as string);
 const { project, pending } = useProjectDetail(projectId);
+const { activity: activityEvents } = useProjectActivity(projectId);
 
 const linkedCredits = computed<Credit[]>(() => {
     if (!project.value?.issuances?.length) return [];
@@ -34,13 +35,15 @@ const linkedCredits = computed<Credit[]>(() => {
 const linkedTransfers = computed(() => []);
 const linkedRetirements = computed(() => []);
 
-// Lifecycle summary
+// Lifecycle summary sourced from backend-computed totals.
+// totalIssued = all NFT serials ever minted + fungible supply
+// totalRetired = NFT serials marked deleted by Mirror Node
+// totalActive  = totalIssued - totalRetired
 const lifecycleSummary = computed(() => {
-    const totalIssued = linkedCredits.value.reduce((sum, c) => sum + c.supply, 0);
-    const totalTransferred = linkedTransfers.value.reduce((sum: number, t: any) => sum + t.quantity, 0);
-    const totalRetired = linkedRetirements.value.reduce((sum: number, r: any) => sum + r.quantity, 0);
-    const active = totalIssued - totalRetired;
-    return { totalIssued, totalTransferred, totalRetired, active };
+    const totalIssued = project.value?.totalIssued ?? 0;
+    const totalRetired = project.value?.totalRetired ?? 0;
+    const active = project.value?.totalActive ?? 0;
+    return { totalIssued, totalTransferred: 0, totalRetired, active };
 });
 
 const termMappingOpen = ref(false);
@@ -87,8 +90,7 @@ const emissions = computed(() => {
     return { baseline: '-', project: '-', leakage: '-', baselineEmissionFactor: '-' };
 });
 
-// Activity log not yet available from API
-const activityLog = computed(() => []);
+const activityLog = computed(() => activityEvents.value ?? []);
 
 const activityTypeIcon: Record<string, { icon: any; color: string }> = {
     document: { icon: FileText, color: 'text-muted-foreground bg-muted' },

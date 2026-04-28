@@ -5,6 +5,7 @@ import {
     ProjectQueryDto,
     ProjectResponseDto,
     PaginatedProjectsDto,
+    ActivityEventDto,
 } from '../dto/project.dto';
 
 @ApiTags('projects')
@@ -32,6 +33,28 @@ export class ProjectsController {
         @Query() query: ProjectQueryDto,
     ) {
         return this.projectsService.findAll(network, query);
+    }
+
+    @Get(':id/activity')
+    @ApiOperation({
+        summary: 'Get Activity Log for a Project',
+        description:
+            'Returns a list of activity events derived from VC-Document and VP-Document messages ' +
+            'published on the project\'s Hedera topic, enriched with schema names from policy_schema.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiParam({ name: 'id', description: 'HCS consensus timestamp (sourceTimestamp) of the project' })
+    @ApiResponse({ status: 200, type: [ActivityEventDto] })
+    @ApiResponse({ status: 404, description: 'Project not found' })
+    async findActivity(
+        @Param('network') network: string,
+        @Param('id') id: string,
+    ): Promise<ActivityEventDto[]> {
+        const project = await this.projectsService.findById(network, id);
+        if (!project) {
+            throw new NotFoundException(`Project with ID "${id}" not found on ${network}`);
+        }
+        return this.projectsService.findActivity(network, id);
     }
 
     @Get(':id')

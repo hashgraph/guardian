@@ -33,6 +33,7 @@ export interface NftInfo {
     token_id: string;
     serial_number: number;
     metadata: string;
+    deleted?: boolean;
 }
 
 export interface TopicMessagesResponse {

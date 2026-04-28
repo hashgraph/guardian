@@ -6,6 +6,9 @@
  * so swapping to a different storage backend only requires a new implementation.
  */
 
+import { IssuanceRow } from './project.repository';
+export { IssuanceRow };
+
 export interface MethodologyListQuery {
     page: number;
     limit: number;
@@ -48,6 +51,11 @@ export interface MethodologyRow {
     createdAt: Date;
     updatedAt: Date;
     stats: MethodologyStatsRow;
+    /** Token issuances linked to this methodology's policy topic. Only populated by findById. */
+    issuances?: IssuanceRow[];
+    totalIssued?: number;
+    totalRetired?: number;
+    totalActive?: number;
 }
 
 export interface MethodologyListResult {

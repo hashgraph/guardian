@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ProjectQueryDto, ProjectResponseDto } from '../dto/project.dto';
+import { ProjectQueryDto, ProjectResponseDto, ActivityEventDto } from '../dto/project.dto';
 import { PaginatedResponse } from '../dto/pagination.dto';
 import { NetworkDataSourceRegistry } from '../database/network-datasource.registry';
 import { PgProjectRepository } from '../repositories/pg-project.repository';
@@ -32,6 +32,7 @@ export class ProjectsService {
             developer: query.developer,
             vintage: query.vintage,
             status: query.status,
+            policyTopicId: query.policyTopicId,
         });
 
         const data = result.rows.map(row => ProjectResponseDto.fromRow(row, network));
@@ -43,6 +44,12 @@ export class ProjectsService {
         const row = await repo.findById(id);
         if (!row) return null;
         return ProjectResponseDto.fromRow(row, network);
+    }
+
+    async findActivity(network: string, id: string): Promise<ActivityEventDto[]> {
+        const repo = this.getRepository(network);
+        const rows = await repo.findActivity(id);
+        return rows.map(r => ActivityEventDto.fromRow(r));
     }
 
     /**

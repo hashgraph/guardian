@@ -24,4 +24,7 @@ export class NftCache {
 
     @Column({ type: 'varchar', length: 100, nullable: true })
     metadata: string | null;
+
+    @Column({ type: 'boolean', default: false })
+    deleted: boolean;
 }
