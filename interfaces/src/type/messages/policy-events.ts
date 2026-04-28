@@ -23,6 +23,7 @@ export enum PolicyEvents {
     BLOCK_BY_TAG = 'policy-event-block-by-tag',
     GET_BLOCK_PARENTS = 'policy-event-get-block-parents',
     BLOCK_UPDATE_BROADCAST = 'policy-event-block-update-broadcast',
+    BLOCK_COMPLETE_BROADCAST = 'policy-event-block-complete-broadcast',
     MRV_DATA = 'policy-event-mrv-data',
     MRV_DATA_CUSTOM = 'policy-event-mrv-data-custom',
     GET_BLOCK_ABOUT = 'policy-event-get-block-about',

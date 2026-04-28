@@ -147,7 +147,10 @@ export class PolicyLink<T> {
                     res.then((result) => {
                         actionStatus.dec();
                         return result;
-                    })
+                    }).catch((err: unknown) => {
+                        actionStatus.addError(err);
+                        actionStatus.dec();
+                    });
                 } else {
                     actionStatus.dec();
                 }

@@ -1,10 +1,10 @@
 import { DataBaseHelper, IAuthUser, JwtServicesValidator, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
-import { GenerateUUIDv4, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
+import { GenerateUUIDv4, IBlockCompleteEvent, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
 import { headers } from 'nats';
 import { Inject } from '../helpers/decorators/inject.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import { ComponentsService } from './helpers/components-service.js';
-import { PolicyComponentsUtils } from './policy-components-utils.js';
+import { blockCompleteEvent, PolicyComponentsUtils } from './policy-components-utils.js';
 import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface.js';
 import { PolicyUser } from './policy-user.js';
 import { RecordUtils } from './record-utils.js';
@@ -210,25 +210,59 @@ export class BlockTreeGenerator extends NatsService {
                 }
                 // Available -->
 
-                const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents, history);
+                const baseEvent = {
+                    blockType: block.blockType,
+                    blockTag: block.tag,
+                    blockId: block.uuid,
+                    policyId,
+                    userId: userFull.did,
+                };
+
+                const actionstep = new RecordActionStep(
+                    (recordActionId, actionTimestemp, errors) => {
+                        RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp);
+                        blockCompleteEvent({
+                            ...baseEvent,
+                            trackingId: recordActionId,
+                            status: errors.length === 0 ? 'success' : 'failure',
+                            error: errors[0]?.message,
+                            errorDetails: errors.length > 0 ? errors : undefined,
+                            timestamp: Date.now(),
+                        } as IBlockCompleteEvent);
+                    },
+                    0, syncEvents, history
+                );
 
                 const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep, waitRemotePolicy);
 
                 actionstep.finish();
 
+                if (res instanceof MessageError) {
+                    actionstep.cancel();
+                    blockCompleteEvent({
+                        ...baseEvent,
+                        trackingId: actionstep.id,
+                        status: 'failure',
+                        error: res.error,
+                        errorDetails: [{ message: res.error }],
+                        timestamp: Date.now(),
+                    } as IBlockCompleteEvent);
+                    return res;
+                }
+
                 if (syncEvents) {
                     const results = actionstep.getResults();
-                    if (res instanceof MessageError) {
-                        return res;
-                    } else {
-                        return new MessageResponse({
-                            response: res.body,
-                            result: results.at(-1),
-                            steps: history ? results : [],
-                        }, res.code);
-                    }
+                    return new MessageResponse({
+                        trackingId: actionstep.id,
+                        response: res.body,
+                        result: results.at(-1),
+                        steps: history ? results : [],
+                    }, res.code);
                 } else {
-                    return res;
+                    return new MessageResponse({
+                        trackingId: actionstep.id,
+                        ...(res.body ?? {}),
+                    }, res.code);
                 }
             });
 
@@ -253,26 +287,59 @@ export class BlockTreeGenerator extends NatsService {
                 }
                 // Available -->
 
-                const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents, history);
+                const baseEvent = {
+                    blockType: block.blockType,
+                    blockTag: block.tag,
+                    blockId: block.uuid,
+                    policyId,
+                    userId: userFull.did,
+                };
+
+                const actionstep = new RecordActionStep(
+                    (recordActionId, actionTimestemp, errors) => {
+                        RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp);
+                        blockCompleteEvent({
+                            ...baseEvent,
+                            trackingId: recordActionId,
+                            status: errors.length === 0 ? 'success' : 'failure',
+                            error: errors[0]?.message,
+                            errorDetails: errors.length > 0 ? errors : undefined,
+                            timestamp: Date.now(),
+                        } as IBlockCompleteEvent);
+                    },
+                    0, syncEvents, history
+                );
 
                 const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep, waitRemotePolicy);
 
                 actionstep.finish();
 
+                if (res instanceof MessageError) {
+                    actionstep.cancel();
+                    blockCompleteEvent({
+                        ...baseEvent,
+                        trackingId: actionstep.id,
+                        status: 'failure',
+                        error: res.error,
+                        errorDetails: [{ message: res.error }],
+                        timestamp: Date.now(),
+                    } as IBlockCompleteEvent);
+                    return res;
+                }
+
                 if (syncEvents) {
                     const results = actionstep.getResults();
-
-                    if (res instanceof MessageError) {
-                        return res;
-                    } else {
-                        return new MessageResponse({
-                            response: res.body,
-                            result: results.at(-1),
-                            steps: history ? results : [],
-                        }, res.code);
-                    }
+                    return new MessageResponse({
+                        trackingId: actionstep.id,
+                        response: res.body,
+                        result: results.at(-1),
+                        steps: history ? results : [],
+                    }, res.code);
                 } else {
-                    return res;
+                    return new MessageResponse({
+                        trackingId: actionstep.id,
+                        ...(res.body ?? {}),
+                    }, res.code);
                 }
             });
 
