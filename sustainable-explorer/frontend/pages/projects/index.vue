@@ -10,6 +10,7 @@ import type { Project } from '~/types/models';
 
 const { t } = useI18n();
 const { projects, total, filterOptions } = useProjects();
+const { resolvedCode } = useGeocodedCountries(projects);
 
 
 // Aggregate transferred/retired per project
@@ -199,7 +200,7 @@ const statusColor: Record<string, string> = {
                             </td>
                             <td class="py-3 px-4 text-muted-foreground">
                                 <div class="group relative inline-flex items-center gap-1.5">
-                                    <CountryFlag :code="p.countryCode" size="sm" />
+                                    <CountryFlag :code="resolvedCode(p)" size="sm" />
                                     <span class="hidden md:inline">{{ p.country }}</span>
                                     <div class="md:hidden pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-[100]">
                                         <div class="whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-[11px] text-background shadow-lg">

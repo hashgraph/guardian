@@ -11,12 +11,33 @@ import { formatCredits, formatNumber } from '~/lib/format';
 import { getSDG } from '~/lib/sdgs';
 import { REGISTRY_TERM_MAPPINGS } from '~/lib/registry-terms';
 import { getMethodologyName } from '~/lib/methodologies';
+import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
 
 const route = useRoute();
 const { network } = useNetwork();
 const projectId = computed(() => route.params.id as string);
 const { project, pending } = useProjectDetail(projectId);
 const { activity: activityEvents } = useProjectActivity(projectId);
+
+// When the API returns no country (UNK) but we have valid coordinates, fall back
+// to a Nominatim reverse-geocode lookup so the correct flag is shown.
+const geocodedCountry = ref<{ code: string; name: string } | null>(null);
+watch(project, async (p) => {
+    geocodedCountry.value = null;
+    if (!p || p.countryCode !== 'UNK' || !p.lat || !p.lng) return;
+    try {
+        const res = await $fetch<any>('https://nominatim.openstreetmap.org/reverse', {
+            params: { lat: p.lat, lon: p.lng, format: 'json', zoom: 3 },
+            headers: { 'Accept-Language': 'en' },
+        });
+        const name: string = res?.address?.country ?? '';
+        const code = COUNTRY_ALPHA3[name] ?? 'UNK';
+        if (code !== 'UNK') geocodedCountry.value = { code, name };
+    } catch { /* ignore — fallback stays UNK */ }
+}, { immediate: true });
+
+const displayCountryCode = computed(() => geocodedCountry.value?.code ?? project.value?.countryCode ?? 'UNK');
+const displayCountry = computed(() => geocodedCountry.value?.name ?? project.value?.country ?? '');
 
 const linkedCredits = computed<Credit[]>(() => {
     if (!project.value?.issuances?.length) return [];
@@ -150,7 +171,7 @@ const fullMethodologyName = computed(() => {
                 <div class="min-w-0">
                     <h1 class="text-2xl font-bold text-foreground">{{ project.name }}</h1>
                     <p class="text-sm text-muted-foreground mt-1">
-                        <CountryFlag :code="project.countryCode" size="sm" class="mr-0.5" /> {{ project.country }} &middot; {{ project.registry }} &middot; {{ project.developer }}
+                        <CountryFlag :code="displayCountryCode" size="sm" class="mr-0.5" /> {{ displayCountry }} &middot; {{ project.registry }} &middot; {{ project.developer }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
@@ -190,7 +211,7 @@ const fullMethodologyName = computed(() => {
                 </div>
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Country</div>
-                    <div class="text-sm font-medium text-foreground flex items-center gap-1.5"><CountryFlag :code="project.countryCode" size="sm" /> {{ project.country }}</div>
+                    <div class="text-sm font-medium text-foreground flex items-center gap-1.5"><CountryFlag :code="displayCountryCode" size="sm" /> {{ displayCountry }}</div>
                 </div>
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Status</div>

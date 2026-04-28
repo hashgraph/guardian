@@ -155,6 +155,16 @@ function isGeoJsonProperty(fdef: Record<string, any>, geoDefKey?: string | null)
 }
 
 /**
+ * GeoJSON standard is [lng, lat], but some Guardian VCs store [lat, lng].
+ * If the second element exceeds ±90 (impossible latitude) and the first does not,
+ * the pair is [lat, lng] — swap it to canonical [lng, lat].
+ */
+function normaliseLngLat(c: [number, number]): [number, number] {
+    if (Math.abs(c[1]) > 90 && Math.abs(c[0]) <= 90) return [c[1], c[0]];
+    return c;
+}
+
+/**
  * Extracts a representative [lng, lat] pair from any GeoJSON geometry.
  * Point → coordinates directly.
  * Polygon / MultiLineString → centroid of the first ring.
@@ -168,26 +178,29 @@ function extractLatLng(geo: Record<string, any>): [number, number] | null {
     if (type === 'Point') {
         const c = coords as number[];
         if (!Array.isArray(c) || c.length < 2) return null;
-        return [c[0], c[1]];
+        return normaliseLngLat([c[0], c[1]]);
     }
 
     if (type === 'LineString' || type === 'MultiPoint') {
         const ring = coords as number[][];
         if (!Array.isArray(ring) || ring.length === 0) return null;
         const mid = ring[Math.floor(ring.length / 2)];
-        return Array.isArray(mid) && mid.length >= 2 ? [mid[0], mid[1]] : null;
+        if (!Array.isArray(mid) || mid.length < 2) return null;
+        return normaliseLngLat([mid[0], mid[1]]);
     }
 
     if (type === 'Polygon' || type === 'MultiLineString') {
         const rings = coords as number[][][];
         if (!Array.isArray(rings) || rings.length === 0) return null;
-        return ringCentroid(rings[0]);
+        const c = ringCentroid(rings[0]);
+        return c ? normaliseLngLat(c) : null;
     }
 
     if (type === 'MultiPolygon') {
         const polys = coords as number[][][][];
         if (!Array.isArray(polys) || polys.length === 0) return null;
-        return ringCentroid(polys[0][0]);
+        const c = ringCentroid(polys[0][0]);
+        return c ? normaliseLngLat(c) : null;
     }
 
     return null;
@@ -295,6 +308,32 @@ function findFieldByTitle(
     for (const [fk, fd] of Object.entries(fieldMap)) {
         const titleLower = fd.title.toLowerCase();
         if (keywords.some(kw => titleLower.includes(kw.toLowerCase()))) {
+            const val = subject[fk];
+            if (val !== null && val !== undefined) {
+                const s = String(val).trim();
+                if (s) return s;
+            }
+        }
+    }
+    return '';
+}
+
+/**
+ * Like findFieldByTitle but also accepts a list of words that must NOT appear
+ * in the field title. Useful to avoid false matches (e.g. "participant country").
+ */
+function findFieldByTitleExcluding(
+    subject: Record<string, any>,
+    fieldMap: Record<string, FieldDef>,
+    keywords: string[],
+    exclude: string[],
+): string {
+    for (const [fk, fd] of Object.entries(fieldMap)) {
+        const titleLower = fd.title.toLowerCase();
+        if (
+            keywords.some(kw => titleLower.includes(kw.toLowerCase())) &&
+            !exclude.some(ex => titleLower.includes(ex.toLowerCase()))
+        ) {
             const val = subject[fk];
             if (val !== null && val !== undefined) {
                 const s = String(val).trim();
@@ -691,7 +730,9 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
             const name = findFieldByTitle(subject, fm, 'project name', 'name', 'title');
             if (!name) continue;
 
-            const country = findFieldByTitle(subject, fm, 'country');
+            // Exclude "participant country" / "applicant country" — those hold the
+            // developer's home country, not the project host country.
+            const country = findFieldByTitleExcluding(subject, fm, ['country'], ['participant', 'applicant']);
             const developer = findFieldByTitle(subject, fm,
                 'developer', 'proponent', 'organization', 'project developer', 'applicant');
             const category = findFieldByTitle(subject, fm, 'category', 'project type');
