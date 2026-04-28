@@ -41,6 +41,7 @@ import {
     TopicConfig,
     Users,
     VcHelper,
+    MintTransaction,
     XlsxToJson
 } from '@guardian/common';
 import {
@@ -64,6 +65,8 @@ import {
     IgnoreRule,
     SchemaStatus,
     MigrationConfig, MigrationRunStatus,
+    MintTransactionStatus,
+    TokenType,
     IPolicyDocumentationEntry
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
@@ -619,6 +622,160 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RETRY_MINT,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                vpMessageId: string
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId, vpMessageId } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    const owner = new EntityOwner(user);
+                    await this.policyEngine.accessPolicy(policy, owner, 'execute');
+
+                    if (!policy || owner.creator !== policy.creator) {
+                        const err: any = new Error('Only the policy owner can retry mint requests.');
+                        err.code = 403;
+                        throw err;
+                    }
+
+                    const blockData = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.RETRY_MINT, policyId, {
+                            user,
+                            policyId,
+                            vpMessageId
+                        }, 5 * 60 * 1000) as any;
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MINT_REQUESTS,
+            async (msg: {
+                owner: IOwner,
+                policyId: string,
+                status: string,
+                target: string,
+                vpMessageId: string,
+                pageIndex: string,
+                pageSize: string
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { owner, policyId, status, target, vpMessageId, pageIndex, pageSize } = msg;
+
+                    const parsedPageSize = parseInt(pageSize, 10) || 10;
+                    const parsedPageIndex = parseInt(pageIndex, 10) || 0;
+                    const offset = parsedPageIndex * parsedPageSize;
+                    const limit = parsedPageSize;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+
+                    const filters: any = { policyId };
+
+                    if (!policy || owner.creator !== policy.creator) {
+                        filters.owner = owner.creator;
+                    }
+
+                    if (target) {
+                        filters.target = target;
+                    }
+
+                    if (vpMessageId) {
+                        filters.vpMessageId = vpMessageId;
+                    }
+
+                    if (status === 'error') {
+                        filters.error = { $ne: null };
+                    } else if (status === 'pending') {
+                        filters.error = null;
+                        filters.isMintNeeded = true;
+                    } else if (status === 'success') {
+                        filters.error = null;
+                        filters.isMintNeeded = false;
+                    }
+
+                    const [items, count] = await DatabaseServer.getMintRequestsAndCount(
+                        filters,
+                        {
+                            offset,
+                            limit,
+                            orderBy: { vpMessageId: 'DESC' } as any
+                        }
+                    );
+
+                    const requestIds = items.map((item: any) => item.id);
+                    const allTransactions = requestIds.length > 0
+                        ? await new DataBaseHelper(MintTransaction).find({ mintRequestId: { $in: requestIds } } as any)
+                        : [];
+
+                    const txByRequest = new Map<string, any[]>();
+                    for (const tx of allTransactions) {
+                        const key = tx.mintRequestId;
+                        if (!txByRequest.has(key)) {
+                            txByRequest.set(key, []);
+                        }
+                        txByRequest.get(key)!.push(tx);
+                    }
+
+                    const enrichedItems = items.map((item: any) => {
+                        const plain = typeof item.toJSON === 'function' ? item.toJSON() : { ...item };
+                        const transactions = txByRequest.get(plain.id) || [];
+
+                        let mintedAmount = 0;
+                        let transferredAmount = 0;
+
+                        if (plain.tokenType === TokenType.NON_FUNGIBLE) {
+                            for (const tx of transactions) {
+                                if (tx.mintStatus === MintTransactionStatus.SUCCESS && tx.serials) {
+                                    mintedAmount += tx.serials.length;
+                                }
+                                if (tx.transferStatus === MintTransactionStatus.SUCCESS && tx.serials) {
+                                    transferredAmount += tx.serials.length;
+                                }
+                            }
+                        } else {
+                            const hasSuccessMint = transactions.some(
+                                (tx: any) => tx.mintStatus === MintTransactionStatus.SUCCESS
+                            );
+                            if (hasSuccessMint) {
+                                mintedAmount = plain.decimals > 0
+                                    ? plain.amount / Math.pow(10, plain.decimals)
+                                    : plain.amount;
+                            }
+
+                            const hasSuccessTransfer = transactions.some(
+                                (tx: any) => tx.transferStatus === MintTransactionStatus.SUCCESS
+                            );
+                            if (hasSuccessTransfer) {
+                                transferredAmount = plain.decimals > 0
+                                    ? plain.amount / Math.pow(10, plain.decimals)
+                                    : plain.amount;
+                            }
+                        }
+
+                        const expectedAmount = plain.tokenType === TokenType.NON_FUNGIBLE
+                            ? plain.amount
+                            : (plain.decimals > 0 ? plain.amount / Math.pow(10, plain.decimals) : plain.amount);
+
+                        plain.mintedAmount = mintedAmount;
+                        plain.mintedExpected = expectedAmount;
+                        plain.transferredAmount = transferredAmount;
+                        plain.transferredExpected = plain.wasTransferNeeded ? expectedAmount : 0;
+
+                        return plain;
+                    });
+
+                    return new MessageResponse([enrichedItems, count]);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error, error.code);
                 }
             });

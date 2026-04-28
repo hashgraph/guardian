@@ -62,4 +62,5 @@ export enum PolicyEvents {
     GET_ALL_NEW_VERSION_VC_DOCUMENTS = 'policy-event-get-all-new-version-vc-documents',
     GET_MOCK_CONFIG = 'policy-event-get-mock-config',
     SET_MOCK_CONFIG = 'policy-event-set-mock-config',
+    RETRY_MINT = 'policy-event-retry-mint',
 }

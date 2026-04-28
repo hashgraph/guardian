@@ -158,6 +158,7 @@ import { SearchExternalPolicyDialog } from './dialogs/search-external-policy-dia
 import { PolicyRequestsComponent } from './requests/requests.component';
 import { TestCodeDialog } from './dialogs/test-code-dialog/test-code-dialog.component';
 import { ProjectDataExportComponent } from './project-data-export/project-data-export.component';
+import { MintRequestsComponent } from './policy-viewer/mint-requests/mint-requests.component';
 import { TransformationButtonBlockComponent } from './policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
 import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integration-button-block/integration-button-block.component';
 import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
@@ -296,6 +297,7 @@ import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
         RequestDocumentBlockDialog,
         DataTransformationConfigComponent,
         ProjectDataExportComponent,
+        MintRequestsComponent,
         ExternalPolicyComponent,
         PolicyRequestsComponent,
         SearchExternalPolicyDialog,
