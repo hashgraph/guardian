@@ -119,11 +119,11 @@
         >
             <img alt="" src="assets/images/icons/notification.svg">
             <div [class.hidden-logotype]="!menuCollapsed" class="collapsed-notify-counter">
-                <app-notification [menuCollapsed]="smallMenuMode"></app-notification>
+                <app-notification *ngIf="menuCollapsed"></app-notification>
             </div>
             <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
                 <span>Notifications</span>
-                <app-notification [menuCollapsed]="smallMenuMode"></app-notification>
+                <app-notification *ngIf="!menuCollapsed"></app-notification>
             </div>
         </div>
 
