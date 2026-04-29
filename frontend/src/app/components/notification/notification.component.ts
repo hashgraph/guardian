@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationType, NotifyAPI, } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
@@ -17,6 +17,8 @@ export class NotificationComponent implements OnInit {
     progressNotifications: any[] = [];
     menuOpened: boolean = false;
     subscription = new Subscription();
+
+    @Output() menuOpenedChange = new EventEmitter<boolean>();
 
     viewDetails($event: MouseEvent, notification: any) {
         if (!notification.action) {
