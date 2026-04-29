@@ -5,7 +5,7 @@ import { DataSource } from "typeorm";
 import Redis from "ioredis";
 import { QUEUE_NAMES } from "@shared/config/bullmq.config";
 import { buildProjectViewsGeojson } from "../project-mapper/geojson-heuristic.mapper";
-import { buildProjectViewsPolicyBased } from "../project-mapper/policy-based.mapper";
+import { buildProjectViewsPolicyBased } from "../project-mapper/improved-heuristic.mapper";
 
 /**
  * Mapping from HCS message types to business domain view types.
@@ -130,21 +130,21 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
         // ── PROJECT MAPPING STRATEGY ───────────────────────────────────────────────
         // Switch between two project-mapping approaches by changing PROJECT_STRATEGY.
         //
-        //  'geojson-heuristic'  — original approach: confirms the project schema by
-        //                         finding the ONLY schema per methodology with a direct
-        //                         GeoJSON field AND a name/title field (title only).
-        //                         Stable; misses policies with opaque field titles
-        //                         (e.g. VM0047) or array-type geo fields.
+        //  'geojson-heuristic'   — original approach: confirms the project schema by
+        //                          finding the ONLY schema per methodology with a direct
+        //                          GeoJSON field AND a name/title field (title only).
+        //                          Stable; misses policies with opaque field titles
+        //                          (e.g. VM0047) or array-type geo fields.
         //
-        //  'policy-based'       — improved approach: checks title + description for
-        //                         name-field detection, handles array-of-GeoJSON fields,
-        //                         nested dict proponent values, and Shape-D lat/lng
-        //                         string fallback (ISO14064).
+        //  'improved-heuristic'  — same pipeline but with better field detection:
+        //                          checks title + description, handles array-of-GeoJSON,
+        //                          nested dict proponent values, and Shape-D lat/lng
+        //                          string fallback (ISO14064).
         //
-        const PROJECT_STRATEGY: 'geojson-heuristic' | 'policy-based' = 'policy-based';
+        const PROJECT_STRATEGY: 'geojson-heuristic' | 'improved-heuristic' = 'improved-heuristic';
         // ──────────────────────────────────────────────────────────────────────────
 
-        if (PROJECT_STRATEGY === 'policy-based') {
+        if (PROJECT_STRATEGY === 'improved-heuristic') {
             await buildProjectViewsPolicyBased(this.dataSource, this.logger);
         } else {
             await buildProjectViewsGeojson(this.dataSource, this.logger);

@@ -174,6 +174,7 @@ function findFieldByTitleOrDesc(
     ...keywords: string[]
 ): string {
     for (const [fk, fd] of Object.entries(fieldMap)) {
+        if (fd.isGeoJson) continue;
         const searchable = fieldSearchable(fd);
         if (keywords.some(kw => searchable.includes(kw.toLowerCase()))) {
             const val = subject[fk];
@@ -193,6 +194,7 @@ function findFieldByTitleOrDescExcluding(
     exclude: string[],
 ): string {
     for (const [fk, fd] of Object.entries(fieldMap)) {
+        if (fd.isGeoJson) continue;
         const searchable = fieldSearchable(fd);
         if (keywords.some(kw => searchable.includes(kw.toLowerCase())) &&
             !exclude.some(ex => searchable.includes(ex.toLowerCase()))) {
@@ -364,7 +366,10 @@ export async function buildProjectViewsPolicyBased(
 
         const fm = schemaEntry.fieldMap;
 
-        const name = findFieldByTitleOrDesc(subject, fm, 'project name', 'name', 'title');
+        const name = findFieldByTitleOrDescExcluding(subject, fm,
+            ['project name', 'project title', 'name', 'title'],
+            ['methodology', 'reference', 'pdd', 'section', 'table', 'site', 'document'],
+        );
         if (!name) continue;
 
         const country = findFieldByTitleOrDescExcluding(subject, fm, ['country'], ['participant', 'applicant']);
