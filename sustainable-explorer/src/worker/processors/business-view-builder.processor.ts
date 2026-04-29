@@ -297,6 +297,26 @@ function hasDirectGeoJson(doc: Record<string, any>): boolean {
 }
 
 /**
+ * Returns true when a schema's top-level properties contain a field whose title
+ * contains "name" or "title" — indicating it carries a project identity, not just
+ * coordinates. Used to exclude utility schemas like "Coordinates", "Geographic Scope",
+ * and "Site Registration Standard" from the project-schema confirmation count:
+ * those schemas have GeoJSON but no project name field, so they should not count
+ * toward the "exactly 1 GeoJSON schema per methodology" check.
+ */
+function hasNameField(doc: Record<string, any>): boolean {
+    const topProps: Record<string, any> = doc['properties'] ?? {};
+    for (const fdef of Object.values(topProps)) {
+        if (!fdef || typeof fdef !== 'object') continue;
+        const title: string = ((fdef as any).title ?? '').toLowerCase();
+        // Accept "name" or "title" only when not qualified by "site" —
+        // "Site Name" in Site Registration schemas should not count.
+        if ((title.includes('name') || title.includes('title')) && !title.includes('site')) return true;
+    }
+    return false;
+}
+
+/**
  * Finds the first field in fieldMap whose title contains any of the given keywords
  * (case-insensitive) and whose value in subject is non-empty.
  */
@@ -484,13 +504,15 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
         `);
 
         // Confirmation uses Shape A only: a schema counts toward the "exactly 1"
-        // check only if its GeoJSON field is directly in top-level properties.
-        // Wrapper/form schemas that embed a project sub-schema also declare GeoJSON
-        // one level deeper (Shape B), which would otherwise create false ambiguity.
+        // check only if its GeoJSON field is directly in top-level properties AND
+        // the schema has a name/title field — indicating it is a project identity
+        // schema rather than a utility schema (Coordinates, Geographic Scope, Site
+        // Registration) that incidentally carries GeoJSON.
         const directGeoByTopic = new Map<string, SchemaEntry[]>();
         for (const row of allSchemaRows) {
             const doc = parseSchemaDoc(row.document);
             if (!hasDirectGeoJson(doc)) continue;          // Shape B → skip for confirmation
+            if (!hasNameField(doc)) continue;              // utility schema → skip for confirmation
             const entry = buildSchemaEntry(row.schemaId, row.policyTopicId, doc);
             if (!entry) continue;
             const list = directGeoByTopic.get(row.policyTopicId) ?? [];
