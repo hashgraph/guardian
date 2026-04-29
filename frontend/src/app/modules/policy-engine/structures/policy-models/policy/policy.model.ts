@@ -385,6 +385,13 @@ export class PolicyTemplate {
         this.emitUpdate();
     }
 
+    public setPolicyDocumentation(policyDocumentation: any[] | null | undefined) {
+        this.policyDocumentation = Array.isArray(policyDocumentation)
+            ? policyDocumentation
+            : [];
+        this.emitUpdate();
+    }
+
     public createStep(role: string, index: number) {
         const e = new PolicyNavigationStepModel({
             name: '',
