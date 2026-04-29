@@ -431,6 +431,7 @@ export class PolicyTemplate {
         this._topicDescription = policy.topicDescription;
         this._projectSchema = policy.projectSchema;
         this._categories = policy.categories;
+        this.policyDocumentation = policy.policyDocumentation;
 
         this._policyRoles = [];
         if (Array.isArray(policy.policyRoles)) {
