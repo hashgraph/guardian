@@ -136,7 +136,7 @@ VM0033 (Methodology for Tidal Wetland and Seagrass Restoration) serves as the id
 * **Geographic Boundaries**: Dynamic boundaries affected by sea level rise over time
 * **Uncertainty Analysis**: Sophisticated error propagation across multiple variables
 
-![A calculation code sample](../../../.gitbook/assets/image-1.png)
+![A calculation code sample](<../../../.gitbook/assets/image-1 (12).png>)
 
 ### Guardian Implementation Patterns
 
@@ -156,7 +156,7 @@ VM0033 (Methodology for Tidal Wetland and Seagrass Restoration) serves as the id
 * **Compliance Maintained**: Full adherence to VM0033's scientific and regulatory requirements
 * **Process Streamlining**: Digital implementation reduces development time while improving accuracy
 
-![Allcot ABC Mangrove Project](../../../.gitbook/assets/image-2.png)
+![Allcot ABC Mangrove Project](<../../../.gitbook/assets/image-2 (9).png>)
 
 ### About Blue Carbon Projects
 

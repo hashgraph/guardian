@@ -5570,6 +5570,19 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Get mint requests with count
+     * @param filters Filters
+     * @param options Options
+     * @returns Mint requests and count
+     */
+    public static async getMintRequestsAndCount(
+        filters?: FilterObject<MintRequest>,
+        options?: FindOptions<object>
+    ): Promise<[MintRequest[], number]> {
+        return await new DataBaseHelper(MintRequest).findAndCount(filters, options);
+    }
+
+    /**
      * Get remote requests
      * @param filters
      */

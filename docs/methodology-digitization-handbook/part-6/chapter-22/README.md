@@ -19,11 +19,11 @@ Guardian's dry-run mode creates a sandbox environment where you can simulate mul
 3. **Create Virtual Users** - Set up users for each role (Project Proponent, VVB, OWNER)
 4. **Execute Complete Workflows** - Test full project lifecycle with role transitions
 
-![Choose role during dry run](<../../../.gitbook/assets/image (187).png>)
+![Choose role during dry run](<../../../.gitbook/assets/image (187) (1).png>)
 
-![Switch role UI](<../../../.gitbook/assets/image-1 (10).png>)
+![Switch role UI](<../../../.gitbook/assets/image-1 (10) (1).png>)
 
-![VVB documents review UI for Registry role](<../../../.gitbook/assets/image-3 (5).png>)
+![VVB documents review UI for Registry role](<../../../.gitbook/assets/image-3 (5) (1).png>)
 
 ### Creating Virtual Users for Multi-Role Testing
 
@@ -50,7 +50,7 @@ Let's walk through testing VM0033's complete workflow using the navigation struc
 
 The Project Proponent starts by accessing the "Projects" section and creating a new project using VM0033's PDD schema.
 
-![New Project Form](<../../../.gitbook/assets/image-2 (8).png>)
+![New Project Form](<../../../.gitbook/assets/image-2 (8) (1).png>)
 
 Testing should validate:
 
@@ -59,7 +59,7 @@ Testing should validate:
 * Calculation inputs integrate with custom logic blocks
 * Document submission creates proper audit trail
 
-![VC document submitted](<../../../.gitbook/assets/image-4 (3).png>)
+![VC document submitted](<../../../.gitbook/assets/image-4 (3) (1).png>)
 
 **Step 2: VVB Selection and Assignment**
 
@@ -70,9 +70,9 @@ After PDD submission and approval by registry, the project developer selects a V
 * Project status updates reflect VVB assignment
 * Document access permissions transfer correctly
 
-![Project approval/rejection UI within SR role](<../../../.gitbook/assets/image-5 (1).png>)
+![Project approval/rejection UI within SR role](<../../../.gitbook/assets/image-5 (1) (1).png>)
 
-![VVB selection via dropdown](<../../../.gitbook/assets/image-6 (1).png>)
+![VVB selection via dropdown](<../../../.gitbook/assets/image-6 (1) (1).png>)
 
 #### VVB Workflow Testing
 
@@ -85,11 +85,11 @@ VVBs access assigned projects through their dedicated interface. Validation test
 * Site visit data collection and documentation
 * Validation report submission using VM0033 validation schema
 
-![Project review UI](<../../../.gitbook/assets/image-7 (1).png>)
+![Project review UI](<../../../.gitbook/assets/image-7 (1) (1).png>)
 
-![Validation Report UI](<../../../.gitbook/assets/image-8 (1).png>)
+![Validation Report UI](<../../../.gitbook/assets/image-8 (1) (1).png>)
 
-![Validation Report Form](<../../../.gitbook/assets/image-9 (1).png>)
+![Validation Report Form](<../../../.gitbook/assets/image-9 (1) (1).png>)
 
 **Step 4: Monitoring Report Verification**
 
@@ -100,13 +100,13 @@ During the crediting period, VVBs verify monitoring reports:
 * Calculation accuracy assessment using VM0033 test artifacts
 * Verification report submission with emission reduction confirmation
 
-![Validated & approved projects see monitoring report button](../../../.gitbook/assets/image-10.png)
+![Validated & approved projects see monitoring report button](<../../../.gitbook/assets/image-10 (1).png>)
 
-![Add report dialog](../../../.gitbook/assets/image-11.png)
+![Add report dialog](<../../../.gitbook/assets/image-11 (1).png>)
 
-![Assigned to Earthood](../../../.gitbook/assets/image-12.png)
+![Assigned to Earthood](<../../../.gitbook/assets/image-12 (1).png>)
 
-![VVB can view the report submitted with auto-calculated values](../../../.gitbook/assets/image-13.png)
+![VVB can view the report submitted with auto-calculated values](<../../../.gitbook/assets/image-13 (1).png>)
 
 #### Standard Registry (OWNER) Workflow Testing
 
@@ -248,7 +248,7 @@ Guardian's dry-run mode creates artifacts that help validate testing results and
 * **Token Operations**: Credit issuance and transfer records
 * **Audit Trail**: Complete workflow execution history
 
-![Menu bar showing artifacts tab](../../../.gitbook/assets/image-14.png)
+![Menu bar showing artifacts tab](<../../../.gitbook/assets/image-14 (1).png>)
 
 ### Test Data Management and Version Control
 

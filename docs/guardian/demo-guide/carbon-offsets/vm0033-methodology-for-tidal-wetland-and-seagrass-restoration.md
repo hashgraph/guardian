@@ -96,7 +96,7 @@ Verified Carbon Units (VCUs), each equivalent to one tonne of CO2 equivalent emi
 
 3. In Dry-Run, create a user by selecting the Create User button. Then open the user dropdown and select Virtual User 1.
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -132,7 +132,7 @@ Verified Carbon Units (VCUs), each equivalent to one tonne of CO2 equivalent emi
 
 <figure><img src="../../../.gitbook/assets/image (16) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (17) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (17) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 9. To assign the project for validation, switch back to the Project Proponent account and select the appropriate VVB in the Assign dropdown.
 
@@ -144,7 +144,7 @@ Verified Carbon Units (VCUs), each equivalent to one tonne of CO2 equivalent emi
 
 <figure><img src="../../../.gitbook/assets/image (21) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (22) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (22) (1) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 11. Switch back to the Administrator role. The Administrator will now be able to see and approve the submitted validation report. The updated status will be displayed for the Project Proponent.
 

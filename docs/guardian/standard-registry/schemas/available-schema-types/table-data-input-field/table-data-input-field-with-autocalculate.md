@@ -16,34 +16,25 @@ AutoCalculate expressions are evaluated as **JavaScript**. The expression is wra
 
 When editing an Auto Calculate expression, a **?** help icon appears next to the "Edit expression" button. Hovering over it shows a quick reference tooltip:
 
-<figure><img src="../../../../../../.gitbook/assets/expression-help-tooltip.png" alt=""><figcaption><p>Help tooltip with operators, functions, and an example</p></figcaption></figure>
-
 Click "Edit expression" to open the Code Editor. Click the **?** icon in the editor header to open the Expression Help panel on the right side:
-
-<figure><img src="../../../../../../.gitbook/assets/expression-help-editor-fields.png" alt=""><figcaption><p>Code Editor with Expression Help panel showing available fields</p></figcaption></figure>
 
 The help panel provides:
 
 * **Available Fields** — clickable chips of sibling field names; click to insert at cursor
 * **Operators** — all supported JS operators with labels
 * **Functions** — grouped by category (Math, Array, Type conversion) with click-to-insert
-
-<figure><img src="../../../../../../.gitbook/assets/expression-help-operators-functions.png" alt=""><figcaption><p>Operators and function categories in the help panel</p></figcaption></figure>
-
 * **Parameters** — the `table` helper and its methods with usage descriptions
 * **Examples** — ready-to-use expression patterns covering common scenarios
-
-<figure><img src="../../../../../../.gitbook/assets/expression-help-parameters-examples.png" alt=""><figcaption><p>Table helper methods and expression examples</p></figcaption></figure>
 
 The editor and help panel scroll independently, so you can browse the reference while writing your expression.
 
 ### 2.2 Supported Functions
 
-| Category | Functions |
-| --- | --- |
-| Math | `Math.abs()`, `Math.round()`, `Math.floor()`, `Math.ceil()`, `Math.sqrt()`, `Math.pow()`, `Math.log()`, `Math.log10()`, `Math.exp()`, `Math.min()`, `Math.max()`, `Math.trunc()`, `Math.sign()` |
-| Array | `.reduce()`, `.filter()`, `.map()`, `.length` |
-| Type conversion | `Number()`, `String()`, `parseFloat()`, `parseInt()` |
+| Category        | Functions                                                                                                                                                                                       |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Math            | `Math.abs()`, `Math.round()`, `Math.floor()`, `Math.ceil()`, `Math.sqrt()`, `Math.pow()`, `Math.log()`, `Math.log10()`, `Math.exp()`, `Math.min()`, `Math.max()`, `Math.trunc()`, `Math.sign()` |
+| Array           | `.reduce()`, `.filter()`, `.map()`, `.length`                                                                                                                                                   |
+| Type conversion | `Number()`, `String()`, `parseFloat()`, `parseInt()`                                                                                                                                            |
 
 ### 2.3 Expression Validation
 
@@ -54,8 +45,6 @@ The editor validates expressions by compiling and executing them against mock da
 * Undefined field references
 
 If validation reports a warning, you can still save the expression using the **Save Anyway** button.
-
-<figure><img src="../../../../../../.gitbook/assets/expression-help-validation.png" alt=""><figcaption><p>Validation warning for an undefined field reference, with Fix and Save Anyway options</p></figcaption></figure>
 
 ### 2.4 Nested Schema Fields
 
@@ -114,17 +103,17 @@ Coordinates of data (zero-based):
 
 ### 5.1 By Column Name
 
-table.col(field20, 'Price')  // entire 'Price' column from table field20
+table.col(field20, 'Price') // entire 'Price' column from table field20
 
 ### 5.2 By Column Index (no headers dependence)
 
-table.col(field20, 2)  // third column (index 2)
+table.col(field20, 2) // third column (index 2)
 
 ### 5.3 Single Cell by Coordinates
 
-table.cell(field20, 1, 'Qty')  // row 1 (second data row), column 'Qty'
+table.cell(field20, 1, 'Qty') // row 1 (second data row), column 'Qty'
 
-table.cell(field20, 2, 2)      // row 2, column index 2
+table.cell(field20, 2, 2) // row 2, column index 2
 
 ## 7. In-Table Calculations (Single Table)
 
@@ -178,11 +167,9 @@ Math.pow(
 ## 9. Power & Root Examples
 
 * Square: (a + b) \*\* 2 or Math.pow(a + b, 2)
-* Square root: Math.sqrt(x)  // same as Math.pow(x, 0.5)
+* Square root: Math.sqrt(x) // same as Math.pow(x, 0.5)
 * (table.num(table.cell(field20, 0, 2)) \*\* 2)
 * Math.sqrt(table.num(table.cell(field20, 2, 2)))
 
-
-
 \
-\
+\\

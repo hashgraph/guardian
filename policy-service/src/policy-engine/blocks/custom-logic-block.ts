@@ -123,14 +123,14 @@ export class CustomLogicBlock {
                 if (!documents) {
                     return;
                 }
-                event.data.data = documents;
+                const outData: IPolicyEventState = { ...event.data, data: documents };
                 // event.actionStatus.saveResult(event.data);
 
-                await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
+                await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, outData, event.actionStatus);
                 await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
-                await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
+                await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, outData, event.actionStatus);
                 PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
-                    documents: ExternalDocuments(event?.data?.data)
+                    documents: ExternalDocuments(outData?.data)
                 }));
             }
             await this.execute(event.data, event.user, triggerEvents, event?.user?.userId, event.actionStatus);

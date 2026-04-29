@@ -6,7 +6,7 @@ This chapter demonstrates schema development foundations using VM0033 implementa
 
 The schema architecture establishes the foundation for translating methodology requirements from Part II analysis into working Guardian data structures. Rather than building everything at once, establishing architectural understanding first enables building schemas that handle complexity while remaining practical for real-world use.
 
-![VM0033 Schemas](<../../../.gitbook/assets/image (68).png>)
+![VM0033 Schemas](<../../../.gitbook/assets/image (68) (2).png>)
 
 ## Guardian Schema System Foundation
 

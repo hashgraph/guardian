@@ -426,6 +426,23 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/${policyId}/search-documents`, { observe: 'response', params });
     }
 
+    public getMintRequests(
+        policyId: string,
+        filters: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const params = this.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/${policyId}/mint-requests`, { observe: 'response', params });
+    }
+
+    public retryMint(
+        policyId: string,
+        vpMessageId: string
+    ): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/mint/${vpMessageId}/retry`, {});
+    }
+
     public exportDocuments(
         policyId: string,
         filters: any,

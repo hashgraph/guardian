@@ -112,6 +112,7 @@
 * [Map Related APIs](guardian/map-related-apis/README.md)
   * [Returning map API Key](guardian/map-related-apis/returning-map-api-key.md)
   * [Returning Sentinel API Key](guardian/map-related-apis/returning-sentinel-api-key.md)
+* [Policy API Documentation & DMRV Aliases](guardian/policy-api-documentation-and-dmrv-aliases.md)
 * [Standard Registry](guardian/standard-registry/README.md)
   * [Schemas](guardian/standard-registry/schemas/README.md)
     * [Available Schema Data Types](guardian/standard-registry/schemas/available-schema-types/README.md)

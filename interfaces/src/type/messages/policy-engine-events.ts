@@ -128,6 +128,8 @@ export enum PolicyEngineEvents {
     GET_All_NEW_VERSION_VC_DOCUMENTS = 'policy-engine-get-all-new-version-vc-documents',
 
     SAVE_POLICY_PARAMETERS_VALUES = 'policy-engine-save-policy-parameters-values',
-    GET_POLICY_PARAMETERS_VALUES = 'policy-engine-get-policy-parameters-values'
+    GET_POLICY_PARAMETERS_VALUES = 'policy-engine-get-policy-parameters-values',
 
+    RETRY_MINT = 'policy-engine-event-retry-mint',
+    GET_MINT_REQUESTS = 'policy-engine-event-get-mint-requests'
 }
