@@ -12,6 +12,17 @@ const { t } = useI18n();
 const { projects, total, filterOptions } = useProjects();
 const { resolvedCode } = useGeocodedCountries(projects);
 
+const INVALID_COUNTRY = new Set([
+    'not applicable', 'not specified', 'n/a', 'na', 'none', 'not stated',
+    'not available', 'not provided', 'unknown',
+    'point', 'multipoint', 'linestring', 'multilinestring',
+    'polygon', 'multipolygon', 'geometrycollection',
+]);
+function displayCountry(p: Project): string | null {
+    if (!p.country) return null;
+    return INVALID_COUNTRY.has(p.country.toLowerCase().trim()) ? null : p.country;
+}
+
 
 // Aggregate transferred/retired per project
 const transferredByProject = computed(() => {
@@ -201,10 +212,10 @@ const statusColor: Record<string, string> = {
                             <td class="py-3 px-4 text-muted-foreground">
                                 <div class="group relative inline-flex items-center gap-1.5">
                                     <CountryFlag :code="resolvedCode(p)" size="sm" />
-                                    <span class="hidden md:inline">{{ p.country }}</span>
-                                    <div class="md:hidden pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-[100]">
+                                    <span class="hidden md:inline">{{ displayCountry(p) }}</span>
+                                    <div v-if="displayCountry(p)" class="md:hidden pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-[100]">
                                         <div class="whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-[11px] text-background shadow-lg">
-                                            {{ p.country }}
+                                            {{ displayCountry(p) }}
                                         </div>
                                         <div class="mx-auto h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />
                                     </div>
