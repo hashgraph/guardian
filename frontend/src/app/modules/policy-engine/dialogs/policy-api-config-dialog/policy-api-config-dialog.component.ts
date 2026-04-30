@@ -186,34 +186,11 @@ export class PolicyApiConfigDialogComponent {
         const aliasMethods  = new Map<string, { index: number; method: string }[]>();
         for (let i = 0; i < this.entries.length; i++) {
             const entry = this.entries[i];
-            if (!entry.target) {
-                this.validationErrors.set(i, 'Block is required');
-                continue;
-            }
-            if (!entry.alias) {
-                this.validationErrors.set(i, 'Alias is required');
-                continue;
-            }
-            if (!/^[a-z0-9-]+$/.test(entry.alias)) {
-                this.validationErrors.set(i, 'Alias: only lowercase letters, digits and hyphens');
-                continue;
-            }
             const block = this.getBlockByTag(entry.target);
             const about = block ? this.getBlockAbout(block) : null;
-            if (!block || !about || (!about.get && !about.post)) {
-                this.validationErrors.set(i, 'Selected block does not support API aliases');
-                continue;
-            }
-            if (entry.method === 'GET' && !about.get) {
-                this.validationErrors.set(i, 'Selected block does not support GET');
-                continue;
-            }
-            if (entry.method === 'POST' && !about.post) {
-                this.validationErrors.set(i, 'Selected block does not support POST');
-                continue;
-            }
-            if (entry.method === 'Both' && (!about.get || !about.post)) {
-                this.validationErrors.set(i, 'Selected block must support both GET and POST for Both');
+            const entryError = this.validateEntry(entry, block, about);
+            if (entryError) {
+                this.validationErrors.set(i, entryError);
                 continue;
             }
 
@@ -244,6 +221,31 @@ export class PolicyApiConfigDialogComponent {
             existingAliasMethods.push({ index: i, method: entry.method });
             aliasMethods.set(entry.alias, existingAliasMethods);
         }
+    }
+
+    private validateEntry(entry: IPolicyDocumentationEntry, block: any, about: any): string | null {
+        if (!entry.target) {
+            return 'Block is required';
+        }
+        if (!entry.alias) {
+            return 'Alias is required';
+        }
+        if (!/^[a-z0-9-]+$/.test(entry.alias)) {
+            return 'Alias: only lowercase letters, digits and hyphens';
+        }
+        if (!block || !about || (!about.get && !about.post)) {
+            return 'Selected block does not support API aliases';
+        }
+        if (entry.method === 'GET' && !about.get) {
+            return 'Selected block does not support GET';
+        }
+        if (entry.method === 'POST' && !about.post) {
+            return 'Selected block does not support POST';
+        }
+        if (entry.method === 'Both' && (!about.get || !about.post)) {
+            return 'Selected block must support both GET and POST for Both';
+        }
+        return null;
     }
 
     getGetParams(entry: IPolicyDocumentationEntry): { name: string; type: string; description: string }[] {
