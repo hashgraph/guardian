@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { IPolicyDocumentationEntry } from '@guardian/interfaces';
 import { RegisteredService } from '../../services/registered.service';
+import { IBlockAbout, PolicyFolder } from '../../structures';
 
 @Component({
     selector: 'app-policy-api-config-dialog',
@@ -12,7 +13,7 @@ export class PolicyApiConfigDialogComponent {
     public entries: IPolicyDocumentationEntry[] = [];
     public blocks: any[] = [];
     public eligibleBlocks: any[] = [];
-    public root: any;
+    public root!: PolicyFolder;
     public policyId: string;
     public methods = [
         { label: 'GET', value: 'GET' },
@@ -161,7 +162,7 @@ export class PolicyApiConfigDialogComponent {
         return !!(about?.get || about?.post);
     }
 
-    private getBlockAbout(block: any): any {
+    private getBlockAbout(block: any): IBlockAbout | null {
         return this.registeredService.getAbout(block, this.root);
     }
 
@@ -223,7 +224,7 @@ export class PolicyApiConfigDialogComponent {
         }
     }
 
-    private validateEntry(entry: IPolicyDocumentationEntry, block: any, about: any): string | null {
+    private validateEntry(entry: IPolicyDocumentationEntry, block: any, about: IBlockAbout | null): string | null {
         if (!entry.target) {
             return 'Block is required';
         }
