@@ -69,24 +69,45 @@ export class PolicyApiConfigDialogComponent {
     }
 
     addAllEntries(): void {
-        const existingTargets = new Set(
-            this.entries
-                .map((entry) => entry.target)
-                .filter((target): target is string => !!target)
-        );
+        const coverageByBlockTag = new Map<string, Set<string>>();
+        for (const entry of this.entries) {
+            if (!entry.target) {
+                continue;
+            }
+            const coveredMethods = coverageByBlockTag.get(entry.target) ?? new Set<string>();
+            if (entry.method === 'Both') {
+                coveredMethods.add('GET');
+                coveredMethods.add('POST');
+            } else if (entry.method) {
+                coveredMethods.add(entry.method);
+            }
+            coverageByBlockTag.set(entry.target, coveredMethods);
+        }
 
-        const newEntries = this.eligibleBlocks
-            .filter((block: any) => block?.tag && !existingTargets.has(block.tag))
-            .map((block: any) => ({
+        const newEntries: any[] = [];
+        for (const block of this.eligibleBlocks) {
+            if (!block?.tag) {
+                continue;
+            }
+            const about = this.getBlockAbout(block);
+            const coveredMethods = coverageByBlockTag.get(block.tag) ?? new Set<string>();
+            const needsGet = !!about?.get && !coveredMethods.has('GET');
+            const needsPost = !!about?.post && !coveredMethods.has('POST');
+            if (!needsGet && !needsPost) {
+                continue;
+            }
+            const methodToAdd = (needsGet && needsPost) ? 'Both' : (needsGet ? 'GET' : 'POST');
+            newEntries.push({
                 name: block.tag,
                 description: '',
                 target: block.tag,
-                method: this.getDefaultMethod(block),
+                method: methodToAdd,
                 alias: block.tag.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
                 url: '',
                 dmrvUrl: '',
                 blockType: block.blockType || '',
-            }));
+            });
+        }
 
         if (newEntries.length > 0) {
             this.entries.push(...newEntries);
