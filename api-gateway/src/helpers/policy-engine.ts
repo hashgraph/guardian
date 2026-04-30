@@ -368,6 +368,46 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Retry mint
+     * @param user
+     * @param policyId
+     * @param vpMessageId
+     */
+    public async retryMint(
+        user: IAuthUser,
+        policyId: string,
+        vpMessageId: string
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.RETRY_MINT, {
+            user, policyId, vpMessageId
+        });
+    }
+
+    /**
+     * Get mint requests
+     * @param owner Owner
+     * @param policyId Policy identifier
+     * @param status Status filter
+     * @param target Account ID filter
+     * @param pageIndex Page index
+     * @param pageSize Page size
+     * @returns Mint requests and count
+     */
+    public async getMintRequests(
+        owner: IOwner,
+        policyId: string,
+        status?: string,
+        target?: string,
+        vpMessageId?: string,
+        pageIndex?: number | string,
+        pageSize?: number | string
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_MINT_REQUESTS, {
+            owner, policyId, status, target, vpMessageId, pageIndex, pageSize
+        });
+    }
+
+    /**
      * Set block data
      * @param user
      * @param policyId

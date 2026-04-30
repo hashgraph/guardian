@@ -2361,7 +2361,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 xlsxResult.updateSchemas(false);
                 xlsxResult.updatePolicy(target);
                 xlsxResult.addErrors(errors);
-                GenerateBlocks.generate(xlsxResult);
+                const isReplacement = Array.isArray(schemasIds) && schemasIds.some((schemaId) => !!schemaId);
+                if (!isReplacement) {
+                    GenerateBlocks.generate(xlsxResult);
+                }
                 notifier.completeStep(STEP_IMPORT_TOOLS);
 
                 notifier.startStep(STEP_IMPORT_SCHEMAS);
