@@ -162,6 +162,7 @@ export class PolicyApiConfigDialogComponent {
     private revalidate(): void {
         this.validationErrors.clear();
         const targetMethods = new Map<string, { index: number; method: string }[]>();
+        const aliasMethods  = new Map<string, { index: number; method: string }[]>();
         for (let i = 0; i < this.entries.length; i++) {
             const entry = this.entries[i];
             if (!entry.target) {
@@ -206,11 +207,21 @@ export class PolicyApiConfigDialogComponent {
                 continue;
             }
 
-            existingMethods.push({
-                index: i,
-                method: entry.method,
-            });
+            const existingAliasMethods = aliasMethods.get(entry.alias) ?? [];
+            const aliasConflict = existingAliasMethods.find((item) =>
+                item.method === entry.method ||
+                item.method === 'Both' ||
+                entry.method === 'Both'
+            );
+            if (aliasConflict) {
+                this.validationErrors.set(i, `Conflicting alias/method (same as row ${aliasConflict.index + 1})`);
+                continue;
+            }
+
+            existingMethods.push({ index: i, method: entry.method });
             targetMethods.set(entry.target, existingMethods);
+            existingAliasMethods.push({ index: i, method: entry.method });
+            aliasMethods.set(entry.alias, existingAliasMethods);
         }
     }
 
