@@ -82,16 +82,16 @@ const vcViewerTitle = ref('');
 const vcViewerData = ref<Record<string, any> | null>(null);
 
 function viewProjectVc() {
-    if (!project.value || !projectVc.value) return;
+    if (!project.value) return;
     vcViewerTitle.value = project.value.name;
-    vcViewerData.value = projectVc.value;
+    vcViewerData.value = project.value as unknown as Record<string, any>;
     vcViewerOpen.value = true;
 }
 
 function viewCreditVc(c: Credit) {
     vcViewerTitle.value = c.name;
     const issuance = project.value?.issuances?.find(i => i.tokenId === c.tokenId);
-    vcViewerData.value = issuance?.rawVc ?? generateCreditVc(c, project.value?.name);
+    vcViewerData.value = issuance?.rawVc ?? null;
     vcViewerOpen.value = true;
 }
 

@@ -4,12 +4,28 @@ export type FieldDef = {
     isGeoJson: boolean;
 };
 
+// Pre-resolved mapping from project property → schema field key.
+// Computed once when a schema is confirmed; stored in projectSchemaConfig.
+// null means no matching field was found for that property.
+export type ResolvedFieldPaths = {
+    name: string | null;
+    country: string | null;
+    developer: string | null;
+    category: string | null;
+    scale: string | null;
+    sector: string | null;
+    vintageRaw: string | null;
+    creditingPeriod: string | null;
+    sdgOrCobenefits: string | null;
+};
+
 export type SchemaEntry = {
     schemaUuid: string;
     policyTopicId: string;
     geoKey: string;
     section: string | null;
     fieldMap: Record<string, FieldDef>;
+    resolvedFields?: ResolvedFieldPaths;
 };
 
 export type MethodEntry = {
@@ -49,4 +65,5 @@ export type ProjectRecord = {
     sector: string;
     sectoralScope: string;
     vcCount: number;
+    projectSchemaUuids: string[];
 };

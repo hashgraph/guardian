@@ -40,4 +40,31 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         CREATE INDEX IF NOT EXISTS idx_business_view_search_text_trgm
         ON business_view USING GIN ("searchText" gin_trgm_ops)
     `);
+
+    // Persist project-schema classification and resolved field config on policy_schema
+    // so Step A of the improved-heuristic mapper can skip already-evaluated topics.
+    await dataSource.query(`
+        ALTER TABLE policy_schema
+        ADD COLUMN IF NOT EXISTS "isProjectSchema" BOOLEAN DEFAULT NULL
+    `);
+
+    await dataSource.query(`
+        ALTER TABLE policy_schema
+        ADD COLUMN IF NOT EXISTS "projectSchemaConfig" JSONB DEFAULT NULL
+    `);
+
+    // Partial index: only covers rows that have been classified, which is the
+    // exact set read at the start of every mapper run (WHERE "isProjectSchema" = TRUE).
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_policy_schema_project_confirmed
+        ON policy_schema ("policyTopicId")
+        WHERE "isProjectSchema" = TRUE
+    `);
+
+    // Partial index: unprocessed rows — used to detect topics needing re-evaluation.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_policy_schema_unprocessed
+        ON policy_schema ("policyTopicId")
+        WHERE "isProjectSchema" IS NULL
+    `);
 }

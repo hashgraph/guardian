@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { MethodEntry, ProjectRecord, ResolutionMaps } from './types';
+import { FieldDef, MethodEntry, ProjectRecord, ResolutionMaps, ResolvedFieldPaths, SchemaEntry } from './types';
 
 // ---------------------------------------------------------------------------
 // Slug utility
@@ -290,6 +290,93 @@ export async function loadResolutionMaps(
 }
 
 /**
+ * Resolves project property names to their schema field keys by running the
+ * keyword-matching logic once against fieldMap titles and descriptions.
+ * The result is stored in projectSchemaConfig so subsequent mapper runs can
+ * do direct key lookups instead of scanning fieldMap on every VC.
+ */
+export function resolveFieldPaths(fieldMap: Record<string, FieldDef>): ResolvedFieldPaths {
+    const find = (keywords: string[], exclude: string[] = []): string | null => {
+        for (const [fk, fd] of Object.entries(fieldMap)) {
+            if (fd.isGeoJson) continue;
+            const searchable = `${fd.title} ${fd.description}`.toLowerCase();
+            if (
+                keywords.some(kw => searchable.includes(kw)) &&
+                !exclude.some(ex => searchable.includes(ex))
+            ) return fk;
+        }
+        return null;
+    };
+
+    let creditingPeriod: string | null = null;
+    let sdgOrCobenefits: string | null = null;
+
+    for (const [fk, fd] of Object.entries(fieldMap)) {
+        const t = fd.title.toLowerCase();
+        if (!creditingPeriod && t.includes('crediting period')) creditingPeriod = fk;
+        if (!sdgOrCobenefits && (t.includes('co-benefit') || t.includes('sustainable') || t.includes('sdg'))) {
+            sdgOrCobenefits = fk;
+        }
+    }
+
+    return {
+        name:            find(['project name', 'project title', 'name', 'title'],
+                              ['methodology', 'reference', 'pdd', 'section', 'table', 'site', 'document']),
+        country:         find(['country'], ['participant', 'applicant']),
+        developer:       find(['developer', 'proponent', 'organization', 'project developer', 'applicant']),
+        category:        find(['category', 'project type']),
+        scale:           find(['scale', 'project scale']),
+        sector:          find(['sector', 'activity']),
+        vintageRaw:      find(['start date', 'commencement']),
+        creditingPeriod,
+        sdgOrCobenefits,
+    };
+}
+
+/**
+ * Persists isProjectSchema classification for a batch of re-evaluated topics.
+ *
+ * For each topic in revaluatedTopicIds:
+ *   - All schemas are first marked FALSE (clears any stale TRUE from a prior run)
+ *   - Then the one confirmed schema (if any) is marked TRUE
+ *
+ * Two batched UPDATEs regardless of how many topics or schemas are involved.
+ */
+export async function persistSchemaClassification(
+    dataSource: DataSource,
+    confirmedByTopic: Map<string, SchemaEntry>,
+    revaluatedTopicIds: string[],
+): Promise<void> {
+    if (revaluatedTopicIds.length === 0) return;
+
+    // Mark everything in re-evaluated topics as FALSE and clear any stale config.
+    await dataSource.query(
+        `UPDATE policy_schema
+         SET "isProjectSchema" = FALSE, "projectSchemaConfig" = NULL
+         WHERE "policyTopicId" = ANY($1)`,
+        [revaluatedTopicIds],
+    );
+
+    // For each confirmed schema, write TRUE and store the full resolved SchemaEntry
+    // (including pre-computed field paths) so subsequent runs skip document parsing
+    // and keyword matching entirely.
+    for (const entry of confirmedByTopic.values()) {
+        const config = {
+            geoKey: entry.geoKey,
+            section: entry.section,
+            fieldMap: entry.fieldMap,
+            resolvedFields: entry.resolvedFields ?? resolveFieldPaths(entry.fieldMap),
+        };
+        await dataSource.query(
+            `UPDATE policy_schema
+             SET "isProjectSchema" = TRUE, "projectSchemaConfig" = $1
+             WHERE "schemaId" = $2`,
+            [JSON.stringify(config), entry.schemaUuid],
+        );
+    }
+}
+
+/**
  * Upserts all project rows from projectMap into business_view and removes any
  * stale PROJECT rows that are no longer in the current result set.
  * Corresponds to Step G of the project-building pipeline.
@@ -323,6 +410,7 @@ export async function upsertProjectRows(
             topicId: proj.topicId,
             policyTopicId: proj.policyTopicId,
             vcCount: proj.vcCount,
+            projectSchemaUuids: proj.projectSchemaUuids,
         };
 
         const searchText = [

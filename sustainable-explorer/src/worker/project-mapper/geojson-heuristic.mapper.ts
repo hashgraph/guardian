@@ -429,6 +429,7 @@ export async function buildProjectViewsGeojson(
                 sector,
                 sectoralScope,
                 vcCount: 1,
+                projectSchemaUuids: [],
             });
         } else {
             existing.credits += creditsToAdd;

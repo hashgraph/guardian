@@ -10,12 +10,39 @@ import {
     extractLatLng,
     loadResolutionMaps,
     upsertProjectRows,
+    persistSchemaClassification,
+    resolveFieldPaths,
 } from './helpers';
-import { FieldDef, SchemaEntry, ProjectRecord } from './types';
+import { FieldDef, SchemaEntry, ProjectRecord, ResolvedFieldPaths } from './types';
 
 // ---------------------------------------------------------------------------
 // Helpers specific to the policy-based approach
 // ---------------------------------------------------------------------------
+
+/**
+ * Extracts SDG numbers (1-17) from free-text co-benefits descriptions.
+ * Handles two common Guardian patterns:
+ *   1. Explicit "SDG N" references  → "contributions to SDG 1, SDG 13 …"
+ *   2. Numbered list items          → "1 - Poverty reduction … 5 - Gender …"
+ */
+function extractSdgsFromText(text: string): number[] {
+    if (!text) return [];
+    const sdgs = new Set<number>();
+
+    // "SDG N" / "SDG-N" (case-insensitive)
+    for (const m of text.matchAll(/\bSDG[-\s]*(\d{1,2})\b/gi)) {
+        const n = parseInt(m[1], 10);
+        if (n >= 1 && n <= 17) sdgs.add(n);
+    }
+
+    // Numbered list: "N - Capital…" or "N – Capital…"
+    for (const m of text.matchAll(/(?<!\d)(\d{1,2})\s*[-–]\s+(?=[A-Z\d])/g)) {
+        const n = parseInt(m[1], 10);
+        if (n >= 1 && n <= 17) sdgs.add(n);
+    }
+
+    return [...sdgs].sort((a, b) => a - b);
+}
 
 /**
  * Combines title + description into one searchable string.
@@ -226,39 +253,134 @@ export async function buildProjectViewsPolicyBased(
 ): Promise<void> {
     logger.log('Building project views from VC-Document messages (policy-based)...');
 
-    // Step A — per methodology, confirm the ONE schema that declares a GeoJSON field.
-    // Uses improved detection: array-of-GeoJSON counts, title+description checked.
-    const allSchemaRows: Array<{
+    // Step A — confirm the ONE project-registration schema per policy topic.
+    //
+    // Optimised two-pass approach:
+    //   Pass 1 (fast): load topics already confirmed in a prior run (isProjectSchema = TRUE).
+    //   Pass 2 (full): re-evaluate only topics that have at least one unprocessed schema
+    //                  (isProjectSchema IS NULL). Results are persisted back to DB so
+    //                  those topics are skipped on the next run.
+    //
+    // Net effect: once all policies are ingested the full scan never runs again.
+
+    type SchemaRow = { schemaId: string; policyTopicId: string; document: unknown };
+    type PreConfirmedRow = {
         schemaId: string;
         policyTopicId: string;
+        projectSchemaConfig: Record<string, unknown> | null;
         document: unknown;
-    }> = await dataSource.query(`
-        SELECT "schemaId", "policyTopicId", document
-        FROM policy_schema
-        WHERE "schemaId" IS NOT NULL AND document IS NOT NULL
-    `);
+    };
 
-    const directGeoByTopic = new Map<string, SchemaEntry[]>();
-    for (const row of allSchemaRows) {
-        const doc = parseSchemaDoc(row.document);
-        if (!hasDirectGeoJsonImproved(doc)) continue;
-        if (!hasNameFieldImproved(doc)) continue;
-        const entry = buildSchemaEntryImproved(row.schemaId, row.policyTopicId, doc);
-        if (!entry) continue;
-        const list = directGeoByTopic.get(row.policyTopicId) ?? [];
-        list.push(entry);
-        directGeoByTopic.set(row.policyTopicId, list);
-    }
+    const [preConfirmedRows, nullTopicRows]: [PreConfirmedRow[], Array<{ policyTopicId: string }>] =
+        await Promise.all([
+            dataSource.query(`
+                SELECT "schemaId", "policyTopicId", "projectSchemaConfig", document
+                FROM policy_schema
+                WHERE "isProjectSchema" = TRUE
+                  AND "schemaId" IS NOT NULL
+            `),
+            dataSource.query(`
+                SELECT DISTINCT "policyTopicId"
+                FROM policy_schema
+                WHERE "isProjectSchema" IS NULL
+                  AND "schemaId" IS NOT NULL AND document IS NOT NULL
+            `),
+        ]);
 
-    // Confirmed: exactly 1 direct-GeoJSON schema per policy topic
+    // Topics with NULL schemas must be re-evaluated; pre-confirmed topics for which
+    // a new schema has been imported will also appear in nullTopicRows (because the
+    // import processor resets isProjectSchema = NULL for the whole topic).
+    const topicsNeedingEval = new Set(nullTopicRows.map(r => r.policyTopicId));
+
+    // Seed confirmedByTopic from pre-confirmed rows.
+    // Fast path: use stored projectSchemaConfig (no document parsing).
+    // Migration fallback: if config is missing (rows confirmed before this column
+    // was added), parse the document and persist the config immediately.
     const confirmedByTopic = new Map<string, SchemaEntry>();
-    const confirmedTopics = new Set<string>();
-    for (const [topicId, entries] of directGeoByTopic) {
-        if (entries.length === 1) {
-            confirmedByTopic.set(topicId, entries[0]);
-            confirmedTopics.add(topicId);
+    const needsConfigBackfill = new Map<string, SchemaEntry>();
+
+    for (const row of preConfirmedRows) {
+        if (topicsNeedingEval.has(row.policyTopicId)) continue;
+
+        let entry: SchemaEntry | null = null;
+
+        if (row.projectSchemaConfig) {
+            const cfg = row.projectSchemaConfig;
+            entry = {
+                schemaUuid: row.schemaId,
+                policyTopicId: row.policyTopicId,
+                geoKey: cfg['geoKey'] as string,
+                section: (cfg['section'] as string | null) ?? null,
+                fieldMap: cfg['fieldMap'] as SchemaEntry['fieldMap'],
+                resolvedFields: cfg['resolvedFields'] as ResolvedFieldPaths | undefined,
+            };
+        } else {
+            // Config missing (rows confirmed before this column was added) —
+            // parse document, resolve field paths, and backfill both.
+            const doc = parseSchemaDoc(row.document);
+            entry = buildSchemaEntryImproved(row.schemaId, row.policyTopicId, doc);
+            if (entry) {
+                entry.resolvedFields = resolveFieldPaths(entry.fieldMap);
+                needsConfigBackfill.set(row.policyTopicId, entry);
+            }
         }
+
+        if (entry) confirmedByTopic.set(row.policyTopicId, entry);
     }
+
+    // Persist any missing configs so the next run uses the fast path.
+    if (needsConfigBackfill.size > 0) {
+        for (const entry of needsConfigBackfill.values()) {
+            const config = { geoKey: entry.geoKey, section: entry.section, fieldMap: entry.fieldMap };
+            await dataSource.query(
+                `UPDATE policy_schema SET "projectSchemaConfig" = $1 WHERE "schemaId" = $2`,
+                [JSON.stringify(config), entry.schemaUuid],
+            );
+        }
+        logger.log(`Backfilled projectSchemaConfig for ${needsConfigBackfill.size} pre-confirmed schema(s).`);
+    }
+
+    // Re-evaluate topics that have at least one NULL schema.
+    if (topicsNeedingEval.size > 0) {
+        const revalTopicIds = Array.from(topicsNeedingEval);
+        const revalRows: SchemaRow[] = await dataSource.query(`
+            SELECT "schemaId", "policyTopicId", document
+            FROM policy_schema
+            WHERE "policyTopicId" = ANY($1)
+              AND "schemaId" IS NOT NULL AND document IS NOT NULL
+        `, [revalTopicIds]);
+
+        const directGeoByTopic = new Map<string, SchemaEntry[]>();
+        for (const row of revalRows) {
+            const doc = parseSchemaDoc(row.document);
+            if (!hasDirectGeoJsonImproved(doc)) continue;
+            if (!hasNameFieldImproved(doc)) continue;
+            const entry = buildSchemaEntryImproved(row.schemaId, row.policyTopicId, doc);
+            if (!entry) continue;
+            const list = directGeoByTopic.get(row.policyTopicId) ?? [];
+            list.push(entry);
+            directGeoByTopic.set(row.policyTopicId, list);
+        }
+
+        const newlyConfirmed = new Map<string, SchemaEntry>();
+        for (const [topicId, entries] of directGeoByTopic) {
+            if (entries.length === 1) {
+                const confirmed = entries[0];
+                confirmed.resolvedFields = resolveFieldPaths(confirmed.fieldMap);
+                newlyConfirmed.set(topicId, confirmed);
+                confirmedByTopic.set(topicId, confirmed);
+            }
+        }
+
+        // Persist TRUE/FALSE classification so these topics are skipped next run.
+        await persistSchemaClassification(dataSource, newlyConfirmed, revalTopicIds);
+        logger.log(
+            `Schema classification: evaluated ${revalTopicIds.length} topic(s), ` +
+            `confirmed ${newlyConfirmed.size} new project schema(s).`,
+        );
+    }
+
+    const confirmedTopics = new Set(confirmedByTopic.keys());
 
     if (confirmedTopics.size === 0) {
         logger.warn('No confirmed project schemas found in policy_schema — no project views built.');
@@ -268,11 +390,18 @@ export async function buildProjectViewsPolicyBased(
 
     logger.log(`Confirmed project schemas: ${confirmedTopics.size}`);
 
-    // Step B — build sibling-schema map using improved detection.
-    // Same three shapes (A, B, C) as geojson-heuristic but with improved field detection.
+    // Step B — build sibling-schema map for confirmed topics only.
+    // Loads schemas scoped to confirmed topics (far smaller than the full table scan).
+    const confirmedTopicIds = Array.from(confirmedTopics);
+    const siblingRows: SchemaRow[] = await dataSource.query(`
+        SELECT "schemaId", "policyTopicId", document
+        FROM policy_schema
+        WHERE "policyTopicId" = ANY($1)
+          AND "schemaId" IS NOT NULL AND document IS NOT NULL
+    `, [confirmedTopicIds]);
+
     const siblingSchemaMap = new Map<string, SchemaEntry>();
-    for (const row of allSchemaRows) {
-        if (!confirmedTopics.has(row.policyTopicId)) continue;
+    for (const row of siblingRows) {
         const doc = parseSchemaDoc(row.document);
 
         // Shape A or B (improved)
@@ -295,6 +424,7 @@ export async function buildProjectViewsPolicyBased(
                     geoKey: confirmedEntry.geoKey,
                     section: wrapKey,
                     fieldMap: confirmedEntry.fieldMap,
+                    resolvedFields: confirmedEntry.resolvedFields,
                 });
                 break;
             }
@@ -302,6 +432,17 @@ export async function buildProjectViewsPolicyBased(
     }
 
     const acceptableUuids = Array.from(siblingSchemaMap.keys());
+
+    // Build policyTopicId → schema UUIDs map so each project record knows
+    // which schema UUIDs were used to find its VCs. Used by findActivity()
+    // to scope activity queries to this project's schemas only (avoiding
+    // cross-contamination when multiple projects share the same instance topic).
+    const policySchemaUuids = new Map<string, string[]>();
+    for (const [uuid, entry] of siblingSchemaMap) {
+        const list = policySchemaUuids.get(entry.policyTopicId) ?? [];
+        list.push(uuid);
+        policySchemaUuids.set(entry.policyTopicId, list);
+    }
     const projectVcs: Array<{
         consensusTimestamp: string;
         topicId: string;
@@ -365,49 +506,71 @@ export async function buildProjectViewsPolicyBased(
         const lat = lngLat[1];
 
         const fm = schemaEntry.fieldMap;
+        const rf = schemaEntry.resolvedFields;
 
-        const name = findFieldByTitleOrDescExcluding(subject, fm,
-            ['project name', 'project title', 'name', 'title'],
-            ['methodology', 'reference', 'pdd', 'section', 'table', 'site', 'document'],
-        );
+        // Field extraction — fast path uses pre-resolved field keys (direct lookup);
+        // fallback to runtime keyword search for sibling schemas without resolvedFields.
+        const getRaw = (key: string | null | undefined): string =>
+            key ? unwrapValue(subject[key]) : '';
+
+        const name = rf
+            ? getRaw(rf.name)
+            : findFieldByTitleOrDescExcluding(subject, fm,
+                ['project name', 'project title', 'name', 'title'],
+                ['methodology', 'reference', 'pdd', 'section', 'table', 'site', 'document']);
         if (!name) continue;
 
-        const country = findFieldByTitleOrDescExcluding(subject, fm, ['country'], ['participant', 'applicant']);
-        const developer = findFieldByTitleOrDesc(subject, fm,
-            'developer', 'proponent', 'organization', 'project developer', 'applicant');
-        const category = findFieldByTitleOrDesc(subject, fm, 'category', 'project type');
-        const scale = findFieldByTitleOrDesc(subject, fm, 'scale', 'project scale');
-        const rawSector = findFieldByTitleOrDesc(subject, fm, 'sector', 'activity');
-        const vintageRaw = findFieldByTitleOrDesc(subject, fm, 'start date', 'commencement');
+        const country = rf
+            ? getRaw(rf.country)
+            : findFieldByTitleOrDescExcluding(subject, fm, ['country'], ['participant', 'applicant']);
+        const developer = rf
+            ? getRaw(rf.developer)
+            : findFieldByTitleOrDesc(subject, fm, 'developer', 'proponent', 'organization', 'project developer', 'applicant');
+        const category = rf
+            ? getRaw(rf.category)
+            : findFieldByTitleOrDesc(subject, fm, 'category', 'project type');
+        const scale = rf
+            ? getRaw(rf.scale)
+            : findFieldByTitleOrDesc(subject, fm, 'scale', 'project scale');
+        const rawSector = rf
+            ? getRaw(rf.sector)
+            : findFieldByTitleOrDesc(subject, fm, 'sector', 'activity');
+        const vintageRaw = rf
+            ? getRaw(rf.vintageRaw)
+            : findFieldByTitleOrDesc(subject, fm, 'start date', 'commencement');
 
-        // Crediting period — find field whose title contains "crediting period"
+        // Crediting period
         let createdAt: string | null = null;
         let creditingPeriodEnd: string | null = null;
-        for (const [fk, fd] of Object.entries(fm)) {
-            if (fd.title.toLowerCase().includes('crediting period')) {
-                const f = subject[fk];
-                if (f && typeof f === 'object') {
-                    createdAt = typeof f['from'] === 'string' ? f['from'] : null;
-                    creditingPeriodEnd = typeof f['to'] === 'string' ? f['to'] : null;
-                }
-                break;
+        const cpKey = rf?.creditingPeriod
+            ?? Object.entries(fm).find(([, fd]) => fd.title.toLowerCase().includes('crediting period'))?.[0];
+        if (cpKey) {
+            const f = subject[cpKey];
+            if (f && typeof f === 'object') {
+                createdAt = typeof f['from'] === 'string' ? f['from'] : null;
+                creditingPeriodEnd = typeof f['to'] === 'string' ? f['to'] : null;
             }
         }
         if (!createdAt) createdAt = vintageRaw || null;
-        const vintage: string | null = (createdAt ?? vintageRaw)?.slice(0, 4) ?? null;
+        const rawDateForYear = createdAt ?? vintageRaw ?? null;
+        const vintage: string | null = rawDateForYear
+            ? (rawDateForYear.match(/\b(19|20)\d{2}\b/)?.[0] ?? null)
+            : null;
 
-        // SDGs when all-numeric tokens, else cobenefits
-        const field25Key = Object.entries(fm).find(([, fd]) =>
-            fd.title.toLowerCase().includes('co-benefit') ||
-            fd.title.toLowerCase().includes('sustainable') ||
-            fd.title.toLowerCase().includes('sdg')
-        )?.[0];
-        const field25Raw = field25Key ? String(subject[field25Key] ?? '').trim() : '';
+        // SDGs / co-benefits
+        const sdgKey = rf?.sdgOrCobenefits
+            ?? Object.entries(fm).find(([, fd]) => {
+                const t = fd.title.toLowerCase();
+                return t.includes('co-benefit') || t.includes('sustainable') || t.includes('sdg');
+            })?.[0];
+        const field25Raw = sdgKey ? String(subject[sdgKey] ?? '').trim() : '';
         const field25Tokens = field25Raw.split(',').map(s => s.trim()).filter(Boolean);
         const allNumeric = field25Tokens.length > 0 && field25Tokens.every(t => /^\d+$/.test(t));
+        // Primary: comma-separated SDG numbers (e.g. "1,3,13").
+        // Fallback: extract from free-text co-benefits using regex (two Guardian patterns).
         const sdgs: number[] = allNumeric
             ? field25Tokens.map(Number).filter(n => n >= 1 && n <= 17)
-            : [];
+            : extractSdgsFromText(field25Raw);
         const cobenefits: string | null = !allNumeric && field25Raw ? field25Raw : null;
 
         // emission_reduction
@@ -455,6 +618,7 @@ export async function buildProjectViewsPolicyBased(
                 sector,
                 sectoralScope,
                 vcCount: 1,
+                projectSchemaUuids: policySchemaUuids.get(resolved.policyTopicId) ?? [],
             });
         } else {
             existing.credits += creditsToAdd;

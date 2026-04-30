@@ -58,6 +58,17 @@ export class PolicySchemaImportProcessor extends WorkerHost {
             return;
         }
 
+        // New CID means schema content may have changed — invalidate any cached
+        // classification and resolved field config so the mapper re-evaluates this topic.
+        if (!schemasAlreadyImported) {
+            await this.dataSource.query(
+                `UPDATE policy_schema
+                 SET "isProjectSchema" = NULL, "projectSchemaConfig" = NULL
+                 WHERE "policyTopicId" = $1`,
+                [policyTopicId],
+            );
+        }
+
         const zipBuffer = await this.ipfsService.fetchContent(cid);
         const zip = await JSZip.loadAsync(zipBuffer);
 

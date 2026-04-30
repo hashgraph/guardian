@@ -52,6 +52,17 @@ export class PolicySchema {
     @Column({ type: 'bigint' })
     lastUpdate: string;
 
+    // NULL = never evaluated, TRUE = confirmed project schema for this topic,
+    // FALSE = evaluated and ruled out. Reset to NULL when schema content changes.
+    @Column({ type: 'boolean', nullable: true, default: null })
+    isProjectSchema: boolean | null;
+
+    // Resolved SchemaEntry for the confirmed project schema: { geoKey, section, fieldMap }.
+    // Populated alongside isProjectSchema = TRUE so subsequent mapper runs can skip
+    // re-parsing the schema document entirely. Cleared when isProjectSchema is reset.
+    @Column({ type: 'jsonb', nullable: true, default: null })
+    projectSchemaConfig: Record<string, unknown> | null;
+
     @CreateDateColumn()
     createdAt: Date;
 

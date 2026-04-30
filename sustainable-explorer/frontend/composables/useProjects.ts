@@ -152,6 +152,19 @@ export interface ActivityEvent {
     type: string;
 }
 
+const VALID_ACTIVITY_TYPES = new Set(['document', 'verification', 'registry', 'monitoring', 'credit']);
+
+function mapActivityEvent(raw: Record<string, unknown>): ActivityEvent {
+    const type = typeof raw.type === 'string' && VALID_ACTIVITY_TYPES.has(raw.type)
+        ? raw.type
+        : 'document';
+    return {
+        date: typeof raw.date === 'string' ? raw.date : '',
+        action: typeof raw.action === 'string' ? raw.action : 'Activity recorded',
+        type,
+    };
+}
+
 export function useProjectActivity(id: Ref<string>) {
     const { network } = useNetwork();
     const config = useRuntimeConfig();
@@ -167,7 +180,8 @@ export function useProjectActivity(id: Ref<string>) {
         key.value,
         async () => {
             try {
-                return await $fetch<ActivityEvent[]>(url.value, { baseURL });
+                const raw = await $fetch<Record<string, unknown>[]>(url.value, { baseURL });
+                return Array.isArray(raw) ? raw.map(mapActivityEvent) : [];
             } catch {
                 return [];
             }
