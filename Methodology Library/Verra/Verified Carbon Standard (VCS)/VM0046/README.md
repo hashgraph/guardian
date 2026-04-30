@@ -73,7 +73,7 @@ This implementation maintains 100% conformance with VM0046 v1.0 calculation proc
 
 **Guardian UI**: Renders dynamic forms generated from JSON schemas. Project Proponents complete PDD and MR forms; VVBs complete Validation Reports and Verification Reports; Verra Owner approves at appropriate workflow checkpoints.
 
-**Guardian Policy Engine**: 
+**Guardian Policy Engine**:
 - Orchestrates VCS workflow (PDD → Validation → MR → Verification → VCU issuance)
 - Validates submitted documents against schemas (JSON Schema Draft 7)
 - Executes JavaScript calculation engine on submission of PDD and MR
@@ -290,6 +290,60 @@ A `massBalanceCheck` object is written to the document with `M_FLW_total`, `M_re
 | V12 | Step-1 evidence justification ≥ 100 chars; Type (i) surplus ≥ 25% | Mixed |
 
 When any error is raised, the engine sets `validationStatus = "REJECTED"` and `VCUs = 0`, ensuring no VCUs are issued for non-conforming submissions.
+
+### 4.6 Formula Linked Definitions (FLD)
+
+Per VCS Standard v4.4 transparency requirements, the policy includes **Formula Linked Definitions (FLD)** — a declarative, human-readable representation of all VM0046 calculation logic in standard mathematical (LaTeX) notation. The FLD complements (does not replace) the JavaScript calculation engine: customLogicBlock executes calculations, FLD documents them for reviewers.
+
+The FLD is stored within the policy archive (`formulas/` directory) and contains **42 components**:
+
+| Component Type | Count | Purpose |
+|---|---|---|
+| **Constants** | 5 | Fixed methodology values (GWP_CH4=28, phi_SWDS Humid/Dry, f_degradable, NCV_default) |
+| **Variables** | 19 | Input parameters with bindings to specific schema fields in MR Template |
+| **Formulas** | 14 | All VM0046 Section 8 equations in LaTeX notation |
+| **Text** | 4 | Logic-based rules that cannot be expressed as pure formulas |
+
+**Variables** — each of the 19 VM0046 input parameters is declared as a Variable with:
+- LaTeX-formatted name (e.g. `M_{FLW,j,y}`, `\phi_{SWDS}`)
+- Description referencing VM0046 documentation
+- Direct link to the source schema field (18 of 19 linked to MR Template fields; M_recovered is documentation-only)
+
+This enables Verra reviewers to click any variable in a displayed formula and navigate directly to the field where the actual project data is entered.
+
+**Formulas** — all 14 equations from VM0046 Section 8 are encoded as Formula components in LaTeX:
+
+| FLD Formula | LaTeX Notation | Type |
+|---|---|---|
+| `BE_y` (Eq. 1) | `BE_y = \sum_j (BE_{j,y} + BE_{Trans,j,y})` | Aggregator |
+| `M_{DM,j,y}` (Eq. 2) | `M_{DM,j,y} = M_{FLW,j,y} \times DM_{j,y}` | Intermediate |
+| `BE_{j,y}^{Option1}` (Eq. 3) | `BE_{j,y} = 0.9 \times M_{FLW} \times \frac{DM}{DM_{facility}} \times EF_j` | Per-stream |
+| `BE_{j,y}^{Option2}` (Eq. 4) | `BE_{j,y} = \phi_{SWDS} \times (1-f_j) \times GWP \times MCF \times f_{deg} \times M \times DM` | Per-stream |
+| `BE_{j,y}^{Option3}` (Eq. 5) | `BE_{j,y} = M_{FLW,j,y} \times DM_{j,y} \times EF_{default,j}` | Per-stream |
+| `BE_{Trans,j,y}` (Eq. 6) | `BE_{Trans,j,y} = D_{j,y} \times M_{FLW} \times EF_{trans} \times 0.001` | Per-stream |
+| `PE_y` (Eq. 7) | `PE_y = PE_{Trans,y} + PE_{Proc,y}` | Aggregator |
+| `PE_{Trans,y}` (Eq. 8) | `PE_{Trans,y} = D_{m,x,y} \times M_{FLW} \times EF_{trans} \times 0.001` | Project-level |
+| `PE_{Proc,y}` (Eq. 9) | `PE_{Proc,y} = PE_{EC,y} + PE_{FC,y} + OE_y` | Project-level |
+| `OE_y` (Eq. 10) | `OE_y = \sum_p M_{material,p,y} \times EF_{material,p}` | Project-level |
+| `LE_y` (Eq. 11) | `LE_y = LE_d + LE_v` | Aggregator |
+| `LE_d` (Eq. 12) | `LE_d = \sum_j BE_{j,y} \times LF_{i,l}` | Conditional |
+| `LE_v` (Eq. 13) | `LE_v = EF_{CO_2,LE} \times M_{FLW} \times NCV_y` | Conditional |
+| `ER_y` (Eq. 14) ⭐ | `ER_y = BE_y - PE_y - LE_y` | Final |
+
+The four main aggregator formulas (`BE_y`, `PE_y`, `LE_y`, `ER_y`) have **Output Links** to their corresponding fields in the `Ex-post Emission Reductions` array within MR Template. This provides a complete bidirectional trace: from input variable → through formula → to recorded output value.
+
+**Text components** — four documentation blocks describe rules that cannot be expressed as pure formulas:
+
+| Text Component | Documents |
+|---|---|
+| Conditional Leakage Logic (VM0046 Section 8.3) | When Eq. 12 and Eq. 13 apply / are skipped based on Step-1 evidence and destination type |
+| Mass Balance Verification (VM0046 Section 8.2) | ΔM thresholds (≤2% OK, 2-10% justification, >10% reject) |
+| Multi-Stream Aggregation Architecture | How Guardian groups inputs by (year, destination) tuples |
+| CDM Tools Methodology Deviation (VCS Standard 3.4) | External execution of Tools 03/05/16 in Calculation Workbook |
+
+**Reviewer experience** — when a Verra reviewer opens any document with linked formulas (PDD, MR), they see a "Formulas" button that opens a navigable display of all 14 VM0046 equations rendered as standard LaTeX. Each variable is clickable, drilling down to the source schema field. This provides full mathematical transparency without requiring inspection of JavaScript source code.
+
+The FLD structure conforms with VCS Standard v4.4 dMRV transparency requirements and the Hedera Guardian Formula Linked Definitions specification (Guardian v3.1+).
 
 ---
 
@@ -641,7 +695,7 @@ The implementation declares **one methodology deviation** (CDM Tools external ex
 This DMRV System Description is part of a Verra digitization submission package containing:
 
 1. **VM0046 DMRV System Description** (this document)
-2. **VM0046 Guardian Policy file** (`.policy` archive containing 88 schemas, workflow JSON, calculation engine JavaScript)
+2. **VM0046 Guardian Policy file** (`.policy` archive containing 88 schemas, workflow JSON, calculation engine JavaScript, and **embedded Formula Linked Definitions** with all 14 VM0046 equations in LaTeX notation — see Section 4.6)
 3. **Sample Project Description** (PDD VC exported from Guardian for a representative project)
 4. **Sample Monitoring Report** (MR VC exported from Guardian)
 5. **Calculation Workbook** (Excel applying CDM Tools 03/05/16)
