@@ -2,7 +2,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { IPolicyDocumentationEntry } from '@guardian/interfaces';
 import { RegisteredService } from '../../services/registered.service';
-import { IBlockAbout, PolicyFolder } from '../../structures';
+import { IBlockAbout, PolicyFolder, PolicyItem } from '../../structures';
 
 @Component({
     selector: 'app-policy-api-config-dialog',
@@ -85,7 +85,7 @@ export class PolicyApiConfigDialogComponent {
             coverageByBlockTag.set(entry.target, coveredMethods);
         }
 
-        const newEntries: any[] = [];
+        const newEntries: IPolicyDocumentationEntry[] = [];
         for (const block of this.eligibleBlocks) {
             if (!block?.tag) {
                 continue;
@@ -170,17 +170,6 @@ export class PolicyApiConfigDialogComponent {
         return this.blocks.find((block: any) => block.tag === tag);
     }
 
-    private getDefaultMethod(block: any): string {
-        const about = this.getBlockAbout(block);
-        if (about?.get && about?.post) {
-            return 'Both';
-        }
-        if (about?.post) {
-            return 'POST';
-        }
-        return 'GET';
-    }
-
     private revalidate(): void {
         this.validationErrors.clear();
         const targetMethods = new Map<string, { index: number; method: string }[]>();
@@ -224,7 +213,7 @@ export class PolicyApiConfigDialogComponent {
         }
     }
 
-    private validateEntry(entry: IPolicyDocumentationEntry, block: any, about: IBlockAbout | null): string | null {
+    private validateEntry(entry: IPolicyDocumentationEntry, block: PolicyItem | undefined, about: IBlockAbout | null): string | null {
         if (!entry.target) {
             return 'Block is required';
         }
