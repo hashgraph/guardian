@@ -3,6 +3,7 @@ import { DatabaseServer, INotificationStep, IToolComponents, MessageAction, Mess
 import { importTag } from '../tag/tag-import-helper.js';
 import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
 import { ImportToolMap, ImportToolResult, ImportToolResults } from './tool-import.interface.js';
+import { resolveToolOverrides } from './tool-override-resolver.js';
 
 /**
  * Import tools by messages
@@ -366,7 +367,7 @@ export async function importToolByFile(
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, userId);
 
-    const toolsMapping: ImportToolMap[] = [];
+    const { toolsMapping, preResolvedTools, toolsToImport } = await resolveToolOverrides(tools, metadata);
 
     delete tool._id;
     delete tool.id;
@@ -438,43 +439,6 @@ export async function importToolByFile(
 
     // Import Tools
     notifier.startStep(STEP_IMPORT_SUB_SCHEMAS);
-
-    const preResolvedTools: PolicyTool[] = [];
-    const toolsToImport: PolicyTool[] = [];
-    const overrides: { subTool: PolicyTool, overrideMessageId: string }[] = [];
-
-    for (const subTool of tools) {
-        const overrideMessageId = metadata?.tools?.[subTool.messageId];
-        if (overrideMessageId && subTool.messageId !== overrideMessageId) {
-            overrides.push({ subTool, overrideMessageId });
-        } else {
-            toolsToImport.push(subTool);
-        }
-    }
-
-    const localTools = overrides.length
-        ? await DatabaseServer.getTools({
-            messageId: { $in: overrides.map((o) => o.overrideMessageId) },
-            status: ModuleStatus.PUBLISHED
-        })
-        : [];
-    const localToolsByMessageId = new Map(localTools.map((t) => [t.messageId, t]));
-
-    for (const { subTool, overrideMessageId } of overrides) {
-        toolsMapping.push({
-            oldMessageId: subTool.messageId,
-            messageId: overrideMessageId,
-            oldHash: subTool.hash,
-        });
-        const localTool = localToolsByMessageId.get(overrideMessageId);
-        if (localTool) {
-            preResolvedTools.push(localTool);
-        } else {
-            subTool.messageId = overrideMessageId;
-            toolsToImport.push(subTool);
-        }
-    }
-
     const toolsResult = await importSubTools(
         root,
         toolsToImport,

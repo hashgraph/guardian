@@ -5,7 +5,6 @@ import {
     IFormula,
     IOwner,
     IRootConfig,
-    ModuleStatus,
     PolicyTestStatus,
     PolicyToolMetadata,
     PolicyStatus,
@@ -47,6 +46,7 @@ import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
 import { importTag } from '../tag/tag-import-helper.js';
 import { ImportToolMap, ImportToolResults } from '../tool/tool-import.interface.js';
 import { importSubTools } from '../tool/tool-import-helper.js';
+import { resolveToolOverrides } from '../tool/tool-override-resolver.js';
 import { ImportTokenMap, ImportTokenResult } from '../token/token-import.interface.js';
 import { ImportArtifactResult } from '../artifact/artifact-import.interface.js';
 import { importTokensByFiles } from '../token/token-import-helper.js';
@@ -376,42 +376,8 @@ export class PolicyImport {
     ) {
         step.start();
 
-        this.toolsMapping = [];
-        const preResolvedTools: PolicyTool[] = [];
-        const toolsToImport: PolicyTool[] = [];
-        const overrides: { tool: PolicyTool, overrideMessageId: string }[] = [];
-
-        for (const tool of tools) {
-            const overrideMessageId = metadata?.tools?.[tool.messageId];
-            if (overrideMessageId && tool.messageId !== overrideMessageId) {
-                overrides.push({ tool, overrideMessageId });
-            } else {
-                toolsToImport.push(tool);
-            }
-        }
-
-        const localTools = overrides.length
-            ? await DatabaseServer.getTools({
-                messageId: { $in: overrides.map((o) => o.overrideMessageId) },
-                status: ModuleStatus.PUBLISHED
-            })
-            : [];
-        const localToolsByMessageId = new Map(localTools.map((t) => [t.messageId, t]));
-
-        for (const { tool, overrideMessageId } of overrides) {
-            this.toolsMapping.push({
-                oldMessageId: tool.messageId,
-                messageId: overrideMessageId,
-                oldHash: tool.hash,
-            });
-            const localTool = localToolsByMessageId.get(overrideMessageId);
-            if (localTool) {
-                preResolvedTools.push(localTool);
-            } else {
-                tool.messageId = overrideMessageId;
-                toolsToImport.push(tool);
-            }
-        }
+        const { toolsMapping, preResolvedTools, toolsToImport } = await resolveToolOverrides(tools, metadata);
+        this.toolsMapping = toolsMapping;
 
         this.toolsResult = await importSubTools(this.root, toolsToImport, user, step, userId);
         this.toolsResult.tools = [...preResolvedTools, ...this.toolsResult.tools];
