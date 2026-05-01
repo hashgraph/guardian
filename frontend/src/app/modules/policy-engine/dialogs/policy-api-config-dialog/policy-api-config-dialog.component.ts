@@ -1,6 +1,8 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { IPolicyDocumentationEntry } from '@guardian/interfaces';
+import { RegisteredService } from '../../services/registered.service';
+import { IBlockAbout, PolicyFolder, PolicyItem } from '../../structures';
 
 @Component({
     selector: 'app-policy-api-config-dialog',
@@ -10,7 +12,8 @@ import { IPolicyDocumentationEntry } from '@guardian/interfaces';
 export class PolicyApiConfigDialogComponent {
     public entries: IPolicyDocumentationEntry[] = [];
     public blocks: any[] = [];
-    public root: any;
+    public eligibleBlocks: any[] = [];
+    public root!: PolicyFolder;
     public policyId: string;
     public methods = [
         { label: 'GET', value: 'GET' },
@@ -43,12 +46,14 @@ export class PolicyApiConfigDialogComponent {
 
     constructor(
         public ref: DynamicDialogRef,
-        public config: DynamicDialogConfig
+        public config: DynamicDialogConfig,
+        private registeredService: RegisteredService
     ) {
-        this.policyId = this.config.data?.policyId || '';
-        this.blocks = this.config.data?.blocks || [];
+        this.policyId = this.config.data?.policyId ?? '';
+        this.blocks = this.config.data?.blocks ?? [];
         this.root = this.config.data?.root;
-        const existing: IPolicyDocumentationEntry[] = this.config.data?.entries || [];
+        this.eligibleBlocks = this.blocks.filter((block: any) => this.isApiCapableBlock(block));
+        const existing: IPolicyDocumentationEntry[] = this.config.data?.entries ?? [];
         this.entries = existing.map((e) => ({ ...e }));
     }
 
@@ -64,6 +69,53 @@ export class PolicyApiConfigDialogComponent {
         });
     }
 
+    addAllEntries(): void {
+        const coverageByBlockTag = new Map<string, Set<string>>();
+        for (const entry of this.entries) {
+            if (!entry.target) {
+                continue;
+            }
+            const coveredMethods = coverageByBlockTag.get(entry.target) ?? new Set<string>();
+            if (entry.method === 'Both') {
+                coveredMethods.add('GET');
+                coveredMethods.add('POST');
+            } else if (entry.method) {
+                coveredMethods.add(entry.method);
+            }
+            coverageByBlockTag.set(entry.target, coveredMethods);
+        }
+
+        const newEntries: IPolicyDocumentationEntry[] = [];
+        for (const block of this.eligibleBlocks) {
+            if (!block?.tag) {
+                continue;
+            }
+            const about = this.getBlockAbout(block);
+            const coveredMethods = coverageByBlockTag.get(block.tag) ?? new Set<string>();
+            const needsGet = !!about?.get && !coveredMethods.has('GET');
+            const needsPost = !!about?.post && !coveredMethods.has('POST');
+            if (!needsGet && !needsPost) {
+                continue;
+            }
+            const methodToAdd = (needsGet && needsPost) ? 'Both' : (needsGet ? 'GET' : 'POST');
+            newEntries.push({
+                name: block.tag,
+                description: '',
+                target: block.tag,
+                method: methodToAdd,
+                alias: block.tag.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
+                url: '',
+                dmrvUrl: '',
+                blockType: block.blockType || '',
+            });
+        }
+
+        if (newEntries.length > 0) {
+            this.entries.push(...newEntries);
+            this.revalidate();
+        }
+    }
+
     removeEntry(index: number): void {
         this.entries.splice(index, 1);
         this.validationErrors.delete(index);
@@ -73,7 +125,7 @@ export class PolicyApiConfigDialogComponent {
     onTargetChange(index: number): void {
         const entry = this.entries[index];
         if (entry.target) {
-            const block = this.blocks.find((b: any) => b.tag === entry.target);
+            const block = this.getBlockByTag(entry.target);
             entry.blockType = block?.blockType || '';
             if (!entry.name) {
                 entry.name = entry.target;
@@ -91,6 +143,10 @@ export class PolicyApiConfigDialogComponent {
         this.revalidate();
     }
 
+    onMethodChange(): void {
+        this.revalidate();
+    }
+
     getPreviewUrl(entry: IPolicyDocumentationEntry): string {
         if (!entry.alias) {
             return '';
@@ -98,29 +154,88 @@ export class PolicyApiConfigDialogComponent {
         return `/api/v1/dmrv/${this.policyId}/${entry.alias}`;
     }
 
+    private isApiCapableBlock(block: any): boolean {
+        if (!block?.tag) {
+            return false;
+        }
+        const about = this.registeredService.getAbout(block, this.root);
+        return !!(about?.get || about?.post);
+    }
+
+    private getBlockAbout(block: any): IBlockAbout | null {
+        return this.registeredService.getAbout(block, this.root);
+    }
+
+    private getBlockByTag(tag: string): any {
+        return this.blocks.find((block: any) => block.tag === tag);
+    }
+
     private revalidate(): void {
         this.validationErrors.clear();
-        const targetSet = new Map<string, number>();
+        const targetMethods = new Map<string, { index: number; method: string }[]>();
+        const aliasMethods  = new Map<string, { index: number; method: string }[]>();
         for (let i = 0; i < this.entries.length; i++) {
             const entry = this.entries[i];
-            if (!entry.target) {
-                this.validationErrors.set(i, 'Block is required');
+            const block = this.getBlockByTag(entry.target);
+            const about = block ? this.getBlockAbout(block) : null;
+            const entryError = this.validateEntry(entry, block, about);
+            if (entryError) {
+                this.validationErrors.set(i, entryError);
                 continue;
             }
-            if (!entry.alias) {
-                this.validationErrors.set(i, 'Alias is required');
+
+            const existingMethods = targetMethods.get(entry.target) ?? [];
+            const conflictingEntry = existingMethods.find((item) =>
+                item.method === entry.method ||
+                item.method === 'Both' ||
+                entry.method === 'Both'
+            );
+            if (conflictingEntry) {
+                this.validationErrors.set(i, `Conflicting block/method (same as row ${conflictingEntry.index + 1})`);
                 continue;
             }
-            if (!/^[a-z0-9-]+$/.test(entry.alias)) {
-                this.validationErrors.set(i, 'Alias: only lowercase letters, digits and hyphens');
+
+            const existingAliasMethods = aliasMethods.get(entry.alias) ?? [];
+            const aliasConflict = existingAliasMethods.find((item) =>
+                item.method === entry.method ||
+                item.method === 'Both' ||
+                entry.method === 'Both'
+            );
+            if (aliasConflict) {
+                this.validationErrors.set(i, `Conflicting alias/method (same as row ${aliasConflict.index + 1})`);
                 continue;
             }
-            if (targetSet.has(entry.target)) {
-                this.validationErrors.set(i, `Duplicate block (same as row ${(targetSet.get(entry.target) as number) + 1})`);
-                continue;
-            }
-            targetSet.set(entry.target, i);
+
+            existingMethods.push({ index: i, method: entry.method });
+            targetMethods.set(entry.target, existingMethods);
+            existingAliasMethods.push({ index: i, method: entry.method });
+            aliasMethods.set(entry.alias, existingAliasMethods);
         }
+    }
+
+    private validateEntry(entry: IPolicyDocumentationEntry, block: PolicyItem | undefined, about: IBlockAbout | null): string | null {
+        if (!entry.target) {
+            return 'Block is required';
+        }
+        if (!entry.alias) {
+            return 'Alias is required';
+        }
+        if (!/^[a-z0-9-]+$/.test(entry.alias)) {
+            return 'Alias: only lowercase letters, digits and hyphens';
+        }
+        if (!block || !about || (!about.get && !about.post)) {
+            return 'Selected block does not support API aliases';
+        }
+        if (entry.method === 'GET' && !about.get) {
+            return 'Selected block does not support GET';
+        }
+        if (entry.method === 'POST' && !about.post) {
+            return 'Selected block does not support POST';
+        }
+        if (entry.method === 'Both' && (!about.get || !about.post)) {
+            return 'Selected block must support both GET and POST for Both';
+        }
+        return null;
     }
 
     getGetParams(entry: IPolicyDocumentationEntry): { name: string; type: string; description: string }[] {

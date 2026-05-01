@@ -28,17 +28,32 @@ Policy authors can define clean, human-readable API endpoint aliases for their p
 
 <figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
-### 1.3. Validation Rules
+### 1.3. Add All Endpoints
+
+Use the **Add All Endpoints** button at the top of the dialog (next to **+ Add Endpoint**) to auto-populate API documentation entries for every linked policy block in one click.
+
+<figure><img src="../.gitbook/assets/api-add-all-endpoints.png" alt=""><figcaption></figcaption></figure>
+
+**Behavior:**
+
+* Adds an entry for every eligible block in the current policy.
+* **Skips blocks that already have an entry** — no duplicates are created.
+* Generates a smart **Name** from the block name.
+* Generates a smart **Alias** (URL-friendly: lowercase, hyphenated) from the block name/tag.
+
+### 1.4. Validation Rules
 
 * **Alias:** only `a-z`, `0-9`, `-` allowed
 * **Block** and **Alias** must be unique
 * **Block** and **Alias** are required
+* **Method** must be supported by the selected **Block** (`GET`, `POST`, or both for `BOTH`)
+* `GET + POST` on the same **Block** is allowed as two separate rows; any other combination on the same **Block** is rejected
 
 Errors appear below the corresponding row.
 
-<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/api-validation-rules.png" alt=""><figcaption></figcaption></figure>
 
-### 1.4. Save
+### 1.5. Save
 
 1. Click **Save** in the modal to apply changes locally.
 2. Click **Save** in the toolbar to persist the policy to the database.
