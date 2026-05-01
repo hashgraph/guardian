@@ -66,6 +66,15 @@
     "license": "Apache-2.0",
     "main": "dist/index.js",
     "module": "dist/index.js",
+    "exports": {
+        ".": "./dist/index.js",
+        "./entities": "./dist/entities.js",
+        "./dist/*": "./dist/*",
+        "./package.json": "./package.json"
+    },
+    "sideEffects": [
+        "./dist/entity/**/*.js"
+    ],
     "name": "@guardian/common",
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",
