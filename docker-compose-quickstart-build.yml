@@ -1,0 +1,239 @@
+# This file is linted and formatted using Docker Compose Linter (https://github.com/zavoloklom/docker-compose-linter):
+# npx dclint . --fix=true
+
+# Please note variables defined in the "environment" section will override the same variables defined in the "env_file"
+# See # https://docs.docker.com/compose/environment-variables/envvars-precedence/ for more details
+
+# YAML anchor that contains common configuration elements for our services
+x-service-template: &service-template
+  init: true
+  env_file:
+    - ./configs/.env.quickstart.guardian.system
+  environment:
+    GUARDIAN_ENV: ${GUARDIAN_ENV}
+
+name: guardian-quickstart
+
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    depends_on:
+      - auth-service
+      - cache
+      - guardian-service
+      - logger-service
+      - message-broker
+      - mongo
+    volumes:
+      - ./api-gateway/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '3002'
+      - '6555'
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: ./auth-service/Dockerfile
+    depends_on:
+      - logger-service
+      - message-broker
+      - mongo
+    volumes:
+      - ./auth-service/tls:/usr/local/app/tls:ro
+      - ./auth-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
+      - '5005'
+
+  cache:
+    image: registry.redict.io/redict:7.3.6-alpine
+    restart: always
+    expose:
+      - '6379'
+    init: true
+
+  guardian-service:
+    build:
+      context: .
+      dockerfile: ./guardian-service/Dockerfile
+    depends_on:
+      - auth-service
+      - logger-service
+      - message-broker
+      - mongo
+      - policy-service
+      - worker-service
+    volumes:
+      - ./guardian-service/tls:/usr/local/app/tls:ro
+      - ./guardian-service/configs:/usr/local/app/configs:ro
+    environment:
+      OPERATOR_ID: ${OPERATOR_ID}
+      OPERATOR_KEY: ${OPERATOR_KEY}
+    <<: *service-template
+    expose:
+      - '6555'
+      - '5007'
+
+  ipfs-node:
+    image: ipfs/kubo:v0.39.0
+    volumes:
+      - ipfs_data:/data/ipfs:rw
+      - ipfs_export:/export:rw
+    environment:
+      IPFS_TELEMETRY: off # valid options: 'on' (default), 'off', 'auto' (https://github.com/ipfs/kubo/blob/master/docs/telemetry.md)
+    ports:
+      - '127.0.0.1:4001:4001'
+      - '127.0.0.1:5001:5001'
+      - '127.0.0.1:8080:8080'
+    init: true
+
+  logger-service:
+    image: gcr.io/hedera-registry/logger-service:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - message-broker
+    volumes:
+      - ./logger-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
+
+  message-broker:
+    image: nats:2.9.25
+    volumes:
+      - ./configs/nats.conf:/etc/nats/nats.conf
+    ports:
+      - '127.0.0.1:8222:8222'
+    command: "-c /etc/nats/nats.conf --http_port 8222"
+    expose:
+      - '4222'
+    init: true
+
+  mongo:
+    image: mongo:6.0.26
+    # command: "--setParameter allowDiskUseByDefault=true"
+    command: "--setParameter allowDiskUseByDefault=true --quiet --logpath /dev/null" # use this command to reduce log noise
+    restart: always
+    expose:
+      - '27017'
+    init: true
+
+  notification-service:
+    image: gcr.io/hedera-registry/notification-service:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - message-broker
+    volumes:
+      - ./notification-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+
+  policy-service:
+    build:
+      context: .
+      dockerfile: ./policy-service/Dockerfile
+    depends_on:
+      - auth-service
+      - logger-service
+      - message-broker
+      - mongo
+    volumes:
+      - ./policy-service/tls:/usr/local/app/tls:ro
+      - ./policy-service/configs:/usr/local/app/configs:ro
+      # Uncomment for PYTHON_SANDBOX_MODE=docker:
+      # - /var/run/docker.sock:/var/run/docker.sock
+    <<: *service-template
+    expose:
+      - '5006'
+
+  # Uncomment for PYTHON_SANDBOX_MODE=docker:
+  # python-sandbox:
+  #   build:
+  #     context: ./policy-service/docker/python-sandbox
+  #     dockerfile: Dockerfile
+  #   image: guardian/python-sandbox:latest
+
+  queue-service:
+    build:
+      context: .
+      dockerfile: ./queue-service/Dockerfile
+    depends_on:
+      - logger-service
+      - message-broker
+      - mongo
+    volumes:
+      - ./queue-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
+
+  topic-listener-service:
+    build:
+      context: .
+      dockerfile: ./topic-listener-service/Dockerfile
+    depends_on:
+      - message-broker
+      - mongo
+      - queue-service
+    volumes:
+      - ./topic-listener-service/configs:/usr/local/app/configs:ro
+    <<: *service-template
+    expose:
+      - '6555'
+
+  topic-viewer:
+    build:
+      context: .
+      dockerfile: ./topic-viewer/Dockerfile
+    expose:
+      - '3006'
+      - '5009'
+    init: true
+
+  web-proxy:
+    build:
+      context: .
+      dockerfile: ./web-proxy/Dockerfile.ci
+    depends_on:
+      - api-gateway
+      - auth-service
+      - guardian-service
+    environment:
+      GATEWAY_CLIENT_MAX_BODY_SIZE: 1024m
+      GATEWAY_HOST: api-gateway
+      GATEWAY_PORT: 3002
+      MRV_SENDER_HOST: mrv-sender
+      MRV_SENDER_PORT: 3005
+      TOPIC_VIEWER_HOST: topic-viewer
+      TOPIC_VIEWER_PORT: 3006
+    ports:
+      - '127.0.0.1:3000:80'
+    init: true
+
+  worker-service:
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    depends_on:
+      auth-service:
+        condition: service_started
+      ipfs-node:
+        condition: service_healthy
+      queue-service:
+        condition: service_started
+    volumes:
+      - ./worker-service/tls:/usr/local/app/tls:ro
+      - ./worker-service/configs:/usr/local/app/configs:ro
+    environment:
+      OPERATOR_ID: ${OPERATOR_ID}
+      OPERATOR_KEY: ${OPERATOR_KEY}
+    <<: *service-template
+    deploy:
+      replicas: 1
+    expose:
+      - '6555'
+
+volumes:
+  ipfs_data:
+  ipfs_export:
