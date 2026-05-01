@@ -29,7 +29,7 @@ RUN yarn pack
 FROM base AS deps
 COPY --link --from=interfaces /usr/local/app/indexer-interfaces-*.tgz /tmp/indexer-interfaces.tgz
 COPY --link --from=common /usr/local/app/indexer-common-*.tgz /tmp/indexer-common.tgz
-COPY --link indexer-api-gateway/package.json indexer-api-gateway/tsconfig*.json indexer-api-gateway/Gulpfile.mjs yarn.lock ./
+COPY --link indexer-api-gateway/package.json indexer-api-gateway/tsconfig*.json yarn.lock ./
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@indexer/interfaces']='file:/tmp/indexer-interfaces.tgz'; input.dependencies['@indexer/common']='file:/tmp/indexer-common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
     yarn install --prod
@@ -38,7 +38,7 @@ RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
 FROM base AS build
 COPY --link --from=interfaces /usr/local/app/indexer-interfaces-*.tgz /tmp/indexer-interfaces.tgz
 COPY --link --from=common /usr/local/app/indexer-common-*.tgz /tmp/indexer-common.tgz
-COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/Gulpfile.mjs /usr/local/app/yarn.lock ./
+COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
 RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
     yarn install --immutable
 COPY --link indexer-api-gateway/environments environments/

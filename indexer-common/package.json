@@ -19,8 +19,6 @@
     "description": "Common package share cross all services",
     "devDependencies": {
         "@types/express": "^5.0.1",
-        "@types/gulp": "^4",
-        "@types/gulp-rename": "^2",
         "@types/node": "^22.15.19",
         "@types/glob": "^8.1.0",
         "mocha-junit-reporter": "^2.0.2",
