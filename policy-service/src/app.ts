@@ -1,4 +1,5 @@
-import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, entities, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet, OldSecretManager, MockService } from '@guardian/common';
+import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet, OldSecretManager, MockService } from '@guardian/common';
+import { entities } from '@guardian/common/dist/entities.js';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from './helpers/policy-container.js';
 import { BlockService } from './policy-engine/block-service.js';
