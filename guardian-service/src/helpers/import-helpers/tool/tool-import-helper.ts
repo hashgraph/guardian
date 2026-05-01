@@ -366,28 +366,7 @@ export async function importToolByFile(
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, userId);
 
-    const toolsMapping: {
-        oldMessageId: string;
-        messageId: string;
-        oldHash: string;
-        newHash?: string;
-    }[] = [];
-    if (metadata?.tools) {
-        // tslint:disable-next-line:no-shadowed-variable
-        for (const tool of tools) {
-            if (
-                metadata.tools[tool.messageId] &&
-                tool.messageId !== metadata.tools[tool.messageId]
-            ) {
-                toolsMapping.push({
-                    oldMessageId: tool.messageId,
-                    messageId: metadata.tools[tool.messageId],
-                    oldHash: tool.hash,
-                });
-                tool.messageId = metadata.tools[tool.messageId];
-            }
-        }
-    }
+    const toolsMapping: ImportToolMap[] = [];
 
     delete tool._id;
     delete tool.id;
@@ -459,18 +438,55 @@ export async function importToolByFile(
 
     // Import Tools
     notifier.startStep(STEP_IMPORT_SUB_SCHEMAS);
+
+    const preResolvedTools: PolicyTool[] = [];
+    const toolsToImport: PolicyTool[] = [];
+    const overrides: { subTool: PolicyTool, overrideMessageId: string }[] = [];
+
+    for (const subTool of tools) {
+        const overrideMessageId = metadata?.tools?.[subTool.messageId];
+        if (overrideMessageId && subTool.messageId !== overrideMessageId) {
+            overrides.push({ subTool, overrideMessageId });
+        } else {
+            toolsToImport.push(subTool);
+        }
+    }
+
+    const localTools = overrides.length
+        ? await DatabaseServer.getTools({
+            messageId: { $in: overrides.map((o) => o.overrideMessageId) },
+            status: ModuleStatus.PUBLISHED
+        })
+        : [];
+    const localToolsByMessageId = new Map(localTools.map((t) => [t.messageId, t]));
+
+    for (const { subTool, overrideMessageId } of overrides) {
+        toolsMapping.push({
+            oldMessageId: subTool.messageId,
+            messageId: overrideMessageId,
+            oldHash: subTool.hash,
+        });
+        const localTool = localToolsByMessageId.get(overrideMessageId);
+        if (localTool) {
+            preResolvedTools.push(localTool);
+        } else {
+            subTool.messageId = overrideMessageId;
+            toolsToImport.push(subTool);
+        }
+    }
+
     const toolsResult = await importSubTools(
         root,
-        tools,
+        toolsToImport,
         user,
         notifier.getStep(STEP_IMPORT_SUB_SCHEMAS),
         userId
     );
+    toolsResult.tools = [...preResolvedTools, ...toolsResult.tools];
 
     for (const toolMapping of toolsMapping) {
         const toolByMessageId = toolsResult.tools.find(
-            // tslint:disable-next-line:no-shadowed-variable
-            (tool) => tool.messageId === toolMapping.messageId
+            (t) => t.messageId === toolMapping.messageId
         );
         toolMapping.newHash = toolByMessageId?.hash;
     }
@@ -508,6 +524,7 @@ export async function importToolByFile(
 
     // Replace id
     await replaceConfig(tool, schemasMap, toolsMapping);
+    await updateToolConfig(tool);
 
     const item = await DatabaseServer.createTool(tool);
     const _topicRow = await DatabaseServer.getTopicById(topic.topicId);
