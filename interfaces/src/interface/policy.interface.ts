@@ -34,6 +34,10 @@ export interface IPolicyDocumentationEntry {
    * Block type (auto-populated for query params display)
    */
   blockType?: string;
+  /**
+   * Schema IRI bound to the target block (auto-populated by /about)
+   */
+  schemaId?: string;
 }
 
 /**
