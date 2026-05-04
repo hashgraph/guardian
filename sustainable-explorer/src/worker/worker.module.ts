@@ -11,13 +11,14 @@ import { QUEUE_NAMES, getActiveQueues } from '@shared/config/bullmq.config';
 // Services
 import { HederaService } from './services/hedera.service';
 import { IpfsService } from './services/ipfs.service';
+import { PolicySchemaImportService } from './services/policy-schema-import.service';
 
 // Processors
 import { TopicSyncProcessor } from './processors/topic-sync.processor';
 import { MessageProcessProcessor } from './processors/message-process.processor';
 import { TokenSyncProcessor } from './processors/token-sync.processor';
 import { IpfsFetchProcessor } from './processors/ipfs-fetch.processor';
-import { PolicySchemaImportProcessor } from './processors/policy-schema-import.processor';
+import { PolicyDecodeProcessor } from './processors/policy-decode.processor';
 import { MvRefreshProcessor } from './processors/mv-refresh.processor';
 import { BusinessViewBuilderProcessor } from './processors/business-view-builder.processor';
 
@@ -33,7 +34,7 @@ const PROCESSOR_MAP: Record<string, any> = {
     [QUEUE_NAMES.MESSAGE_PARSE]: MessageProcessProcessor,
     [QUEUE_NAMES.TOKEN_SYNC]: TokenSyncProcessor,
     [QUEUE_NAMES.IPFS_FETCH]: IpfsFetchProcessor,
-    [QUEUE_NAMES.POLICY_SCHEMA_IMPORT]: PolicySchemaImportProcessor,
+    [QUEUE_NAMES.POLICY_DECODE]: PolicyDecodeProcessor,
     [QUEUE_NAMES.MV_REFRESH]: MvRefreshProcessor,
     [QUEUE_NAMES.BUSINESS_VIEW_BUILD]: BusinessViewBuilderProcessor,
 };
@@ -100,6 +101,7 @@ export class WorkerModule {
                 // Services (always available for processors)
                 HederaService,
                 IpfsService,
+                PolicySchemaImportService,
 
                 // Only processors for active queues
                 ...activeProcessors,

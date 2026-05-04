@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import Redis from 'ioredis';
 import { QUEUE_NAMES, getWorkerNetwork } from '@shared/config/bullmq.config';
-import { PolicySchemaImportJobData } from '../processors/policy-schema-import.processor';
+import { PolicyDecodeJobData } from '../processors/policy-decode.processor';
 
 /**
  * Orchestrates initial sync jobs on startup.
@@ -29,7 +29,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         @InjectQueue(QUEUE_NAMES.TOKEN_SYNC) private readonly tokenQueue: Queue,
         @InjectQueue(QUEUE_NAMES.MV_REFRESH) private readonly mvRefreshQueue: Queue,
         @InjectQueue(QUEUE_NAMES.BUSINESS_VIEW_BUILD) private readonly businessViewQueue: Queue,
-        @InjectQueue(QUEUE_NAMES.POLICY_SCHEMA_IMPORT) private readonly policySchemaQueue: Queue,
+        @InjectQueue(QUEUE_NAMES.POLICY_DECODE) private readonly policyDecodeQueue: Queue,
     ) {}
 
     async onModuleInit(): Promise<void> {
@@ -51,7 +51,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         // Always schedule initial topic/token syncs (idempotent via jobId)
         await this.scheduleTopicSyncs();
         await this.scheduleTokenSyncs();
-        await this.schedulePolicySchemaImports();
+        await this.schedulePolicyDecodeJobs();
 
         // Renew leadership periodically
         this.leaderInterval = setInterval(async () => {
@@ -233,12 +233,12 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
 
     /**
      * Finds Instance-Policy messages that have a ZIP CID but no imported schemas
-     * and re-enqueues them for the PolicySchemaImportProcessor.
+     * and re-enqueues them for the PolicyDecodeProcessor.
      *
      * The processor itself deduplicates via (policyTopicId, sourceCid), so
      * already-imported ZIPs are skipped cheaply on subsequent restarts.
      */
-    private async schedulePolicySchemaImports(): Promise<void> {
+    private async schedulePolicyDecodeJobs(): Promise<void> {
         const rows: Array<{ policy_topic_id: string; consensus_timestamp: string; cid: string }> =
             await this.dataSource.query(`
                 SELECT
@@ -268,19 +268,19 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
             `);
 
         for (const row of rows) {
-            const jobData: PolicySchemaImportJobData = {
+            const jobData: PolicyDecodeJobData = {
                 cid: row.cid,
                 messageTimestamp: row.consensus_timestamp,
                 policyTopicId: row.policy_topic_id,
             };
             // Timestamp suffix ensures a fresh job even if an old completed/failed
             // job with the same logical ID exists in BullMQ history.
-            await this.policySchemaQueue.add('import', jobData, {
-                jobId: `policy-schema-${row.policy_topic_id}-${row.cid}-${Date.now()}`,
+            await this.policyDecodeQueue.add('decode', jobData, {
+                jobId: `policy-decode-${row.policy_topic_id}-${row.cid}-${Date.now()}`,
             });
         }
 
-        this.logger.log(`Enqueued ${rows.length} missing policy schema import job(s)`);
+        this.logger.log(`Enqueued ${rows.length} missing policy decode job(s)`);
     }
 
     private async scheduleMvRefresh(): Promise<void> {

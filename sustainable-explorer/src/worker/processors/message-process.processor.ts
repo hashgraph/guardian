@@ -28,7 +28,7 @@ export class MessageProcessProcessor extends WorkerHost {
     constructor(
         private readonly dataSource: DataSource,
         @InjectQueue(QUEUE_NAMES.IPFS_FETCH) private readonly ipfsQueue: Queue,
-        @InjectQueue(QUEUE_NAMES.POLICY_SCHEMA_IMPORT) private readonly policySchemaQueue: Queue,
+        @InjectQueue(QUEUE_NAMES.POLICY_DECODE) private readonly policyDecodeQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOPIC_SYNC) private readonly topicQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOKEN_SYNC) private readonly tokenQueue: Queue,
     ) {
@@ -152,12 +152,12 @@ export class MessageProcessProcessor extends WorkerHost {
                 : topicId;
 
             for (const cid of parsed.files) {
-                await this.policySchemaQueue.add('import', {
+                await this.policyDecodeQueue.add('decode', {
                     cid,
                     messageTimestamp: consensusTimestamp,
                     policyTopicId,
                 }, {
-                    jobId: `policy-schema-${policyTopicId}-${cid}`,
+                    jobId: `policy-decode-${policyTopicId}-${cid}`,
                 });
             }
         }
