@@ -1,5 +1,6 @@
-import { describe, expect, it } from '@jest/globals';
-import { readdirSync, readFileSync } from 'fs';
+import { beforeAll, describe, expect, it } from '@jest/globals';
+import { readFileSync } from 'fs';
+import JSZip from 'jszip';
 import { basename, join } from 'path';
 import { HeuristicFieldMapperService } from '../../../../src/worker/mapping/strategies/map-fields/heuristic-field-mapper.service';
 import { LlmFieldMapperService } from '../../../../src/worker/mapping/strategies/map-fields/llm-field-mapper.service';
@@ -35,26 +36,42 @@ const resolveSchemaId = (parsed: RawPolicySchemaDocument, fileName: string): str
     return id.slice(0, 255);
 };
 
-const buildSchemasFromFixtures = () => {
-    const schemasDir = join(__dirname, 'VMR0006', 'schemas');
-    const files = readdirSync(schemasDir)
-        .filter(file => file.toLowerCase().endsWith('.json'))
-        .sort();
+const buildSchemasFromPolicyArchive = async () => {
+    const policyPath = join(__dirname, 'policies', 'VMR0006.policy');
+    const zip = await JSZip.loadAsync(readFileSync(policyPath));
 
-    return files.map((fileName) => {
-        const filePath = join(schemasDir, fileName);
-        const parsed = JSON.parse(readFileSync(filePath, 'utf-8')) as RawPolicySchemaDocument;
-        return {
-            id: resolveSchemaId(parsed, fileName),
+    const schemaFiles = Object.values(zip.files)
+        .filter(file => !file.dir && /(^|\/)(schema|schemas)\/.*\.json$/i.test(file.name))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    const schemas: Array<{ id: string; name?: string; rawSchema: Record<string, unknown> }> = [];
+
+    for (const file of schemaFiles) {
+        let parsed: RawPolicySchemaDocument;
+
+        try {
+            parsed = JSON.parse(await file.async('string')) as RawPolicySchemaDocument;
+        } catch {
+            continue;
+        }
+
+        schemas.push({
+            id: resolveSchemaId(parsed, file.name),
             name: asString(parsed.name) ?? undefined,
             rawSchema: asObject(parsed) ?? {},
-        };
-    });
+        });
+    }
+
+    return schemas;
 };
 
 describe('field mapping strategies', () => {
-    const schemas = buildSchemasFromFixtures();
+    let schemas: Array<{ id: string; name?: string; rawSchema: Record<string, unknown> }> = [];
     const schemaMap = { ProjectSchema: '5dde840d-e4d8-4185-a4cd-48fb314c0ef3' };
+
+    beforeAll(async () => {
+        schemas = await buildSchemasFromPolicyArchive();
+    });
     const fields = [
         {
             "fieldName": "Project Title",
