@@ -2,6 +2,7 @@ import { IPFSService } from "src/app/services/ipfs.service";
 import { firstValueFrom } from 'rxjs';
 import { fileTypeFromBuffer } from 'file-type';
 import { PolicyEngineService } from "src/app/services/policy-engine.service";
+import { CID } from 'multiformats/cid';
 
 interface DocumentData {
     document: any;
@@ -95,7 +96,16 @@ export class IpfsTransformationUIAddonCode {
             return ipfsString;
         }
 
-        const cid = match[1];
+        const rawCid = match[1];
+        let cid = rawCid;
+
+        if (!this.dryRun) {
+            try {
+                cid = CID.parse(rawCid).toV1().toString();
+            } catch (error) {
+                console.warn(`Skipping CID v1 conversion for "${rawCid}":`, error);
+            }
+        }
 
         if (this.transformationType === TransformationIpfsLinkType.IpfsGateway) {
             return this.convertToIpfsGateway(cid);
