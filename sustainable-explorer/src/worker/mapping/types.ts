@@ -3,12 +3,16 @@
  */
 
 /**
+ * Schema label - Restricted to specific schema types
+ */
+export type SchemaLabel = 'ProjectSchema' | 'PDD' | 'MonitoringReport' | 'VerificationReport' | 'ValidationReport';
+
+/**
  * Schema Label Map - Output of the Map Schemas step
  * Maps schema names to their IDs for reference
+ * Keys are restricted to known schema types
  */
-export interface SchemaLabelMap {
-    [schemaName: string]: string;
-}
+export type SchemaLabelMap = Partial<Record<SchemaLabel, string>>;
 
 /**
  * Field representation for mapping input
