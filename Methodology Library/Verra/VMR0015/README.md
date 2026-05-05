@@ -17,7 +17,11 @@ Submitted for the [DLT Earth bounty programme](https://www.dltearth.com/bounty-p
 | Token | [`0.0.8865898`](https://hashscan.io/testnet/token/0.0.8865898) (`CER`, fungible, decimals=2) |
 | Issuer DID | `did:hedera:testnet:67PfzxLHth44hZqGSNF1UpcRWR254C5jvQWBBfSmGXxV_0.0.8865869` |
 | Issuer account | [`0.0.8865868`](https://hashscan.io/testnet/account/0.0.8865868) |
-| Policy IPFS CID | `QmUebQeBdFVhfZA2xpmzKESxQkWGCawBw7tjVe6f5kM2wN` |
+| Policy IPFS CID | [`QmUebQeBdFVhfZA2xpmzKESxQkWGCawBw7tjVe6f5kM2wN`](https://ipfs.io/ipfs/QmUebQeBdFVhfZA2xpmzKESxQkWGCawBw7tjVe6f5kM2wN) |
+| Context IPFS CID | [`QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv`](https://ipfs.io/ipfs/QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv) |
+| Instance topic | [`0.0.8865998`](https://hashscan.io/testnet/topic/0.0.8865998) |
+| HCS publish messageId | `1778016453.758267000` |
+| Schemas published | 14 |
 
 Full identifier list: [`evidence/ON_CHAIN_ARTIFACTS.md`](evidence/ON_CHAIN_ARTIFACTS.md).
 
@@ -52,7 +56,7 @@ Methodology Library/Verra/VMR0015/
     ├── COMPARISON_VS_GOLD_STANDARD.md (unbiased positioning)
     └── FORENSIC_CHECK.md              (12/12 originality pass)
 └── tests/
-    └── tc1_mint_only.record           (full-lifecycle dry-run fixture)
+    └── tc1_full_lifecycle.record       (recorded passing dry-run, 11 actions, 12 documents)
 ```
 
 ---

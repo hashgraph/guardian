@@ -140,7 +140,7 @@ If the reviewer wants to exercise the policy themselves:
 
 1. Import `VMR0015.policy` into their own MGS instance (free testnet account).
 2. Publish.
-3. Open the policy → Test → upload `tc1_mint_only.record`.
+3. Open the policy → Test → upload `tc1_full_lifecycle.record`.
 4. Run.
 
 Expected result: every action passes through. The final mint emits 18,750 units (= 187.50 CER) against the supply key controlled by the policy.
@@ -171,4 +171,4 @@ Step 9 is optional and demonstrates dynamic correctness, not just static correct
 | Reviewer guide | `Methodology Library/Verra/VMR0015/evidence/REVIEWER_GUIDE.md` |
 | Comparison | `Methodology Library/Verra/VMR0015/evidence/COMPARISON_VS_GOLD_STANDARD.md` |
 | Forensic | `Methodology Library/Verra/VMR0015/evidence/FORENSIC_CHECK.md` |
-| Test record | `Methodology Library/Verra/VMR0015/tests/tc1_mint_only.record` |
+| Test record | `Methodology Library/Verra/VMR0015/tests/tc1_full_lifecycle.record` |

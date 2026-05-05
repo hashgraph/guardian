@@ -192,3 +192,26 @@ In the pilot example, `wq_pass_rate = 0.97` clears the 0.95 threshold, so the re
 - Schema `Baseline Emissions Breakdown` — BE component fields
 - Schema `Project Activity Emissions` — PE component fields
 - Schema `Leakage Adjustment (VMR0015)` — LE component fields, `f_woody` flag
+
+---
+
+## Appendix A — Full schema IRI registry (14 published schemas)
+
+All 14 schemas were anchored to HCS topic `0.0.8865880` at publish time. A reviewer can verify each by extracting `VMR0015.policy` and inspecting `schemas/`.
+
+| # | IRI | Name |
+|---|-----|------|
+| 1 | `#0a9931ce-1bdb-49ef-bfde-f9afad5e6e74&1.0.0` | VVB |
+| 2 | `#104b5d2f-c3e0-46c6-b486-6652dd649779&1.0.0` | Project Participant |
+| 3 | `#23b4fa33-c869-4989-8afe-6870ddf5ebd1&1.0.0` | Baseline Fuel Mix (VMR0015) |
+| 4 | `#26e77906-aeb6-4505-b17f-dc6b0efbeedf&1.0.0` | Household Profile |
+| 5 | `#2cca5db7-2abc-4dff-9f60-ac78a6cc2a59&1.0.0` | Geographic Location |
+| 6 | `#498e22a8-8aba-4201-ae0c-a66464351b8c&1.0.0` | Monitoring Reporting Period |
+| 7 | `#63f685ca-6473-48b5-b67d-b3c504165f11&1.0.0` | Project Activity Emissions |
+| 8 | `#879b3b39-9ab9-43ca-8390-76043a314f5f&1.0.0` | Leakage Adjustment (VMR0015) |
+| 9 | `#a6c5a581-6828-41de-ac85-cef0ba38033a&1.0.0` | Water Quality Test |
+| 10 | `#aacff1ab-ef5f-4ca1-873f-bfb06c1a1b0a&1.0.0` | Baseline Emissions Breakdown |
+| 11 | `#bab53f97-d952-4ae3-81a6-3e2ac2c12d5e&1.0.0` | Water Purification Device |
+| 12 | `#c2d7ce9c-6008-430d-8381-27e195a04a79&1.0.0` | Operating Performance |
+| 13 | `#d0f009f5-44c6-438e-b852-02dbe831a079&1.0.0` | Monitoring Report (VMR0015) |
+| 14 | `#dbbe9f47-7bbc-48dd-b876-29c1a950807e&1.0.0` | Project Description (VMR0015) |

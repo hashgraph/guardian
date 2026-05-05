@@ -39,7 +39,7 @@ The criteria below are derived from:
 | C3 | Trust chain (full report) implemented | ✅ | `vmr0015_trust_chain_report` (renamed from default `trustChainBlock`) — 1 `reportBlock` + 8 `reportItemBlock` |
 | C4 | Policy publishes without validation errors | ✅ | Policy id `69fa5c34bafe0836d93bcde0` status PUBLISHED |
 | C5 | Mint block correctly wired | ✅ | `mintDocumentBlock.tokenId = 0.0.8865898`, `rule = field7` (ER_total) |
-| C6 | End-to-end lifecycle reaches mint | ✅ | `tc1_mint_only.record` covers role choice → PP profile → project → report → VVB approve → owner approve → mint |
+| C6 | End-to-end lifecycle reaches mint | ✅ | `tc1_full_lifecycle.record` covers role choice → PP profile → project → report → VVB approve → owner approve → mint |
 
 ## D. On-Chain Anchoring
 
@@ -50,7 +50,7 @@ The criteria below are derived from:
 | D3 | Issuer DID resolvable | ✅ | DID `67PfzxLHth44hZqGSNF1UpcRWR254C5jvQWBBfSmGXxV_0.0.8865869`; user topic `0.0.8865869` |
 | D4 | HTS token created and policy-controlled | ✅ | Token `0.0.8865898`, fungible, decimals 2, supply key held by policy |
 | D5 | IPFS pinning of policy and context | ✅ | Policy CID `QmUebQeBdFVhfZA2xpmzKESxQkWGCawBw7tjVe6f5kM2wN`; context CID `QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv` |
-| D6 | Verifiable Credential signed at publish | ✅ | VC `urn:uuid:75fac51f-ba27-44f3-a678-1fa427cbc64c`; Ed25519Signature2018 |
+| D6 | Verifiable Credential signed at publish | ✅ | VC `urn:uuid:c965c4dc-c43e-4485-8a60-91f8f18e418c`; Ed25519Signature2018 |
 
 ## E. Documentation
 
@@ -82,7 +82,7 @@ The criteria below are derived from:
 | G1 | Policy file in repo matches published policy | ✅ | `Methodology Library/Verra/VMR0015/VMR0015.policy` (in PR) |
 | G2 | Schemas in repo match published schemas | ✅ | All 14 schemas embedded in the .policy file |
 | G3 | Worked example numbers reproducible from inputs | ✅ | `EMISSIONS_CALCULATION.md` shows full arithmetic |
-| G4 | Test fixture provided | ✅ | `tc1_mint_only.record` (full lifecycle dry-run) |
+| G4 | Test fixture provided | ✅ | `tc1_full_lifecycle.record` (full lifecycle dry-run) |
 
 ---
 

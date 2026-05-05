@@ -19,7 +19,7 @@ A reviewer can independently verify each artifact on Hashscan and IPFS without a
 | Schema topic | [`0.0.8865880`](https://hashscan.io/testnet/topic/0.0.8865880) |
 | IPFS @context | [`QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv`](https://ipfs.io/ipfs/QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv) |
 | IPFS policy CID | [`QmUebQeBdFVhfZA2xpmzKESxQkWGCawBw7tjVe6f5kM2wN`](https://ipfs.io/ipfs/QmUebQeBdFVhfZA2xpmzKESxQkWGCawBw7tjVe6f5kM2wN) |
-| Verifiable Credential id | `urn:uuid:75fac51f-ba27-44f3-a678-1fa427cbc64c` |
+| Verifiable Credential id | `urn:uuid:c965c4dc-c43e-4485-8a60-91f8f18e418c` |
 | VC issuance | 2026-05-05T21:27:40Z |
 | VC proof | Ed25519Signature2018 (assertionMethod) |
 
@@ -95,7 +95,7 @@ The export shipped one VC representing the policy publish event.
 
 ```json
 {
-  "id": "urn:uuid:75fac51f-ba27-44f3-a678-1fa427cbc64c",
+  "id": "urn:uuid:c965c4dc-c43e-4485-8a60-91f8f18e418c",
   "type": ["VerifiableCredential"],
   "issuer": "did:hedera:testnet:67PfzxLHth44hZqGSNF1UpcRWR254C5jvQWBBfSmGXxV_0.0.8865869",
   "issuanceDate": "2026-05-05T21:27:40.407Z",
