@@ -57,10 +57,40 @@ describe('field mapping strategies', () => {
     const schemaMap = { ProjectSchema: '5dde840d-e4d8-4185-a4cd-48fb314c0ef3' };
     const fields = [
         {
-            fieldName: 'Project Title',
-            description: 'Dummy field',
-            keywords: ['title'],
+            "fieldName": "Project Title",
+            "description": "Official name or title of the project",
+            "keywords": ["title", "project", "name", "program"]
         },
+        {
+            "fieldName": "Country",
+            "description": "Country where the project is implemented or located",
+            "keywords": ["country", "location", "host", "region", "territory"]
+        },
+        {
+            "fieldName": "Registry",
+            "description": "Carbon or environmental registry system where the project is registered (e.g., Verra, Gold Standard)",
+            "keywords": ["registry", "standard", "program", "verra", "gold", "CDM", "VCS"]
+        },
+        {
+            "fieldName": "Project Developer",
+            "description": "Organization, company, or entity responsible for developing or implementing the project",
+            "keywords": ["developer", "proponent", "entity", "owner"]
+        },
+        {
+            "fieldName": "Sector",
+            "description": "Industry or sector classification of the project (e.g., energy, forestry, agriculture)",
+            "keywords": ["sector", "type", "category", "energy", "forestry", "agriculture", "land use", "methodology"]
+        },
+        {
+            "fieldName": "Status",
+            "description": "Current lifecycle status of the project such as proposed, registered, active, or retired",
+            "keywords": ["status", "stage", "state", "phase", "lifecycle", "approved", "verified"]
+        },
+        {
+            "fieldName": "SDGs",
+            "description": "List of United Nations Sustainable Development Goals (SDGs) that the project contributes to or supports",
+            "keywords": ["sdg", "goals", "sustainable", "development goals", "UN goals", "co-benefits", "social impact", "benefits"]
+        }
     ];
 
     it('HeuristicFieldMapperService returns an empty dummy map', async () => {
