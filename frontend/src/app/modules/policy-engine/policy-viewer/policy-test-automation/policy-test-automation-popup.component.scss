@@ -1,0 +1,38 @@
+.policy-test-automation-popup {
+    width: 280px;
+    padding: 12px;
+    color: #23252e;
+    font-size: 12px;
+}
+
+.policy-test-automation-title {
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.policy-test-section {
+    margin-bottom: 12px;
+}
+
+.policy-test-section-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.policy-test-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.policy-test-section-disabled {
+    opacity: 0.45;
+}
+
+.policy-test-link-button {
+    border: 0;
+    background: none;
+    color: var(--color-primary, #3f51b5);
+    cursor: pointer;
+    padding: 0;
+}

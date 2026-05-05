@@ -181,6 +181,7 @@ import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialo
 import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
 import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-dialog.component';
 import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
+import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-automation/policy-test-automation-popup.component';
 
 @NgModule({
     declarations: [
@@ -318,7 +319,8 @@ import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
         AddDocumentDialog,
         ChangeBlockSettingsDialog,
         ApproveUpdateVcDocumentDialogComponent,
-        MockDialog
+        MockDialog,
+        PolicyTestAutomationPopupComponent
     ],
     imports: [
         CommonModule,

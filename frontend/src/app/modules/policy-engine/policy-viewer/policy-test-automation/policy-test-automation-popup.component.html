@@ -1,0 +1,26 @@
+<div class="policy-test-automation-popup" *ngIf="draftService.draft$ | async as draft">
+    <div class="policy-test-automation-title">Policy Test Automation</div>
+
+    <div class="policy-test-section">
+        <div class="policy-test-section-title">Input</div>
+
+        <label class="policy-test-checkbox-row" *ngIf="!draft.input">
+            <input
+                type="checkbox"
+                [checked]="draft.captureNextFormSubmit"
+                (change)="onCaptureChange($any($event.target).checked)"
+            />
+            <span>Capture Form Submission Data</span>
+        </label>
+
+        <div class="policy-test-captured-input" *ngIf="draft.input">
+            <div class="policy-test-input-name">Form input captured</div>
+            <button type="button" class="policy-test-link-button" (click)="discardInput()">Discard</button>
+        </div>
+    </div>
+
+    <div class="policy-test-section policy-test-section-disabled">
+        <div class="policy-test-section-title">Outputs</div>
+        <div class="policy-test-muted">Confirm Document Results</div>
+    </div>
+</div>
