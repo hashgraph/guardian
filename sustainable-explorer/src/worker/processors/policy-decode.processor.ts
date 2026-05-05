@@ -262,55 +262,40 @@ export class PolicyDecodeProcessor extends WorkerHost {
         // These are common fields found in policy schemas
         return [
             {
-                fieldName: 'Project ID',
-                description: 'Unique identifier for the project',
-                keywords: ['projectId', 'project_id', 'id', 'uuid'],
+                "fieldName": "Project Title",
+                "description": "Official name or title of the project",
+                "keywords": ["title", "project", "name", "program"]
             },
             {
-                fieldName: 'Project Name',
-                description: 'Name or title of the project',
-                keywords: ['projectName', 'project_name', 'name', 'title'],
+                "fieldName": "Country",
+                "description": "Country where the project is implemented or located",
+                "keywords": ["country", "location", "host", "region", "territory"]
             },
             {
-                fieldName: 'Project Description',
-                description: 'Detailed description of the project',
-                keywords: ['projectDescription', 'project_description', 'description'],
+                "fieldName": "Registry",
+                "description": "Carbon or environmental registry system where the project is registered (e.g., Verra, Gold Standard)",
+                "keywords": ["registry", "standard", "program", "verra", "gold", "CDM", "VCS"]
             },
             {
-                fieldName: 'Baseline Emissions',
-                description: 'Baseline emissions for the project',
-                keywords: ['baselineEmissions', 'baseline_emissions', 'baseline'],
+                "fieldName": "Project Developer",
+                "description": "Organization, company, or entity responsible for developing or implementing the project",
+                "keywords": ["developer", "proponent", "entity", "owner"]
             },
             {
-                fieldName: 'Project Emissions',
-                description: 'Project-related emissions',
-                keywords: ['projectEmissions', 'project_emissions', 'emissions'],
+                "fieldName": "Sector",
+                "description": "Industry or sector classification of the project (e.g., energy, forestry, agriculture)",
+                "keywords": ["sector", "type", "category", "energy", "forestry", "agriculture", "land use", "methodology"]
             },
             {
-                fieldName: 'Emission Reductions',
-                description: 'Total emission reductions achieved',
-                keywords: ['emissionReductions', 'emission_reductions', 'reductions'],
+                "fieldName": "Status",
+                "description": "Current lifecycle status of the project such as proposed, registered, active, or retired",
+                "keywords": ["status", "stage", "state", "phase", "lifecycle", "approved", "verified"]
             },
             {
-                fieldName: 'Methodology',
-                description: 'Applied methodology for the project',
-                keywords: ['methodology', 'method', 'approach'],
-            },
-            {
-                fieldName: 'Start Date',
-                description: 'Project start date',
-                keywords: ['startDate', 'start_date', 'begin_date'],
-            },
-            {
-                fieldName: 'End Date',
-                description: 'Project end date',
-                keywords: ['endDate', 'end_date', 'completion_date'],
-            },
-            {
-                fieldName: 'Location',
-                description: 'Project location or region',
-                keywords: ['location', 'region', 'country', 'area'],
-            },
+                "fieldName": "SDGs",
+                "description": "List of United Nations Sustainable Development Goals (SDGs) that the project contributes to or supports",
+                "keywords": ["sdg", "goals", "sustainable", "development goals", "UN goals", "co-benefits", "social impact", "benefits"]
+            }
         ];
     }
 
