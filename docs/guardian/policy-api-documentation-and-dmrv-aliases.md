@@ -135,6 +135,8 @@ Authorization: Bearer <token>
 
 Returns the configured documentation entries.
 
+When the target block references a schema (e.g. `requestVcDocumentBlock`, `documentValidatorBlock`), the entry includes a `schemaId` field with the schema's IRI. The field is omitted for blocks that don't reference a schema.
+
 **Response example:**
 
 ```json
@@ -156,6 +158,18 @@ Returns the configured documentation entries.
       { "name": "filterByUUID",  "type": "string",   "description": "Filter by document UUID" },
       { "name": "savepointIds",  "type": "string[]", "description": "Savepoint IDs filter (JSON array)" }
     ]
+  },
+  {
+    "name": "Create Application",
+    "description": "Submit a new applicant registration",
+    "target": "create_application",
+    "method": "POST",
+    "alias": "create-application",
+    "url": "/api/v1/policies/69c3dbe9a4d2ac84f75cdfc4/tag/create_application/blocks",
+    "dmrvUrl": "/api/v1/dmrv/69c3dbe9a4d2ac84f75cdfc4/create-application",
+    "blockType": "requestVcDocumentBlock",
+    "schemaId": "#9bd1c75b-76df-4d3c-8775-1f76d18d7d8c",
+    "queryParams": []
   }
 ]
 ```
