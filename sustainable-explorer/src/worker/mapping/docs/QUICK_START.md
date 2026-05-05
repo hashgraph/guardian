@@ -12,7 +12,7 @@ There are two strategy interfaces:
 Today the code supports these method values:
 
 - Schema mapping: `GEOJSON`
-- Field mapping: `RULE`, `AI`
+- Field mapping: `HEURISTIC-FIELD-MAPPER`, `LLM-FIELD-MAPPER`
 
 ## Standard Pattern
 
@@ -29,7 +29,7 @@ Every new strategy follows the same flow:
 
 ### 1. Implement the interface
 
-Create a service such as `src/worker/mapping/strategies/map-fields/ml-map-fields.service.ts`.
+Create a service such as `src/worker/mapping/strategies/map-fields/llm-field-mapper.service.ts`.
 
 ```ts
 import { Injectable } from '@nestjs/common';
@@ -37,7 +37,7 @@ import { IMapFieldsStrategy } from '../../interfaces/strategies.interface';
 import { FieldMap, FieldDescriptor, SchemaInfo, SchemaLabelMap } from '../../types';
 
 @Injectable()
-export class MLMapFieldsService implements IMapFieldsStrategy {
+export class LlmFieldMapperService implements IMapFieldsStrategy {
   async execute(
     schemaMap: SchemaLabelMap,
     schemas: SchemaInfo[],
@@ -56,11 +56,11 @@ Update [providers/map-fields.provider.ts](../providers/map-fields.provider.ts) t
 
 ```ts
 switch (method.toUpperCase()) {
-  case MapFieldsMethodType.AI:
-    return new AIMapFieldsService();
-  case MapFieldsMethodType.RULE:
+  case MapFieldsMethodType.LLM_FIELD_MAPPER:
+    return new LlmFieldMapperService();
+  case MapFieldsMethodType.HEURISTIC_FIELD_MAPPER:
   default:
-    return new RuleMapFieldsService();
+    return new HeuristicFieldMapperService();
 }
 ```
 
@@ -71,7 +71,7 @@ Add your new enum value first, then add a matching case.
 Set the method in your environment:
 
 ```bash
-MAP_FIELDS_METHOD=ML
+MAP_FIELDS_METHOD=LLM-FIELD-MAPPER
 ```
 
 ### 4. Test it

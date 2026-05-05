@@ -16,12 +16,12 @@ export enum MapSchemasMethodType {
 }
 
 export enum MapFieldsMethodType {
-    RULE = 'RULE',
-    AI = 'AI',
+    LLM_FIELD_MAPPER = 'LLM-FIELD-MAPPER',
+    HEURISTIC_FIELD_MAPPER = 'HEURISTIC-FIELD-MAPPER',
 }
 
 /**
  * Default strategy implementations
  */
 export const DEFAULT_MAP_SCHEMAS_METHOD = MapSchemasMethodType.GEOJSON;
-export const DEFAULT_MAP_FIELDS_METHOD = MapFieldsMethodType.RULE;
+export const DEFAULT_MAP_FIELDS_METHOD = MapFieldsMethodType.HEURISTIC_FIELD_MAPPER;

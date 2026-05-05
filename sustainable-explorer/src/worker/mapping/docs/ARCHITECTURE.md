@@ -23,15 +23,15 @@ The pipeline is intentionally small and implementation-agnostic. The orchestrati
 The current runtime options are:
 
 - `MAP_SCHEMAS_METHOD=GEOJSON` for schema mapping.
-- `MAP_FIELDS_METHOD=RULE` or `MAP_FIELDS_METHOD=AI` for field mapping.
+- `MAP_FIELDS_METHOD=HEURISTIC-FIELD-MAPPER` or `MAP_FIELDS_METHOD=LLM-FIELD-MAPPER` for field mapping.
 
 Defaults are:
 
 - `DEFAULT_MAP_SCHEMAS_METHOD = GEOJSON`
-- `DEFAULT_MAP_FIELDS_METHOD = RULE`
+- `DEFAULT_MAP_FIELDS_METHOD = HEURISTIC-FIELD-MAPPER`
 
 Schema mapping currently has one concrete implementation: `GeoJsonMapSchemasService`.
-Field mapping currently has two implementations: `RuleMapFieldsService` and `AIMapFieldsService`.
+Field mapping currently has two dummy implementations: `HeuristicFieldMapperService` and `LlmFieldMapperService`.
 
 ## Data Flow
 

@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 
 // Strategies
 import { GeoJsonMapSchemasService } from './strategies/map-schemas/geo-json-map-schemas.service';
-import { RuleMapFieldsService } from './strategies/map-fields/rule-map-fields.service';
-import { AIMapFieldsService } from './strategies/map-fields/ai-map-fields.service';
+import { HeuristicFieldMapperService } from './strategies/map-fields/heuristic-field-mapper.service';
+import { LlmFieldMapperService } from './strategies/map-fields/llm-field-mapper.service';
 
 // Pipeline Service
 import { MappingPipelineService } from './mapping-pipeline.service';
@@ -18,7 +18,7 @@ import { mapFieldsStrategyProvider } from './providers/map-fields.provider';
  *
  * Encapsulates all schema and field mapping functionality.
  * Provides:
- * - Strategy implementations (GeoJSON for schema mapping, Rule-based and AI-based for field mapping)
+ * - Strategy implementations (GeoJSON for schema mapping, heuristic and LLM dummies for field mapping)
  * - Factory providers for runtime strategy selection
  * - MappingPipelineService for orchestration
  *
@@ -39,8 +39,8 @@ import { mapFieldsStrategyProvider } from './providers/map-fields.provider';
     providers: [
         // Strategy implementations
         GeoJsonMapSchemasService,
-        RuleMapFieldsService,
-        AIMapFieldsService,
+        HeuristicFieldMapperService,
+        LlmFieldMapperService,
 
         // Factory providers
         mapSchemasStrategyProvider,

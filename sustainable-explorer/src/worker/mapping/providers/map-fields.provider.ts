@@ -6,8 +6,8 @@ import {
     DEFAULT_MAP_FIELDS_METHOD,
 } from '../tokens/mapping.tokens';
 import { IMapFieldsStrategy } from '../interfaces/strategies.interface';
-import { RuleMapFieldsService } from '../strategies/map-fields/rule-map-fields.service';
-import { AIMapFieldsService } from '../strategies/map-fields/ai-map-fields.service';
+import { HeuristicFieldMapperService } from '../strategies/map-fields/heuristic-field-mapper.service';
+import { LlmFieldMapperService } from '../strategies/map-fields/llm-field-mapper.service';
 
 /**
  * Factory provider for Map Fields strategy
@@ -16,7 +16,7 @@ import { AIMapFieldsService } from '../strategies/map-fields/ai-map-fields.servi
  * MAP_FIELDS_METHOD environment variable.
  *
  * Environment variable:
- * - MAP_FIELDS_METHOD: 'RULE' | 'AI' (default: 'RULE')
+ * - MAP_FIELDS_METHOD: 'HEURISTIC-FIELD-MAPPER' | 'LLM-FIELD-MAPPER' (default: 'HEURISTIC-FIELD-MAPPER')
  */
 export const mapFieldsStrategyProvider: Provider<IMapFieldsStrategy> = {
     provide: MAP_FIELDS_STRATEGY_TOKEN,
@@ -27,11 +27,11 @@ export const mapFieldsStrategyProvider: Provider<IMapFieldsStrategy> = {
         );
 
         switch (method.toUpperCase()) {
-            case MapFieldsMethodType.AI:
-                return new AIMapFieldsService();
-            case MapFieldsMethodType.RULE:
+            case MapFieldsMethodType.LLM_FIELD_MAPPER:
+                return new LlmFieldMapperService();
+            case MapFieldsMethodType.HEURISTIC_FIELD_MAPPER:
             default:
-                return new RuleMapFieldsService();
+                return new HeuristicFieldMapperService();
         }
     },
     inject: [ConfigService],
