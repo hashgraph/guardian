@@ -206,10 +206,10 @@ export class PolicyDecodeProcessor extends WorkerHost {
 
             await this.dataSource.query(
                 `UPDATE business_view
-                 SET "businessData" = "businessData" || $1::jsonb,
-                     "updatedAt" = NOW()
-                 WHERE "viewType" = 'METHODOLOGY'
-                   AND "businessData"->>'topicId' = $2`,
+                SET "businessData" = "businessData" || jsonb_build_object('glossary', $1::jsonb),
+                    "updatedAt" = NOW()
+                WHERE "viewType" = 'METHODOLOGY'
+                    AND "businessData"->>'topicId' = $2`,
                 [JSON.stringify(patch), policyTopicId],
             );
 
