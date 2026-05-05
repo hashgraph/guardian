@@ -1,392 +1,104 @@
-#!/usr/bin/env node
-/**
- * Quick Start Guide for the Mapping Pipeline
- *
- * This file serves as a reference for using and extending the mapping pipeline.
- */
+# Adding a New Mapping Strategy
 
-// ============================================================================
-// SECTION 1: Basic Usage
-// ============================================================================
+This guide is for developers who want to add or swap a schema or field mapping strategy without touching the pipeline orchestration.
 
-/**
- * Use the mapping pipeline in your service or processor
- */
+## What You Can Extend
 
-// In your service/processor
-import { MappingPipelineService } from './mapping-pipeline.service';
-import { SchemaInfo, FieldDescriptor } from './types';
+There are two strategy interfaces:
 
-class YourService {
-    constructor(private pipeline: MappingPipelineService) {}
+- `IMapSchemasStrategy` for schema-to-label mapping.
+- `IMapFieldsStrategy` for field-to-path mapping.
 
-    async processSchemas() {
-        // Step 1: Prepare schemas (from database or API)
-        const schemas: SchemaInfo[] = [
-            {
-                id: 'uuid-1',
-                name: 'ProjectSchema',
-                document: { /* schema doc */ },
-                rawSchema: { /* raw schema */ },
-            },
-        ];
+Today the code supports these method values:
 
-        // Step 2: Define fields to map
-        const fields: FieldDescriptor[] = [
-            {
-                fieldName: 'Project Title',
-                description: 'Name of the project',
-                keywords: ['title', 'name'],
-            },
-        ];
+- Schema mapping: `GEOJSON`
+- Field mapping: `RULE`, `AI`
 
-        // Step 3: Execute pipeline
-        const { schemaMap, fieldMap } = await this.pipeline.executePipeline(
-            schemas,
-            fields,
-        );
+## Standard Pattern
 
-        console.log('Schema Map:', schemaMap);
-        console.log('Field Map:', fieldMap);
-    }
-}
+Every new strategy follows the same flow:
 
-// ============================================================================
-// SECTION 2: Switching Implementations
-// ============================================================================
+1. Create a class that implements the relevant interface.
+2. Add the class to the matching provider switch.
+3. Add a new enum value in `tokens/mapping.tokens.ts` if you are introducing a new method name.
+4. Set the environment variable to that method value.
+5. Update `env.example` so the new option is visible to other developers.
+6. Verify the pipeline still works end to end.
 
-/**
- * Control which implementation runs via environment variables
- */
+## Example: Add a New Field Strategy
 
-process.env.MAP_SCHEMAS_METHOD = 'GEOJSON'; // GeoJSON-based schema mapping
-process.env.MAP_FIELDS_METHOD = 'RULE';    // or 'AI' for field mapping
+### 1. Implement the interface
 
-// The correct implementations are automatically injected!
-// No code changes needed.
+Create a service such as `src/worker/mapping/strategies/map-fields/ml-map-fields.service.ts`.
 
-// ============================================================================
-// SECTION 3: Creating a New Strategy
-// ============================================================================
-
-/**
- * Example: Add a "ML-Based" field mapping strategy
- */
-
-// Step 1: Create implementation
-// File: mapping/strategies/map-fields/ml-map-fields.service.ts
-
-import { Injectable, Logger } from '@nestjs/common';
+```ts
+import { Injectable } from '@nestjs/common';
 import { IMapFieldsStrategy } from '../../interfaces/strategies.interface';
-import {
-    SchemaLabelMap,
-    FieldMap,
-    FieldDescriptor,
-    SchemaInfo,
-} from '../../types';
+import { FieldMap, FieldDescriptor, SchemaInfo, SchemaLabelMap } from '../../types';
 
 @Injectable()
 export class MLMapFieldsService implements IMapFieldsStrategy {
-    private readonly logger = new Logger(MLMapFieldsService.name);
+  async execute(
+    schemaMap: SchemaLabelMap,
+    schemas: SchemaInfo[],
+    fields: FieldDescriptor[],
+  ): Promise<FieldMap> {
+    const result: FieldMap = {};
 
-    async execute(
-        schemaMap: SchemaLabelMap,
-        schemas: SchemaInfo[],
-        fields: FieldDescriptor[],
-    ): Promise<FieldMap> {
-        this.logger.log(`ML-based field mapping for ${fields.length} fields`);
-
-        // Your ML logic here
-        const result: FieldMap = {};
-
-        for (const field of fields) {
-            // Example: Use your ML model to find the field
-            const mapping = await this.mlModel.findField(field, schemas);
-            if (mapping) {
-                result[field.fieldName] = mapping;
-            }
-        }
-
-        return result;
-    }
+    return result;
+  }
 }
+```
 
-// Step 2: Update factory provider
-// File: mapping/providers/map-fields.provider.ts
-// Add this case to the switch statement (if needed, currently only GEOJSON is supported):
+### 2. Register it in the provider
 
-// Step 3: Set environment variable
-// .env file or deployment config:
-// MAP_SCHEMAS_METHOD=GEOJSON
+Update [providers/map-fields.provider.ts](../providers/map-fields.provider.ts) to return the new class for a new method value.
 
-// Step 4: That's it! No other changes needed.
-
-// ============================================================================
-// SECTION 4: Testing
-// ============================================================================
-
-/**
- * Testing the pipeline with different strategies
- */
-
-import { ConfigService } from '@nestjs/config';
-
-async function testPipeline() {
-    const configService = new ConfigService();
-
-    // Test with GeoJSON-based mapping
-    configService.set('MAP_SCHEMAS_METHOD', 'GEOJSON');
-    configService.set('MAP_FIELDS_METHOD', 'RULE');
-
-    const { schemaMap: schemaMapGeoJson, fieldMap: fieldMapGeoJson } =
-        await pipeline.executePipeline(schemas, fields);
-
-    // Compare results
-    console.log('GeoJSON-based results:', fieldMapGeoJson);
+```ts
+switch (method.toUpperCase()) {
+  case MapFieldsMethodType.AI:
+    return new AIMapFieldsService();
+  case MapFieldsMethodType.RULE:
+  default:
+    return new RuleMapFieldsService();
 }
+```
 
-// ============================================================================
-// SECTION 5: Common Patterns
-// ============================================================================
+Add your new enum value first, then add a matching case.
 
-/**
- * Pattern 1: Fallback to Rule-based (for field mapping)
- * When your custom field strategy fails, fall back to rule-based
- */
+### 3. Add the env var
 
-@Injectable()
-export class FallbackMapFieldsService implements IMapFieldsStrategy {
-    constructor(private ruleStrategy: RuleMapFieldsService) {}
+Set the method in your environment:
 
-    async execute(
-        schemaMap: SchemaLabelMap,
-        schemas: SchemaInfo[],
-        fields: FieldDescriptor[],
-    ): Promise<FieldMap> {
-        try {
-            // Try primary method
-            return await this.primaryMethod(schemaMap, schemas, fields);
-        } catch (error) {
-            this.logger.warn('Primary method failed, falling back to rule-based');
-            return this.ruleStrategy.execute(schemaMap, schemas, fields);
-        }
-    }
+```bash
+MAP_FIELDS_METHOD=ML
+```
 
-    private async primaryMethod(
-        schemaMap: SchemaLabelMap,
-        schemas: SchemaInfo[],
-        fields: FieldDescriptor[],
-    ): Promise<FieldMap> {
-        // Your logic here
-        return {};
-    }
-}
+### 4. Test it
 
-/**
- * Pattern 2: Hybrid Strategy (for field mapping)
- * Combine rule-based and other strategies for better results
- */
+Run the pipeline with representative schemas and fields, then confirm the output still lands in `business_view.businessData`.
 
-@Injectable()
-export class HybridMapFieldsService implements IMapFieldsStrategy {
-    constructor(private ruleStrategy: RuleMapFieldsService) {}
+## Example: Add a New Schema Strategy
 
-    async execute(
-        schemaMap: SchemaLabelMap,
-        schemas: SchemaInfo[],
-        fields: FieldDescriptor[],
-    ): Promise<FieldMap> {
-        // Get results from rule-based strategy
-        const ruleResults = await this.ruleStrategy.execute(
-            schemaMap,
-            schemas,
-            fields,
-        );
+The same pattern applies to schema mapping:
 
-        // Additional processing if needed
-        return ruleResults;
-    }
-}
+1. Implement `IMapSchemasStrategy`.
+2. Register it in [providers/map-schemas.provider.ts](../providers/map-schemas.provider.ts).
+3. Add the method value to [tokens/mapping.tokens.ts](../tokens/mapping.tokens.ts).
+4. Set `MAP_SCHEMAS_METHOD` to the new value.
 
-/**
- * Pattern 3: Caching Results
- * Cache expensive computations
- */
+Current schema mapping only exposes `GEOJSON`, so adding a second schema strategy would be a real code change, not just a doc update.
 
-@Injectable()
-export class CachingMapFieldsService implements IMapFieldsStrategy {
-    private cache = new Map<string, FieldMap>();
+## Guardrails
 
-    async execute(
-        schemaMap: SchemaLabelMap,
-        schemas: SchemaInfo[],
-        fields: FieldDescriptor[],
-    ): Promise<FieldMap> {
-        const cacheKey = this.generateKey(schemaMap, fields);
+- Keep strategies stateless where possible.
+- Return partial results instead of failing the whole pipeline when that is acceptable.
+- Use the NestJS logger for debug and warning output.
+- Do not change `MappingPipelineService` just to add a new strategy.
 
-        if (this.cache.has(cacheKey)) {
-            return this.cache.get(cacheKey)!;
-        }
+## Quick Verification Checklist
 
-        const result = await this.computeMapping(schemaMap, schemas, fields);
-        this.cache.set(cacheKey, result);
-
-        return result;
-    }
-
-    private generateKey(schemaMap: SchemaLabelMap, fields: FieldDescriptor[]): string {
-        return JSON.stringify({ schemaMap, fields });
-    }
-
-    private async computeMapping(
-        schemaMap: SchemaLabelMap,
-        schemas: SchemaInfo[],
-        fields: FieldDescriptor[],
-    ): Promise<FieldMap> {
-        // Your expensive computation here
-        return {};
-    }
-}
-
-// ============================================================================
-// SECTION 6: Debugging
-// ============================================================================
-
-/**
- * Enable detailed logging for debugging
- */
-
-// Set log level
-process.env.LOG_LEVEL = 'debug';
-
-// Watch logs from the pipeline:
-// [MappingPipelineService] Starting schema mapping with 5 schema(s)
-// [GeoJsonMapSchemasService] GeoJSON-based schema mapping for 5 schema(s)
-// [RuleMapFieldsService] Rule-based field mapping for 10 field(s)
-// [MappingPipelineService] Field mapping completed successfully. Mapped 8 field(s)
-
-// ============================================================================
-// SECTION 7: File Structure Reminder
-// ============================================================================
-
-/*
-src/worker/mapping/
-├── interfaces/
-│   └── strategies.interface.ts          # Implement these interfaces
-│
-├── strategies/
-│   ├── map-schemas/                     # Schema mappers
-│   │   ├── rule-map-schemas.service.ts
-│   │   └── ai-map-schemas.service.ts
-│   │
-│   └── map-fields/                      # Field mappers
-│       ├── rule-map-fields.service.ts
-│       └── ai-map-fields.service.ts
-│
-├── providers/
-│   ├── map-schemas.provider.ts          # Register new strategies here
-│   └── map-fields.provider.ts           # Register new strategies here
-│
-├── tokens/
-│   └── mapping.tokens.ts                # Add method types here if needed
-│
-├── types.ts                             # Type definitions
-├── mapping-pipeline.service.ts          # Don't modify
-├── mapping.module.ts                    # Don't modify
-└── ARCHITECTURE.md                      # Full documentation
-*/
-
-// ============================================================================
-// SECTION 8: Checklist for Adding a New Strategy
-// ============================================================================
-
-/*
-[ ] Create implementation class in strategies/ folder
-[ ] Implement IMapSchemasStrategy or IMapFieldsStrategy interface
-[ ] Add method type to mapping.tokens.ts (if new type needed)
-[ ] Update factory provider switch statement
-[ ] Test with new environment variable
-[ ] Update ARCHITECTURE.md with documentation
-[ ] Test integration with policy decoder
-*/
-
-// ============================================================================
-// SECTION 9: Common Mistakes to Avoid
-// ============================================================================
-
-/*
-❌ DON'T: Hardcode implementations in the pipeline
-✅ DO: Use dependency injection with factory providers
-
-❌ DON'T: Return null or undefined for unmapped fields
-✅ DO: Log warnings and skip those fields; return partial results
-
-❌ DON'T: Modify MappingPipelineService to add new logic
-✅ DO: Create a new strategy implementation
-
-❌ DON'T: Share state between strategy calls
-✅ DO: Keep strategies stateless and pure
-
-❌ DON'T: Ignore the interface contract
-✅ DO: Implement exactly the interface signature
-
-❌ DON'T: Make strategies tightly coupled to database/API
-✅ DO: Accept all dependencies as constructor parameters
-
-❌ DON'T: Forget to update factory provider
-✅ DO: Register new strategies before using them
-*/
-
-// ============================================================================
-// SECTION 10: Integration Examples
-// ============================================================================
-
-/**
- * Example 1: Policy Decoder Integration
- * (Already done in policy-decode.processor.ts)
- */
-
-async process(job: Job) {
-    // ... schema import ...
-
-    // Execute mapping pipeline
-    const { schemaMap, fieldMap } = await this.mappingPipeline.executePipeline(
-        schemas,
-        fields,
-    );
-
-    // Store results
-    await this.database.update('business_view', {
-        businessData: { schemaMap, fieldMap },
-    });
-}
-
-/**
- * Example 2: REST API Endpoint
- */
-
-@Post('/map-schemas')
-async mapSchemas(@Body() body: { schemas: SchemaInfo[] }) {
-    const schemaMap = await this.mappingPipeline.mapSchemas(body.schemas);
-    return schemaMap;
-}
-
-/**
- * Example 3: Batch Processing
- */
-
-async batchProcess(policies: PolicyInfo[]) {
-    for (const policy of policies) {
-        const schemas = await this.getSchemas(policy.id);
-        const fields = this.getDefaultFields();
-
-        const { schemaMap, fieldMap } = await this.mappingPipeline.executePipeline(
-            schemas,
-            fields,
-        );
-
-        await this.storeResults(policy.id, { schemaMap, fieldMap });
-    }
-}
-
-export {};
+- The new class implements the correct interface.
+- The provider returns the new class for the new method value.
+- The env var is documented and set.
+- The pipeline still produces a valid `SchemaLabelMap` and `FieldMap`.
