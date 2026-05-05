@@ -21,13 +21,11 @@ export interface FieldDescriptor {
 
 /**
  * Field mapping result - Output of the Map Fields step
- * Maps field names to their locations in the schema
+ * Maps field names to fully-qualified schema paths in the form
+ * `${policySchema.schemaId}.${path}`.
  */
 export interface FieldMap {
-    [fieldName: string]: {
-        schemaId: string;
-        path: string;
-    };
+    [fieldName: string]: string;
 }
 
 /**

@@ -142,16 +142,12 @@ fields: FieldDescriptor[]               // Fields to locate
 FieldMap
 // Example:
 {
-  'Project Title': {
-    schemaId: 'uuid-1',
-    path: 'projectDescription.name'
-  },
-  'Emissions': {
-    schemaId: 'uuid-1',
-    path: 'projectDescription.emissions'
-  }
+  'Project Title': 'schemaId.projectDescription.name',
+  'Emissions': 'schemaId.projectDescription.emissions'
 }
 ```
+
+Each value is a single string built from the `policy_schema.schemaId` column and the mapped path.
 
 ### Contract
 ```typescript
@@ -259,7 +255,10 @@ await this.executeMapping(policyTopicId);
 // 3. Results stored in business_view.businessData
 {
     schemaLabelMap: {...},
-    fieldMap: {...}
+    fieldMap: {
+        'Project Title': 'schemaId.projectDescription.name',
+        'Emissions': 'schemaId.projectDescription.emissions'
+    }
 }
 ```
 

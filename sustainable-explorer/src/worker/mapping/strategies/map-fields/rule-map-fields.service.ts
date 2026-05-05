@@ -35,9 +35,9 @@ export class RuleMapFieldsService implements IMapFieldsStrategy {
         for (const field of fields) {
             const mapping = this.findFieldMapping(field, schemaIndex, schemaMap);
             if (mapping) {
-                result[field.fieldName] = mapping;
+                result[field.fieldName] = this.formatMapping(mapping.schemaId, mapping.path);
                 this.logger.debug(
-                    `Mapped field "${field.fieldName}" to ${mapping.schemaId}/${mapping.path}`,
+                    `Mapped field "${field.fieldName}" to ${result[field.fieldName]}`,
                 );
             } else {
                 this.logger.warn(`Could not map field "${field.fieldName}" using rule-based matching`);
@@ -201,5 +201,9 @@ export class RuleMapFieldsService implements IMapFieldsStrategy {
             .replace(/[_-]/g, '')
             .replace(/([a-z])([A-Z])/g, '$1$2')
             .toLowerCase();
+    }
+
+    private formatMapping(schemaId: string, path: string): string {
+        return `${schemaId}.${path}`;
     }
 }

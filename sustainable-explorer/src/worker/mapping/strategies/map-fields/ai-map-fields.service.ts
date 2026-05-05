@@ -35,9 +35,9 @@ export class AIMapFieldsService implements IMapFieldsStrategy {
         for (const field of fields) {
             const mapping = await this.intelligentlyMapField(field, schemaMap, schemas);
             if (mapping) {
-                result[field.fieldName] = mapping;
+                result[field.fieldName] = this.formatMapping(mapping.schemaId, mapping.path);
                 this.logger.debug(
-                    `AI mapped field "${field.fieldName}" to ${mapping.schemaId}/${mapping.path}`,
+                    `AI mapped field "${field.fieldName}" to ${result[field.fieldName]}`,
                 );
             } else {
                 this.logger.warn(`AI could not map field "${field.fieldName}"`);
@@ -149,5 +149,9 @@ export class AIMapFieldsService implements IMapFieldsStrategy {
                 }
             }
         }
+    }
+
+    private formatMapping(schemaId: string, path: string): string {
+        return `${schemaId}.${path}`;
     }
 }

@@ -105,8 +105,8 @@ export class MappingPipelineService {
      *
      * const fieldMap = await pipeline.mapFields(schemaMap, schemas, fields);
      * // Result: {
-     * //   'Project Title': { schemaId: 'uuid-1', path: 'projectDescription.name' },
-     * //   'Emissions': { schemaId: 'uuid-1', path: 'projectDescription.emissions' },
+     * //   'Project Title': 'schemaId.projectDescription.name',
+     * //   'Emissions': 'schemaId.projectDescription.emissions',
      * // }
      * ```
      */
