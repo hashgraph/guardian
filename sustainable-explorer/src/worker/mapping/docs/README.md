@@ -120,15 +120,10 @@ interface IMapFieldsStrategy {
 
 ### Map Schemas
 
-- **RuleMapSchemasService** (Default)
-  - Uses schema IDs and names
-  - Fast, deterministic
-  - No external dependencies
-
-- **AIMapSchemasService**
-  - LLM-based analysis
-  - Placeholder for future integration
-  - Falls back to rule-based
+- **GeoJsonMapSchemasService** (Current Implementation)
+  - GeoJSON-based schema analysis
+  - Maps schemas based on geographic/location data
+  - Returns schemas in GeoJSON format structure
 
 ### Map Fields
 

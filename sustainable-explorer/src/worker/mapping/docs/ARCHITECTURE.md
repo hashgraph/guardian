@@ -105,16 +105,10 @@ interface IMapSchemasStrategy {
 
 ### Implementations
 
-#### **RuleMapSchemasService** (Default)
-- Uses deterministic heuristics: document `$id` > schema `id` > schema `name`
-- Fast, no external dependencies
-- Suitable for well-structured schemas
-
-#### **AIMapSchemasService**
-- Uses LLM to intelligently identify schemas
-- Placeholder for future LLM integration (OpenAI, Gemini, etc.)
-- Falls back to rule-based when LLM unavailable
-- Better for ambiguous or non-standard schemas
+#### **GeoJsonMapSchemasService** (Current Implementation)
+- Uses GeoJSON-based analysis to map schemas
+- Maps schemas based on geographic/location data
+- Returns schemas in GeoJSON format structure
 
 ---
 
@@ -215,12 +209,11 @@ The factory providers resolve the correct implementations based on environment v
 ```typescript
 @Inject(MAP_SCHEMAS_STRATEGY_TOKEN)
 useFactory: (configService: ConfigService) => {
-    const method = configService.get('MAP_SCHEMAS_METHOD', 'RULE');
+    const method = configService.get('MAP_SCHEMAS_METHOD', 'GEOJSON');
     switch (method.toUpperCase()) {
-        case 'AI':
-            return new AIMapSchemasService();
+        case 'GEOJSON':
         default:
-            return new RuleMapSchemasService();
+            return new GeoJsonMapSchemasService();
     }
 };
 ```
@@ -294,7 +287,7 @@ switch (method.toUpperCase()) {
     case 'AI':
         return new AIMapSchemasService();
     default:
-        return new RuleMapSchemasService();
+        return new GeoJsonMapSchemasService();
 }
 ```
 

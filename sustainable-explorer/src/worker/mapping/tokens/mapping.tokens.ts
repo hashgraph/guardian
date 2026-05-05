@@ -12,8 +12,7 @@ export const MAP_FIELDS_STRATEGY_TOKEN = 'MAP_FIELDS_STRATEGY';
  * Known strategy implementation names
  */
 export enum MapSchemasMethodType {
-    RULE = 'RULE',
-    AI = 'AI',
+    GEOJSON = 'GEOJSON',
 }
 
 export enum MapFieldsMethodType {
@@ -24,5 +23,5 @@ export enum MapFieldsMethodType {
 /**
  * Default strategy implementations
  */
-export const DEFAULT_MAP_SCHEMAS_METHOD = MapSchemasMethodType.RULE;
+export const DEFAULT_MAP_SCHEMAS_METHOD = MapSchemasMethodType.GEOJSON;
 export const DEFAULT_MAP_FIELDS_METHOD = MapFieldsMethodType.RULE;

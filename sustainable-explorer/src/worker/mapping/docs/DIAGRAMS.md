@@ -16,8 +16,7 @@
 │         │                                                       │
 │         ├─→ Step 1: Map Schemas                                 │
 │         │   ├─> IMapSchemasStrategy (interface)                │
-│         │   ├─→ RuleMapSchemasService                           │
-│         │   └─→ AIMapSchemasService                             │
+│         │   └─→ GeoJsonMapSchemasService                        │
 │         │       └─> Factory Provider (configurable)             │
 │         │       └─> Environment: MAP_SCHEMAS_METHOD             │
 │         │                                                       │
@@ -182,13 +181,12 @@ Configuration Layer
     ↓
 ConfigService.get('MAP_SCHEMAS_METHOD')
     │
-    ├─→ "RULE"
+    ├─→ "GEOJSON"
     │
     ↓
 switch (method.toUpperCase())
-    ├─→ case 'RULE': new RuleMapSchemasService()
-    ├─→ case 'AI': new AIMapSchemasService()
-    └─→ default: new RuleMapSchemasService()
+    ├─→ case 'GEOJSON': new GeoJsonMapSchemasService()
+    └─→ default: new GeoJsonMapSchemasService()
     │
     ↓
 Injection Token: MAP_SCHEMAS_STRATEGY_TOKEN
@@ -335,28 +333,22 @@ src/worker/mapping/
 ## 8. Test Scenarios
 
 ```
-Test 1: Rule-Based Mapping
-    Configuration: MAP_SCHEMAS_METHOD=RULE, MAP_FIELDS_METHOD=RULE
-    ├─→ RuleMapSchemasService
+Test 1: GeoJSON-Based Mapping
+    Configuration: MAP_SCHEMAS_METHOD=GEOJSON, MAP_FIELDS_METHOD=RULE
+    ├─→ GeoJsonMapSchemasService
     ├─→ RuleMapFieldsService
-    └─→ Fast, deterministic results
+    └─→ GeoJSON schema analysis with rule-based field mapping
 
-Test 2: AI-Based Mapping
-    Configuration: MAP_SCHEMAS_METHOD=AI, MAP_FIELDS_METHOD=AI
-    ├─→ AIMapSchemasService
+Test 2: Hybrid
+    Configuration: MAP_SCHEMAS_METHOD=GEOJSON, MAP_FIELDS_METHOD=AI
+    ├─→ GeoJsonMapSchemasService
     ├─→ AIMapFieldsService
-    └─→ Falls back to rule-based (LLM not integrated yet)
+    └─→ GeoJSON schemas with AI field mapping
 
-Test 3: Hybrid
-    Configuration: MAP_SCHEMAS_METHOD=RULE, MAP_FIELDS_METHOD=AI
-    ├─→ RuleMapSchemasService
-    ├─→ AIMapFieldsService
-    └─→ Mix of strategies
-
-Test 4: Custom Implementation
+Test 3: Custom Field Implementation
     Configuration: MAP_FIELDS_METHOD=ML
+    ├─→ GeoJsonMapSchemasService
     ├─→ MLMapFieldsService (custom)
-    ├─→ Loaded from factory
     └─→ Used in pipeline automatically
 ```
 

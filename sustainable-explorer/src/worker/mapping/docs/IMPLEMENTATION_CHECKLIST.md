@@ -112,10 +112,10 @@ This checklist helps verify that the mapping pipeline is correctly integrated an
 
 ## Phase 7: Verification Tests
 
-### Test 1: Rule-Based Mapping ✓
+### Test 1: GeoJSON-Based Mapping ✓
 ```
-Configuration: MAP_SCHEMAS_METHOD=RULE, MAP_FIELDS_METHOD=RULE
-Expected: Uses RuleMapSchemasService and RuleMapFieldsService
+Configuration: MAP_SCHEMAS_METHOD=GEOJSON, MAP_FIELDS_METHOD=RULE
+Expected: Uses GeoJsonMapSchemasService and RuleMapFieldsService
 Result: ✓ Verified no errors
 ```
 

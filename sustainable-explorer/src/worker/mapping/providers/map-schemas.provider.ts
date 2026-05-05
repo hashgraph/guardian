@@ -6,8 +6,7 @@ import {
     DEFAULT_MAP_SCHEMAS_METHOD,
 } from '../tokens/mapping.tokens';
 import { IMapSchemasStrategy } from '../interfaces/strategies.interface';
-import { RuleMapSchemasService } from '../strategies/map-schemas/rule-map-schemas.service';
-import { AIMapSchemasService } from '../strategies/map-schemas/ai-map-schemas.service';
+import { GeoJsonMapSchemasService } from '../strategies/map-schemas/geo-json-map-schemas.service';
 
 /**
  * Factory provider for Map Schemas strategy
@@ -16,7 +15,7 @@ import { AIMapSchemasService } from '../strategies/map-schemas/ai-map-schemas.se
  * MAP_SCHEMAS_METHOD environment variable.
  *
  * Environment variable:
- * - MAP_SCHEMAS_METHOD: 'RULE' | 'AI' (default: 'RULE')
+ * - MAP_SCHEMAS_METHOD: 'GEOJSON' (default: 'GEOJSON')
  */
 export const mapSchemasStrategyProvider: Provider<IMapSchemasStrategy> = {
     provide: MAP_SCHEMAS_STRATEGY_TOKEN,
@@ -27,11 +26,9 @@ export const mapSchemasStrategyProvider: Provider<IMapSchemasStrategy> = {
         );
 
         switch (method.toUpperCase()) {
-            case MapSchemasMethodType.AI:
-                return new AIMapSchemasService();
-            case MapSchemasMethodType.RULE:
+            case MapSchemasMethodType.GEOJSON:
             default:
-                return new RuleMapSchemasService();
+                return new GeoJsonMapSchemasService();
         }
     },
     inject: [ConfigService],

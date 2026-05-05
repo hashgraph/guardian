@@ -59,8 +59,8 @@ class YourService {
  * Control which implementation runs via environment variables
  */
 
-process.env.MAP_SCHEMAS_METHOD = 'RULE'; // or 'AI'
-process.env.MAP_FIELDS_METHOD = 'RULE';  // or 'AI'
+process.env.MAP_SCHEMAS_METHOD = 'GEOJSON'; // GeoJSON-based schema mapping
+process.env.MAP_FIELDS_METHOD = 'RULE';    // or 'AI' for field mapping
 
 // The correct implementations are automatically injected!
 // No code changes needed.
@@ -113,22 +113,11 @@ export class MLMapFieldsService implements IMapFieldsStrategy {
 
 // Step 2: Update factory provider
 // File: mapping/providers/map-fields.provider.ts
-// Add this case to the switch statement:
-
-/*
-switch (method.toUpperCase()) {
-    case 'ML':
-        return new MLMapFieldsService();
-    case 'AI':
-        return new AIMapFieldsService();
-    default:
-        return new RuleMapFieldsService();
-}
-*/
+// Add this case to the switch statement (if needed, currently only GEOJSON is supported):
 
 // Step 3: Set environment variable
 // .env file or deployment config:
-// MAP_FIELDS_METHOD=ML
+// MAP_SCHEMAS_METHOD=GEOJSON
 
 // Step 4: That's it! No other changes needed.
 
@@ -145,23 +134,15 @@ import { ConfigService } from '@nestjs/config';
 async function testPipeline() {
     const configService = new ConfigService();
 
-    // Test with Rule-based mapping
-    configService.set('MAP_SCHEMAS_METHOD', 'RULE');
+    // Test with GeoJSON-based mapping
+    configService.set('MAP_SCHEMAS_METHOD', 'GEOJSON');
     configService.set('MAP_FIELDS_METHOD', 'RULE');
 
-    const { schemaMap: schemaMapRule, fieldMap: fieldMapRule } =
-        await pipeline.executePipeline(schemas, fields);
-
-    // Test with AI mapping
-    configService.set('MAP_SCHEMAS_METHOD', 'AI');
-    configService.set('MAP_FIELDS_METHOD', 'AI');
-
-    const { schemaMap: schemaMapAI, fieldMap: fieldMapAI } =
+    const { schemaMap: schemaMapGeoJson, fieldMap: fieldMapGeoJson } =
         await pipeline.executePipeline(schemas, fields);
 
     // Compare results
-    console.log('Rule-based results:', fieldMapRule);
-    console.log('AI-based results:', fieldMapAI);
+    console.log('GeoJSON-based results:', fieldMapGeoJson);
 }
 
 // ============================================================================
@@ -169,8 +150,8 @@ async function testPipeline() {
 // ============================================================================
 
 /**
- * Pattern 1: Fallback to Rule-based
- * When your custom strategy fails, fall back to rule-based
+ * Pattern 1: Fallback to Rule-based (for field mapping)
+ * When your custom field strategy fails, fall back to rule-based
  */
 
 @Injectable()
@@ -202,34 +183,28 @@ export class FallbackMapFieldsService implements IMapFieldsStrategy {
 }
 
 /**
- * Pattern 2: Hybrid Strategy
- * Combine multiple strategies for better results
+ * Pattern 2: Hybrid Strategy (for field mapping)
+ * Combine rule-based and other strategies for better results
  */
 
 @Injectable()
 export class HybridMapFieldsService implements IMapFieldsStrategy {
-    constructor(
-        private ruleStrategy: RuleMapFieldsService,
-        private aiStrategy: AIMapFieldsService,
-    ) {}
+    constructor(private ruleStrategy: RuleMapFieldsService) {}
 
     async execute(
         schemaMap: SchemaLabelMap,
         schemas: SchemaInfo[],
         fields: FieldDescriptor[],
     ): Promise<FieldMap> {
-        // Get results from both strategies
+        // Get results from rule-based strategy
         const ruleResults = await this.ruleStrategy.execute(
             schemaMap,
             schemas,
             fields,
         );
-        const aiResults = await this.aiStrategy.execute(schemaMap, schemas, fields);
 
-        // Merge results: AI first, fall back to rule-based
-        const combined: FieldMap = { ...ruleResults, ...aiResults };
-
-        return combined;
+        // Additional processing if needed
+        return ruleResults;
     }
 }
 
@@ -286,7 +261,7 @@ process.env.LOG_LEVEL = 'debug';
 
 // Watch logs from the pipeline:
 // [MappingPipelineService] Starting schema mapping with 5 schema(s)
-// [RuleMapSchemasService] Rule-based schema mapping for 5 schema(s)
+// [GeoJsonMapSchemasService] GeoJSON-based schema mapping for 5 schema(s)
 // [RuleMapFieldsService] Rule-based field mapping for 10 field(s)
 // [MappingPipelineService] Field mapping completed successfully. Mapped 8 field(s)
 
