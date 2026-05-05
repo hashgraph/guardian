@@ -184,14 +184,6 @@
                 <span>Run</span>
             </div>
 
-            <div (click)="policyTestAutomation.toggle($event)" class="dry-run-group-btn">
-                <i class="pi pi-check-square"></i>
-                <span>Test</span>
-                <div class="expand-group">
-                    <i class="pi pi-sort-down-fill"></i>
-                </div>
-            </div>
-
             <div class="delimiter"></div>
 
             <div
@@ -831,10 +823,6 @@
             <span>Role: </span><span>Not Set</span>
         </div>
     </div>
-</p-overlayPanel>
-
-<p-overlayPanel #policyTestAutomation>
-    <policy-test-automation-popup></policy-test-automation-popup>
 </p-overlayPanel>
 
 <ng-template #preloader>

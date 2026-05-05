@@ -36,3 +36,45 @@
     cursor: pointer;
     padding: 0;
 }
+
+.policy-test-captured-input {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.policy-test-input-name {
+    font-weight: 600;
+}
+
+.policy-test-muted {
+    color: #999;
+    font-size: 11px;
+}
+
+.policy-test-awaiting {
+    color: #f39c12;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.policy-test-help {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    background: #f0f0f0;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 6px;
+
+    i {
+        margin-top: 1px;
+        flex-shrink: 0;
+    }
+
+    span {
+        line-height: 1.4;
+    }
+}

@@ -13,6 +13,15 @@
             <span>Capture Form Submission Data</span>
         </label>
 
+        <div class="policy-test-awaiting" *ngIf="draft.captureNextFormSubmit && !draft.input">
+            AWAITING INPUT
+        </div>
+
+        <div class="policy-test-help" *ngIf="draft.captureNextFormSubmit && !draft.input">
+            <i class="pi pi-info-circle"></i>
+            <span>Data on next form submission will be used for test input</span>
+        </div>
+
         <div class="policy-test-captured-input" *ngIf="draft.input">
             <div class="policy-test-input-name">Input captured</div>
             <div class="policy-test-muted">AWAITING OUTPUTS</div>

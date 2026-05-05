@@ -267,3 +267,44 @@
     z-index: 1;
     pointer-events: all;
 }
+
+.recording-test-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #646464;
+
+    span {
+        line-height: 1;
+    }
+
+    i {
+        font-size: 10px;
+    }
+}
+
+.recording-stop-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #f00;
+
+    span {
+        line-height: 1;
+    }
+}
+
+::ng-deep .policy-test-record-overlay {
+    .p-overlayPanel-content {
+        padding: 0;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+    }
+}
