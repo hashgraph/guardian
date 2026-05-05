@@ -18,6 +18,7 @@ import { autosaveValueChanged, getMinutesAgoStream } from 'src/app/utils/autosav
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { PolicyTestAutomationDraftService } from '../../../policy-test-automation/policy-test-automation-draft.service';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -115,6 +116,7 @@ export class RequestDocumentBlockDialog {
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
         private ipfsService: IPFSService,
+        private policyTestDraft: PolicyTestAutomationDraftService,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
@@ -294,15 +296,26 @@ export class RequestDocumentBlockDialog {
 
         const evidence = this.enableAdditionalData ? this.buildEvidence() : undefined;
 
+        const payload = {
+            document: data,
+            ref: this.docRef,
+            draft,
+            draftId,
+            relayerAccount: this.getRelayerAccount(),
+            ...(evidence?.length ? { evidence } : {})
+        };
+
+        if (this.dryRun && !draft && this.policyTestDraft.draft.captureNextFormSubmit) {
+            this.policyTestDraft.captureInput({
+                policyId: this.policyId,
+                blockId: this.id,
+                blockType: 'requestDocumentBlock',
+                ...payload
+            });
+        }
+
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, {
-                document: data,
-                ref: this.docRef,
-                draft: draft,
-                draftId: draftId,
-                relayerAccount: this.getRelayerAccount(),
-                ...(evidence?.length ? { evidence } : {})
-            })
+            .setBlockData(this.id, this.policyId, payload)
             .subscribe(() => {
                 setTimeout(() => {
                     this.loading = false;

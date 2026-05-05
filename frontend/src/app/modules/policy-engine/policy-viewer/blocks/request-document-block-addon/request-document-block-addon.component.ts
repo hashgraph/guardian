@@ -19,6 +19,7 @@ import { RequestDocumentBlockDialog } from '../request-document-block/dialog/req
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { PolicyStatus } from '@guardian/interfaces';
+import { PolicyTestAutomationDraftService } from '../../policy-test-automation/policy-test-automation-draft.service';
 
 interface IRequestDocumentAddonData {
     readonly: boolean;
@@ -92,7 +93,8 @@ export class RequestDocumentBlockAddonComponent
         private fb: UntypedFormBuilder,
         private dialogService: DialogService,
         private router: Router,
-        private changeDetectorRef: ChangeDetectorRef
+        private changeDetectorRef: ChangeDetectorRef,
+        private policyTestDraft: PolicyTestAutomationDraftService
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -203,14 +205,25 @@ export class RequestDocumentBlockAddonComponent
         if (this.dataForm.valid) {
             const data = this.dataForm.getRawValue();
             prepareVcData(data);
+            const payload = {
+                document: data,
+                ref: this.ref?.id,
+            };
+
+            if (this.dryRun && this.policyTestDraft.draft.captureNextFormSubmit) {
+                this.policyTestDraft.captureInput({
+                    policyId: this.policyId,
+                    blockId: this.id,
+                    blockType: 'requestDocumentBlockAddon',
+                    ...payload
+                });
+            }
+
             this.dialogRef.close();
             this.dialogRef = null;
             this.loading = true;
             this.policyEngineService
-                .setBlockData(this.id, this.policyId, {
-                    document: data,
-                    ref: this.ref?.id,
-                })
+                .setBlockData(this.id, this.policyId, payload)
                 .subscribe(
                     // tslint:disable-next-line:no-empty
                     () => { },
