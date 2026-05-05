@@ -1,16 +1,60 @@
 import { describe, expect, it } from '@jest/globals';
+import { readdirSync, readFileSync } from 'fs';
+import { basename, join } from 'path';
 import { HeuristicFieldMapperService } from '../../../../src/worker/mapping/strategies/map-fields/heuristic-field-mapper.service';
 import { LlmFieldMapperService } from '../../../../src/worker/mapping/strategies/map-fields/llm-field-mapper.service';
 
+interface RawPolicySchemaDocument {
+    uuid?: unknown;
+    iri?: unknown;
+    name?: unknown;
+    document?: unknown;
+}
+
+const asString = (value: unknown): string | null =>
+    typeof value === 'string' && value.length > 0 ? value : null;
+
+const asObject = (value: unknown): Record<string, unknown> | null => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return null;
+    }
+    return value as Record<string, unknown>;
+};
+
+const extractDocumentId = (value: unknown): string | null => {
+    const obj = asObject(value);
+    if (!obj) return null;
+    return asString(obj.$id);
+};
+
+const resolveSchemaId = (parsed: RawPolicySchemaDocument, fileName: string): string => {
+    const id = asString(parsed.uuid)
+        || asString(parsed.iri)
+        || extractDocumentId(parsed.document)
+        || basename(fileName, '.json');
+    return id.slice(0, 255);
+};
+
+const buildSchemasFromFixtures = () => {
+    const schemasDir = join(__dirname, 'VMR0006', 'schemas');
+    const files = readdirSync(schemasDir)
+        .filter(file => file.toLowerCase().endsWith('.json'))
+        .sort();
+
+    return files.map((fileName) => {
+        const filePath = join(schemasDir, fileName);
+        const parsed = JSON.parse(readFileSync(filePath, 'utf-8')) as RawPolicySchemaDocument;
+        return {
+            id: resolveSchemaId(parsed, fileName),
+            name: asString(parsed.name) ?? undefined,
+            rawSchema: asObject(parsed) ?? {},
+        };
+    });
+};
+
 describe('field mapping strategies', () => {
-    const schemaMap = { ProjectSchema: 'schema-1' };
-    const schemas = [
-        {
-            id: 'schema-1',
-            name: 'ProjectSchema',
-            rawSchema: {},
-        },
-    ];
+    const schemas = buildSchemasFromFixtures();
+    const schemaMap = { ProjectSchema: '5dde840d-e4d8-4185-a4cd-48fb314c0ef3' };
     const fields = [
         {
             fieldName: 'Project Title',

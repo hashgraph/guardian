@@ -1,0 +1,119 @@
+{
+    "createDate": "2024-07-24T12:58:40.579Z",
+    "updateDate": "2024-07-24T13:02:21.872Z",
+    "uuid": "00f620d8-069d-4010-a06b-2a2088e688f7",
+    "hash": "",
+    "name": "VVB",
+    "description": "VVB",
+    "entity": "VC",
+    "documentFileId": "66a0fb5d0ed2f86089667dd6",
+    "contextFileId": "66a0fb5d0ed2f86089667dd8",
+    "version": "1.0.0",
+    "sourceVersion": "",
+    "creator": "did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265",
+    "owner": "did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265",
+    "topicId": "0.0.4623061",
+    "messageId": "1721826140.243797003",
+    "documentURL": "ipfs://bafkreicpp4ycwsfmf2dmk224lkdexqhctnii7qs47o3oifj3mbvre5rnnu",
+    "contextURL": "ipfs://bafkreiexxckioqh4s7zc327oxz7gw22mflelcznhyabjk2eotrwtqnotoi",
+    "iri": "#00f620d8-069d-4010-a06b-2a2088e688f7&1.0.0",
+    "system": false,
+    "active": false,
+    "category": "POLICY",
+    "codeVersion": "1.1.0",
+    "defs": [],
+    "errors": [],
+    "document": {
+        "$id": "#00f620d8-069d-4010-a06b-2a2088e688f7&1.0.0",
+        "$comment": "{ \"@id\": \"ipfs://bafkreiexxckioqh4s7zc327oxz7gw22mflelcznhyabjk2eotrwtqnotoi#00f620d8-069d-4010-a06b-2a2088e688f7&1.0.0\", \"term\": \"00f620d8-069d-4010-a06b-2a2088e688f7&1.0.0\" }",
+        "title": "VVB",
+        "description": "VVB",
+        "type": "object",
+        "properties": {
+            "@context": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "readOnly": true
+            },
+            "type": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "readOnly": true
+            },
+            "id": {
+                "type": "string",
+                "readOnly": true
+            },
+            "field0": {
+                "title": "field0",
+                "description": "VVB Name",
+                "readOnly": false,
+                "type": "string",
+                "$comment": "{\"term\":\"field0\",\"@id\":\"https://www.schema.org/text\",\"orderPosition\":0}"
+            },
+            "policyId": {
+                "title": "policyId",
+                "description": "policyId",
+                "readOnly": true,
+                "type": "string",
+                "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+            },
+            "ref": {
+                "title": "ref",
+                "description": "ref",
+                "readOnly": true,
+                "type": "string",
+                "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+            }
+        },
+        "required": [
+            "@context",
+            "type",
+            "field0",
+            "policyId"
+        ],
+        "additionalProperties": false,
+        "$defs": {}
+    },
+    "context": {
+        "@context": {
+            "@version": 1.1,
+            "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+            "id": "@id",
+            "type": "@type",
+            "00f620d8-069d-4010-a06b-2a2088e688f7&1.0.0": {
+                "@id": "schema:00f620d8-069d-4010-a06b-2a2088e688f7#00f620d8-069d-4010-a06b-2a2088e688f7&1.0.0",
+                "@context": {
+                    "field0": {
+                        "@type": "https://www.schema.org/text"
+                    },
+                    "policyId": {
+                        "@type": "https://www.schema.org/text"
+                    },
+                    "ref": {
+                        "@type": "https://www.schema.org/text"
+                    }
+                }
+            }
+        }
+    },
+    "id": "66a0fa7c0ed2f86089667d1f"
+}
