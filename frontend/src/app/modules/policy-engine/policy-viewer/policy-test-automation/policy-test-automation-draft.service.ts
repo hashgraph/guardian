@@ -11,14 +11,22 @@ export interface PolicyTestInputAnchor {
     draft?: boolean;
     draftId?: string | null;
     relayerAccount?: unknown;
-    evidence?: Array<{ dataType: 'message' | 'file'; data: string }>;
+    evidence?: { dataType: 'message' | 'file'; data: string }[];
     capturedAt: string;
 }
 
 export interface PolicyTestOutputAnchor {
-    type: string;
+    type: 'vc' | 'vp' | 'schema' | string;
     id: string;
+    title?: string;
     document?: unknown;
+    source?: {
+        policyId?: string;
+        documentId?: string;
+        schemaId?: string;
+        messageId?: string;
+        rowId?: string;
+    };
     capturedAt: string;
 }
 
@@ -85,13 +93,15 @@ export class PolicyTestAutomationDraftService {
             outputs: [
                 ...this.draft.outputs,
                 { ...this.clone(output), capturedAt: new Date().toISOString() }
-            ]
+            ],
+            readyToSave: false
         });
     }
 
     public discardOutput(type: string, id: string): void {
         this.update({
-            outputs: this.draft.outputs.filter((item) => item.type !== type || item.id !== id)
+            outputs: this.draft.outputs.filter((item) => item.type !== type || item.id !== id),
+            readyToSave: false
         });
     }
 
