@@ -24,7 +24,7 @@ import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
-import { IOnboardingPayload, setupUserProfile, validateCommonDid } from './helpers/profile-helper.js';
+import { ICredentials, IOnboardingPayload, setupUserProfile, validateCommonDid } from './helpers/profile-helper.js';
 
 @Controller()
 export class ProfileController {
@@ -244,7 +244,7 @@ export function profileAPI(logger: PinoLogger) {
                         ? SchemaEntity.STANDARD_REGISTRY
                         : SchemaEntity.USER,
                     parent: payload.parent ?? parentUser?.did ?? null,
-                };
+                } as unknown as ICredentials;
 
                 const did = await setupUserProfile({
                     username: payload.username,
