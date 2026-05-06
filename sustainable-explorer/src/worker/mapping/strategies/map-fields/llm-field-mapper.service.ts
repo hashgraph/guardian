@@ -36,6 +36,7 @@ Rules:
 4. If no good match exists, return null.
 5. Do not invent indexes.
 6. Be strict and avoid weak matches.
+7. Do not return same index for multiple fields unless they are identical in meaning.
 
 Output format (STRICT JSON):
 [

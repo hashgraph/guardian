@@ -118,11 +118,19 @@ describe('field mapping strategies', () => {
         expect(result).toEqual({});
     });
 
-    it('LlmFieldMapperService returns an empty dummy map', async () => {
+    it('LlmFieldMapperService returns mapping in expected format and logs output', async () => {
         const service = new LlmFieldMapperService();
 
         const result = await service.execute(schemaMap, schemas, fields);
 
-        expect(result).toEqual({});
+        // Log the output for inspection
+        // eslint-disable-next-line no-console
+        console.log('LlmFieldMapperService output:', result);
+
+        expect(typeof result).toBe('object');
+        expect(Object.keys(result)).toEqual(fields.map((f) => f.fieldName));
+        for (const value of Object.values(result)) {
+            expect(typeof value).toBe('string');
+        }
     });
 });
