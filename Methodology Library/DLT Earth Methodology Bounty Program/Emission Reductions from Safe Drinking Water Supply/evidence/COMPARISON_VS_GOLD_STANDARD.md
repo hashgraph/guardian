@@ -41,7 +41,7 @@ This is the only Guardian implementation of **Verra's VMR0015 revision** specifi
 | Aspect | CDM AMS-III.AV | Gold Standard TPDDTEC SDW | **VMR0015 v1.0 (this)** |
 |---|---|---|---|
 | Leakage on woody biomass | Always counted | Always counted | **Conditional on `f_woody > 0`** |
-| Water quality gating | None inside math | Quality test schema; gate often advisory | Documentation gate at 0.95 (VVB-enforced in v1.0.0; math-layer gate planned for v1.1.0) |
+| Water quality gating | None inside math | Quality test schema; gate often advisory | **Math-layer hard gate at 0.95** — `customLogicBlock.calculate_report_fields` computes `wq_pass_rate` from per-test verdicts and forces `ER_total = 0` when below 0.95 |
 | Mint clamp on negative ER | Not enforced | Not always enforced | **`max(0, …)` in `customLogicBlock`** |
 | Equipment default fractions | Loose | Conservative | Verra-tightened (per VMR0015 §5) |
 
@@ -49,7 +49,7 @@ This is the only Guardian implementation of **Verra's VMR0015 revision** specifi
 
 The Gold Standard SDW Supply policy treats water quality testing as evidence the VVB reviews. If the VVB approves anyway, tokens mint.
 
-This policy treats `wq_pass_rate < 0.95` as a documentation gate enforced through VVB review in v1.0.0. v1.1.0 will move the gate into the customLogicBlock directly so issuance is refused in the math layer regardless of VVB approval. The Gold Standard SDW Supply policy treats water-quality testing as VVB-only evidence; this submission goes one step further by surfacing the threshold explicitly in documentation today and committing to a math-layer gate in the next minor.
+This policy enforces `wq_pass_rate < 0.95` directly inside `customLogicBlock.calculate_report_fields`. The block computes `wq_pass_rate` from the per-test `Pass / Fail` verdicts on the Monitoring Report's water-quality test array and, if the observed pass-rate is below 0.95, forces `ER_total = 0` regardless of any upstream VVB or owner approval. The Gold Standard SDW Supply policy treats water-quality testing as VVB-only evidence; this submission moves the threshold into the math layer as defence-in-depth: a misconfigured or compromised VVB review cannot cause non-compliant issuance, because the mint quantity is computed by the policy engine from the same Monitoring Report data the VVB reviews.
 
 ### 3.3 Renamed trust-chain tag
 

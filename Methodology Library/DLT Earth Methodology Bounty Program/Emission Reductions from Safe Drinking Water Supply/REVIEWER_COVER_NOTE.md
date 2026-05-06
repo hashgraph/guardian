@@ -23,10 +23,11 @@ original; VMR0015 adds two clarifications, both addressed here:
 1. **Conditional leakage** — `LE_woody` is only counted when the pre-project
    fuel mix contains woody biomass. Prevents over-deduction on
    electric-baseline projects. **Implemented in `customLogicBlock` math.**
-2. **Water-quality gate** — `wq_pass_rate < 0.95` enforced through VVB
-   review and explicit documentation in v1.0.0; v1.1.0 will move this gate
-   into the `customLogicBlock` directly so issuance is refused in the math
-   layer regardless of VVB approval.
+2. **Water-quality gate (math-layer)** — `wq_pass_rate` is computed inside
+   `customLogicBlock.calculate_report_fields` from the per-test verdicts on
+   the Monitoring Report. If the observed pass-rate falls below 0.95, `ER_total`
+   is forced to 0 and the mint emits zero base units regardless of any upstream
+   VVB or owner approval. **Implemented in `customLogicBlock` math.**
 
 ## What is in this folder
 
@@ -68,7 +69,7 @@ original; VMR0015 adds two clarifications, both addressed here:
 | Calculation workbook | Present (8 sheets, 47 live formulas) | — |
 | `customLogicBlock` formulas in policy | Present (1 active block: `calculate_report_fields`; dormant `calculate_project_fields` removed in corrective pass) | v1.1.0 will split into named blocks `calc_baseline / calc_project / calc_leakage / calc_net_er` for clearer audit |
 | Uncertainty discount factor | Applied in workbook (`u_def = 0.89` per AMS-III.AV §B.7.4) | v1.1.0 will move this into the policy's `customLogicBlock` directly |
-| Water-quality 0.95 hard gate | Documentation gate only in v1.0.0 (VVB review enforces) | v1.1.0 will add `if (wq_pass < 0.95) ER_total = 0` directly inside the `customLogicBlock` |
+| Water-quality 0.95 hard gate | **Implemented in v1.0.0** — `customLogicBlock.calculate_report_fields` computes `wq_pass_rate` from per-test verdicts and forces `ER_total = 0` when below 0.95 | v1.1.0 will add an explicit `verificationFailed` VC path so reviewers see a typed rejection event instead of a silent zero-mint |
 | Negative-ER handling | Workbook surfaces `FAIL` flag; v1.0.0 policy clamps to 0 | v1.1.0 will replace the silent clamp with an explicit `verificationFailed` VC path |
 | Transformation blocks for Verra Project Hub | 0 blocks (no public Verra ingest API exists; consistent with merged GS-SDW and VM0047 precedents) | Optional roadmap item |
 

@@ -42,7 +42,7 @@ Full identifier list: [`evidence/ON_CHAIN_ARTIFACTS.md`](evidence/ON_CHAIN_ARTIF
 AMS-III.AV / VMR0015 covers projects that displace pre-project household water-treatment practices (boiling, chemical disinfection) with a mechanical purification system whose performance is monitored. Two material updates from the original CDM AMS-III.AV are implemented here, matching VMR0015 v1.0:
 
 1. **Conditional leakage on woody biomass** — `LE_woody` is excluded from `LE_total` when the pre-project fuel mix has no woody component. This prevents over-deduction on electric-baseline projects.
-2. **Water-quality 0.95 documentation gate** — `wq_pass_rate < 0.95` is enforced through VVB review and explicit documentation in v1.0.0. v1.1.0 will move this gate into the `customLogicBlock` directly so issuance is refused in the math layer regardless of VVB approval.
+2. **Water-quality 0.95 hard gate (math-layer)** — `wq_pass_rate` is computed inside `customLogicBlock.calculate_report_fields` directly from the per-test verdicts (`field2[*].field8` = Pass / Fail vs WHO drinking-water guidelines) on the Monitoring Report. If the observed pass-rate falls below 0.95, `ER_total` is forced to 0 and the mint emits zero base units regardless of any upstream VVB or owner approval.
 
 Full equations and worked examples: [`evidence/EMISSIONS_CALCULATION.md`](evidence/EMISSIONS_CALCULATION.md).
 
@@ -75,8 +75,16 @@ Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions fro
 │   ├── REVIEWER_GUIDE.md              (10-min verification path)
 │   ├── COMPARISON_VS_GOLD_STANDARD.md (positions vs the GS-SDW merge)
 │   └── FORENSIC_CHECK.md              (originality scan + sr_trustchain note)
-└── tests/
-    └── tc1_full_lifecycle.record      (recorded passing dry-run, 11 actions, 12 documents)
+├── calculations/
+│   ├── README.md                      (workbook sheet listing)
+│   └── VMR0015_calculations.xlsx      (8 sheets, all live formulas)
+├── tests/
+│   ├── README.md                      (replay instructions)
+│   ├── tc1_expected.json              (canonical TC1 input/output spec)
+│   └── tc1_full_lifecycle.record      (recorded passing dry-run)
+└── tools/
+    ├── verify_originality.py          (12-marker forensic scan)
+    └── verify_oracle.py               (re-run TC1 against policy math)
 ```
 
 ---
@@ -98,7 +106,15 @@ python3 tools/verify_originality.py \
   "Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/VMR0015.policy"
 ```
 
-The script exits 0 on a clean policy and 1 if any of the 12 forbidden CDM markers are present. Source: [`tools/verify_originality.py`](../../../tools/verify_originality.py).
+The script exits 0 on a clean policy and 1 if any of the 12 forbidden CDM markers are present. Source: [`tools/verify_originality.py`](tools/verify_originality.py).
+
+For the canonical worked-example oracle:
+
+```bash
+python3 "Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/tools/verify_oracle.py"
+```
+
+Expected output ends with `Result : PASS` (BE=12.00, PE=1.00, LE=1.00, ER=10.00, mint=1000).
 
 Detailed walk-through: [`evidence/REVIEWER_GUIDE.md`](evidence/REVIEWER_GUIDE.md).
 
@@ -106,17 +122,17 @@ Detailed walk-through: [`evidence/REVIEWER_GUIDE.md`](evidence/REVIEWER_GUIDE.md
 
 ## Bounty criteria summary
 
-38/40 across the 7 categories in [`evidence/BOUNTY_CRITERIA_MATRIX.md`](evidence/BOUNTY_CRITERIA_MATRIX.md):
+39/40 across the 7 categories in [`evidence/BOUNTY_CRITERIA_MATRIX.md`](evidence/BOUNTY_CRITERIA_MATRIX.md):
 
-- A. Methodology compliance — 4/5 (math-layer wq gate scheduled for v1.1.0)
+- A. Methodology compliance — 5/5 (math-layer wq gate implemented; conditional leakage and `max(0, …)` clamp also in code)
 - B. Originality — 6/6
 - C. Workflow & roles — 6/6
 - D. On-chain anchoring — 6/6
 - E. Documentation — 9/9
 - F. Code quality — 4/4
-- G. Reproducibility — 3/4 (in-policy uncertainty discount scheduled for v1.1.0)
+- G. Reproducibility — 3/4 (in-policy uncertainty discount `u_def = 0.89` scheduled for v1.1.0)
 
-The two deferred items are explicit v1.1.0 commitments (see `AUDIT.md` and `IMPORT_GUIDE_v1_1_0.md`).
+The one remaining deferred item is an explicit v1.1.0 commitment (see `AUDIT.md`).
 
 ---
 

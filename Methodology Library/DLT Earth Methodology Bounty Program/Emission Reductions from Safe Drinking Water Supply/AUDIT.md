@@ -86,15 +86,28 @@ Reproduce locally with `python3 tools/verify_originality.py
 
 Bundle: `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/VMR0015.policy` (62 KB).
 
-## Supplementary v1.1.0 preview binaries
+## Code-layer changes in this corrective pass
 
-This folder also contains `VMR0015_v1_1_0_schemas.policy` (Stage 1 schema
-upgrades — semantic field titles + 2 new VCS schemas) and
-`VMR0015_v1_1_0.policy` (full v1.1.0 build — split customLogicBlocks,
-in-policy uncertainty discount, math-layer wq gate). Both are **previews of the
-next minor**, not part of this v1.0.0 submission, and have not been published
-to testnet under this PR. Refer to `IMPORT_GUIDE_v1_1_0.md` and
-`IMPORT_GUIDE_v1_1_0_full.md` for context.
+In addition to the forensic and metadata fixes above, two code-layer changes
+landed in `VMR0015.policy`:
+
+1. **Water-quality 0.95 hard gate moved into
+   `customLogicBlock.calculate_report_fields`.** The block now derives
+   `wq_pass_rate` from the per-test `Pass / Fail` verdicts in the Monitoring
+   Report's water-quality test array (`field2[*].field8`) and forces
+   `ER_total = 0` when the observed pass-rate is below 0.95. The gate is
+   defence-in-depth: a misconfigured or compromised VVB review cannot cause
+   non-compliant issuance.
+2. **Dormant `calculate_project_fields` block removed.** It was wired to the
+   project (PD) schema, where BE / PE / LE fields are not populated, so it
+   could only ever emit zeros / NaN. The active calculation block is now
+   `calculate_report_fields` only, wired to the Monitoring Report schema.
+
+The v1.1.0 preview binaries (`VMR0015_v1_1_0.policy`,
+`VMR0015_v1_1_0_schemas.policy`) referenced in earlier drafts have been
+dropped from this PR and will be re-introduced in a separate v1.1.0 PR
+alongside the in-policy `u_def = 0.89` uncertainty discount and an explicit
+`verificationFailed` VC path.
 
 > Note: dates above reflect the Hedera testnet timeline for the DLT Earth
 > bounty submission window (2026-05-05 / 2026-05-06).

@@ -15,7 +15,7 @@ The criteria below are derived from:
 |---|---|---|---|
 | A1 | Implements a published Verra or Gold Standard methodology | ✅ | VMR0015 v1.0 — Verra revision of AMS-III.AV |
 | A2 | Methodology equations reproducible from the policy | ✅ | `EMISSIONS_CALCULATION.md` — equations + 3 worked examples |
-| A3 | Conditional/threshold logic from the methodology is enforced | ⚠️ Partial | VMR0015 conditional leakage on `f_woody`; `max(0, …)` clamp; water-quality 0.95 documentation gate (VVB-enforced in v1.0.0; math-layer gate committed for v1.1.0) |
+| A3 | Conditional/threshold logic from the methodology is enforced | ✅ Pass | VMR0015 conditional leakage on `f_woody`; `max(0, …)` clamp; **water-quality 0.95 hard gate implemented in `customLogicBlock.calculate_report_fields`** — `wq_pass_rate` is computed from per-test verdicts (`field2[*].field8`) and forces `ER_total = 0` when below 0.95. |
 | A4 | Required schemas exist for each methodology entity | ✅ | 14 schemas; all published on topic `0.0.8865880` |
 | A5 | Methodology version explicit in metadata | ✅ | Policy `version: 1.0.0`; name carries `VMR0015 v1.0` |
 
@@ -90,13 +90,13 @@ The criteria below are derived from:
 
 | Category | Pass | Total | Notes |
 |---|---|---|---|
-| A. Methodology compliance | 4 | 5 | A3 partial — math-layer wq gate in v1.1.0 |
+| A. Methodology compliance | 5 | 5 | A3 implemented — math-layer wq gate in code |
 | B. Originality | 6 | 6 |  |
 | C. Workflow & roles | 6 | 6 |  |
 | D. On-chain anchoring | 6 | 6 |  |
 | E. Documentation | 9 | 9 |  |
 | F. Code quality | 4 | 4 |  |
 | G. Reproducibility | 3 | 4 | G4 partial — uncertainty fixture deferred to v1.1.0 |
-| **Total** | **38** | **40** | (2 items deferred to v1.1.0 with explicit commitments) |
+| **Total** | **39** | **40** | (1 item deferred to v1.1.0 with explicit commitment: G4 in-policy `u_def` discount) |
 
-Every criterion has a concrete evidence pointer (a file, a Hedera topic, a Hashscan link, or an IPFS CID). A reviewer can verify each row without contacting the author. The two partial rows are documented honestly with forward commitments rather than claimed as full pass.
+Every criterion has a concrete evidence pointer (a file, a Hedera topic, a Hashscan link, or an IPFS CID). A reviewer can verify each row without contacting the author. The one remaining partial row is documented honestly with a forward commitment rather than claimed as full pass.
