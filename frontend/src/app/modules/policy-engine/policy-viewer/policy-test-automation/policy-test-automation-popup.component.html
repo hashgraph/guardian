@@ -1,26 +1,6 @@
 <div class="policy-test-automation-popup" *ngIf="draftService.draft$ | async as draft">
-    <div class="policy-test-automation-title">Policy Test Automation</div>
-
-    <div class="policy-test-section">
-        <div class="policy-test-section-title">Input</div>
-
-        <label class="policy-test-checkbox-row" *ngIf="!draft.input">
-            <input
-                type="checkbox"
-                [checked]="draft.captureNextFormSubmit"
-                (change)="onCaptureChange($any($event.target).checked)"
-            />
-            <span>Capture Form Submission Data</span>
-        </label>
-
-        <div class="policy-test-awaiting" *ngIf="draft.captureNextFormSubmit && !draft.input">
-            AWAITING INPUT
-        </div>
-
-        <div class="policy-test-help" *ngIf="draft.captureNextFormSubmit && !draft.input">
-            <i class="pi pi-info-circle"></i>
-            <span>Data on next form submission will be used for test input</span>
-        </div>
+    <div class="policy-test-automation-header">
+        <div class="policy-test-automation-title">Policy Test Automation</div>
 
         <button
             type="button"
@@ -37,21 +17,59 @@
             (click)="onAwaitingOutputsClick()">
             AWAITING OUTPUTS
         </button>
-
-        <div class="policy-test-draft-item" *ngIf="draft.input">
-            <span>{{ draft.input.title || 'Input captured' }}</span>
-            <button type="button" (click)="inspectInput()">Inspect Data</button>
-            <button type="button" (click)="discardInput()">Discard</button>
-        </div>
     </div>
 
     <div class="policy-test-section">
-        <div class="policy-test-section-title">Outputs</div>
-        <div class="policy-test-draft-item" *ngFor="let output of draft.outputs">
-            <span>{{ output.title || output.type }}</span>
-            <button type="button" (click)="inspectOutput(output)">Inspect Data</button>
-            <button type="button" (click)="discardOutput(output.type, output.id)">Discard</button>
+        <div class="policy-test-section-title">Input</div>
+
+        <div class="policy-test-section-body">
+            <div class="policy-test-section-left">
+                <label class="policy-test-checkbox-row" *ngIf="!draft.input">
+                    <input
+                        type="checkbox"
+                        [checked]="draft.captureNextFormSubmit"
+                        (change)="onCaptureChange($any($event.target).checked)"
+                    />
+                    <span>Capture Form Submission Data</span>
+                </label>
+
+                <div class="policy-test-draft-item" *ngIf="draft.input">
+                    <span>{{ draft.input.title || 'Input captured' }}</span>
+                    <button type="button" (click)="inspectInput()"><i class="pi pi-search"></i>View Input</button>
+                    <button type="button" (click)="discardInput()"><i class="pi pi-trash"></i>Discard</button>
+                </div>
+            </div>
+
+            <div class="policy-test-section-right">
+                <div class="policy-test-help" *ngIf="!draft.input">
+                    <i class="pi pi-info-circle"></i>
+                    <span>Data on next form submission will be used for test input</span>
+                </div>
+            </div>
         </div>
-        <div class="policy-test-muted" *ngIf="draft.outputs.length === 0">No outputs yet</div>
+    </div>
+
+    <div class="policy-test-section" [ngClass]="{'policy-test-section-disabled': !draft.input}">
+        <div class="policy-test-section-title">Outputs</div>
+
+        <div class="policy-test-section-body">
+            <div class="policy-test-section-left">
+                <div class="policy-test-section-subtitle">Confirm Document Results</div>
+
+                <div class="policy-test-draft-item" *ngFor="let output of draft.outputs">
+                    <span>{{ output.title || output.type }}</span>
+                    <button type="button" (click)="inspectOutput(output)"><i class="pi pi-search"></i>View</button>
+                    <button type="button" (click)="discardOutput(output.type, output.id)"><i class="pi pi-trash"></i></button>
+                </div>
+                <div class="policy-test-muted" *ngIf="draft.outputs.length === 0 && draft.input">No outputs yet</div>
+            </div>
+
+            <div class="policy-test-section-right">
+                <div class="policy-test-help" *ngIf="draft.input && draft.outputs.length === 0">
+                    <i class="pi pi-info-circle"></i>
+                    <span>Review Document output and confirm they are correct</span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

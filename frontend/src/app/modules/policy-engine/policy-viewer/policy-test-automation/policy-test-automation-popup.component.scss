@@ -1,77 +1,103 @@
 .policy-test-automation-popup {
-    width: 280px;
-    padding: 12px;
+    width: 480px;
+    padding: 16px;
     color: #23252e;
-    font-size: 12px;
+    font-size: 13px;
+    border: 1px solid #999;
+    border-radius: 6px;
+    background: #d9d9d9;
+}
+
+.policy-test-automation-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
 }
 
 .policy-test-automation-title {
-    font-weight: 600;
-    margin-bottom: 12px;
+    font-weight: 700;
+    font-size: 14px;
 }
 
 .policy-test-section {
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .policy-test-section-title {
-    font-weight: 600;
-    margin-bottom: 6px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 2px;
+    display: inline-block;
+    text-decoration: underline;
+}
+
+.policy-test-section-body {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.policy-test-section-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.policy-test-section-right {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.policy-test-section-subtitle {
+    font-style: italic;
+    color: #666;
+    font-size: 12px;
 }
 
 .policy-test-checkbox-row {
     display: flex;
     align-items: center;
     gap: 8px;
+    font-style: italic;
+}
+
+.policy-test-checkbox-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
 }
 
 .policy-test-section-disabled {
-    opacity: 0.45;
-}
-
-.policy-test-link-button {
-    border: 0;
-    background: none;
-    color: var(--color-primary, #3f51b5);
-    cursor: pointer;
-    padding: 0;
-}
-
-.policy-test-captured-input {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.policy-test-input-name {
-    font-weight: 600;
+    opacity: 0.5;
 }
 
 .policy-test-muted {
-    color: #999;
-    font-size: 11px;
-}
-
-.policy-test-awaiting {
-    color: #f39c12;
-    font-weight: 600;
-    margin-bottom: 6px;
+    color: #888;
+    font-size: 12px;
+    font-style: italic;
 }
 
 .policy-test-help {
     display: flex;
     align-items: flex-start;
-    gap: 6px;
-    background: #f0f0f0;
-    padding: 8px;
+    gap: 8px;
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    padding: 8px 10px;
     border-radius: 4px;
     font-size: 11px;
-    color: #666;
-    margin-bottom: 6px;
+    color: #2d5016;
 
     i {
         margin-top: 1px;
         flex-shrink: 0;
+        color: #2d5016;
+        font-size: 14px;
     }
 
     span {
@@ -80,26 +106,26 @@
 }
 
 .policy-test-status-button {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    background: #f5f5f5;
-    color: #999;
+    padding: 8px 18px;
+    border: 1px solid #999;
+    background: #b8b8b8;
+    color: #fff;
     font-size: 12px;
-    font-weight: 600;
-    border-radius: 4px;
+    font-weight: 700;
+    border-radius: 3px;
     cursor: default;
-    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
 
     &:disabled {
-        opacity: 0.5;
+        opacity: 1;
         cursor: not-allowed;
     }
 }
 
 .policy-test-status-button-active {
-    border: 1px solid var(--color-primary, #3f51b5);
-    background: var(--color-primary, #3f51b5);
+    border: 1px solid #0089d0;
+    background: #0089d0;
     color: white;
     cursor: pointer;
 
@@ -115,22 +141,27 @@
 .policy-test-draft-item {
     display: grid;
     grid-template-columns: 1fr auto auto;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
-    padding: 6px 8px;
-    background: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 3px;
-    margin-bottom: 6px;
-    font-size: 11px;
-    min-height: 28px;
+    font-size: 12px;
 }
 
 .policy-test-draft-item button {
     border: 0;
     background: none;
-    color: var(--color-primary, #3f51b5);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #333;
     cursor: pointer;
     padding: 0;
     font-size: 12px;
+
+    i {
+        font-size: 14px;
+    }
+
+    &:hover {
+        opacity: 0.7;
+    }
 }
