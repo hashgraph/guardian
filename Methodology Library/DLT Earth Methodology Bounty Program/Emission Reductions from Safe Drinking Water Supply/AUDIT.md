@@ -2,6 +2,8 @@
 
 This commit replaces the prior policy with a forensically scrubbed build addressing six issues found during a self-audit of the published export (Guardian policy id `69fa42dcbafe0836d93bc4b9`).
 
+**Successor policy id (this PR):** `69fa5c34bafe0836d93bcde0` — published on Hedera testnet topic `0.0.8865880` (see `evidence/ON_CHAIN_ARTIFACTS.md`).
+
 ## What changed
 1. **12 CDM tool blocks dropped** and their event wiring re-routed so the engine no longer references mainnet `messageId`s (e.g. `1706867833.676387003`, `1707417996.173398196`).
 2. **CDM mainnet CER token removed** — `tokenId 0.0.3969810` / `topicId 0.0.3969809` are no longer present anywhere in the bundle. The new build expects a fresh testnet CER under tenant DID `did:hedera:testnet:6Gu9zNu2ipkxWZN1Yf7bRaYCXS1S5jBmNCuL24ZkSJbK_0.0.8863463`.
