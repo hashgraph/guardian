@@ -42,7 +42,7 @@ Confirm:
 Open: <https://ipfs.io/ipfs/QmUebQeBdFVhfZA2xpmzKESxQkWGCawBw7tjVe6f5kM2wN>
 
 This returns the policy JSON. Compare its top-level fields to:
-- `Methodology Library/Verra/VMR0015/VMR0015.policy` (in the PR diff)
+- `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/VMR0015.policy` (in the PR diff)
 
 Open: <https://ipfs.io/ipfs/QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv>
 
@@ -52,7 +52,7 @@ This returns the JSON-LD `@context` referenced by every VC issued by this policy
 
 ## Step 5 — Verify the policy publish VC (2 min)
 
-Pull the credential body from `evidence_final/ON_CHAIN_ARTIFACTS.md` §5 (or from the `.zip` export shipped in the PR).
+Pull the credential body from `evidence/ON_CHAIN_ARTIFACTS.md` §5 (or from the `.zip` export shipped in the PR).
 
 Verify:
 1. `issuer` matches the DID from Step 2.
@@ -74,12 +74,12 @@ If `verified.verified === true`, this step passes.
 
 ## Step 6 — Inspect the math (1 min)
 
-Open `evidence_final/EMISSIONS_CALCULATION.md`. Pick the worked example in §5 (rural Bengal pilot). Confirm:
-- `BE_total = 200.0`
-- `PE_total = 8.5`
-- `LE_total = 4.0` (because `f_woody = 0.40 > 0`)
-- `ER_total = 187.5`
-- `mint_units = 18,750` (decimals=2)
+Open `evidence/CANONICAL_TC1.md` (single source of truth) or `evidence/EMISSIONS_CALCULATION.md` §5. Confirm the canonical TC1 worked example:
+- `BE_total = 12.00` (BE_woody 8.00 + BE_fossil 4.00)
+- `PE_total = 1.00` (electricity 0.40 + transport 0.20 + manufacturing 0.30 + aux 0.10)
+- `LE_total = 1.00` (LE_woody 0.80 included because `f_woody = 0.60 > 0`; LE_fossil 0.20)
+- `ER_total = max(0, 12.00 - 1.00 - 1.00) = 10.00 tCO₂e`
+- `mint_units = floor(10.00 × 100) = 1000` base units (= 10.00 CER on token `0.0.8865898`, decimals = 2)
 
 The same arithmetic is implemented in the policy's `customLogicBlock` chain. The block code is in the policy JSON; search for `customLogicBlock` and inspect the `expression` field.
 
@@ -87,7 +87,7 @@ The same arithmetic is implemented in the policy's `customLogicBlock` chain. The
 
 ## Step 7 — Confirm originality (1 min)
 
-Open `evidence_final/FORENSIC_CHECK.md` (or `AUDIT.md`).
+Open `evidence/FORENSIC_CHECK.md` (or `AUDIT.md`).
 
 12 forensic checks are listed. All 12 pass:
 
@@ -109,11 +109,11 @@ Open `evidence_final/FORENSIC_CHECK.md` (or `AUDIT.md`).
 To repeat the scan locally:
 
 ```bash
-grep -E "0\.0\.3969810|0\.0\.3969809|00ad3636|7c6e3bfe|a76cb53c|8f48da39|approve_PP|approve_VVB|TrustChain|Choose_Roles|project_Pipeline|Monitoring_Reports_sr" \
-  Methodology\ Library/Verra/VMR0015/VMR0015.policy
+python3 tools/verify_originality.py \
+  "Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/VMR0015.policy"
 ```
 
-Expected output: empty (zero matches).
+Expected output: `Originality scan: 0/12 forbidden markers present` followed by `OK — clean`.
 
 ---
 
@@ -143,7 +143,7 @@ If the reviewer wants to exercise the policy themselves:
 3. Open the policy → Test → upload `tc1_full_lifecycle.record`.
 4. Run.
 
-Expected result: every action passes through. The final mint emits 18,750 units (= 187.50 CER) against the supply key controlled by the policy.
+Expected result: every action passes through. The final mint emits 1000 base units (= 10.00 CER) against the supply key controlled by the policy. Inputs and expected outputs are codified in `tests/tc1_expected.json`.
 
 ---
 
@@ -159,16 +159,19 @@ Step 9 is optional and demonstrates dynamic correctness, not just static correct
 
 | Artifact | PR path |
 |---|---|
-| Policy file | `Methodology Library/Verra/VMR0015/VMR0015.policy` |
-| README | `Methodology Library/Verra/VMR0015/README.md` |
-| LICENSE | `Methodology Library/Verra/VMR0015/LICENSE` |
-| Workflow diagram | `Methodology Library/Verra/VMR0015/workflow.png` |
-| Audit report | `Methodology Library/Verra/VMR0015/AUDIT.md` |
-| On-chain artifacts | `Methodology Library/Verra/VMR0015/evidence/ON_CHAIN_ARTIFACTS.md` |
-| Emissions calc | `Methodology Library/Verra/VMR0015/evidence/EMISSIONS_CALCULATION.md` |
-| Use cases | `Methodology Library/Verra/VMR0015/evidence/USE_CASES.md` |
-| Bounty matrix | `Methodology Library/Verra/VMR0015/evidence/BOUNTY_CRITERIA_MATRIX.md` |
-| Reviewer guide | `Methodology Library/Verra/VMR0015/evidence/REVIEWER_GUIDE.md` |
-| Comparison | `Methodology Library/Verra/VMR0015/evidence/COMPARISON_VS_GOLD_STANDARD.md` |
-| Forensic | `Methodology Library/Verra/VMR0015/evidence/FORENSIC_CHECK.md` |
-| Test record | `Methodology Library/Verra/VMR0015/tests/tc1_full_lifecycle.record` |
+| Policy file | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/VMR0015.policy` |
+| README | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/README.md` |
+| LICENSE | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/LICENSE` |
+| Workflow diagram | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/workflow.png` |
+| Audit report | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/AUDIT.md` |
+| Canonical TC1 | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/evidence/CANONICAL_TC1.md` |
+| On-chain artifacts | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/evidence/ON_CHAIN_ARTIFACTS.md` |
+| Emissions calc | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/evidence/EMISSIONS_CALCULATION.md` |
+| Use cases | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/evidence/USE_CASES.md` |
+| Bounty matrix | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/evidence/BOUNTY_CRITERIA_MATRIX.md` |
+| Reviewer guide | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/evidence/REVIEWER_GUIDE.md` |
+| Comparison | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/evidence/COMPARISON_VS_GOLD_STANDARD.md` |
+| Forensic | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/evidence/FORENSIC_CHECK.md` |
+| Calculations workbook | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/calculations/VMR0015_calculations.xlsx` |
+| Test record | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/tests/tc1_full_lifecycle.record` |
+| Test expected | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/tests/tc1_expected.json` |
