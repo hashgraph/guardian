@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { IPolicyDocumentationEntry } from '@guardian/interfaces';
+import { IPolicyDocumentationEntry, POLICY_ALIAS_REGEX } from '@guardian/interfaces';
 import { RegisteredService } from '../../services/registered.service';
 import { IBlockAbout, PolicyFolder, PolicyItem } from '../../structures';
 
@@ -139,7 +139,7 @@ export class PolicyApiConfigDialogComponent {
 
     onAliasChange(index: number): void {
         const entry = this.entries[index];
-        entry.alias = entry.alias.toLowerCase().replace(/[^a-z0-9-]/g, '');
+        entry.alias = entry.alias.toLowerCase().replace(/[^a-z0-9\-/]/g, '');
         this.revalidate();
     }
 
@@ -220,8 +220,8 @@ export class PolicyApiConfigDialogComponent {
         if (!entry.alias) {
             return 'Alias is required';
         }
-        if (!/^[a-z0-9-]+$/.test(entry.alias)) {
-            return 'Alias: only lowercase letters, digits and hyphens';
+        if (!POLICY_ALIAS_REGEX.test(entry.alias)) {
+            return "Alias: lowercase letters, digits, hyphens; use '/' to separate path segments";
         }
         if (!block || !about || (!about.get && !about.post)) {
             return 'Selected block does not support API aliases';

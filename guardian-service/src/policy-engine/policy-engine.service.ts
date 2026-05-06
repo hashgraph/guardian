@@ -67,7 +67,8 @@ import {
     MigrationConfig, MigrationRunStatus,
     MintTransactionStatus,
     TokenType,
-    IPolicyDocumentationEntry
+    IPolicyDocumentationEntry,
+    POLICY_ALIAS_REGEX
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
@@ -100,6 +101,11 @@ function buildDocumentationUrls(
         const tag = entry.target;
         const alias = entry.alias;
         const method = entry.method;
+        if (!alias || !POLICY_ALIAS_REGEX.test(alias)) {
+            throw new Error(
+                `Invalid alias "${alias}" — only lowercase letters, digits, hyphens; segments separated by '/'.`
+            );
+        }
         const technicalUrl = method === 'POST'
             ? `/api/v1/policies/${policyId}/tag/${tag}/blocks`
             : `/api/v1/policies/${policyId}/tag/${tag}`;

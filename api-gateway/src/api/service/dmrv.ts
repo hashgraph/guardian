@@ -2,7 +2,7 @@ import { Auth, AuthUser } from '#auth';
 import { PREFIXES } from '#constants';
 import { CacheService, EntityOwner, getCacheKey, InternalException, PolicyEngine } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Permissions } from '@guardian/interfaces';
+import { Permissions, POLICY_ALIAS_REGEX } from '@guardian/interfaces';
 import {
     All,
     Body,
@@ -34,7 +34,7 @@ export class DmrvApi {
     /**
      * DMRV proxy: resolves alias to block and forwards request
      */
-    @All('/:policyId/:alias')
+    @All('/:policyId/*')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_MANAGE,
@@ -52,7 +52,8 @@ export class DmrvApi {
     @ApiParam({
         name: 'alias',
         type: String,
-        description: 'Human-readable alias for the block endpoint',
+        description: 'Alias path; one or more lowercase slug segments separated by `/`.',
+        example: 'monitoring-reports/create',
         required: true,
     })
     @ApiOkResponse({
@@ -66,12 +67,17 @@ export class DmrvApi {
     async proxyByAlias(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Param('alias') alias: string,
         @Query() query: any,
         @Body() body: any,
         @Req() req: any
     ): Promise<any> {
         try {
+            const rawAlias = (req.params && req.params['*']) ?? '';
+            const alias = decodeURIComponent(String(rawAlias));
+            if (!alias || !POLICY_ALIAS_REGEX.test(alias)) {
+                throw new HttpException('Invalid alias path.', HttpStatus.BAD_REQUEST);
+            }
+
             const engineService = new PolicyEngine();
             const policy = await engineService.getPolicy(
                 { filters: policyId, userDid: user.did },
