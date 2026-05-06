@@ -8,6 +8,9 @@ import { getDatabaseConfig } from '@shared/config/database.config';
 import { getRedictConfig } from '@shared/config/redict.config';
 import { QUEUE_NAMES, getActiveQueues } from '@shared/config/bullmq.config';
 
+// Modules
+import { MappingModule } from './mapping/mapping.module';
+
 // Services
 import { HederaService } from './services/hedera.service';
 import { IpfsService } from './services/ipfs.service';
@@ -80,6 +83,9 @@ export class WorkerModule {
                 BullModule.registerQueue(
                     ...allQueueNames.map(name => ({ name })),
                 ),
+
+                // Mapping pipeline module
+                MappingModule,
             ],
             providers: [
                 // Redict pub/sub client for event publishing
