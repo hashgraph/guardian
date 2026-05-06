@@ -110,7 +110,7 @@ If the PP attempts to ship a report with `wq_pass_rate < 0.95`, in v1.0.0 the VV
 
 ## 4. Project Sizing Guide
 
-Per-household yield ~0.04–0.08 tCO₂e/HH/yr for woody-mix baselines (Verra VMR0015 §6). The canonical TC1 pilot (200 HH, see [`CANONICAL_TC1.md`](CANONICAL_TC1.md)) yields 10.00 tCO₂e/yr net at a mid-range per-HH rate of 0.05 tCO₂e/HH/yr, minting 1000 base units (10.00 CER) on token `0.0.8865898`.
+Per-household yield ~0.04–0.08 tCO₂e/HH/yr for woody-mix baselines (Verra VMR0015 §6). The canonical TC1 pilot (200 HH, see [`CANONICAL_TC1.md`](CANONICAL_TC1.md)) yields 8.90 tCO₂e/yr net at a mid-range per-HH rate of 0.05 tCO₂e/HH/yr (10.00 gross × u_def 0.89), minting 890 base units (8.90 CER) on token `0.0.8865898`.
 
 ### Archetypes
 
@@ -134,7 +134,7 @@ Numbers depend on woody fraction, local emission factor, average household water
 - 200 households in West Bengal
 - UF + UV system
 - f_woody = 0.60, f_fossil = 0.40, wq_pass_rate = 0.98
-- ER_total = 10.00 tCO₂e/yr → mint 1000 base units (10.00 CER) on token `0.0.8865898`
+- ER_gross = 10.00 tCO₂e/yr × u_def (0.89) → ER_net = 8.90 tCO₂e/yr → mint 890 base units (8.90 CER) on token `0.0.8865898`
 - Full input/output table: [`CANONICAL_TC1.md`](CANONICAL_TC1.md)
 
 ### Example 2 — Andean village programme

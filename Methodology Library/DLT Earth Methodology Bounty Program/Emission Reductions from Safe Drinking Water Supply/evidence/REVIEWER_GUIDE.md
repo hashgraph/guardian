@@ -79,7 +79,7 @@ Open `evidence/CANONICAL_TC1.md` (single source of truth) or `evidence/EMISSIONS
 - `PE_total = 1.00` (electricity 0.40 + transport 0.20 + manufacturing 0.30 + aux 0.10)
 - `LE_total = 1.00` (LE_woody 0.80 included because `f_woody = 0.60 > 0`; LE_fossil 0.20)
 - `ER_total = max(0, 12.00 - 1.00 - 1.00) = 10.00 tCO₂e`
-- `mint_units = floor(10.00 × 100) = 1000` base units (= 10.00 CER on token `0.0.8865898`, decimals = 2)
+- `mint_units = floor(8.90 × 100) = 890` base units (= 8.90 CER on token `0.0.8865898`, decimals = 2)
 
 The same arithmetic is implemented in the policy's `customLogicBlock` chain. The block code is in the policy JSON; search for `customLogicBlock` and inspect the `expression` field.
 
@@ -143,7 +143,7 @@ If the reviewer wants to exercise the policy themselves:
 3. Open the policy → Test → upload `tc1_full_lifecycle.record`.
 4. Run.
 
-Expected result: every action passes through. The final mint emits 1000 base units (= 10.00 CER) against the supply key controlled by the policy. Inputs and expected outputs are codified in `tests/tc1_expected.json`.
+Expected result: every action passes through. The final mint emits 890 base units (= 8.90 CER) against the supply key controlled by the policy. Inputs and expected outputs are codified in `tests/tc1_expected.json`.
 
 ---
 

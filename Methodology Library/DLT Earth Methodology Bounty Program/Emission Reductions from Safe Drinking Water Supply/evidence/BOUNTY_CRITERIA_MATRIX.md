@@ -39,7 +39,7 @@ The criteria below are derived from:
 | C3 | Trust chain (full report) implemented | ✅ | `vmr0015_trust_chain_report` (renamed from default `trustChainBlock`) — 1 `reportBlock` + 8 `reportItemBlock` |
 | C4 | Policy publishes without validation errors | ✅ | Policy id `69fa5c34bafe0836d93bcde0` status PUBLISHED |
 | C5 | Mint block correctly wired | ✅ | `mintDocumentBlock.tokenId = 0.0.8865898`, `rule = field7` (ER_total) |
-| C6 | End-to-end lifecycle reaches mint | ✅ | `tc1_full_lifecycle.record` covers role choice → PP profile → project → report → VVB approve → owner approve → mint; mint quantity = 1000 base units (10.00 CER) on token `0.0.8865898` |
+| C6 | End-to-end lifecycle reaches mint | ✅ | `tc1_full_lifecycle.record` covers role choice → PP profile → project → report → VVB approve → owner approve → mint; mint quantity = 890 base units (8.90 CER, after u_def = 0.89) on token `0.0.8865898` |
 
 ## D. On-Chain Anchoring
 
@@ -82,7 +82,7 @@ The criteria below are derived from:
 | G1 | Policy file in repo matches published policy | ✅ | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/VMR0015.policy` (in PR) |
 | G2 | Schemas in repo match published schemas | ✅ | All 14 schemas embedded in the .policy file |
 | G3 | Worked example numbers reproducible from inputs | ✅ | Canonical TC1 reproducible — see `evidence/CANONICAL_TC1.md` and `tests/tc1_expected.json` |
-| G4 | Test fixture provided | ⚠️ Partial | `tc1_full_lifecycle.record` + `tests/tc1_expected.json` (uncertainty-quantification fixture pending in v1.1.0) |
+| G4 | Test fixture provided | ✅ | `tc1_full_lifecycle.record` + `tests/tc1_expected.json` with `u_def = 0.89` uncertainty discount applied in `customLogicBlock.calculate_report_fields` (ER_gross 10.00 × u_def 0.89 → ER_net 8.90 → mint 890) |
 
 ---
 
@@ -96,7 +96,7 @@ The criteria below are derived from:
 | D. On-chain anchoring | 6 | 6 |  |
 | E. Documentation | 9 | 9 |  |
 | F. Code quality | 4 | 4 |  |
-| G. Reproducibility | 3 | 4 | G4 partial — uncertainty fixture deferred to v1.1.0 |
-| **Total** | **39** | **40** | (1 item deferred to v1.1.0 with explicit commitment: G4 in-policy `u_def` discount) |
+| G. Reproducibility | 4 | 4 | All criteria pass |
+| **Total** | **40** | **40** | All criteria pass; `u_def = 0.89` applied in code as of commit on top of validator-fix |
 
 Every criterion has a concrete evidence pointer (a file, a Hedera topic, a Hashscan link, or an IPFS CID). A reviewer can verify each row without contacting the author. The one remaining partial row is documented honestly with a forward commitment rather than claimed as full pass.

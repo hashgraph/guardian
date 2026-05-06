@@ -18,9 +18,11 @@
     "BE_total": 12.00,
     "PE_total": 1.00,
     "LE_total": 1.00,
-    "ER_total": 10.00,
-    "mint_base_units": 1000,
-    "mint_readable": "10.00 CER",
+    "ER_gross": 10.00,
+    "u_def": 0.89,
+    "ER_total": 8.90,
+    "mint_base_units": 890,
+    "mint_readable": "8.90 CER",
     "token_id": "0.0.8865898"
   },
   "source_of_truth": "evidence/CANONICAL_TC1.md"

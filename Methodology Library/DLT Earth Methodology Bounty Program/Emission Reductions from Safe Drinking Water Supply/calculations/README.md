@@ -11,7 +11,7 @@ math. It contains 8 sheets:
 | `Project` | PE_* line-item computation |
 | `Leakage` | LE_woody / LE_fossil with `f_woody` conditional |
 | `ER_NetCalc` | BE − PE − LE with `max(0, …)` clamp |
-| `WorkedExample` | Canonical TC1 — must reproduce 10.00 tCO₂e (links to `evidence/CANONICAL_TC1.md`) |
+| `WorkedExample` | Canonical TC1 — must reproduce 8.90 tCO₂e (after u_def = 0.89) (links to `evidence/CANONICAL_TC1.md`) |
 | `PolicyMapping` | Maps each workbook variable to a `field*` path inside the policy `customLogicBlock` |
 
 Every result cell is a live formula. Verify by changing any input and watching
@@ -28,6 +28,6 @@ Running the workbook with default canonical inputs produces:
 | `WorkedExample!D23` (BE_total) | 12.00 |
 | `WorkedExample!D24` (PE_total) | 1.00 |
 | `WorkedExample!D25` (LE_total) | 1.00 |
-| `WorkedExample!D26` (ER_total) | **10.00** tCO₂e |
-| `WorkedExample!D27` (Mint_base_units) | **1000** |
-| `WorkedExample!D28` (Mint_readable) | **10.00 CER** on token `0.0.8865898` |
+| `WorkedExample!D26` (ER_net after u_def=0.89) | **8.90** tCO₂e |
+| `WorkedExample!D27` (Mint_base_units) | **890** |
+| `WorkedExample!D28` (Mint_readable) | **8.90 CER** on token `0.0.8865898` |

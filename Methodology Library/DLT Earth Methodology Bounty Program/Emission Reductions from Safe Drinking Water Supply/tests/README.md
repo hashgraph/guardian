@@ -12,7 +12,7 @@ dry-run that exercises the full policy lifecycle against the current
 | `tc1_full_lifecycle.record` | Recorded MGS dry-run (role choice → PP profile → project registration → monitoring report → water-quality block → VVB validation → VVB verification → owner confirmation) |
 
 Expected outcomes match [`../evidence/CANONICAL_TC1.md`](../evidence/CANONICAL_TC1.md):
-`ER_total = 10.00 tCO₂e` → mint **1000 base units** (= 10.00 CER, decimals = 2)
+`ER_gross = 10.00 tCO₂e` → after `u_def = 0.89` → `ER_net = 8.90 tCO₂e` → mint **890 base units** (= 8.90 CER, decimals = 2)
 on token `0.0.8865898`.
 
 ## About the recording
@@ -33,8 +33,8 @@ python3 tools/verify_oracle.py
 This re-runs the canonical TC1 inputs (200 HH, `f_woody = 0.60`,
 `wq_pass_rate = 0.98`) against a Python port of the policy math and
 returns `Result : PASS` if the math layer is consistent with the
-specification (BE = 12.00, PE = 1.00, LE = 1.00, ER = 10.00,
-mint_base_units = 1000).
+specification (BE = 12.00, PE = 1.00, LE = 1.00, ER_gross = 10.00, u_def = 0.89, ER_net = 8.90,
+mint_base_units = 890).
 
 ## To replay the recorded fixture
 
@@ -52,5 +52,5 @@ mint_base_units = 1000).
    (200 households, BE_woody = 8.00, BE_fossil = 4.00, PE = 0.40 / 0.20 / 0.30 / 0.10,
    LE_woody = 0.80, LE_fossil = 0.20, water-quality test array with
    `wq_pass_rate ≈ 0.98`).
-4. Confirm the mint event shows **1000 base units** on token `0.0.8865898`.
+4. Confirm the mint event shows **890 base units** on token `0.0.8865898`.
 5. Save the recording back to `tc1_full_lifecycle.record`.

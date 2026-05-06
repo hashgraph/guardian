@@ -38,7 +38,7 @@ original; VMR0015 adds two clarifications, both addressed here:
 | `LICENSE` | Apache 2.0 |
 | `AUDIT.md` | Static audit log (0 errors, 0 warnings after the structural pass) |
 | `workflow.png` | Block-graph of the policy state machine |
-| `calculations/VMR0015_calculations.xlsx` | Live-formula workbook replicating the policy's `customLogicBlock` math, with the canonical TC1 worked example (200-household pilot, ER_total = 10.00 tCO₂e/yr → 1000 base units / 10.00 CER — see `evidence/CANONICAL_TC1.md`) |
+| `calculations/VMR0015_calculations.xlsx` | Live-formula workbook replicating the policy's `customLogicBlock` math, with the canonical TC1 worked example (200-household pilot, ER_gross = 10.00 tCO₂e/yr → ER_net = 8.90 tCO₂e/yr (after u_def = 0.89) → 890 base units / 8.90 CER — see `evidence/CANONICAL_TC1.md`) |
 | `evidence/CANONICAL_TC1.md` | Single source of truth for the TC1 worked example (inputs, arithmetic, expected outputs) |
 | `tools/verify_originality.py` | Standalone originality-scan script (run against `VMR0015.policy`) |
 | `evidence/ON_CHAIN_ARTIFACTS.md` | Hedera testnet identifiers (policy id, topics, token, IPFS CIDs) |

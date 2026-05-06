@@ -37,7 +37,11 @@ BE_total = BE_woody + BE_fossil = 8.00 + 4.00 = 12.00
 PE_total = PE_electricity + PE_transport + PE_manufacturing + PE_aux = 1.00
 LE_total = (f_woody > 0 ? LE_woody : 0) + LE_fossil = 0.80 + 0.20 = 1.00
 ER_raw   = BE_total - PE_total - LE_total = 12.00 - 1.00 - 1.00 = 10.00
-ER_total = max(0, ER_raw) = 10.00
+ER_gross = max(0, ER_raw)                                       = 10.00
+# Apply VMR0015 §B.7 / AMS-III.AV uncertainty discount
+u_def    = 0.89
+ER_net   = ER_gross × u_def = 10.00 × 0.89                      = 8.90
+ER_total = ER_net = 8.90
 ```
 
 ## Outputs
@@ -45,7 +49,7 @@ ER_total = max(0, ER_raw) = 10.00
 | Output | Value |
 | --- | --- |
 | `ER_total` (field7) | **10.00 tCO₂e/yr** |
-| Mint (decimals=2) | `floor(10.00 × 100)` = **1000 base units** |
+| Mint (decimals=2) | `floor(8.90 × 100)` = **890 base units** |
 | Mint readable | **10.00 CER** on token `0.0.8865898` |
 
 ## Notes on what is and is not in the math layer

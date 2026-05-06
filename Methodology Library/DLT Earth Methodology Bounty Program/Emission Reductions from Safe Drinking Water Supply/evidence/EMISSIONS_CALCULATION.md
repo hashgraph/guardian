@@ -107,7 +107,9 @@ The canonical worked example is maintained as a single source of truth in [`CANO
 BE_total = BE_woody + BE_fossil                     = 12.00
 PE_total = PE_electricity + PE_transport + PE_manufacturing + PE_aux = 1.00
 LE_total = (f_woody > 0 ? LE_woody : 0) + LE_fossil = 1.00
-ER_total = max(0, BE_total - PE_total - LE_total)   = 10.00
+ER_gross = max(0, BE_total - PE_total - LE_total)   = 10.00
+u_def    = 0.89  (VMR0015 §B.7 / AMS-III.AV uncertainty discount)
+ER_total = ER_gross × u_def                          = 8.90
 ```
 
 ### Output write-paths (as the policy actually writes them)
@@ -122,10 +124,10 @@ ER_total = max(0, BE_total - PE_total - LE_total)   = 10.00
 ### Mint
 
 ```
-mint_units = floor(field7 × 10^decimals) = floor(10.00 × 100) = 1000
+mint_units = floor(field7 × 10^decimals) = floor(8.90 × 100) = 890
 ```
 
-The Guardian engine submits an HTS mint of **1000 base units** against token `0.0.8865898`. Because decimals = 2, this represents **10.00 CER**.
+The Guardian engine submits an HTS mint of **890 base units** against token `0.0.8865898`. Because decimals = 2, this represents **8.90 CER**.
 
 ---
 

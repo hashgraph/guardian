@@ -46,7 +46,7 @@ AMS-III.AV / VMR0015 covers projects that displace pre-project household water-t
 
 Full equations and worked examples: [`evidence/EMISSIONS_CALCULATION.md`](evidence/EMISSIONS_CALCULATION.md).
 
-The canonical TC1 worked example — 200-household solar-augmented pilot, 1-year monitoring, mixed-fuel baseline (`f_woody = 0.60`), `wq_pass_rate = 0.98`, `ER_total = 10.00 tCO₂e/yr` → 1000 base units (10.00 CER) minted on token `0.0.8865898`. Full inputs and arithmetic in [`evidence/CANONICAL_TC1.md`](evidence/CANONICAL_TC1.md). The matching spreadsheet is in [`calculations/VMR0015_calculations.xlsx`](calculations/VMR0015_calculations.xlsx) (8 sheets, every cell a live formula; sheet listing in [`calculations/README.md`](calculations/README.md)).
+The canonical TC1 worked example — 200-household solar-augmented pilot, 1-year monitoring, mixed-fuel baseline (`f_woody = 0.60`), `wq_pass_rate = 0.98`, `ER_gross = 10.00 tCO₂e/yr × u_def (0.89) → ER_net = 8.90 tCO₂e/yr → 890 base units (8.90 CER) minted on token `0.0.8865898`. Full inputs and arithmetic in [`evidence/CANONICAL_TC1.md`](evidence/CANONICAL_TC1.md). The matching spreadsheet is in [`calculations/VMR0015_calculations.xlsx`](calculations/VMR0015_calculations.xlsx) (8 sheets, every cell a live formula; sheet listing in [`calculations/README.md`](calculations/README.md)).
 
 ---
 
@@ -114,7 +114,7 @@ For the canonical worked-example oracle:
 python3 "Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/tools/verify_oracle.py"
 ```
 
-Expected output ends with `Result : PASS` (BE=12.00, PE=1.00, LE=1.00, ER=10.00, mint=1000).
+Expected output ends with `Result : PASS` (BE=12.00, PE=1.00, LE=1.00, ER_gross=10.00, u_def=0.89, ER=8.90, mint=890).
 
 Detailed walk-through: [`evidence/REVIEWER_GUIDE.md`](evidence/REVIEWER_GUIDE.md).
 
