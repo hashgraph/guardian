@@ -120,7 +120,7 @@ Per-household yield ~0.04–0.08 tCO₂e/HH/yr for woody-mix baselines (Verra VM
 | Refugee camp (LPG-dominant) | 1,000 | f_woody=0.10, f_fossil=0.90 | ~30–40 tCO₂e | low woody leakage |
 | Peri-urban estate (electric baseline) | 500 | f_woody=0, f_fossil=0 | small / zero | demonstrates LE_woody exclusion |
 | School cluster | 50 | f_woody=0.80 | ~3 tCO₂e | small project |
-| Failed-WQ scenario | 200 | wq_pass_rate=0.85 | 0 (refused) | documentation gate v1.0.0; math-layer gate v1.1.0 |
+| Failed-WQ scenario | 200 | wq_pass_rate=0.85 | 0 (refused) | math-layer hard gate in `customLogicBlock`: `wq_pass_rate < 0.95` forces `ER_total = 0` |
 | Multi-village programme | 5,000 | f_woody=0.50 | ~250 tCO₂e | aggregated |
 
 Numbers depend on woody fraction, local emission factor, average household water consumption, and fraction of demand served. The policy supports any of these sizes; the only hard cap is HTS supply-key authorisation per transaction (~9 quintillion units, far above any realistic project).

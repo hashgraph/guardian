@@ -97,7 +97,7 @@ The canonical worked example is maintained as a single source of truth in [`CANO
 | `LE_woody` | 0.80 tCO₂e |
 | `LE_fossil` | 0.20 tCO₂e |
 | `f_woody` | 0.60 |
-| `wq_pass_rate` | 0.98 (≥ 0.95 documentation gate) |
+| `wq_pass_rate` | 0.98 (≥ 0.95 math-layer hard gate) |
 | Households served | 200 |
 | Monitoring period | 365 days |
 
