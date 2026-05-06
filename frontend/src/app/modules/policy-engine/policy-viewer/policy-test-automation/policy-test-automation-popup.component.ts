@@ -35,7 +35,7 @@ export class PolicyTestAutomationPopupComponent {
     }
 
     public inspectOutput(output: PolicyTestOutputAnchor): void {
-        this.openJson(output.title || 'Output reference', output);
+        this.openJson(output.title || 'Output', output.document || output);
     }
 
     public discardOutput(type: string, id: string): void {

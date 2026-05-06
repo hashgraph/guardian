@@ -121,6 +121,7 @@ export class PolicyTestAutomationDraftService {
                 input.capturedAt
             ].join(':'),
             title: input.title || 'Confirmed output',
+            document: input.document,
             source: {
                 policyId: input.policyId,
                 blockId: input.blockId,
