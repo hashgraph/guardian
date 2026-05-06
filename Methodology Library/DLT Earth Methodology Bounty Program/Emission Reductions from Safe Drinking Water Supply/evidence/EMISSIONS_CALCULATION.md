@@ -67,67 +67,65 @@ ER_total = max(0, BE_total − PE_total − LE_total)
 
 ## 4. Field Mapping in Custom-Logic Output
 
-The first `customLogicBlock` aggregates the inputs and emits a document with these output fields. These are the field indices the `mintDocumentBlock` references.
+The active `customLogicBlock` (`calculate_report_fields`, wired to MR schema `d0f009f5-...&1.0.0`) writes output fields with both nested intermediates and the top-level mint key. These are the paths the `mintDocumentBlock` references.
 
-| Field | Output | Meaning |
+| Field path | Source variable | Meaning |
 |---|---|---|
-| `field4` | `PE_total` | Project emissions |
-| `field5` | `BE_total` | Baseline emissions |
-| `field6` | `LE_total` | Leakage |
-| **`field7`** | **`ER_total`** | **Emission reductions — mint rule reads this** |
+| `field5.field0` | `BE_total` | Baseline emissions (nested under field5) |
+| `field4.field0` | `PE_total` | Project emissions (nested under field4) |
+| `field6.field3` | `LE_total` | Leakage (nested under field6) |
+| **`field7`** | **`ER_total`** | **Top-level — mint rule reads this** |
 
-`mintDocumentBlock.rule = "field7"`. Decimals on the CER token = 2, so the minted units are `ER_total × 100`.
+`mintDocumentBlock.rule = "field7"`. Decimals on the CER token = 2, so the minted units are `floor(ER_total × 100)`. The dormant `calculate_project_fields` block was removed in the corrective pass (it was wired to the project schema, which has no BE/PE/LE fields at creation).
 
 ---
 
-## 5. Worked Example (TC1 Pilot)
+## 5. Worked Example (TC1 — canonical)
 
-Inputs supplied via the Monitoring Report VC (`#d0f009f5-44c6-438e-b852-02dbe831a079`):
+The canonical worked example is maintained as a single source of truth in [`CANONICAL_TC1.md`](CANONICAL_TC1.md). All other documentation and the calculations workbook reference that file. The summary below mirrors it.
+
+### Inputs (Monitoring Report VC, schema `d0f009f5-44c6-438e-b852-02dbe831a079&1.0.0`)
 
 | Variable | Value |
 |---|---|
-| `BE_woody` | 120.0 tCO₂e |
-| `BE_fossil` | 80.0 tCO₂e |
-| `PE_electricity` | 5.0 tCO₂e |
-| `PE_transport` | 2.0 tCO₂e |
-| `PE_manufacturing` | 1.0 tCO₂e |
-| `PE_aux` | 0.5 tCO₂e |
-| `LE_woody` | 3.0 tCO₂e |
-| `LE_fossil` | 1.0 tCO₂e |
-| `f_woody` | 0.40 |
+| `BE_woody` | 8.00 tCO₂e |
+| `BE_fossil` | 4.00 tCO₂e |
+| `PE_electricity` | 0.40 tCO₂e |
+| `PE_transport` | 0.20 tCO₂e |
+| `PE_manufacturing` | 0.30 tCO₂e |
+| `PE_aux` | 0.10 tCO₂e |
+| `LE_woody` | 0.80 tCO₂e |
+| `LE_fossil` | 0.20 tCO₂e |
+| `f_woody` | 0.60 |
+| `wq_pass_rate` | 0.98 (≥ 0.95 documentation gate) |
+| Households served | 200 |
+| Monitoring period | 365 days |
 
-### Step 1 — baseline
-
-```
-BE_total = 120.0 + 80.0 = 200.0
-```
-
-### Step 2 — project
+### Computation (verbatim from `customLogicBlock.calculate_report_fields`)
 
 ```
-PE_total = 5.0 + 2.0 + 1.0 + 0.5 = 8.5
+BE_total = BE_woody + BE_fossil                     = 12.00
+PE_total = PE_electricity + PE_transport + PE_manufacturing + PE_aux = 1.00
+LE_total = (f_woody > 0 ? LE_woody : 0) + LE_fossil = 1.00
+ER_total = max(0, BE_total - PE_total - LE_total)   = 10.00
 ```
 
-### Step 3 — leakage (VMR0015 conditional)
+### Output write-paths (as the policy actually writes them)
+
+| Field | Source variable | Where written |
+|---|---|---|
+| `field5.field0` | `BE_total` | nested under field5 |
+| `field4.field0` | `PE_total` | nested under field4 |
+| `field6.field3` | `LE_total` | nested under field6 |
+| **`field7`** | **`ER_total`** | **top-level — read by `mintDocumentBlock.rule`** |
+
+### Mint
 
 ```
-f_woody = 0.40 > 0  →  include LE_woody
-LE_total = 3.0 + 1.0 = 4.0
+mint_units = floor(field7 × 10^decimals) = floor(10.00 × 100) = 1000
 ```
 
-### Step 4 — net reductions
-
-```
-ER_total = max(0, 200.0 − 8.5 − 4.0) = 187.5 tCO₂e
-```
-
-### Step 5 — mint quantity
-
-```
-mint_units = 187.5 × 10^decimals = 187.5 × 100 = 18,750 CER
-```
-
-The Guardian engine submits an HTS mint of 18,750 base units against token `0.0.8865898`. Because decimals = 2, this represents **187.50 CER**.
+The Guardian engine submits an HTS mint of **1000 base units** against token `0.0.8865898`. Because decimals = 2, this represents **10.00 CER**.
 
 ---
 
@@ -177,16 +175,17 @@ Under AMS-III.AV (CDM original) the woody leakage would have been incorrectly su
 
 ## 8. Validation gate — water quality
 
-The Monitoring Report schema includes `wq_pass_rate`. Verra requires ≥ 95 % pass rate on independent water quality testing for the reporting period to be eligible. Reports below this threshold are rejected by the VVB at `approve_report_btn` and never reach the mint block.
+The Monitoring Report schema includes `wq_pass_rate`. Verra requires ≥ 95 % pass rate on independent water quality testing for the reporting period to be eligible.
 
-In the pilot example, `wq_pass_rate = 0.97` clears the 0.95 threshold, so the report proceeds to mint.
+In v1.0.0 this is a **documentation gate enforced by VVB review**: reports below 0.95 are expected to be rejected by the VVB at `approve_report_btn` before they reach the mint block. v1.1.0 will move this into the math layer directly (`if (wq_pass < 0.95) ER_total = 0` inside `calculate_report_fields`) so the policy refuses to mint regardless of VVB approval.
+
+In the canonical TC1 example, `wq_pass_rate = 0.98` clears the 0.95 threshold, so the report proceeds to mint.
 
 ---
 
 ## 9. Where to inspect this in the policy JSON
 
-- `customLogicBlock` #1 — input aggregation (BE, PE, LE component sums)
-- `customLogicBlock` #2 — `ER_total` and field-7 mapping (also enforces `max(0, …)`)
+- `customLogicBlock` `calculate_report_fields` — single active block. Aggregates BE/PE/LE, computes `ER_total = max(0, BE_total - PE_total - LE_total)`, writes `field7` plus the nested intermediates listed in §4. Wired to MR schema `d0f009f5-...&1.0.0`.
 - `mintDocumentBlock` — `tokenId: 0.0.8865898`, `rule: field7`
 - Schema `Monitoring Report (VMR0015)` (`#d0f009f5-...`) — required input fields
 - Schema `Baseline Emissions Breakdown` — BE component fields

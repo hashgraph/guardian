@@ -41,7 +41,7 @@ This is the only Guardian implementation of **Verra's VMR0015 revision** specifi
 | Aspect | CDM AMS-III.AV | Gold Standard TPDDTEC SDW | **VMR0015 v1.0 (this)** |
 |---|---|---|---|
 | Leakage on woody biomass | Always counted | Always counted | **Conditional on `f_woody > 0`** |
-| Water quality gating | None inside math | Quality test schema; gate often advisory | **Hard gate at 0.95 in math layer** |
+| Water quality gating | None inside math | Quality test schema; gate often advisory | Documentation gate at 0.95 (VVB-enforced in v1.0.0; math-layer gate planned for v1.1.0) |
 | Mint clamp on negative ER | Not enforced | Not always enforced | **`max(0, …)` in `customLogicBlock`** |
 | Equipment default fractions | Loose | Conservative | Verra-tightened (per VMR0015 §5) |
 
@@ -49,7 +49,7 @@ This is the only Guardian implementation of **Verra's VMR0015 revision** specifi
 
 The Gold Standard SDW Supply policy treats water quality testing as evidence the VVB reviews. If the VVB approves anyway, tokens mint.
 
-This policy refuses to mint when `wq_pass_rate < 0.95`, even if the VVB approves. The mint quantity is gated by the math itself in `customLogicBlock` #2. A reviewer can confirm by reading the expression body in the policy JSON.
+This policy treats `wq_pass_rate < 0.95` as a documentation gate enforced through VVB review in v1.0.0. v1.1.0 will move the gate into the customLogicBlock directly so issuance is refused in the math layer regardless of VVB approval. The Gold Standard SDW Supply policy treats water-quality testing as VVB-only evidence; this submission goes one step further by surfacing the threshold explicitly in documentation today and committing to a math-layer gate in the next minor.
 
 ### 3.3 Renamed trust-chain tag
 

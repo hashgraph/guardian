@@ -14,18 +14,19 @@ mechanical treatment systems whose throughput and water quality are monitored.
 
 AMS-III.AV originated as a CDM Type-III small-scale methodology and was
 adopted by Verra under VCS as VMR0015. The DLT Earth bounty page lists this
-slot under the Verra column. The methodology family is mainstream within
-Verra — *Verra has 31+ registered projects citing VMR0015 / AMS-III.AV* — but
-it is less common than VM0042 (agriculture) or VM0047 (ARR), so a reviewer
-focused on those families may not have seen it before. The math is structurally
-identical to the CDM original; VMR0015 adds two clarifications, both
-implemented here:
+slot under the Verra column. The methodology is registered on Verra's
+registry and used by active project developers; it is less common than VM0042
+(agriculture) or VM0047 (ARR), so a reviewer focused on those families may
+not have seen it before. The math is structurally identical to the CDM
+original; VMR0015 adds two clarifications, both addressed here:
 
 1. **Conditional leakage** — `LE_woody` is only counted when the pre-project
    fuel mix contains woody biomass. Prevents over-deduction on
-   electric-baseline projects.
-2. **Water-quality gate** — issuance is refused when measured pass-rate
-   falls below 95%, even with VVB approval.
+   electric-baseline projects. **Implemented in `customLogicBlock` math.**
+2. **Water-quality gate** — `wq_pass_rate < 0.95` enforced through VVB
+   review and explicit documentation in v1.0.0; v1.1.0 will move this gate
+   into the `customLogicBlock` directly so issuance is refused in the math
+   layer regardless of VVB approval.
 
 ## What is in this folder
 
@@ -36,7 +37,9 @@ implemented here:
 | `LICENSE` | Apache 2.0 |
 | `AUDIT.md` | Static audit log (0 errors, 0 warnings after the structural pass) |
 | `workflow.png` | Block-graph of the policy state machine |
-| `calculations/VMR0015_calculations.xlsx` | Live-formula workbook replicating the policy's `customLogicBlock` math, with worked example (10.0 tCO2 net ER for a 200-household pilot) |
+| `calculations/VMR0015_calculations.xlsx` | Live-formula workbook replicating the policy's `customLogicBlock` math, with the canonical TC1 worked example (200-household pilot, ER_total = 10.00 tCO₂e/yr → 1000 base units / 10.00 CER — see `evidence/CANONICAL_TC1.md`) |
+| `evidence/CANONICAL_TC1.md` | Single source of truth for the TC1 worked example (inputs, arithmetic, expected outputs) |
+| `tools/verify_originality.py` | Standalone originality-scan script (run against `VMR0015.policy`) |
 | `evidence/ON_CHAIN_ARTIFACTS.md` | Hedera testnet identifiers (policy id, topics, token, IPFS CIDs) |
 | `evidence/EMISSIONS_CALCULATION.md` | Equations BE, PE, LE, ER_net with sources |
 | `evidence/USE_CASES.md` | 8 representative project archetypes with inputs |
@@ -62,12 +65,12 @@ implemented here:
 
 | Item | Status | Plan |
 |---|---|---|
-| Calculation workbook | Present | — |
-| `customLogicBlock` formulas in policy | Present (2 blocks: project + report) | v1.1.0 will split these into named blocks `calc_baseline / calc_project / calc_leakage / calc_net_er` for clearer audit |
+| Calculation workbook | Present (8 sheets, 47 live formulas) | — |
+| `customLogicBlock` formulas in policy | Present (1 active block: `calculate_report_fields`; dormant `calculate_project_fields` removed in corrective pass) | v1.1.0 will split into named blocks `calc_baseline / calc_project / calc_leakage / calc_net_er` for clearer audit |
 | Uncertainty discount factor | Applied in workbook (`u_def = 0.89` per AMS-III.AV §B.7.4) | v1.1.0 will move this into the policy's `customLogicBlock` directly |
+| Water-quality 0.95 hard gate | Documentation gate only in v1.0.0 (VVB review enforces) | v1.1.0 will add `if (wq_pass < 0.95) ER_total = 0` directly inside the `customLogicBlock` |
 | Negative-ER handling | Workbook surfaces `FAIL` flag; v1.0.0 policy clamps to 0 | v1.1.0 will replace the silent clamp with an explicit `verificationFailed` VC path |
-| Transformation blocks for Verra Project Hub | 0 blocks (consistent with merged GS-SDW and VM0047 precedents) | Optional roadmap item |
-| Excel calculations | Present (this PR) | — |
+| Transformation blocks for Verra Project Hub | 0 blocks (no public Verra ingest API exists; consistent with merged GS-SDW and VM0047 precedents) | Optional roadmap item |
 
 These gaps are documented openly because they are real and a reviewer would
 find them. The policy is functional and on-chain at v1.0.0; v1.1.0 is the

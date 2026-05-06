@@ -28,6 +28,10 @@ This implementation is built against **Verra VMR0015 v1.0**, the registry-curren
 | Policy IPFS CID | [`QmUebQeBdFVhfZA2xpmzKESxQkWGCawBw7tjVe6f5kM2wN`](https://ipfs.io/ipfs/QmUebQeBdFVhfZA2xpmzKESxQkWGCawBw7tjVe6f5kM2wN) |
 | Context IPFS CID | [`QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv`](https://ipfs.io/ipfs/QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv) |
 | Schemas published | 14 |
+| Synchronization topic | [`0.0.8866000`](https://hashscan.io/testnet/topic/0.0.8866000) |
+| Publish VC URN | `urn:uuid:75fac51f-ba27-44f3-a678-1fa427cbc64c` |
+| Guardian engine codeVersion | `1.5.1` |
+| Block count (post-import) | 194 |
 
 Full identifier list: [`evidence/ON_CHAIN_ARTIFACTS.md`](evidence/ON_CHAIN_ARTIFACTS.md).
 
@@ -38,11 +42,11 @@ Full identifier list: [`evidence/ON_CHAIN_ARTIFACTS.md`](evidence/ON_CHAIN_ARTIF
 AMS-III.AV / VMR0015 covers projects that displace pre-project household water-treatment practices (boiling, chemical disinfection) with a mechanical purification system whose performance is monitored. Two material updates from the original CDM AMS-III.AV are implemented here, matching VMR0015 v1.0:
 
 1. **Conditional leakage on woody biomass** — `LE_woody` is excluded from `LE_total` when the pre-project fuel mix has no woody component. This prevents over-deduction on electric-baseline projects.
-2. **Hard water-quality gate** — the policy refuses to mint when `wq_pass_rate < 0.95`, even if the VVB approves. Defence-in-depth in the math layer, not just in human review.
+2. **Water-quality 0.95 documentation gate** — `wq_pass_rate < 0.95` is enforced through VVB review and explicit documentation in v1.0.0. v1.1.0 will move this gate into the `customLogicBlock` directly so issuance is refused in the math layer regardless of VVB approval.
 
 Full equations and worked examples: [`evidence/EMISSIONS_CALCULATION.md`](evidence/EMISSIONS_CALCULATION.md).
 
-A spreadsheet replicating the policy's calculation logic with a worked example (200-household solar-augmented pilot, 1 year, 10.0 tCO2 net ER) is in [`calculations/VMR0015_calculations.xlsx`](calculations/VMR0015_calculations.xlsx). It contains 8 sheets: README, EmissionFactors, Baseline, Project, Leakage, ER_NetCalc, WorkedExample, PolicyMapping. Every cell is a live formula; no hardcoded results.
+The canonical TC1 worked example — 200-household solar-augmented pilot, 1-year monitoring, mixed-fuel baseline (`f_woody = 0.60`), `wq_pass_rate = 0.98`, `ER_total = 10.00 tCO₂e/yr` → 1000 base units (10.00 CER) minted on token `0.0.8865898`. Full inputs and arithmetic in [`evidence/CANONICAL_TC1.md`](evidence/CANONICAL_TC1.md). The matching spreadsheet is in [`calculations/VMR0015_calculations.xlsx`](calculations/VMR0015_calculations.xlsx) (8 sheets, every cell a live formula; sheet listing in [`calculations/README.md`](calculations/README.md)).
 
 ---
 
@@ -90,16 +94,11 @@ Open these five Hashscan / IPFS links in order:
 Then run the originality scan locally:
 
 ```bash
-unzip -p VMR0015.policy policy.json > /tmp/p.json
-python3 -c "
-import re
-text = open('/tmp/p.json').read()
-markers = ['0.0.3969810','0.0.3969809','00ad3636','7c6e3bfe','a76cb53c','8f48da39',
-          'approve_PP','approve_VVB','TrustChain','Choose_Roles','project_Pipeline','Monitoring_Reports_sr']
-hits = sum(1 for m in markers if re.search(re.escape(m), text))
-print(f'Originality scan: {hits}/12 forbidden markers found ({\"pass\" if hits==0 else \"fail\"})')
-"
+python3 tools/verify_originality.py \
+  "Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/VMR0015.policy"
 ```
+
+The script exits 0 on a clean policy and 1 if any of the 12 forbidden CDM markers are present. Source: [`tools/verify_originality.py`](../../../tools/verify_originality.py).
 
 Detailed walk-through: [`evidence/REVIEWER_GUIDE.md`](evidence/REVIEWER_GUIDE.md).
 
@@ -107,15 +106,17 @@ Detailed walk-through: [`evidence/REVIEWER_GUIDE.md`](evidence/REVIEWER_GUIDE.md
 
 ## Bounty criteria summary
 
-40/40 across the 7 categories in [`evidence/BOUNTY_CRITERIA_MATRIX.md`](evidence/BOUNTY_CRITERIA_MATRIX.md):
+38/40 across the 7 categories in [`evidence/BOUNTY_CRITERIA_MATRIX.md`](evidence/BOUNTY_CRITERIA_MATRIX.md):
 
-- A. Methodology compliance — 5/5
+- A. Methodology compliance — 4/5 (math-layer wq gate scheduled for v1.1.0)
 - B. Originality — 6/6
 - C. Workflow & roles — 6/6
 - D. On-chain anchoring — 6/6
 - E. Documentation — 9/9
 - F. Code quality — 4/4
-- G. Reproducibility — 4/4
+- G. Reproducibility — 3/4 (in-policy uncertainty discount scheduled for v1.1.0)
+
+The two deferred items are explicit v1.1.0 commitments (see `AUDIT.md` and `IMPORT_GUIDE_v1_1_0.md`).
 
 ---
 

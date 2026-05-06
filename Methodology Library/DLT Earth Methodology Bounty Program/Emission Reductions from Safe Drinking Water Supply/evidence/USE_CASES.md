@@ -104,18 +104,24 @@ Tokens are minted to PP's account. PP can subsequently retire portions of the su
 
 ### Scenario H — non-compliant water quality
 
-If the PP attempts to ship a report with `wq_pass_rate < 0.95`, custom-logic gates set the mint quantity to 0 even if the VVB inadvertently approves. Defence-in-depth: the policy refuses to mint at the math layer.
+If the PP attempts to ship a report with `wq_pass_rate < 0.95`, in v1.0.0 the VVB review step rejects the report; v1.1.0 will additionally hard-gate at the customLogicBlock so the mint is refused even if a VVB approval slips through.
 
 ---
 
 ## 4. Project Sizing Guide
 
-| Households served | Approx. period reductions (woody-baseline) |
-|---|---|
-| 100 | ~20–40 tCO₂e/yr |
-| 1,000 | ~150–250 tCO₂e/yr |
-| 10,000 | ~1,500–2,500 tCO₂e/yr |
-| 100,000 | ~15,000–25,000 tCO₂e/yr |
+Per-household yield ~0.04–0.08 tCO₂e/HH/yr for woody-mix baselines (Verra VMR0015 §6). The canonical TC1 pilot (200 HH, see [`CANONICAL_TC1.md`](CANONICAL_TC1.md)) yields 10.00 tCO₂e/yr net at a mid-range per-HH rate of 0.05 tCO₂e/HH/yr, minting 1000 base units (10.00 CER) on token `0.0.8865898`.
+
+### Archetypes
+
+| Archetype | Households | Baseline mix | Indicative ER/yr | Notes |
+|---|---|---|---|---|
+| Rural village kiosk (woody+LPG) | 200 | f_woody=0.60, f_fossil=0.40 | ~10 tCO₂e | TC1 canonical |
+| Refugee camp (LPG-dominant) | 1,000 | f_woody=0.10, f_fossil=0.90 | ~30–40 tCO₂e | low woody leakage |
+| Peri-urban estate (electric baseline) | 500 | f_woody=0, f_fossil=0 | small / zero | demonstrates LE_woody exclusion |
+| School cluster | 50 | f_woody=0.80 | ~3 tCO₂e | small project |
+| Failed-WQ scenario | 200 | wq_pass_rate=0.85 | 0 (refused) | documentation gate v1.0.0; math-layer gate v1.1.0 |
+| Multi-village programme | 5,000 | f_woody=0.50 | ~250 tCO₂e | aggregated |
 
 Numbers depend on woody fraction, local emission factor, average household water consumption, and fraction of demand served. The policy supports any of these sizes; the only hard cap is HTS supply-key authorisation per transaction (~9 quintillion units, far above any realistic project).
 
@@ -123,12 +129,13 @@ Numbers depend on woody fraction, local emission factor, average household water
 
 ## 5. Operational Examples
 
-### Example 1 — Rural Bengal pilot (the worked example in `EMISSIONS_CALCULATION.md`)
+### Example 1 — Rural Bengal pilot (the canonical TC1 worked example)
 
-- 1,000 households in West Bengal
+- 200 households in West Bengal
 - UF + UV system
-- 95 % woody-biomass displacement, 60 % fossil
-- 187.5 tCO₂e per quarter → 750 tCO₂e/yr → ~75,000 CER (decimals 2) per year
+- f_woody = 0.60, f_fossil = 0.40, wq_pass_rate = 0.98
+- ER_total = 10.00 tCO₂e/yr → mint 1000 base units (10.00 CER) on token `0.0.8865898`
+- Full input/output table: [`CANONICAL_TC1.md`](CANONICAL_TC1.md)
 
 ### Example 2 — Andean village programme
 
@@ -164,7 +171,7 @@ The on-chain dMRV layer addresses this by:
 
 1. Forcing the PP to commit baseline parameters in a signed VC at project registration. Subsequent baseline modifications create new on-chain VCs with timestamps; the registry can reject revisions.
 2. Forcing every monitoring report to carry the actual computed `ER_total`, with the math executed by the policy (not by the PP's spreadsheet).
-3. Refusing to mint if `wq_pass_rate < 0.95` (defence in depth — the math layer enforces it even if the VVB does not).
+3. Documenting a 0.95 water-quality threshold enforced by VVB review in v1.0.0; v1.1.0 will move the gate into the customLogicBlock so issuance is refused at the math layer regardless of VVB approval.
 4. Issuing a Verifiable Credential at every state transition; the buyer can replay the credential chain end-to-end before purchasing.
 
 This shifts the trust boundary from "trust the PP's numbers" to "trust the methodology code" and the methodology code is open and reviewable.

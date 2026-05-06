@@ -39,5 +39,8 @@ when `dataType` is absent. `dataType` was added mirroring `dataSource`:
 | Errors   | 0     |
 | Warnings | 0     |
 
+Verified on 2026-05-06 against the published build `69fa5c34bafe0836d93bcde0`
+in MGS codeVersion 1.5.1. Output: 0 errors, 0 warnings.
+
 The fixes are non-functional: no runtime behaviour or token issuance logic
 changes. Only validator metadata and dead UI events were touched.

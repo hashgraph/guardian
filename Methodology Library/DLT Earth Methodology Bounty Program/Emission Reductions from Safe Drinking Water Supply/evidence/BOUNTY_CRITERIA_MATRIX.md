@@ -15,7 +15,7 @@ The criteria below are derived from:
 |---|---|---|---|
 | A1 | Implements a published Verra or Gold Standard methodology | ✅ | VMR0015 v1.0 — Verra revision of AMS-III.AV |
 | A2 | Methodology equations reproducible from the policy | ✅ | `EMISSIONS_CALCULATION.md` — equations + 3 worked examples |
-| A3 | Conditional/threshold logic from the methodology is enforced | ✅ | VMR0015 conditional leakage on `f_woody`; water quality 0.95 floor; `max(0, …)` clamp |
+| A3 | Conditional/threshold logic from the methodology is enforced | ⚠️ Partial | VMR0015 conditional leakage on `f_woody`; `max(0, …)` clamp; water-quality 0.95 documentation gate (VVB-enforced in v1.0.0; math-layer gate committed for v1.1.0) |
 | A4 | Required schemas exist for each methodology entity | ✅ | 14 schemas; all published on topic `0.0.8865880` |
 | A5 | Methodology version explicit in metadata | ✅ | Policy `version: 1.0.0`; name carries `VMR0015 v1.0` |
 
@@ -39,7 +39,7 @@ The criteria below are derived from:
 | C3 | Trust chain (full report) implemented | ✅ | `vmr0015_trust_chain_report` (renamed from default `trustChainBlock`) — 1 `reportBlock` + 8 `reportItemBlock` |
 | C4 | Policy publishes without validation errors | ✅ | Policy id `69fa5c34bafe0836d93bcde0` status PUBLISHED |
 | C5 | Mint block correctly wired | ✅ | `mintDocumentBlock.tokenId = 0.0.8865898`, `rule = field7` (ER_total) |
-| C6 | End-to-end lifecycle reaches mint | ✅ | `tc1_full_lifecycle.record` covers role choice → PP profile → project → report → VVB approve → owner approve → mint |
+| C6 | End-to-end lifecycle reaches mint | ✅ | `tc1_full_lifecycle.record` covers role choice → PP profile → project → report → VVB approve → owner approve → mint; mint quantity = 1000 base units (10.00 CER) on token `0.0.8865898` |
 
 ## D. On-Chain Anchoring
 
@@ -50,7 +50,7 @@ The criteria below are derived from:
 | D3 | Issuer DID resolvable | ✅ | DID `67PfzxLHth44hZqGSNF1UpcRWR254C5jvQWBBfSmGXxV_0.0.8865869`; user topic `0.0.8865869` |
 | D4 | HTS token created and policy-controlled | ✅ | Token `0.0.8865898`, fungible, decimals 2, supply key held by policy |
 | D5 | IPFS pinning of policy and context | ✅ | Policy CID `QmUebQeBdFVhfZA2xpmzKESxQkWGCawBw7tjVe6f5kM2wN`; context CID `QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv` |
-| D6 | Verifiable Credential signed at publish | ✅ | VC `urn:uuid:c965c4dc-c43e-4485-8a60-91f8f18e418c`; Ed25519Signature2018 |
+| D6 | Verifiable Credential signed at publish | ✅ | VC `urn:uuid:75fac51f-ba27-44f3-a678-1fa427cbc64c`; issuanceDate `2026-05-05T21:27:40.407Z`; Ed25519Signature2018 |
 
 ## E. Documentation
 
@@ -59,12 +59,12 @@ The criteria below are derived from:
 | E1 | README explaining the methodology | ✅ | `README.md` |
 | E2 | LICENSE file | ✅ | `LICENSE` (Apache 2.0) |
 | E3 | Workflow diagram | ✅ | `workflow.png` |
-| E4 | On-chain artifact list | ✅ | `evidence_final/ON_CHAIN_ARTIFACTS.md` |
-| E5 | Equation documentation | ✅ | `evidence_final/EMISSIONS_CALCULATION.md` |
-| E6 | Use cases | ✅ | `evidence_final/USE_CASES.md` |
-| E7 | Audit / forensics | ✅ | `AUDIT.md` (existing) + `evidence_final/FORENSIC_CHECK.md` |
-| E8 | Reviewer guide | ✅ | `evidence_final/REVIEWER_GUIDE.md` |
-| E9 | Comparison vs comparable Gold Standard work | ✅ | `evidence_final/COMPARISON_VS_GOLD_STANDARD.md` |
+| E4 | On-chain artifact list | ✅ | `evidence/ON_CHAIN_ARTIFACTS.md` |
+| E5 | Equation documentation | ✅ | `evidence/EMISSIONS_CALCULATION.md` |
+| E6 | Use cases | ✅ | `evidence/USE_CASES.md` |
+| E7 | Audit / forensics | ✅ | `AUDIT.md` (existing) + `evidence/FORENSIC_CHECK.md` |
+| E8 | Reviewer guide | ✅ | `evidence/REVIEWER_GUIDE.md` |
+| E9 | Comparison vs comparable Gold Standard work | ✅ | `evidence/COMPARISON_VS_GOLD_STANDARD.md` |
 
 ## F. Code Quality
 
@@ -79,24 +79,24 @@ The criteria below are derived from:
 
 | # | Criterion | Status | Evidence |
 |---|---|---|---|
-| G1 | Policy file in repo matches published policy | ✅ | `Methodology Library/Verra/VMR0015/VMR0015.policy` (in PR) |
+| G1 | Policy file in repo matches published policy | ✅ | `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/VMR0015.policy` (in PR) |
 | G2 | Schemas in repo match published schemas | ✅ | All 14 schemas embedded in the .policy file |
-| G3 | Worked example numbers reproducible from inputs | ✅ | `EMISSIONS_CALCULATION.md` shows full arithmetic |
-| G4 | Test fixture provided | ✅ | `tc1_full_lifecycle.record` (full lifecycle dry-run) |
+| G3 | Worked example numbers reproducible from inputs | ✅ | Canonical TC1 reproducible — see `evidence/CANONICAL_TC1.md` and `tests/tc1_expected.json` |
+| G4 | Test fixture provided | ⚠️ Partial | `tc1_full_lifecycle.record` + `tests/tc1_expected.json` (uncertainty-quantification fixture pending in v1.1.0) |
 
 ---
 
 ## Summary scorecard
 
-| Category | Pass | Total |
-|---|---|---|
-| A. Methodology compliance | 5 | 5 |
-| B. Originality | 6 | 6 |
-| C. Workflow & roles | 6 | 6 |
-| D. On-chain anchoring | 6 | 6 |
-| E. Documentation | 9 | 9 |
-| F. Code quality | 4 | 4 |
-| G. Reproducibility | 4 | 4 |
-| **Total** | **40** | **40** |
+| Category | Pass | Total | Notes |
+|---|---|---|---|
+| A. Methodology compliance | 4 | 5 | A3 partial — math-layer wq gate in v1.1.0 |
+| B. Originality | 6 | 6 |  |
+| C. Workflow & roles | 6 | 6 |  |
+| D. On-chain anchoring | 6 | 6 |  |
+| E. Documentation | 9 | 9 |  |
+| F. Code quality | 4 | 4 |  |
+| G. Reproducibility | 3 | 4 | G4 partial — uncertainty fixture deferred to v1.1.0 |
+| **Total** | **38** | **40** | (2 items deferred to v1.1.0 with explicit commitments) |
 
-Every criterion has a concrete evidence pointer (a file, a Hedera topic, a Hashscan link, or an IPFS CID). A reviewer can verify each row without contacting the author.
+Every criterion has a concrete evidence pointer (a file, a Hedera topic, a Hashscan link, or an IPFS CID). A reviewer can verify each row without contacting the author. The two partial rows are documented honestly with forward commitments rather than claimed as full pass.
