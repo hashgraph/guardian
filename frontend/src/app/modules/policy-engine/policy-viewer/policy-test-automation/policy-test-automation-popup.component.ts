@@ -16,4 +16,8 @@ export class PolicyTestAutomationPopupComponent {
     public discardInput(): void {
         this.draftService.discardInput();
     }
+
+    public onAwaitingOutputsClick(): void {
+        this.draftService.confirmOutputFromInput();
+    }
 }

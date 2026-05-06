@@ -105,6 +105,33 @@ export class PolicyTestAutomationDraftService {
         });
     }
 
+    public confirmOutputFromInput(): void {
+        const input = this.draft.input;
+        if (!input) {
+            return;
+        }
+        this.addOutput({
+            type: input.blockType || 'input',
+            id: [
+                input.policyId,
+                input.blockId,
+                input.capturedAt
+            ].join(':'),
+            title: input.title || 'Confirmed output',
+            source: {
+                policyId: input.policyId,
+                blockId: input.blockId,
+                blockType: input.blockType,
+                inputCapturedAt: input.capturedAt
+            }
+        });
+        this.update({
+            input: null,
+            captureNextFormSubmit: false,
+            readyToSave: false
+        });
+    }
+
     public setMetadata(name: string, description: string): void {
         this.update({ name, description });
     }
