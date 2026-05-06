@@ -38,9 +38,10 @@
             AWAITING OUTPUTS
         </button>
 
-        <div class="policy-test-captured-input" *ngIf="draft.input">
-            <div class="policy-test-input-name">Input captured</div>
-            <button type="button" class="policy-test-link-button" (click)="discardInput()">Discard</button>
+        <div class="policy-test-draft-item" *ngIf="draft.input">
+            <span>{{ draft.input.title || 'Input captured' }}</span>
+            <button type="button" (click)="inspectInput()">Inspect Data</button>
+            <button type="button" (click)="discardInput()">Discard</button>
         </div>
     </div>
 
@@ -48,6 +49,8 @@
         <div class="policy-test-section-title">Outputs</div>
         <div class="policy-test-draft-item" *ngFor="let output of draft.outputs">
             <span>{{ output.title || output.type }}</span>
+            <button type="button" (click)="inspectOutput(output)">Inspect Data</button>
+            <button type="button" (click)="discardOutput(output.type, output.id)">Discard</button>
         </div>
         <div class="policy-test-muted" *ngIf="draft.outputs.length === 0">No outputs yet</div>
     </div>

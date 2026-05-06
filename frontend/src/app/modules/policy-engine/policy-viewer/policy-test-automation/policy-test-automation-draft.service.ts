@@ -26,6 +26,9 @@ export interface PolicyTestOutputAnchor {
         schemaId?: string;
         messageId?: string;
         rowId?: string;
+        blockId?: string;
+        blockType?: string;
+        inputCapturedAt?: string;
     };
     capturedAt: string;
 }
