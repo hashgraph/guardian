@@ -24,7 +24,7 @@ import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
-import { setupUserProfile, validateCommonDid } from './helpers/profile-helper.js';
+import { IOnboardingPayload, setupUserProfile, validateCommonDid } from './helpers/profile-helper.js';
 
 @Controller()
 export class ProfileController {
@@ -172,7 +172,7 @@ export function profileAPI(logger: PinoLogger) {
     ApiResponse(MessageAPI.ONBOARD_USER_ASYNC,
         async (msg: {
             parentUser: IAuthUser | null,
-            payload: any,
+            payload: IOnboardingPayload,
             task: any
         }) => {
             const { parentUser, payload, task } = msg;
@@ -183,29 +183,25 @@ export function profileAPI(logger: PinoLogger) {
                 const STEP_CREATE_HEDERA = 'Create Hedera account';
                 const STEP_REGISTER = 'Register user';
 
-                notifier.start();
-
                 let hederaAccountId: string = payload.hederaAccountId ?? null;
                 let hederaAccountKey: string = payload.hederaAccountKey ?? null;
 
                 if (!hederaAccountId) {
                     notifier.addStep(STEP_CREATE_HEDERA);
+                }
+                notifier.addStep(STEP_REGISTER);
+                notifier.start();
+
+                if (!hederaAccountId) {
                     notifier.startStep(STEP_CREATE_HEDERA);
 
                     const secretManager = SecretManager.New();
                     const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
 
-                    let initialBalance: number = null;
-                    try {
-                        initialBalance = payload.role === UserRole.STANDARD_REGISTRY
-                            ? parseInt(process.env.INITIAL_STANDARD_REGISTRY_BALANCE, 10)
-                            : parseInt(process.env.INITIAL_BALANCE, 10);
-                        if (!Number.isFinite(initialBalance)) {
-                            initialBalance = null;
-                        }
-                    } catch (_) {
-                        initialBalance = null;
-                    }
+                    const rawBalance = payload.role === UserRole.STANDARD_REGISTRY
+                        ? parseInt(process.env.INITIAL_STANDARD_REGISTRY_BALANCE, 10)
+                        : parseInt(process.env.INITIAL_BALANCE, 10);
+                    const initialBalance: number = Number.isFinite(rawBalance) ? rawBalance : null;
 
                     const workers = new Workers();
                     const treasury = await workers.addNonRetryableTask({
@@ -229,7 +225,6 @@ export function profileAPI(logger: PinoLogger) {
                     notifier.completeStep(STEP_CREATE_HEDERA);
                 }
 
-                notifier.addStep(STEP_REGISTER);
                 notifier.startStep(STEP_REGISTER);
                 const users = new Users();
                 await users.registerNewUser(
@@ -261,7 +256,7 @@ export function profileAPI(logger: PinoLogger) {
 
                 let publicKey: string | null = null;
                 try {
-                    publicKey = PrivateKey.fromStringDer(hederaAccountKey).publicKey.toString();
+                    publicKey = PrivateKey.fromString(hederaAccountKey).publicKey.toString();
                 } catch (_) {
                     publicKey = null;
                 }

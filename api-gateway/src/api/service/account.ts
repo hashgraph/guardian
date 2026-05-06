@@ -2,7 +2,7 @@ import { IAuthUser, NotificationHelper, PinoLogger, RunFunctionAsync } from '@gu
 import { Permissions, PolicyStatus, SchemaEntity, TaskAction, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse, getSchemaPath } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiAcceptedResponse, ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse, getSchemaPath } from '@nestjs/swagger';
 import {
     AccessTokenRequestDTO,
     AccessTokenResponseDTO,
@@ -221,7 +221,7 @@ export class AccountApi {
         description: 'Registration and optional Hedera / DID credentials.',
         type: OnboardingDTO,
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Task created — poll for completion.',
         type: TaskDTO,
     })
@@ -304,6 +304,16 @@ export class AccountApi {
                 `Username '${body.username}' is already taken`,
                 HttpStatus.CONFLICT,
             );
+        }
+
+        if (body.hederaAccountId) {
+            const existingHederaUser = await users.getUserByAccount(body.hederaAccountId);
+            if (existingHederaUser) {
+                throw new HttpException(
+                    `Hedera account '${body.hederaAccountId}' is already associated with an existing registration`,
+                    HttpStatus.CONFLICT,
+                );
+            }
         }
 
         const taskManager = new TaskManager();

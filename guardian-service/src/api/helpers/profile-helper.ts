@@ -79,6 +79,20 @@ export interface IDidKey {
     key: string
 }
 
+export interface IOnboardingPayload {
+    username: string;
+    password: string;
+    role: UserRole;
+    hederaAccountId?: string;
+    hederaAccountKey?: string;
+    parent?: string;
+    vcDocument?: any;
+    didDocument?: any;
+    didKeys?: IDidKey[];
+    useFireblocksSigning?: boolean;
+    fireblocksConfig?: IFireblocksConfig;
+}
+
 /**
  * Get global topic
  */

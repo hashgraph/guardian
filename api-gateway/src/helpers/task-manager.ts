@@ -70,7 +70,7 @@ export class TaskManager {
         [TaskAction.PREVIEW_SCHEMA_MESSAGE, 4],
         [TaskAction.CREATE_RANDOM_KEY, 3],
         [TaskAction.CONNECT_USER, 9],
-        [TaskAction.ONBOARD_USER, 11],
+        [TaskAction.ONBOARD_USER, 9],
         [TaskAction.PREVIEW_POLICY_MESSAGE, 4],
         [TaskAction.CREATE_TOKEN, 4],
         [TaskAction.ASSOCIATE_TOKEN, 4],
@@ -371,8 +371,6 @@ export class TaskManager {
             taskId: task.taskId,
             action: task.action,
             expectation: task.expectation,
-            statuses: task.statuses,
-            info: task.info,
             completed: task.result != null,
             failed: task.error != null,
             error: task.error

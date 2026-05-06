@@ -104,7 +104,7 @@ export class TaskApi {
                     HttpStatus.UNAUTHORIZED,
                 );
             }
-            await this.logger.error(error, ['API_GATEWAY'], null);
+            await InternalException(error, this.logger, null);
         }
     }
 }

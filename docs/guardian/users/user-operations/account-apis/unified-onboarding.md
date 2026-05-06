@@ -27,7 +27,7 @@ Registers a new user account and fully sets up their Hedera account, DID, and cr
 | `username` | string | Yes | Username for the new account |
 | `password` | string | Yes | Account password |
 | `password_confirmation` | string | Yes | Must match `password` |
-| `role` | string | Yes | `STANDARD_REGISTRY`, `USER`, or `AUDITOR` |
+| `role` | string | Yes | `STANDARD_REGISTRY` or `USER` |
 | `parent` | string | Required for `USER` role | Standard Registry username. Links the `USER` account to their registry |
 | `hederaAccountId` | string | No | Hedera account ID (e.g. `0.0.4532001`). Auto-generated if omitted |
 | `hederaAccountKey` | string | No | Hedera account private key (DER encoded). Required when `hederaAccountId` is provided |
@@ -97,8 +97,6 @@ Returns the current status of an onboarding task. No authentication required. Re
   "taskId": "63e3e5e8-a01b-3c00-1234-abcd5678ef90",
   "action": "Onboard user",
   "expectation": 11,
-  "statuses": [],
-  "info": null,
   "completed": false,
   "failed": false,
   "error": null

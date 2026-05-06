@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 import fieldsValidation from '../fields-validation.js'
-import { IsArray, IsBoolean, Examples, ObjectExamples } from '../examples.js';
+import { Examples, ObjectExamples } from '../examples.js';
 import {
     IsArray,
     IsBoolean,
@@ -8,7 +8,7 @@ import {
     IsNotEmpty,
     IsNumber,
     IsOptional,
-    IsOptional, IsString
+    IsString
 } from 'class-validator';
 import { UserRole } from '@guardian/interfaces';
 import { Expose, Type } from 'class-transformer';
