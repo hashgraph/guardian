@@ -75,7 +75,7 @@ gh search code --repo hashgraph/guardian "59fa0904-b890-4fb9-b46e-0a1d8f654883"
 
 ## 4. How to reproduce the scan
 
-Run from the `Methodology Library/Verra/VMR0015/` folder of the repo:
+Run from the `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/` folder of the repo:
 
 ```bash
 PATTERN='0\.0\.3969810|0\.0\.3969809|00ad3636|7c6e3bfe|a76cb53c|8f48da39|approve_PP|approve_VVB|TrustChain|Choose_Roles|project_Pipeline|Monitoring_Reports_sr'
