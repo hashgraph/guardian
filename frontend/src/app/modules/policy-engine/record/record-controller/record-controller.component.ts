@@ -11,6 +11,7 @@ import {
     ImportEntityDialog,
     ImportEntityType
 } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
+import {PolicyTestAutomationDraftService} from '../../policy-viewer/policy-test-automation/policy-test-automation-draft.service';
 
 @Component({
     selector: 'app-record-controller',
@@ -47,6 +48,7 @@ export class RecordControllerComponent implements OnInit {
         private recordService: RecordService,
         private router: Router,
         private dialog: DialogService,
+        private policyTestDraft: PolicyTestAutomationDraftService,
     ) {
         this._showActions = (localStorage.getItem('SHOW_RECORD_ACTIONS') || 'true') === 'true';
         this._overlay = localStorage.getItem('HIDE_RECORD_OVERLAY');
@@ -121,6 +123,38 @@ export class RecordControllerComponent implements OnInit {
     }
 
     public stopRecording() {
+        if (this.policyTestDraft.shouldWarnBeforeStop()) {
+            this.openNoOutputWarning();
+            return;
+        }
+
+        this.stopRecordingInternal();
+    }
+
+    private openNoOutputWarning(): void {
+        const dialogRef = this.dialog.open(ConfirmDialog, {
+            width: '560px',
+            data: {
+                title: 'Stop and Discard Input?',
+                description: [
+                    'Input test data was not captured or there is no corresponding output document(s) selected.',
+                    'Stop this recording and discard input test data?'
+                ],
+                submitButton: 'Confirm',
+                cancelButton: 'Cancel'
+            },
+            modal: true,
+            closable: false
+        });
+
+        dialogRef.onClose.subscribe((confirmed: boolean) => {
+            if (confirmed) {
+                this.stopRecordingInternal();
+            }
+        });
+    }
+
+    private stopRecordingInternal(): void {
         this.loading = true;
         this.recordItems = [];
         this.recordService.stopRecording(this.policyId).subscribe((fileBuffer) => {
