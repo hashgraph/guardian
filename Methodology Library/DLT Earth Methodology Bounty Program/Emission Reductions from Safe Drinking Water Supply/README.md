@@ -42,6 +42,8 @@ AMS-III.AV / VMR0015 covers projects that displace pre-project household water-t
 
 Full equations and worked examples: [`evidence/EMISSIONS_CALCULATION.md`](evidence/EMISSIONS_CALCULATION.md).
 
+A spreadsheet replicating the policy's calculation logic with a worked example (200-household solar-augmented pilot, 1 year, 10.0 tCO2 net ER) is in [`calculations/VMR0015_calculations.xlsx`](calculations/VMR0015_calculations.xlsx). It contains 8 sheets: README, EmissionFactors, Baseline, Project, Leakage, ER_NetCalc, WorkedExample, PolicyMapping. Every cell is a live formula; no hardcoded results.
+
 ---
 
 ## Why this is *not* the merged Gold Standard SDW PR
