@@ -790,7 +790,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                 const items = await DatabaseServer.getRecord({ policyId, method: 'STOP' });
                 const uuid = items[items.length - 1]?.uuid;
 
-                const zip = await RecordImportExport.generate(uuid);
+                const zip = await RecordImportExport.generate(uuid, options?.policyTest || null);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
                     compression: 'DEFLATE',

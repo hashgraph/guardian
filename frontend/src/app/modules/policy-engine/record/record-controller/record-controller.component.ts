@@ -157,7 +157,8 @@ export class RecordControllerComponent implements OnInit {
     private stopRecordingInternal(): void {
         this.loading = true;
         this.recordItems = [];
-        this.recordService.stopRecording(this.policyId).subscribe((fileBuffer) => {
+        const policyTest = this.policyTestDraft.getRecordMetadata();
+        this.recordService.stopRecording(this.policyId, { policyTest }).subscribe((fileBuffer) => {
             this.recording = false;
             this.running = false;
             this.updateActive();

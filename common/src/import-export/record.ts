@@ -22,6 +22,16 @@ export interface IRecordResult {
 }
 
 /**
+ * Record policy test metadata
+ */
+export interface IRecordPolicyTestMetadata {
+    /**
+     * Selected output result links
+     */
+    outputs: string[];
+}
+
+/**
  * Record components
  */
 export interface IRecordComponents {
@@ -120,6 +130,10 @@ export class RecordImportExport {
      * Record filename
      */
     public static readonly recordFileName = 'actions.csv';
+    /**
+     * Policy test metadata filename
+     */
+    public static readonly policyTestFileName = 'policy-test.json';
     /**
      * Generate archive for single record entry
      * @param record
@@ -306,26 +320,28 @@ export class RecordImportExport {
     /**
      * Generate Zip File
      * @param record record to pack
+     * @param policyTest policy test metadata
      *
      * @returns Zip file
      * @public
      * @static
      */
-    public static async generate(uuid: string): Promise<JSZip> {
+    public static async generate(uuid: string, policyTest?: IRecordPolicyTestMetadata | null): Promise<JSZip> {
         const components = await RecordImportExport.loadRecordComponents(uuid);
-        const file = await RecordImportExport.generateZipFile(components);
+        const file = await RecordImportExport.generateZipFile(components, policyTest);
         return file;
     }
 
     /**
      * Generate Zip File
      * @param components record components
+     * @param policyTest policy test metadata
      *
      * @returns Zip file
      * @public
      * @static
      */
-    public static async generateZipFile(components: IRecordComponents): Promise<JSZip> {
+    public static async generateZipFile(components: IRecordComponents, policyTest?: IRecordPolicyTestMetadata | null): Promise<JSZip> {
         const zip = new JSZip();
         zip.folder('documents');
         zip.folder('results');
@@ -362,6 +378,13 @@ export class RecordImportExport {
         for (const result of components.results) {
             const item = RecordResult.fromObject(result)
             zip.file(`results/${item.name}`, item.file);
+        }
+
+        if (policyTest?.outputs?.length) {
+            zip.file(
+                RecordImportExport.policyTestFileName,
+                JSON.stringify(policyTest)
+            );
         }
 
         zip.file(RecordImportExport.recordFileName, json);
