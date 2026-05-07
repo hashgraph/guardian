@@ -135,7 +135,7 @@ describe('Lookup (CE integration)', function () {
             ce.box(['List', ce.string('not-a-number')]),
             strList(ce, ['k']),
             ce.string('k'));
-        assert.strictEqual(result.value, 0);
+        assert.isNaN(result.value);
     });
 
     it('matches via numeric coercion: numeric key 5 matches id "5"', function () {

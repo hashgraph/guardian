@@ -127,7 +127,7 @@ describe('Lookup (CE integration)', () => {
             ce.box(['List', ce.string('not-a-number')]),
             strList(ce, ['k']),
             ce.string('k'));
-        expect(result.value).toBe(0);
+        expect(result.value).toBeNaN();
     });
 
     it('matches via numeric coercion: key 5 matches id "5"', () => {

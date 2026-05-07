@@ -48,6 +48,11 @@ function lookupExtremum(
     const vList = getList(ops[0]);
     const kList = getList(ops[1]);
     const sList = getList(ops[3]);
+
+    if (vList.length !== kList.length || kList.length !== sList.length) {
+        return ce.number(NaN);
+    }
+
     const idVal = getString(ops[2]);
 
     let bestVal: BoxedExpression | null = null;
@@ -76,14 +81,15 @@ export function registerCEFunctions(ce: ComputeEngine): void {
 
             const vList = getList(values);
             const kList = getList(keys);
+            if (vList.length !== kList.length) { return ce.number(NaN); }
+
             const idVal = getString(id);
 
             for (let n = 0; n < kList.length; n++) {
                 const k = getString(kList[n]);
                 if (k === idVal) {
                     const v = vList[n];
-                    const num = typeof v?.value === 'number' ? v.value : 0;
-                    return ce.number(num);
+                    return ce.number(typeof v?.value === 'number' ? v.value : NaN);
                 }
             }
             return ce.number(NaN);
@@ -92,7 +98,7 @@ export function registerCEFunctions(ce: ComputeEngine): void {
 
     ce.declare('LookupTwo', {
         signature: '(value: list, keys1: list, id1: any, keys2: list, id2: any) -> number',
-        evaluate: (ops: ReadonlyArray<any>, options: any) => {
+        evaluate: (ops: ReadonlyArray<any>) => {
             const values = ops[0];
             const keys1  = ops[1];
             const id1    = ops[2];
@@ -114,7 +120,7 @@ export function registerCEFunctions(ce: ComputeEngine): void {
                 if (getString(k1List[n]) !== id1Val) { continue; }
                 if (getString(k2List[n]) !== id2Val) { continue; }
                 const v = vList[n];
-                return ce.number(typeof v?.value === 'number' ? v.value : 0);
+                return ce.number(typeof v?.value === 'number' ? v.value : NaN);
             }
             return ce.number(NaN);
         }
