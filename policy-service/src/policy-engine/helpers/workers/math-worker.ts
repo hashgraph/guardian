@@ -31,11 +31,7 @@ function execute(): void {
     //Output
     const outputs = group.outputs.getItems();
     for (const link of outputs) {
-        try {
-            setDocumentValueByPath(schema, result, link.path, context.scope[link.name]);
-        } catch(e) {
-            throw e;
-        }
+        setDocumentValueByPath(schema, result, link.path, context.scope[link.name]);
     }
 
     //Code

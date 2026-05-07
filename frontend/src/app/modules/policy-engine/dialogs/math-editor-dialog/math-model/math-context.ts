@@ -4,6 +4,144 @@ import { getValueByPath, convertValue, createComputeEngine, getDocumentValueByPa
 import { MathItemType } from './math-item.type';
 import { IContext } from './math.interface';
 import { DocumentMap } from './document-map';
+import { BoxedExpression, ComputeEngine } from '@cortex-js/compute-engine';
+
+export function getList(expr: any): any[] {
+    if (!expr) { return []; }
+    if (expr.ops) { return expr.ops; }
+    if (expr.each) {
+        const result = [];
+        const iter = expr.each();
+        if (iter) {
+            let next = iter.next();
+            while (next && !next.done) {
+                result.push(next.value);
+                next = iter.next();
+            }
+        }
+        return result;
+    }
+    return [];
+}
+
+/**
+ * getString coerces numeric values to string via String(expr.value).
+ * This means numeric key 5 and string key "5" are treated as equal.
+ * All lookup key arrays must use consistent types (all strings or all numbers).
+ */
+export function getString(expr: any): string | null {
+    if (!expr) { return null; }
+    if (typeof expr.string === 'string') { return expr.string; }
+    if (typeof expr.value === 'string') { return expr.value; }
+    if (typeof expr.value === 'number') { return String(expr.value); }
+    if (typeof expr.symbol === 'string') { return expr.symbol; }
+    return null;
+}
+
+export function getNumber(expr: any): number {
+    if (!expr) { return 0; }
+    if (typeof expr.value === 'number') { return expr.value; }
+    return 0;
+}
+
+function lookupExtremum(
+    ops: ReadonlyArray<BoxedExpression>,
+    compare: (a: number, b: number) => boolean,
+    seed: number,
+    ce: ComputeEngine
+): BoxedExpression {
+    const vList = getList(ops[0]);
+    const kList = getList(ops[1]);
+    const sList = getList(ops[3]);
+    const idVal = getString(ops[2]);
+
+    let bestVal: BoxedExpression | null = null;
+    let bestSort = seed;
+
+    for (let n = 0; n < kList.length; n++) {
+        if (getString(kList[n]) !== idVal) { continue; }
+        const s = getNumber(sList[n]);
+        if (compare(s, bestSort)) {
+            bestSort = s;
+            bestVal = vList[n];
+        }
+    }
+
+    if (bestVal === null) { return ce.number(NaN); }
+    return typeof bestVal.value === 'number' ? ce.number(bestVal.value) : ce.number(NaN);
+}
+
+export function registerCEFunctions(ce: ComputeEngine): void {
+    ce.declare('Lookup', {
+        signature: '(value: list, keys: list, id: any) -> number',
+        evaluate: (ops: ReadonlyArray<any>) => {
+            const values = ops[0];
+            const keys = ops[1];
+            const id = ops[2];
+
+            const vList = getList(values);
+            const kList = getList(keys);
+            const idVal = getString(id);
+
+            for (let n = 0; n < kList.length; n++) {
+                const k = getString(kList[n]);
+                if (k === idVal) {
+                    const v = vList[n];
+                    const num = typeof v?.value === 'number' ? v.value : 0;
+                    return ce.number(num);
+                }
+            }
+            return ce.number(NaN);
+        }
+    });
+
+    ce.declare('LookupTwo', {
+        signature: '(value: list, keys1: list, id1: any, keys2: list, id2: any) -> number',
+        evaluate: (ops: ReadonlyArray<any>, options: any) => {
+            const values = ops[0];
+            const keys1  = ops[1];
+            const id1    = ops[2];
+            const keys2  = ops[3];
+            const id2    = ops[4];
+
+            const vList  = getList(values);
+            const k1List = getList(keys1);
+            const k2List = getList(keys2);
+
+            if (vList.length !== k1List.length || k1List.length !== k2List.length) {
+                return ce.number(NaN);
+            }
+
+            const id1Val = getString(id1);
+            const id2Val = getString(id2);
+
+            for (let n = 0; n < k1List.length; n++) {
+                if (getString(k1List[n]) !== id1Val) { continue; }
+                if (getString(k2List[n]) !== id2Val) { continue; }
+                const v = vList[n];
+                return ce.number(typeof v?.value === 'number' ? v.value : 0);
+            }
+            return ce.number(NaN);
+        }
+    });
+
+    ce.declare('LookupMin', {
+        signature: '(value: list, keys: list, id: any, sortKeys: list) -> number',
+        evaluate: (ops) => lookupExtremum(ops, (a, b) => a < b, Infinity, ce)
+    });
+
+    ce.declare('LookupMax', {
+        signature: '(value: list, keys: list, id: any, sortKeys: list) -> number',
+        evaluate: (ops) => lookupExtremum(ops, (a, b) => a > b, -Infinity, ce)
+    });
+
+    ce.declare('EqualString', {
+        signature: '(a: any, b: any) -> number',
+        evaluate: (ops) => {
+            return ce.number(getString(ops[0]) === getString(ops[1]) ? 1 : 0);
+        }
+    });
+}
 
 export class MathContext {
     private readonly list: (MathFormula | FieldLink)[];
@@ -122,238 +260,7 @@ export class MathContext {
             const ce = createComputeEngine();
 
             // Custom functions
-            ce.declare('Lookup', {
-                signature: '(value: any, keys: any, id: any) -> number',
-                evaluate: (ops: ReadonlyArray<any>, options: any) => {
-                    const values = ops[0];
-                    const keys = ops[1];
-                    const id = ops[2];
-
-                    const getList = (expr: any): any[] => {
-                        if (!expr) { return []; }
-                        if (expr.ops) { return expr.ops; }
-                        if (expr.each) {
-                            const result = [];
-                            const iter = expr.each();
-                            if (iter) {
-                                let next = iter.next();
-                                while (next && !next.done) {
-                                    result.push(next.value);
-                                    next = iter.next();
-                                }
-                            }
-                            return result;
-                        }
-                        return [];
-                    };
-
-                    const getString = (expr: any): string | null => {
-                        if (!expr) { return null; }
-                        if (typeof expr.string === 'string') { return expr.string; }
-                        if (typeof expr.value === 'string') { return expr.value; }
-                        if (typeof expr.value === 'number') { return String(expr.value); }
-                        return null;
-                    };
-
-                    const vList = getList(values);
-                    const kList = getList(keys);
-                    const idVal = getString(id);
-
-                    for (let n = 0; n < kList.length; n++) {
-                        const k = getString(kList[n]);
-                        if (k === idVal) {
-                            const v = vList[n];
-                            const num = typeof v?.value === 'number' ? v.value : 0;
-                            return ce.number(num);
-                        }
-                    }
-                    return ce.number(0);
-                }
-            });
-
-            ce.declare('LookupTwo', {
-                signature: '(value: any, keys1: any, id1: any, keys2: any, id2: any) -> number',
-                evaluate: (ops: ReadonlyArray<any>, options: any) => {
-                    const values = ops[0];
-                    const keys1  = ops[1];
-                    const id1    = ops[2];
-                    const keys2  = ops[3];
-                    const id2    = ops[4];
-
-                    const getList = (expr: any): any[] => {
-                        if (!expr) { return []; }
-                        if (expr.ops) { return expr.ops; }
-                        if (expr.each) {
-                            const result = [];
-                            const iter = expr.each();
-                            if (iter) {
-                                let next = iter.next();
-                                while (next && !next.done) {
-                                    result.push(next.value);
-                                    next = iter.next();
-                                }
-                            }
-                            return result;
-                        }
-                        return [];
-                    };
-
-                    const getString = (expr: any): string | null => {
-                        if (!expr) { return null; }
-                        if (typeof expr.string === 'string') { return expr.string; }
-                        if (typeof expr.value === 'string') { return expr.value; }
-                        if (typeof expr.value === 'number') { return String(expr.value); }
-                        return null;
-                    };
-
-                    const vList  = getList(values);
-                    const k1List = getList(keys1);
-                    const k2List = getList(keys2);
-                    const id1Val = getString(id1);
-                    const id2Val = getString(id2);
-
-                    for (let n = 0; n < k1List.length; n++) {
-                        if (getString(k1List[n]) !== id1Val) { continue; }
-                        if (getString(k2List[n]) !== id2Val) { continue; }
-                        const v = vList[n];
-                        return ce.number(typeof v?.value === 'number' ? v.value : 0);
-                    }
-                    return ce.number(0);
-                }
-            });
-
-            ce.declare('LookupMin', {
-                signature: '(value: any, keys: any, id: any, sortKeys: any) -> number',
-                evaluate: (ops: ReadonlyArray<any>, options: any) => {
-                    const values   = ops[0];
-                    const keys     = ops[1];
-                    const id       = ops[2];
-                    const sortKeys = ops[3];
-
-                    const getList = (expr: any): any[] => {
-                        if (!expr) { return []; }
-                        if (expr.ops) { return expr.ops; }
-                        if (expr.each) {
-                            const result = [];
-                            const iter = expr.each();
-                            if (iter) {
-                                let next = iter.next();
-                                while (next && !next.done) {
-                                    result.push(next.value);
-                                    next = iter.next();
-                                }
-                            }
-                            return result;
-                        }
-                        return [];
-                    };
-
-                    const getString = (expr: any): string | null => {
-                        if (!expr) { return null; }
-                        if (typeof expr.string === 'string') { return expr.string; }
-                        if (typeof expr.value === 'string') { return expr.value; }
-                        if (typeof expr.value === 'number') { return String(expr.value); }
-                        return null;
-                    };
-
-                    const getNumber = (expr: any): number => {
-                        if (!expr) { return 0; }
-                        if (typeof expr.value === 'number') { return expr.value; }
-                        return 0;
-                    };
-
-                    const vList = getList(values);
-                    const kList = getList(keys);
-                    const sList = getList(sortKeys);
-                    const idVal = getString(id);
-
-                    let bestVal: any = null;
-                    let bestSort = Infinity;
-
-                    for (let n = 0; n < kList.length; n++) {
-                        if (getString(kList[n]) !== idVal) { continue; }
-                        const s = getNumber(sList[n]);
-                        if (s < bestSort) {
-                            bestSort = s;
-                            bestVal = vList[n];
-                        }
-                    }
-
-                    return ce.number(bestVal !== null && typeof bestVal.value === 'number' ? bestVal.value : 0);
-                }
-            });
-
-            ce.declare('LookupMax', {
-                signature: '(value: any, keys: any, id: any, sortKeys: any) -> number',
-                evaluate: (ops: ReadonlyArray<any>, options: any) => {
-                    const values   = ops[0];
-                    const keys     = ops[1];
-                    const id       = ops[2];
-                    const sortKeys = ops[3];
-
-                    const getList = (expr: any): any[] => {
-                        if (!expr) { return []; }
-                        if (expr.ops) { return expr.ops; }
-                        if (expr.each) {
-                            const result = [];
-                            const iter = expr.each();
-                            if (iter) {
-                                let next = iter.next();
-                                while (next && !next.done) {
-                                    result.push(next.value);
-                                    next = iter.next();
-                                }
-                            }
-                            return result;
-                        }
-                        return [];
-                    };
-
-                    const getString = (expr: any): string | null => {
-                        if (!expr) { return null; }
-                        if (typeof expr.string === 'string') { return expr.string; }
-                        if (typeof expr.value === 'string') { return expr.value; }
-                        if (typeof expr.value === 'number') { return String(expr.value); }
-                        return null;
-                    };
-
-                    const getNumber = (expr: any): number => {
-                        if (!expr) { return 0; }
-                        if (typeof expr.value === 'number') { return expr.value; }
-                        return 0;
-                    };
-
-                    const vList = getList(values);
-                    const kList = getList(keys);
-                    const sList = getList(sortKeys);
-                    const idVal = getString(id);
-
-                    let bestVal: any = null;
-                    let bestSort = -Infinity;
-
-                    for (let n = 0; n < kList.length; n++) {
-                        if (getString(kList[n]) !== idVal) { continue; }
-                        const s = getNumber(sList[n]);
-                        if (s > bestSort) {
-                            bestSort = s;
-                            bestVal = vList[n];
-                        }
-                    }
-
-                    return ce.number(bestVal !== null && typeof bestVal.value === 'number' ? bestVal.value : 0);
-                }
-            });
-
-            ce.declare('EqualString', {
-                signature: '(a: any, b: any) -> number',
-                evaluate: (ops) => {
-                    const getString = (e: any) =>
-                        typeof e?.string === 'string' ? e.string :
-                            typeof e?.value  === 'string' ? e.value  :
-                                typeof e?.symbol === 'string' ? e.symbol : null;
-                    return ce.number(getString(ops[0]) === getString(ops[1]) ? 1 : 0);
-                }
-            });
+            registerCEFunctions(ce);
 
             const systemFunctions = MathFormula.createSystemFunctions();
             for (const systemFunction of systemFunctions) {
@@ -373,7 +280,7 @@ export class MathContext {
                     const value = item.value;
                     if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'string') {
                         const ceList = ['List', ...value.map((s: string) => `'${s}'`)];
-                        ce.assign(item.name, ce.box(ceList as any));
+                        ce.assign(item.name, ce.box(ceList as any)); // CE types don't accept string[] directly
                     } else if (typeof value === 'number') {
                         ce.assign(item.name, ce.number(value));
                     } else if (value !== null && value !== undefined && !Array.isArray(value)) {
