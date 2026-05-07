@@ -120,6 +120,241 @@ export class MathContext {
         this.getField = this.__get.bind(doc);
         try {
             const ce = createComputeEngine();
+
+            // Custom functions
+            ce.declare('Lookup', {
+                signature: '(value: any, keys: any, id: any) -> number',
+                evaluate: (ops: ReadonlyArray<any>, options: any) => {
+                    const values = ops[0];
+                    const keys = ops[1];
+                    const id = ops[2];
+
+                    const getList = (expr: any): any[] => {
+                        if (!expr) { return []; }
+                        if (expr.ops) { return expr.ops; }
+                        if (expr.each) {
+                            const result = [];
+                            const iter = expr.each();
+                            if (iter) {
+                                let next = iter.next();
+                                while (next && !next.done) {
+                                    result.push(next.value);
+                                    next = iter.next();
+                                }
+                            }
+                            return result;
+                        }
+                        return [];
+                    };
+
+                    const getString = (expr: any): string | null => {
+                        if (!expr) { return null; }
+                        if (typeof expr.string === 'string') { return expr.string; }
+                        if (typeof expr.value === 'string') { return expr.value; }
+                        if (typeof expr.value === 'number') { return String(expr.value); }
+                        return null;
+                    };
+
+                    const vList = getList(values);
+                    const kList = getList(keys);
+                    const idVal = getString(id);
+
+                    for (let n = 0; n < kList.length; n++) {
+                        const k = getString(kList[n]);
+                        if (k === idVal) {
+                            const v = vList[n];
+                            const num = typeof v?.value === 'number' ? v.value : 0;
+                            return ce.number(num);
+                        }
+                    }
+                    return ce.number(0);
+                }
+            });
+
+            ce.declare('LookupTwo', {
+                signature: '(value: any, keys1: any, id1: any, keys2: any, id2: any) -> number',
+                evaluate: (ops: ReadonlyArray<any>, options: any) => {
+                    const values = ops[0];
+                    const keys1  = ops[1];
+                    const id1    = ops[2];
+                    const keys2  = ops[3];
+                    const id2    = ops[4];
+
+                    const getList = (expr: any): any[] => {
+                        if (!expr) { return []; }
+                        if (expr.ops) { return expr.ops; }
+                        if (expr.each) {
+                            const result = [];
+                            const iter = expr.each();
+                            if (iter) {
+                                let next = iter.next();
+                                while (next && !next.done) {
+                                    result.push(next.value);
+                                    next = iter.next();
+                                }
+                            }
+                            return result;
+                        }
+                        return [];
+                    };
+
+                    const getString = (expr: any): string | null => {
+                        if (!expr) { return null; }
+                        if (typeof expr.string === 'string') { return expr.string; }
+                        if (typeof expr.value === 'string') { return expr.value; }
+                        if (typeof expr.value === 'number') { return String(expr.value); }
+                        return null;
+                    };
+
+                    const vList  = getList(values);
+                    const k1List = getList(keys1);
+                    const k2List = getList(keys2);
+                    const id1Val = getString(id1);
+                    const id2Val = getString(id2);
+
+                    for (let n = 0; n < k1List.length; n++) {
+                        if (getString(k1List[n]) !== id1Val) { continue; }
+                        if (getString(k2List[n]) !== id2Val) { continue; }
+                        const v = vList[n];
+                        return ce.number(typeof v?.value === 'number' ? v.value : 0);
+                    }
+                    return ce.number(0);
+                }
+            });
+
+            ce.declare('LookupMin', {
+                signature: '(value: any, keys: any, id: any, sortKeys: any) -> number',
+                evaluate: (ops: ReadonlyArray<any>, options: any) => {
+                    const values   = ops[0];
+                    const keys     = ops[1];
+                    const id       = ops[2];
+                    const sortKeys = ops[3];
+
+                    const getList = (expr: any): any[] => {
+                        if (!expr) { return []; }
+                        if (expr.ops) { return expr.ops; }
+                        if (expr.each) {
+                            const result = [];
+                            const iter = expr.each();
+                            if (iter) {
+                                let next = iter.next();
+                                while (next && !next.done) {
+                                    result.push(next.value);
+                                    next = iter.next();
+                                }
+                            }
+                            return result;
+                        }
+                        return [];
+                    };
+
+                    const getString = (expr: any): string | null => {
+                        if (!expr) { return null; }
+                        if (typeof expr.string === 'string') { return expr.string; }
+                        if (typeof expr.value === 'string') { return expr.value; }
+                        if (typeof expr.value === 'number') { return String(expr.value); }
+                        return null;
+                    };
+
+                    const getNumber = (expr: any): number => {
+                        if (!expr) { return 0; }
+                        if (typeof expr.value === 'number') { return expr.value; }
+                        return 0;
+                    };
+
+                    const vList = getList(values);
+                    const kList = getList(keys);
+                    const sList = getList(sortKeys);
+                    const idVal = getString(id);
+
+                    let bestVal: any = null;
+                    let bestSort = Infinity;
+
+                    for (let n = 0; n < kList.length; n++) {
+                        if (getString(kList[n]) !== idVal) { continue; }
+                        const s = getNumber(sList[n]);
+                        if (s < bestSort) {
+                            bestSort = s;
+                            bestVal = vList[n];
+                        }
+                    }
+
+                    return ce.number(bestVal !== null && typeof bestVal.value === 'number' ? bestVal.value : 0);
+                }
+            });
+
+            ce.declare('LookupMax', {
+                signature: '(value: any, keys: any, id: any, sortKeys: any) -> number',
+                evaluate: (ops: ReadonlyArray<any>, options: any) => {
+                    const values   = ops[0];
+                    const keys     = ops[1];
+                    const id       = ops[2];
+                    const sortKeys = ops[3];
+
+                    const getList = (expr: any): any[] => {
+                        if (!expr) { return []; }
+                        if (expr.ops) { return expr.ops; }
+                        if (expr.each) {
+                            const result = [];
+                            const iter = expr.each();
+                            if (iter) {
+                                let next = iter.next();
+                                while (next && !next.done) {
+                                    result.push(next.value);
+                                    next = iter.next();
+                                }
+                            }
+                            return result;
+                        }
+                        return [];
+                    };
+
+                    const getString = (expr: any): string | null => {
+                        if (!expr) { return null; }
+                        if (typeof expr.string === 'string') { return expr.string; }
+                        if (typeof expr.value === 'string') { return expr.value; }
+                        if (typeof expr.value === 'number') { return String(expr.value); }
+                        return null;
+                    };
+
+                    const getNumber = (expr: any): number => {
+                        if (!expr) { return 0; }
+                        if (typeof expr.value === 'number') { return expr.value; }
+                        return 0;
+                    };
+
+                    const vList = getList(values);
+                    const kList = getList(keys);
+                    const sList = getList(sortKeys);
+                    const idVal = getString(id);
+
+                    let bestVal: any = null;
+                    let bestSort = -Infinity;
+
+                    for (let n = 0; n < kList.length; n++) {
+                        if (getString(kList[n]) !== idVal) { continue; }
+                        const s = getNumber(sList[n]);
+                        if (s > bestSort) {
+                            bestSort = s;
+                            bestVal = vList[n];
+                        }
+                    }
+
+                    return ce.number(bestVal !== null && typeof bestVal.value === 'number' ? bestVal.value : 0);
+                }
+            });
+
+            ce.declare('EqualString', {
+                signature: '(a: any, b: any) -> number',
+                evaluate: (ops) => {
+                    const getString = (e: any) =>
+                        typeof e?.string === 'string' ? e.string :
+                            typeof e?.value  === 'string' ? e.value  :
+                                typeof e?.symbol === 'string' ? e.symbol : null;
+                    return ce.number(getString(ops[0]) === getString(ops[1]) ? 1 : 0);
+                }
+            });
+
             const systemFunctions = MathFormula.createSystemFunctions();
             for (const systemFunction of systemFunctions) {
                 const latex = systemFunction.getLatex();
@@ -135,9 +370,30 @@ export class MathContext {
             }
             for (const item of this.list) {
                 if (item.type === MathItemType.LINK) {
-                    const latex = item.getLatex();
-                    if (latex) {
-                        ce.assign(item.name, latex);
+                    const value = item.value;
+                    if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'string') {
+                        const ceList = ['List', ...value.map((s: string) => `'${s}'`)];
+                        ce.assign(item.name, ce.box(ceList as any));
+                    } else if (typeof value === 'number') {
+                        ce.assign(item.name, ce.number(value));
+                    } else if (value !== null && value !== undefined && !Array.isArray(value)) {
+                        if (typeof value === 'string') {
+                            ce.assign(item.name, ce.string(value));
+                        } else {
+                            const num = Number(value);
+                            if (!isNaN(num)) {
+                                ce.assign(item.name, ce.number(num));
+                            }
+                        }
+                    } else {
+                        const latex = item.getLatex();
+                        if (latex) {
+                            if (typeof latex === 'string') {
+                                ce.assign(item.name, ce.parse(latex));
+                            } else if (Array.isArray(latex)) {
+                                ce.assign(item.name, ce.box(latex as any));
+                            }
+                        }
                     }
                     this.variables[item.name] = item.value;
                     this.scope[item.name] = item.value;
@@ -149,8 +405,13 @@ export class MathContext {
                         item.value = parseValue(result);
                         this.variables[item.functionName] = item.value;
                         this.scope[item.functionName] = item.value;
-                        if (item.value) {
-                            ce.assign(item.functionName, convertValue(item.value));
+                        if (item.value !== null && item.value !== undefined) {
+                            const converted = convertValue(item.value);
+                            if (typeof converted === 'number') {
+                                ce.assign(item.functionName, ce.number(converted));
+                            } else if (Array.isArray(converted)) {
+                                ce.assign(item.functionName, ce.box(converted as any));
+                            }
                         }
                     }
                 }

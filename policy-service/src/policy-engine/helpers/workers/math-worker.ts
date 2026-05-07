@@ -31,7 +31,11 @@ function execute(): void {
     //Output
     const outputs = group.outputs.getItems();
     for (const link of outputs) {
-        setDocumentValueByPath(schema, result, link.path, context.scope[link.name]);
+        try {
+            setDocumentValueByPath(schema, result, link.path, context.scope[link.name]);
+        } catch(e) {
+            throw e;
+        }
     }
 
     //Code

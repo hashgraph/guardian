@@ -102,7 +102,7 @@ export class FieldLink {
         this._update();
     }
 
-    public getLatex(): string | null {
+    public getLatex(): any {
         if (this.invalid) {
             return null;
         }
