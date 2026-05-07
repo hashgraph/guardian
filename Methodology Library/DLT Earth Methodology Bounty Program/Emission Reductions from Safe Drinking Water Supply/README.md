@@ -18,6 +18,16 @@ This implementation is built against **Verra VMR0015 v1.0**, the registry-curren
 
 The `Rectified policy File/` subfolder holds an identical backup copy (same byte hash) plus the JSON and CSV exports and a detailed README. If anything in the `Rectified policy File/` README and this root README ever conflict, the rectified version is canonical.
 
+### Note on the `status: "DRY-RUN"` field in the JSON export
+
+The `Policy File (JSON)` export carries `status: "DRY-RUN"` and `version: "Dry Run"` at the top level. This is expected and correct — it reflects the Guardian ATP (Automated Test Plan) tenant the v1.1.1 instance runs under and is how Guardian tags any export taken from a dry-run / ATP workspace. It does **not** mean the policy is unpublished. The actual on-chain publish is recorded by:
+
+- Publish VC `urn:uuid:7de5b666-3b33-4b46-824b-bcc9fa078bbd` (issued `2026-05-06T23:12:34.176Z`)
+- Policy IPFS CID `QmVQpKkGPyzDe9CwsK89um4w1RMqDowd6yXj9mQEjCTVBf`
+- User topic `0.0.8877030` on Hedera testnet
+
+The schemas referenced by the policy live inside the `VMR0015.policy` zip (under `schemas/` and `systemSchemas/`), not inside the JSON export — Guardian convention. Reviewers importing the policy should use `VMR0015.policy` (zip), not the JSON file alone.
+
 ---
 
 ## Status — Published on Hedera testnet (rectified v1.1.1, current)
