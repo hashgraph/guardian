@@ -78,14 +78,17 @@ export class LlmFieldMapperService implements IMapFieldsStrategy {
         const leafDescriptions = this.compressLeafDescriptions(leaves);
         const userMessage = `Here is the input for matching:\n\nFields:\n${JSON.stringify(fields, null, 2)}\n\nLeaf descriptions by index:\n${JSON.stringify(leafDescriptions.descriptions, null, 2)}\n\nReturn strict JSON only following the required output format.`;
 
-        const mappedFields = await this.getMappingResponse(userMessage).catch((error) => {
-            this.logger.warn(
-                `LLM mapping failed, falling back to local matching: ${error instanceof Error ? error.message : String(error)}`,
+        let mappedFields: MappingResult[];
+        try {
+            mappedFields = await this.getMappingResponse(userMessage);
+        } catch (error) {
+            this.logger.error(
+                `LLM mapping failed: ${error instanceof Error ? error.message : String(error)}`,
             );
-            return null;
-        });
+            throw new Error(`LLM mapping failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
 
-        const parsedResults = mappedFields ?? this.buildFallbackMapping(fields, leaves);
+        const parsedResults = mappedFields;
 
         for (const result of parsedResults) {
             if (!result.fieldName) {
@@ -286,26 +289,6 @@ export class LlmFieldMapperService implements IMapFieldsStrategy {
         }
 
         return score;
-    }
-
-    private buildFallbackMapping(fields: FieldDescriptor[], leaves: SchemaNode[]): MappingResult[] {
-        return fields.map((field) => {
-            let bestIndex: number | null = null;
-            let bestScore = 0;
-
-            leaves.forEach((leaf, index) => {
-                const score = this.scoreLeaf(field, leaf);
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestIndex = index;
-                }
-            });
-
-            return {
-                fieldName: field.fieldName,
-                matchedIndex: bestIndex !== null && bestScore > 0 ? String(bestIndex) : null,
-            };
-        });
     }
 
     private async getMappingResponse(userMessage: string): Promise<MappingResult[]> {
