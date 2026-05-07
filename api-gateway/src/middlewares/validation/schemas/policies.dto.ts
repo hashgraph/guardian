@@ -510,15 +510,15 @@ export class PolicyDTO {
         type: 'object',
         additionalProperties: true,
         isArray: true,
-        description: 'User-configured policy API documentation entries',
+        description: 'User-configured policy API documentation entries. The `alias` may be a single slug (`create-device`) or a path of slugs separated by `/` (`monitoring-reports/create`).',
         example: [{
             name: 'create_device',
             description: 'Send event to create_device',
             target: 'create_device',
             method: 'POST',
-            alias: 'create-device',
+            alias: 'monitoring-reports/create',
             url: '/api/v1/policies/{policyId}/tag/create_device/blocks',
-            dmrvUrl: '/api/v1/dmrv/{policyId}/create-device'
+            dmrvUrl: '/api/v1/dmrv/{policyId}/monitoring-reports/create'
         }]
     })
     @IsOptional()

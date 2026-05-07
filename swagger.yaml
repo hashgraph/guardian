@@ -24488,7 +24488,7 @@ paths:
       summary: Get all versions of a VC document.
       tags:
         - policies
-  /dmrv/{policyId}/{alias}:
+  /dmrv/{policyId}/{path}:
     get:
       description: >-
         Resolves a human-readable alias to a policy block and proxies the
@@ -24504,8 +24504,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24555,8 +24556,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24606,8 +24608,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24657,8 +24660,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24708,8 +24712,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24759,8 +24764,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24810,8 +24816,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24861,8 +24868,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -50270,15 +50278,18 @@ components:
             type: object
         policyDocumentation:
           additionalProperties: true
-          description: User-configured policy API documentation entries
+          description: >-
+            User-configured policy API documentation entries. The `alias` may be
+            a single slug (`create-device`) or a path of slugs separated by `/`
+            (`monitoring-reports/create`).
           example:
             - name: create_device
               description: Send event to create_device
               target: create_device
               method: POST
-              alias: create-device
+              alias: monitoring-reports/create
               url: /api/v1/policies/{policyId}/tag/create_device/blocks
-              dmrvUrl: /api/v1/dmrv/{policyId}/create-device
+              dmrvUrl: /api/v1/dmrv/{policyId}/monitoring-reports/create
           type: array
           items:
             type: object
