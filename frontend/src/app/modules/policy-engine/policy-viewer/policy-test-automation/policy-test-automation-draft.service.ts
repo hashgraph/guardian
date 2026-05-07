@@ -33,6 +33,10 @@ export interface PolicyTestOutputAnchor {
     capturedAt: string;
 }
 
+export interface PolicyTestRecordMetadata {
+    outputs: string[];
+}
+
 export interface PolicyTestAutomationDraft {
     captureNextFormSubmit: boolean;
     input: PolicyTestInputAnchor | null;
@@ -158,16 +162,14 @@ export class PolicyTestAutomationDraftService {
         return this.hasInput() && !this.hasOutputs();
     }
 
-    public getRecordMetadata(): { version: 1; name?: string; description?: string; input?: PolicyTestInputAnchor; outputs?: PolicyTestOutputAnchor[] } | null {
-        if (!this.draft.input || !this.draft.outputs.length) {
+    public getRecordMetadata(): PolicyTestRecordMetadata | null {
+        if (!this.draft.outputs.length) {
             return null;
         }
         return {
-            version: 1,
-            name: this.draft.name || undefined,
-            description: this.draft.description || undefined,
-            input: this.draft.input,
-            outputs: this.draft.outputs
+            outputs: this.draft.outputs.map((output) => {
+                return `results/${btoa(`${output.type}|${output.id}`)}`;
+            })
         };
     }
 
