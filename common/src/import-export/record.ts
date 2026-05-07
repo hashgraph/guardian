@@ -51,6 +51,10 @@ export interface IRecordComponents {
      * Duration
      */
     duration: number;
+    /**
+     * Policy test metadata
+     */
+    policyTest?: IRecordPolicyTestMetadata;
 }
 
 /**
@@ -134,6 +138,41 @@ export class RecordImportExport {
      * Policy test metadata filename
      */
     public static readonly policyTestFileName = 'policy-test.json';
+
+    /**
+     * Get result link for policy test metadata
+     * @param result result document
+     * @returns encoded result link
+     */
+    public static resultLink(result: IRecordResult): string {
+        return `results/${btoa(`${result.type}|${result.id}`)}`;
+    }
+
+    /**
+     * Check if components have selected outputs
+     * @param components record components
+     * @returns true if selected outputs exist
+     */
+    public static hasSelectedOutputs(components: IRecordComponents): boolean {
+        return !!components.policyTest?.outputs?.length;
+    }
+
+    /**
+     * Get comparison results based on selected outputs
+     * @param components record components
+     * @returns filtered results or all results
+     */
+    public static getComparisonResults(components: IRecordComponents): IRecordResult[] {
+        const outputLinks = components.policyTest?.outputs || [];
+        if (!outputLinks.length) {
+            return components.results;
+        }
+
+        return components.results.filter((result) => {
+            return outputLinks.includes(RecordImportExport.resultLink(result));
+        });
+    }
+
     /**
      * Generate archive for single record entry
      * @param record
@@ -416,6 +455,12 @@ export class RecordImportExport {
             documents.set(documentId, document);
         }
 
+        let policyTest: IRecordPolicyTestMetadata | undefined;
+        const policyTestFile = content.files[RecordImportExport.policyTestFileName];
+        if (policyTestFile && !policyTestFile.dir) {
+            policyTest = JSON.parse(await policyTestFile.async('string'));
+        }
+
         const results: IRecordResult[] = [];
         const resultFiles = Object.entries(content.files)
             .filter(file => !file[1].dir)
@@ -452,7 +497,8 @@ export class RecordImportExport {
             records,
             results,
             duration,
-            time: now
+            time: now,
+            policyTest
         };
     }
 }

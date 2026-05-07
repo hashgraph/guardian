@@ -4091,12 +4091,17 @@ export class PolicyEngineService {
 
                     const options = { mode: 'test' };
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip));
+                    const selectedOutputs = RecordImportExport.hasSelectedOutputs(recordToImport);
+                    const expectedResults = RecordImportExport.getComparisonResults(recordToImport);
                     const guardiansService = new GuardiansService();
                     const recordId: string = await guardiansService
                         .sendPolicyMessage(PolicyEvents.RUN_RECORD, policyId, {
                             records: recordToImport.records,
-                            results: recordToImport.results,
-                            options
+                            results: expectedResults,
+                            options: {
+                                ...options,
+                                selectedOutputs
+                            }
                         });
                     if (recordId) {
                         test.resultId = recordId;

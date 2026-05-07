@@ -13,6 +13,7 @@ import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 interface RecordOptions {
     mode?: string;
     index?: string | number;
+    selectedOutputs?: boolean;
 }
 
 interface IActionResult {
@@ -814,7 +815,8 @@ export class Running {
                 .loadRecordResults(this.policyId, this._startTime, this._endTime);
             return {
                 documents: results,
-                recorded: this._results
+                recorded: this._results,
+                selectedOutputs: this.options.selectedOutputs
             };
         } else {
             return null;

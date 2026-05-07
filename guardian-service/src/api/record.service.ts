@@ -25,6 +25,17 @@ const MIN_SPACING_MS = 3000;
  * @param policyId
  * @param owner
  */
+function filterGeneratedToSelected(
+    documents: IRecordResult[],
+    recorded: IRecordResult[]
+): IRecordResult[] {
+    return documents.filter((document) => {
+        return recorded.some((expected) => {
+            return expected.type === document.type && expected.id === document.id;
+        });
+    });
+}
+
 export async function compareResults(details: any): Promise<any> {
     if (details) {
         const options = new CompareOptions(
@@ -36,8 +47,10 @@ export async function compareResults(details: any): Promise<any> {
             IRefLvl.Default,
             null
         );
-        const documents: IRecordResult[] = details.documents;
         const recorded: IRecordResult[] = details.recorded;
+        const documents: IRecordResult[] = details.selectedOutputs
+            ? filterGeneratedToSelected(details.documents, recorded)
+            : details.documents;
         const comparator = new RecordComparator(options);
         const loader = new RecordLoader(options);
         const recordedModel = await loader.createModel(recorded);
@@ -856,7 +869,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     const zip = file;
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip.data));
                     records = recordToImport.records;
-                    results = recordToImport.results;
+                    results = RecordImportExport.getComparisonResults(recordToImport);
+                    options.selectedOutputs = RecordImportExport.hasSelectedOutputs(recordToImport);
                 } else if (fromPolicyId) {
                     const dbData = await loadImportedRecordsFromDb(fromPolicyId, policy.owner);
                     records = dbData.records;
