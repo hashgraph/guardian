@@ -104,7 +104,7 @@ Request: POST /api/v1/dmrv/{policyId}/monitoring-reports/create
 
 ### 3.3. Method Routing
 
-<table><thead><tr><th width="130.65625">Request Method</th><th width="196.7578125">Internal Call</th><th>Equivalent Standard Endpoint</th></tr></thead><tbody><tr><td><code>GET</code></td><td><code>getBlockByTagName</code></td><td><code>GET /api/v1/policies/:id/tag/:tag</code></td></tr><tr><td><code>POST</code></td><td><code>setBlockDataByTag</code></td><td><code>POST /api/v1/policies/:id/tag/:tag/blocks</code></td></tr></tbody></table>
+<table><thead><tr><th width="130.65625">Request Method</th><th width="196.7578125">Internal Call</th><th>Equivalent Standard Endpoint</th></tr></thead><tbody><tr><td><code>GET</code></td><td><code>getBlockDataByTag</code></td><td><code>GET /api/v1/policies/:id/tag/:tag/blocks</code></td></tr><tr><td><code>POST</code></td><td><code>setBlockDataByTag</code></td><td><code>POST /api/v1/policies/:id/tag/:tag/blocks</code></td></tr></tbody></table>
 
 ### 3.4. Authentication
 
@@ -149,7 +149,7 @@ Content-Type: application/json
 
 Returns the configured documentation entries.
 
-When the target block references a schema (e.g. `requestVcDocumentBlock`, `documentValidatorBlock`), the entry includes a `schemaId` field with the schema's IRI. The field is omitted for blocks that don't reference a schema.
+When the target block references a schema (e.g. `requestVcDocumentBlock`, `documentValidatorBlock`), the entry includes a `schemaId` field with the schema's IRI (without the leading `#`). The field is omitted for blocks that don't reference a schema.
 
 **Response example:**
 
@@ -161,7 +161,7 @@ When the target block references a schema (e.g. `requestVcDocumentBlock`, `docum
     "target": "registrant_form_grid",
     "method": "GET",
     "alias": "reg",
-    "url": "/api/v1/policies/69c3dbe9a4d2ac84f75cdfc4/tag/registrant_form_grid",
+    "url": "/api/v1/policies/69c3dbe9a4d2ac84f75cdfc4/tag/registrant_form_grid/blocks",
     "dmrvUrl": "/api/v1/dmrv/69c3dbe9a4d2ac84f75cdfc4/reg",
     "blockType": "interfaceDocumentsSourceBlock",
     "queryParams": [
@@ -182,7 +182,7 @@ When the target block references a schema (e.g. `requestVcDocumentBlock`, `docum
     "url": "/api/v1/policies/69c3dbe9a4d2ac84f75cdfc4/tag/create_application/blocks",
     "dmrvUrl": "/api/v1/dmrv/69c3dbe9a4d2ac84f75cdfc4/applications/create",
     "blockType": "requestVcDocumentBlock",
-    "schemaId": "#9bd1c75b-76df-4d3c-8775-1f76d18d7d8c",
+    "schemaId": "9bd1c75b-76df-4d3c-8775-1f76d18d7d8c",
     "queryParams": []
   }
 ]

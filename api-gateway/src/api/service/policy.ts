@@ -1494,7 +1494,10 @@ export class PolicyApi {
             );
             return entries.map((entry: any) => {
                 const getParams = getParamsByBlockType[entry.blockType] || [];
-                const schemaId = schemaByTag.get(entry.target);
+                const rawSchemaId = schemaByTag.get(entry.target);
+                const schemaId = rawSchemaId
+                    ? rawSchemaId.replace(/^#/, '')
+                    : undefined;
                 return {
                     ...entry,
                     ...(schemaId ? { schemaId } : {}),

@@ -115,19 +115,12 @@ export class DmrvApi {
                     user, policyId, tagName, body, false, false, timeout, waitRemotePolicy
                 );
             } else {
-                const hasQueryParams = Object.keys(query).length > 0;
-                if (hasQueryParams) {
-                    query.savepointIds = typeof query.savepointIds === 'string'
-                        ? JSON.parse(query.savepointIds)
-                        : query.savepointIds;
-                    return await engineService.getBlockDataByTag(
-                        user, policyId, tagName, query
-                    );
-                } else {
-                    return await engineService.getBlockByTagName(
-                        user, policyId, tagName
-                    );
-                }
+                query.savepointIds = typeof query.savepointIds === 'string'
+                    ? JSON.parse(query.savepointIds)
+                    : query.savepointIds;
+                return await engineService.getBlockDataByTag(
+                    user, policyId, tagName, query
+                );
             }
         } catch (error) {
             await InternalException(error, this.logger, user.id);
