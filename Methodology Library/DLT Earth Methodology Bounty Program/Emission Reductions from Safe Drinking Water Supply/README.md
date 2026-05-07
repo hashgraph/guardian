@@ -12,6 +12,14 @@ This implementation is built against **Verra VMR0015 v1.0**, the registry-curren
 
 ---
 
+## Canonical policy file
+
+`VMR0015.policy` at the root of this folder is the **rectified, fully-fixed** policy and the only file reviewers should import. It has the math-layer water-quality gate, the `u_def = 0.89` uncertainty discount, the dormant `calculate_project_fields` block removed, and zero invalid `dataType` values. It was re-exported from a freshly published v1.1.1 testnet instance (account `0.0.8877029`, user topic `0.0.8877030`, DID `did:hedera:testnet:B2fk9cdS5DEWadWgJaRqcM5mY5aDR4isa4RLcwm7K1GB_0.0.8877030`, policy uuid `e72bf20d-f12b-47d9-af92-5b8346abed33`, IPFS `QmVQpKkGPyzDe9CwsK89um4w1RMqDowd6yXj9mQEjCTVBf`).
+
+The `Rectified policy File/` subfolder holds an identical backup copy (same byte hash) plus the JSON and CSV exports and a detailed README. If anything in the `Rectified policy File/` README and this root README ever conflict, the rectified version is canonical.
+
+---
+
 ## Status — Published on Hedera testnet
 
 | Field | Value |
