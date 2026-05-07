@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { beforeAll, describe, expect, it } from '@jest/globals';
 import { readFileSync } from 'fs';
 import JSZip from 'jszip';
 import { basename, join } from 'path';
@@ -65,15 +65,101 @@ const buildSchemasFromPolicyArchive = async () => {
 };
 
 describe('GeoJsonMapSchemasService', () => {
-    it('returns a dummy ProjectSchema mapping for the provided schemas', async () => {
+    let policySchemas: Array<{ id: string; name?: string; rawSchema: Record<string, unknown> }> = [];
+
+    beforeAll(async () => {
+        policySchemas = await buildSchemasFromPolicyArchive();
+    });
+
+    it('processes real policy archive schemas without throwing and returns current heuristic output-----', async () => {
         const service = new GeoJsonMapSchemasService();
-        const schemas = await buildSchemasFromPolicyArchive();
+
+        const result = await service.execute(policySchemas);
+
+        expect(result).toEqual({
+            ProjectSchema: '5dde840d-e4d8-4185-a4cd-48fb314c0ef3'
+        });
+    });
+
+    it('maps ProjectSchema when exactly one direct GeoJSON schema has a project name/title field', async () => {
+        const service = new GeoJsonMapSchemasService();
+        const schemas = [
+            {
+                id: 'non-project-wrapper',
+                rawSchema: {
+                    document: {
+                        properties: {
+                            project_details: {
+                                properties: {
+                                    location: { $ref: '#GeoJSON' },
+                                    project_name: { title: 'field0', description: 'Project Name' },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            {
+                id: 'project-schema',
+                rawSchema: {
+                    document: {
+                        properties: {
+                            name: { title: 'field1', description: 'Project Name', type: 'string' },
+                            location: { $ref: '#GeoJSON' },
+                        },
+                    },
+                },
+            },
+            {
+                id: 'utility-schema',
+                rawSchema: {
+                    document: {
+                        properties: {
+                            country: { title: 'field2', description: 'Country', type: 'string' },
+                            location: { $ref: '#GeoJSON' },
+                        },
+                    },
+                },
+            },
+        ];
 
         const result = await service.execute(schemas);
 
         expect(result).toEqual({
-            ProjectSchema: schemas[schemas.length - 1]?.id,
+            ProjectSchema: 'project-schema',
         });
+    });
+
+    it('returns an empty map when multiple direct GeoJSON project schemas are found', async () => {
+        const service = new GeoJsonMapSchemasService();
+        const schemas = [
+            {
+                id: 'project-a',
+                rawSchema: {
+                    document: {
+                        properties: {
+                            title: { title: 'field3', description: 'Project Title', type: 'string' },
+                            location: { $ref: '#GeoJSON' },
+                        },
+                    },
+                },
+            },
+            {
+                id: 'project-b',
+                rawSchema: {
+                    document: {
+                        properties: {
+                            name: { title: 'field4', description: 'Project Name', type: 'string' },
+                            area: { $ref: '#GeoJSON' },
+                        },
+                    },
+                },
+            },
+        ];
+
+        const result = await service.execute(schemas);
+
+        expect(result).toEqual({});
     });
 
     it('returns an empty map when no schemas are provided', async () => {
