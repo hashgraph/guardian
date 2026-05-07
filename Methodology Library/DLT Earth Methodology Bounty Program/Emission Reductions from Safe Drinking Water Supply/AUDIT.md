@@ -1,4 +1,8 @@
-# VMR0015 v1.0 — Bounty corrective pass (2026-05-06)
+# VMR0015 — Bounty corrective pass
+
+> **Current build is rectified v1.1.1.** Review and reproduce against the v1.1.1 instance: account `0.0.8877029`, user topic `0.0.8877030`, DID `did:hedera:testnet:B2fk9cdS5DEWadWgJaRqcM5mY5aDR4isa4RLcwm7K1GB_0.0.8877030`, policy uuid `e72bf20d-f12b-47d9-af92-5b8346abed33`, publish VC `urn:uuid:7de5b666-3b33-4b46-824b-bcc9fa078bbd`, policy IPFS `QmVQpKkGPyzDe9CwsK89um4w1RMqDowd6yXj9mQEjCTVBf`. The v1.0 corrective pass below describes the prior publish; v1.1.1 supersedes it with the math-layer wq<0.95 gate, the in-code `u_def = 0.89` discount, the dormant block removal, and the validator-clean dataType repair.
+
+## v1.0 — superseded (2026-05-06)
 
 This commit replaces the prior published policy `69fa42dcbafe0836d93bc4b9`
 (deprecated on 2026-05-05) with a forensically scrubbed build re-published as

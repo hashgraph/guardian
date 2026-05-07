@@ -2,6 +2,8 @@
 
 Short orientation for a reviewer encountering this submission.
 
+> **Review against the rectified v1.1.1 build.** The policy file at the root of this folder (`VMR0015.policy`) was exported from the freshly republished v1.1.1 testnet instance: account `0.0.8877029`, user topic `0.0.8877030`, issuer DID `did:hedera:testnet:B2fk9cdS5DEWadWgJaRqcM5mY5aDR4isa4RLcwm7K1GB_0.0.8877030`, policy uuid `e72bf20d-f12b-47d9-af92-5b8346abed33`, publish VC `urn:uuid:7de5b666-3b33-4b46-824b-bcc9fa078bbd` (issued 2026-05-06T23:12:34Z), policy IPFS `QmVQpKkGPyzDe9CwsK89um4w1RMqDowd6yXj9mQEjCTVBf`. The v1.0 instance referenced further down is preserved for traceability only. Full identifier set: [`evidence/ON_CHAIN_ARTIFACTS.md`](evidence/ON_CHAIN_ARTIFACTS.md).
+
 ## What you are looking at
 
 A Hedera Guardian implementation of **VMR0015 v1.0** — Verra's registry-current

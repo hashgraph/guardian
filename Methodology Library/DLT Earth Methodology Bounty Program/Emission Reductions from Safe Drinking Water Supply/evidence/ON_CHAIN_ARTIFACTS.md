@@ -1,7 +1,71 @@
-# On-chain artifacts — VMR0015 v1.0
+# On-chain artifacts — VMR0015
 
-All identifiers below are independently verifiable on Hedera testnet via
-Hashscan and IPFS. No item depends on author-side metadata.
+All identifiers below are independently verifiable on Hedera testnet via Hashscan and IPFS. No item depends on author-side metadata.
+
+Two published instances exist on testnet. **v1.1.1 is the current, rectified build that this PR is reviewed against.** v1.0 is the original publish, kept for traceability.
+
+---
+
+## v1.1.1 — current rectified instance (review against this)
+
+### Policy
+
+| Item | Value |
+| --- | --- |
+| Policy version | `1.1.1` |
+| Policy uuid | `e72bf20d-f12b-47d9-af92-5b8346abed33` |
+| Policy tag | `Tag_1778107744798.e20c1865` |
+| Status | `PUBLISH` |
+| publish timestamp | `2026-05-06T23:12:34.176Z` |
+| Tenant id | `69fbc4105f9e36c24879a706` |
+| Account type | ATP |
+
+### Hedera
+
+| Item | Id | Hashscan |
+| --- | --- | --- |
+| Hedera account | `0.0.8877029` | https://hashscan.io/testnet/account/0.0.8877029 |
+| User topic | `0.0.8877030` | https://hashscan.io/testnet/topic/0.0.8877030 |
+| Initialization topic | `0.0.1960` | https://hashscan.io/testnet/topic/0.0.1960 |
+
+### Identity
+
+| Item | Value |
+| --- | --- |
+| Issuer / owner DID | `did:hedera:testnet:B2fk9cdS5DEWadWgJaRqcM5mY5aDR4isa4RLcwm7K1GB_0.0.8877030` |
+| Verification method | `did:hedera:testnet:B2fk9cdS5DEWadWgJaRqcM5mY5aDR4isa4RLcwm7K1GB_0.0.8877030#did-root-key` |
+
+### Publish Verifiable Credential
+
+| Field | Value |
+| --- | --- |
+| VC id | `urn:uuid:7de5b666-3b33-4b46-824b-bcc9fa078bbd` |
+| Operation | `PUBLISH` |
+| issuanceDate (UTC) | `2026-05-06T23:12:34.176Z` |
+| Publish-message VC id | `urn:uuid:1778109147.542038000` |
+| Publish-message VC type | `Policy&1.0.0` |
+| Proof type | `Ed25519Signature2018` (detached JWS, EdDSA, `crit:["b64"]`) |
+| proofPurpose | `assertionMethod` |
+
+### IPFS
+
+| CID | Purpose | Gateway |
+| --- | --- | --- |
+| `QmVQpKkGPyzDe9CwsK89um4w1RMqDowd6yXj9mQEjCTVBf` | Policy bundle (v1.1.1) | https://ipfs.io/ipfs/QmVQpKkGPyzDe9CwsK89um4w1RMqDowd6yXj9mQEjCTVBf |
+| `QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv` | JSON-LD context (shared) | https://ipfs.io/ipfs/QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv |
+
+### What changed vs v1.0
+
+- Math-layer water-quality gate (`wq_pass_rate < 0.95 → ER_total = 0`)
+- Uncertainty discount applied in code (`u_def = 0.89; ER_total = ER_gross * u_def`)
+- Dormant `calculate_project_fields` block removed (193 blocks, was 194; 1 customLogicBlock, was 2)
+- 37 invalid `dataType` values repaired (0 invalid across 53 affected blocks)
+
+Token `0.0.8865898` (CER, decimals=2) carries over from v1.0.
+
+---
+
+## v1.0 — original publish (superseded, kept for traceability)
 
 ## Policy
 
@@ -80,9 +144,15 @@ Hashscan and IPFS. No item depends on author-side metadata.
 
 | Id | Type | Meaning |
 | --- | --- | --- |
+| `e72bf20d-f12b-47d9-af92-5b8346abed33` | UUID | **v1.1.1** policy `uuid` (current, rectified) |
+| `7de5b666-3b33-4b46-824b-bcc9fa078bbd` | UUID | **v1.1.1** publish-VC URN |
+| `1778109147.542038000` | HCS messageId | **v1.1.1** publish-message VC id |
+| `B2fk9cdS5DEWadWgJaRqcM5mY5aDR4isa4RLcwm7K1GB` | Hedera DID base58 | **v1.1.1** issuer/owner DID base |
+| `Tag_1778107744798.e20c1865` | Guardian policy tag | **v1.1.1** internal tag |
+| `69fbc4105f9e36c24879a706` | Hex tenant id | **v1.1.1** MGS tenant |
 | `69fa42dcbafe0836d93bc4b9` | Mongo ObjectId | Prior (deprecated) policy |
-| `69fa5c34bafe0836d93bcde0` | Mongo ObjectId | This published policy |
-| `69fa60ccbafe0836d93bcf24` | Mongo ObjectId | Local DB id of the publish-VC document |
-| `59fa0904-b890-4fb9-b46e-0a1d8f654883` | UUID | Policy `uuid` (carried inside the policy and in the publish VC) |
-| `75fac51f-ba27-44f3-a678-1fa427cbc64c` | UUID | Publish-VC URN |
-| `1778016453.758267000` | HCS messageId | Anchors the publish event on topic `0.0.8865880` |
+| `69fa5c34bafe0836d93bcde0` | Mongo ObjectId | v1.0 published policy |
+| `69fa60ccbafe0836d93bcf24` | Mongo ObjectId | Local DB id of the v1.0 publish-VC document |
+| `59fa0904-b890-4fb9-b46e-0a1d8f654883` | UUID | v1.0 policy `uuid` |
+| `75fac51f-ba27-44f3-a678-1fa427cbc64c` | UUID | v1.0 publish-VC URN |
+| `1778016453.758267000` | HCS messageId | Anchors the v1.0 publish event on topic `0.0.8865880` |

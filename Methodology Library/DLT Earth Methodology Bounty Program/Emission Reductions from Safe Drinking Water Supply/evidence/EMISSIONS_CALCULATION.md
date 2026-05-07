@@ -1,5 +1,8 @@
 # VMR0015 v1.0 — Emissions Calculation
 
+> **Current build: rectified v1.1.1.** Account 0.0.8877029, user topic 0.0.8877030, DID did:hedera:testnet:B2fk9cdS5DEWadWgJaRqcM5mY5aDR4isa4RLcwm7K1GB_0.0.8877030, policy uuid e72bf20d-f12b-47d9-af92-5b8346abed33, publish VC urn:uuid:7de5b666-3b33-4b46-824b-bcc9fa078bbd, IPFS QmVQpKkGPyzDe9CwsK89um4w1RMqDowd6yXj9mQEjCTVBf. Full identifier set in ON_CHAIN_ARTIFACTS.md. v1.0 references in the body of this document are preserved for traceability; v1.1.1 adds the math-layer wq<0.95 gate, the in-code u_def = 0.89 discount, the dormant calculate_project_fields removal, and the validator-clean dataType repair.
+
+
 This file documents the emission-reduction math implemented in the policy. Every equation here is wired into one of two `customLogicBlock` blocks; the result drives the `mintDocumentBlock`.
 
 ---

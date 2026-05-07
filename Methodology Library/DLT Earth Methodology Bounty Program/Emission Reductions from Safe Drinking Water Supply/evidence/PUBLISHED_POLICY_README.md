@@ -1,6 +1,8 @@
 # Published policy JSON — `PUBLISHED_POLICY.json`
 
-This file is the full JSON export of the live published policy on Hedera testnet.
+This file is the full JSON export of the **v1.0** published policy on Hedera testnet, kept for traceability and diffing.
+
+> **Current build is v1.1.1.** The rectified v1.1.1 JSON export lives at `Policy File (JSON)` at the bounty folder root and at `Rectified policy File/Rectified Policy File Json.py`. v1.1.1 IDs: policy uuid `e72bf20d-f12b-47d9-af92-5b8346abed33`, publish VC `urn:uuid:7de5b666-3b33-4b46-824b-bcc9fa078bbd`, account `0.0.8877029`, user topic `0.0.8877030`, IPFS `QmVQpKkGPyzDe9CwsK89um4w1RMqDowd6yXj9mQEjCTVBf`. v1.1.1 adds the math-layer wq<0.95 gate, the `u_def = 0.89` in-code discount, the dormant `calculate_project_fields` block removal, and the validator-clean dataType repair.
 
 ## Identifiers
 

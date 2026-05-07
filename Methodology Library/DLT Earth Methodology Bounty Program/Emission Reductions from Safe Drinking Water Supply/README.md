@@ -20,26 +20,51 @@ The `Rectified policy File/` subfolder holds an identical backup copy (same byte
 
 ---
 
-## Status — Published on Hedera testnet
+## Status — Published on Hedera testnet (rectified v1.1.1, current)
+
+This is the rectified, freshly republished instance that the policy file at the root of this folder (`VMR0015.policy`) was exported from. **All review artifacts in this PR — verifier scripts, recorded test, evidence pack, calculations workbook — apply to this v1.1.1 build.** The earlier v1.0 publish is preserved further down for traceability.
+
+| Field | Value |
+|---|---|
+| Policy version | `1.1.1` |
+| Policy uuid | `e72bf20d-f12b-47d9-af92-5b8346abed33` |
+| Policy tag | `Tag_1778107744798.e20c1865` |
+| Status | **PUBLISHED** on Hedera testnet (2026-05-06T23:12:34Z) |
+| Tenant id | `69fbc4105f9e36c24879a706` |
+| Account type | ATP |
+| Issuer / owner DID | `did:hedera:testnet:B2fk9cdS5DEWadWgJaRqcM5mY5aDR4isa4RLcwm7K1GB_0.0.8877030` |
+| Hedera account | [`0.0.8877029`](https://hashscan.io/testnet/account/0.0.8877029) |
+| User topic | [`0.0.8877030`](https://hashscan.io/testnet/topic/0.0.8877030) |
+| Initialization topic | [`0.0.1960`](https://hashscan.io/testnet/topic/0.0.1960) |
+| Policy IPFS CID | [`QmVQpKkGPyzDe9CwsK89um4w1RMqDowd6yXj9mQEjCTVBf`](https://ipfs.io/ipfs/QmVQpKkGPyzDe9CwsK89um4w1RMqDowd6yXj9mQEjCTVBf) |
+| Context IPFS CID | [`QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv`](https://ipfs.io/ipfs/QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv) |
+| Publish VC id | `urn:uuid:7de5b666-3b33-4b46-824b-bcc9fa078bbd` |
+| Publish VC issuanceDate | `2026-05-06T23:12:34.176Z` |
+| Publish-message VC id | `urn:uuid:1778109147.542038000` |
+| Publish-message VC type | `Policy&1.0.0` |
+| Proof type | `Ed25519Signature2018` |
+| Verification method | `did:hedera:testnet:B2fk9cdS5DEWadWgJaRqcM5mY5aDR4isa4RLcwm7K1GB_0.0.8877030#did-root-key` |
+| Schemas bundled | 14 |
+| Block count (post-import) | 193 (1 customLogicBlock, 0 invalid dataType) |
+
+### Earlier v1.0 publish — superseded, kept for traceability
+
+The v1.0 instance below is the original publish from 2026-05-05. It is functionally superseded by v1.1.1 above (which adds the math-layer wq<0.95 gate, the `u_def = 0.89` uncertainty discount applied in code, the dormant `calculate_project_fields` block removal, and the validator-clean dataType repair). Reviewers can diff the two if they want to see exactly what changed.
 
 | Field | Value |
 |---|---|
 | Policy id | `69fa5c34bafe0836d93bcde0` |
+| Policy uuid | `59fa0904-b890-4fb9-b46e-0a1d8f654883` |
 | Version | 1.0.0 |
-| Status | **PUBLISHED** on Hedera testnet (2026-05-05T21:27:40Z) |
 | Schema topic | [`0.0.8865880`](https://hashscan.io/testnet/topic/0.0.8865880) |
 | Instance topic | [`0.0.8865998`](https://hashscan.io/testnet/topic/0.0.8865998) |
 | HCS publish messageId | `1778016453.758267000` |
 | Token | [`0.0.8865898`](https://hashscan.io/testnet/token/0.0.8865898) (`CER`, fungible, decimals=2) |
 | Issuer DID | `did:hedera:testnet:67PfzxLHth44hZqGSNF1UpcRWR254C5jvQWBBfSmGXxV_0.0.8865869` |
 | Issuer account | [`0.0.8865868`](https://hashscan.io/testnet/account/0.0.8865868) |
-| Policy IPFS CID | [`QmUebQeBdFVhfZA2xpmzKESxQkWGCawBw7tjVe6f5kM2wN`](https://ipfs.io/ipfs/QmUebQeBdFVhfZA2xpmzKESxQkWGCawBw7tjVe6f5kM2wN) |
-| Context IPFS CID | [`QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv`](https://ipfs.io/ipfs/QmZWMEVczMDeaJFVF8Ee4ndyV1R7zWc8MkHury6jwF7uiv) |
-| Schemas published | 14 |
 | Synchronization topic | [`0.0.8866000`](https://hashscan.io/testnet/topic/0.0.8866000) |
 | Publish VC URN | `urn:uuid:75fac51f-ba27-44f3-a678-1fa427cbc64c` |
 | Guardian engine codeVersion | `1.5.1` |
-| Block count (post-import) | 194 |
 
 Full identifier list: [`evidence/ON_CHAIN_ARTIFACTS.md`](evidence/ON_CHAIN_ARTIFACTS.md).
 
