@@ -55,7 +55,7 @@ function lookupExtremum(
     const sList = getList(ops[3]);
 
     if (vList.length !== kList.length || kList.length !== sList.length) {
-        return ce.number(NaN);
+        return ce.number(0);
     }
 
     const idVal = getString(ops[2]);
@@ -72,8 +72,10 @@ function lookupExtremum(
         }
     }
 
-    if (bestVal === null) { return ce.number(NaN); }
-    return typeof bestVal.value === 'number' ? ce.number(bestVal.value) : ce.number(NaN);
+    // Returns 0 on no-match (not NaN):
+    // NaN * 0 = NaN which would corrupt downstream calculations
+    if (bestVal === null) { return ce.number(0); }
+    return typeof bestVal.value === 'number' ? ce.number(bestVal.value) : ce.number(0);
 }
 
 export function registerCEFunctions(ce: ComputeEngine): void {
@@ -86,7 +88,7 @@ export function registerCEFunctions(ce: ComputeEngine): void {
 
             const vList = getList(values);
             const kList = getList(keys);
-            if (vList.length !== kList.length) { return ce.number(NaN); }
+            if (vList.length !== kList.length) { return ce.number(0); }
 
             const idVal = getString(id);
 
@@ -94,10 +96,13 @@ export function registerCEFunctions(ce: ComputeEngine): void {
                 const k = getString(kList[n]);
                 if (k === idVal) {
                     const v = vList[n];
-                    return ce.number(typeof v?.value === 'number' ? v.value : NaN);
+                    return ce.number(typeof v?.value === 'number' ? v.value : 0);
                 }
             }
-            return ce.number(NaN);
+
+            // Returns 0 on no-match (not NaN):
+            // NaN * 0 = NaN which would corrupt downstream calculations
+            return ce.number(0);
         }
     });
 
@@ -115,7 +120,7 @@ export function registerCEFunctions(ce: ComputeEngine): void {
             const k2List = getList(keys2);
 
             if (vList.length !== k1List.length || k1List.length !== k2List.length) {
-                return ce.number(NaN);
+                return ce.number(0);
             }
 
             const id1Val = getString(id1);
@@ -125,9 +130,12 @@ export function registerCEFunctions(ce: ComputeEngine): void {
                 if (getString(k1List[n]) !== id1Val) { continue; }
                 if (getString(k2List[n]) !== id2Val) { continue; }
                 const v = vList[n];
-                return ce.number(typeof v?.value === 'number' ? v.value : NaN);
+                return ce.number(typeof v?.value === 'number' ? v.value : 0);
             }
-            return ce.number(NaN);
+
+            // Returns 0 on no-match (not NaN):
+            // NaN * 0 = NaN which would corrupt downstream calculations
+            return ce.number(0);
         }
     });
 
