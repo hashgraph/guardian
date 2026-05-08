@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { IRecordPolicyTestMetadata } from '@guardian/interfaces';
 
 export interface PolicyTestInputAnchor {
     policyId: string;
@@ -32,10 +33,6 @@ export interface PolicyTestOutputAnchor {
         inputCapturedAt?: string;
     };
     capturedAt: string;
-}
-
-export interface PolicyTestRecordMetadata {
-    outputs: string[];
 }
 
 export interface PolicyTestAutomationDraft {
@@ -168,7 +165,7 @@ export class PolicyTestAutomationDraftService {
         return this.hasInput() && !this.hasOutputs();
     }
 
-    public getRecordMetadata(): PolicyTestRecordMetadata | null {
+    public getRecordMetadata(): IRecordPolicyTestMetadata | null {
         const outputs = this.draft.outputs.filter((output) => {
             return output.type === 'vc' || output.type === 'vp' || output.type === 'schema';
         });

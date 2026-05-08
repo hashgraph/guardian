@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 import { Record, VpDocument as VpDocumentCollection, VcDocument as VcDocumentCollection, VcDocument, VpDocument } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { FilterObject } from '@mikro-orm/core';
+import { IRecordPolicyTestMetadata } from '@guardian/interfaces';
 
 /**
  * Record result
@@ -19,16 +20,6 @@ export interface IRecordResult {
      * Document body (JSON)
      */
     document: any;
-}
-
-/**
- * Record policy test metadata
- */
-export interface IRecordPolicyTestMetadata {
-    /**
-     * Selected output result links
-     */
-    outputs: string[];
 }
 
 /**
@@ -419,7 +410,11 @@ export class RecordImportExport {
             zip.file(`results/${item.name}`, item.file);
         }
 
-        if (policyTest?.outputs?.length) {
+        if (
+            policyTest?.outputs?.length ||
+            policyTest?.name ||
+            policyTest?.description
+        ) {
             zip.file(
                 RecordImportExport.policyTestFileName,
                 JSON.stringify(policyTest)

@@ -12,6 +12,11 @@ import {
     ImportEntityType
 } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
 import {PolicyTestAutomationDraftService} from '../../policy-viewer/policy-test-automation/policy-test-automation-draft.service';
+import {IRecordPolicyTestMetadata} from '@guardian/interfaces';
+import {
+    SavePolicyTestRecordDialog,
+    SavePolicyTestRecordResult
+} from '../save-policy-test-record-dialog/save-policy-test-record-dialog.component';
 
 @Component({
     selector: 'app-record-controller',
@@ -123,12 +128,12 @@ export class RecordControllerComponent implements OnInit {
     }
 
     public stopRecording() {
-        if (this.policyTestDraft.shouldWarnBeforeStop()) {
+        if (this.policyTestDraft.hasInput()) {
             this.openNoOutputWarning();
             return;
         }
 
-        this.stopRecordingInternal();
+        this.openSaveRecordDialog(true);
     }
 
     private openNoOutputWarning(): void {
@@ -149,15 +154,40 @@ export class RecordControllerComponent implements OnInit {
 
         dialogRef.onClose.subscribe((confirmed: boolean) => {
             if (confirmed) {
-                this.stopRecordingInternal();
+                this.openSaveRecordDialog(false);
             }
         });
     }
 
-    private stopRecordingInternal(): void {
+    private openSaveRecordDialog(includePolicyTestMetadata: boolean): void {
+        const dialogRef = this.dialog.open(SavePolicyTestRecordDialog, {
+            showHeader: false,
+            width: '560px',
+            styleClass: 'guardian-dialog',
+            data: {
+                name: this.policyTestDraft.draft.name,
+                description: this.policyTestDraft.draft.description
+            }
+        });
+
+        dialogRef.onClose.subscribe((result: SavePolicyTestRecordResult | null) => {
+            if (!result) {
+                return;
+            }
+
+            this.policyTestDraft.setMetadata(result.name, result.description);
+            this.stopRecordingInternal(result, includePolicyTestMetadata);
+        });
+    }
+
+    private stopRecordingInternal(
+        saveMetadata: SavePolicyTestRecordResult,
+        includePolicyTestMetadata: boolean
+    ): void {
         this.loading = true;
         this.recordItems = [];
-        const policyTest = this.policyTestDraft.getRecordMetadata();
+        const filename = this.sanitizeRecordFilename(saveMetadata.name);
+        const policyTest = this.buildPolicyTestMetadata(saveMetadata, includePolicyTestMetadata);
         this.recordService.stopRecording(this.policyId, { policyTest }).subscribe((fileBuffer) => {
             this.recording = false;
             this.running = false;
@@ -168,7 +198,7 @@ export class RecordControllerComponent implements OnInit {
                 new Blob([new Uint8Array(fileBuffer)], {
                     type: 'application/guardian-policy-record'
                 }));
-            downloadLink.setAttribute('download', `record_${Date.now()}.record`);
+            downloadLink.setAttribute('download', filename);
             document.body.appendChild(downloadLink);
             downloadLink.click();
         }, (e) => {
@@ -177,6 +207,33 @@ export class RecordControllerComponent implements OnInit {
             this.updateActive();
             this.loading = false;
         });
+    }
+
+    private buildPolicyTestMetadata(
+        saveMetadata: SavePolicyTestRecordResult,
+        includePolicyTestMetadata: boolean
+    ): IRecordPolicyTestMetadata {
+        const baseMetadata = includePolicyTestMetadata
+            ? this.policyTestDraft.getRecordMetadata()
+            : null;
+
+        return {
+            ...(baseMetadata || {}),
+            name: saveMetadata.name,
+            description: saveMetadata.description
+        };
+    }
+
+    private sanitizeRecordFilename(name: string): string {
+        const value = (name || '')
+            .trim()
+            .replace(/[<>:"/\\|?*\x00-\x1F]/g, '-')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '')
+            .slice(0, 80);
+
+        return `${value || `record_${Date.now()}`}.record`;
     }
 
     public runRecord() {

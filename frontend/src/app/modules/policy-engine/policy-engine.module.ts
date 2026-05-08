@@ -100,6 +100,7 @@ import { ViewerDialog } from './dialogs/viewer-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './dialogs/compare-modules-dialog/compare-modules-dialog.component';
 import { RecordControllerComponent } from './record/record-controller/record-controller.component';
 import { RecordResultDialog } from './record/record-result-dialog/record-result-dialog.component';
+import { SavePolicyTestRecordDialog } from './record/save-policy-test-record-dialog/save-policy-test-record-dialog.component';
 import { RecordResultsComponent } from './record/record-results/record-results.component';
 import { TestResultsComponent } from './record/test-results/test-results.component';
 import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.component';
@@ -283,6 +284,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         ProgressTrackerComponent,
         RecordControllerComponent,
         RecordResultDialog,
+        SavePolicyTestRecordDialog,
         RecordResultsComponent,
         TestResultsComponent,
         ResizingDirective,

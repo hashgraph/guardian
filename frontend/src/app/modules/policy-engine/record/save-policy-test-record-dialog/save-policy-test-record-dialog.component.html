@@ -1,0 +1,54 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Save Policy Test Record</div>
+    </div>
+    <div class="header-icon" (click)="onCancel()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+
+<div class="dialog-body">
+    <form [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-field">
+        <div class="guardian-input-container">
+            <label class="form-label" for="policy-test-record-name">* Name</label>
+            <input
+                id="policy-test-record-name"
+                formControlName="name"
+                pInputText
+                type="text"
+                placeholder="Record name"
+                autocomplete="off" />
+        </div>
+
+        <div class="guardian-textarea-container">
+            <label class="form-label" for="policy-test-record-description">Description</label>
+            <textarea
+                id="policy-test-record-description"
+                formControlName="description"
+                pTextarea
+                rows="4"
+                placeholder="Describe what this test is doing">
+            </textarea>
+        </div>
+    </form>
+</div>
+
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button
+                (click)="onCancel()"
+                class="guardian-button guardian-button-secondary">
+                Cancel
+            </button>
+        </div>
+        <div class="dialog-button">
+            <button
+                (click)="onSubmit()"
+                class="guardian-button guardian-button-primary"
+                [disabled]="dataForm.invalid">
+                Save
+            </button>
+        </div>
+    </div>
+</div>
