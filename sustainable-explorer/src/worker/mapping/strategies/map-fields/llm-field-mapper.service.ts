@@ -2,8 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { IMapFieldsStrategy } from '../../interfaces/strategies.interface';
 import { FieldDescriptor, FieldMap, SchemaInfo, SchemaLabelMap } from '../../types';
 
-type MappingField = FieldDescriptor;
-
 type MappingResult = {
     fieldName: string;
     matchedIndex: string | null;
@@ -25,18 +23,17 @@ const PROJECT_SCHEMA_LABEL = 'ProjectSchema';
 const RETRY_INVALID_JSON_WITH_LLM = true;
 const MAPPING_SYSTEM_PROMPT = `You are given:
 1) A list of target business fields.
-2) A dictionary of schema leaf descriptions keyed by numeric index.
+2) A dictionary of descriptions keyed by numeric index.
 
 Your task is to map each target field to the single best matching description index.
 
 Rules:
-1. Use semantic meaning from fieldName, field description, and keywords.
-2. Match only against the provided leaf descriptions.
-3. Return the numeric index as a string in matchedIndex.
-4. If no good match exists, return null.
-5. Do not invent indexes.
-6. Be strict and avoid weak matches.
-7. Do not return same index for multiple fields unless they are identical in meaning.
+1. Match only against the provided descriptions.
+2. Return the numeric index as a string in matchedIndex.
+3. If no good match exists, return null.
+4. Do not invent indexes.
+5. Be strict and avoid weak matches.
+6. Do not return same index for multiple fields unless they are identical in meaning.
 
 Output format (STRICT JSON):
 [
@@ -260,37 +257,6 @@ export class LlmFieldMapperService implements IMapFieldsStrategy {
         return { descriptions, paths };
     }
 
-    private normalizeText(value: string): string {
-        return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-    }
-
-    private scoreLeaf(field: MappingField, leaf: SchemaNode): number {
-        const fieldTerms = [field.fieldName, field.description, ...(field.keywords ?? [])]
-            .join(' ')
-            .split(/\s+/)
-            .map((term) => this.normalizeText(term))
-            .filter(Boolean);
-        const leafText = this.normalizeText([leaf.key, leaf.title, leaf.description].filter(Boolean).join(' '));
-
-        let score = 0;
-        for (const term of fieldTerms) {
-            if (!term) {
-                continue;
-            }
-
-            if (leafText.includes(term)) {
-                score += term.length >= 6 ? 3 : 1;
-            }
-        }
-
-        const fieldName = this.normalizeText(field.fieldName);
-        if (fieldName && leafText.includes(fieldName)) {
-            score += 5;
-        }
-
-        return score;
-    }
-
     private async getMappingResponse(userMessage: string): Promise<MappingResult[]> {
         const output = await this.getModelResponse({
             systemPrompt: MAPPING_SYSTEM_PROMPT,
@@ -331,7 +297,16 @@ export class LlmFieldMapperService implements IMapFieldsStrategy {
     }
 
     private buildJsonRetryMessage(modelOutput: string): string {
-        return `Convert the following response into strict JSON only. Return an array of objects with exactly these keys: fieldName and matchedIndex. Do not include markdown fences, commentary, or any extra keys. If no match is found, use null for matchedIndex.\n\nPrevious response:\n${modelOutput}`;
+        return `Return strict JSON only: an array of objects with keys "fieldName" and "matchedIndex". No markdown, comments, or extra keys. Use null if no match.
+Format:
+[
+    {
+    "fieldName": "string",
+    "matchedIndex": "string | null"
+    }
+]
+Previous response:
+"${modelOutput}"`;
     }
 
     private stripCodeFences(text: string): string {
