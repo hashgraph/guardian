@@ -122,12 +122,12 @@ describe('Lookup (CE integration)', function () {
         assert.strictEqual(result.value, 20);
     });
 
-    it('returns NaN when key is not found', function () {
+    it('returns 0 when key is not found', function () {
         const result = call(ce, 'Lookup',
             numList(ce, [10, 20]),
             strList(ce, ['a', 'b']),
             ce.string('z'));
-        assert.isNaN(result.value);
+        assert.strictEqual(result.value, 0);
     });
 
     it('returns 0 when matched value is not numeric', function () {
@@ -135,7 +135,7 @@ describe('Lookup (CE integration)', function () {
             ce.box(['List', ce.string('not-a-number')]),
             strList(ce, ['k']),
             ce.string('k'));
-        assert.isNaN(result.value);
+        assert.strictEqual(result.value, 0);
     });
 
     it('matches via numeric coercion: numeric key 5 matches id "5"', function () {
@@ -160,20 +160,20 @@ describe('LookupTwo (CE integration)', function () {
         assert.strictEqual(result.value, 20);
     });
 
-    it('returns NaN when first key matches but second does not', function () {
+    it('returns 0 when first key matches but second does not', function () {
         const result = call(ce, 'LookupTwo',
             numList(ce, [10, 20]),
             strList(ce, ['a', 'a']), ce.string('a'),
             strList(ce, ['x', 'x']), ce.string('y'));
-        assert.isNaN(result.value);
+        assert.strictEqual(result.value, 0);
     });
 
-    it('returns NaN when array lengths differ', function () {
+    it('returns 0 when array lengths differ', function () {
         const result = call(ce, 'LookupTwo',
             numList(ce, [10, 20]),
             strList(ce, ['a']),       ce.string('a'),
             strList(ce, ['x', 'y']), ce.string('x'));
-        assert.isNaN(result.value);
+        assert.strictEqual(result.value, 0);
     });
 });
 
@@ -192,13 +192,13 @@ describe('LookupMin (CE integration)', function () {
         assert.strictEqual(result.value, 20);
     });
 
-    it('returns NaN when no key matches', function () {
+    it('returns 0 when no key matches', function () {
         const result = call(ce, 'LookupMin',
             numList(ce, [10]),
             strList(ce, ['a']),
             ce.string('z'),
             numList(ce, [1]));
-        assert.isNaN(result.value);
+        assert.strictEqual(result.value, 0);
     });
 });
 
@@ -217,13 +217,13 @@ describe('LookupMax (CE integration)', function () {
         assert.strictEqual(result.value, 10);
     });
 
-    it('returns NaN when no key matches', function () {
+    it('returns 0 when no key matches', function () {
         const result = call(ce, 'LookupMax',
             numList(ce, [10]),
             strList(ce, ['a']),
             ce.string('z'),
             numList(ce, [1]));
-        assert.isNaN(result.value);
+        assert.strictEqual(result.value, 0);
     });
 });
 
