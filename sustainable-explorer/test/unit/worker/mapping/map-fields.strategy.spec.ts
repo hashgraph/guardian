@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { beforeAll, describe, expect, it } from '@jest/globals';
 import { readFileSync } from 'fs';
 import JSZip from 'jszip';
