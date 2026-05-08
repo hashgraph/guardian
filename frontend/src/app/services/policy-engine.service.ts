@@ -161,6 +161,10 @@ export class PolicyEngineService {
         return this.http.post<any>(`${this.url}/${policyId}/blocks/${blockId}/sync-events`, data).pipe(map(res => res.response));
     }
 
+    public setBlockDataWithResult(blockId: string, policyId: string, data: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/blocks/${blockId}/sync-events`, data);
+    }
+
     public getGetIdByName(blockName: string, policyId: string): Observable<any> {
         return this.http.get<any>(`${this.url}/${policyId}/tag/${blockName}`);
     }

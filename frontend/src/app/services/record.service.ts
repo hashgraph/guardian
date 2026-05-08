@@ -24,10 +24,9 @@ export class RecordService {
     public stopRecording(policyId: string, options: any = {}): Observable<ArrayBuffer> {
         return this.http.post(
             `${this.url}/${policyId}/recording/stop`,
-            null,
+            options || null,
             {
-                responseType: 'arraybuffer',
-                params: options
+                responseType: 'arraybuffer'
             });
     }
 

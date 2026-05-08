@@ -19,6 +19,21 @@ import { GuardiansService } from '../helpers/guardians.js';
 import { FilterObject } from '@mikro-orm/core';
 
 const MIN_SPACING_MS = 3000;
+const COMMON_CREDENTIAL_CONTEXT = 'https://www.w3.org/2018/credentials/v1';
+
+function getResultKey(result: IRecordResult): string {
+    if (result.type === 'schema') {
+        return result.id;
+    }
+
+    const context = result.document?.['@context'];
+    const contexts = Array.isArray(context) ? context : [context];
+    const businessContext = contexts.find((item) => {
+        return typeof item === 'string' && item !== COMMON_CREDENTIAL_CONTEXT;
+    });
+
+    return typeof businessContext === 'string' ? businessContext : result.type;
+}
 
 /**
  * Compare results
@@ -31,7 +46,7 @@ function filterGeneratedToSelected(
 ): IRecordResult[] {
     return documents.filter((document) => {
         return recorded.some((expected) => {
-            return expected.type === document.type && expected.id === document.id;
+            return expected.type === document.type && getResultKey(expected) === getResultKey(document);
         });
     });
 }

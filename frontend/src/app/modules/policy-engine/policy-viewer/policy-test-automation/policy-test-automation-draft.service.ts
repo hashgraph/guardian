@@ -12,6 +12,7 @@ export interface PolicyTestInputAnchor {
     draftId?: string | null;
     relayerAccount?: unknown;
     evidence?: { dataType: 'message' | 'file'; data: string }[];
+    result?: any;
     capturedAt: string;
 }
 
@@ -117,22 +118,27 @@ export class PolicyTestAutomationDraftService {
         if (!input) {
             return;
         }
-        this.addOutput({
-            type: input.blockType || 'input',
-            id: [
-                input.policyId,
-                input.blockId,
-                input.capturedAt
-            ].join(':'),
-            title: input.title || 'Confirmed output',
-            document: input.document,
-            source: {
-                policyId: input.policyId,
-                blockId: input.blockId,
-                blockType: input.blockType,
-                inputCapturedAt: input.capturedAt
-            }
-        });
+        const item = input.result?.data || input.result;
+        const document = item?.document;
+        if (document?.id) {
+            const type = item?.type === 'vp' || document?.type?.includes?.('VerifiablePresentation') ? 'vp' : 'vc';
+            this.addOutput({
+                type,
+                id: document.id,
+                title: input.title || item?.tag || type.toUpperCase(),
+                document,
+                source: {
+                    policyId: input.policyId,
+                    blockId: input.blockId,
+                    blockType: input.blockType,
+                    documentId: document.id,
+                    schemaId: item?.schema,
+                    messageId: item?.messageId,
+                    rowId: item?.id,
+                    inputCapturedAt: input.capturedAt
+                }
+            });
+        }
         this.update({
             input: null,
             captureNextFormSubmit: false,
@@ -163,11 +169,14 @@ export class PolicyTestAutomationDraftService {
     }
 
     public getRecordMetadata(): PolicyTestRecordMetadata | null {
-        if (!this.draft.outputs.length) {
+        const outputs = this.draft.outputs.filter((output) => {
+            return output.type === 'vc' || output.type === 'vp' || output.type === 'schema';
+        });
+        if (!outputs.length) {
             return null;
         }
         return {
-            outputs: this.draft.outputs.map((output) => {
+            outputs: outputs.map((output) => {
                 return `results/${btoa(`${output.type}|${output.id}`)}`;
             })
         };

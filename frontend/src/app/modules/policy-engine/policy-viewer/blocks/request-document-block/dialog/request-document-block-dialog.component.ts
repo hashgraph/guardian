@@ -305,18 +305,20 @@ export class RequestDocumentBlockDialog {
             ...(evidence?.length ? { evidence } : {})
         };
 
-        if (this.dryRun && !draft && this.policyTestDraft.draft.captureNextFormSubmit) {
-            this.policyTestDraft.captureInput({
-                policyId: this.policyId,
-                blockId: this.id,
-                blockType: 'requestDocumentBlock',
-                ...payload
-            });
-        }
+        const captureOutput = this.dryRun && !draft && this.policyTestDraft.draft.captureNextFormSubmit;
 
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, payload)
-            .subscribe(() => {
+            .setBlockDataWithResult(this.id, this.policyId, payload)
+            .subscribe((result) => {
+                if (captureOutput) {
+                    this.policyTestDraft.captureInput({
+                        policyId: this.policyId,
+                        blockId: this.id,
+                        blockType: 'requestDocumentBlock',
+                        ...payload,
+                        result: result?.result || result?.response
+                    });
+                }
                 setTimeout(() => {
                     this.loading = false;
                     if (!draft) {
