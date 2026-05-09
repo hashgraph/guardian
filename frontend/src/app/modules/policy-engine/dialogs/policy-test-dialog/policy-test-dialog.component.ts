@@ -4,8 +4,10 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import moment from 'moment';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { Subscription } from 'rxjs';
+import { concatMap, finalize, from, Subscription } from 'rxjs';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { NewImportFileDialog } from '../new-import-file-dialog/new-import-file-dialog.component';
+import { PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
 
 @Component({
     selector: 'policy-test-dialog',
@@ -23,6 +25,7 @@ export class PolicyTestDialog {
     private expandMap: Set<string> = new Set<string>();
     private subscription = new Subscription();
     public isLargeSize: boolean = true;
+    public rerunMenuOpen: boolean = false;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     constructor(
@@ -108,6 +111,98 @@ export class PolicyTestDialog {
             test.__result = this.getResults(test);
             this.isRunning = this.isRunning || test.status === 'Running';
         }
+    }
+
+    public addTest(): void {
+        const dialogRef = this.dialogService.open(NewImportFileDialog, {
+            header: 'Add Policy Tests',
+            width: '600px',
+            styleClass: 'custom-dialog',
+            data: {
+                policy: this.policy,
+                fileExtension: 'record',
+                label: 'Add test .record file',
+                multiple: true,
+                type: 'File'
+            }
+        });
+
+        dialogRef.onClose.subscribe((files: File[] | null) => {
+            if (!files) {
+                return;
+            }
+
+            this.loading = true;
+            this.policyEngineService.addPolicyTest(this.policyId, files).subscribe(() => {
+                this.updateProgress(true);
+            }, () => {
+                this.loading = false;
+            });
+        });
+    }
+
+    public toggleRerunMenu($event: MouseEvent): void {
+        $event.stopPropagation();
+        if (!this.isRunAvailable() || this.isRunning || !(this.tests && this.tests.length)) {
+            return;
+        }
+        this.rerunMenuOpen = !this.rerunMenuOpen;
+    }
+
+    public rerunAll(): void {
+        this.rerunMenuOpen = false;
+        const tests = (this.tests || []).filter((test) => test.status !== PolicyTestStatus.Running);
+        this.rerunTests(tests);
+    }
+
+    public rerunFailed(): void {
+        this.rerunMenuOpen = false;
+        const tests = (this.tests || []).filter((test) => test.status === PolicyTestStatus.Failure);
+        this.rerunTests(tests);
+    }
+
+    private rerunTests(tests: any[]): void {
+        if (!tests.length || this.isRunning || !this.isRunAvailable()) {
+            return;
+        }
+
+        this.loading = true;
+        from(tests).pipe(
+            concatMap((test) => this.policyEngineService.runTest(this.policyId, test.id)),
+            finalize(() => {
+                this.updateProgress(true);
+            })
+        ).subscribe((result) => {
+            const index = this.tests.findIndex((test: any) => test.id === result.id);
+            if (index !== -1) {
+                this.tests[index] = result;
+            }
+            this.tests = this.tests.slice();
+            if (this.policy) {
+                this.policy.tests = this.tests;
+            }
+            this.updateData();
+        }, () => {});
+    }
+
+    public isRunAvailable(): boolean {
+        return this.status === PolicyStatus.DRY_RUN || this.status === PolicyStatus.DEMO;
+    }
+
+    public canAddTest(): boolean {
+        return this.status !== PolicyStatus.PUBLISH && this.status !== PolicyStatus.DISCONTINUED;
+    }
+
+    public canRerunAll(): boolean {
+        return this.isRunAvailable() &&
+            !this.isRunning &&
+            (this.tests || []).some((test) => test.status !== PolicyTestStatus.Running);
+    }
+
+    public canRerunFailed(): boolean {
+        return this.isRunAvailable() &&
+            !this.isRunning &&
+            (this.tests || []).some((test) => test.status === PolicyTestStatus.Failure);
     }
 
     public getExpand(item: any): boolean {

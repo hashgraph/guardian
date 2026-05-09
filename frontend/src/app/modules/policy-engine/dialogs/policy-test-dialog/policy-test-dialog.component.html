@@ -11,6 +11,38 @@
     </div>
 </div>
 <div class="dialog-body">
+    <div class="dialog-actions">
+        <button
+            class="guardian-button guardian-button-secondary dialog-action-button"
+            (click)="addTest()"
+            [disabled]="!canAddTest()">
+            Add Test
+        </button>
+        <div class="rerun-menu" [attr.open]="rerunMenuOpen">
+            <button
+                class="guardian-button guardian-button-secondary dialog-action-button"
+                (click)="toggleRerunMenu($event)"
+                [disabled]="!canRerunAll()">
+                Re-Run
+            </button>
+            <div class="rerun-menu-options">
+                <button
+                    type="button"
+                    class="rerun-menu-option"
+                    (click)="rerunAll()"
+                    [disabled]="!canRerunAll()">
+                    Re-Run All
+                </button>
+                <button
+                    type="button"
+                    class="rerun-menu-option"
+                    (click)="rerunFailed()"
+                    [disabled]="!canRerunFailed()">
+                    Re-Run Failed
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="context">
         <div *ngIf="loading" class="guardian-loading">
             <div class="guardian-loading-image"></div>
