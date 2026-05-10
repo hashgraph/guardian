@@ -590,4 +590,8 @@ export interface IRecordResult {
      * Document body (JSON)
      */
     document: any;
+    /**
+     * Recorded action identifier
+     */
+    recordActionId?: string | null;
 }

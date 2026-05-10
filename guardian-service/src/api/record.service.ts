@@ -35,6 +35,10 @@ function getResultKey(result: IRecordResult): string {
     return typeof businessContext === 'string' ? businessContext : result.type;
 }
 
+function isSameResultKind(expected: IRecordResult, actual: IRecordResult): boolean {
+    return expected.type === actual.type && getResultKey(expected) === getResultKey(actual);
+}
+
 /**
  * Compare results
  * @param policyId
@@ -42,11 +46,18 @@ function getResultKey(result: IRecordResult): string {
  */
 function filterGeneratedToSelected(
     documents: IRecordResult[],
-    recorded: IRecordResult[]
+    recorded: IRecordResult[],
+    outputActions?: Record<string, string> | null
 ): IRecordResult[] {
-    return documents.filter((document) => {
-        return recorded.some((expected) => {
-            return expected.type === document.type && getResultKey(expected) === getResultKey(document);
+    return recorded.flatMap((expected) => {
+        const expectedLink = RecordImportExport.resultLink(expected);
+        const expectedActionId = outputActions?.[expectedLink];
+        const candidates = documents.filter((document) => isSameResultKind(expected, document));
+        if (!expectedActionId) {
+            return candidates;
+        }
+        return candidates.filter((document) => {
+            return document.recordActionId === expectedActionId;
         });
     });
 }
@@ -64,7 +75,11 @@ export async function compareResults(details: any): Promise<any> {
         );
         const recorded: IRecordResult[] = details.recorded;
         const documents: IRecordResult[] = details.selectedOutputs
-            ? filterGeneratedToSelected(details.documents, recorded)
+            ? filterGeneratedToSelected(
+                details.documents,
+                recorded,
+                details.policyTest?.outputActions
+            )
             : details.documents;
         const comparator = new RecordComparator(options);
         const loader = new RecordLoader(options);
@@ -886,6 +901,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     records = recordToImport.records;
                     results = RecordImportExport.getComparisonResults(recordToImport);
                     options.selectedOutputs = RecordImportExport.hasSelectedOutputs(recordToImport);
+                    options.policyTest = recordToImport.policyTest;
                 } else if (fromPolicyId) {
                     const dbData = await loadImportedRecordsFromDb(fromPolicyId, policy.owner);
                     records = dbData.records;

@@ -1,11 +1,11 @@
-import { GenerateUUIDv4, PolicyEvents, TopicType, RecordMethod } from '@guardian/interfaces';
+import { GenerateUUIDv4, IRecordPolicyTestMetadata, PolicyEvents, TopicType, RecordMethod } from '@guardian/interfaces';
 import { RunningStatus } from './status.type.js';
 import { BlockTreeGenerator } from '../block-tree-generator.js';
 import { RecordAction } from './action.type.js';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcDocument as VcDocumentCollection, VcDocument, VcHelper, VpDocument } from '@guardian/common';
+import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcDocument, VpDocument, VcHelper } from '@guardian/common';
 import { RecordItem } from './record-item.js';
 import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, RowDocument, Utils } from './utils.js';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
@@ -14,6 +14,7 @@ interface RecordOptions {
     mode?: string;
     index?: string | number;
     selectedOutputs?: boolean;
+    policyTest?: IRecordPolicyTestMetadata;
 }
 
 interface IActionResult {
@@ -108,6 +109,11 @@ export class Running {
      * Current delay
      */
     private _currentDelay: any;
+    /**
+     * Per-replayed-action start times. Used at end-of-run to attribute
+     * dry-run VC/VP rows to their action by createDate window.
+     */
+    private readonly _actionTimings: { recordActionId: string; startedAt: Date }[] = [];
 
     constructor(
         policyInstance: IPolicyBlock,
@@ -312,12 +318,12 @@ export class Running {
         }
         const results: IRecordResult[] = [];
         const db = new DatabaseServer(this.policyId);
-        const vcs = await db.getVcDocuments<VcDocumentCollection>({
+        const vcs = await db.getVcDocuments<VcDocument>({
             updateDate: {
                 $gte: new Date(this._startTime),
                 $lt: new Date(this._endTime)
             }
-        }) as VcDocumentCollection[];
+        }) as VcDocument[];
 
         for (const vc of vcs) {
             results.push({
@@ -458,6 +464,9 @@ export class Running {
                     const block = PolicyComponentsUtils.GetBlockByTag<any>(this.policyId, action.target);
                     if (await this.isAvailable(block, userFull)) {
                         const doc = await this.getActionDocument(action, block);
+                        if (action.recordActionId) {
+                            this._actionTimings.push({ recordActionId: action.recordActionId, startedAt: new Date() });
+                        }
                         await block.setData(userFull, doc, null, null);
                         return null;
                     } else {
@@ -466,6 +475,9 @@ export class Running {
                 }
                 case RecordAction.SetExternalData: {
                     const doc = await this.getActionDocument(action);
+                    if (action.recordActionId) {
+                        this._actionTimings.push({ recordActionId: action.recordActionId, startedAt: new Date() });
+                    }
                     for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
                         if (block.policyId === this.policyId) {
                             await (block as any).receiveData(doc);
@@ -751,6 +763,62 @@ export class Running {
     }
 
     /**
+     * Pick the action whose start-window covers the given createDate.
+     * Windows are half-open: [timings[i].startedAt, timings[i+1].startedAt).
+     * The last action's window extends to the end of the run.
+     */
+    private resolveActionIdForCreateDate(createDate: Date): string | null {
+        const target = createDate.getTime();
+        let chosen: string | null = null;
+        for (const timing of this._actionTimings) {
+            if (timing.startedAt.getTime() <= target) {
+                chosen = timing.recordActionId;
+            } else {
+                break;
+            }
+        }
+        return chosen;
+    }
+
+    /**
+     * Build an in-memory map from VC/VP document.id to the recordActionId
+     * resolved by createDate window. No DB writes needed — VCs are created
+     * asynchronously after block.setData returns, so stamping during replay
+     * is not possible. Attribution is done at end-of-run after all VCs exist.
+     */
+    private async buildActionIdMap(): Promise<Map<string, string>> {
+        const actionIdMap = new Map<string, string>();
+        if (!this._actionTimings.length) {
+            return actionIdMap;
+        }
+        const db = new DatabaseServer(this.policyId);
+        const runWindow = {
+            createDate: {
+                $gte: new Date(this._startTime),
+                $lt: new Date(this._endTime)
+            }
+        };
+
+        const vcs = await db.getVcDocuments<VcDocument>(runWindow) as VcDocument[];
+        for (const vc of vcs) {
+            const attributed = this.resolveActionIdForCreateDate(vc.createDate);
+            if (attributed && vc.document?.id) {
+                actionIdMap.set(vc.document.id, attributed);
+            }
+        }
+
+        const vps = await db.getVpDocuments<VpDocument>(runWindow) as VpDocument[];
+        for (const vp of vps) {
+            const attributed = this.resolveActionIdForCreateDate(vp.createDate);
+            if (attributed && vp.document?.id) {
+                actionIdMap.set(vp.document.id, attributed);
+            }
+        }
+
+        return actionIdMap;
+    }
+
+    /**
      * Get next uuid
      * @public
      */
@@ -811,12 +879,19 @@ export class Running {
      */
     public async getResults(): Promise<any> {
         if (this._id) {
+            const actionIdMap = await this.buildActionIdMap();
             const results = await RecordImportExport
                 .loadRecordResults(this.policyId, this._startTime, this._endTime);
+            for (const result of results) {
+                if (!result.recordActionId && actionIdMap.has(result.id)) {
+                    result.recordActionId = actionIdMap.get(result.id);
+                }
+            }
             return {
                 documents: results,
                 recorded: this._results,
-                selectedOutputs: this.options.selectedOutputs
+                selectedOutputs: this.options.selectedOutputs,
+                policyTest: this.options.policyTest
             };
         } else {
             return null;

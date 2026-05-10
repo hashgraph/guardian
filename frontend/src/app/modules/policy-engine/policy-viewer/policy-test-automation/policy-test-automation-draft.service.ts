@@ -25,6 +25,7 @@ export interface PolicyTestOutputAnchor {
     source?: {
         policyId?: string;
         documentId?: string;
+        recordActionId?: string;
         schemaId?: string;
         messageId?: string;
         rowId?: string;
@@ -129,6 +130,7 @@ export class PolicyTestAutomationDraftService {
                     blockId: input.blockId,
                     blockType: input.blockType,
                     documentId: document.id,
+                    recordActionId: item?.recordActionId,
                     schemaId: item?.schema,
                     messageId: item?.messageId,
                     rowId: item?.id,
@@ -172,10 +174,19 @@ export class PolicyTestAutomationDraftService {
         if (!outputs.length) {
             return null;
         }
+        const outputLinks = outputs.map((output) => {
+            return `results/${btoa(`${output.type}|${output.id}`)}`;
+        });
+        const outputActions = outputs.reduce<Record<string, string>>((acc, output, index) => {
+            if (output.source?.recordActionId) {
+                acc[outputLinks[index]] = output.source.recordActionId;
+            }
+            return acc;
+        }, {});
+
         return {
-            outputs: outputs.map((output) => {
-                return `results/${btoa(`${output.type}|${output.id}`)}`;
-            })
+            outputs: outputLinks,
+            outputActions: Object.keys(outputActions).length ? outputActions : null
         };
     }
 

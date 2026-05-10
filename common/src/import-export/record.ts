@@ -20,6 +20,10 @@ export interface IRecordResult {
      * Document body (JSON)
      */
     document: any;
+    /**
+     * Recorded action identifier
+     */
+    recordActionId?: string | null;
 }
 
 /**
@@ -240,7 +244,8 @@ export class RecordImportExport {
             results.push({
                 id: vc.document.id,
                 type: 'vc',
-                document: vc.document
+                document: vc.document,
+                recordActionId: vc.recordActionId
             });
         }
 
@@ -255,7 +260,8 @@ export class RecordImportExport {
             results.push({
                 id: vp.document.id,
                 type: 'vp',
-                document: vp.document
+                document: vp.document,
+                recordActionId: vp.recordActionId
             });
         }
         const policy = await DatabaseServer.getPolicyById(policyId);
@@ -310,7 +316,8 @@ export class RecordImportExport {
             result.push({
                 id: vc.document.id,
                 type: 'vc',
-                document: vc.document
+                document: vc.document,
+                recordActionId: vc.recordActionId
             });
         }
 
@@ -318,7 +325,8 @@ export class RecordImportExport {
             result.push({
                 id: vp.document.id,
                 type: 'vp',
-                document: vp.document
+                document: vp.document,
+                recordActionId: vp.recordActionId
             });
         }
 
@@ -398,9 +406,8 @@ export class RecordImportExport {
                 } else {
                     row.push('');
                 }
-                if (item.userRole) {
-                    row.push(item.userRole);
-                }
+                row.push(item.userRole || '');
+                row.push(item.recordActionId || '');
             }
             json += row.join(',') + '\r\n';
         }
@@ -471,7 +478,7 @@ export class RecordImportExport {
         const lines = recordString.split('\r\n');
         for (const line of lines) {
             if (line && !line.startsWith('--')) {
-                const [method, time, action, user, target, documentId, userRole = ''] = line.split(',');
+                const [method, time, action, user, target, documentId, userRole = '', recordActionId = ''] = line.split(',');
                 if (method) {
                     records.push({
                         method,
@@ -481,6 +488,7 @@ export class RecordImportExport {
                         time: RecordImportExport.addTime(now, time),
                         document: documents.get(documentId),
                         userRole,
+                        recordActionId: recordActionId || undefined
                     });
                 }
             }

@@ -4100,7 +4100,8 @@ export class PolicyEngineService {
                             results: expectedResults,
                             options: {
                                 ...options,
-                                selectedOutputs
+                                selectedOutputs,
+                                policyTest: recordToImport.policyTest
                             }
                         });
                     if (recordId) {
