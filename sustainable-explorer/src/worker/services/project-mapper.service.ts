@@ -4,28 +4,32 @@ import {
     slugify,
     normalizeSector,
     resolveMethod,
-    parseSchemaDoc,
-    resolveFieldPaths,
     loadResolutionMaps,
     extractLatLng,
 } from '../project-mapper/helpers';
 import {
-    buildSchemaEntryImproved,
     extractLatLngStrings,
-    findFieldByTitleOrDesc,
-    findFieldByTitleOrDescExcluding,
     extractSdgsFromText,
 } from '../project-mapper/improved-heuristic.mapper';
 import { PROJECT_EXTRACT_FIELDS } from '../project-mapper/project-fields';
-import { SchemaEntry, FieldDef, ResolvedFieldPaths } from '../project-mapper/types';
 
 /**
  * Per-VC project upsert service.
- * Called from IpfsFetchProcessor immediately after a VC-Document's IPFS content
- * lands, so project rows appear without waiting for the 60-minute batch builder.
  *
- * The batch builder (BusinessViewBuilderProcessor) remains as a reconciliation
- * sweep that handles dedup-key changes and stale row deletion.
+ * Called from IpfsFetchProcessor when a VC-Document's IPFS content lands.
+ * Drops the "project anchor schema" notion: every VC of every successfully-decoded
+ * policy is processed, and contributes whatever fields its schema is mapped to
+ * in the policy's cross-schema fieldMap (policy_decode_status.fieldMap).
+ *
+ * Project identity:
+ *   - VCs that carry credentialSubject.id (regular project-data VCs): keyed by cs.id.
+ *   - VCs without cs.id (MintToken, system VCs): attributed to the most recent
+ *     prior cs.id in the same topicId. Acts as the credit source for that project.
+ *
+ * Merge strategy on conflict:
+ *   - Descriptive fields (name, country, sector, …): COALESCE — first non-empty wins.
+ *   - credits: SUM. Prefers MintToken amounts; falls back to emission_reduction.ER_y.
+ *   - vcCount: incremented per VC.
  */
 @Injectable()
 export class ProjectMapperService {
@@ -33,16 +37,7 @@ export class ProjectMapperService {
 
     constructor(private readonly dataSource: DataSource) {}
 
-    /**
-     * Given the consensusTimestamp of a VC-Document message whose documents
-     * column has just been populated, attempts to extract project fields and
-     * upsert a PROJECT row in business_view keyed by projectKey.
-     *
-     * Silently returns (does not throw) when the VC cannot be mapped — missing
-     * schema, no geo field, no name — because the batch reconciler is the safety net.
-     */
     async upsertProjectFromVc(messageConsensusTimestamp: string): Promise<void> {
-        // Load the freshly-updated message row.
         const rows: Array<{
             consensusTimestamp: string;
             topicId: string;
@@ -67,165 +62,185 @@ export class ProjectMapperService {
             : null;
         if (!cs) return;
 
-        const rawType: string = cs['type'] ?? '';
-        const vcUuid = rawType.split('&')[0].trim().replace(/^#/, '');
-        if (!vcUuid) return;
+        const rawType: string = String(cs['type'] ?? '');
+        const vcSchemaUuid = rawType.split('&')[0].trim().replace(/^#/, '');
+        const csId: string | null = typeof cs['id'] === 'string' ? cs['id'] : null;
+        const isMintToken = vcSchemaUuid === 'MintToken';
 
-        // Resolve the schema entry for this VC type.
-        const schemaEntry = await this.resolveSchemaEntry(vcUuid, vc.topicId);
-        if (!schemaEntry) return;
+        // Resolve the policy this VC belongs to.
+        const policyTopicId = await this.resolvePolicyTopicId(vc.topicId);
+        if (!policyTopicId) return;
 
-        const subject: Record<string, any> | null = schemaEntry.section
-            ? (cs[schemaEntry.section] as Record<string, any> | null) ?? null
-            : cs;
-        if (!subject || typeof subject !== 'object') return;
+        const pdsRows: Array<{
+            status: string;
+            fieldMap: Record<string, string> | null;
+            registryDid: string | null;
+            policyName: string | null;
+        }> = await this.dataSource.query(
+            `SELECT
+                pds.status                   AS status,
+                pds."fieldMap"               AS "fieldMap",
+                ip.owner                     AS "registryDid",
+                ip.options->>'name'          AS "policyName"
+             FROM policy_decode_status pds
+             LEFT JOIN message ip
+                ON ip.type = 'Instance-Policy'
+               AND ip.action = 'publish-policy'
+               AND ip."topicId" = pds."policyTopicId"
+             WHERE pds."policyTopicId" = $1
+             LIMIT 1`,
+            [policyTopicId],
+        );
+        if (pdsRows.length === 0 || pdsRows[0].status !== 'success') return;
+        const pds = pdsRows[0];
+        const crossSchemaFieldMap = pds.fieldMap ?? {};
 
-        // Geo extraction (mirrors improved-heuristic.mapper inner loop).
-        // A missing or unparseable geo value is non-fatal — produce a PROJECT row
-        // with lat/lng = null rather than discarding the VC entirely.
-        let lngLat: [number, number] | null = null;
-        if (schemaEntry.geoKey) {
-            let geoVal = subject[schemaEntry.geoKey] as unknown;
-            if (Array.isArray(geoVal) && geoVal.length > 0) geoVal = geoVal[0];
-            if (geoVal && typeof geoVal === 'object') {
-                const geoObj = geoVal as Record<string, any>;
-                if ('type' in geoObj) {
-                    lngLat = extractLatLng(geoObj);
-                } else {
-                    lngLat = extractLatLngStrings(geoObj);
-                }
+        // ── Determine project key (cs.id, or look up recent cs.id for MintToken) ──
+        let projectKey: string;
+        if (csId) {
+            projectKey = csId;
+        } else if (isMintToken) {
+            const ancestor = await this.findRecentCsIdInTopic(vc.topicId, vc.consensusTimestamp);
+            if (!ancestor) {
+                this.logger.debug(
+                    `MintToken vc=${messageConsensusTimestamp} has no prior cs.id in topic=${vc.topicId}, skipping`,
+                );
+                return;
             }
+            projectKey = ancestor;
+        } else {
+            // VC has neither cs.id nor is a MintToken — nothing to attribute to.
+            return;
         }
 
-        const lng = lngLat?.[0] ?? null;
-        const lat = lngLat?.[1] ?? null;
-        const fm = schemaEntry.fieldMap;
-        const rf = schemaEntry.resolvedFields ?? resolveFieldPaths(fm);
+        // ── Per-VC field extraction from cross-schema fieldMap ────────────────────
+        // For each entry in PROJECT_EXTRACT_FIELDS, check if the cross-schema map
+        // routes that field to *this* VC's schema. If so, extract the value at the
+        // path. Otherwise skip — that field will land later from a sibling VC.
+        const extracted: Record<string, string | null> = {};
+        let geoLngLat: [number, number] | null = null;
 
-        const getRaw = (key: string | null | undefined): string =>
-            key ? unwrapValue(subject[key]) : '';
-
-        // Drive all field extractions from PROJECT_EXTRACT_FIELDS.
-        // 'geo' is handled separately via schemaEntry.geoKey — skip it here.
-        const extracted: Record<string, string> = {};
         for (const field of PROJECT_EXTRACT_FIELDS) {
-            if (field.key === 'geo') continue;
-            const rfKey = field.key as keyof ResolvedFieldPaths;
-            if (rf && rf[rfKey] !== undefined) {
-                extracted[field.key] = getRaw(rf[rfKey]);
+            const mapping = crossSchemaFieldMap[field.label];
+            if (!mapping) continue;
+            const firstDot = mapping.indexOf('.');
+            if (firstDot < 0) continue;
+            const targetSchemaId = mapping.slice(0, firstDot);
+            const path = mapping.slice(firstDot + 1);
+            if (targetSchemaId !== vcSchemaUuid) continue;
+
+            const raw = getByPath(cs, path);
+            if (field.key === 'geo') {
+                geoLngLat = parseGeoValue(raw);
             } else {
-                extracted[field.key] = field.exclude
-                    ? findFieldByTitleOrDescExcluding(subject, fm, field.keywords, field.exclude)
-                    : findFieldByTitleOrDesc(subject, fm, ...field.keywords);
+                const s = unwrapValue(raw);
+                if (s) extracted[field.key] = s;
             }
         }
 
-        const name = extracted['name'];
-        if (!name) return;
+        // Common credit sources (independent of fieldMap):
+        //   1. MintToken.amount — preferred.
+        //   2. credentialSubject.emission_reduction.ER_y on data VCs.
+        let creditsToAdd = 0;
+        if (isMintToken) {
+            const amt = parseFloat(String(cs['amount'] ?? '0'));
+            if (!isNaN(amt) && amt > 0) creditsToAdd = amt;
+        } else {
+            const er = cs['emission_reduction'] as Record<string, any> | undefined;
+            if (er) {
+                const ery = parseFloat(String(er['ER_y'] ?? '0'));
+                if (!isNaN(ery) && ery > 0) creditsToAdd = ery;
+            }
+        }
 
-        const country = extracted['country'];
-        const developer = extracted['developer'];
-        const category = extracted['category'];
-        const scale = extracted['scale'];
-        const rawSector = extracted['sector'];
-        const vintageRaw = extracted['vintageRaw'];
+        // SDGs / co-benefits — parse comma-separated SDG numbers, fall back to free text.
+        let sdgs: number[] = [];
+        let cobenefits: string | null = null;
+        if (extracted['sdgOrCobenefits']) {
+            const raw = extracted['sdgOrCobenefits']!;
+            const tokens = raw.split(',').map(s => s.trim()).filter(Boolean);
+            const allNumeric = tokens.length > 0 && tokens.every(t => /^\d+$/.test(t));
+            sdgs = allNumeric ? tokens.map(Number).filter(n => n >= 1 && n <= 17) : extractSdgsFromText(raw);
+            cobenefits = !allNumeric && raw ? raw : null;
+        }
 
-        let createdAt: string | null = null;
+        // Crediting period (object {from, to}) — try the geo-path approach but our
+        // current fieldMap stores only top-level keys. Fall back: scan cs values.
+        let createdAt: string | null = extracted['vintageRaw'] ?? null;
         let creditingPeriodEnd: string | null = null;
-        const cpKey = rf?.creditingPeriod
-            ?? Object.entries(fm).find(([, fd]) => fd.title.toLowerCase().includes('crediting period'))?.[0];
-        if (cpKey) {
-            const f = subject[cpKey];
-            if (f && typeof f === 'object') {
-                createdAt = typeof f['from'] === 'string' ? f['from'] : null;
-                creditingPeriodEnd = typeof f['to'] === 'string' ? f['to'] : null;
+        for (const v of Object.values(cs)) {
+            if (v && typeof v === 'object' && !Array.isArray(v)
+                && 'from' in (v as object) && 'to' in (v as object)) {
+                const obj = v as Record<string, unknown>;
+                if (typeof obj['from'] === 'string') createdAt = obj['from'] as string;
+                if (typeof obj['to'] === 'string') creditingPeriodEnd = obj['to'] as string;
+                break;
             }
         }
-        if (!createdAt) createdAt = vintageRaw || null;
-        const rawDateForYear = createdAt ?? vintageRaw ?? null;
-        const vintage: string | null = rawDateForYear
-            ? (rawDateForYear.match(/\b(19|20)\d{2}\b/)?.[0] ?? null)
+        const vintage = createdAt
+            ? (createdAt.match(/\b(19|20)\d{2}\b/)?.[0] ?? null)
             : null;
 
-        const sdgKey = rf?.sdgOrCobenefits
-            ?? Object.entries(fm).find(([, fd]) => {
-                const t = fd.title.toLowerCase();
-                return t.includes('co-benefit') || t.includes('sustainable') || t.includes('sdg');
-            })?.[0];
-        const field25Raw = sdgKey ? String(subject[sdgKey] ?? '').trim() : '';
-        const field25Tokens = field25Raw.split(',').map((s: string) => s.trim()).filter(Boolean);
-        const allNumeric = field25Tokens.length > 0 && field25Tokens.every((t: string) => /^\d+$/.test(t));
-        const sdgs: number[] = allNumeric
-            ? field25Tokens.map(Number).filter((n: number) => n >= 1 && n <= 17)
-            : extractSdgsFromText(field25Raw);
-        const cobenefits: string | null = !allNumeric && field25Raw ? field25Raw : null;
-
-        const emissionReduction = cs['emission_reduction'] as Record<string, any> | undefined;
-        const erY = emissionReduction ? parseFloat(String(emissionReduction['ER_y'] ?? '0')) : 0;
-        const creditsToAdd = erY > 0 ? erY : 0;
-
+        // Methodology / sector resolution.
+        const developer = extracted['developer'] ?? '';
         const { maps, methodScopeMap } = await loadResolutionMaps(this.dataSource);
         const resolved = resolveMethod(vc.topicId, developer, maps);
         const methScopes = resolved.policyTopicId
             ? (methodScopeMap[resolved.policyTopicId] ?? [])
             : [];
         const sectoralScope = methScopes[0] ?? '';
+        const rawSector = extracted['sector'] ?? '';
         const sector = normalizeSector(methScopes)
             || (rawSector ? normalizeSector([rawSector]) : '')
             || '';
 
-        // When lat/lng are available use geo-precision dedup; otherwise fall back to
-        // name + country so two distinct projects sharing a name don't get merged.
-        const dedupKey = (lat !== null && lng !== null)
-            ? `${name}|${Math.round(lat * 10000) / 10000}|${Math.round(lng * 10000) / 10000}`
-            : `${name}|${country ?? '_'}`;
+        const lng = geoLngLat?.[0] ?? null;
+        const lat = geoLngLat?.[1] ?? null;
+        const name = extracted['name'] ?? null;
+        const country = extracted['country'] ?? null;
 
-        // Load schema UUIDs for this policy to populate projectSchemaUuids.
-        const schemaUuidRows: Array<{ schemaId: string }> = await this.dataSource.query(
-            `SELECT "schemaId" FROM policy_schema WHERE "policyTopicId" = $1 AND "schemaId" IS NOT NULL`,
-            [schemaEntry.policyTopicId],
-        );
-        const projectSchemaUuids = schemaUuidRows.map(r => r.schemaId);
+        // Display name: VC-supplied name when present, else project key (so a row
+        // exists even before the registration VC lands).
+        const displayName = name ?? projectKey;
 
-        const businessData = {
-            name,
-            country: country || null,
-            lat,
-            lng,
-            methodology: resolved.name,
-            methodologyId: slugify(resolved.name),
-            developer,
-            credits: creditsToAdd,
-            status: 'Issuing',
-            vintage,
-            sdgs,
-            cobenefits,
-            scale: scale || null,
-            category: category || null,
-            sector,
-            sectoralScope,
-            createdAt,
-            creditingPeriodEnd,
+        // Build the businessData jsonb. Only set fields we have on this VC; the
+        // upsert merges with existing values via COALESCE in the SQL.
+        const newFields: Record<string, unknown> = {
             topicId: vc.topicId,
-            policyTopicId: resolved.policyTopicId,
-            vcCount: 1,
-            projectSchemaUuids,
+            policyTopicId,
+            policyName: pds.policyName ?? resolved.name ?? null,
         };
+        if (name) newFields.name = name;
+        if (country) newFields.country = country;
+        if (lat !== null && lng !== null) {
+            newFields.lat = lat;
+            newFields.lng = lng;
+        }
+        if (resolved.name) {
+            newFields.methodology = resolved.name;
+            newFields.methodologyId = slugify(resolved.name);
+        }
+        if (developer) newFields.developer = developer;
+        if (vintage) newFields.vintage = vintage;
+        if (sdgs.length > 0) newFields.sdgs = sdgs;
+        if (cobenefits) newFields.cobenefits = cobenefits;
+        if (extracted['scale']) newFields.scale = extracted['scale'];
+        if (extracted['category']) newFields.category = extracted['category'];
+        if (sector) newFields.sector = sector;
+        if (sectoralScope) newFields.sectoralScope = sectoralScope;
+        if (createdAt) newFields.createdAt = createdAt;
+        if (creditingPeriodEnd) newFields.creditingPeriodEnd = creditingPeriodEnd;
+        newFields.status = 'Issuing';
 
         const searchText = [
-            name,
+            name ?? '',
             developer,
             country ?? '',
-            resolved.name,
-            category ?? '',
+            resolved.name ?? '',
+            extracted['category'] ?? '',
             cobenefits ?? '',
-        ]
-            .filter(Boolean)
-            .join(' ');
+        ].filter(Boolean).join(' ');
 
-        // Upsert by (viewType='PROJECT', projectKey). When the same project key
-        // already exists (same dedupKey from an earlier VC), accumulate credits
-        // and increment vcCount rather than overwriting the row.
         await this.dataSource.query(
             `INSERT INTO business_view (
                 "sourceTimestamp",
@@ -239,126 +254,143 @@ export class ProjectMapperService {
                 "lastUpdate",
                 "createdAt",
                 "updatedAt"
-            ) VALUES ($1, 'PROJECT', $2, $3, $4, $5, $6, $7, EXTRACT(EPOCH FROM NOW())::bigint, NOW(), NOW())
+            ) VALUES ($1, 'PROJECT', $2, $3, $4,
+                      jsonb_build_object('credits', $7::numeric, 'vcCount', 1) || $5::jsonb,
+                      $6, $8,
+                      EXTRACT(EPOCH FROM NOW())::bigint, NOW(), NOW())
             ON CONFLICT ("projectKey")
             WHERE "viewType" = 'PROJECT' AND "projectKey" IS NOT NULL
             DO UPDATE SET
-                "displayName"    = EXCLUDED."displayName",
-                "registryDid"    = COALESCE(EXCLUDED."registryDid", business_view."registryDid"),
-                "relatedTopicId" = EXCLUDED."relatedTopicId",
-                "businessData"   = business_view."businessData" || jsonb_build_object(
-                    'credits', COALESCE((business_view."businessData"->>'credits')::numeric, 0)
-                               + COALESCE((EXCLUDED."businessData"->>'credits')::numeric, 0),
-                    'vcCount',  COALESCE((business_view."businessData"->>'vcCount')::int, 0) + 1
-                ) || EXCLUDED."businessData" - 'credits' - 'vcCount',
-                "searchText"     = EXCLUDED."searchText",
+                -- COALESCE for displayName: keep existing unless null/empty.
+                "displayName"    = COALESCE(NULLIF(business_view."displayName", ''), EXCLUDED."displayName"),
+                "registryDid"    = COALESCE(business_view."registryDid", EXCLUDED."registryDid"),
+                "relatedTopicId" = COALESCE(business_view."relatedTopicId", EXCLUDED."relatedTopicId"),
+                "businessData"   = (
+                    -- Start with existing data; overlay with EXCLUDED's new fields
+                    -- (which only contain non-null values from this VC); then
+                    -- recompute credits/vcCount as SUM.
+                    business_view."businessData" || EXCLUDED."businessData"
+                ) || jsonb_build_object(
+                    'credits',
+                        COALESCE((business_view."businessData"->>'credits')::numeric, 0)
+                      + $7::numeric,
+                    'vcCount',
+                        COALESCE((business_view."businessData"->>'vcCount')::int, 0) + 1
+                ),
+                "searchText"     = COALESCE(NULLIF(business_view."searchText", ''), EXCLUDED."searchText"),
                 "lastUpdate"     = EXCLUDED."lastUpdate",
                 "updatedAt"      = NOW()`,
             [
                 vc.consensusTimestamp,
-                name,
-                resolved.registryDid || null,
+                displayName,
+                resolved.registryDid || pds.registryDid || null,
                 vc.topicId,
-                JSON.stringify(businessData),
+                JSON.stringify(newFields),
                 searchText,
-                dedupKey,
+                creditsToAdd,
+                projectKey,
             ],
         );
 
         this.logger.debug(
-            `Upserted PROJECT row for vc=${messageConsensusTimestamp} key="${dedupKey}"`,
+            `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} key=${projectKey} ` +
+            `fields=[${Object.keys(extracted).join(',')}] credits=${creditsToAdd}`,
         );
     }
 
     /**
-     * Resolves the SchemaEntry for a VC type UUID.
-     *
-     * Priority order:
-     *   1. policy_decode_status.projectFieldMap + projectGeoKey/Section (decode-time resolved)
-     *   2. policy_schema.projectSchemaConfig (fast path — stored config)
-     *   3. Parse document via buildSchemaEntryImproved (slow path)
+     * Walks the topic parent chain to find the policy (Instance-Policy publish-policy)
+     * topic this VC belongs to. Up to 12 hops. Mirrors MessageProcessProcessor's lookup.
      */
-    private async resolveSchemaEntry(vcUuid: string, _topicId: string): Promise<SchemaEntry | null> {
-        const rows: Array<{
-            schemaId: string;
-            policyTopicId: string;
-            document: unknown;
-            isProjectSchema: boolean | null;
-            projectSchemaConfig: Record<string, unknown> | null;
-            pds_projectFieldMap: Record<string, string | null> | null;
-            pds_projectGeoKey: string | null;
-            pds_projectGeoSection: string | null;
-        }> = await this.dataSource.query(
-            `SELECT
-                ps."schemaId",
-                ps."policyTopicId",
-                ps.document,
-                ps."isProjectSchema",
-                ps."projectSchemaConfig",
-                pds."projectFieldMap"    AS pds_projectFieldMap,
-                pds."projectGeoKey"      AS pds_projectGeoKey,
-                pds."projectGeoSection"  AS pds_projectGeoSection
-             FROM policy_schema ps
-             LEFT JOIN policy_decode_status pds
-               ON pds."policyTopicId" = ps."policyTopicId"
-              AND pds.status = 'success'
-             WHERE ps."schemaId" = $1
+    private async resolvePolicyTopicId(topicId: string): Promise<string | null> {
+        let current: string | null = topicId;
+        const visited = new Set<string>();
+
+        for (let i = 0; i < 12; i++) {
+            if (!current || visited.has(current)) break;
+            visited.add(current);
+
+            const policyDirect: Array<{ topicId: string }> = await this.dataSource.query(
+                `SELECT "topicId" FROM message
+                 WHERE type='Instance-Policy' AND action='publish-policy' AND "topicId"=$1
+                 LIMIT 1`,
+                [current],
+            );
+            if (policyDirect.length > 0) return current;
+
+            const policyByInstance: Array<{ topicId: string }> = await this.dataSource.query(
+                `SELECT "topicId" FROM message
+                 WHERE type='Instance-Policy' AND action='publish-policy'
+                   AND options->>'instanceTopicId'=$1
+                 LIMIT 1`,
+                [current],
+            );
+            if (policyByInstance.length > 0) return policyByInstance[0].topicId;
+
+            const parentRow: Array<{ parent_id: string | null }> = await this.dataSource.query(
+                `SELECT options->>'parentId' AS parent_id
+                 FROM message WHERE type='Topic' AND "topicId"=$1 LIMIT 1`,
+                [current],
+            );
+            current = parentRow[0]?.parent_id ?? null;
+        }
+        return null;
+    }
+
+    /**
+     * For VCs that don't carry their own cs.id (MintToken, etc.), find the most
+     * recent prior cs.id in the same topic to attribute the credits to.
+     */
+    private async findRecentCsIdInTopic(topicId: string, beforeTs: string): Promise<string | null> {
+        const rows: Array<{ cs_id: string }> = await this.dataSource.query(
+            `SELECT documents->'credentialSubject'->0->>'id' AS cs_id
+             FROM message
+             WHERE type='VC-Document'
+               AND "topicId"=$1
+               AND documents IS NOT NULL
+               AND "consensusTimestamp" < $2
+               AND documents->'credentialSubject'->0->>'id' IS NOT NULL
+             ORDER BY "consensusTimestamp" DESC
              LIMIT 1`,
-            [vcUuid],
+            [topicId, beforeTs],
         );
-
-        if (rows.length === 0) return null;
-
-        const row = rows[0];
-
-        // Path 1: decode-time data from policy_decode_status
-        if (row.pds_projectGeoKey && row.pds_projectFieldMap) {
-            // We need the fieldMap from the stored config to enable unwrap lookups.
-            let fieldMap: Record<string, FieldDef> = {};
-            if (row.projectSchemaConfig) {
-                fieldMap = (row.projectSchemaConfig['fieldMap'] as Record<string, FieldDef>) ?? {};
-            } else if (row.document) {
-                const doc = parseSchemaDoc(row.document);
-                const entry = buildSchemaEntryImproved(row.schemaId, row.policyTopicId, doc);
-                if (entry) fieldMap = entry.fieldMap;
-            }
-            return {
-                schemaUuid: row.schemaId,
-                policyTopicId: row.policyTopicId,
-                geoKey: row.pds_projectGeoKey,
-                section: row.pds_projectGeoSection ?? null,
-                fieldMap,
-                resolvedFields: row.pds_projectFieldMap as unknown as ResolvedFieldPaths,
-            };
-        }
-
-        // Path 2: stored config in policy_schema
-        if (row.isProjectSchema === true && row.projectSchemaConfig) {
-            const cfg = row.projectSchemaConfig;
-            return {
-                schemaUuid: row.schemaId,
-                policyTopicId: row.policyTopicId,
-                geoKey: cfg['geoKey'] as string,
-                section: (cfg['section'] as string | null) ?? null,
-                fieldMap: cfg['fieldMap'] as Record<string, FieldDef>,
-                resolvedFields: cfg['resolvedFields'] as ResolvedFieldPaths | undefined,
-            };
-        }
-
-        // Path 3: parse the document
-        if (!row.document) return null;
-        const doc = parseSchemaDoc(row.document);
-        const entry = buildSchemaEntryImproved(row.schemaId, row.policyTopicId, doc);
-        return entry;
+        return rows[0]?.cs_id ?? null;
     }
 }
 
 // ---------------------------------------------------------------------------
-// Shared internal helpers
+// Internal helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Walks a dotted path against an object. Returns undefined if any segment is missing.
+ */
+function getByPath(obj: any, path: string): unknown {
+    if (!path) return obj;
+    return path.split('.').reduce<any>((cur, key) => (cur == null ? cur : cur[key]), obj);
+}
+
+/**
+ * Coerces a raw VC field value into a [lng, lat] pair if possible.
+ * Handles standard GeoJSON, array-of-GeoJSON (VM0047), and lat/lng-string blocks.
+ */
+function parseGeoValue(raw: unknown): [number, number] | null {
+    let v: unknown = raw;
+    if (Array.isArray(v) && v.length > 0) v = v[0];
+    if (!v || typeof v !== 'object') return null;
+    const obj = v as Record<string, any>;
+    if ('type' in obj) {
+        return extractLatLng(obj);
+    }
+    return extractLatLngStrings(obj);
+}
+
+/**
+ * Flattens nested-dict / list-of-dict values to a single string.
+ */
 function unwrapValue(val: unknown): string {
     if (typeof val === 'string') return val.trim();
+    if (typeof val === 'number') return String(val);
     if (Array.isArray(val)) {
         for (const item of val) {
             const s = unwrapValue(item);

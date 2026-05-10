@@ -6,6 +6,7 @@ import { DataSource } from 'typeorm';
 import Redis from 'ioredis';
 import { QUEUE_NAMES, getWorkerNetwork } from '@shared/config/bullmq.config';
 import { PolicyDecodeJobData } from '../processors/policy-decode.processor';
+import { ProjectMapperService } from '../services/project-mapper.service';
 
 /**
  * Orchestrates initial sync jobs on startup.
@@ -24,6 +25,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     constructor(
         private readonly dataSource: DataSource,
         private readonly configService: ConfigService,
+        private readonly projectMapperService: ProjectMapperService,
         @Inject('REDICT_PUB') private readonly redis: Redis,
         @InjectQueue(QUEUE_NAMES.TOPIC_SYNC) private readonly topicQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOKEN_SYNC) private readonly tokenQueue: Queue,
@@ -58,6 +60,10 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         // Backfill IPFS fetches for VCs whose parent policy is now decoded but whose
         // fetch was skipped (they arrived before their policy was decoded).
         await this.backfillSuccessfulPolicyVcFetches();
+
+        // Re-run eager project mapping for already-fetched VCs that don't have a
+        // PROJECT row yet. Covers worker restarts and pre-eager-path data.
+        // await this.backfillProjectMappings();
 
         // Renew leadership periodically
         this.leaderInterval = setInterval(async () => {
@@ -327,6 +333,59 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
                 `Boot backfill: enqueued ${total} deferred VC IPFS fetch(es) across ${policies.length} decoded polic(ies)`,
             );
         }
+    }
+
+    /**
+     * Boot-time backfill: rebuild PROJECT rows from all already-fetched VCs.
+     *
+     * The per-VC upsert SUMs credits and increments vcCount, so re-running it
+     * over the same VC inflates the totals. We guard against that by clearing
+     * all PROJECT rows first, then replaying every fetched VC in chronological
+     * order. End state is the same as if every VC had streamed through the
+     * eager path exactly once.
+     *
+     * Skipped when there are no fetched VCs to replay (cheap probe).
+     */
+    private async backfillProjectMappings(): Promise<void> {
+        const probe: Array<{ count: string }> = await this.dataSource.query(
+            `SELECT COUNT(*)::text AS count FROM message
+             WHERE type='VC-Document' AND documents IS NOT NULL`,
+        );
+        const total = parseInt(probe[0]?.count ?? '0', 10);
+        if (total === 0) return;
+
+        await this.dataSource.query(
+            `DELETE FROM business_view WHERE "viewType"='PROJECT'`,
+        );
+
+        const rows: Array<{ consensusTimestamp: string }> = await this.dataSource.query(
+            `SELECT m."consensusTimestamp"
+             FROM message m
+             WHERE m.type = 'VC-Document'
+               AND m.documents IS NOT NULL
+             ORDER BY m."consensusTimestamp"`,
+        );
+
+        let processed = 0;
+        let errors = 0;
+        for (const row of rows) {
+            try {
+                await this.projectMapperService.upsertProjectFromVc(row.consensusTimestamp);
+                processed++;
+            } catch (err) {
+                errors++;
+                this.logger.warn(
+                    `backfillProjectMappings: vc=${row.consensusTimestamp} failed: ${err instanceof Error ? err.message : String(err)}`,
+                );
+            }
+        }
+
+        const projectCount: Array<{ count: string }> = await this.dataSource.query(
+            `SELECT COUNT(*)::text AS count FROM business_view WHERE "viewType"='PROJECT'`,
+        );
+        this.logger.log(
+            `Boot backfill: replayed ${processed}/${total} VCs through project mapper (errors: ${errors}); ${projectCount[0].count} project row(s) produced`,
+        );
     }
 
     private async scheduleMvRefresh(): Promise<void> {
