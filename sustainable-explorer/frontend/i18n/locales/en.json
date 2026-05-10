@@ -1,487 +1,539 @@
 {
-    "common": {
-        "search": "Search",
-        "searchEllipsis": "Search...",
-        "clearAll": "Clear all",
-        "clear": "Clear",
-        "clearSelection": "Clear selection",
-        "loading": "Loading...",
-        "noResults": "No results",
-        "retry": "Retry",
-        "viewAll": "View all",
-        "viewDetails": "View details",
-        "showingRange": "Showing {start}–{end} of {total}",
-        "rowsPerPage": "Rows per page:",
-        "page": "Page",
-        "active": "active",
-        "activeCount": "({count} active)",
-        "yes": "Yes",
-        "no": "No",
-        "all": "All",
-        "from": "From",
-        "to": "To",
-        "enabled": "Enabled",
-        "noOptions": "No options",
-        "notFound": "Not Found",
-        "copy": "Copy",
-        "copied": "Copied",
-        "download": "Download",
-        "close": "Close",
-        "viewOnExplorer": "View on Explorer",
-        "viewRawData": "View Raw Data",
-        "lines": "lines",
-        "mdash": "—",
-        "total": "total",
-        "field": "field",
-        "fields": "fields",
-        "changed": "changed"
+  "common": {
+    "search": "Search",
+    "searchEllipsis": "Search...",
+    "clearAll": "Clear all",
+    "clear": "Clear",
+    "clearSelection": "Clear selection",
+    "loading": "Loading...",
+    "noResults": "No results",
+    "retry": "Retry",
+    "viewAll": "View all",
+    "viewDetails": "View details",
+    "showingRange": "Showing {start}–{end} of {total}",
+    "rowsPerPage": "Rows per page:",
+    "page": "Page",
+    "active": "active",
+    "activeCount": "({count} active)",
+    "yes": "Yes",
+    "no": "No",
+    "all": "All",
+    "from": "From",
+    "to": "To",
+    "enabled": "Enabled",
+    "noOptions": "No options",
+    "notFound": "Not Found",
+    "copy": "Copy",
+    "copied": "Copied",
+    "download": "Download",
+    "close": "Close",
+    "viewOnExplorer": "View on Explorer",
+    "viewRawData": "View Raw Data",
+    "lines": "lines",
+    "mdash": "—",
+    "total": "total",
+    "field": "field",
+    "fields": "fields",
+    "changed": "changed"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "issuances": "Issuances",
+    "methodologies": "Methodologies",
+    "registries": "Registries",
+    "developers": "Developers",
+    "sdgs": "SDGs",
+    "analytics": "Analytics",
+    "syncStatus": "Sync Status",
+    "dataSyncedUpTo": "Data synced up to",
+    "sustainable": "Sustainable",
+    "explorer": "Explorer"
+  },
+  "topbar": {
+    "searchPlaceholder": "Search projects, credits, registries...",
+    "network": "Network",
+    "language": "Language",
+    "itemType": {
+      "project": "Project",
+      "issuance": "Issuance",
+      "methodology": "Methodology",
+      "registry": "Registry"
     },
-    "nav": {
-        "dashboard": "Dashboard",
-        "projects": "Projects",
-        "issuances": "Issuances",
-        "methodologies": "Methodologies",
-        "registries": "Registries",
-        "developers": "Developers",
-        "sdgs": "SDGs",
-        "analytics": "Analytics",
-        "syncStatus": "Sync Status",
-        "dataSyncedUpTo": "Data synced up to",
-        "sustainable": "Sustainable",
-        "explorer": "Explorer"
+    "token": "Token",
+    "policies": "policies",
+    "projectsLabel": "projects"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of the Hedera Guardian sustainability network",
+    "filterTooltip": "Filter all dashboard data by project developer and/or registry. All cards, charts, map, and tables update to show only matching projects.",
+    "allDevelopers": "All Developers",
+    "allRegistries": "All Registries",
+    "stats": {
+      "registries": "Registries",
+      "registriesSub": "Standard Registries",
+      "registriesTooltip": "Number of unique Standard Registries (e.g., Verra, Gold Standard) matching the current filters. The change indicator shows how many new registries joined compared to the previous year.",
+      "methodologies": "Methodologies",
+      "methodologiesSub": "Published policies",
+      "methodologiesTooltip": "Total number of unique published policy methodologies across all matching registries. The change indicator shows how many new methodologies were published compared to the previous year.",
+      "projects": "Projects",
+      "projectsSub": "Active verified projects",
+      "projectsTooltip": "Count of sustainability projects registered and verified on the Guardian network matching the current filters. The change indicator shows the net increase in projects compared to the previous year.",
+      "totalIssuances": "Total Issuances",
+      "totalIssuancesSub": "Issued on-chain",
+      "totalIssuancesTooltip": "Sum of all issuances on-chain across matching projects. The change indicator shows the percentage growth in total issuances compared to the previous year.",
+      "totalRetired": "Total Retired",
+      "totalRetiredSub": "Permanently retired",
+      "totalRetiredTooltip": "Sum of all issuances permanently retired (burned) for offsetting purposes across matching projects."
     },
-    "topbar": {
-        "searchPlaceholder": "Search projects, credits, registries...",
-        "network": "Network",
-        "language": "Language",
-        "itemType": {
-            "project": "Project",
-            "issuance": "Issuance",
-            "methodology": "Methodology",
-            "registry": "Registry"
-        },
-        "token": "Token",
-        "policies": "policies",
-        "projectsLabel": "projects"
+    "projectDistribution": "Project Distribution",
+    "projectDistributionTooltip": "Countries are colored by project count. Darker green = more projects. Click a country to see detailed breakdown. Small dots show individual project locations.",
+    "projectDistributionSub": "Geographic spread of verified projects",
+    "viewAllProjects": "View all projects",
+    "map": "Map",
+    "table": "Table",
+    "noCountries": "No countries match the selected filters",
+    "country": "Country",
+    "projectsCol": "Projects",
+    "issuancesCol": "Issuances",
+    "methodologiesCol": "Methodologies",
+    "sectorRegistryBreakdown": "Sector & Registry Breakdown",
+    "sectorRegistryBreakdownTooltip": "Distribution of projects and issuances by sector and registry. Toggle between project count and issuance volume. Reflects current developer/registry filters.",
+    "sectorRegistryBreakdownSub": "Distribution of projects and issuances by sector and registry",
+    "bySector": "By Sector",
+    "byRegistry": "By Registry",
+    "projectsToggle": "Projects",
+    "issuancesToggle": "Issuances",
+    "topRegistries": "Top Registries",
+    "topRegistriesTooltip": "Ranked by project count. Policies = unique methodologies published. Issuances = total issued on-chain by this registry.",
+    "topRegistriesSub": "Most active by policy and project count",
+    "name": "Name",
+    "policies": "Policies",
+    "noRegistries": "No registries match the selected filters",
+    "issuanceTrend": "Issuance Trend",
+    "issuanceTrendTooltip": "Issuance volume over time derived from project creation dates.",
+    "volumeMillions": "Volume (millions)",
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "yearly": "Yearly",
+    "months": "months",
+    "quarters": "quarters",
+    "years": "years",
+    "mTotal": "M total",
+    "noIssuanceData": "No issuance data matches the selected filters",
+    "analytics": "Analytics",
+    "retirementTrend": "Retirement Trend",
+    "retirementTrendTooltip": "Retirement volume over time. Shows issuances permanently retired (burned) for offsetting.",
+    "noRetirementData": "No retirement data matches the selected filters",
+    "vintageDistribution": "Vintage Distribution",
+    "vintageDistributionTooltip": "Distribution of issuances by vintage year. Shows which years have the most credits issued across matching projects.",
+    "vintageDistributionSub": "Issuances by vintage year",
+    "vintages": "vintages",
+    "projectsSuffix": "projects",
+    "noVintageData": "No vintage data matches the selected filters",
+    "networkActivity": "Network Activity",
+    "networkActivityTooltip": "Recent events on the Guardian network including new project registrations, credit issuances, policy publications, and verifications.",
+    "networkActivitySub": "Recent changes across the Guardian network",
+    "noActivity": "No recent activity matches the selected filters",
+    "activeProjects": "Active Projects",
+    "mtco2TotalReduction": "MtCO2 Total Reduction",
+    "mtco2AnnualEst": "MtCO2 Annual Est.",
+    "sector": "Sector",
+    "registry": "Registry",
+    "totalIssuancesLabel": "Total Issuances"
+  },
+  "projects": {
+    "title": "Projects",
+    "subtitle": "Verified sustainability projects on the Guardian network",
+    "searchPlaceholder": "Search projects...",
+    "quickFilters": "Quick filters:",
+    "projectsFound": "{count} projects found",
+    "totalIssuances": "Total issuances:",
+    "countries": "Countries:",
+    "registries": "Registries:",
+    "noMatch": "No projects match your filters",
+    "sectoralScope": "Sectoral Scope: {scope}",
+    "sdgsTooltip": "UN Sustainable Development Goals this project contributes to. Hover over each icon for the full goal name.",
+    "sectorTooltip": "Includes Sectoral Scope as additional detail",
+    "columns": {
+      "project": "Project",
+      "country": "Country",
+      "registry": "Registry",
+      "methodology": "Methodology",
+      "sector": "Sector",
+      "issuances": "Issuances",
+      "transferred": "Transferred",
+      "retired": "Retired",
+      "status": "Status",
+      "sdgs": "SDGs",
+      "rawData": "Raw Data"
     },
-    "dashboard": {
-        "title": "Dashboard",
-        "subtitle": "Overview of the Hedera Guardian sustainability network",
-        "filterTooltip": "Filter all dashboard data by project developer and/or registry. All cards, charts, map, and tables update to show only matching projects.",
-        "allDevelopers": "All Developers",
-        "allRegistries": "All Registries",
-        "stats": {
-            "registries": "Registries",
-            "registriesSub": "Standard Registries",
-            "registriesTooltip": "Number of unique Standard Registries (e.g., Verra, Gold Standard) matching the current filters. The change indicator shows how many new registries joined compared to the previous year.",
-            "methodologies": "Methodologies",
-            "methodologiesSub": "Published policies",
-            "methodologiesTooltip": "Total number of unique published policy methodologies across all matching registries. The change indicator shows how many new methodologies were published compared to the previous year.",
-            "projects": "Projects",
-            "projectsSub": "Active verified projects",
-            "projectsTooltip": "Count of sustainability projects registered and verified on the Guardian network matching the current filters. The change indicator shows the net increase in projects compared to the previous year.",
-            "totalIssuances": "Total Issuances",
-            "totalIssuancesSub": "Issued on-chain",
-            "totalIssuancesTooltip": "Sum of all issuances on-chain across matching projects. The change indicator shows the percentage growth in total issuances compared to the previous year.",
-            "totalRetired": "Total Retired",
-            "totalRetiredSub": "Permanently retired",
-            "totalRetiredTooltip": "Sum of all issuances permanently retired (burned) for offsetting purposes across matching projects."
-        },
-        "projectDistribution": "Project Distribution",
-        "projectDistributionTooltip": "Countries are colored by project count. Darker green = more projects. Click a country to see detailed breakdown. Small dots show individual project locations.",
-        "projectDistributionSub": "Geographic spread of verified projects",
-        "viewAllProjects": "View all projects",
-        "map": "Map",
-        "table": "Table",
-        "noCountries": "No countries match the selected filters",
-        "country": "Country",
-        "projectsCol": "Projects",
-        "issuancesCol": "Issuances",
-        "methodologiesCol": "Methodologies",
-        "sectorRegistryBreakdown": "Sector & Registry Breakdown",
-        "sectorRegistryBreakdownTooltip": "Distribution of projects and issuances by sector and registry. Toggle between project count and issuance volume. Reflects current developer/registry filters.",
-        "sectorRegistryBreakdownSub": "Distribution of projects and issuances by sector and registry",
-        "bySector": "By Sector",
-        "byRegistry": "By Registry",
-        "projectsToggle": "Projects",
-        "issuancesToggle": "Issuances",
-        "topRegistries": "Top Registries",
-        "topRegistriesTooltip": "Ranked by project count. Policies = unique methodologies published. Issuances = total issued on-chain by this registry.",
-        "topRegistriesSub": "Most active by policy and project count",
-        "name": "Name",
-        "policies": "Policies",
-        "noRegistries": "No registries match the selected filters",
-        "issuanceTrend": "Issuance Trend",
-        "issuanceTrendTooltip": "Issuance volume over time derived from project creation dates.",
-        "volumeMillions": "Volume (millions)",
-        "monthly": "Monthly",
-        "quarterly": "Quarterly",
-        "yearly": "Yearly",
-        "months": "months",
-        "quarters": "quarters",
-        "years": "years",
-        "mTotal": "M total",
-        "noIssuanceData": "No issuance data matches the selected filters",
-        "analytics": "Analytics",
-        "retirementTrend": "Retirement Trend",
-        "retirementTrendTooltip": "Retirement volume over time. Shows issuances permanently retired (burned) for offsetting.",
-        "noRetirementData": "No retirement data matches the selected filters",
-        "vintageDistribution": "Vintage Distribution",
-        "vintageDistributionTooltip": "Distribution of issuances by vintage year. Shows which years have the most credits issued across matching projects.",
-        "vintageDistributionSub": "Issuances by vintage year",
-        "vintages": "vintages",
-        "projectsSuffix": "projects",
-        "noVintageData": "No vintage data matches the selected filters",
-        "networkActivity": "Network Activity",
-        "networkActivityTooltip": "Recent events on the Guardian network including new project registrations, credit issuances, policy publications, and verifications.",
-        "networkActivitySub": "Recent changes across the Guardian network",
-        "noActivity": "No recent activity matches the selected filters",
-        "activeProjects": "Active Projects",
-        "mtco2TotalReduction": "MtCO2 Total Reduction",
-        "mtco2AnnualEst": "MtCO2 Annual Est.",
-        "sector": "Sector",
-        "registry": "Registry",
-        "totalIssuancesLabel": "Total Issuances"
+    "filters": {
+      "status": "Status",
+      "registry": "Registry",
+      "vintage": "Vintage",
+      "sector": "Sector",
+      "sectoralScope": "Sectoral Scope",
+      "sdgs": "SDGs"
     },
-    "projects": {
-        "title": "Projects",
-        "subtitle": "Verified sustainability projects on the Guardian network",
-        "searchPlaceholder": "Search projects...",
-        "quickFilters": "Quick filters:",
-        "projectsFound": "{count} projects found",
-        "totalIssuances": "Total issuances:",
-        "countries": "Countries:",
-        "registries": "Registries:",
-        "noMatch": "No projects match your filters",
-        "sectoralScope": "Sectoral Scope: {scope}",
-        "sdgsTooltip": "UN Sustainable Development Goals this project contributes to. Hover over each icon for the full goal name.",
-        "sectorTooltip": "Includes Sectoral Scope as additional detail",
-        "columns": {
-            "project": "Project",
-            "country": "Country",
-            "registry": "Registry",
-            "methodology": "Methodology",
-            "sector": "Sector",
-            "issuances": "Issuances",
-            "transferred": "Transferred",
-            "retired": "Retired",
-            "status": "Status",
-            "sdgs": "SDGs",
-            "rawData": "Raw Data"
-        },
-        "filters": {
-            "status": "Status",
-            "registry": "Registry",
-            "vintage": "Vintage",
-            "sector": "Sector",
-            "sectoralScope": "Sectoral Scope",
-            "sdgs": "SDGs"
-        },
-        "presets": {
-            "issuingForestry": "Issuing Forestry",
-            "goldStandard": "Gold Standard",
-            "sdg13": "SDG 13: Climate Action",
-            "underValidation": "Under Validation",
-            "vintage2024": "Vintage 2024",
-            "blueCarbon": "Blue Carbon"
-        },
-        "notFound": "Project not found",
-        "details": {
-            "projectDetails": "Project Details",
-            "projectName": "Project Name",
-            "country": "Country",
-            "status": "Status",
-            "methodology": "Methodology",
-            "registry": "Registry",
-            "developer": "Developer",
-            "sector": "Sector",
-            "vintage": "Vintage",
-            "created": "Created",
-            "creditingPeriod": "Crediting Period"
-        }
+    "presets": {
+      "issuingForestry": "Issuing Forestry",
+      "goldStandard": "Gold Standard",
+      "sdg13": "SDG 13: Climate Action",
+      "underValidation": "Under Validation",
+      "vintage2024": "Vintage 2024",
+      "blueCarbon": "Blue Carbon"
     },
-    "credits": {
-        "title": "Issuances",
-        "subtitle": "Tokens issued on Hedera",
-        "searchPlaceholder": "Search by name, symbol, token ID...",
-        "noMatch": "No issuances match your filters",
-        "supplyTooltip": "Total token supply minted on Hedera. For fungible tokens this is the total supply. For NFTs this is the number of unique serials.",
-        "columns": {
-            "token": "Token",
-            "symbol": "Symbol",
-            "type": "Type",
-            "supply": "Supply",
-            "project": "Project",
-            "registry": "Registry",
-            "rawData": "Raw Data"
-        },
-        "filters": {
-            "tokenType": "Token Type",
-            "registry": "Registry"
-        }
+    "notFound": "Project not found",
+    "details": {
+      "projectDetails": "Project Details",
+      "projectName": "Project Name",
+      "country": "Country",
+      "status": "Status",
+      "methodology": "Methodology",
+      "registry": "Registry",
+      "developer": "Developer",
+      "sector": "Sector",
+      "vintage": "Vintage",
+      "created": "Created",
+      "creditingPeriod": "Crediting Period"
+    }
+  },
+  "credits": {
+    "title": "Issuances",
+    "subtitle": "Tokens issued on Hedera",
+    "searchPlaceholder": "Search by name, symbol, token ID...",
+    "noMatch": "No issuances match your filters",
+    "supplyTooltip": "Total token supply minted on Hedera. For fungible tokens this is the total supply. For NFTs this is the number of unique serials.",
+    "columns": {
+      "token": "Token",
+      "symbol": "Symbol",
+      "type": "Type",
+      "supply": "Supply",
+      "project": "Project",
+      "registry": "Registry",
+      "rawData": "Raw Data"
     },
-    "methodologies": {
-        "title": "Methodologies",
-        "subtitle": "Published policy workflows for sustainability verification",
-        "searchPlaceholder": "Search methodologies...",
-        "noMatch": "No methodologies match your filters",
-        "columns": {
-            "methodology": "Methodology",
-            "name": "Name",
-            "registry": "Registry",
-            "category": "Category",
-            "projects": "Projects",
-            "issuance": "Issuance",
-            "issuances": "Issuances",
-            "schemaCount": "Schema Count",
-            "schemas": "Schemas",
-            "description": "Description",
-            "id": "ID",
-            "status": "Status",
-            "type": "Type",
-            "version": "Version"
-        },
-        "filters": {
-            "registry": "Registry",
-            "registryDid": "Registry DID",
-            "registryName": "Registry Name",
-            "registryNamePlaceholder": "Search by registry name",
-            "category": "Category",
-            "name": "Name",
-            "namePlaceholder": "Search by name",
-            "id": "ID",
-            "description": "Description",
-            "status": "Status"
-        },
-        "stats": {
-            "total": "Total Methodologies",
-            "active": "Published",
-            "draft": "Draft / Other"
-        },
-        "errors": {
-            "loadFailed": "Failed to load methodologies."
-        },
-        "tooltips": {
-            "copyId": "Copy ID"
-        },
-        "detail": {
-            "breadcrumb": "Methodologies",
-            "backLink": "Back to Methodologies",
-            "notFound": "Methodology not found",
-            "notFoundDesc": "No methodology with ID {id} on {network}.",
-            "viewOnHashScan": "View on HashScan",
-            "tabs": {
-                "overview": "Overview",
-                "versionHistory": "Version History",
-                "linkedProjects": "Linked Projects",
-                "hederaPolicy": "Hedera Policy",
-                "analytics": "Analytics",
-                "actions": "Actions"
-            },
-            "summary": {
-                "registry": "Registry",
-                "version": "Version",
-                "schemas": "Schemas",
-                "status": "Status"
-            },
-            "overview": {
-                "description": "Description",
-                "noDescription": "No description available.",
-                "keyFacts": "Key Facts",
-                "publishedAt": "Published At",
-                "network": "Network",
-                "emissionReductionApproach": "Emission Reduction Approach",
-                "applicableSectoralScopes": "Applicable Sectoral Scopes"
-            },
-            "versions": {
-                "title": "Version History",
-                "columns": {
-                    "version": "Version",
-                    "instancePolicyTopic": "Instance Policy Topic",
-                    "published": "Published",
-                    "schemas": "Schemas",
-                    "status": "Status"
-                },
-                "currentBadge": "Current",
-                "noVersions": "No versions found."
-            },
-            "linkedProjects": {
-                "title": "Linked Projects",
-                "noTopicId": "No policy topic ID available for this methodology.",
-                "columns": {
-                    "project": "Project",
-                    "country": "Country",
-                    "registry": "Registry",
-                    "credits": "Credits",
-                    "status": "Status"
-                },
-                "noProjects": "No projects found under this policy."
-            },
-            "policy": {
-                "title": "On-Chain Policy",
-                "verifiedOnHedera": "Verified on Hedera",
-                "governedBy": "This methodology is governed by an on-chain Guardian policy.",
-                "instancePolicyTopic": "Instance Policy Topic",
-                "publishedAt": "Published At",
-                "registryDid": "Registry DID",
-                "network": "Network"
-            },
-            "analytics": {
-                "schemaCount": "Schema Count",
-                "schemaCountSub": "Data forms in this policy",
-                "projects": "Projects",
-                "projectsSub": "Registered under this methodology",
-                "issuances": "Issuances",
-                "issuancesSub": "Credits issued",
-                "trends": "Trends",
-                "trendsComingSoon": "Issuance over time, retirement trend, and geography charts will be available once live VC-Document data is fully synced."
-            },
-            "actions": {
-                "aboutTitle": "About this Methodology",
-                "instancePolicyTopicLabel": "Instance Policy Topic:",
-                "compareVersions": "Compare Versions",
-                "compareVersionsDesc": "Select another version to compare side-by-side against this one.",
-                "noOtherVersions": "No other versions available for this methodology.",
-                "selectVersionPlaceholder": "— Select a version to compare —",
-                "comparison": "Comparison",
-                "noDifferences": "No differences",
-                "compareColumns": {
-                    "field": "Field",
-                    "current": "Current",
-                    "compare": "Compare"
-                },
-                "compareRows": {
-                    "version": "Version",
-                    "status": "Status",
-                    "published": "Published",
-                    "description": "Description",
-                    "sectoralScopes": "Sectoral Scopes",
-                    "emissionReductionApproach": "Emission Reduction Approach",
-                    "schemaCount": "Schema Count",
-                    "issuances": "Issuances"
-                }
-            }
-        }
+    "filters": {
+      "tokenType": "Token Type",
+      "registry": "Registry"
+    }
+  },
+  "methodologies": {
+    "title": "Methodologies",
+    "subtitle": "Published policy workflows for sustainability verification",
+    "searchPlaceholder": "Search methodologies...",
+    "noMatch": "No methodologies match your filters",
+    "columns": {
+      "methodology": "Methodology",
+      "name": "Name",
+      "registry": "Registry",
+      "category": "Category",
+      "projects": "Projects",
+      "issuance": "Issuance",
+      "issuances": "Issuances",
+      "schemaCount": "Schema Count",
+      "schemas": "Schemas",
+      "description": "Description",
+      "id": "ID",
+      "status": "Status",
+      "type": "Type",
+      "version": "Version",
+      "decoded": "Decoded"
     },
-    "registries": {
-        "title": "Registries",
-        "subtitle": "Standard Registries operating on the Guardian network",
-        "noMatch": "No registries match your filters",
-        "columns": {
-            "name": "Name",
-            "id": "ID",
-            "geography": "Geography",
-            "law": "Law",
-            "methodologies": "Methodologies",
-            "projects": "Projects",
-            "users": "Users",
-            "issuances": "Issuances",
-            "tags": "Tags",
-            "created": "Created"
-        },
-        "filters": {
-            "name": "Name",
-            "namePlaceholder": "Search by name",
-            "id": "ID",
-            "idPlaceholder": "0.0.xxxx",
-            "tags": "Tags",
-            "geography": "Geography",
-            "law": "Law",
-            "registryDid": "Registry DID"
-        },
-        "errors": {
-            "loadFailed": "Failed to load registries."
-        },
-        "tooltips": {
-            "viewMethodologies": "View methodologies for this registry"
-        }
+    "filters": {
+      "registry": "Registry",
+      "registryDid": "Registry DID",
+      "registryName": "Registry Name",
+      "registryNamePlaceholder": "Search by registry name",
+      "category": "Category",
+      "name": "Name",
+      "namePlaceholder": "Search by name",
+      "id": "ID",
+      "description": "Description",
+      "decoded": "Decoded",
+      "decodedAll": "All"
     },
-    "developers": {
-        "title": "Project Developers",
-        "subtitle": "Organizations developing and managing carbon offset projects",
-        "searchPlaceholder": "Search developers, categories, registries...",
-        "noMatch": "No developers match your filters",
-        "issuedTooltip": "Total issuances across all projects by this developer.",
-        "retiredTooltip": "Issuances permanently retired (used for offsetting). Retired issuances cannot be traded or reused.",
-        "columns": {
-            "developer": "Developer",
-            "hq": "HQ",
-            "countries": "Countries",
-            "projects": "Projects",
-            "issued": "Issued",
-            "retired": "Retired",
-            "categories": "Categories",
-            "registries": "Registries",
-            "status": "Status"
-        },
-        "filters": {
-            "status": "Status"
-        }
+    "stats": {
+      "total": "Total Methodologies",
+      "active": "Published",
+      "draft": "Draft / Other"
     },
-    "sdgs": {
-        "title": "Sustainable Development Goals",
-        "subtitle": "Project contributions mapped to the UN SDGs",
-        "searchPlaceholder": "Search SDGs...",
-        "coverageTooltip": "Percentage of total projects that contribute to this SDG. A project can contribute to multiple SDGs.",
-        "columns": {
-            "sdg": "SDG",
-            "goal": "Goal",
-            "projects": "Projects",
-            "issuances": "Issuances",
-            "developers": "Developers",
-            "countries": "Countries",
-            "topMethodology": "Top Methodology",
-            "coverage": "Coverage"
-        }
-    },
-    "analytics": {
-        "title": "Analytics",
-        "subtitle": "Network-wide sustainability metrics and trends",
-        "metrics": {
-            "totalIssuance": "Total Issuance",
-            "activeProjects": "Active Projects",
-            "retirements": "Retirements",
-            "avgProjectSize": "Avg. Project Size"
-        },
-        "issuancesByMethodology": "Issuances by Methodology",
-        "issuancesByMethodologySub": "Distribution of issuances across methodology types"
-    },
-    "status": {
-        "title": "Sync Status",
-        "subtitle": "Data pipeline and worker queue metrics",
-        "dataSyncedUpTo": "Data Synced Up To",
-        "topicsIndexed": "Topics Indexed",
-        "topicsIndexedSub": "of ~1,700 discovered",
-        "messagesProcessed": "Messages Processed",
-        "messagesProcessedSub": "{count} pending in queue",
-        "queueStatus": "Queue Status",
-        "queueStatusSub": "BullMQ worker queues",
-        "columns": {
-            "queue": "Queue",
-            "waiting": "Waiting",
-            "active": "Active",
-            "completed": "Completed",
-            "failed": "Failed"
-        }
-    },
-    "vcViewer": {
-        "rawDataOnBlockchain": "Raw Data on the blockchain",
-        "searchInJson": "Search in JSON..."
-    },
-    "relationshipDiagram": {
-        "registry": "Registry",
-        "policy": "Policy",
-        "schema": "Schema",
-        "role": "Role",
-        "rawData": "Raw Data",
-        "vp": "VP",
-        "token": "Token",
-        "viewRawData": "View Raw Data",
-        "viewOnExplorer": "View on Explorer"
+    "errors": {
+      "loadFailed": "Failed to load methodologies."
     },
     "tooltips": {
-        "copyDid": "Copy DID",
-        "copyId": "Copy ID",
-        "viewRawData": "Raw Data on the blockchain"
+      "copyId": "Copy ID"
+    },
+    "detail": {
+      "breadcrumb": "Methodologies",
+      "backLink": "Back to Methodologies",
+      "notFound": "Methodology not found",
+      "notFoundDesc": "No methodology with ID {id} on {network}.",
+      "viewOnHashScan": "View on HashScan",
+      "tabs": {
+        "overview": "Overview",
+        "decoded": "Decoded Mapping",
+        "versionHistory": "Version History",
+        "linkedProjects": "Linked Projects",
+        "hederaPolicy": "Hedera Policy",
+        "analytics": "Analytics",
+        "actions": "Actions"
+      },
+      "decoded": {
+        "title": "Decoded Mapping",
+        "statusLabel": "Decode Status",
+        "lastAttempt": "Last attempt",
+        "attempts": "attempt(s)",
+        "errorCallout": "Decode error",
+        "noSchema": "No project schema confirmed yet. The decoder hasn't found a schema with both a GeoJSON field and a name field.",
+        "decodeNotComplete": "Decode hasn't completed yet.",
+        "fieldsTableTitle": "Project Fields → Schema Fields",
+        "allFieldsTitle": "All schema fields",
+        "allFieldsCollapsed": "Show all schema fields ({count})",
+        "allFieldsExpanded": "Hide schema fields",
+        "columns": {
+          "projectField": "Project Field",
+          "schemaField": "Schema Field",
+          "fieldKey": "Field Key",
+          "title": "Title",
+          "description": "Description",
+          "usedAs": "Used As",
+          "type": "Type"
+        },
+        "noGeoTitle": "No project schema confirmed",
+        "noGeoBody": "None of the imported schemas had enough matching fields to be classified as a project registration schema. The schemas were imported but no fields could be reliably mapped to project attributes.",
+        "availableSchemasTitle": "Imported schemas",
+        "untitledSchema": "(unnamed schema)",
+        "hasGeo": "Has GeoJSON",
+        "noGeo": "No GeoJSON",
+        "noFields": "(no top-level fields)",
+        "fieldLabels": {
+          "name": "Title",
+          "geo": "Geo / Location",
+          "country": "Country",
+          "developer": "Developer",
+          "sector": "Sector",
+          "category": "Category",
+          "scale": "Scale",
+          "creditingPeriod": "Crediting Period",
+          "vintageRaw": "Vintage Date",
+          "sdgOrCobenefits": "SDGs / Co-benefits"
+        },
+        "fetchError": "Failed to load decoded mapping.",
+        "unresolved": "—"
+      },
+      "summary": {
+        "registry": "Registry",
+        "version": "Version",
+        "schemas": "Schemas",
+        "status": "Status"
+      },
+      "overview": {
+        "description": "Description",
+        "noDescription": "No description available.",
+        "keyFacts": "Key Facts",
+        "publishedAt": "Published At",
+        "network": "Network",
+        "emissionReductionApproach": "Emission Reduction Approach",
+        "applicableSectoralScopes": "Applicable Sectoral Scopes"
+      },
+      "versions": {
+        "title": "Version History",
+        "columns": {
+          "version": "Version",
+          "instancePolicyTopic": "Instance Policy Topic",
+          "published": "Published",
+          "schemas": "Schemas",
+          "status": "Status"
+        },
+        "currentBadge": "Current",
+        "noVersions": "No versions found."
+      },
+      "linkedProjects": {
+        "title": "Linked Projects",
+        "noTopicId": "No policy topic ID available for this methodology.",
+        "columns": {
+          "project": "Project",
+          "country": "Country",
+          "registry": "Registry",
+          "credits": "Credits",
+          "status": "Status"
+        },
+        "noProjects": "No projects found under this policy."
+      },
+      "policy": {
+        "title": "On-Chain Policy",
+        "verifiedOnHedera": "Verified on Hedera",
+        "governedBy": "This methodology is governed by an on-chain Guardian policy.",
+        "instancePolicyTopic": "Instance Policy Topic",
+        "publishedAt": "Published At",
+        "registryDid": "Registry DID",
+        "network": "Network"
+      },
+      "analytics": {
+        "schemaCount": "Schema Count",
+        "schemaCountSub": "Data forms in this policy",
+        "projects": "Projects",
+        "projectsSub": "Registered under this methodology",
+        "issuances": "Issuances",
+        "issuancesSub": "Credits issued",
+        "trends": "Trends",
+        "trendsComingSoon": "Issuance over time, retirement trend, and geography charts will be available once live VC-Document data is fully synced."
+      },
+      "actions": {
+        "aboutTitle": "About this Methodology",
+        "instancePolicyTopicLabel": "Instance Policy Topic:",
+        "compareVersions": "Compare Versions",
+        "compareVersionsDesc": "Select another version to compare side-by-side against this one.",
+        "noOtherVersions": "No other versions available for this methodology.",
+        "selectVersionPlaceholder": "— Select a version to compare —",
+        "comparison": "Comparison",
+        "noDifferences": "No differences",
+        "compareColumns": {
+          "field": "Field",
+          "current": "Current",
+          "compare": "Compare"
+        },
+        "compareRows": {
+          "version": "Version",
+          "status": "Status",
+          "published": "Published",
+          "description": "Description",
+          "sectoralScopes": "Sectoral Scopes",
+          "emissionReductionApproach": "Emission Reduction Approach",
+          "schemaCount": "Schema Count",
+          "issuances": "Issuances"
+        }
+      }
+    },
+    "decodeStatus": {
+      "success": "Decoded",
+      "failed": "Failed",
+      "pending": "Decoding",
+      "unknown": "Not decoded"
     }
+  },
+  "registries": {
+    "title": "Registries",
+    "subtitle": "Standard Registries operating on the Guardian network",
+    "noMatch": "No registries match your filters",
+    "columns": {
+      "name": "Name",
+      "id": "ID",
+      "geography": "Geography",
+      "law": "Law",
+      "methodologies": "Methodologies",
+      "projects": "Projects",
+      "users": "Users",
+      "issuances": "Issuances",
+      "tags": "Tags",
+      "created": "Created"
+    },
+    "filters": {
+      "name": "Name",
+      "namePlaceholder": "Search by name",
+      "id": "ID",
+      "idPlaceholder": "0.0.xxxx",
+      "tags": "Tags",
+      "geography": "Geography",
+      "law": "Law",
+      "registryDid": "Registry DID"
+    },
+    "errors": {
+      "loadFailed": "Failed to load registries."
+    },
+    "tooltips": {
+      "viewMethodologies": "View methodologies for this registry"
+    }
+  },
+  "developers": {
+    "title": "Project Developers",
+    "subtitle": "Organizations developing and managing carbon offset projects",
+    "searchPlaceholder": "Search developers, categories, registries...",
+    "noMatch": "No developers match your filters",
+    "issuedTooltip": "Total issuances across all projects by this developer.",
+    "retiredTooltip": "Issuances permanently retired (used for offsetting). Retired issuances cannot be traded or reused.",
+    "columns": {
+      "developer": "Developer",
+      "hq": "HQ",
+      "countries": "Countries",
+      "projects": "Projects",
+      "issued": "Issued",
+      "retired": "Retired",
+      "categories": "Categories",
+      "registries": "Registries",
+      "status": "Status"
+    },
+    "filters": {
+      "status": "Status"
+    }
+  },
+  "sdgs": {
+    "title": "Sustainable Development Goals",
+    "subtitle": "Project contributions mapped to the UN SDGs",
+    "searchPlaceholder": "Search SDGs...",
+    "coverageTooltip": "Percentage of total projects that contribute to this SDG. A project can contribute to multiple SDGs.",
+    "columns": {
+      "sdg": "SDG",
+      "goal": "Goal",
+      "projects": "Projects",
+      "issuances": "Issuances",
+      "developers": "Developers",
+      "countries": "Countries",
+      "topMethodology": "Top Methodology",
+      "coverage": "Coverage"
+    }
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Network-wide sustainability metrics and trends",
+    "metrics": {
+      "totalIssuance": "Total Issuance",
+      "activeProjects": "Active Projects",
+      "retirements": "Retirements",
+      "avgProjectSize": "Avg. Project Size"
+    },
+    "issuancesByMethodology": "Issuances by Methodology",
+    "issuancesByMethodologySub": "Distribution of issuances across methodology types"
+  },
+  "status": {
+    "title": "Sync Status",
+    "subtitle": "Data pipeline and worker queue metrics",
+    "dataSyncedUpTo": "Data Synced Up To",
+    "topicsIndexed": "Topics Indexed",
+    "topicsIndexedSub": "of ~1,700 discovered",
+    "messagesProcessed": "Messages Processed",
+    "messagesProcessedSub": "{count} pending in queue",
+    "queueStatus": "Queue Status",
+    "queueStatusSub": "BullMQ worker queues",
+    "columns": {
+      "queue": "Queue",
+      "waiting": "Waiting",
+      "active": "Active",
+      "completed": "Completed",
+      "failed": "Failed"
+    }
+  },
+  "vcViewer": {
+    "rawDataOnBlockchain": "Raw Data on the blockchain",
+    "searchInJson": "Search in JSON..."
+  },
+  "relationshipDiagram": {
+    "registry": "Registry",
+    "policy": "Policy",
+    "schema": "Schema",
+    "role": "Role",
+    "rawData": "Raw Data",
+    "vp": "VP",
+    "token": "Token",
+    "viewRawData": "View Raw Data",
+    "viewOnExplorer": "View on Explorer"
+  },
+  "tooltips": {
+    "copyDid": "Copy DID",
+    "copyId": "Copy ID",
+    "viewRawData": "Raw Data on the blockchain"
+  }
 }

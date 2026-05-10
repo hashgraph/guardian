@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { GeoJsonMapSchemasService } from './strategies/map-schemas/geo-json-map-schemas.service';
 import { HeuristicFieldMapperService } from './strategies/map-fields/heuristic-field-mapper.service';
 import { LlmFieldMapperService } from './strategies/map-fields/llm-field-mapper.service';
+import { CrossSchemaFuzzyMapperService } from './strategies/map-fields/cross-schema-fuzzy-mapper.service';
 
 // Pipeline Service
 import { MappingPipelineService } from './mapping-pipeline.service';
@@ -41,6 +42,7 @@ import { mapFieldsStrategyProvider } from './providers/map-fields.provider';
         GeoJsonMapSchemasService,
         HeuristicFieldMapperService,
         LlmFieldMapperService,
+        CrossSchemaFuzzyMapperService,
 
         // Factory providers
         mapSchemasStrategyProvider,

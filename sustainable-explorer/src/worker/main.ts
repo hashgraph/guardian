@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { Logger } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { WorkerModule } from './worker.module';
 import { getActiveQueues } from '@shared/config/bullmq.config';
-import { ensureDatabaseExists } from '@shared/config/database.config';
+import { ensureDatabaseExists, getDatabaseConfig } from '@shared/config/database.config';
 import { bootstrapSchema } from '@shared/database/schema-bootstrap';
 
 async function bootstrap() {
@@ -21,22 +21,29 @@ async function bootstrap() {
         logger.error(`Database ensure failed: ${err}`);
     }
 
+    // Bootstrap schema (tsvector columns, GIN/trigram indexes, policy_decode_status, etc.)
+    // BEFORE Nest starts — onModuleInit hooks (e.g. SyncSchedulerService) query these
+    // tables, so they must exist before the application context is created.
+    try {
+        const bootstrapDs = new DataSource(getDatabaseConfig() as DataSourceOptions);
+        await bootstrapDs.initialize();
+        try {
+            await bootstrapSchema(bootstrapDs);
+            logger.log('Schema bootstrap complete (tsvector + GIN + trigram + policy_decode_status)');
+        } finally {
+            await bootstrapDs.destroy();
+        }
+    } catch (err) {
+        logger.error(`Schema bootstrap failed: ${err}`);
+        throw err;
+    }
+
     const app = await NestFactory.createApplicationContext(
         WorkerModule.register(),
         {
             logger: ['error', 'warn', 'log', 'debug', 'verbose'],
         },
     );
-
-    // Bootstrap schema modifications that TypeORM decorators can't express
-    // (tsvector generated columns, GIN indexes, trigram indexes)
-    try {
-        const dataSource = app.get(DataSource);
-        await bootstrapSchema(dataSource);
-        logger.log('Schema bootstrap complete (tsvector + GIN + trigram indexes)');
-    } catch (err) {
-        logger.error(`Schema bootstrap failed: ${err}`);
-    }
 
     // Graceful shutdown
     const signals: NodeJS.Signals[] = ['SIGTERM', 'SIGINT'];

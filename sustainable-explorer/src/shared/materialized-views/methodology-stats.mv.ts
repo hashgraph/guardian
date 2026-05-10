@@ -43,8 +43,12 @@ export const MV_METHODOLOGY_STATS_CREATE_SQL = `
             FROM policy_schema ps
             WHERE ps."policyTopicId" = mb.policy_topic_id
         ), 0)::bigint AS schema_count,
+        pds.status      AS decode_status,
+        pds.attempts    AS decode_attempts,
+        pds."lastAttemptAt" AS decode_last_attempt_at,
         mb.last_update
-    FROM methodology_base mb;
+    FROM methodology_base mb
+    LEFT JOIN policy_decode_status pds ON pds."policyTopicId" = mb.policy_topic_id;
 `;
 
 // Unique index required for REFRESH MATERIALIZED VIEW CONCURRENTLY

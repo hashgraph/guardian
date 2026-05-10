@@ -6,7 +6,6 @@ export type MethodologySortKey =
     | 'registryDid'
     | 'registryName'
     | 'description'
-    | 'status'
     | 'version'
     | 'sourceTimestamp'
     | 'createdAt'
@@ -54,6 +53,7 @@ export interface MethodologyDto {
     totalIssued?: number;
     totalRetired?: number;
     totalActive?: number;
+    decodeStatus?: 'success' | 'failed' | 'pending' | 'unknown';
 }
 
 export interface MethodologiesMeta {
@@ -79,7 +79,7 @@ export interface UseMethodologiesApiOptions {
 }
 
 // Filter keys recognised by the backend methodologies endpoint.
-const METHODOLOGY_FILTER_KEYS = ['name', 'id', 'description', 'status', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
+const METHODOLOGY_FILTER_KEYS = ['name', 'id', 'description', 'decodeStatus', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
 
 const emptyResponse = (limit: number): MethodologiesResponse => ({
     data: [],

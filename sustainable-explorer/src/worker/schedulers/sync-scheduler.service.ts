@@ -30,6 +30,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         @InjectQueue(QUEUE_NAMES.MV_REFRESH) private readonly mvRefreshQueue: Queue,
         @InjectQueue(QUEUE_NAMES.BUSINESS_VIEW_BUILD) private readonly businessViewQueue: Queue,
         @InjectQueue(QUEUE_NAMES.POLICY_DECODE) private readonly policyDecodeQueue: Queue,
+        @InjectQueue(QUEUE_NAMES.IPFS_FETCH) private readonly ipfsQueue: Queue,
     ) {}
 
     async onModuleInit(): Promise<void> {
@@ -45,13 +46,18 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
             this.logger.log('Another instance is leader — skipping repeating job scheduling');
         }
 
-        // Seed root topic if topic_cache is empty (fresh system bootstrap)
-        await this.seedRootTopicIfEmpty();
+        // Always seed the root topic (idempotent upsert — resets hasNext to true
+        // so a restart will resume crawling even if the topic was previously exhausted).
+        await this.seedRootTopic();
 
         // Always schedule initial topic/token syncs (idempotent via jobId)
         await this.scheduleTopicSyncs();
         await this.scheduleTokenSyncs();
         await this.schedulePolicyDecodeJobs();
+
+        // Backfill IPFS fetches for VCs whose parent policy is now decoded but whose
+        // fetch was skipped (they arrived before their policy was decoded).
+        await this.backfillSuccessfulPolicyVcFetches();
 
         // Renew leadership periodically
         this.leaderInterval = setInterval(async () => {
@@ -112,13 +118,11 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     };
 
     /**
-     * Ensures the root topic for the current network exists in topic_cache.
-     * This bootstraps a fresh system and is also a safety net for cases where
-     * the cache has other topics but not the root (partial seed, manual edit, etc.).
-     * Once the root topic is synced, child topics are discovered recursively
-     * from message content.
+     * Idempotent upsert of the root topic into topic_cache.
+     * Always runs on startup — resets hasNext=true so a restart resumes crawling
+     * even if the topic was previously marked exhausted.
      */
-    private async seedRootTopicIfEmpty(): Promise<void> {
+    private async seedRootTopic(): Promise<void> {
         const network = this.configService.get<string>('app.hedera.network') || 'testnet';
         const seedTopicId = this.configService.get<string>('app.seedTopicId')
             || SyncSchedulerService.ROOT_TOPICS[network];
@@ -128,21 +132,12 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
             return;
         }
 
-        // Check for the specific root topic (not just any row in the cache)
-        const rows = await this.dataSource.query(
-            `SELECT 1 FROM topic_cache WHERE "topicId" = $1 LIMIT 1`,
-            [seedTopicId],
-        );
-
-        if (rows.length > 0) {
-            this.logger.debug(`Root topic ${seedTopicId} already seeded for ${network}`);
-            return;
-        }
-
         await this.dataSource.query(
             `INSERT INTO topic_cache ("topicId", status, messages, "hasNext", "lastUpdate")
              VALUES ($1, 'NEW', 0, true, $2)
-             ON CONFLICT ("topicId") DO NOTHING`,
+             ON CONFLICT ("topicId") DO UPDATE SET
+                 "hasNext"    = true,
+                 "lastUpdate" = EXCLUDED."lastUpdate"`,
             [seedTopicId, Date.now().toString()],
         );
 
@@ -283,6 +278,57 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         this.logger.log(`Enqueued ${rows.length} missing policy decode job(s)`);
     }
 
+    /**
+     * Boot-time backfill: for every successfully decoded policy, enqueue IPFS fetch
+     * jobs for any VC-Document messages under that policy's topic subtree that still
+     * have documents = NULL (fetch was deferred while the policy was being decoded).
+     *
+     * Uses stable jobId `ipfs-${cid}` matching the convention in MessageProcessProcessor,
+     * so BullMQ deduplicates against any already-queued or completed jobs.
+     */
+    private async backfillSuccessfulPolicyVcFetches(): Promise<void> {
+        const policies: Array<{ policyTopicId: string }> = await this.dataSource.query(
+            `SELECT "policyTopicId" FROM policy_decode_status WHERE status = 'success'`,
+        );
+
+        let total = 0;
+        for (const policy of policies) {
+            const rows: Array<{ consensusTimestamp: string; cid: string }> =
+                await this.dataSource.query(
+                    `WITH RECURSIVE descendants AS (
+                         SELECT $1::text AS "topicId"
+                         UNION ALL
+                         SELECT t."topicId"
+                         FROM message t
+                         JOIN descendants d ON (t.options->>'parentId') = d."topicId"
+                         WHERE t.type = 'Topic'
+                     )
+                     SELECT m."consensusTimestamp", unnest(m.files) AS cid
+                     FROM message m
+                     JOIN descendants d ON d."topicId" = m."topicId"
+                     WHERE m.type = 'VC-Document'
+                       AND m.documents IS NULL
+                       AND m.files IS NOT NULL`,
+                    [policy.policyTopicId],
+                );
+
+            for (const row of rows) {
+                await this.ipfsQueue.add(
+                    'fetch',
+                    { cid: row.cid, messageTimestamp: row.consensusTimestamp },
+                    { jobId: `ipfs-${row.cid}` },
+                );
+                total++;
+            }
+        }
+
+        if (total > 0) {
+            this.logger.log(
+                `Boot backfill: enqueued ${total} deferred VC IPFS fetch(es) across ${policies.length} decoded polic(ies)`,
+            );
+        }
+    }
+
     private async scheduleMvRefresh(): Promise<void> {
         const mvRefreshInterval = this.configService.get<number>('app.mvRefreshInterval')! * 1000;
 
@@ -300,18 +346,27 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     }
 
     private async scheduleBusinessViewBuilder(): Promise<void> {
-        const interval = 5 * 60 * 1000;
+        // 60-minute cadence: registry/methodology/credit upserts still run here,
+        // but project mapping is now primarily handled by eager per-VC upserts in
+        // IpfsFetchProcessor. This batch job is the reconciliation/cleanup pass.
+        const interval = 2 * 60 * 1000;
 
         const repeatableJobs = await this.businessViewQueue.getRepeatableJobs();
         for (const rJob of repeatableJobs) {
             await this.businessViewQueue.removeRepeatableByKey(rJob.key);
         }
 
+        // Immediate one-shot so registries/methodologies/credits populate within
+        // seconds of boot rather than waiting a full hour for the first repeat fire.
+        await this.businessViewQueue.add('build-business-views', {}, {
+            jobId: `business-view-build-initial-${Date.now()}`,
+        });
+
         await this.businessViewQueue.add('build-business-views', {}, {
             repeat: { every: interval },
             jobId: 'business-view-build',
         });
 
-        this.logger.log('Scheduled business view builder every 5 minutes');
+        this.logger.log('Scheduled business view builder: initial run + every 60 minutes');
     }
 }

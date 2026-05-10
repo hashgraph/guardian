@@ -22,12 +22,15 @@ import {
   Repeat,
   Flame,
   ArrowRight,
+  FileSearch,
+  ChevronDown,
 } from "lucide-vue-next";
 import { formatCredits, formatNumber } from "~/lib/format";
 import type {
   MethodologyDto,
   MethodologiesResponse,
 } from "~/composables/api/useMethodologiesApi";
+import type { DecodedMethodologyResponse } from "~/composables/api/useDecodedMethodologyApi";
 import { mapApiProject } from "~/composables/useProjects";
 
 const { t } = useI18n();
@@ -83,11 +86,12 @@ if (import.meta.client) {
 }
 
 const activeTab = ref<
-  "overview" | "versions" | "projects" | "policy" | "analytics" | "actions"
+  "overview" | "decoded" | "versions" | "projects" | "policy" | "analytics" | "actions"
 >("overview");
 
 const tabs = computed(() => [
   { key: "overview" as const, label: t('methodologies.detail.tabs.overview'), icon: BookOpen },
+  { key: "decoded" as const, label: t('methodologies.detail.tabs.decoded'), icon: FileSearch },
   { key: "versions" as const, label: t('methodologies.detail.tabs.versionHistory'), icon: Clock },
   { key: "projects" as const, label: t('methodologies.detail.tabs.linkedProjects'), icon: Layers },
   { key: "policy" as const, label: t('methodologies.detail.tabs.hederaPolicy'), icon: Shield },
@@ -160,6 +164,79 @@ if (import.meta.client) {
     { immediate: true },
   );
 }
+
+// Decoded Mapping: fetch lazily when the tab is activated
+const decodedData = ref<DecodedMethodologyResponse | null>(null);
+const decodedPending = ref(false);
+const decodedError = ref<string | null>(null);
+const decodedLoaded = ref(false);
+const allSchemaFieldsExpanded = ref(false);
+
+if (import.meta.client) {
+  const config = useRuntimeConfig();
+  const baseURL = config.public.apiBaseUrl as string;
+
+  watch(
+    [activeTab, id, () => network.value],
+    async ([tab, currentId, currentNetwork], [, oldId, oldNetwork]) => {
+      if (tab !== 'decoded') return;
+      if (decodedLoaded.value && currentId === oldId && currentNetwork === oldNetwork) return;
+      decodedLoaded.value = false;
+      decodedPending.value = true;
+      decodedError.value = null;
+      try {
+        decodedData.value = await $fetch<DecodedMethodologyResponse>(
+          `/api/v1/${currentNetwork}/methodologies/${currentId}/decoded`,
+          { baseURL },
+        );
+      } catch {
+        decodedData.value = null;
+        decodedError.value = t('methodologies.detail.decoded.fetchError');
+      } finally {
+        decodedPending.value = false;
+        decodedLoaded.value = true;
+      }
+    },
+    { immediate: true },
+  );
+}
+
+const decodeStatusClass = (status: string | null | undefined) => {
+  const s = (status ?? '').toLowerCase();
+  if (s === 'success') return 'bg-stat-green/10 text-stat-green';
+  if (s === 'failed') return 'bg-destructive/10 text-destructive';
+  if (s === 'pending') return 'bg-stat-amber/10 text-stat-amber';
+  return 'bg-muted text-muted-foreground';
+};
+
+const formatLastAttempt = (ts: string | null | undefined): string => {
+  if (!ts) return '—';
+  try {
+    return new Date(ts).toLocaleString();
+  } catch {
+    return ts;
+  }
+};
+
+type ResolvedFieldKey = 'name' | 'country' | 'developer' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriod' | 'sdgOrCobenefits';
+
+interface ProjectFieldRow {
+  labelKey: string;
+  fieldKey: ResolvedFieldKey | 'geo';
+}
+
+const PROJECT_FIELD_ROWS: ProjectFieldRow[] = [
+  { labelKey: 'name', fieldKey: 'name' },
+  { labelKey: 'geo', fieldKey: 'geo' },
+  { labelKey: 'country', fieldKey: 'country' },
+  { labelKey: 'developer', fieldKey: 'developer' },
+  { labelKey: 'sector', fieldKey: 'sector' },
+  { labelKey: 'category', fieldKey: 'category' },
+  { labelKey: 'scale', fieldKey: 'scale' },
+  { labelKey: 'creditingPeriod', fieldKey: 'creditingPeriod' },
+  { labelKey: 'vintageRaw', fieldKey: 'vintageRaw' },
+  { labelKey: 'sdgOrCobenefits', fieldKey: 'sdgOrCobenefits' },
+];
 
 // Version comparison
 const compareTopicId = ref<string | null>(null);
@@ -358,6 +435,15 @@ const lifecycleSummary = computed(() => {
                 >
                   {{ scope }}
                 </span>
+                <span
+                  :class="[
+                    decodeStatusClass(methodology.decodeStatus),
+                    'inline-flex items-center text-xs font-medium rounded-full px-2.5 py-0.5',
+                  ]"
+                >
+                  <span class="h-1.5 w-1.5 rounded-full bg-current mr-1.5 shrink-0" />
+                  {{ $t('methodologies.decodeStatus.' + (methodology.decodeStatus ?? 'unknown')) }}
+                </span>
               </div>
             </div>
           </div>
@@ -540,6 +626,335 @@ const lifecycleSummary = computed(() => {
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Tab: Decoded Mapping -->
+      <div v-else-if="activeTab === 'decoded'" class="space-y-6">
+        <!-- Loading skeleton -->
+        <template v-if="decodedPending">
+          <div class="rounded-xl border bg-card overflow-hidden">
+            <div class="px-5 py-3.5 border-b bg-muted/30">
+              <Skeleton class="h-4 w-40" />
+            </div>
+            <div class="px-5 py-5 space-y-3">
+              <Skeleton class="h-5 w-24 rounded-full" />
+              <Skeleton class="h-3 w-48" />
+            </div>
+          </div>
+          <div class="rounded-xl border bg-card overflow-hidden">
+            <div class="px-5 py-3.5 border-b bg-muted/30">
+              <Skeleton class="h-4 w-56" />
+            </div>
+            <div class="divide-y">
+              <div v-for="i in 8" :key="i" class="px-5 py-3 flex gap-6">
+                <Skeleton class="h-4 w-32" />
+                <Skeleton class="h-4 w-48" />
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Fetch error -->
+        <template v-else-if="decodedError && !decodedData">
+          <div class="rounded-xl border bg-card px-6 py-10 text-center">
+            <AlertCircle class="h-7 w-7 text-destructive mx-auto mb-3" />
+            <p class="text-sm text-muted-foreground">{{ decodedError }}</p>
+          </div>
+        </template>
+
+        <template v-else-if="decodedData">
+          <!-- 1. Decode status header -->
+          <div class="rounded-xl border bg-card overflow-hidden">
+            <div class="px-5 py-3.5 border-b bg-muted/30">
+              <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                <FileSearch class="h-4 w-4 text-primary" />
+                {{ $t('methodologies.detail.decoded.title') }}
+              </h2>
+            </div>
+            <div class="px-5 py-4 space-y-3">
+              <!-- Status pill -->
+              <div class="flex items-center gap-3">
+                <span
+                  :class="[
+                    decodeStatusClass(decodedData.decodeStatus),
+                    'text-xs font-medium rounded-full px-2.5 py-1 capitalize',
+                  ]"
+                >
+                  {{ decodedData.decodeStatus }}
+                </span>
+                <span class="text-xs text-muted-foreground">
+                  {{ $t('methodologies.detail.decoded.lastAttempt') }}:
+                  {{ formatLastAttempt(decodedData.lastAttemptAt) }}
+                  &middot;
+                  {{ decodedData.attempts }} {{ $t('methodologies.detail.decoded.attempts') }}
+                </span>
+              </div>
+              <!-- Error callout -->
+              <div
+                v-if="decodedData.decodeStatus === 'failed' && decodedData.decodeError"
+                class="flex items-start gap-3 rounded-lg bg-destructive/5 border border-destructive/20 px-4 py-3"
+              >
+                <AlertCircle class="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                <div>
+                  <div class="text-xs font-medium text-destructive mb-0.5">
+                    {{ $t('methodologies.detail.decoded.errorCallout') }}
+                  </div>
+                  <p class="text-xs text-destructive/80 font-mono break-all">{{ decodedData.decodeError }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Extracted fields table -->
+          <div class="rounded-xl border bg-card overflow-hidden">
+            <div class="px-5 py-3.5 border-b bg-muted/30">
+              <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                <FileText class="h-4 w-4 text-primary" />
+                {{ $t('methodologies.detail.decoded.fieldsTableTitle') }}
+              </h2>
+            </div>
+
+            <!-- No schema state — only when there are also no available schemas -->
+            <div
+              v-if="!decodedData.projectSchema && (!decodedData.availableSchemas || decodedData.availableSchemas.length === 0)"
+              class="px-5 py-8 text-center"
+            >
+              <FileSearch class="h-8 w-8 mx-auto mb-3 text-muted-foreground/40" />
+              <p class="text-sm text-muted-foreground">
+                {{ $t('methodologies.detail.decoded.noSchema') }}
+              </p>
+            </div>
+
+            <!-- Decoded but no GeoJSON schema confirmed — explain why projects can't auto-extract -->
+            <div
+              v-else-if="!decodedData.projectSchema"
+              class="px-5 py-4 bg-stat-amber/5 border-b text-sm text-foreground"
+            >
+              <div class="flex items-start gap-2">
+                <AlertCircle class="h-4 w-4 text-stat-amber shrink-0 mt-0.5" />
+                <div>
+                  <div class="font-medium">{{ $t('methodologies.detail.decoded.noGeoTitle') }}</div>
+                  <div class="text-xs text-muted-foreground mt-0.5">
+                    {{ $t('methodologies.detail.decoded.noGeoBody') }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fields table -->
+            <table v-else class="w-full text-sm">
+              <thead>
+                <tr class="border-b bg-muted/20">
+                  <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-1/3">
+                    {{ $t('methodologies.detail.decoded.columns.projectField') }}
+                  </th>
+                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    {{ $t('methodologies.detail.decoded.columns.schemaField') }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y">
+                <tr
+                  v-for="row in PROJECT_FIELD_ROWS"
+                  :key="row.fieldKey"
+                  class="hover:bg-muted/30 transition-colors"
+                >
+                  <td class="py-3 px-5 text-sm font-medium text-foreground">
+                    {{ $t('methodologies.detail.decoded.fieldLabels.' + row.labelKey) }}
+                  </td>
+                  <td class="py-3 px-4">
+                    <!-- Geo row: reads geoKey + geoFieldTitle directly -->
+                    <template v-if="row.fieldKey === 'geo'">
+                      <template v-if="decodedData.projectSchema.geoKey">
+                        <div class="text-sm text-foreground font-medium">
+                          {{ decodedData.projectSchema.geoFieldTitle || decodedData.projectSchema.geoKey }}
+                          <span class="text-muted-foreground font-normal">({{ decodedData.projectSchema.geoKey }})</span>
+                        </div>
+                      </template>
+                      <span v-else class="text-sm text-muted-foreground">—</span>
+                    </template>
+                    <!-- ResolvedFields rows -->
+                    <template v-else>
+                      <template v-if="decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]">
+                        <div class="text-sm text-foreground font-medium">
+                          {{ decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.title }}
+                          <span class="text-muted-foreground font-normal">({{ decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.fieldKey }})</span>
+                        </div>
+                        <div
+                          v-if="decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.description"
+                          class="text-xs text-muted-foreground mt-0.5 leading-relaxed"
+                        >
+                          {{ decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.description }}
+                        </div>
+                      </template>
+                      <span v-else class="text-sm text-muted-foreground">—</span>
+                    </template>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 3. All schema fields (collapsible) -->
+          <div
+            v-if="decodedData.projectSchema && decodedData.projectSchema.fieldMap.length > 0"
+            class="rounded-xl border bg-card overflow-hidden"
+          >
+            <button
+              class="w-full px-5 py-3.5 flex items-center justify-between text-left bg-muted/30 hover:bg-muted/50 transition-colors"
+              @click="allSchemaFieldsExpanded = !allSchemaFieldsExpanded"
+            >
+              <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Hash class="h-4 w-4 text-primary" />
+                {{ $t('methodologies.detail.decoded.allFieldsTitle') }}
+                <span class="text-xs font-normal text-muted-foreground">
+                  ({{ decodedData.projectSchema.fieldMap.length }})
+                </span>
+              </h2>
+              <ChevronDown
+                :class="[
+                  'h-4 w-4 text-muted-foreground transition-transform duration-200',
+                  allSchemaFieldsExpanded ? 'rotate-180' : '',
+                ]"
+              />
+            </button>
+
+            <div v-if="allSchemaFieldsExpanded">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b bg-muted/20">
+                    <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {{ $t('methodologies.detail.decoded.columns.fieldKey') }}
+                    </th>
+                    <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {{ $t('methodologies.detail.decoded.columns.title') }}
+                    </th>
+                    <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">
+                      {{ $t('methodologies.detail.decoded.columns.description') }}
+                    </th>
+                    <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {{ $t('methodologies.detail.decoded.columns.usedAs') }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr
+                    v-for="field in decodedData.projectSchema.fieldMap"
+                    :key="field.fieldKey"
+                    class="hover:bg-muted/30 transition-colors"
+                  >
+                    <td class="py-2.5 px-5">
+                      <code class="text-xs font-mono bg-muted rounded px-1.5 py-0.5">{{ field.fieldKey }}</code>
+                    </td>
+                    <td class="py-2.5 px-4 text-sm text-foreground">{{ field.title || '—' }}</td>
+                    <td class="py-2.5 px-4 text-xs text-muted-foreground hidden sm:table-cell max-w-[280px] truncate" :title="field.description || ''">
+                      {{ field.description || '—' }}
+                    </td>
+                    <td class="py-2.5 px-4">
+                      <span
+                        v-if="field.resolvedAs"
+                        class="text-xs font-medium bg-primary/10 text-primary rounded-full px-2 py-0.5"
+                      >
+                        {{ field.resolvedAs }}
+                      </span>
+                      <span v-else class="text-xs text-muted-foreground">—</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 4. Available schemas (rendered when projectSchema is null but the policy did decode) -->
+          <div
+            v-if="!decodedData.projectSchema && decodedData.availableSchemas && decodedData.availableSchemas.length > 0"
+            class="rounded-xl border bg-card overflow-hidden"
+          >
+            <div class="px-5 py-3.5 border-b bg-muted/30">
+              <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Hash class="h-4 w-4 text-primary" />
+                {{ $t('methodologies.detail.decoded.availableSchemasTitle') }}
+                <span class="text-xs font-normal text-muted-foreground">
+                  ({{ decodedData.availableSchemas.length }})
+                </span>
+              </h2>
+            </div>
+            <div class="divide-y">
+              <div
+                v-for="schema in decodedData.availableSchemas"
+                :key="schema.schemaId"
+                class="px-5 py-4"
+              >
+                <div class="flex items-start justify-between gap-3 mb-2">
+                  <div class="min-w-0">
+                    <div class="text-sm font-medium text-foreground truncate">
+                      {{ schema.schemaName || $t('methodologies.detail.decoded.untitledSchema') }}
+                    </div>
+                    <div v-if="schema.schemaDescription" class="text-xs text-muted-foreground mt-0.5">
+                      {{ schema.schemaDescription }}
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap gap-1.5 shrink-0">
+                    <span
+                      v-if="schema.hasGeoJsonField"
+                      class="text-[10px] font-medium bg-stat-green/10 text-stat-green rounded-full px-2 py-0.5"
+                    >
+                      {{ $t('methodologies.detail.decoded.hasGeo') }}
+                    </span>
+                    <span
+                      v-else
+                      class="text-[10px] font-medium bg-muted text-muted-foreground rounded-full px-2 py-0.5"
+                    >
+                      {{ $t('methodologies.detail.decoded.noGeo') }}
+                    </span>
+                  </div>
+                </div>
+                <div v-if="schema.fields.length > 0" class="overflow-x-auto">
+                  <table class="w-full text-xs">
+                    <thead>
+                      <tr class="border-b">
+                        <th class="text-left py-1.5 px-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.decoded.columns.fieldKey') }}</th>
+                        <th class="text-left py-1.5 px-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.decoded.columns.title') }}</th>
+                        <th class="text-left py-1.5 px-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">{{ $t('methodologies.detail.decoded.columns.description') }}</th>
+                        <th class="text-left py-1.5 px-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.decoded.columns.type') }}</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                      <tr v-for="f in schema.fields" :key="f.fieldKey" class="hover:bg-muted/30">
+                        <td class="py-1.5 px-2">
+                          <code class="text-[10px] font-mono bg-muted rounded px-1 py-0.5">{{ f.fieldKey }}</code>
+                        </td>
+                        <td class="py-1.5 px-2 text-foreground">
+                          <span :class="f.isGeoJson ? 'text-stat-green font-medium' : ''">{{ f.title || '—' }}</span>
+                        </td>
+                        <td class="py-1.5 px-2 text-muted-foreground hidden sm:table-cell max-w-[260px] truncate" :title="f.description || ''">
+                          {{ f.description || '—' }}
+                        </td>
+                        <td class="py-1.5 px-2">
+                          <span
+                            v-if="f.isGeoJson"
+                            class="text-[10px] font-medium bg-stat-green/10 text-stat-green rounded-full px-1.5 py-0.5"
+                          >GeoJSON</span>
+                          <span v-else class="text-muted-foreground text-[10px]">{{ f.type || '—' }}</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div v-else class="text-xs text-muted-foreground italic">
+                  {{ $t('methodologies.detail.decoded.noFields') }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Not yet loaded (immediate=true but tab wasn't active yet; shouldn't reach here) -->
+        <template v-else-if="!decodedPending && !decodedLoaded">
+          <div class="rounded-xl border bg-card px-6 py-10 text-center">
+            <p class="text-sm text-muted-foreground">{{ $t('methodologies.detail.decoded.decodeNotComplete') }}</p>
+          </div>
+        </template>
       </div>
 
       <!-- Tab: Version History -->

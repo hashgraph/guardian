@@ -18,10 +18,11 @@ export enum MapSchemasMethodType {
 export enum MapFieldsMethodType {
     LLM_FIELD_MAPPER = 'LLM-FIELD-MAPPER',
     HEURISTIC_FIELD_MAPPER = 'HEURISTIC-FIELD-MAPPER',
+    CROSS_SCHEMA_FUZZY = 'CROSS-SCHEMA-FUZZY',
 }
 
 /**
  * Default strategy implementations
  */
 export const DEFAULT_MAP_SCHEMAS_METHOD = MapSchemasMethodType.GEOJSON;
-export const DEFAULT_MAP_FIELDS_METHOD = MapFieldsMethodType.HEURISTIC_FIELD_MAPPER;
+export const DEFAULT_MAP_FIELDS_METHOD = MapFieldsMethodType.CROSS_SCHEMA_FUZZY;

@@ -1,13 +1,14 @@
-import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
+import { Processor, WorkerHost, OnWorkerEvent, InjectQueue } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
-import { Job } from 'bullmq';
+import { Job, Queue } from 'bullmq';
 import { DataSource } from 'typeorm';
 import JSZip from 'jszip';
 import { QUEUE_NAMES } from '@shared/config/bullmq.config';
 import { IpfsService } from '../services/ipfs.service';
 import { PolicySchemaImportService } from '../services/policy-schema-import.service';
 import { MappingPipelineService } from '../mapping/mapping-pipeline.service';
-import { SchemaInfo, FieldDescriptor } from '../mapping/types';
+import { FieldDescriptor, FieldMap, SchemaInfo } from '../mapping/types';
+import { PROJECT_EXTRACT_FIELDS } from '../project-mapper/project-fields';
 
 export interface PolicyDecodeJobData {
     cid: string;
@@ -20,6 +21,101 @@ interface CategoryExportEntry {
     type?: unknown;
 }
 
+interface PerPolicyProjectMeta {
+    projectSchemaId: string;
+    projectFieldMap: Record<string, string | null>;
+    projectGeoKey: string | null;
+    projectGeoSection: string | null;
+}
+
+/**
+ * Derives per-policy project meta from the cross-schema fuzzy field map.
+ *
+ * Algorithm:
+ *  1. Parse each fieldMap[fieldKey] value into { schemaId, path }.
+ *  2. Tally schemaId frequency. The schema with the most matched fields is
+ *     the primary "project schema".
+ *  3. Build projectFieldMap[fieldKey] = path (without schemaId prefix) for
+ *     fields whose schemaId matches the primary schema.
+ *  4. For the 'geo' field: derive projectGeoKey and projectGeoSection.
+ *     - If the path is 'wrapper.geoKey', section = 'wrapper', geoKey = 'geoKey'
+ *     - If the path is 'geoKey', section = null, geoKey = 'geoKey'
+ *  5. Returns null when no field is mapped.
+ */
+function derivePerPolicyProjectMeta(
+    fieldMap: FieldMap,
+    _schemas: SchemaInfo[],
+): PerPolicyProjectMeta | null {
+    // Step 1+2: tally schemaId frequency
+    const tally = new Map<string, number>();
+    const parsed = new Map<string, { schemaId: string; path: string }>();
+
+    for (const [fieldLabel, value] of Object.entries(fieldMap)) {
+        if (!value) continue;
+        const dotIdx = value.indexOf('.');
+        if (dotIdx === -1) continue;
+        const schemaId = value.slice(0, dotIdx);
+        const path = value.slice(dotIdx + 1);
+        parsed.set(fieldLabel, { schemaId, path });
+        tally.set(schemaId, (tally.get(schemaId) ?? 0) + 1);
+    }
+
+    if (tally.size === 0) return null;
+
+    // Pick the schema with the most mapped fields
+    let projectSchemaId = '';
+    let maxCount = 0;
+    for (const [schemaId, count] of tally) {
+        if (count > maxCount) {
+            maxCount = count;
+            projectSchemaId = schemaId;
+        }
+    }
+
+    // Step 3: build projectFieldMap for fields in the primary schema
+    const projectFieldMap: Record<string, string | null> = {};
+    for (const field of PROJECT_EXTRACT_FIELDS) {
+        if (field.key === 'geo') continue; // handled separately
+        const entry = parsed.get(field.label);
+        if (entry && entry.schemaId === projectSchemaId) {
+            projectFieldMap[field.key] = entry.path;
+        } else {
+            projectFieldMap[field.key] = null;
+        }
+    }
+
+    // Step 4: geo key
+    let projectGeoKey: string | null = null;
+    let projectGeoSection: string | null = null;
+
+    // Look up the geo field by its label from PROJECT_EXTRACT_FIELDS
+    const geoField = PROJECT_EXTRACT_FIELDS.find(f => f.key === 'geo');
+    if (geoField) {
+        const geoEntry = parsed.get(geoField.label);
+        if (geoEntry) {
+            // Prefer the geo path from the primary schema; fall back to any schema
+            const geoPath = geoEntry.path;
+            const dotIdx = geoPath.indexOf('.');
+            if (dotIdx !== -1) {
+                // Shape B: wrapper.geoKey
+                projectGeoSection = geoPath.slice(0, dotIdx);
+                projectGeoKey = geoPath.slice(dotIdx + 1);
+            } else {
+                // Shape A: direct geoKey
+                projectGeoSection = null;
+                projectGeoKey = geoPath;
+            }
+        }
+    }
+
+    return {
+        projectSchemaId,
+        projectFieldMap,
+        projectGeoKey,
+        projectGeoSection,
+    };
+}
+
 @Processor(QUEUE_NAMES.POLICY_DECODE)
 export class PolicyDecodeProcessor extends WorkerHost {
     private readonly logger = new Logger(PolicyDecodeProcessor.name);
@@ -29,6 +125,7 @@ export class PolicyDecodeProcessor extends WorkerHost {
         private readonly dataSource: DataSource,
         private readonly policySchemaImportService: PolicySchemaImportService,
         private readonly mappingPipeline: MappingPipelineService,
+        @InjectQueue(QUEUE_NAMES.IPFS_FETCH) private readonly ipfsQueue: Queue,
     ) {
         super();
     }
@@ -36,6 +133,27 @@ export class PolicyDecodeProcessor extends WorkerHost {
     async process(job: Job<PolicyDecodeJobData>): Promise<void> {
         const { cid, messageTimestamp, policyTopicId } = job.data;
 
+        // Mark this attempt in policy_decode_status before doing any work.
+        // If the process exits mid-flight the status stays 'pending', which is safe
+        // (the scheduler will re-enqueue on next boot). The pending upsert also
+        // clears the derived columns so stale data is not read while re-decoding.
+        await this.upsertDecodeStatus(policyTopicId, cid, 'pending');
+
+        try {
+            await this.runDecode(cid, messageTimestamp, policyTopicId);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            await this.upsertDecodeStatus(policyTopicId, cid, 'failed', message);
+            // Re-throw so BullMQ can retry with its configured backoff.
+            throw error;
+        }
+    }
+
+    private async runDecode(
+        cid: string,
+        messageTimestamp: string,
+        policyTopicId: string,
+    ): Promise<void> {
         const existing = await this.dataSource.query(
             `SELECT id
              FROM policy_schema
@@ -44,18 +162,37 @@ export class PolicyDecodeProcessor extends WorkerHost {
             [policyTopicId, cid],
         );
         const schemasAlreadyImported = existing.length > 0;
-        const categoriesAlreadyEnriched = await this.checkCategoriesEnriched(policyTopicId);
-        const mappingsAlreadyGenerated = await this.checkMappingsGenerated(policyTopicId);
 
-        if (schemasAlreadyImported && categoriesAlreadyEnriched && mappingsAlreadyGenerated) {
+        // Check whether all derived columns are already populated on the existing
+        // policy_decode_status row — if so we can skip re-deriving everything.
+        const statusRows: Array<{
+            sectoralScopes: unknown;
+            schemaLabelMap: unknown;
+            fieldMap: unknown;
+        }> = await this.dataSource.query(
+            `SELECT "sectoralScopes", "schemaLabelMap", "fieldMap"
+             FROM policy_decode_status
+             WHERE "policyTopicId" = $1`,
+            [policyTopicId],
+        );
+        const existingStatus = statusRows[0];
+        const derivedColumnsPopulated = !!(
+            existingStatus?.sectoralScopes !== null &&
+            existingStatus?.sectoralScopes !== undefined &&
+            existingStatus?.schemaLabelMap !== null &&
+            existingStatus?.schemaLabelMap !== undefined
+        );
+
+        if (schemasAlreadyImported && derivedColumnsPopulated) {
             this.logger.debug(
-                `Nothing to do for topic=${policyTopicId}, cid=${cid} — schemas, categories, and mappings already stored`,
+                `Nothing to do for topic=${policyTopicId}, cid=${cid} — schemas and derived columns already stored`,
             );
+            await this.markSuccess(policyTopicId);
             return;
         }
 
         // New CID means schema content may have changed — invalidate any cached
-        // classification and resolved field config so the mapper re-evaluates this topic.
+        // classification on policy_schema rows so the mapper re-evaluates on next run.
         if (!schemasAlreadyImported) {
             await this.dataSource.query(
                 `UPDATE policy_schema
@@ -68,17 +205,11 @@ export class PolicyDecodeProcessor extends WorkerHost {
         const zipBuffer = await this.ipfsService.fetchContent(cid);
         const zip = await JSZip.loadAsync(zipBuffer);
 
-        if (!categoriesAlreadyEnriched) {
-            await this.extractAndStorePolicyCategories(zip, policyTopicId);
-        }
+        // --- Step 1: Extract categories (pure, no DB writes) ---
+        const { categoriesExport, sectoralScopes, emissionReductionApproach } =
+            await this.extractCategoriesFromZip(zip, policyTopicId);
 
-        if (schemasAlreadyImported && mappingsAlreadyGenerated) {
-            this.logger.debug(
-                `Policy schemas and mappings already stored for topic=${policyTopicId}, cid=${cid}`,
-            );
-            return;
-        }
-
+        // --- Step 2: Import schemas if needed ---
         if (!schemasAlreadyImported) {
             await this.policySchemaImportService.importSchemasFromZip(zip, {
                 cid,
@@ -87,30 +218,230 @@ export class PolicyDecodeProcessor extends WorkerHost {
             });
         }
 
-        // Step: Execute mapping pipeline (schema mapping and field mapping)
-        if (!mappingsAlreadyGenerated) {
-            await this.executeMapping(policyTopicId);
+        // --- Step 3: Mapping pipeline (cross-schema fuzzy by default) ---
+        const { schemaLabelMap, fieldMap, schemas } = await this.executeMappingPipeline(policyTopicId);
+
+        // --- Step 4: Derive project schema from fuzzy field map ---
+        const projectMeta = derivePerPolicyProjectMeta(fieldMap as FieldMap, schemas);
+
+        let projectFieldMap: Record<string, string | null> | null = null;
+        let projectGeoKey: string | null = null;
+        let projectGeoSection: string | null = null;
+        let projectSchemaId: string | null = null;
+
+        if (projectMeta) {
+            projectSchemaId = projectMeta.projectSchemaId;
+            projectGeoKey = projectMeta.projectGeoKey;
+            projectGeoSection = projectMeta.projectGeoSection;
+            projectFieldMap = projectMeta.projectFieldMap;
+
+            // Persist isProjectSchema flag on policy_schema rows so the mapper can
+            // still use the fast path (isProjectSchema = TRUE) for sibling lookups.
+            await this.dataSource.query(
+                `UPDATE policy_schema
+                 SET "isProjectSchema" = TRUE
+                 WHERE "schemaId" = $1`,
+                [projectMeta.projectSchemaId],
+            );
+            await this.dataSource.query(
+                `UPDATE policy_schema
+                 SET "isProjectSchema" = FALSE
+                 WHERE "policyTopicId" = $1
+                   AND "schemaId" != $2
+                   AND ("isProjectSchema" IS NULL OR "isProjectSchema" = TRUE)`,
+                [policyTopicId, projectMeta.projectSchemaId],
+            );
+        } else {
+            // No confirmed project schema — mark all schemas for this topic as FALSE
+            await this.dataSource.query(
+                `UPDATE policy_schema
+                 SET "isProjectSchema" = FALSE, "projectSchemaConfig" = NULL
+                 WHERE "policyTopicId" = $1`,
+                [policyTopicId],
+            );
+        }
+
+        // --- Step 5: Write all derived columns atomically with status=success ---
+        await this.upsertDecodeStatusSuccess(policyTopicId, cid, {
+            categoriesExport: categoriesExport ?? null,
+            sectoralScopes: sectoralScopes.length > 0 ? sectoralScopes : null,
+            emissionReductionApproach: emissionReductionApproach ?? null,
+            schemaLabelMap: Object.keys(schemaLabelMap).length > 0 ? schemaLabelMap : null,
+            fieldMap: Object.keys(fieldMap).length > 0 ? fieldMap : null,
+            projectFieldMap,
+            projectGeoKey,
+            projectGeoSection,
+            projectSchemaId,
+        });
+
+        // Enqueue IPFS fetches for VC-Documents under this policy's topic subtree that
+        // arrived before the policy was decoded and were therefore deferred.
+        await this.backfillDeferredVcFetches(policyTopicId);
+    }
+
+    /**
+     * Upserts the 'pending' row — increments attempts and clears all derived columns
+     * so stale data is never read while a re-decode is in flight.
+     */
+    private async upsertDecodeStatus(
+        policyTopicId: string,
+        sourceCid: string,
+        status: 'pending' | 'failed',
+        error?: string,
+    ): Promise<void> {
+        if (status === 'pending') {
+            await this.dataSource.query(
+                `INSERT INTO policy_decode_status
+                     ("policyTopicId", "sourceCid", status, attempts, "lastAttemptAt", "updatedAt",
+                      "categoriesExport", "sectoralScopes", "emissionReductionApproach",
+                      "schemaLabelMap", "fieldMap", "projectFieldMap",
+                      "projectGeoKey", "projectGeoSection", "projectSchemaId")
+                 VALUES ($1, $2, 'pending', 1, now(), now(),
+                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+                 ON CONFLICT ("policyTopicId") DO UPDATE SET
+                     "sourceCid"               = EXCLUDED."sourceCid",
+                     status                    = 'pending',
+                     attempts                  = policy_decode_status.attempts + 1,
+                     "lastAttemptAt"           = now(),
+                     "updatedAt"               = now(),
+                     "categoriesExport"        = NULL,
+                     "sectoralScopes"          = NULL,
+                     "emissionReductionApproach" = NULL,
+                     "schemaLabelMap"          = NULL,
+                     "fieldMap"                = NULL,
+                     "projectFieldMap"         = NULL,
+                     "projectGeoKey"           = NULL,
+                     "projectGeoSection"       = NULL,
+                     "projectSchemaId"         = NULL`,
+                [policyTopicId, sourceCid],
+            );
+        } else {
+            await this.dataSource.query(
+                `UPDATE policy_decode_status
+                 SET status      = $1,
+                     error       = $2,
+                     "updatedAt" = now()
+                 WHERE "policyTopicId" = $3`,
+                [status, error ?? null, policyTopicId],
+            );
         }
     }
 
-    private async checkCategoriesEnriched(policyTopicId: string): Promise<boolean> {
-        const rows = await this.dataSource.query(
-            `SELECT 1 FROM business_view
-             WHERE "viewType" = 'METHODOLOGY'
-               AND "businessData"->>'topicId' = $1
-               AND (
-                   "businessData"->'sectoralScopes' IS NOT NULL
-                   OR "businessData"->'emissionReductionApproach' IS NOT NULL
-               )
-             LIMIT 1`,
+    /** Flips an existing pending row to success without touching derived columns. */
+    private async markSuccess(policyTopicId: string): Promise<void> {
+        await this.dataSource.query(
+            `UPDATE policy_decode_status
+             SET status = 'success', error = NULL, "updatedAt" = now()
+             WHERE "policyTopicId" = $1`,
             [policyTopicId],
         );
-        return rows.length > 0;
     }
 
-    private async extractAndStorePolicyCategories(zip: JSZip, policyTopicId: string): Promise<void> {
+    /**
+     * Writes status=success plus all derived columns atomically.
+     */
+    private async upsertDecodeStatusSuccess(
+        policyTopicId: string,
+        sourceCid: string,
+        derived: {
+            categoriesExport: unknown[] | null;
+            sectoralScopes: string[] | null;
+            emissionReductionApproach: string | null;
+            schemaLabelMap: Record<string, unknown> | null;
+            fieldMap: Record<string, unknown> | null;
+            projectFieldMap: Record<string, string | null> | null;
+            projectGeoKey: string | null;
+            projectGeoSection: string | null;
+            projectSchemaId: string | null;
+        },
+    ): Promise<void> {
+        await this.dataSource.query(
+            `UPDATE policy_decode_status
+             SET status                      = 'success',
+                 error                       = NULL,
+                 "updatedAt"                 = now(),
+                 "categoriesExport"          = $2::jsonb,
+                 "sectoralScopes"            = $3::jsonb,
+                 "emissionReductionApproach" = $4,
+                 "schemaLabelMap"            = $5::jsonb,
+                 "fieldMap"                  = $6::jsonb,
+                 "projectFieldMap"           = $7::jsonb,
+                 "projectGeoKey"             = $8,
+                 "projectGeoSection"         = $9,
+                 "projectSchemaId"           = $10
+             WHERE "policyTopicId" = $1`,
+            [
+                policyTopicId,
+                derived.categoriesExport != null ? JSON.stringify(derived.categoriesExport) : null,
+                derived.sectoralScopes != null ? JSON.stringify(derived.sectoralScopes) : null,
+                derived.emissionReductionApproach,
+                derived.schemaLabelMap != null ? JSON.stringify(derived.schemaLabelMap) : null,
+                derived.fieldMap != null ? JSON.stringify(derived.fieldMap) : null,
+                derived.projectFieldMap != null ? JSON.stringify(derived.projectFieldMap) : null,
+                derived.projectGeoKey,
+                derived.projectGeoSection,
+                derived.projectSchemaId,
+            ],
+        );
+    }
+
+    /**
+     * Enqueues IPFS fetches for VC-Documents under the given policy's topic subtree
+     * that have documents = NULL (fetch was skipped while policy was not yet decoded).
+     */
+    private async backfillDeferredVcFetches(policyTopicId: string): Promise<void> {
+        const rows: Array<{ consensusTimestamp: string; cid: string }> =
+            await this.dataSource.query(
+                `WITH RECURSIVE descendants AS (
+                     SELECT $1::text AS "topicId"
+                     UNION ALL
+                     SELECT t."topicId"
+                     FROM message t
+                     JOIN descendants d ON (t.options->>'parentId') = d."topicId"
+                     WHERE t.type = 'Topic'
+                 )
+                 SELECT m."consensusTimestamp", unnest(m.files) AS cid
+                 FROM message m
+                 JOIN descendants d ON d."topicId" = m."topicId"
+                 WHERE m.type = 'VC-Document'
+                   AND m.documents IS NULL
+                   AND m.files IS NOT NULL`,
+                [policyTopicId],
+            );
+
+        let enqueued = 0;
+        for (const row of rows) {
+            await this.ipfsQueue.add(
+                'fetch',
+                { cid: row.cid, messageTimestamp: row.consensusTimestamp },
+                { jobId: `ipfs-${row.cid}` },
+            );
+            enqueued++;
+        }
+
+        if (enqueued > 0) {
+            this.logger.log(
+                `Backfilled ${enqueued} deferred VC IPFS fetch(es) for topic=${policyTopicId}`,
+            );
+        }
+    }
+
+    /**
+     * Extracts category/sectoral-scope/emission-reduction data from policy.json.
+     * Pure: returns data without touching the DB.
+     */
+    private async extractCategoriesFromZip(
+        zip: JSZip,
+        policyTopicId: string,
+    ): Promise<{
+        categoriesExport: CategoryExportEntry[] | null;
+        sectoralScopes: string[];
+        emissionReductionApproach: string | null;
+    }> {
         const policyFile = zip.file('policy.json');
-        if (!policyFile) return;
+        if (!policyFile) {
+            return { categoriesExport: null, sectoralScopes: [], emissionReductionApproach: null };
+        }
 
         let policy: Record<string, unknown>;
         try {
@@ -118,11 +449,13 @@ export class PolicyDecodeProcessor extends WorkerHost {
             policy = JSON.parse(raw) as Record<string, unknown>;
         } catch {
             this.logger.warn(`Could not parse policy.json for topic=${policyTopicId}`);
-            return;
+            return { categoriesExport: null, sectoralScopes: [], emissionReductionApproach: null };
         }
 
         const entries = policy['categoriesExport'];
-        if (!Array.isArray(entries) || entries.length === 0) return;
+        if (!Array.isArray(entries) || entries.length === 0) {
+            return { categoriesExport: null, sectoralScopes: [], emissionReductionApproach: null };
+        }
 
         const categories = entries as CategoryExportEntry[];
 
@@ -145,90 +478,22 @@ export class PolicyDecodeProcessor extends WorkerHost {
             isRemoval ? 'Removal' :
             null;
 
-        const patch: Record<string, unknown> = { categoriesExport: categories };
-        if (sectoralScopes.length > 0) patch.sectoralScopes = sectoralScopes;
-        if (emissionReductionApproach !== null) patch.emissionReductionApproach = emissionReductionApproach;
-
-        await this.dataSource.query(
-            `UPDATE business_view
-             SET "businessData" = "businessData" || $1::jsonb,
-                 "updatedAt" = NOW()
-             WHERE "viewType" = 'METHODOLOGY'
-               AND "businessData"->>'topicId' = $2`,
-            [JSON.stringify(patch), policyTopicId],
-        );
-
         this.logger.debug(
-            `Categories stored for topic=${policyTopicId}: scopes=${sectoralScopes.join(', ')}, approach=${emissionReductionApproach}`,
+            `Categories extracted for topic=${policyTopicId}: scopes=${sectoralScopes.join(', ')}, approach=${emissionReductionApproach}`,
         );
+
+        return { categoriesExport: categories, sectoralScopes, emissionReductionApproach };
     }
 
-    private async checkMappingsGenerated(policyTopicId: string): Promise<boolean> {
-        const rows = await this.dataSource.query(
-            `SELECT 1 FROM business_view
-             WHERE "viewType" = 'METHODOLOGY'
-               AND "businessData"->>'topicId' = $1
-               AND (
-                   "businessData"->>'schemaLabelMap' IS NOT NULL
-                   OR "businessData"->>'fieldMap' IS NOT NULL
-               )
-             LIMIT 1`,
-            [policyTopicId],
-        );
-        return rows.length > 0;
-    }
+    /**
+     * Runs the mapping pipeline against schemas stored in the DB for this policy.
+     * Returns schemaLabelMap, fieldMap, and the hydrated schemas for downstream use.
+     */
+    private async executeMappingPipeline(
+        policyTopicId: string,
+    ): Promise<{ schemaLabelMap: Record<string, unknown>; fieldMap: Record<string, unknown>; schemas: SchemaInfo[] }> {
+        this.logger.debug(`Starting mapping pipeline for topic=${policyTopicId}`);
 
-    private async executeMapping(policyTopicId: string): Promise<void> {
-        try {
-            this.logger.debug(`Starting mapping pipeline for topic=${policyTopicId}`);
-
-            // Retrieve imported schemas from database
-            const schemas = await this.retrieveSchemasFromDatabase(policyTopicId);
-            if (schemas.length === 0) {
-                this.logger.warn(`No schemas found for topic=${policyTopicId}, skipping mapping`);
-                return;
-            }
-
-            // Get fields to map (default set of important fields)
-            const fields = this.getDefaultFieldDescriptors();
-
-            // Execute the mapping pipeline
-            const { schemaMap, fieldMap } = await this.mappingPipeline.executePipeline(
-                schemas,
-                fields,
-            );
-
-            // Store the mapping results in business_view for methodology
-            const patch: Record<string, unknown> = {
-                schemaLabelMap: schemaMap,
-                fieldMap: fieldMap,
-            };
-
-            await this.dataSource.query(
-                `UPDATE business_view
-                SET "businessData" = "businessData" || jsonb_build_object('glossary', $1::jsonb),
-                    "updatedAt" = NOW()
-                WHERE "viewType" = 'METHODOLOGY'
-                    AND "businessData"->>'topicId' = $2`,
-                [JSON.stringify(patch), policyTopicId],
-            );
-
-            this.logger.log(
-                `Mapping pipeline completed for topic=${policyTopicId}: ` +
-                `${Object.keys(schemaMap).length} schema(s) mapped, ` +
-                `${Object.keys(fieldMap).length} field(s) mapped`,
-            );
-        } catch (error) {
-            this.logger.error(
-                `Mapping pipeline failed for topic=${policyTopicId}: ${error instanceof Error ? error.message : String(error)}`,
-                error instanceof Error ? error.stack : undefined,
-            );
-            // Don't re-throw; log the error but allow processing to continue
-            // The mapping can be retried in the next cycle
-        }
-    }
-
-    private async retrieveSchemasFromDatabase(policyTopicId: string): Promise<SchemaInfo[]> {
         const rows = (await this.dataSource.query(
             `SELECT
                 "schemaId" as id,
@@ -244,59 +509,58 @@ export class PolicyDecodeProcessor extends WorkerHost {
             id: string;
             name: string | null;
             description: string | null;
-            document: string | null;
-            rawSchema: string;
+            document: Record<string, unknown> | string | null;
+            rawSchema: Record<string, unknown> | string;
         }>;
 
-        return rows.map(row => ({
+        if (rows.length === 0) {
+            this.logger.warn(`No schemas found for topic=${policyTopicId}, skipping mapping`);
+            return { schemaLabelMap: {}, fieldMap: {}, schemas: [] };
+        }
+
+        const ensureObject = (val: Record<string, unknown> | string | null | undefined) => {
+            if (val == null) return undefined;
+            if (typeof val === 'string') return JSON.parse(val);
+            return val;
+        };
+
+        const schemas: SchemaInfo[] = rows.map(row => ({
             id: row.id,
             name: row.name || undefined,
             description: row.description || undefined,
-            document: row.document ? JSON.parse(row.document) : undefined,
-            rawSchema: JSON.parse(row.rawSchema),
+            document: ensureObject(row.document),
+            rawSchema: ensureObject(row.rawSchema)!,
         }));
+
+        const { schemaMap, fieldMap } = await this.mappingPipeline.executePipeline(
+            schemas,
+            this.fieldDescriptorsFromProjectFields(),
+        );
+
+        this.logger.log(
+            `Mapping pipeline completed for topic=${policyTopicId}: ` +
+            `${Object.keys(schemaMap).length} schema(s) mapped, ` +
+            `${Object.keys(fieldMap).length} field(s) mapped`,
+        );
+
+        return {
+            schemaLabelMap: schemaMap as Record<string, unknown>,
+            fieldMap: fieldMap as Record<string, unknown>,
+            schemas,
+        };
     }
 
-    private getDefaultFieldDescriptors(): FieldDescriptor[] {
-        // Default set of important fields to map across methodologies
-        // These are common fields found in policy schemas
-        return [
-            {
-                "fieldName": "Project Title",
-                "description": "Official name or title of the project",
-                "keywords": ["title", "project", "name", "program"]
-            },
-            {
-                "fieldName": "Country",
-                "description": "Country where the project is implemented or located",
-                "keywords": ["country", "location", "host", "region", "territory"]
-            },
-            {
-                "fieldName": "Registry",
-                "description": "Carbon or environmental registry system where the project is registered (e.g., Verra, Gold Standard)",
-                "keywords": ["registry", "standard", "program", "verra", "gold", "CDM", "VCS"]
-            },
-            {
-                "fieldName": "Project Developer",
-                "description": "Organization, company, or entity responsible for developing or implementing the project",
-                "keywords": ["developer", "proponent", "entity", "owner"]
-            },
-            {
-                "fieldName": "Sector",
-                "description": "Industry or sector classification of the project (e.g., energy, forestry, agriculture)",
-                "keywords": ["sector", "type", "category", "energy", "forestry", "agriculture", "land use", "methodology"]
-            },
-            {
-                "fieldName": "Status",
-                "description": "Current lifecycle status of the project such as proposed, registered, active, or retired",
-                "keywords": ["status", "stage", "state", "phase", "lifecycle", "approved", "verified"]
-            },
-            {
-                "fieldName": "SDGs",
-                "description": "List of United Nations Sustainable Development Goals (SDGs) that the project contributes to or supports",
-                "keywords": ["sdg", "goals", "sustainable", "development goals", "UN goals", "co-benefits", "social impact", "benefits"]
-            }
-        ];
+    /**
+     * Translates PROJECT_EXTRACT_FIELDS into the FieldDescriptor shape consumed
+     * by the mapping pipeline.
+     */
+    private fieldDescriptorsFromProjectFields(): FieldDescriptor[] {
+        return PROJECT_EXTRACT_FIELDS.map(f => ({
+            fieldName: f.label,
+            description: '',
+            keywords: f.keywords,
+            exclude: f.exclude,
+        }));
     }
 
     @OnWorkerEvent('failed')

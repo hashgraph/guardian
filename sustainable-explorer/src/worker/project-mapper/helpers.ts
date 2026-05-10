@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
-import { FieldDef, MethodEntry, ProjectRecord, ResolutionMaps, ResolvedFieldPaths, SchemaEntry } from './types';
+import { FieldDef, MethodEntry, ResolutionMaps, ResolvedFieldPaths } from './types';
+import { PROJECT_EXTRACT_FIELDS } from './project-fields';
 
 // ---------------------------------------------------------------------------
 // Slug utility
@@ -259,16 +260,15 @@ export async function loadResolutionMaps(
 
     const maps: ResolutionMaps = { instToMethod, policyTopicToMethod, parentMap, userMethods };
 
-    // Step D — sectoralScopes map from METHODOLOGY rows
+    // Step D — sectoralScopes map from policy_decode_status (source of truth after refactor)
     const methScopeRows: Array<{ topicId: string; sectoralScopes: unknown }> =
         await dataSource.query(`
             SELECT
-                "businessData"->>'topicId'       AS "topicId",
-                "businessData"->'sectoralScopes' AS "sectoralScopes"
-            FROM business_view
-            WHERE "viewType" = 'METHODOLOGY'
-              AND "businessData"->>'topicId' IS NOT NULL
-              AND "businessData"->'sectoralScopes' IS NOT NULL
+                "policyTopicId"  AS "topicId",
+                "sectoralScopes" AS "sectoralScopes"
+            FROM policy_decode_status
+            WHERE "sectoralScopes" IS NOT NULL
+              AND status = 'success'
         `);
 
     const methodScopeMap: Record<string, string[]> = {};
@@ -292,8 +292,10 @@ export async function loadResolutionMaps(
 /**
  * Resolves project property names to their schema field keys by running the
  * keyword-matching logic once against fieldMap titles and descriptions.
- * The result is stored in projectSchemaConfig so subsequent mapper runs can
- * do direct key lookups instead of scanning fieldMap on every VC.
+ * Driven entirely by PROJECT_EXTRACT_FIELDS — no hardcoded keyword lists.
+ * The result is stored in projectSchemaConfig / policy_decode_status so
+ * subsequent mapper runs can do direct key lookups instead of scanning fieldMap
+ * on every VC.
  */
 export function resolveFieldPaths(fieldMap: Record<string, FieldDef>): ResolvedFieldPaths {
     const find = (keywords: string[], exclude: string[] = []): string | null => {
@@ -308,165 +310,11 @@ export function resolveFieldPaths(fieldMap: Record<string, FieldDef>): ResolvedF
         return null;
     };
 
-    let creditingPeriod: string | null = null;
-    let sdgOrCobenefits: string | null = null;
-
-    for (const [fk, fd] of Object.entries(fieldMap)) {
-        const t = fd.title.toLowerCase();
-        if (!creditingPeriod && t.includes('crediting period')) creditingPeriod = fk;
-        if (!sdgOrCobenefits && (t.includes('co-benefit') || t.includes('sustainable') || t.includes('sdg'))) {
-            sdgOrCobenefits = fk;
-        }
+    const result: Partial<ResolvedFieldPaths> = {};
+    for (const field of PROJECT_EXTRACT_FIELDS) {
+        if (field.key === 'geo') continue; // geo is handled as geoKey/geoSection, not a text field
+        result[field.key] = find(field.keywords, field.exclude ?? []);
     }
 
-    return {
-        name:            find(['project name', 'project title', 'name', 'title'],
-                              ['methodology', 'reference', 'pdd', 'section', 'table', 'site', 'document']),
-        country:         find(['country'], ['participant', 'applicant']),
-        developer:       find(['developer', 'proponent', 'organization', 'project developer', 'applicant']),
-        category:        find(['category', 'project type']),
-        scale:           find(['scale', 'project scale']),
-        sector:          find(['sector', 'activity']),
-        vintageRaw:      find(['start date', 'commencement']),
-        creditingPeriod,
-        sdgOrCobenefits,
-    };
-}
-
-/**
- * Persists isProjectSchema classification for a batch of re-evaluated topics.
- *
- * For each topic in revaluatedTopicIds:
- *   - All schemas are first marked FALSE (clears any stale TRUE from a prior run)
- *   - Then the one confirmed schema (if any) is marked TRUE
- *
- * Two batched UPDATEs regardless of how many topics or schemas are involved.
- */
-export async function persistSchemaClassification(
-    dataSource: DataSource,
-    confirmedByTopic: Map<string, SchemaEntry>,
-    revaluatedTopicIds: string[],
-): Promise<void> {
-    if (revaluatedTopicIds.length === 0) return;
-
-    // Mark everything in re-evaluated topics as FALSE and clear any stale config.
-    await dataSource.query(
-        `UPDATE policy_schema
-         SET "isProjectSchema" = FALSE, "projectSchemaConfig" = NULL
-         WHERE "policyTopicId" = ANY($1)`,
-        [revaluatedTopicIds],
-    );
-
-    // For each confirmed schema, write TRUE and store the full resolved SchemaEntry
-    // (including pre-computed field paths) so subsequent runs skip document parsing
-    // and keyword matching entirely.
-    for (const entry of confirmedByTopic.values()) {
-        const config = {
-            geoKey: entry.geoKey,
-            section: entry.section,
-            fieldMap: entry.fieldMap,
-            resolvedFields: entry.resolvedFields ?? resolveFieldPaths(entry.fieldMap),
-        };
-        await dataSource.query(
-            `UPDATE policy_schema
-             SET "isProjectSchema" = TRUE, "projectSchemaConfig" = $1
-             WHERE "schemaId" = $2`,
-            [JSON.stringify(config), entry.schemaUuid],
-        );
-    }
-}
-
-/**
- * Upserts all project rows from projectMap into business_view and removes any
- * stale PROJECT rows that are no longer in the current result set.
- * Corresponds to Step G of the project-building pipeline.
- */
-export async function upsertProjectRows(
-    dataSource: DataSource,
-    projectMap: Map<string, ProjectRecord>,
-): Promise<void> {
-    const validTimestamps: string[] = [];
-
-    for (const proj of projectMap.values()) {
-        const businessData = {
-            name: proj.name,
-            country: proj.country,
-            lat: proj.lat,
-            lng: proj.lng,
-            methodology: proj.methodology,
-            methodologyId: proj.methodologyId,
-            developer: proj.developer,
-            credits: proj.credits,
-            status: 'Issuing',
-            vintage: proj.vintage,
-            sdgs: proj.sdgs,
-            cobenefits: proj.cobenefits,
-            scale: proj.scale,
-            category: proj.category,
-            sector: proj.sector,
-            sectoralScope: proj.sectoralScope,
-            createdAt: proj.createdAt,
-            creditingPeriodEnd: proj.creditingPeriodEnd,
-            topicId: proj.topicId,
-            policyTopicId: proj.policyTopicId,
-            vcCount: proj.vcCount,
-            projectSchemaUuids: proj.projectSchemaUuids,
-        };
-
-        const searchText = [
-            proj.name,
-            proj.developer,
-            proj.country ?? '',
-            proj.methodology,
-            proj.category ?? '',
-            proj.cobenefits ?? '',
-        ]
-            .filter(Boolean)
-            .join(' ');
-
-        await dataSource.query(
-            `
-            INSERT INTO business_view (
-                "sourceTimestamp",
-                "viewType",
-                "displayName",
-                "registryDid",
-                "relatedTopicId",
-                "businessData",
-                "searchText",
-                "lastUpdate",
-                "createdAt",
-                "updatedAt"
-            ) VALUES ($1, 'PROJECT', $2, $3, $4, $5, $6, EXTRACT(EPOCH FROM NOW())::bigint, NOW(), NOW())
-            ON CONFLICT ("sourceTimestamp", "viewType") DO UPDATE SET
-                "displayName"    = EXCLUDED."displayName",
-                "registryDid"    = EXCLUDED."registryDid",
-                "relatedTopicId" = EXCLUDED."relatedTopicId",
-                "businessData"   = EXCLUDED."businessData",
-                "searchText"     = EXCLUDED."searchText",
-                "lastUpdate"     = EXCLUDED."lastUpdate",
-                "updatedAt"      = NOW()
-            `,
-            [
-                proj.sourceTimestamp,
-                proj.name,
-                proj.registryDid,
-                proj.topicId,
-                JSON.stringify(businessData),
-                searchText,
-            ],
-        );
-
-        validTimestamps.push(proj.sourceTimestamp);
-    }
-
-    if (validTimestamps.length > 0) {
-        const placeholders = validTimestamps.map((_, i) => `$${i + 1}`).join(', ');
-        await dataSource.query(
-            `DELETE FROM business_view WHERE "viewType" = 'PROJECT' AND "sourceTimestamp" NOT IN (${placeholders})`,
-            validTimestamps,
-        );
-    } else {
-        await dataSource.query(`DELETE FROM business_view WHERE "viewType" = 'PROJECT'`);
-    }
+    return result as ResolvedFieldPaths;
 }

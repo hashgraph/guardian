@@ -15,6 +15,7 @@ import { MappingModule } from './mapping/mapping.module';
 import { HederaService } from './services/hedera.service';
 import { IpfsService } from './services/ipfs.service';
 import { PolicySchemaImportService } from './services/policy-schema-import.service';
+import { ProjectMapperService } from './services/project-mapper.service';
 
 // Processors
 import { TopicSyncProcessor } from './processors/topic-sync.processor';
@@ -108,6 +109,7 @@ export class WorkerModule {
                 HederaService,
                 IpfsService,
                 PolicySchemaImportService,
+                ProjectMapperService,
 
                 // Only processors for active queues
                 ...activeProcessors,

@@ -1,10 +1,27 @@
-import { MOCK_PROJECTS, MOCK_CREDITS, MOCK_RETIREMENTS } from '~/data';
 import type { ActivityItem, MapPoint, MapCountry } from '~/types/models';
 import { formatCredits } from '~/lib/format';
 
+function relativeTime(dateStr: string): string {
+    const now = Date.now();
+    const then = new Date(dateStr).getTime();
+    if (isNaN(then)) return dateStr;
+    const diffMs = now - then;
+    const diffMin = Math.floor(diffMs / 60_000);
+    if (diffMin < 1) return 'just now';
+    if (diffMin < 60) return `${diffMin} minute${diffMin === 1 ? '' : 's'} ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr} hour${diffHr === 1 ? '' : 's'} ago`;
+    const diffDay = Math.floor(diffHr / 24);
+    if (diffDay < 30) return `${diffDay} day${diffDay === 1 ? '' : 's'} ago`;
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 export function useDashboard(filters?: Ref<{ developer?: string; registry?: string }>) {
+    const { projects, pending } = useProjects();
+
     const developerOptions = computed(() => {
-        return ['All Developers', ...new Set(MOCK_PROJECTS.map(p => p.developer))].sort((a, b) => {
+        return ['All Developers', ...new Set(projects.value.map(p => p.developer).filter(Boolean))].sort((a, b) => {
             if (a === 'All Developers') return -1;
             if (b === 'All Developers') return 1;
             return a.localeCompare(b);
@@ -12,7 +29,7 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
     });
 
     const registryOptions = computed(() => {
-        return ['All Registries', ...new Set(MOCK_PROJECTS.map(p => p.registry))].sort((a, b) => {
+        return ['All Registries', ...new Set(projects.value.map(p => p.registry).filter(Boolean))].sort((a, b) => {
             if (a === 'All Registries') return -1;
             if (b === 'All Registries') return 1;
             return a.localeCompare(b);
@@ -21,7 +38,7 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
 
     // Filter projects based on dashboard filters
     const filteredProjects = computed(() => {
-        let result = [...MOCK_PROJECTS];
+        let result = [...projects.value];
         if (filters?.value) {
             const f = filters.value;
             if (f.developer && f.developer !== 'All Developers') {
@@ -29,22 +46,6 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             }
             if (f.registry && f.registry !== 'All Registries') {
                 result = result.filter(p => p.registry === f.registry);
-            }
-        }
-        return result;
-    });
-
-    const filteredCredits = computed(() => {
-        let result = [...MOCK_CREDITS];
-        if (filters?.value) {
-            const f = filters.value;
-            if (f.registry && f.registry !== 'All Registries') {
-                result = result.filter(c => c.registry === f.registry);
-            }
-            // Filter credits by developer through their linked projects
-            if (f.developer && f.developer !== 'All Developers') {
-                const projectIds = new Set(filteredProjects.value.map(p => p.id));
-                result = result.filter(c => projectIds.has(c.projectId));
             }
         }
         return result;
@@ -121,17 +122,9 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             orgMap[p.registry].credits += p.credits;
         }
 
-        // Use display names for registries
-        const displayNames: Record<string, string> = {
-            'Verra': 'Verra (VCS)',
-            'Gold Standard': 'Gold Standard',
-            'CAR': 'Climate Action Reserve',
-            'ACR': 'American Carbon Registry',
-        };
-
         return Object.entries(orgMap)
             .map(([key, data]) => ({
-                name: displayNames[key] || key,
+                name: key,
                 policies: data.policies.size,
                 projects: data.projects,
                 credits: formatCredits(data.credits),
@@ -139,49 +132,18 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             .sort((a, b) => b.projects - a.projects);
     });
 
-    // Aggregation helper: group date/value pairs by period
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const quarterNames = ['Q1', 'Q2', 'Q3', 'Q4'];
 
-    function aggregateByPeriod(
-        entries: { date: string; value: number }[],
-        period: 'monthly' | 'quarterly' | 'yearly',
-    ): { label: string; value: number }[] {
-        const map: Record<string, number> = {};
-
-        for (const e of entries) {
-            const d = new Date(e.date);
-            let key: string;
-            let label: string;
-            if (period === 'yearly') {
-                key = String(d.getFullYear());
-                label = key;
-            } else if (period === 'quarterly') {
-                const q = Math.floor(d.getMonth() / 3);
-                key = `${d.getFullYear()}-Q${q}`;
-                label = `${quarterNames[q]} ${d.getFullYear()}`;
-            } else {
-                key = `${d.getFullYear()}-${String(d.getMonth()).padStart(2, '0')}`;
-                label = `${monthNames[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`;
-            }
-            map[key] = (map[key] || 0) + e.value;
-        }
-
-        return Object.entries(map)
-            .sort((a, b) => a[0].localeCompare(b[0]))
-            .map(([, value]) => {
-                // reverse-lookup label from sorted entries
-                return { label: '', value: Math.max(Math.round(value), 1) };
-            });
-    }
-
-    // Build issuance time series from filtered projects
+    // Build issuance time series from filtered projects using createdAt + credits
     function buildIssuanceSeries(period: 'monthly' | 'quarterly' | 'yearly'): { label: string; value: number }[] {
         const map: Record<string, { sortKey: string; label: string; value: number }> = {};
 
         for (const p of filteredProjects.value) {
+            if (!p.createdAt) continue;
             const d = new Date(p.createdAt);
-            const val = p.credits / 1000000;
+            if (isNaN(d.getTime())) continue;
+            const val = p.credits / 1_000_000;
             let sortKey: string;
             let label: string;
             if (period === 'yearly') {
@@ -204,32 +166,9 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             .map(e => ({ label: e.label, value: Math.max(Math.round(e.value * 10) / 10, 0.1) }));
     }
 
-    function buildRetirementSeries(period: 'monthly' | 'quarterly' | 'yearly'): { label: string; value: number }[] {
-        const map: Record<string, { sortKey: string; label: string; value: number }> = {};
-
-        for (const r of filteredRetirements.value) {
-            const d = new Date(r.date);
-            const val = r.quantity / 1000000;
-            let sortKey: string;
-            let label: string;
-            if (period === 'yearly') {
-                sortKey = String(d.getFullYear());
-                label = sortKey;
-            } else if (period === 'quarterly') {
-                const q = Math.floor(d.getMonth() / 3);
-                sortKey = `${d.getFullYear()}-Q${q}`;
-                label = `${quarterNames[q]} '${String(d.getFullYear()).slice(2)}`;
-            } else {
-                sortKey = `${d.getFullYear()}-${String(d.getMonth()).padStart(2, '0')}`;
-                label = `${monthNames[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`;
-            }
-            if (!map[sortKey]) map[sortKey] = { sortKey, label, value: 0 };
-            map[sortKey].value += val;
-        }
-
-        return Object.values(map)
-            .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
-            .map(e => ({ label: e.label, value: Math.max(Math.round(e.value * 10) / 10, 0.1) }));
+    // No retirement data source — always returns empty
+    function buildRetirementSeries(_period: 'monthly' | 'quarterly' | 'yearly'): { label: string; value: number }[] {
+        return [];
     }
 
     // Keep backward-compat computed values (default monthly)
@@ -242,73 +181,37 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         Math.round(issuanceMonths.value.reduce((sum, m) => sum + m.value, 0) * 10) / 10,
     );
 
-    // Recent activity derived from the most recent projects and credits
+    // Recent activity from most recent real projects
     const recentActivity = computed<ActivityItem[]>(() => {
+        if (filteredProjects.value.length === 0) return [];
+
         const activities: ActivityItem[] = [];
 
-        // Sort projects by createdAt descending
-        const sortedProjects = [...filteredProjects.value].sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        );
+        const sortedProjects = [...filteredProjects.value]
+            .filter(p => p.createdAt)
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-        // Generate activity items from recent projects/credits
-        if (sortedProjects.length > 0) {
+        const take = sortedProjects.slice(0, 5);
+
+        for (const p of take) {
             activities.push({
-                time: '2 min ago',
+                time: relativeTime(p.createdAt),
                 action: 'New project registered',
-                detail: `${sortedProjects[0].name} \u2014 ${sortedProjects[0].registry}`,
+                detail: `${p.name} — ${p.registry}`,
                 type: 'project',
             });
         }
 
-        const sortedCredits = [...filteredCredits.value].sort(
-            (a, b) => new Date(b.mintDate).getTime() - new Date(a.mintDate).getTime(),
-        );
-
-        if (sortedCredits.length > 0) {
+        // Add one registry entry if we have registries
+        const uniqueRegistries = [...new Set(filteredProjects.value.map(p => p.registry).filter(Boolean))];
+        if (uniqueRegistries.length > 0) {
+            // Use oldest known project to anchor a registry "joined" entry
+            const oldest = sortedProjects[sortedProjects.length - 1];
             activities.push({
-                time: '8 min ago',
-                action: 'Issuances minted',
-                detail: `${formatCredits(sortedCredits[0].supply)} \u2014 ${sortedCredits[0].name}`,
-                type: 'credit',
-            });
-        }
-
-        if (sortedProjects.length > 1) {
-            activities.push({
-                time: '15 min ago',
-                action: 'Policy published',
-                detail: `${sortedProjects[1].methodology} \u2014 ${sortedProjects[1].registry}`,
-                type: 'policy',
-            });
-        }
-
-        if (sortedProjects.length > 2) {
-            activities.push({
-                time: '23 min ago',
-                action: 'Verification completed',
-                detail: `${sortedProjects[2].name} \u2014 ${sortedProjects[2].registry}`,
-                type: 'verification',
-            });
-        }
-
-        // Registry join
-        const registries = [...new Set(filteredProjects.value.map(p => p.registry))];
-        if (registries.length > 0) {
-            activities.push({
-                time: '1 hour ago',
-                action: 'New registry joined',
-                detail: registries[registries.length - 1],
+                time: oldest ? relativeTime(oldest.createdAt) : '',
+                action: 'Registry indexed',
+                detail: uniqueRegistries[0],
                 type: 'registry',
-            });
-        }
-
-        if (sortedCredits.length > 1) {
-            activities.push({
-                time: '2 hours ago',
-                action: 'Issuances retired',
-                detail: `${formatCredits(Math.round(sortedCredits[1].supply * 0.1))} \u2014 ${sortedCredits[1].name}`,
-                type: 'retirement',
             });
         }
 
@@ -398,10 +301,8 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         const countryData = countries.value.find(c => c.code === code);
         if (!countryData) return null;
 
-        // Get projects for this country
         const countryProjects = filteredProjects.value.filter(p => p.countryCode === code);
 
-        // Build sector breakdown from project categories
         const catCredits: Record<string, number> = {};
         let totalCredits = 0;
         for (const p of countryProjects) {
@@ -409,7 +310,7 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             totalCredits += p.credits;
         }
 
-        const sectorColors: Record<string, string> = {
+        const sectorColorMap: Record<string, string> = {
             'Renewable Energy': '#1a9850',
             'Forestry': '#0f6b3a',
             'Blue Carbon': '#0a97d9',
@@ -423,16 +324,15 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             .map(([label, credits]) => ({
                 label,
                 value: totalCredits > 0 ? Math.round((credits / totalCredits) * 100) : 0,
-                color: sectorColors[label] || '#d4d4d8',
+                color: sectorColorMap[label] || '#d4d4d8',
             }))
             .sort((a, b) => b.value - a.value);
 
-        // Registry breakdown
         const regCredits: Record<string, number> = {};
         for (const p of countryProjects) {
             regCredits[p.registry] = (regCredits[p.registry] || 0) + p.credits;
         }
-        const registries = Object.entries(regCredits)
+        const registriesBreakdown = Object.entries(regCredits)
             .map(([name, credits]) => ({
                 name,
                 pct: totalCredits > 0 ? Math.round((credits / totalCredits) * 1000) / 10 : 0,
@@ -445,47 +345,16 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             flag: countryData.flag,
             projects: countryData.projects,
             credits: countryData.credits,
-            totalReduction: String(Math.round(countryData.projects * 5.2)),
-            annualReduction: String(Math.round(countryData.projects * 2.8)),
             sectors,
-            registries,
+            registries: registriesBreakdown,
         };
     }
 
-    // Total retired from mock retirements, filtered by relevant projects
-    const filteredRetirements = computed(() => {
-        const projectIds = new Set(filteredProjects.value.map(p => p.id));
-        return MOCK_RETIREMENTS.filter(r => projectIds.has(r.projectId));
-    });
-
-    const totalRetired = computed(() => filteredRetirements.value.reduce((sum, r) => sum + r.quantity, 0));
-
-    // Retirement trend by month
-    const retirementMonths = computed(() => {
-        const monthMap: Record<string, number> = {};
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-        for (const r of filteredRetirements.value) {
-            const date = new Date(r.date);
-            const key = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, '0')}`;
-            monthMap[key] = (monthMap[key] || 0) + Math.round(r.quantity / 1000000) || 1;
-        }
-
-        return Object.entries(monthMap)
-            .sort((a, b) => a[0].localeCompare(b[0]))
-            .slice(-6)
-            .map(([key, value]) => {
-                const [, monthIdx] = key.split('-');
-                return { month: monthNames[parseInt(monthIdx)], value: Math.max(value, 1) };
-            });
-    });
-
-    const retirementMax = computed(() => {
-        const vals = retirementMonths.value.map(m => m.value);
-        return vals.length > 0 ? Math.max(...vals) : 1;
-    });
-
-    const retirementTotal = computed(() => retirementMonths.value.reduce((sum, m) => sum + m.value, 0));
+    // Retirement — no data source available
+    const totalRetired = computed(() => 0);
+    const retirementMonths = computed(() => [] as { month: string; value: number }[]);
+    const retirementMax = computed(() => 1);
+    const retirementTotal = computed(() => 0);
 
     // Vintage distribution
     const vintageDistribution = computed(() => {
@@ -529,5 +398,6 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         vintageMax,
         buildIssuanceSeries,
         buildRetirementSeries,
+        pending,
     };
 }

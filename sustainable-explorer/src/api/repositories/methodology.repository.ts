@@ -16,7 +16,7 @@ export interface MethodologyListQuery {
     name?: string;
     id?: string;
     description?: string;
-    status?: string;
+    decodeStatus?: 'success' | 'failed' | 'pending' | 'unknown';
     registryDid?: string;
     registryName?: string;
     version?: string;
@@ -56,6 +56,8 @@ export interface MethodologyRow {
     totalIssued?: number;
     totalRetired?: number;
     totalActive?: number;
+    /** Decode status from policy_decode_status. Null means no row exists yet. */
+    decodeStatus: string | null;
 }
 
 export interface MethodologyListResult {

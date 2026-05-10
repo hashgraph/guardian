@@ -38,4 +38,6 @@ export abstract class PolicySchemaRepository {
         policyTopicId: string,
         query: PolicySchemaListQuery,
     ): Promise<PolicySchemaListResult>;
+
+    abstract findDecoded(policyTopicId: string): Promise<import('../dto/decoded-methodology.dto').DecodedMethodologyRow | null>;
 }

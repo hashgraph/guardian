@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsIn } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
 import { MethodologyRow, MethodologyStatsRow } from '../repositories/methodology.repository';
@@ -20,10 +20,13 @@ export class MethodologyQueryDto extends PaginationQueryDto {
     @IsString()
     description?: string;
 
-    @ApiPropertyOptional({ description: 'Filter by status (e.g. PUBLISHED, DRAFT)' })
+    @ApiPropertyOptional({
+        description: 'Filter by decode status',
+        enum: ['success', 'failed', 'pending', 'unknown'],
+    })
     @IsOptional()
-    @IsString()
-    status?: string;
+    @IsIn(['success', 'failed', 'pending', 'unknown'])
+    decodeStatus?: 'success' | 'failed' | 'pending' | 'unknown';
 
     @ApiPropertyOptional({ description: 'Filter by exact registry DID' })
     @IsOptional()
@@ -124,6 +127,14 @@ export class MethodologyResponseDto {
     @ApiProperty({ description: 'Credits currently in circulation (totalIssued - totalRetired)' })
     totalActive: number;
 
+    @ApiProperty({
+        enum: ['success', 'failed', 'pending', 'unknown'],
+        description:
+            'Decode status of the methodology\'s policy ZIP. ' +
+            '"unknown" means no decode attempt has been made yet.',
+    })
+    decodeStatus: 'success' | 'failed' | 'pending' | 'unknown';
+
     static fromRow(
         row: MethodologyRow,
         network: string,
@@ -134,6 +145,14 @@ export class MethodologyResponseDto {
         const version = typeof options.version === 'string' ? options.version : null;
 
         const policyTopicId = typeof data.topicId === 'string' ? data.topicId : null;
+
+        const rawDecodeStatus = row.decodeStatus;
+        const decodeStatus: MethodologyResponseDto['decodeStatus'] =
+            rawDecodeStatus === 'success' ||
+            rawDecodeStatus === 'failed' ||
+            rawDecodeStatus === 'pending'
+                ? rawDecodeStatus
+                : 'unknown';
 
         return {
             id: row.id,
@@ -164,6 +183,7 @@ export class MethodologyResponseDto {
             totalIssued: row.totalIssued ?? 0,
             totalRetired: row.totalRetired ?? 0,
             totalActive: row.totalActive ?? 0,
+            decodeStatus,
         };
     }
 }

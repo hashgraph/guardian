@@ -55,11 +55,6 @@ export const METHODOLOGY_FIELD_SCHEMA: FieldSchema = {
         filter: 'ilike',
         sortable: true,
     },
-    status: {
-        sql: `bv."businessData"->>'status'`,
-        filter: 'eq',
-        sortable: true,
-    },
     version: {
         sql: `bv."businessData"->'options'->>'version'`,
         filter: 'ilike',

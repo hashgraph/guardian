@@ -72,6 +72,7 @@ const {
     vintageMax,
     buildIssuanceSeries,
     buildRetirementSeries,
+    pending,
 } = useDashboard(dashboardFilters);
 
 type TimePeriod = 'monthly' | 'quarterly' | 'yearly';
@@ -165,7 +166,7 @@ const filteredStats = computed(() => {
         {
             label: t('dashboard.stats.registries'),
             value: String(stats.value.registries),
-            change: hasActiveFilter.value ? '' : '+2',
+            change: '',
             trend: 'up',
             sub: t('dashboard.stats.registriesSub'),
             tooltip: t('dashboard.stats.registriesTooltip'),
@@ -177,7 +178,7 @@ const filteredStats = computed(() => {
         {
             label: t('dashboard.stats.methodologies'),
             value: String(stats.value.methodologies),
-            change: hasActiveFilter.value ? '' : '+5',
+            change: '',
             trend: 'up',
             sub: t('dashboard.stats.methodologiesSub'),
             tooltip: t('dashboard.stats.methodologiesTooltip'),
@@ -189,7 +190,7 @@ const filteredStats = computed(() => {
         {
             label: t('dashboard.stats.projects'),
             value: stats.value.projects.toLocaleString(),
-            change: hasActiveFilter.value ? '' : '+18',
+            change: '',
             trend: 'up',
             sub: t('dashboard.stats.projectsSub'),
             tooltip: t('dashboard.stats.projectsTooltip'),
@@ -201,7 +202,7 @@ const filteredStats = computed(() => {
         {
             label: t('dashboard.stats.totalIssuances'),
             value: formatCredits(stats.value.totalCredits),
-            change: hasActiveFilter.value ? '' : '+12.3%',
+            change: '',
             trend: 'up',
             sub: t('dashboard.stats.totalIssuancesSub'),
             tooltip: t('dashboard.stats.totalIssuancesTooltip'),
@@ -213,7 +214,7 @@ const filteredStats = computed(() => {
         {
             label: t('dashboard.stats.totalRetired'),
             value: formatCredits(totalRetired.value),
-            change: hasActiveFilter.value ? '' : '+8.7%',
+            change: '',
             trend: 'up',
             sub: t('dashboard.stats.totalRetiredSub'),
             tooltip: t('dashboard.stats.totalRetiredTooltip'),
@@ -349,7 +350,11 @@ const filteredStats = computed(() => {
 
         <!-- Stat Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 px-6 pb-6">
+            <template v-if="pending">
+                <Skeleton v-for="n in 5" :key="n" class="h-24 rounded-xl" />
+            </template>
             <NuxtLink
+                v-else
                 v-for="s in filteredStats"
                 :key="s.label"
                 :to="s.to"
@@ -446,17 +451,6 @@ const filteredStats = computed(() => {
                                     <div class="text-center">
                                         <div class="text-3xl font-bold text-primary">{{ activeDetail.projects.toLocaleString() }}</div>
                                         <div class="text-[11px] text-muted-foreground mt-0.5">{{ $t('dashboard.activeProjects') }}</div>
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <div class="text-center">
-                                            <div class="text-lg font-bold text-primary">{{ activeDetail.totalReduction }}</div>
-                                            <div class="text-[10px] text-muted-foreground">{{ $t('dashboard.mtco2TotalReduction') }}</div>
-                                        </div>
-                                        <div class="text-center">
-                                            <div class="text-lg font-bold text-primary">{{ activeDetail.annualReduction }}</div>
-                                            <div class="text-[10px] text-muted-foreground">{{ $t('dashboard.mtco2AnnualEst') }}</div>
-                                        </div>
                                     </div>
 
                                     <!-- Sector donut -->

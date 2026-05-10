@@ -48,8 +48,8 @@ export type ProjectRecord = {
     policyTopicId: string;
     name: string;
     country: string | null;
-    lat: number;
-    lng: number;
+    lat: number | null;
+    lng: number | null;
     methodology: string;
     methodologyId: string;
     registryDid: string | null;

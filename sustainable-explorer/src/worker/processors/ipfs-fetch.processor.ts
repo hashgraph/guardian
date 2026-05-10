@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm';
 import Redis from 'ioredis';
 import { QUEUE_NAMES } from '@shared/config/bullmq.config';
 import { IpfsService } from '../services/ipfs.service';
+import { ProjectMapperService } from '../services/project-mapper.service';
 
 export interface IpfsFetchJobData {
     cid: string;
@@ -18,6 +19,7 @@ export class IpfsFetchProcessor extends WorkerHost {
     constructor(
         private readonly ipfsService: IpfsService,
         private readonly dataSource: DataSource,
+        private readonly projectMapperService: ProjectMapperService,
         @Inject('REDICT_PUB') private readonly redis: Redis,
     ) {
         super();
@@ -71,6 +73,20 @@ export class IpfsFetchProcessor extends WorkerHost {
                     cid,
                 ],
             );
+
+            // If this looks like a VC, attempt eager project mapping.
+            // Errors here are non-fatal — the batch reconciler is the safety net.
+            const isVc = Array.isArray(parsedDocument['credentialSubject']);
+            if (isVc) {
+                try {
+                    await this.projectMapperService.upsertProjectFromVc(messageTimestamp);
+                } catch (err) {
+                    this.logger.warn(
+                        `Eager project mapping failed for vc=${messageTimestamp} cid=${cid}: ` +
+                        `${err instanceof Error ? err.message : String(err)}`,
+                    );
+                }
+            }
         }
 
         // Publish event to Redict for real-time consumers

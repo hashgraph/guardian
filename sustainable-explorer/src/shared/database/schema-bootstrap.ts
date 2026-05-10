@@ -67,4 +67,74 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         ON policy_schema ("policyTopicId")
         WHERE "isProjectSchema" IS NULL
     `);
+
+    // Per-policy decode status table.
+    // Tracks ZIP decode lifecycle so downstream steps (VC IPFS fetch, project mapping)
+    // only run against policies whose schema import + mapping pipeline succeeded.
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS policy_decode_status (
+            "policyTopicId" varchar(30) PRIMARY KEY,
+            "sourceCid"     varchar(120) NOT NULL,
+            status          varchar(20) NOT NULL DEFAULT 'pending'
+                            CHECK (status IN ('pending', 'success', 'failed')),
+            error           text,
+            attempts        int NOT NULL DEFAULT 0,
+            "lastAttemptAt" timestamptz NOT NULL DEFAULT now(),
+            "updatedAt"     timestamptz NOT NULL DEFAULT now()
+        )
+    `);
+
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_policy_decode_status_status
+        ON policy_decode_status (status)
+    `);
+
+    // Decode-derived methodology metadata — stored on policy_decode_status so
+    // they are written atomically with the status flip and are never read from
+    // business_view.businessData (which no longer contains these fields).
+    await dataSource.query(`
+        ALTER TABLE policy_decode_status ADD COLUMN IF NOT EXISTS "categoriesExport"           jsonb
+    `);
+    await dataSource.query(`
+        ALTER TABLE policy_decode_status ADD COLUMN IF NOT EXISTS "sectoralScopes"             jsonb
+    `);
+    await dataSource.query(`
+        ALTER TABLE policy_decode_status ADD COLUMN IF NOT EXISTS "emissionReductionApproach"  varchar(40)
+    `);
+    await dataSource.query(`
+        ALTER TABLE policy_decode_status ADD COLUMN IF NOT EXISTS "schemaLabelMap"             jsonb
+    `);
+    await dataSource.query(`
+        ALTER TABLE policy_decode_status ADD COLUMN IF NOT EXISTS "fieldMap"                   jsonb
+    `);
+    // Per-policy resolved project field map: { name: 'G2', country: 'G7', … }
+    // where values are field keys in the confirmed project schema.
+    // Null when no project schema was confirmed for this policy.
+    await dataSource.query(`
+        ALTER TABLE policy_decode_status ADD COLUMN IF NOT EXISTS "projectFieldMap"            jsonb
+    `);
+    // Geo-field key on the confirmed project schema, plus optional wrapper section.
+    await dataSource.query(`
+        ALTER TABLE policy_decode_status ADD COLUMN IF NOT EXISTS "projectGeoKey"              varchar(120)
+    `);
+    await dataSource.query(`
+        ALTER TABLE policy_decode_status ADD COLUMN IF NOT EXISTS "projectGeoSection"          varchar(120)
+    `);
+    // schemaId (uuid) of the confirmed project schema. Null if none.
+    await dataSource.query(`
+        ALTER TABLE policy_decode_status ADD COLUMN IF NOT EXISTS "projectSchemaId"            varchar(255)
+    `);
+
+    // Stable dedup key for PROJECT rows in eager mapping.
+    // Nullable; partial unique index ensures no two PROJECT rows share a key.
+    await dataSource.query(`
+        ALTER TABLE business_view
+        ADD COLUMN IF NOT EXISTS "projectKey" varchar(120)
+    `);
+
+    await dataSource.query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_business_view_project_key
+        ON business_view ("projectKey")
+        WHERE "viewType" = 'PROJECT' AND "projectKey" IS NOT NULL
+    `);
 }

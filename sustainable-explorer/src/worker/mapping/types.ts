@@ -21,6 +21,8 @@ export interface FieldDescriptor {
     fieldName: string;
     description: string;
     keywords?: string[];
+    /** Words that, if present in a candidate's haystack, disqualify it (penalty ×0.2). */
+    exclude?: string[];
 }
 
 /**

@@ -22,7 +22,6 @@ type ColumnKey =
   | "schemas"
   | "description"
   | "id"
-  | "status"
   | "createdAt";
 
 const columnToApiSort: Record<ColumnKey, MethodologySortKey | null> = {
@@ -33,7 +32,6 @@ const columnToApiSort: Record<ColumnKey, MethodologySortKey | null> = {
   schemas: "schemas",
   description: "description",
   id: "id",
-  status: "status",
   createdAt: "createdAt",
 };
 
@@ -86,10 +84,17 @@ const filterFields = computed<FilterField[]>(() => [
     width: "md",
   },
   {
-    key: "status",
-    label: t("methodologies.filters.status"),
-    type: "text",
+    key: "decodeStatus",
+    label: t("methodologies.filters.decoded"),
+    type: "select",
     width: "sm",
+    options: [
+      { value: "", label: t("methodologies.filters.decodedAll") },
+      { value: "success", label: t("methodologies.decodeStatus.success") },
+      { value: "failed", label: t("methodologies.decodeStatus.failed") },
+      { value: "pending", label: t("methodologies.decodeStatus.pending") },
+      { value: "unknown", label: t("methodologies.decodeStatus.unknown") },
+    ],
   },
 ]);
 
@@ -209,11 +214,18 @@ const copyValue = async (value: string) => {
   }
 };
 
-const statusBadgeClass = (status: string | null | undefined): string => {
-  const s = (status ?? "").toUpperCase();
-  if (s === "PUBLISHED") return "bg-stat-green/10 text-stat-green";
-  if (s === "DRAFT") return "bg-stat-amber/10 text-stat-amber";
+const decodeStatusBadgeClass = (status: string | null | undefined): string => {
+  const s = (status ?? "unknown").toLowerCase();
+  if (s === "success") return "bg-stat-green/10 text-stat-green";
+  if (s === "failed") return "bg-destructive/10 text-destructive";
+  if (s === "pending") return "bg-stat-amber/10 text-stat-amber";
   return "bg-muted text-muted-foreground";
+};
+
+const decodeStatusI18nKey = (status: string | null | undefined): string => {
+  const s = (status ?? "unknown").toLowerCase();
+  if (s === "success" || s === "failed" || s === "pending") return `methodologies.decodeStatus.${s}`;
+  return "methodologies.decodeStatus.unknown";
 };
 
 const skeletonRows = computed(() =>
@@ -252,7 +264,8 @@ const skeletonRows = computed(() =>
 
     <div class="px-6 pb-6">
       <div class="rounded-xl border bg-card overflow-hidden">
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto">
+        <table class="w-full text-sm min-w-[1400px]">
           <thead>
             <tr class="border-b bg-muted/30">
               <SortableHeader
@@ -317,13 +330,9 @@ const skeletonRows = computed(() =>
                 :sort-dir="sortDir"
                 @sort="toggleSort($event)"
               />
-              <SortableHeader
-                :label="$t('methodologies.columns.status')"
-                sort-key="status"
-                :active-sort-key="sortKey as string"
-                :sort-dir="sortDir"
-                @sort="toggleSort($event)"
-              />
+              <th class="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {{ $t('methodologies.columns.decoded') }}
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y">
@@ -437,11 +446,12 @@ const skeletonRows = computed(() =>
                 <td class="py-3 px-4">
                   <span
                     :class="[
-                      statusBadgeClass(r.status),
-                      'text-xs font-medium rounded-full px-2 py-0.5',
+                      decodeStatusBadgeClass(r.decodeStatus),
+                      'inline-flex items-center text-xs font-medium rounded-full px-2 py-0.5',
                     ]"
                   >
-                    {{ r.status ?? "—" }}
+                    <span class="h-1.5 w-1.5 rounded-full bg-current mr-1.5 shrink-0" />
+                    {{ $t(decodeStatusI18nKey(r.decodeStatus)) }}
                   </span>
                 </td>
               </tr>
@@ -456,6 +466,7 @@ const skeletonRows = computed(() =>
             </template>
           </tbody>
         </table>
+        </div>
       </div>
 
       <Pagination

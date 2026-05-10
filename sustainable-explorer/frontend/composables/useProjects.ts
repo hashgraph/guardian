@@ -1,4 +1,3 @@
-import { MOCK_PROJECTS } from '~/data'; // kept aside — not used for live data
 import type { Project, ProjectIssuance } from '~/types/models';
 
 // country display name → ISO 3166-1 alpha-3 for CountryFlag component
@@ -112,10 +111,6 @@ export function useProjects() {
     }));
 
     return { projects, total, filterOptions, pending, error };
-}
-
-export function useMockProjects() {
-    return MOCK_PROJECTS;
 }
 
 export function useProjectDetail(id: Ref<string>) {

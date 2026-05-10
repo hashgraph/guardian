@@ -27,6 +27,9 @@ interface RawRow {
     issuance_count: string | null;
     schema_count: string | null;
     registry_name: string | null;
+    decode_status: string | null;
+    sectoral_scopes: string[] | null;
+    emission_reduction_approach: string | null;
 }
 
 /**
@@ -43,6 +46,16 @@ const REGISTRY_NAME_JOIN = `
         ORDER BY "createdAt" DESC NULLS LAST
         LIMIT 1
     ) reg ON true
+`;
+
+/**
+ * LEFT JOIN that brings in the decode status for the methodology's policy topic.
+ * businessData->>'topicId' is the policyTopicId stored by the worker.
+ * The join is optional (LEFT) so rows without a decode attempt still appear.
+ */
+const POLICY_DECODE_STATUS_JOIN = `
+    LEFT JOIN policy_decode_status pds
+        ON pds."policyTopicId" = bv."businessData"->>'topicId'
 `;
 
 /**
@@ -74,12 +87,20 @@ export class PgMethodologyRepository extends MethodologyRepository {
             name: query.name,
             id: query.id,
             description: query.description,
-            status: query.status,
             registryDid: query.registryDid,
             registryName: query.registryName,
             version: query.version,
             policyTopicId: query.policyTopicId,
         });
+
+        // decodeStatus filter — pds.status is NULL for methodologies that have
+        // never been attempted, which we expose as 'unknown'.
+        if (query.decodeStatus === 'unknown') {
+            builder.addClause(`pds.status IS NULL`);
+        } else if (query.decodeStatus) {
+            const p = builder.nextParam(query.decodeStatus);
+            builder.addClause(`pds.status = ${p}`);
+        }
 
         // Special: full-text search with ranking. The tsvector index covers
         // displayName (weight A), registryDid (B), and searchText (C).
@@ -129,11 +150,15 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 s.issuance_count,
                 s.schema_count,
                 reg.registry_name,
+                pds.status AS decode_status,
+                pds."sectoralScopes" AS sectoral_scopes,
+                pds."emissionReductionApproach" AS emission_reduction_approach,
                 ${rankExpr} AS search_rank
             FROM business_view bv
             LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} s
                 ON s."relatedTopicId" = bv."relatedTopicId"
             ${REGISTRY_NAME_JOIN}
+            ${POLICY_DECODE_STATUS_JOIN}
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
@@ -147,6 +172,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             SELECT COUNT(*)::int AS total
             FROM business_view bv
             ${REGISTRY_NAME_JOIN}
+            ${POLICY_DECODE_STATUS_JOIN}
             WHERE ${whereSql}
         `;
 
@@ -169,11 +195,15 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 s.project_count,
                 s.issuance_count,
                 s.schema_count,
-                reg.registry_name
+                reg.registry_name,
+                pds.status AS decode_status,
+                pds."sectoralScopes" AS sectoral_scopes,
+                pds."emissionReductionApproach" AS emission_reduction_approach
             FROM business_view bv
             LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} s
                 ON s."relatedTopicId" = bv."relatedTopicId"
             ${REGISTRY_NAME_JOIN}
+            ${POLICY_DECODE_STATUS_JOIN}
             WHERE bv."viewType" = 'METHODOLOGY'
               AND bv."relatedTopicId" = $1
             ORDER BY bv."createdAt" DESC NULLS LAST
@@ -294,8 +324,10 @@ export class PgMethodologyRepository extends MethodologyRepository {
         const data = row.businessData || {};
         const description = typeof data.description === 'string' ? data.description : null;
         const statusValue = typeof data.status === 'string' ? data.status : null;
-        const sectoralScopes = Array.isArray(data.sectoralScopes) ? (data.sectoralScopes as string[]) : null;
-        const emissionReductionApproach = typeof data.emissionReductionApproach === 'string' ? data.emissionReductionApproach : null;
+        const sectoralScopes: string[] | null =
+            Array.isArray(row.sectoral_scopes) ? row.sectoral_scopes : null;
+        const emissionReductionApproach: string | null =
+            typeof row.emission_reduction_approach === 'string' ? row.emission_reduction_approach : null;
 
         return {
             id: row.id,
@@ -319,6 +351,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             totalIssued: lifecycle?.totalIssued,
             totalRetired: lifecycle?.totalRetired,
             totalActive: lifecycle?.totalActive,
+            decodeStatus: row.decode_status ?? null,
         };
     }
 }

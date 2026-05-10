@@ -4,22 +4,15 @@ import { Job } from "bullmq";
 import { DataSource } from "typeorm";
 import Redis from "ioredis";
 import { QUEUE_NAMES } from "@shared/config/bullmq.config";
-import { buildProjectViewsGeojson } from "../project-mapper/geojson-heuristic.mapper";
-import { buildProjectViewsPolicyBased } from "../project-mapper/improved-heuristic.mapper";
 
 /**
- * Mapping from HCS message types to business domain view types.
+ * Builds METHODOLOGY / REGISTRY / CREDIT rows in business_view from raw
+ * messages. PROJECT rows are NOT built here — they are produced eagerly by
+ * ProjectMapperService.upsertProjectFromVc as each VC's IPFS document lands
+ * in IpfsFetchProcessor.
  *
- * Note on methodologies: Guardian publishes a draft "Policy" message and a
- * canonical "Instance-Policy" message (with action='PublishPolicy'). The
- * existing Guardian indexer treats Instance-Policy as the canonical
- * methodology entity. We mirror that here by mapping ONLY Instance-Policy
- * messages to METHODOLOGY view rows.
- *
- * Note on projects: VC-Document messages are NOT handled here. Project rows
- * are built separately in the project mapper because they require
- * multi-message aggregation, geo-coordinate deduplication, and methodology
- * resolution that cannot be expressed in a single INSERT … SELECT.
+ * This processor only reshapes already-parsed messages into the frontend
+ * view-model. It does no decoding.
  */
 const TYPE_MAPPINGS: Record<string, string> = {
     'Instance-Policy': 'METHODOLOGY',
@@ -126,29 +119,6 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
         `);
 
         const totalUpserted = result?.rowCount ?? result?.length ?? 0;
-
-        // ── PROJECT MAPPING STRATEGY ───────────────────────────────────────────────
-        // Switch between two project-mapping approaches by changing PROJECT_STRATEGY.
-        //
-        //  'geojson-heuristic'   — original approach: confirms the project schema by
-        //                          finding the ONLY schema per methodology with a direct
-        //                          GeoJSON field AND a name/title field (title only).
-        //                          Stable; misses policies with opaque field titles
-        //                          (e.g. VM0047) or array-type geo fields.
-        //
-        //  'improved-heuristic'  — same pipeline but with better field detection:
-        //                          checks title + description, handles array-of-GeoJSON,
-        //                          nested dict proponent values, and Shape-D lat/lng
-        //                          string fallback (ISO14064).
-        //
-        const PROJECT_STRATEGY: 'geojson-heuristic' | 'improved-heuristic' = 'improved-heuristic';
-        // ──────────────────────────────────────────────────────────────────────────
-
-        if (PROJECT_STRATEGY === 'improved-heuristic') {
-            await buildProjectViewsPolicyBased(this.dataSource, this.logger);
-        } else {
-            await buildProjectViewsGeojson(this.dataSource, this.logger);
-        }
 
         await this.redis.publish(
             "se:events",
