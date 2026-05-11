@@ -179,8 +179,22 @@ const statusColor: Record<string, string> = {
         </div>
 
         <div class="px-6 pb-6">
-            <div class="rounded-xl border bg-card overflow-x-auto">
-                <table class="w-full text-sm min-w-[900px]">
+            <div class="rounded-xl border bg-card overflow-hidden">
+                <table class="w-full text-sm table-fixed">
+                    <colgroup>
+                        <col class="w-[3%]" />
+                        <col class="w-[13%]" />
+                        <col class="w-[7%]" />
+                        <col class="w-[9%]" />
+                        <col class="w-[8%]" />
+                        <col class="w-[8%]" />
+                        <col class="w-[7%]" />
+                        <col class="w-[10%]" />
+                        <col class="w-[10%]" />
+                        <col class="w-[7%]" />
+                        <col class="w-[14%]" />
+                        <col class="w-[4%]" />
+                    </colgroup>
                     <thead>
                         <tr class="border-b bg-muted/30">
                             <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider w-10">
@@ -208,7 +222,7 @@ const statusColor: Record<string, string> = {
                         <tr
                             v-for="p in paginated"
                             :key="p.id"
-                            class="hover:bg-muted/30 transition-colors cursor-pointer"
+                            class="hover:bg-muted/30 transition-colors cursor-pointer align-top"
                         >
                             <td class="py-3 px-3 text-center">
                                 <button
@@ -227,7 +241,7 @@ const statusColor: Record<string, string> = {
                                 </button>
                             </td>
                             <td class="py-3 px-4">
-                                <NuxtLink :to="`/projects/${p.id}`" class="font-medium text-foreground hover:text-primary transition-colors">{{ p.name }}</NuxtLink>
+                                <NuxtLink :to="`/projects/${p.id}`" class="font-medium text-foreground hover:text-primary transition-colors break-words">{{ p.name }}</NuxtLink>
                             </td>
                             <td class="py-3 px-4 text-muted-foreground">
                                 <div class="group relative inline-flex items-center gap-1.5">
@@ -241,7 +255,7 @@ const statusColor: Record<string, string> = {
                                     </div>
                                 </div>
                             </td>
-                            <td class="py-3 px-4 text-muted-foreground text-xs">{{ p.registry }}</td>
+                            <td class="py-3 px-4 text-muted-foreground text-xs break-words">{{ p.registry }}</td>
                             <td class="py-3 px-4">
                                 <div class="group relative inline-block">
                                     <span class="text-xs bg-muted rounded px-1.5 py-0.5 cursor-default">{{ p.methodology }}</span>

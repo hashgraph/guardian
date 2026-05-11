@@ -343,7 +343,25 @@
           "sdgOrCobenefits": "ODS / Cobeneficios"
         },
         "fetchError": "No se pudo cargar el mapeo decodificado.",
-        "unresolved": "—"
+        "unresolved": "—",
+        "actions": {
+          "title": "Mapping actions",
+          "rerunDecoder": "Re-run decoder",
+          "reparseProjects": "Re-parse projects",
+          "editMapping": "Edit mapping",
+          "save": "Save",
+          "cancel": "Cancel",
+          "unmapped": "— None —",
+          "rerunSuccess": "Decoder re-queued — refresh in a few seconds",
+          "rerunError": "Failed to re-queue decoder",
+          "reparseSuccess": "Re-queued {count} project(s) for re-parsing",
+          "reparseEmpty": "Nothing to re-parse — decode first or no cached VCs",
+          "reparseError": "Failed to re-queue project re-parse",
+          "reparseDisabledHint": "Decode the policy successfully before re-parsing projects",
+          "saveSuccess": "Mapping updated",
+          "saveNoChanges": "No changes to save",
+          "saveError": "Failed to save mapping"
+        }
       },
       "summary": {
         "registry": "Registro",

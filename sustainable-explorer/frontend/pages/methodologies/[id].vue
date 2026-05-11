@@ -24,6 +24,9 @@ import {
   ArrowRight,
   FileSearch,
   ChevronDown,
+  RefreshCw,
+  RotateCcw,
+  Pencil,
 } from "lucide-vue-next";
 import { formatCredits, formatNumber } from "~/lib/format";
 import type {
@@ -208,6 +211,218 @@ const decodeStatusClass = (status: string | null | undefined) => {
   if (s === 'pending') return 'bg-stat-amber/10 text-stat-amber';
   return 'bg-muted text-muted-foreground';
 };
+
+// ─── Action: re-run decoder ──────────────────────────────────────────────────
+
+const redecodePending = ref(false);
+
+async function triggerRedecode() {
+  if (!import.meta.client) return;
+  const config = useRuntimeConfig();
+  const baseURL = config.public.apiBaseUrl as string;
+  redecodePending.value = true;
+  try {
+    await $fetch(
+      `/api/v1/${network.value}/methodologies/${id.value}/redecode`,
+      { method: 'POST', baseURL },
+    );
+    const { toast } = await import('vue-sonner');
+    toast.success(t('methodologies.detail.decoded.actions.rerunSuccess'));
+  } catch (err: any) {
+    const { toast } = await import('vue-sonner');
+    toast.error(t('methodologies.detail.decoded.actions.rerunError'));
+  } finally {
+    redecodePending.value = false;
+  }
+}
+
+// ─── Action: re-parse projects ───────────────────────────────────────────────
+
+const reparsePending = ref(false);
+
+async function triggerReparse() {
+  if (!import.meta.client) return;
+  const config = useRuntimeConfig();
+  const baseURL = config.public.apiBaseUrl as string;
+  reparsePending.value = true;
+  try {
+    const res = await $fetch<{ enqueued: number }>(
+      `/api/v1/${network.value}/methodologies/${id.value}/reparse-projects`,
+      { method: 'POST', baseURL },
+    );
+    const { toast } = await import('vue-sonner');
+    if (res.enqueued === 0) {
+      toast.info(t('methodologies.detail.decoded.actions.reparseEmpty'));
+    } else {
+      toast.success(
+        t('methodologies.detail.decoded.actions.reparseSuccess', { count: res.enqueued }),
+      );
+    }
+  } catch {
+    const { toast } = await import('vue-sonner');
+    toast.error(t('methodologies.detail.decoded.actions.reparseError'));
+  } finally {
+    reparsePending.value = false;
+  }
+}
+
+// ─── Action: edit field mapping ──────────────────────────────────────────────
+
+// The editable project field keys (geo is excluded — it has special GeoJSON semantics).
+// If geo editing is needed in a future version, the PATCH endpoint accepts it via the fieldMap key.
+const EDITABLE_FIELD_KEYS: ResolvedFieldKey[] = [
+  'name',
+  'country',
+  'developer',
+  'category',
+  'scale',
+  'sector',
+  'vintageRaw',
+  'creditingPeriod',
+  'sdgOrCobenefits',
+];
+
+// Labels matching PROJECT_EXTRACT_FIELDS on the backend.
+const FIELD_LABELS: Record<ResolvedFieldKey, string> = {
+  name: 'Project Title',
+  country: 'Country',
+  developer: 'Developer',
+  category: 'Category',
+  scale: 'Scale',
+  sector: 'Sector',
+  vintageRaw: 'Vintage / Start Date',
+  creditingPeriod: 'Crediting Period',
+  sdgOrCobenefits: 'SDGs / Co-benefits',
+};
+
+const editingMapping = ref(false);
+// formState: key → "schemaId.fieldKey" or '' (unmapped)
+const formState = ref<Record<ResolvedFieldKey, string>>({} as Record<ResolvedFieldKey, string>);
+const saveMappingPending = ref(false);
+
+function enterEditMode() {
+  if (!decodedData.value?.projectSchema) return;
+  const resolved = decodedData.value.projectSchema.resolvedFields;
+  const schemaId = decodedData.value.projectSchema.schemaId;
+  const state = {} as Record<ResolvedFieldKey, string>;
+  for (const key of EDITABLE_FIELD_KEYS) {
+    const rf = resolved[key];
+    state[key] = rf ? `${schemaId}.${rf.fieldKey}` : '';
+  }
+  formState.value = state;
+  editingMapping.value = true;
+}
+
+function cancelEditMode() {
+  editingMapping.value = false;
+  formState.value = {} as Record<ResolvedFieldKey, string>;
+}
+
+// Compute the initial (original) form state so we can diff to find changes.
+const originalFormState = computed<Record<ResolvedFieldKey, string>>(() => {
+  if (!decodedData.value?.projectSchema) return {} as Record<ResolvedFieldKey, string>;
+  const resolved = decodedData.value.projectSchema.resolvedFields;
+  const schemaId = decodedData.value.projectSchema.schemaId;
+  const state = {} as Record<ResolvedFieldKey, string>;
+  for (const key of EDITABLE_FIELD_KEYS) {
+    const rf = resolved[key];
+    state[key] = rf ? `${schemaId}.${rf.fieldKey}` : '';
+  }
+  return state;
+});
+
+const pendingChanges = computed<Record<string, string>>(() => {
+  const changes: Record<string, string> = {};
+  for (const key of EDITABLE_FIELD_KEYS) {
+    const current = formState.value[key] ?? '';
+    const original = originalFormState.value[key] ?? '';
+    if (current !== original) {
+      // key in PATCH body is the human-readable LABEL, value is "schemaId.fieldPath"
+      changes[FIELD_LABELS[key]] = current;
+    }
+  }
+  return changes;
+});
+
+const hasChanges = computed(() => Object.keys(pendingChanges.value).length > 0);
+
+// Build grouped options for the select: projectSchema.fieldMap first, then other availableSchemas.
+interface SelectOption {
+  value: string;    // "schemaId.fieldKey"
+  label: string;
+  groupLabel: string;
+}
+
+const mappingSelectOptions = computed<SelectOption[]>(() => {
+  if (!decodedData.value) return [];
+  const options: SelectOption[] = [];
+  const schemas = decodedData.value.availableSchemas ?? [];
+  for (const schema of schemas) {
+    const groupLabel = schema.schemaName || schema.schemaId;
+    for (const field of schema.fields) {
+      // Skip GeoJSON fields — they have special backend semantics.
+      if (field.isGeoJson) continue;
+      options.push({
+        value: `${schema.schemaId}.${field.fieldKey}`,
+        label: `${field.title || field.fieldKey} (${field.fieldKey})`,
+        groupLabel,
+      });
+    }
+  }
+  return options;
+});
+
+// Group options by groupLabel for rendering <optgroup>.
+const mappingOptionGroups = computed<{ label: string; options: SelectOption[] }[]>(() => {
+  const map = new Map<string, SelectOption[]>();
+  for (const opt of mappingSelectOptions.value) {
+    if (!map.has(opt.groupLabel)) map.set(opt.groupLabel, []);
+    map.get(opt.groupLabel)!.push(opt);
+  }
+  return Array.from(map.entries()).map(([label, options]) => ({ label, options }));
+});
+
+async function saveMapping() {
+  if (!import.meta.client || !hasChanges.value) {
+    if (!hasChanges.value) {
+      const { toast } = await import('vue-sonner');
+      toast.info(t('methodologies.detail.decoded.actions.saveNoChanges'));
+    }
+    return;
+  }
+  const config = useRuntimeConfig();
+  const baseURL = config.public.apiBaseUrl as string;
+  saveMappingPending.value = true;
+
+  // Build body: only send changed keys with non-empty values. The backend merges,
+  // so keys not sent are left unchanged. Empty values (unmap) are not supported by
+  // the backend yet — the select intentionally omits the "None" option.
+  const fieldMap: Record<string, string> = {};
+  for (const [label, value] of Object.entries(pendingChanges.value)) {
+    if (value) fieldMap[label] = value;
+  }
+
+  try {
+    const updated = await $fetch<DecodedMethodologyResponse>(
+      `/api/v1/${network.value}/methodologies/${id.value}/decoded`,
+      {
+        method: 'PATCH',
+        baseURL,
+        body: { fieldMap },
+      },
+    );
+    decodedData.value = updated;
+    cancelEditMode();
+    const { toast } = await import('vue-sonner');
+    toast.success(t('methodologies.detail.decoded.actions.saveSuccess'));
+  } catch (err: any) {
+    const { toast } = await import('vue-sonner');
+    const detail = err?.data?.message ?? err?.message ?? '';
+    toast.error(`${t('methodologies.detail.decoded.actions.saveError')}${detail ? ': ' + detail : ''}`);
+  } finally {
+    saveMappingPending.value = false;
+  }
+}
 
 const formatLastAttempt = (ts: string | null | undefined): string => {
   if (!ts) return '—';
@@ -702,16 +917,82 @@ const lifecycleSummary = computed(() => {
                   <p class="text-xs text-destructive/80 font-mono break-all">{{ decodedData.decodeError }}</p>
                 </div>
               </div>
+              <!-- Action buttons row -->
+              <div class="flex items-center justify-end gap-2 pt-1">
+                <!-- Re-run decoder -->
+                <Button
+                  variant="outline"
+                  size="sm"
+                  :disabled="redecodePending || decodedData.decodeStatus === 'pending'"
+                  @click="triggerRedecode"
+                >
+                  <RefreshCw :class="['h-3.5 w-3.5', redecodePending ? 'animate-spin' : '']" />
+                  {{ $t('methodologies.detail.decoded.actions.rerunDecoder') }}
+                </Button>
+                <!-- Re-parse projects — disabled unless decode succeeded -->
+                <div class="relative group">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    :disabled="reparsePending || decodedData.decodeStatus !== 'success'"
+                    @click="triggerReparse"
+                  >
+                    <RotateCcw :class="['h-3.5 w-3.5', reparsePending ? 'animate-spin' : '']" />
+                    {{ $t('methodologies.detail.decoded.actions.reparseProjects') }}
+                  </Button>
+                  <!-- Tooltip explaining why button is disabled when decode not successful -->
+                  <div
+                    v-if="decodedData.decodeStatus !== 'success'"
+                    class="pointer-events-none absolute bottom-full right-0 mb-2 hidden group-hover:block z-50"
+                  >
+                    <div class="bg-foreground text-background text-xs rounded px-2.5 py-1.5 whitespace-nowrap shadow-lg">
+                      {{ $t('methodologies.detail.decoded.actions.reparseDisabledHint') }}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           <!-- 2. Extracted fields table -->
           <div class="rounded-xl border bg-card overflow-hidden">
-            <div class="px-5 py-3.5 border-b bg-muted/30">
+            <div class="px-5 py-3.5 border-b bg-muted/30 flex items-center justify-between gap-3">
               <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                 <FileText class="h-4 w-4 text-primary" />
                 {{ $t('methodologies.detail.decoded.fieldsTableTitle') }}
               </h2>
+              <!-- Edit mapping controls — shown only when projectSchema and availableSchemas are present -->
+              <template v-if="decodedData.projectSchema && decodedData.availableSchemas && decodedData.availableSchemas.length > 0">
+                <template v-if="!editingMapping">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    @click="enterEditMode"
+                  >
+                    <Pencil class="h-3.5 w-3.5" />
+                    {{ $t('methodologies.detail.decoded.actions.editMapping') }}
+                  </Button>
+                </template>
+                <template v-else>
+                  <div class="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      :disabled="saveMappingPending"
+                      @click="cancelEditMode"
+                    >
+                      {{ $t('methodologies.detail.decoded.actions.cancel') }}
+                    </Button>
+                    <Button
+                      size="sm"
+                      :disabled="saveMappingPending || !hasChanges"
+                      @click="saveMapping"
+                    >
+                      {{ $t('methodologies.detail.decoded.actions.save') }}
+                    </Button>
+                  </div>
+                </template>
+              </template>
             </div>
 
             <!-- No schema state — only when there are also no available schemas -->
@@ -763,7 +1044,7 @@ const lifecycleSummary = computed(() => {
                     {{ $t('methodologies.detail.decoded.fieldLabels.' + row.labelKey) }}
                   </td>
                   <td class="py-3 px-4">
-                    <!-- Geo row: reads geoKey + geoFieldTitle directly -->
+                    <!-- Geo row: reads geoKey + geoFieldTitle directly; not editable in v1 (geo has special GeoJSON semantics handled by the backend). -->
                     <template v-if="row.fieldKey === 'geo'">
                       <template v-if="decodedData.projectSchema.geoKey">
                         <div class="text-sm text-foreground font-medium">
@@ -773,21 +1054,45 @@ const lifecycleSummary = computed(() => {
                       </template>
                       <span v-else class="text-sm text-muted-foreground">—</span>
                     </template>
-                    <!-- ResolvedFields rows -->
+                    <!-- ResolvedFields rows — show select in edit mode, display text otherwise -->
                     <template v-else>
-                      <template v-if="decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]">
-                        <div class="text-sm text-foreground font-medium">
-                          {{ decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.title }}
-                          <span class="text-muted-foreground font-normal">({{ decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.fieldKey }})</span>
-                        </div>
-                        <div
-                          v-if="decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.description"
-                          class="text-xs text-muted-foreground mt-0.5 leading-relaxed"
+                      <!-- Edit mode: select dropdown -->
+                      <template v-if="editingMapping">
+                        <select
+                          v-model="formState[row.fieldKey as ResolvedFieldKey]"
+                          class="w-full max-w-sm rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         >
-                          {{ decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.description }}
-                        </div>
+                          <optgroup
+                            v-for="group in mappingOptionGroups"
+                            :key="group.label"
+                            :label="group.label"
+                          >
+                            <option
+                              v-for="opt in group.options"
+                              :key="opt.value"
+                              :value="opt.value"
+                            >
+                              {{ opt.label }}
+                            </option>
+                          </optgroup>
+                        </select>
                       </template>
-                      <span v-else class="text-sm text-muted-foreground">—</span>
+                      <!-- View mode: display resolved field text -->
+                      <template v-else>
+                        <template v-if="decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]">
+                          <div class="text-sm text-foreground font-medium">
+                            {{ decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.title }}
+                            <span class="text-muted-foreground font-normal">({{ decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.fieldKey }})</span>
+                          </div>
+                          <div
+                            v-if="decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.description"
+                            class="text-xs text-muted-foreground mt-0.5 leading-relaxed"
+                          >
+                            {{ decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.description }}
+                          </div>
+                        </template>
+                        <span v-else class="text-sm text-muted-foreground">—</span>
+                      </template>
                     </template>
                   </td>
                 </tr>

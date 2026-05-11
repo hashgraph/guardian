@@ -6,6 +6,7 @@ import {
     resolveMethod,
     loadResolutionMaps,
     extractLatLng,
+    resolveCountryName,
 } from '../project-mapper/helpers';
 import {
     extractLatLngStrings,
@@ -197,7 +198,7 @@ export class ProjectMapperService {
         const lng = geoLngLat?.[0] ?? null;
         const lat = geoLngLat?.[1] ?? null;
         const name = extracted['name'] ?? null;
-        const country = extracted['country'] ?? null;
+        const country = extracted['country'] ? resolveCountryName(extracted['country']) : null;
 
         // Display name: VC-supplied name when present, else project key (so a row
         // exists even before the registration VC lands).

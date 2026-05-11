@@ -25,6 +25,7 @@ import { IpfsFetchProcessor } from './processors/ipfs-fetch.processor';
 import { PolicyDecodeProcessor } from './processors/policy-decode.processor';
 import { MvRefreshProcessor } from './processors/mv-refresh.processor';
 import { BusinessViewBuilderProcessor } from './processors/business-view-builder.processor';
+import { ProjectReparseProcessor } from './processors/project-reparse.processor';
 
 // Schedulers
 import { SyncSchedulerService } from './schedulers/sync-scheduler.service';
@@ -44,6 +45,7 @@ const PROCESSOR_MAP: Record<string, any> = {
     [QUEUE_NAMES.POLICY_DECODE]: PolicyDecodeProcessor,
     [QUEUE_NAMES.MV_REFRESH]: MvRefreshProcessor,
     [QUEUE_NAMES.BUSINESS_VIEW_BUILD]: BusinessViewBuilderProcessor,
+    [QUEUE_NAMES.PROJECT_REPARSE]: ProjectReparseProcessor,
 };
 
 @Module({})

@@ -1,17 +1,28 @@
-import { Controller, Get, Param, Query, NotFoundException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Patch, Param, Query, Body, NotFoundException } from '@nestjs/common';
+import {
+    ApiTags,
+    ApiOperation,
+    ApiResponse,
+    ApiParam,
+    ApiBody,
+} from '@nestjs/swagger';
 import { MethodologiesService } from '../services/methodologies.service';
+import { MappingReprocessService } from '../services/mapping-reprocess.service';
 import {
     MethodologyQueryDto,
     MethodologyResponseDto,
     PaginatedMethodologiesDto,
 } from '../dto/methodology.dto';
 import { DecodedMethodologyResponseDto } from '../dto/decoded-methodology.dto';
+import { UpdateMappingDto } from '../dto/update-mapping.dto';
 
 @ApiTags('methodologies')
 @Controller('api/v1/:network/methodologies')
 export class MethodologiesController {
-    constructor(private readonly methodologiesService: MethodologiesService) {}
+    constructor(
+        private readonly methodologiesService: MethodologiesService,
+        private readonly mappingReprocessService: MappingReprocessService,
+    ) {}
 
     @Get()
     @ApiOperation({
@@ -85,5 +96,111 @@ export class MethodologiesController {
             throw new NotFoundException(`Methodology with ID "${id}" not found on ${network}`);
         }
         return result;
+    }
+
+    // TODO: gate behind admin auth once decided
+    @Post(':id/redecode')
+    @ApiOperation({
+        summary: 'Re-run the policy decoder for an existing methodology',
+        description:
+            'Enqueues a fresh POLICY_DECODE job for the methodology\'s policy ZIP so that ' +
+            'improvements to CrossSchemaFuzzyMapperService or MappingPipelineService are picked up ' +
+            'without waiting for the normal re-sync cycle. ' +
+            'The processor is idempotent: it upserts decode columns and overwrites any stale mapping. ' +
+            'Returns immediately — check GET /:id/decoded for the updated status after the job completes.',
+    })
+    @ApiParam({
+        name: 'network',
+        enum: ['mainnet', 'testnet', 'previewnet'],
+        description: 'Hedera network',
+    })
+    @ApiParam({ name: 'id', description: 'Hedera policy topic ID of the methodology' })
+    @ApiResponse({
+        status: 201,
+        description: 'Job enqueued',
+        schema: {
+            type: 'object',
+            properties: {
+                enqueued: { type: 'boolean' },
+                jobId: { type: 'string' },
+            },
+        },
+    })
+    @ApiResponse({ status: 404, description: 'Methodology or decode status row not found' })
+    async redecode(
+        @Param('network') network: string,
+        @Param('id') id: string,
+    ): Promise<{ enqueued: boolean; jobId?: string }> {
+        return this.mappingReprocessService.redecodePolicy(network, id);
+    }
+
+    // TODO: gate behind admin auth once decided
+    @Post(':id/reparse-projects')
+    @ApiOperation({
+        summary: 'Re-parse already-downloaded VCs to populate projects with updated field mapping',
+        description:
+            'Enqueues one PROJECT_REPARSE job per VC-Document that already has its IPFS content ' +
+            'cached in the DB (documents IS NOT NULL). Useful after updating the field map via ' +
+            'PATCH /:id/decoded or after a re-decode. ' +
+            'Silently returns { enqueued: 0 } when the policy decode status is not "success". ' +
+            'Returns immediately — jobs are processed asynchronously by the worker.',
+    })
+    @ApiParam({
+        name: 'network',
+        enum: ['mainnet', 'testnet', 'previewnet'],
+        description: 'Hedera network',
+    })
+    @ApiParam({ name: 'id', description: 'Hedera policy topic ID of the methodology' })
+    @ApiResponse({
+        status: 201,
+        description: 'Jobs enqueued',
+        schema: {
+            type: 'object',
+            properties: {
+                enqueued: { type: 'number', description: 'Number of reparse jobs enqueued' },
+            },
+        },
+    })
+    @ApiResponse({ status: 404, description: 'Methodology not found' })
+    async reparseProjects(
+        @Param('network') network: string,
+        @Param('id') id: string,
+    ): Promise<{ enqueued: number }> {
+        return this.mappingReprocessService.reparseProjects(network, id);
+    }
+
+    // TODO: gate behind admin auth once decided
+    @Patch(':id/decoded')
+    @ApiOperation({
+        summary: 'Manually edit and save the field mapping for a methodology',
+        description:
+            'Applies a partial or full update to the cross-schema field map stored on ' +
+            'policy_decode_status."fieldMap". Only the keys present in the request body are ' +
+            'overwritten (PATCH semantics). Re-derives projectFieldMap, projectGeoKey, ' +
+            'projectGeoSection, and projectSchemaId from the merged map. ' +
+            'Does NOT automatically trigger project re-parsing — call POST /:id/reparse-projects ' +
+            'separately when ready. Returns the updated DecodedMethodologyResponseDto.',
+    })
+    @ApiParam({
+        name: 'network',
+        enum: ['mainnet', 'testnet', 'previewnet'],
+        description: 'Hedera network',
+    })
+    @ApiParam({ name: 'id', description: 'Hedera policy topic ID of the methodology' })
+    @ApiBody({ type: UpdateMappingDto })
+    @ApiResponse({ status: 200, type: DecodedMethodologyResponseDto })
+    @ApiResponse({
+        status: 400,
+        description:
+            'Validation failure — unknown field labels, malformed schemaId.path values, ' +
+            'or schemaIds that do not belong to this policy.',
+    })
+    @ApiResponse({ status: 404, description: 'Methodology or decode status row not found' })
+    async updateMapping(
+        @Param('network') network: string,
+        @Param('id') id: string,
+        @Body() body: UpdateMappingDto,
+    ): Promise<DecodedMethodologyResponseDto> {
+        return this.mappingReprocessService.updateMapping(network, id, body);
     }
 }

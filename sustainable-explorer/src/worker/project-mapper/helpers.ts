@@ -11,6 +11,28 @@ export function slugify(s: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Country code → name resolution
+// ---------------------------------------------------------------------------
+
+const countryDisplay = new Intl.DisplayNames(['en'], { type: 'region' });
+
+/**
+ * If the value looks like an ISO 3166-1 alpha-2 or alpha-3 code, resolve it
+ * to a human-readable country name. Otherwise return the value unchanged.
+ */
+export function resolveCountryName(raw: string): string {
+    const trimmed = raw.trim();
+    if (!/^[A-Za-z]{2,3}$/.test(trimmed)) return trimmed;
+    try {
+        const resolved = countryDisplay.of(trimmed.toUpperCase());
+        if (resolved && resolved.toUpperCase() !== trimmed.toUpperCase()) return resolved;
+    } catch {
+        // Invalid code — fall through and return the raw value.
+    }
+    return trimmed;
+}
+
+// ---------------------------------------------------------------------------
 // Sector normalisation
 // ---------------------------------------------------------------------------
 

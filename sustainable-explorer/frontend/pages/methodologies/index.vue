@@ -264,8 +264,19 @@ const skeletonRows = computed(() =>
 
     <div class="px-6 pb-6">
       <div class="rounded-xl border bg-card overflow-hidden">
-        <div class="overflow-x-auto">
-        <table class="w-full text-sm min-w-[1400px]">
+        <table class="w-full text-sm table-fixed">
+          <colgroup>
+            <col class="w-[18%]" />
+            <col class="w-[13%]" />
+            <col class="w-[9%]" />
+            <col class="w-[7%]" />
+            <col class="w-[8%]" />
+            <col class="w-[6%]" />
+            <col class="w-[18%]" />
+            <col class="w-[10%]" />
+            <col class="w-[5%]" />
+            <col class="w-[6%]" />
+          </colgroup>
           <thead>
             <tr class="border-b bg-muted/30">
               <SortableHeader
@@ -363,18 +374,18 @@ const skeletonRows = computed(() =>
               <tr
                 v-for="r in methodologies"
                 :key="r.id"
-                class="hover:bg-muted/30 transition-colors cursor-pointer"
+                class="hover:bg-muted/30 transition-colors cursor-pointer align-top"
                 @click="r.topicId && navigateTo('/methodologies/' + r.topicId)"
               >
                 <td class="py-3 px-4">
-                  <div class="flex items-center gap-2.5">
+                  <div class="flex items-start gap-2.5">
                     <div
                       class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10"
                     >
                       <BookOpen class="h-4 w-4 text-primary" />
                     </div>
                     <span
-                      class="font-medium text-foreground hover:text-primary transition-colors"
+                      class="font-medium text-foreground hover:text-primary transition-colors break-words min-w-0"
                       >{{ r.name }}</span
                     >
                   </div>
@@ -384,7 +395,7 @@ const skeletonRows = computed(() =>
                     v-if="r.registryDid"
                     :to="`/registries?did=${encodeURIComponent(r.registryDid)}`"
                     :title="r.registryDid"
-                    class="text-sm text-foreground hover:text-primary hover:underline transition-colors truncate inline-block max-w-[200px]"
+                    class="text-sm text-foreground hover:text-primary hover:underline transition-colors break-words"
                   >
                     {{ r.registryName || r.registryDid }}
                   </NuxtLink>
@@ -410,15 +421,15 @@ const skeletonRows = computed(() =>
                 </td>
                 <td class="py-3 px-4">
                   <span
-                    class="block max-w-[300px] truncate text-xs text-muted-foreground"
+                    class="block text-xs text-muted-foreground break-words"
                     :title="r.description ?? ''"
                     >{{ r.description ?? "—" }}</span
                   >
                 </td>
                 <td class="py-3 px-4">
-                  <div class="group flex items-center gap-2">
+                  <div class="group flex items-start gap-2">
                     <code
-                      class="text-[11px] text-muted-foreground/80 font-mono"
+                      class="text-[11px] text-muted-foreground/80 font-mono break-all min-w-0"
                       >{{ r.topicId ?? "—" }}</code
                     >
                     <button
@@ -466,7 +477,6 @@ const skeletonRows = computed(() =>
             </template>
           </tbody>
         </table>
-        </div>
       </div>
 
       <Pagination

@@ -16,6 +16,7 @@ import { QueueStatusController } from './controllers/queue-status.controller';
 // Services
 import { RegistriesService } from './services/registries.service';
 import { MethodologiesService } from './services/methodologies.service';
+import { MappingReprocessService } from './services/mapping-reprocess.service';
 import { PolicySchemasService } from './services/policy-schemas.service';
 import { ProjectsService } from './services/project.service';
 import { CreditsService } from './services/credits.service';
@@ -43,6 +44,7 @@ import { QueueEventsBus } from './queues/queue-events-bus.service';
         NetworkDataSourceRegistry,
         RegistriesService,
         MethodologiesService,
+        MappingReprocessService,
         PolicySchemasService,
         ProjectsService,
         CreditsService,
