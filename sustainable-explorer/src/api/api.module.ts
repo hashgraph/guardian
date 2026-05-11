@@ -10,6 +10,7 @@ import { RegistriesController } from './controllers/registries.controller';
 import { MethodologiesController } from './controllers/methodologies.controller';
 import { PolicySchemasController } from './controllers/policy-schemas.controller';
 import { ProjectsController } from './controllers/project.controller';
+import { CreditsController } from './controllers/credits.controller';
 import { QueueStatusController } from './controllers/queue-status.controller';
 
 // Services
@@ -17,6 +18,7 @@ import { RegistriesService } from './services/registries.service';
 import { MethodologiesService } from './services/methodologies.service';
 import { PolicySchemasService } from './services/policy-schemas.service';
 import { ProjectsService } from './services/project.service';
+import { CreditsService } from './services/credits.service';
 
 // Queue management
 import { QueueRegistry } from './queues/queue.registry';
@@ -34,6 +36,7 @@ import { QueueEventsBus } from './queues/queue-events-bus.service';
         MethodologiesController,
         PolicySchemasController,
         ProjectsController,
+        CreditsController,
         QueueStatusController,
     ],
     providers: [
@@ -42,6 +45,7 @@ import { QueueEventsBus } from './queues/queue-events-bus.service';
         MethodologiesService,
         PolicySchemasService,
         ProjectsService,
+        CreditsService,
         QueueRegistry,
         QueueEventsBus,
     ],

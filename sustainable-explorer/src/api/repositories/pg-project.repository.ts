@@ -168,6 +168,9 @@ export class PgProjectRepository extends ProjectRepository {
     }
 
     async findById(id: string): Promise<ProjectRow | null> {
+        // Accept either the row's sourceTimestamp (legacy ID used by the
+        // /projects list page) or the projectKey (credentialSubject.id, used
+        // by the credits page links).
         const rawRows: RawRow[] = await this.dataSource.query(
             `
             SELECT
@@ -176,7 +179,7 @@ export class PgProjectRepository extends ProjectRepository {
             FROM business_view bv
             ${REGISTRY_NAME_JOIN}
             WHERE bv."viewType" = 'PROJECT'
-              AND bv."sourceTimestamp" = $1
+              AND (bv."sourceTimestamp" = $1 OR bv."projectKey" = $1)
             LIMIT 1
             `,
             [id],

@@ -2,19 +2,36 @@
 import { Coins, FileJson } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
-import { generateCreditVc } from '~/lib/mock-vc';
 
 const { t } = useI18n();
+const { network } = useNetwork();
 const { credits, total, filterOptions } = useCredits();
+
+const config = useRuntimeConfig();
+const apiBaseURL = import.meta.server
+    ? (config.apiBaseUrl as string)
+    : (config.public.apiBaseUrl as string);
 
 const vcViewerOpen = ref(false);
 const vcViewerTitle = ref('');
 const vcViewerData = ref<Record<string, any> | null>(null);
 
-function viewVc(c: any) {
-    vcViewerTitle.value = c.name;
-    vcViewerData.value = generateCreditVc(c, c.project);
+async function viewVc(c: any) {
+    vcViewerTitle.value = c.name ?? c.tokenId ?? 'Credit';
     vcViewerOpen.value = true;
+    vcViewerData.value = null;
+    try {
+        vcViewerData.value = await $fetch<Record<string, any>>(
+            `/api/v1/${network.value}/credits/${encodeURIComponent(c.tokenId)}/raw`,
+            { baseURL: apiBaseURL },
+        );
+    } catch (err) {
+        vcViewerData.value = {
+            error: 'Failed to load raw data',
+            message: err instanceof Error ? err.message : String(err),
+            tokenId: c.tokenId,
+        };
+    }
 }
 
 const allCredits = computed(() => credits.value.map(c => ({
@@ -40,14 +57,8 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
 <template>
     <div class="space-y-0">
         <div class="px-6 pt-6 pb-4">
-            <h1 class="text-2xl font-bold text-foreground flex items-center gap-2">
-                {{ $t('credits.title') }}
-                <MockDataBadge compact />
-            </h1>
+            <h1 class="text-2xl font-bold text-foreground">{{ $t('credits.title') }}</h1>
             <p class="text-sm text-muted-foreground mt-1">{{ $t('credits.subtitle') }}</p>
-        </div>
-        <div class="px-6 pb-3">
-            <MockDataBadge />
         </div>
 
         <div class="px-6 pb-3">
@@ -69,12 +80,22 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
                         </tr>
                     </thead>
                     <tbody class="divide-y">
-                        <tr v-for="c in paginated" :key="c.id" class="hover:bg-muted/30 transition-colors cursor-pointer">
+                        <tr v-for="c in paginated" :key="c.tokenId" class="hover:bg-muted/30 transition-colors cursor-pointer">
                             <td class="py-3 px-4"><div><span class="font-medium text-foreground">{{ c.name }}</span><p class="text-[11px] text-muted-foreground/60 font-mono">{{ c.tokenId }}</p></div></td>
                             <td class="py-3 px-4 font-mono text-xs">{{ c.symbol }}</td>
                             <td class="py-3 px-4"><span :class="[typeColor[c.type], 'text-xs font-medium rounded-full px-2 py-0.5']">{{ c.type }}</span></td>
                             <td class="py-3 px-4 text-right tabular-nums font-medium">{{ c.supplyFormatted }}</td>
-                            <td class="py-3 px-4 text-muted-foreground">{{ c.project }}</td>
+                            <td class="py-3 px-4 text-muted-foreground">
+                                <NuxtLink
+                                    v-if="c.projectId"
+                                    :to="`/projects/${encodeURIComponent(c.projectId)}`"
+                                    class="hover:text-primary hover:underline transition-colors"
+                                    @click.stop
+                                >
+                                    {{ c.project }}
+                                </NuxtLink>
+                                <span v-else>{{ c.project }}</span>
+                            </td>
                             <td class="py-3 px-4 text-muted-foreground">{{ c.registry }}</td>
                             <td class="py-3 px-3 text-center">
                                 <button
