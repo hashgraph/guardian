@@ -59,6 +59,25 @@ const POLICY_DECODE_STATUS_JOIN = `
 `;
 
 /**
+ * Effective decode status for display + filtering.
+ *
+ * Treats a policy as 'success' whenever its schemas have been imported,
+ * even if pds.status is currently 'failed'. This handles the case where a
+ * decode succeeded once, the IPFS CID later became unreachable, and a retry
+ * flipped status to 'failed' — the stored data is still usable, so the UI
+ * should reflect that.
+ */
+const EFFECTIVE_DECODE_STATUS = `
+    CASE
+        WHEN pds."projectSchemaId" IS NOT NULL OR EXISTS (
+            SELECT 1 FROM policy_schema ps
+            WHERE ps."policyTopicId" = bv."businessData"->>'topicId'
+        ) THEN 'success'
+        ELSE pds.status
+    END
+`;
+
+/**
  * PostgreSQL implementation of the MethodologyRepository.
  *
  * Generic filter and sort logic is delegated to QueryBuilder + the field
@@ -93,13 +112,14 @@ export class PgMethodologyRepository extends MethodologyRepository {
             policyTopicId: query.policyTopicId,
         });
 
-        // decodeStatus filter — pds.status is NULL for methodologies that have
-        // never been attempted, which we expose as 'unknown'.
+        // decodeStatus filter — uses the EFFECTIVE status (CASE expression) so
+        // 'success' includes policies whose schemas are imported even if a
+        // recent retry flipped pds.status to 'failed'.
         if (query.decodeStatus === 'unknown') {
-            builder.addClause(`pds.status IS NULL`);
+            builder.addClause(`(${EFFECTIVE_DECODE_STATUS}) IS NULL`);
         } else if (query.decodeStatus) {
             const p = builder.nextParam(query.decodeStatus);
-            builder.addClause(`pds.status = ${p}`);
+            builder.addClause(`(${EFFECTIVE_DECODE_STATUS}) = ${p}`);
         }
 
         // Special: full-text search with ranking. The tsvector index covers
@@ -150,7 +170,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 s.issuance_count,
                 s.schema_count,
                 reg.registry_name,
-                pds.status AS decode_status,
+                (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
                 pds."sectoralScopes" AS sectoral_scopes,
                 pds."emissionReductionApproach" AS emission_reduction_approach,
                 ${rankExpr} AS search_rank
@@ -196,7 +216,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 s.issuance_count,
                 s.schema_count,
                 reg.registry_name,
-                pds.status AS decode_status,
+                (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
                 pds."sectoralScopes" AS sectoral_scopes,
                 pds."emissionReductionApproach" AS emission_reduction_approach
             FROM business_view bv

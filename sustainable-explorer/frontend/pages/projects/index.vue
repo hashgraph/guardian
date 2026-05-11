@@ -188,8 +188,8 @@ const statusColor: Record<string, string> = {
                             <SortableHeader :label="$t('projects.columns.methodology')" sort-key="methodology" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.sector')" sort-key="sector" :tooltip="$t('projects.sectorTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.issuances')" sort-key="issuanceCount" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('projects.columns.transferred')" sort-key="transferred" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('projects.columns.retired')" sort-key="retired" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('projects.columns.transferred')" sort-key="transferred" align="right" mock :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('projects.columns.retired')" sort-key="retired" align="right" mock :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.status')" sort-key="status" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[160px]">
                                 <span class="inline-flex items-center gap-1">

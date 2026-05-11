@@ -9,6 +9,8 @@ const props = defineProps<{
     sortDir: SortDirection;
     align?: 'left' | 'right';
     tooltip?: string;
+    /** Show a compact "Mock data" badge next to the label. */
+    mock?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -29,6 +31,7 @@ const isActive = computed(() => props.activeSortKey === props.sortKey);
             :class="align === 'right' ? 'justify-end' : 'justify-start'"
         >
             <span>{{ label }}</span>
+            <MockDataBadge v-if="mock" compact />
             <InfoTooltip v-if="tooltip" :text="tooltip" />
             <ArrowUp v-if="isActive && sortDir === 'asc'" class="h-3 w-3 text-foreground" />
             <ArrowDown v-else-if="isActive && sortDir === 'desc'" class="h-3 w-3 text-foreground" />

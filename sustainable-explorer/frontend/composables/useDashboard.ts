@@ -19,6 +19,43 @@ function relativeTime(dateStr: string): string {
 
 export function useDashboard(filters?: Ref<{ developer?: string; registry?: string }>) {
     const { projects, pending } = useProjects();
+    const { network } = useNetwork();
+    const config = useRuntimeConfig();
+    const baseURL = import.meta.server
+        ? (config.apiBaseUrl as string)
+        : (config.public.apiBaseUrl as string);
+
+    // System-wide totals fetched independently of the project list, so the
+    // top-line stat cards reflect everything indexed — not just whatever
+    // appears in the current filtered project set.
+    const registryTotal = ref(0);
+    const methodologyTotal = ref(0);
+
+    async function refreshTotals() {
+        if (!import.meta.client) return;
+        try {
+            const [r, m] = await Promise.all([
+                $fetch<{ meta: { total: number } }>(`/api/v1/${network.value}/registries`, {
+                    baseURL,
+                    query: { limit: 1, page: 1 },
+                }),
+                $fetch<{ meta: { total: number } }>(`/api/v1/${network.value}/methodologies`, {
+                    baseURL,
+                    query: { limit: 1, page: 1 },
+                }),
+            ]);
+            registryTotal.value = r?.meta?.total ?? 0;
+            methodologyTotal.value = m?.meta?.total ?? 0;
+        } catch {
+            registryTotal.value = 0;
+            methodologyTotal.value = 0;
+        }
+    }
+
+    if (import.meta.client) {
+        refreshTotals();
+        watch(network, refreshTotals);
+    }
 
     const developerOptions = computed(() => {
         return ['All Developers', ...new Set(projects.value.map(p => p.developer).filter(Boolean))].sort((a, b) => {
@@ -225,19 +262,14 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         return (f.developer && f.developer !== 'All Developers') || (f.registry && f.registry !== 'All Registries');
     });
 
-    const stats = computed(() => {
-        const totalProjects = filteredProjects.value.length;
-        const totalCredits = filteredProjects.value.reduce((sum, p) => sum + p.credits, 0);
-        const uniqueRegistries = new Set(filteredProjects.value.map(p => p.registry)).size;
-        const uniqueMethodologies = new Set(filteredProjects.value.map(p => p.methodologyId)).size;
-
-        return {
-            registries: uniqueRegistries,
-            methodologies: uniqueMethodologies,
-            projects: totalProjects,
-            totalCredits,
-        };
-    });
+    // Stat cards reflect system-wide totals — they don't react to the dashboard
+    // filter dropdowns. Filters only narrow the map/charts/tables below.
+    const stats = computed(() => ({
+        registries: registryTotal.value,
+        methodologies: methodologyTotal.value,
+        projects: projects.value.length,
+        totalCredits: projects.value.reduce((sum, p) => sum + p.credits, 0),
+    }));
 
     // Sector breakdown for pie charts
     const sectorColors: Record<string, string> = {

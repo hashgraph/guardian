@@ -141,8 +141,24 @@ export class PgPolicySchemaRepository extends PolicySchemaRepository {
             project_schema_config: Record<string, unknown> | null;
         }> = await this.dataSource.query(
             `SELECT
-                pds.status               AS decode_status,
-                pds.error                AS decode_error,
+                -- Effective status: if schemas exist or a project schema was
+                -- identified, treat as 'success' even when a recent retry
+                -- flipped pds.status to 'failed'.
+                CASE
+                    WHEN pds."projectSchemaId" IS NOT NULL OR EXISTS (
+                        SELECT 1 FROM policy_schema ps2
+                        WHERE ps2."policyTopicId" = q.topic_id
+                    ) THEN 'success'
+                    ELSE pds.status
+                END                      AS decode_status,
+                -- Hide stale errors when we've overridden status to success.
+                CASE
+                    WHEN pds."projectSchemaId" IS NOT NULL OR EXISTS (
+                        SELECT 1 FROM policy_schema ps2
+                        WHERE ps2."policyTopicId" = q.topic_id
+                    ) THEN NULL
+                    ELSE pds.error
+                END                      AS decode_error,
                 pds.attempts             AS attempts,
                 pds."lastAttemptAt"      AS last_attempt_at,
                 pds."projectSchemaId"    AS project_schema_id,

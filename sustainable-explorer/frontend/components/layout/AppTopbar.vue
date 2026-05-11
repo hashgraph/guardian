@@ -282,6 +282,10 @@ function onSearchKeydown(e: KeyboardEvent) {
                         v-if="searchOpen && filteredResults.length > 0"
                         class="absolute left-0 right-0 top-full mt-1 rounded-lg border bg-popover shadow-lg overflow-hidden"
                     >
+                        <div class="px-3 py-1.5 border-b bg-muted/30 flex items-center justify-between">
+                            <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Results</span>
+                            <MockDataBadge compact />
+                        </div>
                         <div class="py-1">
                             <button
                                 v-for="(result, idx) in filteredResults"

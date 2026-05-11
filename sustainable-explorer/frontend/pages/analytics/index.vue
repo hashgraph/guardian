@@ -46,8 +46,14 @@ const byMethodology = computed(() => {
 <template>
     <div class="space-y-0">
         <div class="px-6 pt-6 pb-5">
-            <h1 class="text-2xl font-bold text-foreground">{{ $t('analytics.title') }}</h1>
+            <h1 class="text-2xl font-bold text-foreground flex items-center gap-2">
+                {{ $t('analytics.title') }}
+                <MockDataBadge compact />
+            </h1>
             <p class="text-sm text-muted-foreground mt-1">{{ $t('analytics.subtitle') }}</p>
+        </div>
+        <div class="px-6 pb-4">
+            <MockDataBadge />
         </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 px-6 pb-6">

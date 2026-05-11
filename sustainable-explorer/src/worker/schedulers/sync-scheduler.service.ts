@@ -240,11 +240,17 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     }
 
     /**
-     * Finds Instance-Policy messages that have a ZIP CID but no imported schemas
-     * and re-enqueues them for the PolicyDecodeProcessor.
+     * Finds published Instance-Policy messages whose policy hasn't been decoded
+     * successfully yet, and re-enqueues them for the PolicyDecodeProcessor.
      *
-     * The processor itself deduplicates via (policyTopicId, sourceCid), so
-     * already-imported ZIPs are skipped cheaply on subsequent restarts.
+     * Re-enqueue when:
+     *   - No row in policy_decode_status (never attempted), OR
+     *   - status != 'success' (pending or failed — give it another chance).
+     *
+     * Policies with status='success' are NOT re-enqueued. This prevents the
+     * boot-storm regression where successful decodes get retried every restart,
+     * eventually failing once the IPFS CID becomes unreachable and flipping
+     * status from 'success' to 'failed'.
      */
     private async schedulePolicyDecodeJobs(): Promise<void> {
         const rows: Array<{ policy_topic_id: string; consensus_timestamp: string; cid: string }> =
@@ -259,19 +265,10 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
                   AND m.action ILIKE 'publish-policy'
                   AND m.files IS NOT NULL
                   AND array_length(m.files, 1) > 0
-                  AND (
-                      NOT EXISTS (
-                          SELECT 1 FROM policy_schema ps
-                          WHERE ps."policyTopicId" = m."topicId"
-                            AND ps."sourceCid" = f.cid
-                      )
-                      OR EXISTS (
-                          SELECT 1 FROM business_view bv
-                          WHERE bv."viewType" = 'METHODOLOGY'
-                            AND bv."businessData"->>'topicId' = m."topicId"
-                            AND bv."businessData"->'sectoralScopes' IS NULL
-                            AND bv."businessData"->'emissionReductionApproach' IS NULL
-                      )
+                  AND NOT EXISTS (
+                      SELECT 1 FROM policy_decode_status pds
+                      WHERE pds."policyTopicId" = m."topicId"
+                        AND pds.status = 'success'
                   )
             `);
 
