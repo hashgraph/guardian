@@ -334,11 +334,17 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         if (!countryData) return null;
 
         const countryProjects = filteredProjects.value.filter(p => p.countryCode === code);
+        const totalProjects = countryProjects.length;
 
+        // Per-bucket counts AND credits. Percentages prefer credit weighting when
+        // credits exist; otherwise fall back to project-count weighting so the
+        // breakdown is still meaningful for pre-issuance / un-tokenized projects.
         const catCredits: Record<string, number> = {};
+        const catCounts: Record<string, number> = {};
         let totalCredits = 0;
         for (const p of countryProjects) {
             catCredits[p.category] = (catCredits[p.category] || 0) + p.credits;
+            catCounts[p.category]  = (catCounts[p.category]  || 0) + 1;
             totalCredits += p.credits;
         }
 
@@ -352,23 +358,31 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             'Waste': '#a6d96a',
         };
 
-        const sectors = Object.entries(catCredits)
-            .map(([label, credits]) => ({
-                label,
-                value: totalCredits > 0 ? Math.round((credits / totalCredits) * 100) : 0,
-                color: sectorColorMap[label] || '#d4d4d8',
-            }))
+        const useCredits = totalCredits > 0;
+        const denom = useCredits ? totalCredits : (totalProjects || 1);
+
+        const sectors = Object.keys(catCounts)
+            .map(label => {
+                const numerator = useCredits ? catCredits[label] : catCounts[label];
+                return {
+                    label,
+                    value: Math.round((numerator / denom) * 100),
+                    color: sectorColorMap[label] || '#d4d4d8',
+                };
+            })
             .sort((a, b) => b.value - a.value);
 
         const regCredits: Record<string, number> = {};
+        const regCounts: Record<string, number> = {};
         for (const p of countryProjects) {
             regCredits[p.registry] = (regCredits[p.registry] || 0) + p.credits;
+            regCounts[p.registry]  = (regCounts[p.registry]  || 0) + 1;
         }
-        const registriesBreakdown = Object.entries(regCredits)
-            .map(([name, credits]) => ({
-                name,
-                pct: totalCredits > 0 ? Math.round((credits / totalCredits) * 1000) / 10 : 0,
-            }))
+        const registriesBreakdown = Object.keys(regCounts)
+            .map(name => {
+                const numerator = useCredits ? regCredits[name] : regCounts[name];
+                return { name, pct: Math.round((numerator / denom) * 1000) / 10 };
+            })
             .sort((a, b) => b.pct - a.pct)
             .slice(0, 3);
 
