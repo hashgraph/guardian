@@ -1,5 +1,5 @@
 import { DataBaseHelper, IAuthUser, JwtServicesValidator, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
-import { GenerateUUIDv4, IBlockCompleteEvent, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
+import { GenerateUUIDv4, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
 import { headers } from 'nats';
 import { Inject } from '../helpers/decorators/inject.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
@@ -116,9 +116,9 @@ export class BlockTreeGenerator extends NatsService {
         // Available -->
 
         const baseEvent = {
-            blockType: block.blockType,
-            blockTag: block.tag,
-            blockId: block.uuid,
+            blockType: block.blockType ?? '',
+            blockTag: block.tag ?? '',
+            blockId: block.uuid ?? '',
             policyId,
             userId: userFull.did,
         };
@@ -133,7 +133,7 @@ export class BlockTreeGenerator extends NatsService {
                     error: errors[0]?.message,
                     errorDetails: errors.length > 0 ? errors : undefined,
                     timestamp: Date.now(),
-                } as IBlockCompleteEvent);
+                });
             },
             0, syncEvents, history
         );
@@ -151,7 +151,7 @@ export class BlockTreeGenerator extends NatsService {
                 error: res.error,
                 errorDetails: [{ message: res.error }],
                 timestamp: Date.now(),
-            } as IBlockCompleteEvent);
+            });
             return res;
         }
 
