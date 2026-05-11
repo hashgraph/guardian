@@ -4,7 +4,7 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import moment from 'moment';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { concatMap, finalize, from, Subscription } from 'rxjs';
+import { concatMap, filter, finalize, from, interval, map, Observable, Subscription, take } from 'rxjs';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { NewImportFileDialog } from '../new-import-file-dialog/new-import-file-dialog.component';
 import { PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
@@ -24,6 +24,7 @@ export class PolicyTestDialog {
     private lastUpdate: any;
     private expandMap: Set<string> = new Set<string>();
     private subscription = new Subscription();
+    private bulkSubscription: Subscription | null = null;
     public isLargeSize: boolean = true;
     public rerunMenuOpen: boolean = false;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
@@ -161,28 +162,68 @@ export class PolicyTestDialog {
         this.rerunTests(tests);
     }
 
+    private replaceTest(result: any): void {
+        const index = this.tests.findIndex((t: any) => t.id === result.id);
+        if (index !== -1) {
+            this.tests[index] = result;
+        }
+        this.tests = this.tests.slice();
+        if (this.policy) {
+            this.policy.tests = this.tests;
+        }
+    }
+
+    private waitForTestCompletion(testId: string): Observable<any> {
+        return interval(3000).pipe(
+            concatMap(() => this.policyEngineService.policy(this.policyId)),
+            map((policy: any) => {
+                this.updatePolicy(policy);
+                this.updateData();
+                return (policy?.tests || []).find((t: any) => t.id === testId);
+            }),
+            filter((test: any) => !!test && test.status !== PolicyTestStatus.Running),
+            take(1)
+        );
+    }
+
+    public isBulkRunning(): boolean {
+        return !!this.bulkSubscription;
+    }
+
+    public stopAll(): void {
+        if (this.bulkSubscription) {
+            this.bulkSubscription.unsubscribe();
+            this.bulkSubscription = null;
+        }
+        const running = (this.tests || []).filter((t: any) => t.status === PolicyTestStatus.Running);
+        for (const test of running) {
+            this.policyEngineService.stopTest(this.policyId, test.id).subscribe();
+        }
+        this.updateProgress(true);
+    }
+
     private rerunTests(tests: any[]): void {
         if (!tests.length || this.isRunning || !this.isRunAvailable()) {
             return;
         }
 
         this.loading = true;
-        from(tests).pipe(
-            concatMap((test) => this.policyEngineService.runTest(this.policyId, test.id)),
+        this.bulkSubscription = from(tests).pipe(
+            concatMap((test) =>
+                this.policyEngineService.runTest(this.policyId, test.id).pipe(
+                    concatMap((result) => {
+                        this.replaceTest(result);
+                        this.updateData();
+                        this.loading = false;
+                        return this.waitForTestCompletion(result.id);
+                    })
+                )
+            ),
             finalize(() => {
+                this.bulkSubscription = null;
                 this.updateProgress(true);
             })
-        ).subscribe((result) => {
-            const index = this.tests.findIndex((test: any) => test.id === result.id);
-            if (index !== -1) {
-                this.tests[index] = result;
-            }
-            this.tests = this.tests.slice();
-            if (this.policy) {
-                this.policy.tests = this.tests;
-            }
-            this.updateData();
-        }, () => {});
+        ).subscribe(() => {}, () => {});
     }
 
     public isRunAvailable(): boolean {

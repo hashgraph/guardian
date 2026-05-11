@@ -71,6 +71,7 @@ import {
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
+import { createHash } from 'crypto';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
@@ -4023,6 +4024,16 @@ export class PolicyEngineService {
                         throw new Error(`Policy is published`);
                     }
                     const buffer = Buffer.from(file.buffer);
+                    const newHash = createHash('sha256').update(buffer).digest('hex');
+                    const existingTests = await DatabaseServer.getPolicyTests(policyId);
+                    for (const existing of existingTests) {
+                        const existingBuffer = existing.file
+                            ? await DatabaseServer.loadFile(existing.file)
+                            : null;
+                        if (existingBuffer && createHash('sha256').update(existingBuffer).digest('hex') === newHash) {
+                            return new MessageError('Duplicate test file.', 409);
+                        }
+                    }
                     const recordToImport = await RecordImportExport.parseZipFile(buffer);
                     const test = await DatabaseServer.createPolicyTest(
                         {

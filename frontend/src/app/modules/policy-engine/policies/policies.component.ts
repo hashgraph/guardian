@@ -536,7 +536,7 @@ export class PoliciesComponent implements OnInit {
                     }),
                     new MenuButton({
                         visible: true,
-                        disabled: !(policy.tests && policy.tests.length),
+                        disabled: false,
                         tooltip: 'Test details',
                         icon: 'run-test',
                         color: 'primary-color',
