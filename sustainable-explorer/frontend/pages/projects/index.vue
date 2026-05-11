@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FolderKanban, FileJson, Sparkles } from 'lucide-vue-next';
+import { FolderKanban, FileJson, Sparkles, CheckSquare, Square, X, Columns2 } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
 import { SDG_LIST } from '~/lib/sdgs';
@@ -10,6 +10,7 @@ import type { Project } from '~/types/models';
 
 const { t } = useI18n();
 const { projects, total, filterOptions } = useProjects();
+const { selectedEntries, canAdd, isSelected, toggleProject, removeProject, clearAll, goToCompare } = useProjectComparison();
 const { resolvedCode } = useGeocodedCountries(projects);
 
 const INVALID_COUNTRY = new Set([
@@ -182,6 +183,9 @@ const statusColor: Record<string, string> = {
                 <table class="w-full text-sm min-w-[900px]">
                     <thead>
                         <tr class="border-b bg-muted/30">
+                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider w-10">
+                                <span class="inline-flex items-center gap-1"><Columns2 class="h-3.5 w-3.5" /></span>
+                            </th>
                             <SortableHeader :label="$t('projects.columns.project')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.country')" sort-key="country" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.registry')" sort-key="registry" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
@@ -206,6 +210,22 @@ const statusColor: Record<string, string> = {
                             :key="p.id"
                             class="hover:bg-muted/30 transition-colors cursor-pointer"
                         >
+                            <td class="py-3 px-3 text-center">
+                                <button
+                                    :class="[
+                                        isSelected(p.id)
+                                            ? 'text-primary bg-primary/10 hover:bg-primary/20'
+                                            : (!canAdd ? 'opacity-40 cursor-not-allowed text-muted-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'),
+                                        'inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors',
+                                    ]"
+                                    :title="isSelected(p.id) ? $t('projects.compare.removeFromCompare') : (!canAdd ? $t('projects.compare.maxSelected') : $t('projects.compare.addToCompare'))"
+                                    :disabled="!canAdd && !isSelected(p.id)"
+                                    @click.stop="toggleProject(p.id, p.name)"
+                                >
+                                    <CheckSquare v-if="isSelected(p.id)" class="h-3.5 w-3.5" />
+                                    <Square v-else class="h-3.5 w-3.5" />
+                                </button>
+                            </td>
                             <td class="py-3 px-4">
                                 <NuxtLink :to="`/projects/${p.id}`" class="font-medium text-foreground hover:text-primary transition-colors">{{ p.name }}</NuxtLink>
                             </td>
@@ -266,7 +286,7 @@ const statusColor: Record<string, string> = {
                             </td>
                         </tr>
                         <tr v-if="paginated.length === 0">
-                            <td colspan="11" class="py-12 text-center text-sm text-muted-foreground">{{ $t('projects.noMatch') }}</td>
+                            <td colspan="12" class="py-12 text-center text-sm text-muted-foreground">{{ $t('projects.noMatch') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -282,4 +302,66 @@ const statusColor: Record<string, string> = {
 
         <VcJsonViewer :open="vcViewerOpen" :title="vcViewerTitle" :data="vcViewerData" @close="vcViewerOpen = false" />
     </div>
+
+    <!-- Floating comparison bar -->
+    <Teleport to="body">
+        <Transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 translate-y-4"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="opacity-100 translate-y-0"
+            leave-to-class="opacity-0 translate-y-4"
+        >
+            <div v-if="selectedEntries.length > 0" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+                <div class="pointer-events-auto flex items-center gap-3 rounded-xl border bg-card shadow-2xl px-4 py-3 min-w-[340px] max-w-[700px]">
+                    <Columns2 class="h-4 w-4 text-primary shrink-0" />
+                    <span class="text-sm font-medium text-foreground shrink-0">
+                        {{ $t('projects.compare.comparing', { count: selectedEntries.length }) }}
+                    </span>
+
+                    <!-- Project chips -->
+                    <div class="flex items-center gap-1.5 flex-1 flex-wrap min-w-0">
+                        <span
+                            v-for="entry in selectedEntries"
+                            :key="entry.id"
+                            class="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-xs font-medium max-w-[160px]"
+                        >
+                            <span class="truncate">{{ entry.name }}</span>
+                            <button
+                                class="shrink-0 rounded-full hover:bg-primary/20 transition-colors p-0.5"
+                                :title="$t('common.close')"
+                                @click="removeProject(entry.id)"
+                            >
+                                <X class="h-2.5 w-2.5" />
+                            </button>
+                        </span>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button
+                            class="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                            @click="clearAll"
+                        >
+                            {{ $t('projects.compare.clearAll') }}
+                        </button>
+                        <button
+                            :disabled="selectedEntries.length < 2"
+                            :class="[
+                                selectedEntries.length >= 2
+                                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                    : 'bg-muted text-muted-foreground cursor-not-allowed',
+                                'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
+                            ]"
+                            @click="goToCompare"
+                        >
+                            <Columns2 class="h-3 w-3" />
+                            {{ $t('projects.compare.compareButton') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
 </template>

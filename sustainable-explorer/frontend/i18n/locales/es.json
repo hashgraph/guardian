@@ -198,6 +198,27 @@
       "vintage": "Añada",
       "created": "Creado",
       "creditingPeriod": "Período de acreditación"
+    },
+    "compare": {
+      "title": "Comparar proyectos",
+      "subtitle": "Comparación lado a lado de hasta 4 proyectos",
+      "attribute": "Atributo",
+      "notFound": "Proyecto no encontrado",
+      "needTwo": "Selecciona al menos 2 proyectos para comparar.",
+      "credits": "Créditos est.",
+      "totalIssued": "Total emitido",
+      "totalRetired": "Total retirado",
+      "totalActive": "Total activo",
+      "creditingPeriodEnd": "Fin del período de acreditación",
+      "selectToCompare": "Comparar",
+      "comparing": "{count} seleccionados",
+      "compareButton": "Comparar",
+      "clearAll": "Limpiar todo",
+      "maxSelected": "Máx. 4 proyectos",
+      "addToCompare": "Añadir a la comparación",
+      "removeFromCompare": "Quitar de la comparación",
+      "diff": "dif.",
+      "diffLegend": "Las filas resaltadas difieren entre proyectos"
     }
   },
   "credits": {
