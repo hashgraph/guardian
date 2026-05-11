@@ -198,6 +198,27 @@
       "vintage": "Vintage",
       "created": "Created",
       "creditingPeriod": "Crediting Period"
+    },
+    "compare": {
+      "title": "Compare Projects",
+      "subtitle": "Side-by-side comparison of up to 4 projects",
+      "attribute": "Attribute",
+      "notFound": "Project not found",
+      "needTwo": "Select at least 2 projects to compare.",
+      "credits": "Est. Credits",
+      "totalIssued": "Total Issued",
+      "totalRetired": "Total Retired",
+      "totalActive": "Total Active",
+      "creditingPeriodEnd": "Crediting Period End",
+      "selectToCompare": "Compare",
+      "comparing": "{count} selected",
+      "compareButton": "Compare",
+      "clearAll": "Clear all",
+      "maxSelected": "Max 4 projects",
+      "addToCompare": "Add to comparison",
+      "removeFromCompare": "Remove from comparison",
+      "diff": "diff",
+      "diffLegend": "Highlighted rows differ between projects"
     }
   },
   "credits": {
