@@ -68,6 +68,29 @@ export class IpfsService {
     }
 
     /**
+     * Classifies an IPFS fetch error as permanent or transient.
+     *
+     * Permanent errors (404, 410, invalid CID) will never succeed on retry —
+     * the processor should use UnrecoverableError to skip remaining BullMQ retries.
+     *
+     * Transient errors (network timeouts, 5xx, connection refused, etc.) may
+     * succeed on a later attempt and should be retried normally.
+     */
+    static classifyError(error: Error): 'transient' | 'permanent' {
+        const msg = (error.message || '').toLowerCase();
+        if (
+            msg.includes('404') ||
+            msg.includes('not found') ||
+            msg.includes('invalid cid') ||
+            msg.includes('410') ||
+            msg.includes('gone')
+        ) {
+            return 'permanent';
+        }
+        return 'transient';
+    }
+
+    /**
      * Basic CID validation. Returns the CID string if valid, null otherwise.
      * Supports CIDv0 (Qm...) and CIDv1 (bafy...) formats.
      */
