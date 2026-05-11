@@ -11,6 +11,13 @@ import {
 @Entity('business_view')
 @Unique(['sourceTimestamp', 'viewType'])
 @Index(['viewType', 'registryDid'])
+// Partial unique index for the eager project mapper's ON CONFLICT clause.
+// Declared on the entity so TypeORM's `synchronize: true` creates it and
+// stops dropping it on every restart.
+@Index('idx_business_view_project_key', ['projectKey'], {
+    unique: true,
+    where: `"viewType" = 'PROJECT' AND "projectKey" IS NOT NULL`,
+})
 export class BusinessView {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     id: string;
@@ -39,6 +46,14 @@ export class BusinessView {
 
     @Column({ type: 'text', nullable: true })
     searchText: string | null;
+
+    /**
+     * Stable dedup key for PROJECT rows (typically credentialSubject.id). Used
+     * by the eager project mapper's ON CONFLICT clause via the partial unique
+     * index created in schema-bootstrap.ts. Null for non-PROJECT view types.
+     */
+    @Column({ type: 'varchar', length: 120, nullable: true })
+    projectKey: string | null;
 
     @Column({ type: 'bigint' })
     lastUpdate: string;

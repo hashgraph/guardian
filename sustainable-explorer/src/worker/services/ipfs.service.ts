@@ -34,37 +34,61 @@ export class IpfsService {
     }
 
     /**
-     * Fetches content from IPFS by trying each configured gateway in order.
-     * Converts CIDs to CIDv1 base32 format for maximum gateway compatibility.
-     * Returns the raw content as a Buffer.
-     * Throws if all gateways fail.
+     * Fetches content from IPFS by RACING all configured gateways in parallel
+     * and returning the first successful response. Pending requests to slower
+     * gateways are aborted as soon as one wins.
+     *
+     * Why race instead of fall-through: a slow gateway with a 180s timeout used
+     * to block the next gateway entirely. With racing, even one fast gateway
+     * gives us sub-second results regardless of how many slow ones we configure.
+     *
+     * Throws only when EVERY gateway has rejected.
      */
     async fetchContent(cid: string): Promise<Buffer> {
         const v1Cid = this.toV1Base32(cid);
+        if (this.gateways.length === 0) {
+            throw new Error(`No IPFS gateways configured for CID ${cid}`);
+        }
+
+        const controllers = this.gateways.map(() => new AbortController());
         const errors: string[] = [];
 
-        for (const gateway of this.gateways) {
-            // Support both URL template (${cid}) and path-suffix patterns
+        const attempts = this.gateways.map((gateway, i) => {
             const url = gateway.includes('${cid}')
                 ? gateway.replace('${cid}', v1Cid)
                 : `${gateway}${v1Cid}`;
-            try {
-                this.logger.debug(`Fetching IPFS: ${url}`);
-                const response = await axios.get(url, {
+            return axios
+                .get(url, {
                     timeout: this.timeout,
                     responseType: 'arraybuffer',
+                    signal: controllers[i].signal as unknown as AbortSignal,
+                })
+                .then((response) => {
+                    this.logger.debug(`IPFS win: ${url}`);
+                    return Buffer.from(response.data);
+                })
+                .catch((error: unknown) => {
+                    const message = error instanceof Error ? error.message : String(error);
+                    // Filter out our own cancellations from the error list.
+                    if (!message.includes('canceled') && !message.includes('aborted')) {
+                        errors.push(`${gateway}: ${message}`);
+                    }
+                    throw error;
                 });
-                return Buffer.from(response.data);
-            } catch (error: unknown) {
-                const message = error instanceof Error ? error.message : String(error);
-                this.logger.warn(`IPFS gateway failed: ${gateway} - ${message} ${url} ${cid}`);
-                errors.push(`${gateway}: ${message} ${url} ${cid}`);
-            }
-        }
+        });
 
-        throw new Error(
-            `All IPFS gateways failed for CID ${cid} (v1: ${v1Cid}): ${errors.join('; ')}`,
-        );
+        try {
+            const result = await Promise.any(attempts);
+            // Cancel any still-in-flight slower gateway requests.
+            controllers.forEach((c) => {
+                try { c.abort(); } catch { /* noop */ }
+            });
+            return result;
+        } catch {
+            throw new Error(
+                `All IPFS gateways failed for CID ${cid} (v1: ${v1Cid}): ${errors.join('; ')}`,
+            );
+        }
     }
 
     /**

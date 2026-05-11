@@ -45,6 +45,18 @@ async function bootstrap() {
         },
     );
 
+    // Re-run bootstrap AFTER TypeORM synchronize. TypeORM drops indexes it
+    // doesn't see on entities (e.g. our partial unique index on business_view
+    // (projectKey) WHERE viewType='PROJECT'). Bootstrap is idempotent, so the
+    // second run reinstates anything synchronize stripped.
+    try {
+        const ds = app.get(DataSource);
+        await bootstrapSchema(ds);
+        logger.log('Schema bootstrap re-run after synchronize (indexes reinstated)');
+    } catch (err) {
+        logger.error(`Post-synchronize bootstrap failed: ${err}`);
+    }
+
     // Graceful shutdown
     const signals: NodeJS.Signals[] = ['SIGTERM', 'SIGINT'];
     for (const signal of signals) {

@@ -61,9 +61,16 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         // fetch was skipped (they arrived before their policy was decoded).
         await this.backfillSuccessfulPolicyVcFetches();
 
-        // Re-run eager project mapping for already-fetched VCs that don't have a
-        // PROJECT row yet. Covers worker restarts and pre-eager-path data.
-        // await this.backfillProjectMappings();
+        // Re-run eager project mapping for already-fetched VCs.
+        // Opt-in via BACKFILL_PROJECTS_ON_BOOT=true. Used when the mapper logic
+        // changed and existing PROJECT rows need to be regenerated from scratch.
+        // The backfill DELETEs all PROJECT rows before replaying, so credits
+        // don't double-count. After it produces rows, unset the env var on the
+        // next restart to skip the O(n) replay cost.
+        if (process.env.BACKFILL_PROJECTS_ON_BOOT === 'true') {
+            this.logger.log('BACKFILL_PROJECTS_ON_BOOT=true — replaying VCs through project mapper');
+            await this.backfillProjectMappings();
+        }
 
         // Renew leadership periodically
         this.leaderInterval = setInterval(async () => {
