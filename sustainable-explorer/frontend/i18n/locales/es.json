@@ -503,17 +503,67 @@
     "subtitle": "Métricas del pipeline de datos y las colas de trabajadores",
     "dataSyncedUpTo": "Datos sincronizados hasta",
     "topicsIndexed": "Tópicos indexados",
-    "topicsIndexedSub": "de ~1.700 descubiertos",
+    "topicsDiscovered": "descubiertos",
     "messagesProcessed": "Mensajes procesados",
-    "messagesProcessedSub": "{count} pendientes en cola",
+    "pendingInQueue": "pendientes en cola",
     "queueStatus": "Estado de las colas",
     "queueStatusSub": "Colas de trabajadores BullMQ",
+        "connectionLive": "En vivo",
+        "connectionPolling": "Sondeando",
+        "lastUpdated": "Última actualización",
+        "totalWaiting": "Total en espera",
+        "totalFailed": "Total fallidos",
     "columns": {
       "queue": "Cola",
       "waiting": "En espera",
       "active": "Activas",
       "completed": "Completadas",
-      "failed": "Fallidas"
+      "failed": "Fallidas",
+            "delayed": "Diferidas",
+            "concurrency": "Concurrencia",
+            "status": "Estado",
+            "actions": "Acciones"
+        },
+        "queueStatuses": {
+            "active": "Activa",
+            "idle": "Inactiva",
+            "paused": "En pausa"
+        },
+        "actions": {
+            "pause": "Pausar",
+            "resume": "Reanudar",
+            "viewFailures": "Ver fallos",
+            "retryAll": "Reintentar todo"
+        },
+        "failedDrawer": {
+            "title": "Trabajos fallidos",
+            "byReason": "Por motivo",
+            "allFailed": "Todos los fallidos",
+            "retryJob": "Reintentar",
+            "forceRetry": "Ignorar límite de reintentos (forzar)",
+            "budgetExhausted": "Presupuesto de reintentos agotado",
+            "attempts": "Intentos",
+            "manualRetries": "Reintentos manuales"
+        },
+        "syncHealth": {
+            "title": "Salud de sincronización",
+            "lastSynced": "Última sincronización",
+            "lag": "Retraso",
+            "topics": "Tópicos",
+            "tokens": "Tokens"
+        },
+        "activity": {
+            "title": "Actividad reciente",
+            "events": "eventos",
+            "filterAll": "Todos",
+            "filterFailures": "Solo fallos",
+            "empty": "Sin eventos recientes — esperando actividad de las colas...",
+            "emptyFailures": "No se registraron fallos en esta sesión"
+        },
+        "retryAll": {
+            "confirm": "¿Reintentar todos los trabajos fallidos?",
+            "force": "Ignorar límite de reintentos (forzar)",
+            "result": "Reintentados {retried} trabajos, omitidos {skipped}"
     }
   },
   "vcViewer": {

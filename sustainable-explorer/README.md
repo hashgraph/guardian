@@ -143,6 +143,35 @@ sustainable-explorer/
 └── .env.example                    Environment variable template
 ```
 
+## Queue Worker Resilience
+
+### IPFS multi-gateway fallback
+Set `IPFS_GATEWAYS=https://gateway1.io/ipfs/,https://gateway2.io/ipfs/` (comma-separated). Per-gateway timeout: `IPFS_FETCH_TIMEOUT` (default: 180000 ms). All gateways are tried in order before a job fails.
+
+### IPFS failure persistence
+Permanent failures (404, invalid CID, 410 Gone) are immediately moved to the failed set without consuming remaining retries (`UnrecoverableError`). Transient failures (network timeouts, 5xx errors) retry per the BullMQ `attempts` config (5x for IPFS). All failures are persisted to the `ipfs_fetch_failure` table with error category, attempt count, and last error text. On subsequent successful fetch the failure record is removed and an `ipfs-fetch-recovered` event is published.
+
+### Manual retry budget
+Via the API, failed jobs can be manually retried. The `manualRetryCount` column in `ipfs_fetch_failure` tracks how many times a CID has been manually re-queued, allowing the API layer to enforce retry budgets (e.g. max 3 manual retries before requiring `{ force: true }`).
+
+### In-process autoscaler
+`QueueAutoscalerService` adjusts BullMQ worker concurrency at runtime without restarting the process. Concurrency bounds are:
+- Minimum: startup baseline from `getQueueConfigs()` (env-var controlled, e.g. `WORKER_IPFS_CONCURRENCY=3`)
+- Maximum: `WORKER_<QUEUE>_MAX_CONCURRENCY` env var, or `max(baseline * 4, baseline + 4)` if unset
+
+Example env var names (replace hyphens with underscores, uppercase):
+- `WORKER_IPFS_FILES_MAX_CONCURRENCY`
+- `WORKER_MIRROR_NODE_TOPICS_MAX_CONCURRENCY`
+
+Scaling rules (checked every 30s, leader-elected per network):
+- Scale up: `waiting > 100` → `concurrency += 2` (immediate)
+- Scale down: `waiting < 10` and `active < 50% concurrency` for 2 consecutive cycles → `concurrency -= 1`
+
+**For production load, scale horizontally** (more worker containers with `WORKER_QUEUES` partitioning). In-process scaling is a smoothing layer only.
+
+### Nginx / reverse proxy (SSE)
+Add `proxy_buffering off;` to the nginx location block serving `/api/v1/*/queues/events` to prevent SSE buffering.
+
 ## Documentation
 
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — Data pipeline architecture, deduplication, leader election, horizontal scaling, business data mapping

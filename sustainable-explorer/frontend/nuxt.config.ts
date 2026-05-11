@@ -57,6 +57,11 @@ export default defineNuxtConfig({
             //   (e.g., `http://<host>:3030`) via NUXT_PUBLIC_API_BASE_URL.
             //   Nuxt automatically overrides public.* from NUXT_PUBLIC_* env vars.
             apiBaseUrl: '',
+            // SSE (EventSource) must bypass the Nitro proxy — connect directly to the API.
+            // Override via NUXT_PUBLIC_SSE_API_BASE_URL in production.
+            sseApiBaseUrl: process.env.NUXT_PUBLIC_SSE_API_BASE_URL || 'http://localhost:3030',
+            // Reverse-geocoding endpoint. Override via NUXT_PUBLIC_GEOCODER_URL.
+            geocoderUrl: 'https://nominatim.openstreetmap.org/reverse',
         },
     },
 
@@ -74,4 +79,8 @@ export default defineNuxtConfig({
     },
 
     compatibilityDate: '2025-01-01',
+
+    experimental: {
+        appManifest: false,
+    },
 });
