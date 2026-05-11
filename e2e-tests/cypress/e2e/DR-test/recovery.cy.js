@@ -1,3 +1,4 @@
+import { randomInt } from "../../support/random";
 
 const Locators = {
     createNew: "Create new",
@@ -14,7 +15,7 @@ const Locators = {
 };
 
 describe("Disaster Recovery Testing", { tags: "@recovery" }, () => {
-    const name = Math.floor(Math.random() * 999) + "testName";
+    const name = randomInt(999) + "testName";
     it("checks ", () => {
         cy.viewport(1440, 900);
 

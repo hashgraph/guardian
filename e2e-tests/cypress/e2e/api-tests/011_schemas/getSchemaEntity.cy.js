@@ -1,3 +1,4 @@
+import { randomInt } from "../../../support/random";
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -15,7 +16,7 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                 "WIPE_TOKEN",
                 "MINT_NFTOKEN",
             ];
-            let randomItem = items[Math.floor(Math.random() * items.length)];
+            let randomItem = items[randomInt(items.length)];
             cy.request({
                 method: METHOD.GET,
                 url:

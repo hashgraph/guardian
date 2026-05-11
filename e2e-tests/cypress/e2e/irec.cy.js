@@ -1,10 +1,11 @@
+import { randomInt } from "../support/random";
 import { METHOD, STATUS_CODE } from "../../support/api/api-const";
 import API from "../support/ApiUrls";
 
 context("IREC e2e test", { tags: "@e2e" }, () => {
     var accessToken;
     var rootUserDid;
-    const name = Math.floor(Math.random() * 99999) + "test001SR";
+    const name = randomInt(99999) + "test001SR";
 
     it("register a new root user and login with it", () => {
         cy.request("POST", API.ApiServer + "accounts/register", {
@@ -130,7 +131,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
     });
 
     it("Tokens", () => {
-        const installer = Math.floor(Math.random() * 99999) + "test001User";
+        const installer = randomInt(99999) + "test001User";
 
         cy.request("POST", API.ApiServer + "accounts/register", {
             username: installer,
