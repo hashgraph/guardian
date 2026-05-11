@@ -166,10 +166,16 @@ export class MappingReprocessService {
             const jobData: ProjectReparseJobData = {
                 messageConsensusTimestamp: row.consensusTimestamp,
             };
-            // Deterministic jobId makes re-clicking idempotent within BullMQ's
-            // removeOnComplete window.
+            // Remove any stale completed job with the same canonical jobId so a
+            // bulk re-parse after a mapping change always re-processes. The
+            // upsert is idempotent on the worker side (linkedVcs dedupe check
+            // prevents credit/vcCount double-counting), so re-runs are safe.
+            const canonicalJobId = `project-reparse-${row.consensusTimestamp}`;
+            const stale = await queue.getJob(canonicalJobId);
+            if (stale) await stale.remove();
+
             await queue.add('reparse', jobData, {
-                jobId: `project-reparse-${row.consensusTimestamp}`,
+                jobId: `project-reparse-${row.consensusTimestamp}-${Date.now()}`,
             });
             enqueued++;
         }
@@ -179,6 +185,59 @@ export class MappingReprocessService {
         );
 
         return { enqueued };
+    }
+
+    /**
+     * Walks every methodology in the network and enqueues per-VC reparse jobs
+     * for each that has a successful decode.
+     *
+     * Used to backfill project rows after a mapping change without clicking the
+     * per-methodology button manually. Returns aggregate stats — methodologies
+     * with no successful decode contribute 0 and are skipped silently.
+     */
+    async reparseAllProjects(network: string): Promise<{
+        methodologies: number;
+        succeeded: number;
+        skipped: number;
+        enqueued: number;
+    }> {
+        const ds = this.dataSources.getDataSource(network);
+
+        const rows: Array<{ policy_topic: string }> = await ds.query(
+            `SELECT DISTINCT bv."businessData"->>'topicId' AS policy_topic
+             FROM business_view bv
+             WHERE bv."viewType" = 'METHODOLOGY'
+               AND bv."businessData"->>'topicId' IS NOT NULL`,
+        );
+
+        let succeeded = 0;
+        let skipped = 0;
+        let enqueued = 0;
+
+        for (const row of rows) {
+            try {
+                const result = await this.reparseProjects(network, row.policy_topic);
+                if (result.enqueued > 0) {
+                    succeeded++;
+                    enqueued += result.enqueued;
+                } else {
+                    skipped++;
+                }
+            } catch (err) {
+                skipped++;
+                this.logger.warn(
+                    `reparseAllProjects: skipped policyTopicId=${row.policy_topic}: ` +
+                    `${err instanceof Error ? err.message : String(err)}`,
+                );
+            }
+        }
+
+        this.logger.log(
+            `reparseAllProjects on ${network}: ${succeeded} methodology/ies reparsed, ` +
+            `${skipped} skipped, ${enqueued} VC job(s) enqueued`,
+        );
+
+        return { methodologies: rows.length, succeeded, skipped, enqueued };
     }
 
     /**
@@ -322,6 +381,146 @@ export class MappingReprocessService {
             );
         }
         return DecodedMethodologyResponseDto.fromRow(row);
+    }
+
+    /**
+     * Re-enqueues a PROJECT_REPARSE job for every VC already attached to a
+     * specific project via `businessData->'linkedVcs'`.
+     *
+     * Unlike `reparseProjects` (which walks the full methodology subtree), this
+     * only targets the VCs that were previously linked to this project — it is
+     * safe to call after a mapping update when only one project needs refreshing.
+     *
+     * Returns `{ enqueued: 0 }` when the project has no linkedVcs yet rather
+     * than throwing, because that is a valid state for projects that predate the
+     * linkedVcs tracking.
+     *
+     * Lookup accepts either `sourceTimestamp` or `projectKey` (same dual-key
+     * pattern used by the project detail endpoint).
+     */
+    async reextractProject(
+        network: string,
+        projectId: string,
+    ): Promise<{ enqueued: number }> {
+        const ds = this.dataSources.getDataSource(network);
+
+        const rows: Array<{ businessData: Record<string, unknown> | null }> = await ds.query(
+            `SELECT "businessData"
+             FROM business_view
+             WHERE "viewType" = 'PROJECT'
+               AND ("sourceTimestamp" = $1 OR "projectKey" = $1)
+             LIMIT 1`,
+            [projectId],
+        );
+
+        if (rows.length === 0) {
+            throw new NotFoundException(
+                `Project with ID "${projectId}" not found on ${network}.`,
+            );
+        }
+
+        const businessData = rows[0].businessData ?? {};
+        const linkedVcs = Array.isArray(businessData['linkedVcs'])
+            ? (businessData['linkedVcs'] as Array<Record<string, unknown>>)
+            : [];
+
+        if (linkedVcs.length === 0) {
+            this.logger.log(
+                `reextractProject: no linkedVcs on project "${projectId}" on ${network} — nothing to enqueue`,
+            );
+            return { enqueued: 0 };
+        }
+
+        const queue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.PROJECT_REPARSE);
+
+        let enqueued = 0;
+        for (const entry of linkedVcs) {
+            const ts = entry['consensusTimestamp'];
+            if (typeof ts !== 'string' || !ts) continue;
+
+            // Per-project re-extract is an explicit user-driven action — it must
+            // always re-run, even if a job with the deterministic bulk-flow jobId
+            // already completed earlier (e.g. before a mapping change). Remove
+            // any stale job, then enqueue a fresh one with a unique jobId so
+            // BullMQ doesn't dedupe-and-skip.
+            const bulkJobId = `project-reparse-${ts}`;
+            const stale = await queue.getJob(bulkJobId);
+            if (stale) await stale.remove();
+
+            const jobData: ProjectReparseJobData = { messageConsensusTimestamp: ts };
+            await queue.add('reparse', jobData, {
+                jobId: `project-reextract-${ts}-${Date.now()}`,
+            });
+            enqueued++;
+        }
+
+        this.logger.log(
+            `reextractProject: enqueued ${enqueued} reparse job(s) for project "${projectId}" on ${network}`,
+        );
+
+        return { enqueued };
+    }
+
+    /**
+     * Fetches the raw VC document for a single linked VC, verifying that the
+     * requested `consensusTimestamp` actually appears in the project's
+     * `linkedVcs[]` before hitting the message table.
+     *
+     * Throws NotFoundException when the project is not found, the timestamp is
+     * not in its linkedVcs list, or the message row has no documents column.
+     */
+    async getLinkedVcDocument(
+        network: string,
+        projectId: string,
+        consensusTimestamp: string,
+    ): Promise<Record<string, unknown>> {
+        const ds = this.dataSources.getDataSource(network);
+
+        // Resolve the project and verify the timestamp is in its linkedVcs.
+        const projectRows: Array<{ businessData: Record<string, unknown> | null }> = await ds.query(
+            `SELECT "businessData"
+             FROM business_view
+             WHERE "viewType" = 'PROJECT'
+               AND ("sourceTimestamp" = $1 OR "projectKey" = $1)
+             LIMIT 1`,
+            [projectId],
+        );
+
+        if (projectRows.length === 0) {
+            throw new NotFoundException(
+                `Project with ID "${projectId}" not found on ${network}.`,
+            );
+        }
+
+        const businessData = projectRows[0].businessData ?? {};
+        const linkedVcs = Array.isArray(businessData['linkedVcs'])
+            ? (businessData['linkedVcs'] as Array<Record<string, unknown>>)
+            : [];
+
+        const isLinked = linkedVcs.some(
+            v => typeof v['consensusTimestamp'] === 'string' && v['consensusTimestamp'] === consensusTimestamp,
+        );
+
+        if (!isLinked) {
+            throw new NotFoundException(
+                `VC with consensusTimestamp "${consensusTimestamp}" is not linked to project "${projectId}" on ${network}.`,
+            );
+        }
+
+        // Fetch the raw document from the message table.
+        const msgRows: Array<{ documents: Record<string, unknown> | null }> = await ds.query(
+            `SELECT documents FROM message WHERE "consensusTimestamp" = $1 LIMIT 1`,
+            [consensusTimestamp],
+        );
+
+        if (msgRows.length === 0 || !msgRows[0].documents) {
+            throw new NotFoundException(
+                `No document found for consensusTimestamp "${consensusTimestamp}" on ${network}.`,
+            );
+        }
+
+        // Non-null asserted: the guard above guarantees documents is present.
+        return msgRows[0].documents!;
     }
 
     // ---------------------------------------------------------------------------

@@ -6,6 +6,7 @@ import {
     ProjectRow,
     IssuanceRow,
     ActivityEventRow,
+    PolicySchemaRow,
 } from './project.repository';
 import { QueryBuilder } from './query-builder';
 import { PROJECT_FIELD_SCHEMA } from './schemas/project.schema';
@@ -349,7 +350,20 @@ export class PgProjectRepository extends ProjectRepository {
 
         const totalActive = totalIssued - totalRetired;
 
-        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive });
+        // Load policy schemas for this project's policyTopicId so the DTO
+        // can render a grouped linked-VCs view without a second round trip.
+        let policySchemas: PolicySchemaRow[] = [];
+        if (policyTopicId) {
+            policySchemas = await this.dataSource.query(
+                `SELECT "schemaId", name, "isProjectSchema"
+                 FROM policy_schema
+                 WHERE "policyTopicId" = $1
+                 ORDER BY "isProjectSchema" DESC, name ASC`,
+                [policyTopicId],
+            );
+        }
+
+        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive }, policySchemas);
     }
 
     async findActivity(sourceTimestamp: string): Promise<ActivityEventRow[]> {
@@ -400,6 +414,7 @@ export class PgProjectRepository extends ProjectRepository {
         row: RawRow,
         issuances?: IssuanceRow[],
         lifecycle?: { totalIssued: number; totalRetired: number; totalActive: number },
+        policySchemas?: PolicySchemaRow[],
     ): ProjectRow {
         return {
             id: row.id,
@@ -418,6 +433,7 @@ export class PgProjectRepository extends ProjectRepository {
             totalIssued: lifecycle?.totalIssued,
             totalRetired: lifecycle?.totalRetired,
             totalActive: lifecycle?.totalActive,
+            policySchemas,
         };
     }
 }

@@ -199,6 +199,27 @@
       "created": "Creado",
       "creditingPeriod": "Período de acreditación"
     },
+    "detail": {
+      "linkedVcs": {
+        "title": "Datos en bruto vinculados",
+        "subtitle": "Documentos de datos en bruto que contribuyeron a este proyecto, agrupados por esquema. Los esquemas vacíos indican campos que no pudieron extraerse.",
+        "empty": "No hay datos en bruto vinculados desde este esquema",
+        "notTracked": "No hay datos en bruto vinculados disponibles — vuelva a analizar la metodología para poblarlos.",
+        "viewJson": "Ver JSON",
+        "projectSchemaBadge": "Esquema de proyecto",
+        "columns": {
+          "timestamp": "Marca de tiempo",
+          "topicId": "ID de tópico",
+          "csId": "cs.id"
+        }
+      },
+      "actions": {
+        "reextract": "Re-extraer",
+        "reextractSuccess": "Re-extrayendo desde {count} VC(s) — actualice en unos segundos",
+        "reextractEmpty": "Nada que re-extraer — aún no hay VCs vinculados a este proyecto",
+        "reextractError": "Error al re-extraer"
+      }
+    },
     "compare": {
       "title": "Comparar proyectos",
       "subtitle": "Comparación lado a lado de hasta 4 proyectos",

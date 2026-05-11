@@ -50,8 +50,11 @@ export class MethodologyQueryDto extends PaginationQueryDto {
 }
 
 export class MethodologyStats {
-    @ApiProperty({ description: 'Number of projects under this methodology' })
+    @ApiProperty({ description: 'Total number of projects across all versions of this methodology' })
     projectCount: number;
+
+    @ApiProperty({ description: 'Number of projects published under this specific methodology version (instance topic)' })
+    instanceProjectCount: number;
 
     @ApiProperty({ description: 'Number of credit issuances under this methodology' })
     issuanceCount: number;

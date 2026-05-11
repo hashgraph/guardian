@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { ProjectsService } from '../services/project.service';
 import {
@@ -55,6 +55,80 @@ export class ProjectsController {
             throw new NotFoundException(`Project with ID "${id}" not found on ${network}`);
         }
         return this.projectsService.findActivity(network, id);
+    }
+
+    // TODO: gate behind admin auth once decided
+    @Post(':id/re-extract')
+    @ApiOperation({
+        summary: 'Re-extract a project from its already-attached VCs',
+        description:
+            'Enqueues one PROJECT_REPARSE job per VC that was previously attached to this project ' +
+            'via businessData->linkedVcs. Useful after a field-mapping update when only one project ' +
+            'needs refreshing — faster than running the per-methodology reparse. ' +
+            'Returns immediately; jobs are processed asynchronously by the worker. ' +
+            'Returns { enqueued: 0 } when the project has no linkedVcs yet.',
+    })
+    @ApiParam({
+        name: 'network',
+        enum: ['mainnet', 'testnet', 'previewnet'],
+        description: 'Hedera network',
+    })
+    @ApiParam({
+        name: 'id',
+        description: 'HCS consensus timestamp (sourceTimestamp) or projectKey of the project',
+    })
+    @ApiResponse({
+        status: 201,
+        description: 'Reparse jobs enqueued',
+        schema: {
+            type: 'object',
+            properties: {
+                enqueued: { type: 'number', description: 'Number of PROJECT_REPARSE jobs enqueued' },
+            },
+        },
+    })
+    @ApiResponse({ status: 404, description: 'Project not found' })
+    async reextractProject(
+        @Param('network') network: string,
+        @Param('id') id: string,
+    ): Promise<{ enqueued: number }> {
+        return this.projectsService.reextractProject(network, id);
+    }
+
+    @Get(':id/linked-vcs/:consensusTimestamp')
+    @ApiOperation({
+        summary: 'Get the raw VC document for a single linked VC',
+        description:
+            'Returns the full JSONB VC document from the message table for the specified ' +
+            'consensusTimestamp. The timestamp must appear in the project\'s businessData->linkedVcs ' +
+            'list — this check prevents arbitrary message fetches via the project namespace. ' +
+            'Use the linkedSchemas field on GET /:id to enumerate valid timestamps.',
+    })
+    @ApiParam({
+        name: 'network',
+        enum: ['mainnet', 'testnet', 'previewnet'],
+        description: 'Hedera network',
+    })
+    @ApiParam({
+        name: 'id',
+        description: 'HCS consensus timestamp (sourceTimestamp) or projectKey of the project',
+    })
+    @ApiParam({
+        name: 'consensusTimestamp',
+        description: 'HCS consensus timestamp of the linked VC message (e.g. "1234567890.123456789")',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Raw VC document (JSONB)',
+        schema: { type: 'object', additionalProperties: true },
+    })
+    @ApiResponse({ status: 404, description: 'Project not found, VC not linked to this project, or no document stored' })
+    async getLinkedVcDocument(
+        @Param('network') network: string,
+        @Param('id') id: string,
+        @Param('consensusTimestamp') consensusTimestamp: string,
+    ): Promise<Record<string, unknown>> {
+        return this.projectsService.getLinkedVcDocument(network, id, consensusTimestamp);
     }
 
     @Get(':id')

@@ -1,7 +1,7 @@
 import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
-import { ProjectRow, ActivityEventRow } from '../repositories/project.repository';
+import { ProjectRow, ActivityEventRow, PolicySchemaRow } from '../repositories/project.repository';
 
 export class ActivityEventDto {
     @ApiProperty({ description: 'Date of the activity (YYYY-MM-DD)' })
@@ -68,6 +68,34 @@ export class IssuanceDto {
 
     @ApiProperty({ nullable: true, description: 'Raw MintToken VC document from the Hedera message' })
     rawVc: Record<string, any> | null;
+}
+
+export class LinkedVcDto {
+    @ApiProperty({ description: 'HCS consensus timestamp identifying this VC message' })
+    consensusTimestamp: string;
+
+    @ApiProperty({ description: 'Hedera topic ID the VC was published to' })
+    topicId: string;
+
+    @ApiProperty({ nullable: true, description: 'Credential subject ID from the VC (may be null for MintToken)' })
+    csId: string | null;
+}
+
+export class LinkedSchemaDto {
+    @ApiProperty({ description: 'Schema UUID from the VC type field, or literal "MintToken" for mint VCs' })
+    schemaUuid: string;
+
+    @ApiProperty({ nullable: true, description: 'Human-readable schema name from policy_schema; null for MintToken or unmapped UUIDs' })
+    schemaName: string | null;
+
+    @ApiProperty({ description: 'True when policy_schema.isProjectSchema = true for this UUID' })
+    isProjectSchema: boolean;
+
+    @ApiProperty({ description: 'Number of linked VCs carrying this schema UUID' })
+    vcCount: number;
+
+    @ApiProperty({ type: [LinkedVcDto], description: 'Individual VCs carrying this schema UUID' })
+    linkedVcs: LinkedVcDto[];
 }
 
 export class ProjectQueryDto extends PaginationQueryDto {
@@ -182,6 +210,9 @@ export class ProjectResponseDto {
     @ApiProperty({ nullable: true, description: 'Hedera policy topic ID (parent of the instance topic)' })
     policyTopicId: string | null;
 
+    @ApiProperty({ nullable: true, description: 'Instance topic ID for the specific methodology version this project was published under' })
+    instanceTopicId: string | null;
+
     @ApiProperty({ description: 'Number of VC-Document messages that contributed to this project row' })
     vcCount: number;
 
@@ -206,8 +237,89 @@ export class ProjectResponseDto {
     @ApiProperty({ description: 'Credits currently in circulation (totalIssued - totalRetired)' })
     totalActive: number;
 
+    @ApiProperty({
+        type: [LinkedSchemaDto],
+        description:
+            'VCs attached to this project grouped by schema UUID. Includes schemas with zero VCs ' +
+            'so the frontend can surface "0 linked VCs" for project schemas that produced no matches.',
+    })
+    linkedSchemas: LinkedSchemaDto[];
+
     static fromRow(row: ProjectRow, network: string): ProjectResponseDto {
         const data = (row.businessData ?? {}) as Record<string, unknown>;
+
+        // Build a quick-lookup map from policy_schema rows for this project.
+        const schemaMetaMap = new Map<string, Pick<PolicySchemaRow, 'name' | 'isProjectSchema'>>();
+        for (const s of (row.policySchemas ?? [])) {
+            schemaMetaMap.set(s.schemaId, { name: s.name, isProjectSchema: s.isProjectSchema });
+        }
+
+        // Group linkedVcs entries by schemaUuid.
+        const rawLinkedVcs = Array.isArray(data['linkedVcs'])
+            ? (data['linkedVcs'] as Array<Record<string, unknown>>)
+            : [];
+
+        const groupedBySchema = new Map<string, LinkedVcDto[]>();
+        for (const entry of rawLinkedVcs) {
+            const uuid = typeof entry['schemaUuid'] === 'string' ? entry['schemaUuid'] : 'unknown';
+            const ts = typeof entry['consensusTimestamp'] === 'string' ? entry['consensusTimestamp'] : '';
+            const topicId = typeof entry['topicId'] === 'string' ? entry['topicId'] : '';
+            const csId = typeof entry['csId'] === 'string' ? entry['csId'] : null;
+
+            if (!groupedBySchema.has(uuid)) {
+                groupedBySchema.set(uuid, []);
+            }
+            groupedBySchema.get(uuid)!.push({ consensusTimestamp: ts, topicId, csId });
+        }
+
+        // Build LinkedSchemaDto entries for every UUID present in linked VCs.
+        const linkedFromVcs: LinkedSchemaDto[] = [];
+        for (const [uuid, vcs] of groupedBySchema.entries()) {
+            const meta = schemaMetaMap.get(uuid);
+            linkedFromVcs.push({
+                schemaUuid: uuid,
+                schemaName: meta?.name ?? null,
+                isProjectSchema: meta?.isProjectSchema ?? false,
+                vcCount: vcs.length,
+                linkedVcs: vcs,
+            });
+        }
+
+        // Also include schemas that are in policy_schema but have ZERO linked VCs,
+        // so the frontend can render "Project schema: 0 VCs" for phantom cases like Capturiant.
+        const linkedSchemaUuids = new Set(groupedBySchema.keys());
+        const emptySchemas: LinkedSchemaDto[] = [];
+        for (const s of (row.policySchemas ?? [])) {
+            if (!linkedSchemaUuids.has(s.schemaId)) {
+                emptySchemas.push({
+                    schemaUuid: s.schemaId,
+                    schemaName: s.name,
+                    isProjectSchema: s.isProjectSchema,
+                    vcCount: 0,
+                    linkedVcs: [],
+                });
+            }
+        }
+
+        // Sort: project schemas first, then schemas with VCs by count desc,
+        // then empty schemas (also project-schema-first within each tier).
+        const sortGroup = (a: LinkedSchemaDto): number => {
+            if (a.vcCount > 0 && a.isProjectSchema) return 0;
+            if (a.vcCount > 0 && !a.isProjectSchema) return 1;
+            if (a.vcCount === 0 && a.isProjectSchema) return 2;
+            return 3;
+        };
+        const linkedSchemas: LinkedSchemaDto[] = [
+            ...linkedFromVcs,
+            ...emptySchemas,
+        ].sort((a, b) => {
+            const ga = sortGroup(a);
+            const gb = sortGroup(b);
+            if (ga !== gb) return ga - gb;
+            // Within groups that have VCs, sort by count desc
+            if (a.vcCount !== b.vcCount) return b.vcCount - a.vcCount;
+            return 0;
+        });
 
         return {
             id: row.id,
@@ -233,6 +345,7 @@ export class ProjectResponseDto {
             creditingPeriodEnd: typeof data['creditingPeriodEnd'] === 'string' ? data['creditingPeriodEnd'] : null,
             topicId: typeof data['topicId'] === 'string' ? data['topicId'] : null,
             policyTopicId: typeof data['policyTopicId'] === 'string' ? data['policyTopicId'] : null,
+            instanceTopicId: typeof data['instanceTopicId'] === 'string' ? data['instanceTopicId'] : null,
             vcCount: typeof data['vcCount'] === 'number' ? data['vcCount'] : 0,
             sourceTimestamp: row.sourceTimestamp,
             updatedAt: row.updatedAt,
@@ -249,6 +362,7 @@ export class ProjectResponseDto {
             totalIssued: row.totalIssued ?? 0,
             totalRetired: row.totalRetired ?? 0,
             totalActive: row.totalActive ?? 0,
+            linkedSchemas,
         };
     }
 }

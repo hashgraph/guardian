@@ -24,6 +24,7 @@ interface RawRow {
     createdAt: Date;
     updatedAt: Date;
     project_count: string | null;
+    instance_project_count: string | null;
     issuance_count: string | null;
     schema_count: string | null;
     registry_name: string | null;
@@ -167,6 +168,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             SELECT
                 bv.*,
                 s.project_count,
+                s.instance_project_count,
                 s.issuance_count,
                 s.schema_count,
                 reg.registry_name,
@@ -213,6 +215,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             SELECT
                 bv.*,
                 s.project_count,
+                s.instance_project_count,
                 s.issuance_count,
                 s.schema_count,
                 reg.registry_name,
@@ -337,6 +340,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
     ): MethodologyRow {
         const stats: MethodologyStatsRow = {
             projectCount: parseInt(row.project_count || '0', 10),
+            instanceProjectCount: parseInt(row.instance_project_count || '0', 10),
             issuanceCount: parseInt(row.issuance_count || '0', 10),
             schemaCount: parseInt(row.schema_count || '0', 10),
         };

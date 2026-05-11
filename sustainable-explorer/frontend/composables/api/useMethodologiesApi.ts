@@ -18,6 +18,7 @@ export type MethodologySortDir = 'asc' | 'desc';
 
 export interface MethodologyStats {
     projectCount: number;
+    instanceProjectCount: number;
     issuanceCount: number;
     schemaCount: number;
 }

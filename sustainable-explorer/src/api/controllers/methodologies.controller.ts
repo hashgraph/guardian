@@ -135,6 +135,40 @@ export class MethodologiesController {
     }
 
     // TODO: gate behind admin auth once decided
+    @Post('reparse-projects')
+    @ApiOperation({
+        summary: 'Re-parse projects across every methodology in the network',
+        description:
+            'Iterates over every methodology in the network and enqueues per-VC ' +
+            'PROJECT_REPARSE jobs for those whose decode status is "success". ' +
+            'Methodologies without a successful decode are skipped silently. ' +
+            'Returns aggregate counts; jobs are processed asynchronously by the worker.',
+    })
+    @ApiParam({
+        name: 'network',
+        enum: ['mainnet', 'testnet', 'previewnet'],
+        description: 'Hedera network',
+    })
+    @ApiResponse({
+        status: 201,
+        description: 'Reparse triggered',
+        schema: {
+            type: 'object',
+            properties: {
+                methodologies: { type: 'number', description: 'Methodologies inspected' },
+                succeeded: { type: 'number', description: 'Methodologies that produced reparse jobs' },
+                skipped: { type: 'number', description: 'Methodologies skipped (decode not success or error)' },
+                enqueued: { type: 'number', description: 'Total VC reparse jobs enqueued' },
+            },
+        },
+    })
+    async reparseProjectsAll(
+        @Param('network') network: string,
+    ): Promise<{ methodologies: number; succeeded: number; skipped: number; enqueued: number }> {
+        return this.mappingReprocessService.reparseAllProjects(network);
+    }
+
+    // TODO: gate behind admin auth once decided
     @Post(':id/reparse-projects')
     @ApiOperation({
         summary: 'Re-parse already-downloaded VCs to populate projects with updated field mapping',

@@ -199,6 +199,27 @@
       "created": "Created",
       "creditingPeriod": "Crediting Period"
     },
+    "detail": {
+      "linkedVcs": {
+        "title": "Linked Raw Data",
+        "subtitle": "Raw data documents that contributed to this project, grouped by schema. Empty schemas indicate fields that couldn't be extracted.",
+        "empty": "No raw data linked from this schema",
+        "notTracked": "No linked raw data available — re-parse the methodology to populate.",
+        "viewJson": "View JSON",
+        "projectSchemaBadge": "Project schema",
+        "columns": {
+          "timestamp": "Timestamp",
+          "topicId": "Topic ID",
+          "csId": "cs.id"
+        }
+      },
+      "actions": {
+        "reextract": "Re-extract",
+        "reextractSuccess": "Re-extracting from {count} VC(s) — refresh in a few seconds",
+        "reextractEmpty": "Nothing to re-extract — no linked VCs on this project yet",
+        "reextractError": "Failed to re-extract"
+      }
+    },
     "compare": {
       "title": "Compare Projects",
       "subtitle": "Side-by-side comparison of up to 4 projects",

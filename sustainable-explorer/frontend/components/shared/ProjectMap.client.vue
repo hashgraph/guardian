@@ -28,6 +28,7 @@ const emit = defineEmits<{
 const mapContainer = ref<HTMLElement | null>(null);
 let map: L.Map | null = null;
 let geoLayer: L.GeoJSON | null = null;
+let pointsLayer: L.LayerGroup | null = null;
 
 const maxProjects = computed(() => Math.max(...props.countries.map(c => c.projects), 1));
 
@@ -110,23 +111,29 @@ async function initMap() {
         pane: 'overlayPane',
     }).addTo(map);
 
-    if (props.points?.length) {
-        for (const pt of props.points) {
-            L.circleMarker([pt.lat, pt.lng], {
-                radius: 4,
-                fillColor: '#1a9850',
-                fillOpacity: 0.9,
-                color: '#fff',
-                weight: 1.5,
-            })
-                .bindPopup(`
-                    <div style="font-size:12px;line-height:1.6">
-                        <strong>${pt.name}</strong>
-                        ${pt.credits ? `<br><span style="color:#666">Issuances:</span> <strong>${pt.credits}</strong>` : ''}
-                    </div>
-                `)
-                .addTo(map);
-        }
+    pointsLayer = L.layerGroup().addTo(map);
+    renderPoints();
+}
+
+function renderPoints() {
+    if (!map || !pointsLayer) return;
+    pointsLayer.clearLayers();
+    if (!props.points?.length) return;
+    for (const pt of props.points) {
+        L.circleMarker([pt.lat, pt.lng], {
+            radius: 4,
+            fillColor: '#1a9850',
+            fillOpacity: 0.9,
+            color: '#fff',
+            weight: 1.5,
+        })
+            .bindPopup(`
+                <div style="font-size:12px;line-height:1.6">
+                    <strong>${pt.name}</strong>
+                    ${pt.credits ? `<br><span style="color:#666">Issuances:</span> <strong>${pt.credits}</strong>` : ''}
+                </div>
+            `)
+            .addTo(pointsLayer);
     }
 }
 
@@ -136,7 +143,19 @@ onMounted(async () => {
     // Leaflet needs a size recalc after the container is laid out
     setTimeout(() => { map?.invalidateSize(); }, 100);
 });
-onUnmounted(() => { map?.remove(); map = null; });
+onUnmounted(() => { map?.remove(); map = null; geoLayer = null; pointsLayer = null; });
+
+// Re-style country shapes when the data arrives or changes after initial mount.
+// Without this, the map paints countries with `projects = 0` (transparent) on
+// first load — switching tabs and back used to be the workaround because it
+// re-mounted the component.
+watch(() => props.countries, () => {
+    geoLayer?.resetStyle();
+}, { deep: true });
+
+watch(() => props.points, () => {
+    renderPoints();
+}, { deep: true });
 </script>
 
 <template>

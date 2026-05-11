@@ -411,7 +411,11 @@ const skeletonRows = computed(() =>
                   <span v-else class="text-xs text-muted-foreground">—</span>
                 </td>
                 <td class="py-3 px-4 text-right tabular-nums">
-                  {{ r.stats.projectCount }}
+                  <span :title="r.stats.projectCount !== r.stats.instanceProjectCount
+                    ? `${r.stats.projectCount} total across all versions`
+                    : undefined">
+                    {{ r.stats.instanceProjectCount }}
+                  </span>
                 </td>
                 <td class="py-3 px-4 text-right tabular-nums font-medium">
                   {{ formatCredits(r.stats.issuanceCount) }}
