@@ -124,8 +124,8 @@ export class BlockTreeGenerator extends NatsService {
         };
 
         const actionstep = new RecordActionStep(
-            (recordActionId, actionTimestemp, errors) => {
-                RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp);
+            (recordActionId, actionTimestamp, errors) => {
+                RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestamp);
                 blockCompleteEvent({
                     ...baseEvent,
                     trackingId: recordActionId,
