@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import { Toaster } from 'vue-sonner';
+</script>
+
 <template>
     <div class="flex min-h-screen">
         <AppSidebar />
@@ -7,5 +11,6 @@
                 <slot />
             </main>
         </div>
+        <Toaster position="bottom-right" rich-colors />
     </div>
 </template>

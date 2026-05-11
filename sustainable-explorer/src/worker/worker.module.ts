@@ -29,6 +29,9 @@ import { BusinessViewBuilderProcessor } from './processors/business-view-builder
 // Schedulers
 import { SyncSchedulerService } from './schedulers/sync-scheduler.service';
 
+// Services (extended)
+import { QueueAutoscalerService } from './services/queue-autoscaler.service';
+
 /**
  * Maps queue names to the processor classes that handle them.
  * Only processors for active queues will be registered.
@@ -118,6 +121,10 @@ export class WorkerModule {
                 ...(activeQueues.some(q => q.startsWith('mirror-node'))
                     ? [SyncSchedulerService]
                     : []),
+
+                // Autoscaler — always registered; uses @Optional() for processor
+                // injections so it gracefully handles partial processor sets.
+                QueueAutoscalerService,
             ],
         };
     }

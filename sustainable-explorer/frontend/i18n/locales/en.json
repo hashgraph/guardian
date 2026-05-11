@@ -503,17 +503,67 @@
     "subtitle": "Data pipeline and worker queue metrics",
     "dataSyncedUpTo": "Data Synced Up To",
     "topicsIndexed": "Topics Indexed",
-    "topicsIndexedSub": "of ~1,700 discovered",
+    "topicsDiscovered": "discovered",
     "messagesProcessed": "Messages Processed",
-    "messagesProcessedSub": "{count} pending in queue",
+    "pendingInQueue": "pending in queue",
     "queueStatus": "Queue Status",
     "queueStatusSub": "BullMQ worker queues",
+        "connectionLive": "Live",
+        "connectionPolling": "Polling",
+        "lastUpdated": "Last updated",
+        "totalWaiting": "Total Waiting",
+        "totalFailed": "Total Failed",
     "columns": {
       "queue": "Queue",
       "waiting": "Waiting",
       "active": "Active",
       "completed": "Completed",
-      "failed": "Failed"
+      "failed": "Failed",
+            "delayed": "Delayed",
+            "concurrency": "Concurrency",
+            "status": "Status",
+            "actions": "Actions"
+        },
+        "queueStatuses": {
+            "active": "Active",
+            "idle": "Idle",
+            "paused": "Paused"
+        },
+        "actions": {
+            "pause": "Pause",
+            "resume": "Resume",
+            "viewFailures": "View failures",
+            "retryAll": "Retry all"
+        },
+        "failedDrawer": {
+            "title": "Failed jobs",
+            "byReason": "By reason",
+            "allFailed": "All failed",
+            "retryJob": "Retry",
+            "forceRetry": "Override retry limit (force)",
+            "budgetExhausted": "Retry budget exhausted",
+            "attempts": "Attempts",
+            "manualRetries": "Manual retries"
+        },
+        "syncHealth": {
+            "title": "Sync Health",
+            "lastSynced": "Last Synced",
+            "lag": "Lag",
+            "topics": "Topics",
+            "tokens": "Tokens"
+        },
+        "activity": {
+            "title": "Recent Activity",
+            "events": "events",
+            "filterAll": "All",
+            "filterFailures": "Failures only",
+            "empty": "No recent events — waiting for queue activity...",
+            "emptyFailures": "No failures recorded in this session"
+        },
+        "retryAll": {
+            "confirm": "Retry all failed jobs?",
+            "force": "Override retry limit (force)",
+            "result": "Retried {retried} jobs, skipped {skipped}"
     }
   },
   "vcViewer": {
