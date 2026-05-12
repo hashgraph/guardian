@@ -181,6 +181,9 @@ services:
             # Must be externally reachable from end-user machines.
             # Example: http://3.93.78.104:3030 or https://api.yourdomain.com
             NUXT_PUBLIC_API_BASE_URL: ${NUXT_PUBLIC_API_BASE_URL:-http://localhost:3030}
+            # SSE base URL — must bypass Nitro proxy (Nitro buffers the body,
+            # which breaks text/event-stream). Must be publicly reachable.
+            NUXT_PUBLIC_SSE_API_BASE_URL: ${NUXT_PUBLIC_SSE_API_BASE_URL:-http://localhost:3030}
         ports:
             - '${FRONTEND_PORT:-3000}:3000'
         depends_on:
