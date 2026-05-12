@@ -22,6 +22,11 @@ import {
     Flame,
 } from 'lucide-vue-next';
 import { formatCredits } from '~/lib/format';
+import {
+    allocateDonutColors,
+    DONUT_OTHER_COLOR,
+    mergeTopBinsWithOther,
+} from '~/lib/chart-colors';
 
 const { t } = useI18n();
 
@@ -89,8 +94,52 @@ const retirementSeriesTotal = computed(() =>
     Math.round(retirementSeriesData.value.reduce((s, d) => s + d.value, 0) * 10) / 10,
 );
 
+function buildDonutRows(
+    bins: { label: string; projectCount: number; creditCount: number }[],
+    mode: 'projects' | 'credits',
+    seedPrefix: string,
+) {
+    if (bins.length === 0) return [];
+    const merged = mergeTopBinsWithOther(bins, mode, t('dashboard.otherCategory'));
+    const hasOtherAggregate = bins.length > 15;
+    const mainSliceCount = hasOtherAggregate ? 15 : merged.length;
+    const val = (b: (typeof merged)[number]) =>
+        mode === 'projects' ? b.projectCount : b.creditCount;
+    const seed = `${seedPrefix}|${mode}|${merged.map(b => `${b.label}:${val(b)}`).join('|')}`;
+    const colors = allocateDonutColors(mainSliceCount, seed);
+    if (hasOtherAggregate) colors.push(DONUT_OTHER_COLOR);
+    return merged.map((b, i) => ({
+        ...b,
+        color: colors[i]!,
+    }));
+}
+
+const sectorDonutRows = computed(() =>
+    buildDonutRows(
+        sectorBreakdown.value.map(({ label, projectCount, creditCount }) => ({
+            label,
+            projectCount,
+            creditCount,
+        })),
+        chartMode.value,
+        'sector',
+    ),
+);
+
+const registryDonutRows = computed(() =>
+    buildDonutRows(
+        registryBreakdown.value.map(({ label, projectCount, creditCount }) => ({
+            label,
+            projectCount,
+            creditCount,
+        })),
+        chartMode.value,
+        'registry',
+    ),
+);
+
 const sectorChartSegments = computed(() =>
-    sectorBreakdown.value.map(s => ({
+    sectorDonutRows.value.map(s => ({
         label: s.label,
         value: chartMode.value === 'projects' ? s.projectCount : s.creditCount,
         color: s.color,
@@ -98,7 +147,7 @@ const sectorChartSegments = computed(() =>
 );
 
 const registryChartSegments = computed(() =>
-    registryBreakdown.value.map(s => ({
+    registryDonutRows.value.map(s => ({
         label: s.label,
         value: chartMode.value === 'projects' ? s.projectCount : s.creditCount,
         color: s.color,
@@ -565,7 +614,7 @@ const filteredStats = computed(() => {
                         <div class="flex items-start gap-5">
                             <DonutChart :segments="sectorChartSegments" :size="140" />
                             <div class="space-y-2 flex-1 min-w-0 pt-1">
-                                <div v-for="s in sectorBreakdown" :key="s.label" class="flex items-center gap-2">
+                                <div v-for="s in sectorDonutRows" :key="s.label" class="flex items-center gap-2">
                                     <span class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: s.color }" />
                                     <span class="text-xs text-muted-foreground truncate flex-1">{{ s.label }}</span>
                                     <span class="text-xs font-medium text-foreground tabular-nums shrink-0">
@@ -585,7 +634,7 @@ const filteredStats = computed(() => {
                         <div class="flex items-start gap-5">
                             <DonutChart :segments="registryChartSegments" :size="140" />
                             <div class="space-y-2 flex-1 min-w-0 pt-1">
-                                <div v-for="s in registryBreakdown" :key="s.label" class="flex items-center gap-2">
+                                <div v-for="s in registryDonutRows" :key="s.label" class="flex items-center gap-2">
                                     <span class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: s.color }" />
                                     <span class="text-xs text-muted-foreground truncate flex-1">{{ s.label }}</span>
                                     <span class="text-xs font-medium text-foreground tabular-nums shrink-0">

@@ -279,17 +279,6 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         totalCredits: projects.value.reduce((sum, p) => sum + p.credits, 0),
     }));
 
-    // Sector breakdown for pie charts
-    const sectorColors: Record<string, string> = {
-        'Energy Industries': 'hsl(142, 76%, 36%)',
-        'Energy Demand': 'hsl(197, 37%, 24%)',
-        'Forestry and Land Use': 'hsl(47, 96%, 53%)',
-        'Waste Handling and Disposal': 'hsl(349, 89%, 60%)',
-        'Agriculture': 'hsl(262, 83%, 58%)',
-        'Coastal and Marine': 'hsl(199, 89%, 48%)',
-        'Water Supply': 'hsl(217, 71%, 53%)',
-    };
-
     const sectorBreakdown = computed(() => {
         const groups: Record<string, { projectCount: number; creditCount: number }> = {};
         for (const p of filteredProjects.value) {
@@ -304,18 +293,9 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
                 label,
                 projectCount: data.projectCount,
                 creditCount: data.creditCount,
-                color: sectorColors[label] || 'hsl(220, 13%, 69%)',
             }))
             .sort((a, b) => b.projectCount - a.projectCount);
     });
-
-    // Registry breakdown for pie charts
-    const registryColors: Record<string, string> = {
-        'Verra': 'hsl(142, 76%, 36%)',
-        'Gold Standard': 'hsl(47, 96%, 53%)',
-        'CAR': 'hsl(349, 89%, 60%)',
-        'ACR': 'hsl(262, 83%, 58%)',
-    };
 
     const registryBreakdown = computed(() => {
         const groups: Record<string, { projectCount: number; creditCount: number }> = {};
@@ -331,7 +311,6 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
                 label,
                 projectCount: data.projectCount,
                 creditCount: data.creditCount,
-                color: registryColors[label] || 'hsl(220, 13%, 69%)',
             }))
             .sort((a, b) => b.projectCount - a.projectCount);
     });
