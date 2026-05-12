@@ -6,6 +6,7 @@ import {
     resolveMethod,
     loadResolutionMaps,
     extractLatLng,
+    resolveCountryName,
 } from '../project-mapper/helpers';
 import {
     extractLatLngStrings,
@@ -68,8 +69,9 @@ export class ProjectMapperService {
         const isMintToken = vcSchemaUuid === 'MintToken';
 
         // Resolve the policy this VC belongs to.
-        const policyTopicId = await this.resolvePolicyTopicId(vc.topicId);
-        if (!policyTopicId) return;
+        const resolvedTopics = await this.resolvePolicyTopicId(vc.topicId);
+        if (!resolvedTopics) return;
+        const { policyTopicId, instanceTopicId } = resolvedTopics;
 
         const pdsRows: Array<{
             status: string;
@@ -197,7 +199,7 @@ export class ProjectMapperService {
         const lng = geoLngLat?.[0] ?? null;
         const lat = geoLngLat?.[1] ?? null;
         const name = extracted['name'] ?? null;
-        const country = extracted['country'] ?? null;
+        const country = extracted['country'] ? resolveCountryName(extracted['country']) : null;
 
         // Display name: VC-supplied name when present, else project key (so a row
         // exists even before the registration VC lands).
@@ -208,6 +210,7 @@ export class ProjectMapperService {
         const newFields: Record<string, unknown> = {
             topicId: vc.topicId,
             policyTopicId,
+            instanceTopicId,
             policyName: pds.policyName ?? resolved.name ?? null,
         };
         if (name) newFields.name = name;
@@ -231,6 +234,15 @@ export class ProjectMapperService {
         if (createdAt) newFields.createdAt = createdAt;
         if (creditingPeriodEnd) newFields.creditingPeriodEnd = creditingPeriodEnd;
         newFields.status = 'Issuing';
+
+        // Track this VC's contribution. The SQL UPDATE below dedupes by
+        // consensusTimestamp so re-running upsert for the same VC is idempotent.
+        newFields.linkedVcs = [{
+            consensusTimestamp: vc.consensusTimestamp,
+            topicId: vc.topicId,
+            schemaUuid: vcSchemaUuid,
+            csId,
+        }];
 
         const searchText = [
             name ?? '',
@@ -267,15 +279,34 @@ export class ProjectMapperService {
                 "relatedTopicId" = COALESCE(business_view."relatedTopicId", EXCLUDED."relatedTopicId"),
                 "businessData"   = (
                     -- Start with existing data; overlay with EXCLUDED's new fields
-                    -- (which only contain non-null values from this VC); then
-                    -- recompute credits/vcCount as SUM.
-                    business_view."businessData" || EXCLUDED."businessData"
+                    -- (excluding linkedVcs, which needs append+dedupe semantics
+                    -- rather than overwrite); then recompute credits/vcCount as SUM
+                    -- and rebuild linkedVcs as the deduped union of old + new.
+                    business_view."businessData" || (EXCLUDED."businessData" - 'linkedVcs')
                 ) || jsonb_build_object(
+                    -- Only add credits/vcCount when this VC isn't already linked.
+                    -- Makes reparse-all idempotent — clicking it twice doesn't double credits.
                     'credits',
                         COALESCE((business_view."businessData"->>'credits')::numeric, 0)
-                      + $7::numeric,
+                      + CASE WHEN business_view."businessData"->'linkedVcs' @>
+                                  jsonb_build_array(jsonb_build_object('consensusTimestamp', $1::text))
+                             THEN 0 ELSE $7::numeric END,
                     'vcCount',
-                        COALESCE((business_view."businessData"->>'vcCount')::int, 0) + 1
+                        COALESCE((business_view."businessData"->>'vcCount')::int, 0)
+                      + CASE WHEN business_view."businessData"->'linkedVcs' @>
+                                  jsonb_build_array(jsonb_build_object('consensusTimestamp', $1::text))
+                             THEN 0 ELSE 1 END,
+                    'linkedVcs', (
+                        SELECT COALESCE(jsonb_agg(elem ORDER BY elem->>'consensusTimestamp'), '[]'::jsonb)
+                        FROM (
+                            SELECT DISTINCT ON (e->>'consensusTimestamp') e AS elem
+                            FROM jsonb_array_elements(
+                                COALESCE(business_view."businessData"->'linkedVcs', '[]'::jsonb)
+                                || COALESCE(EXCLUDED."businessData"->'linkedVcs', '[]'::jsonb)
+                            ) e
+                            ORDER BY e->>'consensusTimestamp'
+                        ) deduped
+                    )
                 ),
                 "searchText"     = COALESCE(NULLIF(business_view."searchText", ''), EXCLUDED."searchText"),
                 "lastUpdate"     = EXCLUDED."lastUpdate",
@@ -302,7 +333,10 @@ export class ProjectMapperService {
      * Walks the topic parent chain to find the policy (Instance-Policy publish-policy)
      * topic this VC belongs to. Up to 12 hops. Mirrors MessageProcessProcessor's lookup.
      */
-    private async resolvePolicyTopicId(topicId: string): Promise<string | null> {
+    private async resolvePolicyTopicId(topicId: string): Promise<{
+        policyTopicId: string;
+        instanceTopicId: string | null;
+    } | null> {
         let current: string | null = topicId;
         const visited = new Set<string>();
 
@@ -316,7 +350,9 @@ export class ProjectMapperService {
                  LIMIT 1`,
                 [current],
             );
-            if (policyDirect.length > 0) return current;
+            if (policyDirect.length > 0) {
+                return { policyTopicId: current, instanceTopicId: null };
+            }
 
             const policyByInstance: Array<{ topicId: string }> = await this.dataSource.query(
                 `SELECT "topicId" FROM message
@@ -325,7 +361,10 @@ export class ProjectMapperService {
                  LIMIT 1`,
                 [current],
             );
-            if (policyByInstance.length > 0) return policyByInstance[0].topicId;
+            if (policyByInstance.length > 0) {
+                // current === instanceTopicId of the resolved version
+                return { policyTopicId: policyByInstance[0].topicId, instanceTopicId: current };
+            }
 
             const parentRow: Array<{ parent_id: string | null }> = await this.dataSource.query(
                 `SELECT options->>'parentId' AS parent_id

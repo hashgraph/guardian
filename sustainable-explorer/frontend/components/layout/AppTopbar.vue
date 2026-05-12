@@ -6,13 +6,12 @@ import {
 } from 'lucide-vue-next';
 import { onClickOutside, useDebounceFn } from '@vueuse/core';
 import { networkOptions } from '~/composables/useNetwork';
-import { MOCK_PROJECTS, MOCK_CREDITS } from '~/data';
 import { formatCredits } from '~/lib/format';
 
 const { t, locale, locales, setLocale } = useI18n();
 
 const collapsed = useState('sidebar-collapsed', () => false);
-const { currentNetwork, setNetwork } = useNetwork();
+const { network, currentNetwork, setNetwork } = useNetwork();
 const router = useRouter();
 const route = useRoute();
 
@@ -28,6 +27,48 @@ const routeMeta = computed<Record<string, { label: string; icon: any }>>(() => (
     '/analytics': { label: t('nav.analytics'), icon: BarChart3 },
     '/status': { label: t('nav.syncStatus'), icon: Activity },
 }));
+
+// Cache resolved detail names by `${parent}|${id}` so breadcrumbs stay stable
+// across re-renders and don't refetch on every keystroke elsewhere on the page.
+const detailLabelCache = ref<Record<string, string>>({});
+
+async function resolveDetailLabel(parentPath: string, paramId: string) {
+    const cacheKey = `${parentPath}|${paramId}`;
+    if (detailLabelCache.value[cacheKey]) return;
+
+    let endpoint: string | null = null;
+    if (parentPath === '/projects') endpoint = `projects/${paramId}`;
+    else if (parentPath === '/methodologies') endpoint = `methodologies/${paramId}`;
+    if (!endpoint) return;
+
+    if (!import.meta.client) return;
+
+    const config = useRuntimeConfig();
+    const baseURL = config.public.apiBaseUrl as string;
+
+    try {
+        const res = await $fetch<{ name?: string; displayName?: string }>(
+            `/api/v1/${network.value}/${endpoint}`,
+            { baseURL },
+        );
+        const label = res?.name || res?.displayName;
+        if (label) detailLabelCache.value[cacheKey] = label;
+    } catch {
+        // Leave the cache untouched on error — breadcrumb shows raw id as fallback.
+    }
+}
+
+watch(
+    () => [route.path, network.value],
+    () => {
+        const segments = route.path.split('/').filter(Boolean);
+        if (segments.length < 2) return;
+        const parentPath = '/' + segments[0];
+        const paramId = segments[1];
+        resolveDetailLabel(parentPath, paramId);
+    },
+    { immediate: true },
+);
 
 const breadcrumbs = computed(() => {
     const path = route.path;
@@ -53,13 +94,12 @@ const breadcrumbs = computed(() => {
             // Detail page (e.g. /projects/3) — parent is a link
             crumbs.push({ label: meta.label, icon: meta.icon, to: parentPath });
 
-            // Resolve detail label from mock data
+            // Resolve detail label live from the API; fall back to the raw param
+            // until the fetch completes (or if it fails). Never show "Not Found"
+            // — the row almost certainly exists, the breadcrumb just lacked data.
             const paramId = segments[1];
-            let detailLabel = paramId;
-            if (parentPath === '/projects') {
-                const project = MOCK_PROJECTS.find(p => p.id === paramId);
-                detailLabel = project?.name || t('common.notFound');
-            }
+            const cacheKey = `${parentPath}|${paramId}`;
+            const detailLabel = detailLabelCache.value[cacheKey] ?? paramId;
             crumbs.push({ label: detailLabel });
         }
     }
@@ -105,90 +145,137 @@ const selectedIndex = ref(-1);
 
 onClickOutside(searchRef, () => { searchOpen.value = false; });
 
-// Search index derived from mock data
-const searchIndex = computed(() => {
-    const items: { type: string; icon: any; color: string; title: string; sub: string; to: string }[] = [];
+// Live global search across projects / methodologies / registries / credits.
+// Each list endpoint already supports a `search` query param backed by
+// PostgreSQL tsvector + pg_trgm \u2014 we fan out in parallel and merge top hits.
 
-    // Projects
-    for (const p of MOCK_PROJECTS) {
+interface GlobalResult {
+    type: string;
+    icon: any;
+    color: string;
+    title: string;
+    sub: string;
+    to: string;
+}
+
+const filteredResults = ref<GlobalResult[]>([]);
+const searchPending = ref(false);
+let searchSeq = 0;
+
+const PER_TYPE_LIMIT = 4;
+
+async function runGlobalSearch(rawQuery: string) {
+    const q = rawQuery.trim();
+    if (q.length < 2) {
+        filteredResults.value = [];
+        searchPending.value = false;
+        return;
+    }
+
+    const seq = ++searchSeq;
+    searchPending.value = true;
+
+    const config = useRuntimeConfig();
+    const baseURL = config.public.apiBaseUrl as string;
+    const net = network.value;
+
+    const fetchList = async <T = any>(path: string): Promise<T[]> => {
+        try {
+            const res = await $fetch<{ data?: T[] }>(
+                `/api/v1/${net}/${path}`,
+                {
+                    baseURL,
+                    params: { search: q, limit: PER_TYPE_LIMIT, page: 1 },
+                },
+            );
+            return res?.data ?? [];
+        } catch {
+            return [];
+        }
+    };
+
+    const [projects, methodologies, registries, credits] = await Promise.all([
+        fetchList<any>('projects'),
+        fetchList<any>('methodologies'),
+        fetchList<any>('registries'),
+        fetchList<any>('credits'),
+    ]);
+
+    // A more recent search may have started while this one was in flight \u2014
+    // discard stale results to avoid flicker.
+    if (seq !== searchSeq) return;
+
+    const items: GlobalResult[] = [];
+
+    for (const p of projects) {
         items.push({
             type: t('topbar.itemType.project'),
             icon: FolderKanban,
             color: 'text-stat-amber',
-            title: p.name,
-            sub: `${p.registry} ${p.methodology} \u00b7 ${p.status}`,
-            to: `/projects/${p.id}`,
+            title: p.name ?? p.displayName ?? '\u2014',
+            sub: [p.registry ?? p.registryName, p.methodology, p.status]
+                .filter(Boolean).join(' \u00b7 '),
+            to: `/projects/${p.id ?? p.sourceTimestamp}`,
         });
     }
 
-    // Credits
-    for (const c of MOCK_CREDITS) {
-        items.push({
-            type: t('topbar.itemType.issuance'),
-            icon: Coins,
-            color: 'text-stat-rose',
-            title: `${c.name} (${c.symbol})`,
-            sub: `${t('topbar.token')} ${c.tokenId} \u00b7 ${formatCredits(c.supply)}`,
-            to: '/credits',
-        });
-    }
-
-    // Methodologies (derived from projects)
-    const methMap: Record<string, { name: string; registry: string; projects: number }> = {};
-    for (const p of MOCK_PROJECTS) {
-        if (!methMap[p.methodologyId]) {
-            methMap[p.methodologyId] = { name: p.methodology, registry: p.registry, projects: 0 };
-        }
-        methMap[p.methodologyId].projects++;
-    }
-    for (const m of Object.values(methMap)) {
+    for (const m of methodologies) {
         items.push({
             type: t('topbar.itemType.methodology'),
             icon: BookOpen,
             color: 'text-stat-green',
-            title: m.name,
-            sub: `${m.registry} \u00b7 ${m.projects} ${t('topbar.projectsLabel')}`,
-            to: '/methodologies',
+            title: m.name ?? m.displayName ?? '\u2014',
+            sub: [m.registryName, m.version && `v${m.version}`,
+                  m.stats?.projectCount != null && `${m.stats.projectCount} ${t('topbar.projectsLabel')}`,
+            ].filter(Boolean).join(' \u00b7 '),
+            to: `/methodologies/${m.topicId ?? m.id}`,
         });
     }
 
-    // Registries (derived from projects)
-    const regMap: Record<string, { policies: Set<string>; projects: number }> = {};
-    for (const p of MOCK_PROJECTS) {
-        if (!regMap[p.registry]) regMap[p.registry] = { policies: new Set(), projects: 0 };
-        regMap[p.registry].policies.add(p.methodologyId);
-        regMap[p.registry].projects++;
-    }
-    for (const [name, data] of Object.entries(regMap)) {
+    for (const r of registries) {
         items.push({
             type: t('topbar.itemType.registry'),
             icon: Building2,
             color: 'text-stat-blue',
-            title: name,
-            sub: `${data.policies.size} ${t('topbar.policies')} \u00b7 ${data.projects} ${t('topbar.projectsLabel')}`,
-            to: '/registries',
+            title: r.name ?? r.displayName ?? '\u2014',
+            sub: [r.stats?.policyCount != null && `${r.stats.policyCount} ${t('topbar.policies')}`,
+                  r.stats?.projectCount != null && `${r.stats.projectCount} ${t('topbar.projectsLabel')}`,
+            ].filter(Boolean).join(' \u00b7 '),
+            to: `/registries${r.did ? `?did=${encodeURIComponent(r.did)}` : ''}`,
         });
     }
 
-    return items;
-});
+    for (const c of credits) {
+        items.push({
+            type: t('topbar.itemType.issuance'),
+            icon: Coins,
+            color: 'text-stat-rose',
+            title: c.symbol ? `${c.name ?? '\u2014'} (${c.symbol})` : (c.name ?? '\u2014'),
+            sub: [c.tokenId && `${t('topbar.token')} ${c.tokenId}`,
+                  c.supply != null && formatCredits(Number(c.supply)),
+            ].filter(Boolean).join(' \u00b7 '),
+            to: '/credits',
+        });
+    }
 
-const filteredResults = computed(() => {
-    const q = searchQuery.value.trim().toLowerCase();
-    if (q.length < 2) return [];
-    return searchIndex.value
-        .filter(item => item.title.toLowerCase().includes(q) || item.sub.toLowerCase().includes(q) || item.type.toLowerCase().includes(q))
-        .slice(0, 7);
-});
+    filteredResults.value = items;
+    searchPending.value = false;
+}
 
-const debouncedOpen = useDebounceFn(() => {
-    searchOpen.value = searchQuery.value.trim().length >= 2;
+const debouncedSearch = useDebounceFn((q: string) => {
+    runGlobalSearch(q);
+    searchOpen.value = q.trim().length >= 2;
     selectedIndex.value = -1;
-}, 150);
+}, 250);
 
 function onSearchInput() {
-    debouncedOpen();
+    debouncedSearch(searchQuery.value);
 }
+
+// Re-run when the network switches so results match the current scope.
+watch(network, () => {
+    if (searchQuery.value.trim().length >= 2) runGlobalSearch(searchQuery.value);
+});
 
 function onSearchFocus() {
     if (searchQuery.value.trim().length >= 2) {
@@ -279,14 +366,14 @@ function onSearchKeydown(e: KeyboardEvent) {
                     leave-to-class="opacity-0 -translate-y-1"
                 >
                     <div
-                        v-if="searchOpen && filteredResults.length > 0"
+                        v-if="searchOpen"
                         class="absolute left-0 right-0 top-full mt-1 rounded-lg border bg-popover shadow-lg overflow-hidden"
                     >
                         <div class="px-3 py-1.5 border-b bg-muted/30 flex items-center justify-between">
                             <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Results</span>
-                            <MockDataBadge compact />
+                            <span v-if="searchPending" class="text-[10px] text-muted-foreground">{{ $t('common.searchEllipsis') }}</span>
                         </div>
-                        <div class="py-1">
+                        <div v-if="filteredResults.length > 0" class="py-1">
                             <button
                                 v-for="(result, idx) in filteredResults"
                                 :key="idx"
@@ -305,7 +392,9 @@ function onSearchKeydown(e: KeyboardEvent) {
                                 <span class="text-[10px] font-medium text-muted-foreground/60 uppercase">{{ result.type }}</span>
                             </button>
                         </div>
-
+                        <div v-else-if="!searchPending" class="px-3 py-4 text-center text-xs text-muted-foreground">
+                            No results
+                        </div>
                     </div>
                 </Transition>
             </div>

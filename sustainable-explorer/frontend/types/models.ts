@@ -8,6 +8,20 @@ export interface ProjectIssuance {
     rawVc?: Record<string, any> | null;
 }
 
+export interface LinkedVc {
+    consensusTimestamp: string;
+    topicId: string;
+    csId: string | null;
+}
+
+export interface LinkedSchema {
+    schemaUuid: string;
+    schemaName: string | null;
+    isProjectSchema: boolean;
+    vcCount: number;
+    linkedVcs: LinkedVc[];
+}
+
 export interface Project {
     id: string;
     name: string;
@@ -31,10 +45,12 @@ export interface Project {
     creditingPeriodEnd?: string | null;
     topicId?: string;
     policyTopicId?: string;
+    instanceTopicId?: string | null;
     registryDid?: string;
     sourceTimestamp?: string;
     issuances?: ProjectIssuance[];
     issuanceCount?: number;
+    linkedSchemas?: LinkedSchema[];
     totalIssued?: number;
     totalRetired?: number;
     totalActive?: number;

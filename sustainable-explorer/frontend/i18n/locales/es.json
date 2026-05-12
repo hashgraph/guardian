@@ -198,6 +198,48 @@
       "vintage": "Añada",
       "created": "Creado",
       "creditingPeriod": "Período de acreditación"
+    },
+    "detail": {
+      "linkedVcs": {
+        "title": "Datos en bruto vinculados",
+        "subtitle": "Documentos de datos en bruto que contribuyeron a este proyecto, agrupados por esquema. Los esquemas vacíos indican campos que no pudieron extraerse.",
+        "empty": "No hay datos en bruto vinculados desde este esquema",
+        "notTracked": "No hay datos en bruto vinculados disponibles — vuelva a analizar la metodología para poblarlos.",
+        "viewJson": "Ver JSON",
+        "projectSchemaBadge": "Esquema de proyecto",
+        "columns": {
+          "timestamp": "Marca de tiempo",
+          "topicId": "ID de tópico",
+          "csId": "cs.id"
+        }
+      },
+      "actions": {
+        "reextract": "Re-extraer",
+        "reextractSuccess": "Re-extrayendo desde {count} VC(s) — actualice en unos segundos",
+        "reextractEmpty": "Nada que re-extraer — aún no hay VCs vinculados a este proyecto",
+        "reextractError": "Error al re-extraer"
+      }
+    },
+    "compare": {
+      "title": "Comparar proyectos",
+      "subtitle": "Comparación lado a lado de hasta 4 proyectos",
+      "attribute": "Atributo",
+      "notFound": "Proyecto no encontrado",
+      "needTwo": "Selecciona al menos 2 proyectos para comparar.",
+      "credits": "Créditos est.",
+      "totalIssued": "Total emitido",
+      "totalRetired": "Total retirado",
+      "totalActive": "Total activo",
+      "creditingPeriodEnd": "Fin del período de acreditación",
+      "selectToCompare": "Comparar",
+      "comparing": "{count} seleccionados",
+      "compareButton": "Comparar",
+      "clearAll": "Limpiar todo",
+      "maxSelected": "Máx. 4 proyectos",
+      "addToCompare": "Añadir a la comparación",
+      "removeFromCompare": "Quitar de la comparación",
+      "diff": "dif.",
+      "diffLegend": "Las filas resaltadas difieren entre proyectos"
     }
   },
   "credits": {
@@ -322,7 +364,25 @@
           "sdgOrCobenefits": "ODS / Cobeneficios"
         },
         "fetchError": "No se pudo cargar el mapeo decodificado.",
-        "unresolved": "—"
+        "unresolved": "—",
+        "actions": {
+          "title": "Mapping actions",
+          "rerunDecoder": "Re-run decoder",
+          "reparseProjects": "Re-parse projects",
+          "editMapping": "Edit mapping",
+          "save": "Save",
+          "cancel": "Cancel",
+          "unmapped": "— None —",
+          "rerunSuccess": "Decoder re-queued — refresh in a few seconds",
+          "rerunError": "Failed to re-queue decoder",
+          "reparseSuccess": "Re-queued {count} project(s) for re-parsing",
+          "reparseEmpty": "Nothing to re-parse — decode first or no cached VCs",
+          "reparseError": "Failed to re-queue project re-parse",
+          "reparseDisabledHint": "Decode the policy successfully before re-parsing projects",
+          "saveSuccess": "Mapping updated",
+          "saveNoChanges": "No changes to save",
+          "saveError": "Failed to save mapping"
+        }
       },
       "summary": {
         "registry": "Registro",

@@ -16,6 +16,12 @@ export interface IssuanceRow {
     rawVc?: Record<string, any> | null;
 }
 
+export interface PolicySchemaRow {
+    schemaId: string;
+    name: string | null;
+    isProjectSchema: boolean;
+}
+
 export interface ProjectRow {
     id: string;
     sourceTimestamp: string;
@@ -33,6 +39,7 @@ export interface ProjectRow {
     totalIssued?: number;
     totalRetired?: number;
     totalActive?: number;
+    policySchemas?: PolicySchemaRow[];
 }
 
 export interface ProjectListQuery {

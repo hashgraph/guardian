@@ -1,4 +1,4 @@
-import type { Project, ProjectIssuance } from '~/types/models';
+import type { Project, ProjectIssuance, LinkedSchema, LinkedVc } from '~/types/models';
 
 // country display name → ISO 3166-1 alpha-3 for CountryFlag component
 export const COUNTRY_ALPHA3: Record<string, string> = {
@@ -54,6 +54,7 @@ export function mapApiProject(raw: Record<string, any>): Project {
         creditingPeriodEnd: raw.creditingPeriodEnd ?? null,
         topicId: raw.topicId ?? undefined,
         policyTopicId: raw.policyTopicId ?? undefined,
+        instanceTopicId: raw.instanceTopicId ?? null,
         registryDid: raw.registryDid ?? undefined,
         sourceTimestamp: raw.sourceTimestamp ?? undefined,
         issuanceCount: typeof raw.issuanceCount === 'number' ? raw.issuanceCount : 0,
@@ -71,6 +72,21 @@ export function mapApiProject(raw: Record<string, any>): Project {
         totalIssued: typeof raw.totalIssued === 'number' ? raw.totalIssued : 0,
         totalRetired: typeof raw.totalRetired === 'number' ? raw.totalRetired : 0,
         totalActive: typeof raw.totalActive === 'number' ? raw.totalActive : 0,
+        linkedSchemas: Array.isArray(raw.linkedSchemas)
+            ? (raw.linkedSchemas as Array<Record<string, any>>).map((s): LinkedSchema => ({
+                schemaUuid: s['schemaUuid'] ?? '',
+                schemaName: s['schemaName'] ?? null,
+                isProjectSchema: Boolean(s['isProjectSchema']),
+                vcCount: typeof s['vcCount'] === 'number' ? s['vcCount'] : 0,
+                linkedVcs: Array.isArray(s['linkedVcs'])
+                    ? (s['linkedVcs'] as Array<Record<string, any>>).map((v): LinkedVc => ({
+                        consensusTimestamp: v['consensusTimestamp'] ?? '',
+                        topicId: v['topicId'] ?? '',
+                        csId: v['csId'] ?? null,
+                    }))
+                    : [],
+            }))
+            : [],
     };
 }
 

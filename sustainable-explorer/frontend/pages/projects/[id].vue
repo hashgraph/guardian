@@ -4,13 +4,13 @@ import {
     ChevronDown, ChevronUp, Copy, Check, Users, BookOpen, Target,
     Globe, Leaf, FolderKanban, Layers, BarChart3, Clock, Activity,
     GitBranch, ArrowRight, CheckCircle2, Circle, Zap, FileText, Network, Repeat, Flame,
-    TrendingUp, TrendingDown, AlertTriangle, Database, ExternalLink,
+    TrendingUp, TrendingDown, AlertTriangle, Database, ExternalLink, RotateCcw,
 } from 'lucide-vue-next';
 import type { Credit } from '~/types/models';
 import { formatCredits, formatNumber } from '~/lib/format';
 import { getSDG } from '~/lib/sdgs';
-import { REGISTRY_TERM_MAPPINGS } from '~/lib/registry-terms';
 import { getMethodologyName } from '~/lib/methodologies';
+import { useDecodedMethodologyApi } from '~/composables/api/useDecodedMethodologyApi';
 import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
 
 const route = useRoute();
@@ -76,13 +76,67 @@ const lifecycleSummary = computed(() => {
     return { totalIssued, totalTransferred: 0, totalRetired, active };
 });
 
-const termMappingOpen = ref(false);
+const methodologyMappingOpen = ref(false);
+
+// Fetch the methodology's resolved field mapping using this project's
+// instance topic (the same URL the methodology detail page uses). Lazy:
+// only triggered when the user expands the section.
+const methodologyMappingId = computed(() => project.value?.instanceTopicId ?? '');
+const decodedMethodology = useDecodedMethodologyApi({
+    id: methodologyMappingId,
+    network: computed(() => network.value as string),
+});
+const methodologyMappingRows = computed(() => {
+    const ps = decodedMethodology.data.value?.projectSchema;
+    if (!ps) return [];
+    const rf = ps.resolvedFields;
+    return [
+        { label: 'Project Title',         field: rf.name },
+        { label: 'Country',               field: rf.country },
+        { label: 'Developer',             field: rf.developer },
+        { label: 'Category',              field: rf.category },
+        { label: 'Scale',                 field: rf.scale },
+        { label: 'Sector',                field: rf.sector },
+        { label: 'Vintage / Start Date',  field: rf.vintageRaw },
+        { label: 'Crediting Period',      field: rf.creditingPeriod },
+        { label: 'SDGs / Co-benefits',    field: rf.sdgOrCobenefits },
+        {
+            label: 'Project Location',
+            field: ps.geoKey
+                ? { fieldKey: ps.geoKey, title: ps.geoFieldTitle ?? ps.geoKey, description: '' }
+                : null,
+        },
+    ];
+});
+
+watch(methodologyMappingOpen, (open) => {
+    if (open && methodologyMappingId.value && !decodedMethodology.loaded.value) {
+        decodedMethodology.fetch();
+    }
+});
+
 const vcViewerOpen = ref(false);
 const vcViewerTitle = ref('');
 const vcViewerData = ref<Record<string, any> | null>(null);
 
-function viewProjectVc() {
+// "View Raw Data" — show the project's anchor VC document. Picks the first VC
+// from the project schema; falls back to the first non-MintToken linked VC; if
+// no linked VCs at all, falls back to the aggregated project businessData
+// (older projects predating linkedVcs tracking).
+async function viewProjectVc() {
     if (!project.value) return;
+    const schemas = project.value.linkedSchemas ?? [];
+    const projectSchema = schemas.find(s => s.isProjectSchema && s.linkedVcs.length > 0);
+    const fallback = schemas.find(s => s.schemaUuid !== 'MintToken' && s.linkedVcs.length > 0);
+    const pick = projectSchema ?? fallback;
+    const anchor = pick?.linkedVcs[0];
+
+    if (anchor) {
+        await viewLinkedVcJson(anchor.consensusTimestamp);
+        vcViewerTitle.value = `${project.value.name} — ${pick!.schemaName ?? pick!.schemaUuid}`;
+        return;
+    }
+
     vcViewerTitle.value = project.value.name;
     vcViewerData.value = project.value as unknown as Record<string, any>;
     vcViewerOpen.value = true;
@@ -165,6 +219,102 @@ const fullMethodologyName = computed(() => {
     if (!project.value) return '';
     return getMethodologyName(project.value.methodologyId) || project.value.methodology;
 });
+
+// ─── Linked VCs panel ────────────────────────────────────────────────────────
+
+// Per-schema open/closed state. First schema with vcCount > 0 starts expanded.
+const schemaOpenState = ref<Record<string, boolean>>({});
+
+watch(project, (p) => {
+    if (!p?.linkedSchemas?.length) return;
+    const state: Record<string, boolean> = {};
+    let firstExpanded = false;
+    for (const s of p.linkedSchemas) {
+        if (!firstExpanded && s.vcCount > 0) {
+            state[s.schemaUuid] = true;
+            firstExpanded = true;
+        } else {
+            state[s.schemaUuid] = false;
+        }
+    }
+    schemaOpenState.value = state;
+}, { immediate: true });
+
+function toggleSchema(uuid: string) {
+    schemaOpenState.value = { ...schemaOpenState.value, [uuid]: !schemaOpenState.value[uuid] };
+}
+
+function schemaDisplayName(uuid: string, name: string | null): string {
+    if (name) return name;
+    // Truncate UUID to first 8 chars with ellipsis
+    return `${uuid.slice(0, 8)}...`;
+}
+
+function formatTimestamp(ts: string): string {
+    if (!ts) return '—';
+    const secs = parseFloat(ts);
+    if (isNaN(secs)) return ts;
+    return new Date(secs * 1000).toLocaleString();
+}
+
+// Copy-to-clipboard for topic IDs (reuse pattern from existing code)
+const copiedTopicId = ref<string | null>(null);
+
+async function copyToClipboard(text: string) {
+    try {
+        await navigator.clipboard.writeText(text);
+        copiedTopicId.value = text;
+        setTimeout(() => { copiedTopicId.value = null; }, 1500);
+    } catch { /* ignore */ }
+}
+
+async function viewLinkedVcJson(consensusTimestamp: string) {
+    if (!project.value) return;
+    if (!import.meta.client) return;
+    const config = useRuntimeConfig();
+    const baseURL = config.public.apiBaseUrl as string;
+    try {
+        const data = await $fetch<Record<string, any>>(
+            `/api/v1/${network.value}/projects/${projectId.value}/linked-vcs/${consensusTimestamp}`,
+            { baseURL },
+        );
+        vcViewerTitle.value = consensusTimestamp;
+        vcViewerData.value = data;
+        vcViewerOpen.value = true;
+    } catch (err: any) {
+        const { toast } = await import('vue-sonner');
+        toast.error('Failed to load VC document');
+    }
+}
+
+// ─── Re-extract action ────────────────────────────────────────────────────────
+
+const { t } = useI18n();
+const reextractPending = ref(false);
+
+async function triggerReextract() {
+    if (!import.meta.client) return;
+    const config = useRuntimeConfig();
+    const baseURL = config.public.apiBaseUrl as string;
+    reextractPending.value = true;
+    try {
+        const res = await $fetch<{ enqueued: number }>(
+            `/api/v1/${network.value}/projects/${projectId.value}/re-extract`,
+            { method: 'POST', baseURL },
+        );
+        const { toast } = await import('vue-sonner');
+        if (res.enqueued === 0) {
+            toast.info(t('projects.detail.actions.reextractEmpty'));
+        } else {
+            toast.success(t('projects.detail.actions.reextractSuccess', { count: res.enqueued }));
+        }
+    } catch {
+        const { toast } = await import('vue-sonner');
+        toast.error(t('projects.detail.actions.reextractError'));
+    } finally {
+        reextractPending.value = false;
+    }
+}
 </script>
 
 <template>
@@ -204,6 +354,14 @@ const fullMethodologyName = computed(() => {
                         <FileJson class="h-4 w-4 text-primary" />
                         {{ $t('common.viewRawData') }}
                     </button>
+                    <button
+                        :disabled="reextractPending"
+                        class="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        @click="triggerReextract"
+                    >
+                        <RotateCcw :class="['h-4 w-4 text-primary', reextractPending ? 'animate-spin' : '']" />
+                        {{ $t('projects.detail.actions.reextract') }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -234,7 +392,14 @@ const fullMethodologyName = computed(() => {
                 </div>
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Methodology</div>
-                    <div class="text-sm font-medium text-foreground">{{ fullMethodologyName }}</div>
+                    <NuxtLink
+                        v-if="project.instanceTopicId"
+                        :to="`/methodologies/${project.instanceTopicId}`"
+                        class="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                    >
+                        {{ fullMethodologyName }}
+                    </NuxtLink>
+                    <div v-else class="text-sm font-medium text-foreground">{{ fullMethodologyName }}</div>
                 </div>
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Registry</div>
@@ -270,41 +435,6 @@ const fullMethodologyName = computed(() => {
                 </div>
             </div>
 
-            <!-- Registry Term Mapping (collapsible) -->
-            <div class="border-t">
-                <button
-                    class="flex w-full items-center justify-between px-5 py-3 text-xs font-medium text-muted-foreground hover:bg-muted/30 transition-colors"
-                    @click="termMappingOpen = !termMappingOpen"
-                >
-                    <span class="flex items-center gap-2">
-                        <Layers class="h-3.5 w-3.5" />
-                        Registry Term Mapping — {{ project.registry }}
-                    </span>
-                    <ChevronDown class="h-3.5 w-3.5 transition-transform" :class="termMappingOpen ? 'rotate-180' : ''" />
-                </button>
-                <div v-if="termMappingOpen" class="border-t">
-                    <table class="w-full text-xs">
-                        <thead>
-                            <tr class="bg-muted/20">
-                                <th class="text-left py-2 px-5 font-medium text-muted-foreground uppercase tracking-wider">Standard Term</th>
-                                <th class="text-left py-2 px-4 font-medium text-muted-foreground uppercase tracking-wider">{{ project.registry }} Term</th>
-                                <th class="text-left py-2 px-4 font-medium text-muted-foreground uppercase tracking-wider">Description</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y">
-                            <tr v-for="m in REGISTRY_TERM_MAPPINGS" :key="m.canonical" class="hover:bg-muted/20">
-                                <td class="py-2 px-5 font-medium text-foreground">{{ m.canonical }}</td>
-                                <td class="py-2 px-4">
-                                    <span class="inline-flex items-center rounded bg-primary/10 text-primary px-1.5 py-0.5 text-[11px] font-medium">
-                                        {{ m.terms[project.registry] || m.canonical }}
-                                    </span>
-                                </td>
-                                <td class="py-2 px-4 text-muted-foreground">{{ m.description }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
 
         <!-- Hedera On-Chain References -->
@@ -797,6 +927,175 @@ const fullMethodologyName = computed(() => {
                             :class="step.status === 'complete' ? 'bg-emerald-300' : 'bg-border'"
                         />
                     </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Methodology Field Mapping -->
+        <div class="rounded-xl border bg-card overflow-hidden">
+            <button
+                class="w-full px-5 py-3.5 border-b bg-muted/30 flex items-center justify-between text-left hover:bg-muted/50 transition-colors"
+                @click="methodologyMappingOpen = !methodologyMappingOpen"
+            >
+                <div>
+                    <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <Layers class="h-4 w-4 text-primary" />
+                        Methodology Field Mapping
+                    </h2>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">{{ fullMethodologyName }} — how project fields map to schema fields</p>
+                </div>
+                <ChevronDown class="h-4 w-4 text-muted-foreground transition-transform" :class="methodologyMappingOpen ? 'rotate-180' : ''" />
+            </button>
+            <div v-if="methodologyMappingOpen">
+                <!-- Loading -->
+                <div v-if="decodedMethodology.pending.value" class="px-5 py-6 text-center text-xs text-muted-foreground">
+                    Loading mapping…
+                </div>
+                <!-- No instanceTopicId — older project, needs reparse -->
+                <div v-else-if="!project.instanceTopicId" class="px-5 py-6 text-xs text-muted-foreground">
+                    Methodology version is not linked to this project yet. Click <strong class="text-foreground">Re-extract</strong> above (or re-parse the methodology) to populate it.
+                </div>
+                <!-- Fetch error -->
+                <div v-else-if="decodedMethodology.error.value" class="px-5 py-6 text-xs text-destructive">
+                    Failed to load methodology mapping.
+                </div>
+                <!-- No project schema decoded -->
+                <div v-else-if="!decodedMethodology.data.value?.projectSchema" class="px-5 py-6 text-xs text-muted-foreground">
+                    No project schema has been confirmed for this methodology yet.
+                </div>
+                <!-- Mapping table -->
+                <table v-else class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-muted/20 border-b">
+                            <th class="text-left py-2.5 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider w-1/3">Project Field</th>
+                            <th class="text-left py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Schema Field</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr v-for="row in methodologyMappingRows" :key="row.label" class="hover:bg-muted/30 align-top">
+                            <td class="py-3 px-5 font-medium text-foreground">{{ row.label }}</td>
+                            <td class="py-3 px-4">
+                                <template v-if="row.field">
+                                    <div class="text-foreground font-medium">
+                                        {{ row.field.title || row.field.fieldKey }}
+                                        <span class="text-muted-foreground font-normal">({{ row.field.fieldKey }})</span>
+                                    </div>
+                                    <div v-if="row.field.description" class="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                                        {{ row.field.description }}
+                                    </div>
+                                </template>
+                                <span v-else class="text-muted-foreground">—</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Linked VCs Panel -->
+        <div class="rounded-xl border bg-card overflow-hidden">
+            <div class="px-5 py-3.5 border-b bg-muted/30">
+                <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <FileText class="h-4 w-4 text-primary" />
+                    {{ $t('projects.detail.linkedVcs.title') }}
+                </h2>
+                <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('projects.detail.linkedVcs.subtitle') }}</p>
+            </div>
+
+            <!-- No tracking data at all -->
+            <div v-if="!project.linkedSchemas?.length" class="px-5 py-8 text-center text-sm text-muted-foreground">
+                {{ $t('projects.detail.linkedVcs.notTracked') }}
+            </div>
+
+            <!-- Schema cards -->
+            <div v-else class="divide-y">
+                <div
+                    v-for="schema in project.linkedSchemas"
+                    :key="schema.schemaUuid"
+                    :class="['transition-colors', schema.vcCount === 0 ? 'border-l-2 border-l-amber-300' : '']"
+                >
+                    <!-- Schema header (collapsible toggle) -->
+                    <button
+                        class="flex w-full items-center justify-between gap-3 px-5 py-3 text-left hover:bg-muted/30 transition-colors"
+                        @click="toggleSchema(schema.schemaUuid)"
+                    >
+                        <span class="flex items-center gap-2 min-w-0">
+                            <FileText class="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <span class="text-sm font-medium text-foreground truncate">{{ schemaDisplayName(schema.schemaUuid, schema.schemaName) }}</span>
+                            <span
+                                v-if="schema.isProjectSchema"
+                                class="shrink-0 inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-medium"
+                            >
+                                {{ $t('projects.detail.linkedVcs.projectSchemaBadge') }}
+                            </span>
+                            <span
+                                v-if="schema.vcCount === 0"
+                                class="shrink-0 inline-flex items-center rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-medium"
+                            >
+                                0 VCs
+                            </span>
+                        </span>
+                        <span class="flex items-center gap-2 shrink-0">
+                            <span class="text-xs text-muted-foreground tabular-nums">{{ schema.vcCount }} VC(s)</span>
+                            <ChevronDown
+                                class="h-3.5 w-3.5 text-muted-foreground transition-transform"
+                                :class="schemaOpenState[schema.schemaUuid] ? 'rotate-180' : ''"
+                            />
+                        </span>
+                    </button>
+
+                    <!-- Expanded content -->
+                    <div v-if="schemaOpenState[schema.schemaUuid]" class="border-t">
+                        <!-- Empty state -->
+                        <div v-if="schema.vcCount === 0" class="px-5 py-4 text-sm text-muted-foreground italic">
+                            {{ $t('projects.detail.linkedVcs.empty') }}
+                        </div>
+
+                        <!-- VC table -->
+                        <table v-else class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-muted/20">
+                                    <th class="text-left py-2 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.detail.linkedVcs.columns.timestamp') }}</th>
+                                    <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.detail.linkedVcs.columns.topicId') }}</th>
+                                    <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.detail.linkedVcs.columns.csId') }}</th>
+                                    <th class="py-2 px-4" />
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr v-for="vc in schema.linkedVcs" :key="vc.consensusTimestamp" class="hover:bg-muted/30 transition-colors">
+                                    <td class="py-2.5 px-5 text-xs text-foreground tabular-nums">{{ formatTimestamp(vc.consensusTimestamp) }}</td>
+                                    <td class="py-2.5 px-4">
+                                        <span class="group inline-flex items-center gap-1.5">
+                                            <code class="text-xs font-mono text-foreground">{{ vc.topicId }}</code>
+                                            <button
+                                                class="opacity-0 group-hover:opacity-100 transition-opacity"
+                                                :title="$t('common.copy')"
+                                                @click.stop="copyToClipboard(vc.topicId)"
+                                            >
+                                                <Check v-if="copiedTopicId === vc.topicId" class="h-3 w-3 text-emerald-500" />
+                                                <Copy v-else class="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                                            </button>
+                                        </span>
+                                    </td>
+                                    <td class="py-2.5 px-4">
+                                        <code v-if="vc.csId" class="text-xs font-mono text-muted-foreground" :title="vc.csId">
+                                            {{ vc.csId.length > 16 ? vc.csId.slice(0, 14) + '…' : vc.csId }}
+                                        </code>
+                                        <span v-else class="text-xs text-muted-foreground">—</span>
+                                    </td>
+                                    <td class="py-2.5 px-4 text-right">
+                                        <button
+                                            class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                                            @click="viewLinkedVcJson(vc.consensusTimestamp)"
+                                        >
+                                            <FileJson class="h-3.5 w-3.5 text-primary" />
+                                            {{ $t('projects.detail.linkedVcs.viewJson') }}
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

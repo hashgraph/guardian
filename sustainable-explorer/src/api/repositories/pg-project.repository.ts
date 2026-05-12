@@ -6,6 +6,7 @@ import {
     ProjectRow,
     IssuanceRow,
     ActivityEventRow,
+    PolicySchemaRow,
 } from './project.repository';
 import { QueryBuilder } from './query-builder';
 import { PROJECT_FIELD_SCHEMA } from './schemas/project.schema';
@@ -168,6 +169,9 @@ export class PgProjectRepository extends ProjectRepository {
     }
 
     async findById(id: string): Promise<ProjectRow | null> {
+        // Accept either the row's sourceTimestamp (legacy ID used by the
+        // /projects list page) or the projectKey (credentialSubject.id, used
+        // by the credits page links).
         const rawRows: RawRow[] = await this.dataSource.query(
             `
             SELECT
@@ -176,7 +180,7 @@ export class PgProjectRepository extends ProjectRepository {
             FROM business_view bv
             ${REGISTRY_NAME_JOIN}
             WHERE bv."viewType" = 'PROJECT'
-              AND bv."sourceTimestamp" = $1
+              AND (bv."sourceTimestamp" = $1 OR bv."projectKey" = $1)
             LIMIT 1
             `,
             [id],
@@ -346,7 +350,20 @@ export class PgProjectRepository extends ProjectRepository {
 
         const totalActive = totalIssued - totalRetired;
 
-        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive });
+        // Load policy schemas for this project's policyTopicId so the DTO
+        // can render a grouped linked-VCs view without a second round trip.
+        let policySchemas: PolicySchemaRow[] = [];
+        if (policyTopicId) {
+            policySchemas = await this.dataSource.query(
+                `SELECT "schemaId", name, "isProjectSchema"
+                 FROM policy_schema
+                 WHERE "policyTopicId" = $1
+                 ORDER BY "isProjectSchema" DESC, name ASC`,
+                [policyTopicId],
+            );
+        }
+
+        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive }, policySchemas);
     }
 
     async findActivity(sourceTimestamp: string): Promise<ActivityEventRow[]> {
@@ -397,6 +414,7 @@ export class PgProjectRepository extends ProjectRepository {
         row: RawRow,
         issuances?: IssuanceRow[],
         lifecycle?: { totalIssued: number; totalRetired: number; totalActive: number },
+        policySchemas?: PolicySchemaRow[],
     ): ProjectRow {
         return {
             id: row.id,
@@ -415,6 +433,7 @@ export class PgProjectRepository extends ProjectRepository {
             totalIssued: lifecycle?.totalIssued,
             totalRetired: lifecycle?.totalRetired,
             totalActive: lifecycle?.totalActive,
+            policySchemas,
         };
     }
 }

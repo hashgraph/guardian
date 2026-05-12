@@ -27,15 +27,17 @@ const isActive = computed(() => props.activeSortKey === props.sortKey);
         @click="emit('sort', sortKey)"
     >
         <span
-            class="inline-flex items-center gap-1"
+            class="inline-flex flex-wrap items-center gap-x-1 gap-y-0.5"
             :class="align === 'right' ? 'justify-end' : 'justify-start'"
         >
-            <span>{{ label }}</span>
+            <span class="inline-flex items-center gap-1">
+                <span>{{ label }}</span>
+                <ArrowUp v-if="isActive && sortDir === 'asc'" class="h-3 w-3 text-foreground" />
+                <ArrowDown v-else-if="isActive && sortDir === 'desc'" class="h-3 w-3 text-foreground" />
+                <ArrowUpDown v-else class="h-3 w-3 opacity-0 group-hover:opacity-40 transition-opacity" />
+            </span>
             <MockDataBadge v-if="mock" compact />
             <InfoTooltip v-if="tooltip" :text="tooltip" />
-            <ArrowUp v-if="isActive && sortDir === 'asc'" class="h-3 w-3 text-foreground" />
-            <ArrowDown v-else-if="isActive && sortDir === 'desc'" class="h-3 w-3 text-foreground" />
-            <ArrowUpDown v-else class="h-3 w-3 opacity-0 group-hover:opacity-40 transition-opacity" />
         </span>
     </th>
 </template>

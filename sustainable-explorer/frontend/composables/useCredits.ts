@@ -1,48 +1,49 @@
-import { MOCK_CREDITS, MOCK_PROJECTS } from '~/data';
-import type { Credit } from '~/types/models';
+import type { CreditDto } from '~/composables/api/useCreditsApi';
 
-export interface CreditWithProject extends Credit {
+export interface CreditWithProject extends CreditDto {
     project: string;
 }
 
-export function useCredits(filters?: Ref<{ type?: string; registry?: string; search?: string }>) {
-    const projectMap = computed(() => {
-        const map: Record<string, string> = {};
-        for (const p of MOCK_PROJECTS) {
-            map[p.id] = p.name;
-        }
-        return map;
+export function useCredits(_filters?: Ref<{ type?: string; registry?: string; search?: string }>) {
+    const { network } = useNetwork();
+
+    const { data } = useCreditsApi({
+        page: ref(1),
+        limit: ref(500),
+        search: ref(''),
+        network: network as Ref<string>,
+        sortBy: ref(null),
+        sortDir: ref(null),
     });
 
-    const credits = computed<CreditWithProject[]>(() => {
-        let result: CreditWithProject[] = MOCK_CREDITS.map(c => ({
-            ...c,
-            project: projectMap.value[c.projectId] || 'Unknown Project',
-        }));
-
-        if (!filters?.value) return result;
-
-        const f = filters.value;
-        if (f.type) result = result.filter(c => c.type === f.type);
-        if (f.registry) result = result.filter(c => c.registry === f.registry);
-        if (f.search) {
-            const q = f.search.toLowerCase();
-            result = result.filter(c =>
-                c.name.toLowerCase().includes(q) ||
-                c.symbol.toLowerCase().includes(q) ||
-                c.tokenId.toLowerCase().includes(q) ||
-                c.project.toLowerCase().includes(q) ||
-                c.registry.toLowerCase().includes(q),
-            );
+    /**
+     * Format a project label for display. If the project mapper hasn't found a
+     * human-readable name (so `displayName` ended up being the cs.id), shorten
+     * the urn into something readable while still being unique enough to tell
+     * adjacent projects apart.
+     */
+    function displayProject(dto: CreditDto): string {
+        const name = dto.project;
+        if (!name) return 'Unknown Project';
+        if (name === dto.projectId && /^urn:uuid:/i.test(name)) {
+            const short = name.slice('urn:uuid:'.length, 'urn:uuid:'.length + 8);
+            return `Project ${short}`;
         }
-        return result;
-    });
+        return name;
+    }
 
-    const total = computed(() => credits.value.length);
+    const credits = computed<CreditWithProject[]>(() =>
+        (data.value?.data ?? []).map(dto => ({
+            ...dto,
+            project: displayProject(dto),
+        })),
+    );
+
+    const total = computed(() => data.value?.meta.total ?? 0);
 
     const filterOptions = computed(() => ({
-        types: [...new Set(MOCK_CREDITS.map(c => c.type))].sort(),
-        registries: [...new Set(MOCK_CREDITS.map(c => c.registry))].sort(),
+        types: [...new Set(credits.value.map(c => c.type).filter((t): t is string => t !== null))].sort(),
+        registries: [...new Set(credits.value.map(c => c.registry).filter((r): r is string => r !== null))].sort(),
     }));
 
     return { credits, total, filterOptions };

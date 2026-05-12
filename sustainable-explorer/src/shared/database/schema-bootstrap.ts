@@ -137,4 +137,16 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         ON business_view ("projectKey")
         WHERE "viewType" = 'PROJECT' AND "projectKey" IS NOT NULL
     `);
+
+    // Partial expression index on MintToken VC tokenId — without this, the
+    // credits list endpoint's LATERAL "project link" join scans all 10k+
+    // VC-Documents per credit row (Postgres can't index into JSONB without
+    // an expression index). With this index the lookup is O(log n).
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_message_mint_token_tokenid
+        ON message ((documents->'credentialSubject'->0->>'tokenId'))
+        WHERE type = 'VC-Document'
+          AND documents IS NOT NULL
+          AND (documents->'credentialSubject'->0->>'type') = 'MintToken'
+    `);
 }

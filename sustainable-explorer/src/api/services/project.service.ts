@@ -4,11 +4,13 @@ import { PaginatedResponse } from '../dto/pagination.dto';
 import { NetworkDataSourceRegistry } from '../database/network-datasource.registry';
 import { PgProjectRepository } from '../repositories/pg-project.repository';
 import { ProjectRepository } from '../repositories/project.repository';
+import { MappingReprocessService } from './mapping-reprocess.service';
 
 @Injectable()
 export class ProjectsService {
     constructor(
         private readonly dataSources: NetworkDataSourceRegistry,
+        private readonly mappingReprocessService: MappingReprocessService,
     ) {}
 
     async findAll(
@@ -50,6 +52,28 @@ export class ProjectsService {
         const repo = this.getRepository(network);
         const rows = await repo.findActivity(id);
         return rows.map(r => ActivityEventDto.fromRow(r));
+    }
+
+    /**
+     * Re-enqueues PROJECT_REPARSE jobs for every VC already attached to this
+     * project via businessData->linkedVcs. Delegates to MappingReprocessService
+     * which owns the queue interaction.
+     */
+    async reextractProject(network: string, id: string): Promise<{ enqueued: number }> {
+        return this.mappingReprocessService.reextractProject(network, id);
+    }
+
+    /**
+     * Returns the raw VC document for a single linked VC, verifying that the
+     * requested consensusTimestamp is in the project's linkedVcs list before
+     * querying the message table.
+     */
+    async getLinkedVcDocument(
+        network: string,
+        projectId: string,
+        consensusTimestamp: string,
+    ): Promise<Record<string, unknown>> {
+        return this.mappingReprocessService.getLinkedVcDocument(network, projectId, consensusTimestamp);
     }
 
     /**

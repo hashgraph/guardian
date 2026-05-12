@@ -12,6 +12,7 @@ export const BASE_QUEUE_NAMES = {
     TOKEN_SYNC: 'mirror-node-tokens',
     MV_REFRESH: 'maintenance-refresh-mvs',
     BUSINESS_VIEW_BUILD: 'maintenance-build-business-views',
+    PROJECT_REPARSE: 'project-reparse',
 } as const;
 
 export type BaseQueueName = typeof BASE_QUEUE_NAMES[keyof typeof BASE_QUEUE_NAMES];
@@ -43,6 +44,7 @@ export const QUEUE_NAMES = {
     TOKEN_SYNC: qname(BASE_QUEUE_NAMES.TOKEN_SYNC),
     MV_REFRESH: qname(BASE_QUEUE_NAMES.MV_REFRESH),
     BUSINESS_VIEW_BUILD: qname(BASE_QUEUE_NAMES.BUSINESS_VIEW_BUILD),
+    PROJECT_REPARSE: qname(BASE_QUEUE_NAMES.PROJECT_REPARSE),
 } as const;
 
 export type QueueName = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES];
@@ -153,6 +155,17 @@ export function getQueueConfigs(): QueueDefinition[] {
                 removeOnFail: 500,
             },
             concurrency: 5,
+        },
+        {
+            name: QUEUE_NAMES.PROJECT_REPARSE,
+            defaultJobOptions: {
+                attempts: 3,
+                backoff: { type: 'exponential', delay: 2000 },
+                timeout: 60000,
+                removeOnComplete: 500,
+                removeOnFail: 2000,
+            },
+            concurrency: parseInt(process.env.WORKER_PROJECT_REPARSE_CONCURRENCY || '5', 10),
         },
     ];
 }

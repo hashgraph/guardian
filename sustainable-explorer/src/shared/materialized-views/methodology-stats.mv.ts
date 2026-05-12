@@ -33,6 +33,12 @@ export const MV_METHODOLOGY_STATS_CREATE_SQL = `
         ), 0)::bigint AS project_count,
         COALESCE((
             SELECT COUNT(*)
+            FROM business_view p
+            WHERE p."viewType" = 'PROJECT'
+              AND p."businessData"->>'instanceTopicId' = mb."relatedTopicId"
+        ), 0)::bigint AS instance_project_count,
+        COALESCE((
+            SELECT COUNT(*)
             FROM message m
             WHERE m."topicId" = mb.policy_topic_id
               AND m.type = 'Token'

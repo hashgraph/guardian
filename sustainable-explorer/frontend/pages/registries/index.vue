@@ -175,7 +175,19 @@ const tagsAsList = (tags: string | null): string[] => {
 
         <div class="px-6 pb-6">
             <div class="rounded-xl border bg-card overflow-hidden">
-                <table class="w-full text-sm">
+                <table class="w-full text-sm table-fixed">
+                    <colgroup>
+                        <col class="w-[16%]" />
+                        <col class="w-[10%]" />
+                        <col class="w-[9%]" />
+                        <col class="w-[9%]" />
+                        <col class="w-[8%]" />
+                        <col class="w-[7%]" />
+                        <col class="w-[7%]" />
+                        <col class="w-[10%]" />
+                        <col class="w-[14%]" />
+                        <col class="w-[10%]" />
+                    </colgroup>
                     <thead>
                         <tr class="border-b bg-muted/30">
                             <SortableHeader :label="$t('registries.columns.name')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
@@ -212,19 +224,19 @@ const tagsAsList = (tags: string | null): string[] => {
                             <tr
                                 v-for="r in registries"
                                 :key="r.id"
-                                class="hover:bg-muted/30 transition-colors cursor-pointer"
+                                class="hover:bg-muted/30 transition-colors cursor-pointer align-top"
                             >
                                 <td class="py-3 px-4">
-                                    <div class="flex items-center gap-2.5">
+                                    <div class="flex items-start gap-2.5">
                                         <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                                             <Building2 class="h-4 w-4 text-primary" />
                                         </div>
-                                        <span class="font-medium text-foreground hover:text-primary transition-colors">{{ r.name }}</span>
+                                        <span class="font-medium text-foreground hover:text-primary transition-colors break-words min-w-0">{{ r.name }}</span>
                                     </div>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <div class="group flex items-center gap-2">
-                                        <code class="text-[11px] text-muted-foreground/80 font-mono">{{ r.relatedTopicId ?? '—' }}</code>
+                                    <div class="group flex items-start gap-2">
+                                        <code class="text-[11px] text-muted-foreground/80 font-mono break-all min-w-0">{{ r.relatedTopicId ?? '—' }}</code>
                                         <button
                                             v-if="r.relatedTopicId"
                                             class="opacity-0 group-hover:opacity-100 transition-opacity flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -237,10 +249,10 @@ const tagsAsList = (tags: string | null): string[] => {
                                     </div>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <span class="text-xs text-foreground">{{ r.geography ?? '—' }}</span>
+                                    <span class="text-xs text-foreground break-words">{{ r.geography ?? '—' }}</span>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <span class="text-xs text-foreground">{{ r.law ?? '—' }}</span>
+                                    <span class="text-xs text-foreground break-words">{{ r.law ?? '—' }}</span>
                                 </td>
                                 <td class="py-3 px-4 text-right tabular-nums">
                                     <NuxtLink

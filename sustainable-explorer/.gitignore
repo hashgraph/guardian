@@ -1,2 +1,3 @@
 frontend/.nuxt/**/*
 frontend/.output/**/*
+*.sql
