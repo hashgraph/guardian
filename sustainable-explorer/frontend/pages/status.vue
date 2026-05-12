@@ -25,10 +25,16 @@ const {
     refresh: refreshQueues,
 } = useQueueListApi({ network });
 
+const syncTopicPage = ref(1);
+const syncTopicPageSize = ref(10);
+const syncTokenPage = ref(1);
+const syncTokenPageSize = ref(10);
+
 const {
     data: syncStatus,
     available: syncAvailable,
-} = useSyncStatusApi({ network });
+    refresh: refreshSync,
+} = useSyncStatusApi({ network, topicPage: syncTopicPage, topicPageSize: syncTopicPageSize, tokenPage: syncTokenPage, tokenPageSize: syncTokenPageSize });
 
 // ─── SSE ─────────────────────────────────────────────────────────────────────
 
@@ -229,12 +235,19 @@ async function confirmRetryAll() {
 
 const drawerBaseName = ref<string | null>(null);
 const drawerTab = ref<'byReason' | 'allFailed'>('byReason');
-const failedPageOffset = ref(0);
+const failedPage = ref(1);
+const failedPageSize = ref(50);
+const failedOffset = computed(() => (failedPage.value - 1) * failedPageSize.value);
+const groupPage = ref(1);
+const groupPageSize = ref(10);
 
 function openDrawer(baseName: string) {
     drawerBaseName.value = baseName;
     drawerTab.value = 'byReason';
-    failedPageOffset.value = 0;
+    failedPage.value = 1;
+    failedPageSize.value = 50;
+    groupPage.value = 1;
+    groupPageSize.value = 10;
 }
 
 function closeDrawer() {
@@ -245,15 +258,58 @@ const { data: failedJobs, pending: failedPending, refresh: refreshFailed } =
     useQueueFailedJobsApi({
         network,
         baseName: drawerBaseName,
-        limit: 50,
-        offset: failedPageOffset,
+        limit: failedPageSize,
+        offset: failedOffset,
     });
 
-const { data: failedGroups, pending: groupsPending, refresh: refreshGroups } =
+const { data: failedGroupsData, pending: groupsPending, refresh: refreshGroups } =
     useQueueFailedGroupsApi({
         network,
         baseName: drawerBaseName,
+        groupPage,
+        groupPageSize,
     });
+
+const failedGroups = computed(() => failedGroupsData.value?.groups ?? []);
+const groupsTotal = computed(() => failedGroupsData.value?.total ?? 0);
+
+// ─── Pagination handlers ──────────────────────────────────────────────────────
+
+function onFailedPageChange(page: number) {
+    failedPage.value = page;
+}
+
+function onFailedPageSizeChange(size: number) {
+    failedPageSize.value = size;
+    failedPage.value = 1;
+}
+
+function onGroupPageChange(page: number) {
+    groupPage.value = page;
+}
+
+function onGroupPageSizeChange(size: number) {
+    groupPageSize.value = size;
+    groupPage.value = 1;
+}
+
+function onSyncTopicPageChange(page: number) {
+    syncTopicPage.value = page;
+}
+
+function onSyncTopicPageSizeChange(size: number) {
+    syncTopicPageSize.value = size;
+    syncTopicPage.value = 1;
+}
+
+function onSyncTokenPageChange(page: number) {
+    syncTokenPage.value = page;
+}
+
+function onSyncTokenPageSizeChange(size: number) {
+    syncTokenPageSize.value = size;
+    syncTokenPage.value = 1;
+}
 
 // ─── Per-job retry state ──────────────────────────────────────────────────────
 
@@ -674,8 +730,11 @@ function formatTs(ts: number): string {
                     </div>
 
                     <!-- Topics table -->
-                    <div v-if="syncStatus?.topics?.length">
-                        <h3 class="text-sm font-semibold text-foreground mb-2">{{ $t('status.syncHealth.topics') }}</h3>
+                    <div v-if="syncStatus?.totalTopics">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-semibold text-foreground">{{ $t('status.syncHealth.topics') }}</h3>
+                            <span class="text-xs text-muted-foreground">{{ syncStatus.totalTopics.toLocaleString() }} total</span>
+                        </div>
                         <div class="rounded-lg border bg-card overflow-hidden">
                             <table class="w-full text-sm">
                                 <thead>
@@ -707,11 +766,22 @@ function formatTs(ts: number): string {
                                 </tbody>
                             </table>
                         </div>
+                        <Pagination
+                            :currentPage="syncTopicPage"
+                            :totalPages="Math.ceil(syncStatus.totalTopics / syncTopicPageSize)"
+                            :totalItems="syncStatus.totalTopics"
+                            :pageSize="syncTopicPageSize"
+                            @update:currentPage="onSyncTopicPageChange"
+                            @update:pageSize="onSyncTopicPageSizeChange"
+                        />
                     </div>
 
                     <!-- Tokens table -->
-                    <div v-if="syncStatus?.tokens?.length">
-                        <h3 class="text-sm font-semibold text-foreground mb-2">{{ $t('status.syncHealth.tokens') }}</h3>
+                    <div v-if="syncStatus?.tokenTotal">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-semibold text-foreground">{{ $t('status.syncHealth.tokens') }}</h3>
+                            <span class="text-xs text-muted-foreground">{{ syncStatus.tokenTotal.toLocaleString() }} total</span>
+                        </div>
                         <div class="rounded-lg border bg-card overflow-hidden">
                             <table class="w-full text-sm">
                                 <thead>
@@ -739,6 +809,14 @@ function formatTs(ts: number): string {
                                 </tbody>
                             </table>
                         </div>
+                        <Pagination
+                            :currentPage="syncTokenPage"
+                            :totalPages="Math.ceil(syncStatus.tokenTotal / syncTokenPageSize)"
+                            :totalItems="syncStatus.tokenTotal"
+                            :pageSize="syncTokenPageSize"
+                            @update:currentPage="onSyncTokenPageChange"
+                            @update:pageSize="onSyncTokenPageSizeChange"
+                        />
                     </div>
                 </div>
             </Transition>
@@ -987,6 +1065,17 @@ function formatTs(ts: number): string {
                                     Retry group
                                 </button>
                             </div>
+
+                            <!-- Groups pagination -->
+                            <Pagination
+                                v-if="groupsTotal > 0"
+                                :currentPage="groupPage"
+                                :totalPages="Math.ceil(groupsTotal / groupPageSize)"
+                                :totalItems="groupsTotal"
+                                :pageSize="groupPageSize"
+                                @update:currentPage="onGroupPageChange"
+                                @update:pageSize="onGroupPageSizeChange"
+                            />
                         </template>
 
                         <!-- All failed tab -->
@@ -1099,26 +1188,15 @@ function formatTs(ts: number): string {
                             </div>
 
                             <!-- Pagination -->
-                            <div v-if="(failedJobs?.total ?? 0) > 50" class="flex items-center justify-between pt-2">
-                                <button
-                                    class="text-xs rounded px-3 py-1.5 border border-border hover:bg-muted transition-colors disabled:opacity-40"
-                                    :disabled="failedPageOffset <= 0"
-                                    @click="failedPageOffset = Math.max(0, failedPageOffset - 50)"
-                                >
-                                    Previous
-                                </button>
-                                <span class="text-xs text-muted-foreground">
-                                    {{ failedPageOffset + 1 }}–{{ Math.min(failedPageOffset + 50, failedJobs?.total ?? 0) }}
-                                    of {{ failedJobs?.total ?? 0 }}
-                                </span>
-                                <button
-                                    class="text-xs rounded px-3 py-1.5 border border-border hover:bg-muted transition-colors disabled:opacity-40"
-                                    :disabled="failedPageOffset + 50 >= (failedJobs?.total ?? 0)"
-                                    @click="failedPageOffset += 50"
-                                >
-                                    Next
-                                </button>
-                            </div>
+                            <Pagination
+                                v-if="(failedJobs?.total ?? 0) > 0"
+                                :currentPage="failedPage"
+                                :totalPages="Math.ceil((failedJobs?.total ?? 0) / failedPageSize)"
+                                :totalItems="failedJobs?.total ?? 0"
+                                :pageSize="failedPageSize"
+                                @update:currentPage="onFailedPageChange"
+                                @update:pageSize="onFailedPageSizeChange"
+                            />
                         </template>
                     </div>
 

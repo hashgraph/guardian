@@ -66,6 +66,47 @@ class FailedJobsQueryDto {
     @Transform(({ value }) => value === true || value === 'true' || value === '1')
     @IsBoolean()
     groupByReason?: boolean = false;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    groupPage?: number = 1;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    @Max(100)
+    groupPageSize?: number = 10;
+}
+
+class SyncStatusQueryDto {
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    topicPage?: number = 1;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    @Max(100)
+    topicPageSize?: number = 10;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    tokenPage?: number = 1;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    @Max(100)
+    tokenPageSize?: number = 10;
 }
 
 // ---------------------------------------------------------------------------
@@ -193,6 +234,8 @@ export class QueueStatusController {
         type: Boolean,
         description: 'When true, group results by failure reason',
     })
+    @ApiQuery({ name: 'groupPage', required: false, type: Number, description: 'Page number for grouped results (default 1)' })
+    @ApiQuery({ name: 'groupPageSize', required: false, type: Number, description: 'Groups per page (default 10, max 100)' })
     @ApiResponse({ status: 200, description: 'Failed job list or grouped summary' })
     @ApiResponse({ status: 404, description: 'Network or queue not found' })
     async getFailedJobs(
@@ -207,11 +250,14 @@ export class QueueStatusController {
 
         // Use getJobCounts for the total — reads ZCARD directly, stays consistent
         // with the queue list endpoint. getFailedCount() can diverge after removeOnFail trims.
-        const [rawFailed, counts] = await Promise.all([
-            queue.getFailed(offset, offset + limit - 1),
-            queue.getJobCounts('failed'),
-        ]);
+        const counts = await queue.getJobCounts('failed');
         const total = counts['failed'] ?? 0;
+
+        // When grouping, fetch all failed jobs so group counts are accurate across
+        // the full set — not just the current page.
+        const rawFailed = groupByReason
+            ? await queue.getFailed(0, Math.max(total - 1, 0))
+            : await queue.getFailed(offset, offset + limit - 1);
 
         // Job.fromId returns undefined when the hash is missing (e.g. BullMQ version
         // mismatch, partial cleanup). Filter those out so the mapping doesn't throw.
@@ -231,13 +277,23 @@ export class QueueStatusController {
                 groupMap.set(reason, entry);
             }
 
-            const groups: FailedJobGroupDto[] = Array.from(groupMap.entries()).map(([reason, g]) => ({
+            const allGroups: FailedJobGroupDto[] = Array.from(groupMap.entries()).map(([reason, g]) => ({
                 reason,
                 count: g.count,
                 sampleJobIds: g.sampleJobIds,
             }));
 
-            return { groups };
+            const groupPageSize = query.groupPageSize ?? 10;
+            const groupPage = query.groupPage ?? 1;
+            const groupStart = (groupPage - 1) * groupPageSize;
+            const groups = allGroups.slice(groupStart, groupStart + groupPageSize);
+
+            return {
+                total: allGroups.length,
+                page: groupPage,
+                pageSize: groupPageSize,
+                groups,
+            };
         }
 
         const items: FailedJobDto[] = failedJobs.map((job) => ({
@@ -412,12 +468,25 @@ export class QueueStatusController {
             'consensus timestamp, approximate lag, and per-topic/token watermarks.',
     })
     @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiQuery({ name: 'topicPage', required: false, type: Number, description: 'Page number for topics (default 1)' })
+    @ApiQuery({ name: 'topicPageSize', required: false, type: Number, description: 'Topics per page (default 10, max 100)' })
+    @ApiQuery({ name: 'tokenPage', required: false, type: Number, description: 'Page number for tokens (default 1)' })
+    @ApiQuery({ name: 'tokenPageSize', required: false, type: Number, description: 'Tokens per page (default 10, max 100)' })
     @ApiResponse({ status: 200, type: SyncStatusDto })
     @ApiResponse({ status: 404, description: 'Network not configured on this API instance' })
-    async getSyncStatus(@Param('network') network: string): Promise<SyncStatusDto> {
+    async getSyncStatus(
+        @Param('network') network: string,
+        @Query() query: SyncStatusQueryDto,
+    ): Promise<SyncStatusDto> {
         const ds = this.dataSources.getDataSource(network);
+        const topicPageSize = query.topicPageSize ?? 10;
+        const tokenPageSize = query.tokenPageSize ?? 10;
+        const topicPage = query.topicPage ?? 1;
+        const tokenPage = query.tokenPage ?? 1;
+        const topicOffset = (topicPage - 1) * topicPageSize;
+        const tokenOffset = (tokenPage - 1) * tokenPageSize;
 
-        const [topicRows, tokenRows, [aggRow]]: [
+        const [topicRows, tokenRows, [aggRow], [tokenCountRow]]: [
             Array<{
                 topicId: string;
                 messages: number;
@@ -432,17 +501,20 @@ export class QueueStatusController {
                 type: string | null;
             }>,
             Array<{ totalTopics: string; syncedTopics: string; totalMessages: string }>,
+            Array<{ total: string }>,
         ] = await Promise.all([
             ds.query(
                 `SELECT "topicId", messages, "hasNext", "lastUpdate", status
                  FROM topic_cache
                  ORDER BY messages DESC
-                 LIMIT 50`,
+                 LIMIT $1 OFFSET $2`,
+                [topicPageSize, topicOffset],
             ),
             ds.query(
                 `SELECT "tokenId", "serialNumber", "hasNext", type
                  FROM token_cache
-                 LIMIT 50`,
+                 LIMIT $1 OFFSET $2`,
+                [tokenPageSize, tokenOffset],
             ),
             ds.query(
                 `SELECT COUNT(*)::int AS "totalTopics",
@@ -450,6 +522,7 @@ export class QueueStatusController {
                         COALESCE(SUM(messages), 0)::bigint AS "totalMessages"
                  FROM topic_cache`,
             ),
+            ds.query(`SELECT COUNT(*)::int AS total FROM token_cache`),
         ]);
 
         // lastUpdate is stored as either:
@@ -497,7 +570,12 @@ export class QueueStatusController {
             totalTopics: Number(aggRow?.totalTopics ?? 0),
             syncedTopics: Number(aggRow?.syncedTopics ?? 0),
             totalMessages: Number(aggRow?.totalMessages ?? 0),
+            topicPage,
+            topicPageSize,
             topics,
+            tokenTotal: Number(tokenCountRow?.total ?? 0),
+            tokenPage,
+            tokenPageSize,
             tokens,
         };
     }
