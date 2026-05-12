@@ -1,11 +1,19 @@
 <script setup lang="ts">
+import type { Project, ProjectIssuance, LinkedSchema } from '~/types/models';
+
 interface RelNode {
     id: string;
     label: string;
     fullLabel: string;
-    type: 'registry' | 'policy' | 'schema' | 'role' | 'vc' | 'vp' | 'token';
+    type: 'registry' | 'policy' | 'schema' | 'vc' | 'token';
     x: number;
     y: number;
+    /** When set, click → fetch this VC's full document via /linked-vcs/:ts. */
+    consensusTimestamp?: string;
+    /** When set, render an explorer link in the popover. */
+    explorerUrl?: string;
+    /** Pre-built metadata to show as the "raw data" for non-VC nodes. */
+    inlineDoc?: Record<string, any>;
 }
 
 interface RelEdge {
@@ -14,18 +22,8 @@ interface RelEdge {
 }
 
 const props = defineProps<{
-    projectName: string;
-    methodology: string;
-    methodologyId: string;
-    registry: string;
-    developer: string;
-    projectId: string;
-    vintage: string;
-    country: string;
-    sector: string;
-    tokenSymbol?: string;
-    tokenName?: string;
-    tokenId?: string;
+    project: Project;
+    network: string;
 }>();
 
 const emit = defineEmits<{
@@ -33,14 +31,14 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const config = useRuntimeConfig();
+const baseURL = config.public.apiBaseUrl as string;
 
 const typeColors = computed<Record<string, { fill: string; stroke: string; label: string }>>(() => ({
     registry: { fill: '#4361ee', stroke: '#3a56d4', label: t('relationshipDiagram.registry') },
     policy:   { fill: '#66bb6a', stroke: '#4caf50', label: t('relationshipDiagram.policy') },
     schema:   { fill: '#ffa726', stroke: '#fb8c00', label: t('relationshipDiagram.schema') },
-    role:     { fill: '#ef5350', stroke: '#e53935', label: t('relationshipDiagram.role') },
     vc:       { fill: '#81d4fa', stroke: '#4fc3f7', label: t('relationshipDiagram.rawData') },
-    vp:       { fill: '#388e3c', stroke: '#2e7d32', label: t('relationshipDiagram.vp') },
     token:    { fill: '#ff8a65', stroke: '#ff7043', label: t('relationshipDiagram.token') },
 }));
 
@@ -50,45 +48,171 @@ const popoverPos = ref({ x: 0, y: 0 });
 const svgRef = ref<SVGSVGElement | null>(null);
 
 function truncate(str: string, max: number): string {
-    return str.length > max ? str.substring(0, max) + '...' : str;
+    if (!str) return '';
+    return str.length > max ? str.substring(0, max) + '…' : str;
 }
 
-const nodes = computed<RelNode[]>(() => {
-    const methShort = truncate(props.methodology, 12);
-    const regShort = truncate(props.registry, 14);
-    const tokenSym = props.tokenSymbol || 'VER';
-    const tokenLabel = props.tokenName ? truncate(props.tokenName, 12) : 'MintToken';
+// ---------------------------------------------------------------------------
+// Layout — 5 columns (Registry · Policy · Schemas · VCs · Tokens). Vertical
+// spacing scales with the largest column.
+// ---------------------------------------------------------------------------
 
-    return [
-        { id: 'registry',       label: regShort,           fullLabel: props.registry,                     type: 'registry', x: 100, y: 180 },
-        { id: 'policy-1',       label: methShort,          fullLabel: props.methodology,                  type: 'policy',   x: 280, y: 100 },
-        { id: 'mint-token',     label: tokenLabel,         fullLabel: props.tokenName || 'MintToken',     type: 'schema',   x: 460, y: 100 },
-        { id: 'vvb-verify-1',   label: 'VVB Verificat...', fullLabel: 'VVB Verification Report',         type: 'vc',       x: 680, y: 100 },
-        { id: 'ver-1',          label: tokenSym,           fullLabel: `${tokenSym} Token`,                type: 'token',    x: 880, y: 100 },
-        { id: 'vvb',            label: 'VVB',              fullLabel: 'Validation & Verification Body',   type: 'role',     x: 560, y: 230 },
-        { id: 'policy-2',       label: methShort,          fullLabel: `${props.methodology} (v2)`,        type: 'policy',   x: 280, y: 320 },
-        { id: 'vvb-verify-2',   label: 'VVB Verificat...', fullLabel: 'VVB Verification Document',       type: 'vc',       x: 460, y: 320 },
-        { id: 'mint-token-doc', label: 'MintToken Do...', fullLabel: 'MintToken Document VP',             type: 'vp',       x: 680, y: 320 },
-        { id: 'ver-2',          label: tokenSym,           fullLabel: `${tokenSym} Retirement Token`,     type: 'token',    x: 880, y: 320 },
-    ];
+const COL_X = { registry: 90, policy: 280, schema: 480, vc: 700, token: 900 };
+const ROW_HEIGHT = 90;
+const PAD_TOP = 60;
+
+interface Layout {
+    nodes: RelNode[];
+    edges: RelEdge[];
+    height: number;
+}
+
+const layout = computed<Layout>(() => {
+    const p = props.project;
+    const nodes: RelNode[] = [];
+    const edges: RelEdge[] = [];
+
+    const linkedSchemas = (p.linkedSchemas ?? []) as LinkedSchema[];
+    const issuances = (p.issuances ?? []) as ProjectIssuance[];
+
+    // For schemas, keep only those with at least one linked VC. MintToken
+    // contributions are represented as token nodes instead, so we collapse
+    // those into the token column rather than rendering a duplicate schema.
+    const visibleSchemas = linkedSchemas.filter(
+        s => s.vcCount > 0 && s.schemaUuid !== 'MintToken',
+    );
+
+    // ── Row planning ───────────────────────────────────────────────────────
+    // Each schema occupies max(1, vcCount) rows so its VCs can sit beside it
+    // without overlap. The schema centers in the middle of its row span.
+    const schemaSpans: Array<{ schema: LinkedSchema; startRow: number; rows: number }> = [];
+    let cursor = 0;
+    for (const s of visibleSchemas) {
+        const rows = Math.max(1, s.linkedVcs.length);
+        schemaSpans.push({ schema: s, startRow: cursor, rows });
+        cursor += rows;
+    }
+    const schemaRows = Math.max(cursor, 1);
+
+    // Token rows determine the column-5 height; we leave them independent.
+    const tokenRows = Math.max(issuances.length, 0);
+    const totalRows = Math.max(schemaRows, tokenRows, 3);   // min 3 for nice spacing
+    const height = PAD_TOP * 2 + totalRows * ROW_HEIGHT;
+    const centerY = PAD_TOP + (totalRows * ROW_HEIGHT) / 2;
+
+    // ── Registry ──────────────────────────────────────────────────────────
+    const registryId = 'registry';
+    nodes.push({
+        id: registryId,
+        label: truncate(p.registry || '—', 14),
+        fullLabel: p.registry || 'Registry',
+        type: 'registry',
+        x: COL_X.registry,
+        y: centerY,
+        inlineDoc: {
+            type: 'StandardRegistry',
+            name: p.registry || null,
+            did: p.registryDid || null,
+            network: props.network,
+        },
+    });
+
+    // ── Policy (this project's specific methodology version) ──────────────
+    const policyId = 'policy';
+    nodes.push({
+        id: policyId,
+        label: truncate(p.methodology || '—', 14),
+        fullLabel: p.methodology || 'Methodology',
+        type: 'policy',
+        x: COL_X.policy,
+        y: centerY,
+        explorerUrl: p.instanceTopicId
+            ? `https://hashscan.io/${props.network}/topic/${p.instanceTopicId}`
+            : undefined,
+        inlineDoc: {
+            type: 'PolicyVersion',
+            name: p.methodology || null,
+            methodologyId: p.methodologyId || null,
+            instanceTopicId: p.instanceTopicId || null,
+            policyTopicId: p.policyTopicId || null,
+            registry: p.registry || null,
+        },
+    });
+    edges.push({ from: registryId, to: policyId });
+
+    // ── Schemas + their VCs ───────────────────────────────────────────────
+    for (const span of schemaSpans) {
+        const { schema, startRow, rows } = span;
+        const schemaY = PAD_TOP + (startRow + rows / 2) * ROW_HEIGHT;
+        const schemaId = `schema-${schema.schemaUuid}`;
+        nodes.push({
+            id: schemaId,
+            label: truncate(schema.schemaName ?? schema.schemaUuid, 14),
+            fullLabel: schema.schemaName ?? schema.schemaUuid,
+            type: 'schema',
+            x: COL_X.schema,
+            y: schemaY,
+            inlineDoc: {
+                type: 'PolicySchema',
+                schemaUuid: schema.schemaUuid,
+                name: schema.schemaName,
+                isProjectSchema: schema.isProjectSchema,
+                vcCount: schema.vcCount,
+            },
+        });
+        edges.push({ from: policyId, to: schemaId });
+
+        schema.linkedVcs.forEach((vc, i) => {
+            const vy = PAD_TOP + (startRow + i + 0.5) * ROW_HEIGHT;
+            const vcId = `vc-${vc.consensusTimestamp}`;
+            nodes.push({
+                id: vcId,
+                label: truncate(vc.consensusTimestamp.split('.')[0], 12),
+                fullLabel: vc.consensusTimestamp,
+                type: 'vc',
+                x: COL_X.vc,
+                y: vy,
+                consensusTimestamp: vc.consensusTimestamp,
+                explorerUrl: `https://hashscan.io/${props.network}/transaction/${vc.consensusTimestamp}`,
+            });
+            edges.push({ from: schemaId, to: vcId });
+        });
+    }
+
+    // ── Tokens (issuances) ────────────────────────────────────────────────
+    issuances.forEach((iss, i) => {
+        const ty = tokenRows > 0
+            ? PAD_TOP + (i + 0.5) * (totalRows / tokenRows) * ROW_HEIGHT
+            : centerY;
+        const tokenId = `token-${iss.tokenId || i}`;
+        nodes.push({
+            id: tokenId,
+            label: truncate(iss.symbol || iss.name || iss.tokenId, 10),
+            fullLabel: iss.name ? `${iss.name}${iss.symbol ? ` (${iss.symbol})` : ''}` : (iss.tokenId || 'Token'),
+            type: 'token',
+            x: COL_X.token,
+            y: ty,
+            explorerUrl: iss.tokenId
+                ? `https://hashscan.io/${props.network}/token/${iss.tokenId}`
+                : undefined,
+            inlineDoc: iss.rawVc ?? {
+                type: 'TokenIssuance',
+                tokenId: iss.tokenId,
+                tokenName: iss.name,
+                tokenSymbol: iss.symbol,
+                supply: iss.supply,
+                mintDate: iss.mintDate,
+            },
+        });
+        edges.push({ from: policyId, to: tokenId });
+    });
+
+    return { nodes, edges, height };
 });
 
-const edges = computed<RelEdge[]>(() => [
-    { from: 'registry', to: 'policy-1' },
-    { from: 'registry', to: 'policy-2' },
-    { from: 'policy-1', to: 'mint-token' },
-    { from: 'policy-1', to: 'vvb' },
-    { from: 'mint-token', to: 'vvb-verify-1' },
-    { from: 'vvb-verify-1', to: 'ver-1' },
-    { from: 'vvb', to: 'vvb-verify-1' },
-    { from: 'vvb', to: 'vvb-verify-2' },
-    { from: 'vvb', to: 'mint-token-doc' },
-    { from: 'policy-2', to: 'vvb-verify-2' },
-    { from: 'vvb-verify-2', to: 'mint-token-doc' },
-    { from: 'mint-token-doc', to: 'ver-2' },
-    { from: 'mint-token', to: 'vvb' },
-    { from: 'policy-2', to: 'vvb' },
-]);
+const nodes = computed(() => layout.value.nodes);
+const edges = computed(() => layout.value.edges);
+const viewBoxHeight = computed(() => layout.value.height);
 
 function nodeById(id: string): RelNode | undefined {
     return nodes.value.find(n => n.id === id);
@@ -125,130 +249,6 @@ function isNodeHighlighted(node: RelNode): boolean {
     );
 }
 
-// Generate a mock hashscan transaction ID per node (deterministic from project + node id)
-function nodeHashscanUrl(node: RelNode): string {
-    const base = parseInt(props.projectId) || 1;
-    const hash = node.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-    const seconds = 1774094386 + base * 1000 + hash * 100;
-    const nanos = (base * 32210979 + hash * 854625) % 1000000000;
-    return `https://hashscan.io/mainnet/transaction/${seconds}.${String(nanos).padStart(9, '0')}`;
-}
-
-// Generate a mock VC for each node entity
-function nodeVc(node: RelNode): Record<string, any> {
-    const issuer = `did:hedera:testnet:z6Mk${props.registry.replace(/\s+/g, '')}Registry`;
-    const baseVc = {
-        '@context': [
-            'https://www.w3.org/2018/credentials/v1',
-            'https://w3id.org/security/suites/ed25519-2020/v1',
-        ],
-        id: `urn:uuid:${node.id}-${props.projectId}`,
-        type: ['VerifiableCredential'],
-        issuer,
-        issuanceDate: new Date().toISOString(),
-    };
-
-    const vcByType: Record<string, any> = {
-        registry: {
-            ...baseVc,
-            credentialSubject: [{
-                type: 'StandardRegistry',
-                name: props.registry,
-                did: issuer,
-                network: 'mainnet',
-                status: 'Issuing',
-                policies: [props.methodology],
-            }],
-        },
-        policy: {
-            ...baseVc,
-            credentialSubject: [{
-                type: 'PolicyDocument',
-                policyName: props.methodology,
-                policyId: props.methodologyId,
-                registry: props.registry,
-                version: node.id === 'policy-1' ? '1.0' : '2.0',
-                status: 'Published',
-                sector: props.sector,
-                country: props.country,
-            }],
-        },
-        schema: {
-            ...baseVc,
-            credentialSubject: [{
-                type: 'MintTokenSchema',
-                tokenName: props.tokenName || 'MintToken',
-                tokenSymbol: props.tokenSymbol || 'VER',
-                tokenId: props.tokenId || '0.0.48291',
-                tokenType: 'Fungible',
-                methodology: props.methodology,
-                project: props.projectName,
-            }],
-        },
-        role: {
-            ...baseVc,
-            credentialSubject: [{
-                type: 'RoleAssignment',
-                roleName: 'VVB',
-                roleDescription: 'Validation & Verification Body',
-                assignedTo: `did:hedera:testnet:z6MkVVB${props.projectId}`,
-                registry: props.registry,
-                methodology: props.methodology,
-            }],
-        },
-        vc: {
-            ...baseVc,
-            credentialSubject: [{
-                type: 'VVBVerificationReport',
-                project: props.projectName,
-                methodology: props.methodology,
-                verificationBody: 'VVB',
-                verificationDate: new Date().toISOString().split('T')[0],
-                result: 'Approved',
-                vintage: props.vintage,
-                emissionReductions: { unit: 'tCO2e' },
-            }],
-        },
-        vp: {
-            ...baseVc,
-            type: ['VerifiablePresentation'],
-            credentialSubject: [{
-                type: 'MintTokenDocument',
-                project: props.projectName,
-                tokenName: props.tokenName || 'MintToken',
-                tokenId: props.tokenId || '0.0.48291',
-                methodology: props.methodology,
-                registry: props.registry,
-                vintage: props.vintage,
-                verificationStatus: 'Verified',
-            }],
-        },
-        token: {
-            ...baseVc,
-            credentialSubject: [{
-                type: 'TokenIssuance',
-                tokenId: props.tokenId || '0.0.48291',
-                tokenName: props.tokenName || 'Carbon Credit',
-                tokenSymbol: props.tokenSymbol || 'VER',
-                tokenType: 'Fungible',
-                project: props.projectName,
-                registry: props.registry,
-                vintage: props.vintage,
-            }],
-        },
-    };
-
-    const vc = vcByType[node.type] || baseVc;
-    vc.proof = {
-        type: 'Ed25519Signature2020',
-        created: new Date().toISOString(),
-        verificationMethod: `${issuer}#key-1`,
-        proofPurpose: 'assertionMethod',
-        proofValue: 'z3FXQFBYhSMYDNaUbDfcideGfreKPJLx9bFPmNTNg7CvX8rZpPJLHJ5BpQz1p5vZVp3LdNeDx8k93HQDbVMnEsJA2',
-    };
-    return vc;
-}
-
 function onNodeClick(node: RelNode, event: MouseEvent) {
     if (selectedNode.value === node.id) {
         selectedNode.value = null;
@@ -256,7 +256,6 @@ function onNodeClick(node: RelNode, event: MouseEvent) {
     }
     selectedNode.value = node.id;
 
-    // Position popover near click relative to the container
     if (svgRef.value) {
         const rect = svgRef.value.getBoundingClientRect();
         popoverPos.value = {
@@ -266,9 +265,29 @@ function onNodeClick(node: RelNode, event: MouseEvent) {
     }
 }
 
-function onViewVc(node: RelNode) {
-    emit('view-vc', { title: node.fullLabel, vc: nodeVc(node) });
+async function onViewRawData(node: RelNode) {
     selectedNode.value = null;
+
+    // VC node: fetch the real document from the API.
+    if (node.consensusTimestamp) {
+        try {
+            const data = await $fetch<Record<string, any>>(
+                `/api/v1/${props.network}/projects/${props.project.id}/linked-vcs/${node.consensusTimestamp}`,
+                { baseURL },
+            );
+            emit('view-vc', { title: node.fullLabel, vc: data });
+        } catch {
+            const { toast } = await import('vue-sonner');
+            toast.error('Failed to load raw data');
+        }
+        return;
+    }
+
+    // Other node types: emit the pre-built inline metadata so the parent's
+    // VcJsonViewer can show it just like any other JSON document.
+    if (node.inlineDoc) {
+        emit('view-vc', { title: node.fullLabel, vc: node.inlineDoc });
+    }
 }
 
 function closePopover() {
@@ -280,7 +299,6 @@ const selectedNodeData = computed(() => {
     return nodeById(selectedNode.value) || null;
 });
 
-// Clamp popover to stay in view
 const popoverStyle = computed(() => {
     const x = Math.min(Math.max(popoverPos.value.x - 140, 8), 600);
     const y = popoverPos.value.y + 16;
@@ -311,9 +329,9 @@ const nodeRadius = 36;
         <div class="relative w-full overflow-x-auto" @click.self="closePopover">
             <svg
                 ref="svgRef"
-                viewBox="0 0 980 420"
+                :viewBox="`0 0 980 ${viewBoxHeight}`"
                 class="w-full min-w-[700px]"
-                style="max-height: 420px;"
+                :style="{ maxHeight: `${Math.min(viewBoxHeight, 600)}px` }"
                 @mouseleave="hoveredNode = null"
             >
                 <defs>
@@ -360,7 +378,6 @@ const nodeRadius = 36;
                     @mouseenter="hoveredNode = node.id"
                     @click="onNodeClick(node, $event)"
                 >
-                    <!-- Outer glow on hover -->
                     <circle
                         v-if="hoveredNode === node.id"
                         :cx="node.x"
@@ -370,7 +387,6 @@ const nodeRadius = 36;
                         opacity="0.15"
                     />
 
-                    <!-- Selected ring -->
                     <circle
                         v-if="selectedNode === node.id"
                         :cx="node.x"
@@ -382,7 +398,6 @@ const nodeRadius = 36;
                         opacity="0.9"
                     />
 
-                    <!-- Main circle -->
                     <circle
                         :cx="node.x"
                         :cy="node.y"
@@ -393,7 +408,6 @@ const nodeRadius = 36;
                         filter="url(#node-shadow)"
                     />
 
-                    <!-- Label -->
                     <text
                         :x="node.x"
                         :y="node.y + 1"
@@ -407,7 +421,6 @@ const nodeRadius = 36;
                         {{ node.label }}
                     </text>
 
-                    <!-- Type label below -->
                     <text
                         :x="node.x"
                         :y="node.y + nodeRadius + 14"
@@ -421,6 +434,18 @@ const nodeRadius = 36;
                         {{ typeColors[node.type].label }}
                     </text>
                 </g>
+
+                <!-- Empty state — no schemas / no VCs / no issuances -->
+                <text
+                    v-if="nodes.length <= 2"
+                    :x="490"
+                    :y="viewBoxHeight / 2 + 80"
+                    text-anchor="middle"
+                    fill="#999"
+                    font-size="12"
+                >
+                    No schemas, VCs, or issuances linked to this project yet
+                </text>
             </svg>
 
             <!-- Click popover -->
@@ -437,7 +462,6 @@ const nodeRadius = 36;
                     class="absolute z-50 w-[280px] rounded-lg border bg-card shadow-xl"
                     :style="popoverStyle"
                 >
-                    <!-- Header -->
                     <div class="flex items-center gap-2.5 px-4 py-3 border-b">
                         <span
                             class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
@@ -463,11 +487,11 @@ const nodeRadius = 36;
                         </button>
                     </div>
 
-                    <!-- Actions -->
                     <div class="p-2 space-y-0.5">
                         <button
+                            v-if="selectedNodeData.consensusTimestamp || selectedNodeData.inlineDoc"
                             class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
-                            @click.stop="onViewVc(selectedNodeData!)"
+                            @click.stop="onViewRawData(selectedNodeData!)"
                         >
                             <svg class="h-4 w-4 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/>
@@ -476,7 +500,8 @@ const nodeRadius = 36;
                             {{ $t('relationshipDiagram.viewRawData') }}
                         </button>
                         <a
-                            :href="nodeHashscanUrl(selectedNodeData!)"
+                            v-if="selectedNodeData.explorerUrl"
+                            :href="selectedNodeData.explorerUrl"
                             target="_blank"
                             rel="noopener noreferrer"
                             class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"

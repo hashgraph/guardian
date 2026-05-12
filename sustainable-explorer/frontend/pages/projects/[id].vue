@@ -842,18 +842,8 @@ async function triggerReextract() {
             <div class="px-5 py-5">
                 <ClientOnly>
                     <RelationshipDiagram
-                        :project-name="project.name"
-                        :methodology="project.methodology"
-                        :methodology-id="project.methodologyId"
-                        :registry="project.registry"
-                        :developer="project.developer"
-                        :project-id="project.id"
-                        :vintage="project.vintage"
-                        :country="displayCountry || undefined"
-                        :sector="project.sector"
-                        :token-symbol="linkedCredits[0]?.symbol"
-                        :token-name="linkedCredits[0]?.name"
-                        :token-id="linkedCredits[0]?.tokenId"
+                        :project="project"
+                        :network="network"
                         @view-vc="({ title, vc }) => { vcViewerTitle = title; vcViewerData = vc; vcViewerOpen = true; }"
                     />
                 </ClientOnly>
