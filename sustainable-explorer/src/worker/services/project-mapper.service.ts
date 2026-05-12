@@ -101,22 +101,50 @@ export class ProjectMapperService {
         const pds = pdsRows[0];
         const crossSchemaFieldMap = pds.fieldMap ?? {};
 
-        // ── Determine project key (cs.id, or look up recent cs.id for MintToken) ──
-        let projectKey: string;
-        if (csId) {
-            projectKey = csId;
-        } else if (isMintToken) {
-            const ancestor = await this.findRecentCsIdInTopic(vc.topicId, vc.consensusTimestamp);
-            if (!ancestor) {
+        // MintTokens never create or update projects here — credit→project
+        // linkage is resolved separately (see credit repository's MintToken
+        // join). Skip and return.
+        if (isMintToken) return;
+
+        // Every other contributing VC must carry a cs.id.
+        if (!csId) return;
+
+        // Walk options.relationships back to the root cs.id-having VC. The
+        // root is the project's identity; monitoring / verification VCs merge
+        // into it instead of creating phantom projects keyed by their own
+        // cs.id.
+        const { projectKey, walked, hadRelationships } =
+            await this.resolveProjectKeyViaRelationships(vc.consensusTimestamp, csId);
+
+        // Phantom-project suppression.
+        // A real Project Registration VC starts the relationship chain — its
+        // `options.relationships` is null/empty. A downstream VC (monitoring,
+        // verification, minting artifact) always carries relationships, even
+        // if they only point to system Role-Documents.
+        //
+        //   walked=true  → merged into an ancestor project. Continue.
+        //   walked=false, hadRelationships=true → tried to link upstream but
+        //       found no parent VC (relationships pointed to Role-Documents
+        //       or non-VC messages). This VC is downstream; skip.
+        //   walked=false, hadRelationships=false:
+        //       VC is the chain root. If it lives in a topic dedicated to
+        //       downstream artifacts (Token_Minting, Verification, Validation),
+        //       skip — the chain root semantics are inverted there. Otherwise,
+        //       treat as project registration and create a row keyed by own
+        //       cs.id.
+        if (!walked) {
+            if (hadRelationships) {
                 this.logger.debug(
-                    `MintToken vc=${messageConsensusTimestamp} has no prior cs.id in topic=${vc.topicId}, skipping`,
+                    `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} has relationships but no VC parent → skipping`,
                 );
                 return;
             }
-            projectKey = ancestor;
-        } else {
-            // VC has neither cs.id nor is a MintToken — nothing to attribute to.
-            return;
+            if (await this.isDownstreamTopic(vc.topicId)) {
+                this.logger.debug(
+                    `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} in downstream topic ${vc.topicId} with no relationships → skipping`,
+                );
+                return;
+            }
         }
 
         // ── Per-VC field extraction from cross-schema fieldMap ────────────────────
@@ -144,14 +172,12 @@ export class ProjectMapperService {
             }
         }
 
-        // Common credit sources (independent of fieldMap):
-        //   1. MintToken.amount — preferred.
-        //   2. credentialSubject.emission_reduction.ER_y on data VCs.
+        // Credits sourced from this VC's emission_reduction.ER_y when present.
+        // MintToken-driven crediting is intentionally not handled here — it
+        // would require linking the MintToken to a project, which is done by
+        // the credit query, not the project mapper.
         let creditsToAdd = 0;
-        if (isMintToken) {
-            const amt = parseFloat(String(cs['amount'] ?? '0'));
-            if (!isNaN(amt) && amt > 0) creditsToAdd = amt;
-        } else {
+        {
             const er = cs['emission_reduction'] as Record<string, any> | undefined;
             if (er) {
                 const ery = parseFloat(String(er['ER_y'] ?? '0'));
@@ -203,13 +229,13 @@ export class ProjectMapperService {
         const lng = geoLngLat?.[0] ?? null;
         const lat = geoLngLat?.[1] ?? null;
         const name = extracted['name'] ?? null;
-        // Country sanity check: real country names top out at ~56 chars
-        // ("United Kingdom of Great Britain and Northern Ireland"). When the
-        // cross-schema fuzzy mapper accidentally maps Country to a description
-        // field, the extracted value is a multi-hundred-char paragraph — reject
-        // anything longer than 80 chars rather than store narrative text as a country.
+        // Country sanity check. Single names top out at ~56 chars; allow
+        // generous headroom for comma-joined multi-country values from
+        // wildcard paths (`locations.*.country`) while still rejecting
+        // multi-hundred-char narrative paragraphs that come from a mis-mapped
+        // description field.
         const rawCountry = extracted['country'];
-        let country = rawCountry && rawCountry.length <= 80
+        let country = rawCountry && rawCountry.length <= 200
             ? resolveCountryName(rawCountry)
             : null;
 
@@ -412,23 +438,95 @@ export class ProjectMapperService {
     }
 
     /**
-     * For VCs that don't carry their own cs.id (MintToken, etc.), find the most
-     * recent prior cs.id in the same topic to attribute the credits to.
+     * Walk `message.options.relationships` backwards from a VC to find the root
+     * cs.id-carrying VC in the chain. The root is treated as the project's
+     * identity, so monitoring / verification VCs merge into the project rather
+     * than creating phantom rows keyed by their own cs.id.
+     *
+     * Stops at the first ancestor that has no relationships (or no cs.id-
+     * carrying VC among its relationships). Up to 12 hops. Skips
+     * Role-Documents and other non-VC referenced messages.
      */
-    private async findRecentCsIdInTopic(topicId: string, beforeTs: string): Promise<string | null> {
-        const rows: Array<{ cs_id: string }> = await this.dataSource.query(
-            `SELECT documents->'credentialSubject'->0->>'id' AS cs_id
+    private async resolveProjectKeyViaRelationships(
+        startTs: string,
+        startCsId: string,
+    ): Promise<{ projectKey: string; walked: boolean; hadRelationships: boolean }> {
+        let currentTs = startTs;
+        let currentCsId = startCsId;
+        let walked = false;
+        let hadRelationships = false;
+        const visited = new Set<string>([currentTs]);
+
+        for (let i = 0; i < 12; i++) {
+            const rows: Array<{ rels: string[] | null }> = await this.dataSource.query(
+                `SELECT
+                    CASE
+                        WHEN jsonb_typeof(options->'relationships') = 'array'
+                            THEN ARRAY(SELECT jsonb_array_elements_text(options->'relationships'))
+                        ELSE NULL
+                    END AS rels
+                 FROM message
+                 WHERE "consensusTimestamp" = $1
+                 LIMIT 1`,
+                [currentTs],
+            );
+
+            const rels = rows[0]?.rels ?? [];
+            if (i === 0) hadRelationships = rels.length > 0;
+            if (rels.length === 0) break;
+
+            const fresh = rels.filter(r => !visited.has(r));
+            if (fresh.length === 0) break;
+
+            const parents: Array<{ consensusTimestamp: string; cs_id: string | null }> =
+                await this.dataSource.query(
+                    `SELECT "consensusTimestamp",
+                            documents->'credentialSubject'->0->>'id' AS cs_id
+                     FROM message
+                     WHERE "consensusTimestamp" = ANY($1::text[])
+                       AND type = 'VC-Document'
+                       AND documents IS NOT NULL
+                       AND documents->'credentialSubject'->0->>'id' IS NOT NULL
+                     ORDER BY "consensusTimestamp" ASC
+                     LIMIT 1`,
+                    [fresh],
+                );
+
+            if (parents.length === 0) break;
+            const parent = parents[0];
+
+            visited.add(parent.consensusTimestamp);
+            currentTs = parent.consensusTimestamp;
+            currentCsId = parent.cs_id!;
+            walked = true;
+        }
+
+        return { projectKey: currentCsId, walked, hadRelationships };
+    }
+
+    /**
+     * Downstream topic-name conventions used across Guardian policies. VCs in
+     * these topics describe monitoring / verification / minting artifacts and
+     * should not seed a project keyed by their own cs.id when they carry no
+     * `options.relationships` to walk back to a Project VC.
+     */
+    private static readonly DOWNSTREAM_TOPIC_NAMES = new Set<string>([
+        'Token_Minting',
+        'Verification',
+        'Validation',
+    ]);
+
+    private async isDownstreamTopic(topicId: string): Promise<boolean> {
+        const rows: Array<{ name: string | null }> = await this.dataSource.query(
+            `SELECT options->>'name' AS name
              FROM message
-             WHERE type='VC-Document'
-               AND "topicId"=$1
-               AND documents IS NOT NULL
-               AND "consensusTimestamp" < $2
-               AND documents->'credentialSubject'->0->>'id' IS NOT NULL
-             ORDER BY "consensusTimestamp" DESC
+             WHERE type='Topic' AND "topicId"=$1
+             ORDER BY "consensusTimestamp" ASC
              LIMIT 1`,
-            [topicId, beforeTs],
+            [topicId],
         );
-        return rows[0]?.cs_id ?? null;
+        const name = rows[0]?.name;
+        return !!name && ProjectMapperService.DOWNSTREAM_TOPIC_NAMES.has(name);
     }
 }
 
@@ -439,9 +537,32 @@ export class ProjectMapperService {
 /**
  * Walks a dotted path against an object. Returns undefined if any segment is missing.
  */
+/**
+ * Walk a dotted path. Supports numeric indices (`locations.0.country`) and the
+ * `*` wildcard (`locations.*.country`) which iterates an array and returns a
+ * flat list of values from each element.
+ */
 function getByPath(obj: any, path: string): unknown {
     if (!path) return obj;
-    return path.split('.').reduce<any>((cur, key) => (cur == null ? cur : cur[key]), obj);
+    return resolvePath(obj, path.split('.'));
+}
+
+function resolvePath(cur: any, parts: string[]): unknown {
+    if (cur == null) return cur;
+    if (parts.length === 0) return cur;
+    const [key, ...rest] = parts;
+    if (key === '*') {
+        if (!Array.isArray(cur)) return null;
+        const out: unknown[] = [];
+        for (const item of cur) {
+            const r = resolvePath(item, rest);
+            if (r == null) continue;
+            if (Array.isArray(r)) out.push(...r);
+            else out.push(r);
+        }
+        return out;
+    }
+    return resolvePath(cur[key], rest);
 }
 
 /**
@@ -466,11 +587,22 @@ function unwrapValue(val: unknown): string {
     if (typeof val === 'string') return val.trim();
     if (typeof val === 'number') return String(val);
     if (Array.isArray(val)) {
+        // Collect every distinct non-empty scalar across the array. When the
+        // path used a `*` wildcard (e.g. `locations.*.country`), val arrives
+        // here as a flat list of strings — we join them so the project gets
+        // every country, not just the first one. Single-element arrays
+        // collapse to that one value, preserving the original behavior.
+        const unique: string[] = [];
+        const seen = new Set<string>();
         for (const item of val) {
             const s = unwrapValue(item);
-            if (s) return s;
+            if (!s) continue;
+            const key = s.toLowerCase();
+            if (key === 'not specified' || seen.has(key)) continue;
+            seen.add(key);
+            unique.push(s);
         }
-        return '';
+        return unique.join(', ');
     }
     if (val && typeof val === 'object') {
         for (const v of Object.values(val as Record<string, unknown>)) {

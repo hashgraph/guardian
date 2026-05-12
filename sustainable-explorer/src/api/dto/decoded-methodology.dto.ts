@@ -180,7 +180,15 @@ export class DecodedMethodologyResponseDto {
         dto.decodeError = row.decodeError;
         dto.attempts = row.attempts;
         dto.lastAttemptAt = row.lastAttemptAt ? new Date(row.lastAttemptAt).toISOString() : null;
-        dto.availableSchemas = (row.allSchemas ?? []).map(s => DecodedMethodologyResponseDto.summarizeSchema(s));
+        // Build a UUID → schema map so summarizeSchema can follow array-item
+        // $refs (e.g. `locations: { items: { $ref: "#<UUID>" } }`) and surface
+        // those nested fields as user-pickable paths in the editor.
+        const schemasByUuid = new Map<string, PolicySchemaSummaryRow>();
+        for (const s of row.allSchemas ?? []) {
+            if (s.schemaId) schemasByUuid.set(s.schemaId, s);
+        }
+        dto.availableSchemas = (row.allSchemas ?? [])
+            .map(s => DecodedMethodologyResponseDto.summarizeSchema(s, schemasByUuid));
 
         if (!row.projectSchemaConfig) {
             dto.projectSchema = null;
@@ -242,14 +250,36 @@ export class DecodedMethodologyResponseDto {
 
     /**
      * Summarize a single policy_schema row into the SchemaSummaryDto shape.
-     * Reads the JSON-Schema document's top-level `properties` block and emits
-     * one entry per field, marking GeoJSON-typed ones with isGeoJson = true.
+     * Emits one entry per top-level property AND one entry per nested
+     * property (one level deep), so the mapping editor can offer paths like
+     * `location.country`. This mirrors the candidate-collection logic in
+     * `CrossSchemaFuzzyMapperService`, which already understands the same
+     * `<top>.<nested>` path shape on the worker side.
      */
-    private static summarizeSchema(s: PolicySchemaSummaryRow): SchemaSummaryDto {
+    private static summarizeSchema(
+        s: PolicySchemaSummaryRow,
+        schemasByUuid?: Map<string, PolicySchemaSummaryRow>,
+    ): SchemaSummaryDto {
         const doc = (s.document ?? {}) as Record<string, any>;
         const props = (doc.properties ?? {}) as Record<string, any>;
         const fields: SchemaFieldDto[] = [];
         let hasGeoJsonField = false;
+
+        const NESTED_SKIP_KEYS = new Set(['@context', 'type', 'id', 'coordinates']);
+
+        // Pull a child schema's properties when a $ref points at another
+        // schema in this policy. Refs look like `#<UUID>&<version>`; we
+        // extract the UUID and look it up in the map.
+        const refToProps = (ref: string): Record<string, any> | null => {
+            if (!ref || !schemasByUuid) return null;
+            const m = ref.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+            const uuid = m?.[1];
+            if (!uuid) return null;
+            const target = schemasByUuid.get(uuid);
+            const targetDoc = (target?.document ?? {}) as Record<string, any>;
+            const targetProps = targetDoc.properties as Record<string, any> | undefined;
+            return targetProps ?? null;
+        };
 
         for (const [fieldKey, def] of Object.entries(props)) {
             if (!def || typeof def !== 'object') continue;
@@ -257,6 +287,7 @@ export class DecodedMethodologyResponseDto {
             const format = String(def['format'] ?? '').toLowerCase();
             const innerProps = (def['properties'] ?? {}) as Record<string, any>;
             const itemsRef = String(((def['items'] ?? {}) as Record<string, any>)['$ref'] ?? '');
+            const isArray = def['type'] === 'array';
             const isGeoJson =
                 ref.includes('GeoJSON') ||
                 itemsRef.includes('GeoJSON') ||
@@ -265,13 +296,72 @@ export class DecodedMethodologyResponseDto {
                 ('type' in innerProps && 'coordinates' in innerProps);
             if (isGeoJson) hasGeoJsonField = true;
 
+            const topTitle = typeof def.title === 'string' ? def.title : fieldKey;
             fields.push({
                 fieldKey,
-                title: typeof def.title === 'string' ? def.title : fieldKey,
+                title: topTitle,
                 description: typeof def.description === 'string' ? def.description : '',
                 type: typeof def.type === 'string' ? def.type : '',
                 isGeoJson,
             });
+
+            // Skip nested children of a GeoJSON-shaped field — those are
+            // geometry internals (type/coordinates), not user-pickable fields.
+            if (isGeoJson) continue;
+
+            // Collect nested child properties to surface. We pull from three
+            // possible sources, in order:
+            //   1. Inline object: { properties: { … } }
+            //   2. Array of inline objects: { items: { properties: { … } } }
+            //   3. Array of another schema: { items: { $ref: "#<UUID>" } }
+            // For (2) and (3) the path uses index "0" so getByPath can read
+            // the first array element at runtime (locations.0.country).
+            const itemsObj = (def['items'] ?? {}) as Record<string, any>;
+            const itemsInline = (itemsObj['properties'] ?? null) as Record<string, any> | null;
+            const refProps = refToProps(itemsRef) ?? refToProps(ref);
+
+            // For array fields we surface TWO path options per nested child:
+            //   - `<field>.0.<child>` → first element only
+            //   - `<field>.*.<child>` → every element, joined as comma list
+            // The wildcard variant is what the user wants when a project may
+            // have multiple locations (e.g. multi-country projects). The
+            // worker's `getByPath` understands both.
+            type NestedSource = { props: Record<string, any>; pathPrefix: string; titleSuffix: string };
+            const sources: NestedSource[] = [];
+            if (Object.keys(innerProps).length > 0) {
+                sources.push({ props: innerProps, pathPrefix: fieldKey, titleSuffix: '' });
+            }
+            const itemsSources: Array<{ props: Record<string, any> }> = [];
+            if (isArray && itemsInline && Object.keys(itemsInline).length > 0) {
+                itemsSources.push({ props: itemsInline });
+            }
+            if (isArray && refProps && Object.keys(refProps).length > 0) {
+                itemsSources.push({ props: refProps });
+            }
+            for (const { props: itemsProps } of itemsSources) {
+                sources.push({ props: itemsProps, pathPrefix: `${fieldKey}.0`, titleSuffix: ' [first]' });
+                sources.push({ props: itemsProps, pathPrefix: `${fieldKey}.*`, titleSuffix: ' [all]' });
+            }
+            if (!isArray && refProps && Object.keys(refProps).length > 0) {
+                sources.push({ props: refProps, pathPrefix: fieldKey, titleSuffix: '' });
+            }
+
+            for (const { props: nestedProps, pathPrefix, titleSuffix } of sources) {
+                for (const [nestedKey, nestedDefRaw] of Object.entries(nestedProps)) {
+                    if (NESTED_SKIP_KEYS.has(nestedKey)) continue;
+                    if (!nestedDefRaw || typeof nestedDefRaw !== 'object') continue;
+                    const nestedDef = nestedDefRaw as Record<string, any>;
+
+                    const childTitle = typeof nestedDef.title === 'string' ? nestedDef.title : nestedKey;
+                    fields.push({
+                        fieldKey: `${pathPrefix}.${nestedKey}`,
+                        title: `${topTitle} › ${childTitle}${titleSuffix}`,
+                        description: typeof nestedDef.description === 'string' ? nestedDef.description : '',
+                        type: typeof nestedDef.type === 'string' ? nestedDef.type : '',
+                        isGeoJson: false,
+                    });
+                }
+            }
         }
 
         return {
