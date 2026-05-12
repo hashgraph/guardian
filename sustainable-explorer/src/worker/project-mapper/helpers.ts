@@ -37,22 +37,81 @@ export function resolveCountryName(raw: string): string {
 // ---------------------------------------------------------------------------
 
 export const SECTOR_KEYWORD_MAP: Array<{ sector: string; keywords: string[] }> = [
-    { sector: 'Energy', keywords: ['energy'] },
-    { sector: 'Transport', keywords: ['transport'] },
-    { sector: 'Waste', keywords: ['waste'] },
     {
-        sector: 'Nature Based Solutions',
+        sector: 'Energy',
         keywords: [
-            'afforestation', 'reforestation', 'redd', 'forest', 'agriculture',
-            'land use', 'blue carbon', 'wetland', 'coastal', 'marine',
-            'grassland', 'peatland', 'restoration',
+            'energy',
+            'industries',
+            'distribution',
+            'demand',
+        ],
+    },
+    {
+        sector: 'Transport',
+        keywords: [
+            'transport',
+        ],
+    },
+    {
+        sector: 'Waste',
+        keywords: [
+            'waste',
+            'handling',
+            'disposal',
+        ],
+    },
+    {
+        sector: 'Land Use & Forestry',
+        keywords: [
+            'agriculture',
+            'afforestation',
+            'reforestation',
+            'forest',
+            'forestry',
+            'land',
+            'use',
         ],
     },
     {
         sector: 'Industrial Process',
         keywords: [
-            'manufacturing', 'chemical', 'construction', 'mining',
-            'metal', 'fugitive', 'solvent', 'industrial',
+            'chemical',
+            'manufacturing',
+            'metal',
+            'production',
+            'industrial',
+        ],
+    },
+    {
+        sector: 'Fugitive Emissions',
+        keywords: [
+            'fugitive',
+            'emissions',
+            'solid',
+            'fuels',
+            'oil',
+            'gas',
+            'halocarbons',
+            'sulphur',
+        ],
+    },
+    {
+        sector: 'Others',
+        keywords: [
+            'construction',
+            'mining',
+            'mineral',
+            'production',
+            'solvents',
+            'use',
+            'geological',
+            'carbon',
+            'storage',
+            'engineered',
+            'removals',
+            'oceans',
+            'marine',
+            'resources',
         ],
     },
 ];
