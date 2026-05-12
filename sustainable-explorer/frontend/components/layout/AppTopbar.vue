@@ -215,7 +215,10 @@ async function runGlobalSearch(rawQuery: string) {
             title: p.name ?? p.displayName ?? '\u2014',
             sub: [p.registry ?? p.registryName, p.methodology, p.status]
                 .filter(Boolean).join(' \u00b7 '),
-            to: `/projects/${p.id ?? p.sourceTimestamp}`,
+            // The /projects/:id route accepts sourceTimestamp or projectKey;
+            // p.id is the business_view row PK (numeric), which the API doesn't
+            // resolve and produces a 404.
+            to: `/projects/${p.sourceTimestamp ?? p.projectKey ?? p.id}`,
         });
     }
 
