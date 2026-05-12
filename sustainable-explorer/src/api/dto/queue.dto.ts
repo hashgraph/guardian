@@ -117,6 +117,15 @@ export class FailedJobGroupDto {
 }
 
 export class FailedJobGroupListDto {
+    @ApiProperty({ description: 'Total number of distinct failure reason groups' })
+    total: number;
+
+    @ApiProperty({ description: 'Current page (1-based)' })
+    page: number;
+
+    @ApiProperty({ description: 'Number of groups per page' })
+    pageSize: number;
+
     @ApiProperty({ type: [FailedJobGroupDto] })
     groups: FailedJobGroupDto[];
 }
@@ -240,9 +249,24 @@ export class SyncStatusDto {
     @ApiProperty({ description: 'Total HCS messages indexed across all topics' })
     totalMessages: number;
 
-    @ApiProperty({ type: [TopicSyncItemDto], description: 'Top 50 topics by message count' })
+    @ApiProperty({ description: 'Current topic page (1-based)' })
+    topicPage: number;
+
+    @ApiProperty({ description: 'Number of topics per page' })
+    topicPageSize: number;
+
+    @ApiProperty({ type: [TopicSyncItemDto], description: 'Topics for the current page, sorted by message count desc' })
     topics: TopicSyncItemDto[];
 
-    @ApiProperty({ type: [TokenSyncItemDto], description: 'Up to 50 tracked tokens' })
+    @ApiProperty({ description: 'Total number of tokens tracked in token_cache' })
+    tokenTotal: number;
+
+    @ApiProperty({ description: 'Current token page (1-based)' })
+    tokenPage: number;
+
+    @ApiProperty({ description: 'Number of tokens per page' })
+    tokenPageSize: number;
+
+    @ApiProperty({ type: [TokenSyncItemDto], description: 'Tokens for the current page' })
     tokens: TokenSyncItemDto[];
 }
