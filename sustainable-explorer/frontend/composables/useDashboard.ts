@@ -270,28 +270,27 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         return (f.developer && f.developer !== 'All Developers') || (f.registry && f.registry !== 'All Registries');
     });
 
-    // Stat cards reflect the currently-filtered project set so they stay in
-    // lock-step with the map/charts/tables below. When no filter is applied
-    // filteredProjects equals projects, so the numbers match the system view;
-    // when filtered, every card narrows accordingly.
+    // Stat cards reflect the currently-filtered project set when a filter is
+    // active. With no filter, registries/methodologies use the system-wide
+    // API totals so the cards match the counts on the /registries and
+    // /methodologies pages (which include rows that have zero projects).
+    // Project-derived counts would otherwise hide registries/methodologies
+    // that exist but haven't produced any projects yet.
     const stats = computed(() => {
         const set = filteredProjects.value;
+        let totalCredits = 0;
         const uniqueRegistries = new Set<string>();
         const uniqueMethodologies = new Set<string>();
-        let totalCredits = 0;
         for (const p of set) {
             if (p.registry) uniqueRegistries.add(p.registry);
             if (p.methodologyId) uniqueMethodologies.add(p.methodologyId);
             totalCredits += p.credits;
         }
         return {
-            // Fall back to the API-fetched totals only when there's no filter
-            // AND the filtered set is empty (e.g. on initial load before
-            // projects.value resolves), so the cards aren't blank.
-            registries: hasActiveFilter.value || set.length > 0
+            registries: hasActiveFilter.value
                 ? uniqueRegistries.size
                 : registryTotal.value,
-            methodologies: hasActiveFilter.value || set.length > 0
+            methodologies: hasActiveFilter.value
                 ? uniqueMethodologies.size
                 : methodologyTotal.value,
             projects: set.length,
