@@ -46,16 +46,31 @@ services:
         image: registry.redict.io/redict:7.3.6-alpine
         container_name: se-redict
         restart: unless-stopped
-        command: redict-server --appendonly yes
+        command: >
+            redict-server
+            --appendonly yes
+            --maxmemory 1500mb
+            --maxmemory-policy noeviction
+            --auto-aof-rewrite-percentage 50
+            --auto-aof-rewrite-min-size 64mb
         volumes:
             - redict_data:/data
         # ports:
         #     - '6379:6379'   # uncomment for host debugging access
+        deploy:
+            resources:
+                limits:
+                    memory: 2G
+                    cpus: '0.5'
+                reservations:
+                    memory: 256M
+                    cpus: '0.1'
         healthcheck:
-            test: ['CMD', 'redict-cli', 'ping']
+            test: ['CMD-SHELL', 'redict-cli ping || redis-cli ping']
             interval: 10s
             timeout: 5s
             retries: 5
+            start_period: 30s
 
     ipfs:
         image: ipfs/kubo:latest

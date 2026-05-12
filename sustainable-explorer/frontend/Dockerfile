@@ -26,8 +26,7 @@ COPY . .
 # Nuxt expects NODE_ENV at build time for production optimizations
 ENV NODE_ENV=production
 
-RUN yarn build
-
+RUN yarn nuxt prepare && yarn build
 
 # ---- 3. Runner ----
 FROM node:22-alpine AS runner

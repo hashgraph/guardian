@@ -64,6 +64,10 @@ export interface QueueDefinition {
     concurrency: number;
 }
 
+function envInt(name: string, defaultValue: number): number {
+    return parseInt(process.env[name] || String(defaultValue), 10);
+}
+
 /**
  * Returns queue definitions with their default job options and concurrency settings.
  */
@@ -75,10 +79,10 @@ export function getQueueConfigs(): QueueDefinition[] {
                 attempts: 5,
                 backoff: { type: 'exponential', delay: 3000 },
                 timeout: 120000,
-                removeOnComplete: 1000,
-                removeOnFail: 5000,
+                removeOnComplete: envInt('TOPIC_SYNC_REMOVE_ON_COMPLETE', 1000),
+                removeOnFail: envInt('TOPIC_SYNC_REMOVE_ON_FAIL', 5000),
             },
-            concurrency: parseInt(process.env.WORKER_TOPIC_CONCURRENCY || '5', 10),
+            concurrency: envInt('WORKER_TOPIC_CONCURRENCY', 5),
         },
         {
             name: QUEUE_NAMES.MESSAGE_PARSE,
@@ -86,41 +90,37 @@ export function getQueueConfigs(): QueueDefinition[] {
                 attempts: 3,
                 backoff: { type: 'exponential', delay: 2000 },
                 timeout: 60000,
-                removeOnComplete: 1000,
-                removeOnFail: 5000,
+                removeOnComplete: envInt('MESSAGE_PARSE_REMOVE_ON_COMPLETE', 1000),
+                removeOnFail: envInt('MESSAGE_PARSE_REMOVE_ON_FAIL', 5000),
             },
-            concurrency: parseInt(process.env.WORKER_MESSAGE_CONCURRENCY || '10', 10),
+            concurrency: envInt('WORKER_MESSAGE_CONCURRENCY', 10),
         },
         {
             name: QUEUE_NAMES.IPFS_FETCH,
             defaultJobOptions: {
                 attempts: 5,
                 backoff: { type: 'exponential', delay: 5000 },
-                timeout: parseInt(process.env.IPFS_FETCH_TIMEOUT || '180000', 10),
-                removeOnComplete: 500,
-                removeOnFail: 2000,
+                timeout: envInt('IPFS_FETCH_TIMEOUT', 180000),
+                removeOnComplete: envInt('IPFS_FETCH_REMOVE_ON_COMPLETE', 500),
+                removeOnFail: envInt('IPFS_FETCH_REMOVE_ON_FAIL', 2000),
             },
-            concurrency: parseInt(process.env.WORKER_IPFS_CONCURRENCY || '3', 10),
+            concurrency: envInt('WORKER_IPFS_CONCURRENCY', 3),
         },
         {
             name: QUEUE_NAMES.POLICY_DECODE,
             defaultJobOptions: {
                 attempts: 5,
                 backoff: { type: 'exponential', delay: 5000 },
-                timeout: parseInt(
-                    process.env.POLICY_DECODE_TIMEOUT
-                        || process.env.POLICY_SCHEMA_IMPORT_TIMEOUT
-                        || '300000',
-                    10,
+                timeout: envInt(
+                    'POLICY_DECODE_TIMEOUT',
+                    envInt('POLICY_SCHEMA_IMPORT_TIMEOUT', 300000),
                 ),
-                removeOnComplete: 500,
-                removeOnFail: 2000,
+                removeOnComplete: envInt('POLICY_DECODE_REMOVE_ON_COMPLETE', 500),
+                removeOnFail: envInt('POLICY_DECODE_REMOVE_ON_FAIL', 2000),
             },
-            concurrency: parseInt(
-                process.env.WORKER_POLICY_DECODE_CONCURRENCY
-                    || process.env.WORKER_POLICY_SCHEMA_CONCURRENCY
-                    || '2',
-                10,
+            concurrency: envInt(
+                'WORKER_POLICY_DECODE_CONCURRENCY',
+                envInt('WORKER_POLICY_SCHEMA_CONCURRENCY', 2),
             ),
         },
         {
@@ -129,10 +129,10 @@ export function getQueueConfigs(): QueueDefinition[] {
                 attempts: 3,
                 backoff: { type: 'exponential', delay: 5000 },
                 timeout: 90000,
-                removeOnComplete: 500,
-                removeOnFail: 2000,
+                removeOnComplete: envInt('TOKEN_SYNC_REMOVE_ON_COMPLETE', 500),
+                removeOnFail: envInt('TOKEN_SYNC_REMOVE_ON_FAIL', 2000),
             },
-            concurrency: parseInt(process.env.WORKER_TOKEN_CONCURRENCY || '2', 10),
+            concurrency: envInt('WORKER_TOKEN_CONCURRENCY', 2),
         },
         {
             name: QUEUE_NAMES.MV_REFRESH,
@@ -140,8 +140,8 @@ export function getQueueConfigs(): QueueDefinition[] {
                 attempts: 2,
                 backoff: { type: 'fixed', delay: 5000 },
                 timeout: 300000,
-                removeOnComplete: 100,
-                removeOnFail: 500,
+                removeOnComplete: envInt('MV_REFRESH_REMOVE_ON_COMPLETE', 100),
+                removeOnFail: envInt('MV_REFRESH_REMOVE_ON_FAIL', 500),
             },
             concurrency: 1,
         },
@@ -151,8 +151,8 @@ export function getQueueConfigs(): QueueDefinition[] {
                 attempts: 2,
                 backoff: { type: 'fixed', delay: 1000 },
                 timeout: 60000,
-                removeOnComplete: 100,
-                removeOnFail: 500,
+                removeOnComplete: envInt('BUSINESS_VIEW_BUILD_REMOVE_ON_COMPLETE', 100),
+                removeOnFail: envInt('BUSINESS_VIEW_BUILD_REMOVE_ON_FAIL', 500),
             },
             concurrency: 5,
         },
@@ -162,10 +162,10 @@ export function getQueueConfigs(): QueueDefinition[] {
                 attempts: 3,
                 backoff: { type: 'exponential', delay: 2000 },
                 timeout: 60000,
-                removeOnComplete: 500,
-                removeOnFail: 2000,
+                removeOnComplete: envInt('PROJECT_REPARSE_REMOVE_ON_COMPLETE', 500),
+                removeOnFail: envInt('PROJECT_REPARSE_REMOVE_ON_FAIL', 2000),
             },
-            concurrency: parseInt(process.env.WORKER_PROJECT_REPARSE_CONCURRENCY || '5', 10),
+            concurrency: envInt('WORKER_PROJECT_REPARSE_CONCURRENCY', 5),
         },
     ];
 }

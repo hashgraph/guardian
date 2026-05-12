@@ -26,6 +26,7 @@ import { IpfsFetchProcessor } from '../processors/ipfs-fetch.processor';
 import { MvRefreshProcessor } from '../processors/mv-refresh.processor';
 import { BusinessViewBuilderProcessor } from '../processors/business-view-builder.processor';
 import { PolicyDecodeProcessor } from '../processors/policy-decode.processor';
+import { ProjectReparseProcessor } from '../processors/project-reparse.processor';
 
 interface ScalingEntry {
     queue: Queue;
@@ -78,6 +79,7 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
         @InjectQueue(QUEUE_NAMES.MV_REFRESH) private readonly mvQueue: Queue,
         @InjectQueue(QUEUE_NAMES.BUSINESS_VIEW_BUILD) private readonly bvQueue: Queue,
         @InjectQueue(QUEUE_NAMES.POLICY_DECODE) private readonly pdQueue: Queue,
+        @InjectQueue(QUEUE_NAMES.PROJECT_REPARSE) private readonly projectReparseQueue: Queue,
 
         // Processor instances — decorated with @Optional() because worker.module.ts
         // only registers processors for active queues. NestJS resolves missing
@@ -89,6 +91,7 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
         @Optional() private readonly mvProcessor: MvRefreshProcessor,
         @Optional() private readonly bvProcessor: BusinessViewBuilderProcessor,
         @Optional() private readonly pdProcessor: PolicyDecodeProcessor,
+        @Optional() private readonly projectReparseProcessor: ProjectReparseProcessor,
     ) {}
 
     /**
@@ -122,6 +125,9 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
                     await this.redis.expire(this.leaderKey, 30);
                 } else if (this.isLeader && !wasLeader) {
                     this.logger.log('[Autoscaler] Took over leadership');
+                    for (const key of Object.keys(this.scaleDownCounters)) {
+                        this.scaleDownCounters[key] = 0;
+                    }
                     this.startScalingLoop();
                 } else if (!this.isLeader && wasLeader) {
                     this.logger.warn('[Autoscaler] Lost leadership — pausing scaling loop');
@@ -208,6 +214,12 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
                 queueName: QUEUE_NAMES.POLICY_DECODE,
                 queue: this.pdQueue,
                 processor: this.pdProcessor,
+            },
+            {
+                baseName: BASE_QUEUE_NAMES.PROJECT_REPARSE,
+                queueName: QUEUE_NAMES.PROJECT_REPARSE,
+                queue: this.projectReparseQueue,
+                processor: this.projectReparseProcessor,
             },
         ];
 
