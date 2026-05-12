@@ -342,8 +342,8 @@ Previous response:
     private async getModelResponse({ systemPrompt, userMessage }: { systemPrompt: string; userMessage: string }): Promise<string> {
         const provider = (process.env.AI_PROVIDER || 'gemini').toLowerCase();
 
-        if (!['gemini', 'openai'].includes(provider)) {
-            throw new Error("AI_PROVIDER must be either 'gemini' or 'openai'.");
+        if (!['gemini', 'openai', 'bedrock'].includes(provider)) {
+            throw new Error("AI_PROVIDER must be one of 'gemini', 'openai', or 'bedrock'.");
         }
 
         if (provider === 'gemini') {
@@ -382,38 +382,115 @@ Previous response:
             });
         }
 
-        const apiKey = process.env.OPENAI_API_KEY;
-        if (!apiKey) {
-            throw new Error('OPENAI_API_KEY environment variable is not set.');
+        if (provider === 'openai') {
+            const apiKey = process.env.OPENAI_API_KEY;
+            if (!apiKey) {
+                throw new Error('OPENAI_API_KEY environment variable is not set.');
+            }
+
+            const model = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
+            return this.generateContentWithRetry(async () => {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${apiKey}`,
+                    },
+                    body: JSON.stringify({
+                        model,
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: userMessage },
+                        ],
+                        temperature: 0,
+                    }),
+                });
+
+                const raw = await response.text();
+                if (!response.ok) {
+                    const error = new Error(raw || `OpenAI request failed with status ${response.status}`) as Error & { status?: number };
+                    error.status = response.status;
+                    throw error;
+                }
+
+                const payload = JSON.parse(raw) as { choices?: Array<{ message?: { content?: string } }> };
+                return payload.choices?.[0]?.message?.content || '';
+            });
         }
 
-        const model = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
+        const bedrockRegion = process.env.AWS_BEDROCK_REGION;
+        if (!bedrockRegion) {
+            throw new Error('AWS_BEDROCK_REGION environment variable is not set.');
+        }
+
+        const bedrockAuthToken = process.env.AWS_BEDROCK_AUTH_TOKEN;
+        if (!bedrockAuthToken) {
+            throw new Error('AWS_BEDROCK_AUTH_TOKEN environment variable is not set.');
+        }
+
+        const model = process.env.AWS_BEDROCK_MODEL || 'google.gemma-3-4b-it';
         return this.generateContentWithRetry(async () => {
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${apiKey}`,
+            const response = await fetch(
+                `https://bedrock-runtime.${encodeURIComponent(bedrockRegion)}.amazonaws.com/model/${encodeURIComponent(model)}/invoke`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        Authorization: `Bearer ${bedrockAuthToken}`,
+                    },
+                    body: JSON.stringify({
+                        system: systemPrompt,
+                        messages: [
+                            {
+                                role: 'user',
+                                content: userMessage,
+                            },
+                        ],
+                        temperature: 0,
+                    }),
                 },
-                body: JSON.stringify({
-                    model,
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: userMessage },
-                    ],
-                    temperature: 0,
-                }),
-            });
+            );
 
             const raw = await response.text();
             if (!response.ok) {
-                const error = new Error(raw || `OpenAI request failed with status ${response.status}`) as Error & { status?: number };
+                const error = new Error(raw || `Bedrock request failed with status ${response.status}`) as Error & { status?: number };
                 error.status = response.status;
                 throw error;
             }
 
-            const payload = JSON.parse(raw) as { choices?: Array<{ message?: { content?: string } }> };
-            return payload.choices?.[0]?.message?.content || '';
+            const payload = JSON.parse(raw) as {
+                output?: Array<{ content?: Array<{ text?: string }> }>;
+                content?: Array<{ text?: string }>;
+                generation?: string;
+                outputText?: string;
+            
+                // OpenAI-compatible shape
+                choices?: Array<{
+                    message?: {
+                        content?: string;
+                    };
+                }>;
+            };
+            
+            const outputText = payload.output?.[0]?.content
+                ?.map((part) => part.text ?? '')
+                .join('');
+            
+            const contentText = payload.content
+                ?.map((part) => part.text ?? '')
+                .join('');
+            
+            const choiceText = payload.choices?.[0]?.message?.content;
+            
+            return (
+                outputText ||
+                contentText ||
+                choiceText ||
+                payload.outputText ||
+                payload.generation ||
+                ''
+            );
         });
     }
 }
