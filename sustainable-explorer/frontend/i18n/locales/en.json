@@ -103,6 +103,7 @@
     "sectorRegistryBreakdownSub": "Distribution of projects and issuances by sector and registry",
     "bySector": "By Sector",
     "byRegistry": "By Registry",
+    "otherCategory": "Other",
     "projectsToggle": "Projects",
     "issuancesToggle": "Issuances",
     "topRegistries": "Top Registries",

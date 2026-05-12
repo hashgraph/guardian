@@ -102,6 +102,7 @@
     "sectorRegistryBreakdownTooltip": "Distribución de proyectos y emisiones por sector y registro. Alterna entre conteo de proyectos y volumen de emisiones. Refleja los filtros actuales de desarrollador/registro.",
     "sectorRegistryBreakdownSub": "Distribución de proyectos y emisiones por sector y registro",
     "bySector": "Por sector",
+    "otherCategory": "Otros",
     "byRegistry": "Por registro",
     "projectsToggle": "Proyectos",
     "issuancesToggle": "Emisiones",
