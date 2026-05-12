@@ -50,11 +50,7 @@ export class IpfsFetchProcessor extends WorkerHost implements OnModuleInit {
             this.logger.debug(`CID ${cid} already exists in ipfs_files, skipping fetch`);
             // Clean up any stale failure record and publish recovery event
             await this.failureRepo.deleteFailure(cid);
-            await this.redis.publish('se:events', JSON.stringify({
-                type: 'ipfs-fetch-recovered',
-                cid,
-                timestamp: Date.now(),
-            }));
+            await this.publishEvent({ type: 'ipfs-fetch-recovered', cid, timestamp: Date.now() });
             return;
         }
 
@@ -125,22 +121,26 @@ export class IpfsFetchProcessor extends WorkerHost implements OnModuleInit {
         await this.failureRepo.deleteFailure(cid);
 
         // Publish recovery event (covers both first-time successes and retried successes)
-        await this.redis.publish('se:events', JSON.stringify({
-            type: 'ipfs-fetch-recovered',
-            cid,
-            timestamp: Date.now(),
-        }));
+        await this.publishEvent({ type: 'ipfs-fetch-recovered', cid, timestamp: Date.now() });
 
         // Publish document-loaded event for real-time consumers
-        await this.redis.publish('se:events', JSON.stringify({
+        await this.publishEvent({
             type: 'document-loaded',
             messageId: messageTimestamp,
             cid,
             contentLength: content.length,
             hasDocument: !!parsedDocument,
-        }));
+        });
 
         this.logger.log(`IPFS content fetched for CID ${cid} (${content.length} bytes)`);
+    }
+
+    private async publishEvent(payload: Record<string, unknown>): Promise<void> {
+        try {
+            await this.redis.publish('se:events', JSON.stringify(payload));
+        } catch (err) {
+            this.logger.warn(`Failed to publish se:events: ${(err as Error).message}`);
+        }
     }
 
     @OnWorkerEvent('failed')
@@ -163,14 +163,14 @@ export class IpfsFetchProcessor extends WorkerHost implements OnModuleInit {
                 job.data.messageTimestamp ?? null,
             );
 
-            await this.redis.publish('se:events', JSON.stringify({
+            await this.publishEvent({
                 type: 'ipfs-fetch-failed',
                 cid: job.data.cid,
                 errorCategory: category,
                 attemptCount: job.attemptsMade,
                 lastError: error.message.slice(0, 500),
                 timestamp: Date.now(),
-            }));
+            });
         } catch (handlerErr) {
             this.logger.error('Failed to handle IPFS failure event', handlerErr);
         }

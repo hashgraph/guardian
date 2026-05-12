@@ -207,11 +207,14 @@ export class QueueStatusController {
 
         // Use getJobCounts for the total — reads ZCARD directly, stays consistent
         // with the queue list endpoint. getFailedCount() can diverge after removeOnFail trims.
-        const [rawFailed, counts] = await Promise.all([
-            queue.getFailed(offset, offset + limit - 1),
-            queue.getJobCounts('failed'),
-        ]);
+        const counts = await queue.getJobCounts('failed');
         const total = counts['failed'] ?? 0;
+
+        // When grouping, fetch all failed jobs so group counts are accurate across
+        // the full set — not just the current page.
+        const rawFailed = groupByReason
+            ? await queue.getFailed(0, Math.max(total - 1, 0))
+            : await queue.getFailed(offset, offset + limit - 1);
 
         // Job.fromId returns undefined when the hash is missing (e.g. BullMQ version
         // mismatch, partial cleanup). Filter those out so the mapping doesn't throw.
