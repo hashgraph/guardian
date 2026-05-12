@@ -446,6 +446,7 @@ Type-to-operator quick reference:
                             "type": "object",
                         },
                     },
+                    "description": "Generic wrapper for non-object return types.",
                     "properties": {
                         "result": {
                             "items": {"$ref": "#/$defs/MethodologyDocumentSearchResult"},
@@ -915,6 +916,7 @@ Type-to-operator quick reference:
                             "type": "object",
                         },
                     },
+                    "description": "Generic wrapper for non-object return types.",
                     "properties": {
                         "result": {
                             "items": {"$ref": "#/$defs/SchemaPropertySearchResult"},
@@ -939,7 +941,12 @@ Type-to-operator quick reference:
             {
                 "name": "schema_properties_get_index_status",
                 "title": None,
-                "description": "Get filterable field schema and indexing status for schema properties.\n\nReturns payload_schema with indexed field keys, types, and\nmatch operators. Call BEFORE constructing any filter.",
+                "description": """\
+Get filterable field schema and indexing status for schema properties.
+
+Returns payload_schema with indexed field keys, types, and
+match operators. Call BEFORE constructing any filter.\
+""",
                 "inputSchema": {
                     "properties": {},
                     "type": "object",
