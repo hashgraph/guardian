@@ -50,6 +50,7 @@ import {
     EntityOwner,
     ExternalMessageEvents,
     GenerateUUIDv4,
+    IBlockCompleteEvent,
     IOwner,
     PolicyEngineEvents,
     PolicyEvents,
@@ -386,6 +387,15 @@ export class PolicyEngineService {
                 const policy = await DatabaseServer.getPolicyById(msg.policyId);
                 if (policy) {
                     this.channel.publish('update-restore', msg);
+                }
+            })
+
+        this.channel.getMessages(PolicyEvents.BLOCK_COMPLETE_BROADCAST,
+            (msg: IBlockCompleteEvent) => {
+                try {
+                    this.channel.sendMessage(ExternalMessageEvents.BLOCK_COMPLETE, msg, false);
+                } catch (error) {
+                    console.error('Error relaying BLOCK_COMPLETE_BROADCAST:', error);
                 }
             })
 
