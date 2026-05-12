@@ -101,9 +101,33 @@ export function useProjects() {
     const key = computed(() => `projects:${network.value}`);
     const url = computed(() => `/api/v1/${network.value}/projects`);
 
+    // Page size used for the bulk dashboard fetch. The first page also carries
+    // meta.total so we know whether to fetch additional pages.
+    const PAGE_SIZE = 1000;
+
+    async function fetchAll(): Promise<{ data: Record<string, any>[]; meta: { total: number } }> {
+        const first = await $fetch<{ data: Record<string, any>[]; meta: { total: number } }>(
+            url.value, { baseURL, query: { limit: PAGE_SIZE, page: 1 } },
+        );
+        const total = first?.meta?.total ?? first?.data?.length ?? 0;
+        const totalPages = Math.ceil(total / PAGE_SIZE);
+        if (totalPages <= 1) return first ?? { data: [], meta: { total: 0 } };
+
+        const rest = await Promise.all(
+            Array.from({ length: totalPages - 1 }, (_, i) =>
+                $fetch<{ data: Record<string, any>[] }>(url.value, {
+                    baseURL,
+                    query: { limit: PAGE_SIZE, page: i + 2 },
+                }).then(r => r?.data ?? []),
+            ),
+        );
+
+        return { data: [...first.data, ...rest.flat()], meta: { total } };
+    }
+
     const { data, pending, error } = useAsyncData<{ data: Record<string, any>[]; meta: { total: number } }>(
         key.value,
-        () => $fetch(url.value, { baseURL, query: { limit: 500 } }),
+        fetchAll,
         {
             watch: [network],
             default: () => ({ data: [], meta: { total: 0 } }),
