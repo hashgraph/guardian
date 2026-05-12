@@ -2,7 +2,7 @@
 import {
     PanelLeft, Globe, ChevronDown, ChevronRight, Search, Check,
     LayoutDashboard, FolderKanban, Coins, BookOpen, Building2, Users,
-    Target, BarChart3, Activity, ArrowRight,
+    Target, BarChart3, Activity,
 } from 'lucide-vue-next';
 import { onClickOutside, useDebounceFn } from '@vueuse/core';
 import { networkOptions } from '~/composables/useNetwork';
@@ -72,7 +72,7 @@ watch(
 
 const breadcrumbs = computed(() => {
     const path = route.path;
-    const crumbs: { label: string; icon: any; to?: string }[] = [];
+    const crumbs: { label: string; icon?: any; to?: string }[] = [];
 
     // Always start with Dashboard
     if (path === '/') {
@@ -286,7 +286,7 @@ function onSearchFocus() {
     }
 }
 
-function selectResult(result: typeof searchIndex.value[0]) {
+function selectResult(result: GlobalResult) {
     searchOpen.value = false;
     searchQuery.value = '';
     router.push(result.to);

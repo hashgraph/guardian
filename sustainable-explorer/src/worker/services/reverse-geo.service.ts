@@ -36,6 +36,7 @@ export class ReverseGeoService {
         await this.ensureLoaded();
         if (!this.features) return null;
 
+        // Pass 1 — strict point-in-polygon, bbox pre-filtered.
         for (const f of this.features) {
             if (lng < f.minLng || lng > f.maxLng) continue;
             if (lat < f.minLat || lat > f.maxLat) continue;
@@ -43,7 +44,44 @@ export class ReverseGeoService {
                 return { code: f.code, name: f.name };
             }
         }
+
+        // Pass 2 — coastal-tolerance fallback. The bundled GeoJSON's
+        // coastline is simplified, so cities like Darwin (-12.48, 130.90)
+        // sit just outside the polygon. Find the nearest country whose
+        // bbox is within ~1° of the point and pick it if a vertex is within
+        // the tolerance.
+        const TOLERANCE_DEG = 1.0;
+        const TOL_SQ = TOLERANCE_DEG * TOLERANCE_DEG;
+        let best: { f: CountryFeatureBbox; d: number } | null = null;
+        for (const f of this.features) {
+            if (lng < f.minLng - TOLERANCE_DEG || lng > f.maxLng + TOLERANCE_DEG) continue;
+            if (lat < f.minLat - TOLERANCE_DEG || lat > f.maxLat + TOLERANCE_DEG) continue;
+            const d = this.minVertexDistanceSq(lng, lat, f.polygons, TOL_SQ);
+            if (best === null || d < best.d) best = { f, d };
+        }
+        if (best && best.d <= TOL_SQ) {
+            return { code: best.f.code, name: best.f.name };
+        }
         return null;
+    }
+
+    /** Minimum squared distance (in degrees²) from (lng, lat) to any polygon
+     * vertex. Early-exits as soon as a distance below `cap` is found. */
+    private minVertexDistanceSq(lng: number, lat: number, polygons: number[][][][], cap: number): number {
+        let best = Infinity;
+        for (const poly of polygons) {
+            for (const ring of poly) {
+                for (const [vx, vy] of ring) {
+                    const dx = vx - lng, dy = vy - lat;
+                    const d = dx * dx + dy * dy;
+                    if (d < best) {
+                        best = d;
+                        if (best < cap * 0.01) return best;   // very close — stop scanning
+                    }
+                }
+            }
+        }
+        return best;
     }
 
     private async ensureLoaded(): Promise<void> {
