@@ -138,12 +138,20 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
     });
 
     const mapPoints = computed<MapPoint[]>(() => {
-        return filteredProjects.value.map(p => ({
-            name: p.name,
-            lat: p.lat,
-            lng: p.lng,
-            credits: formatCredits(p.credits),
-        }));
+        // Show a dot whenever the project has real geo coordinates — country
+        // string is independent (a project with valid lat/lng but no extracted
+        // country still belongs on the map). Skip 0/0 and non-numeric coords
+        // to avoid a misleading marker in the Atlantic Ocean.
+        return filteredProjects.value
+            .filter(p =>
+                typeof p.lat === 'number' && typeof p.lng === 'number'
+                && (p.lat !== 0 || p.lng !== 0))
+            .map(p => ({
+                name: p.name,
+                lat: p.lat,
+                lng: p.lng,
+                credits: formatCredits(p.credits),
+            }));
     });
 
     // Registries derived from filtered projects

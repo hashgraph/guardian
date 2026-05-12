@@ -16,6 +16,7 @@ import { HederaService } from './services/hedera.service';
 import { IpfsService } from './services/ipfs.service';
 import { PolicySchemaImportService } from './services/policy-schema-import.service';
 import { ProjectMapperService } from './services/project-mapper.service';
+import { ReverseGeoService } from './services/reverse-geo.service';
 
 // Processors
 import { TopicSyncProcessor } from './processors/topic-sync.processor';
@@ -114,6 +115,7 @@ export class WorkerModule {
                 HederaService,
                 IpfsService,
                 PolicySchemaImportService,
+                ReverseGeoService,
                 ProjectMapperService,
 
                 // Only processors for active queues

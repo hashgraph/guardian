@@ -244,16 +244,19 @@ const statusColor: Record<string, string> = {
                                 <NuxtLink :to="`/projects/${p.id}`" class="font-medium text-foreground hover:text-primary transition-colors break-words">{{ p.name }}</NuxtLink>
                             </td>
                             <td class="py-3 px-4 text-muted-foreground">
-                                <div class="group relative inline-flex items-center gap-1.5">
-                                    <CountryFlag :code="resolvedCode(p)" size="sm" />
-                                    <span class="hidden md:inline">{{ displayCountry(p) }}</span>
-                                    <div v-if="displayCountry(p)" class="md:hidden pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-[100]">
-                                        <div class="whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-[11px] text-background shadow-lg">
-                                            {{ displayCountry(p) }}
+                                <template v-if="displayCountry(p)">
+                                    <div class="group relative inline-flex items-center gap-1.5">
+                                        <CountryFlag :code="resolvedCode(p)" size="sm" />
+                                        <span class="hidden md:inline">{{ displayCountry(p) }}</span>
+                                        <div class="md:hidden pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-[100]">
+                                            <div class="whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-[11px] text-background shadow-lg">
+                                                {{ displayCountry(p) }}
+                                            </div>
+                                            <div class="mx-auto h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />
                                         </div>
-                                        <div class="mx-auto h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />
                                     </div>
-                                </div>
+                                </template>
+                                <span v-else class="text-xs">—</span>
                             </td>
                             <td class="py-3 px-4 text-muted-foreground text-xs break-words">{{ p.registry }}</td>
                             <td class="py-3 px-4">

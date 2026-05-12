@@ -13,6 +13,7 @@ import {
     extractSdgsFromText,
 } from '../project-mapper/improved-heuristic.mapper';
 import { PROJECT_EXTRACT_FIELDS } from '../project-mapper/project-fields';
+import { ReverseGeoService } from './reverse-geo.service';
 
 /**
  * Per-VC project upsert service.
@@ -36,7 +37,10 @@ import { PROJECT_EXTRACT_FIELDS } from '../project-mapper/project-fields';
 export class ProjectMapperService {
     private readonly logger = new Logger(ProjectMapperService.name);
 
-    constructor(private readonly dataSource: DataSource) {}
+    constructor(
+        private readonly dataSource: DataSource,
+        private readonly reverseGeoService: ReverseGeoService,
+    ) {}
 
     async upsertProjectFromVc(messageConsensusTimestamp: string): Promise<void> {
         const rows: Array<{
@@ -199,7 +203,26 @@ export class ProjectMapperService {
         const lng = geoLngLat?.[0] ?? null;
         const lat = geoLngLat?.[1] ?? null;
         const name = extracted['name'] ?? null;
-        const country = extracted['country'] ? resolveCountryName(extracted['country']) : null;
+        // Country sanity check: real country names top out at ~56 chars
+        // ("United Kingdom of Great Britain and Northern Ireland"). When the
+        // cross-schema fuzzy mapper accidentally maps Country to a description
+        // field, the extracted value is a multi-hundred-char paragraph — reject
+        // anything longer than 80 chars rather than store narrative text as a country.
+        const rawCountry = extracted['country'];
+        let country = rawCountry && rawCountry.length <= 80
+            ? resolveCountryName(rawCountry)
+            : null;
+
+        // Geo fallback: if no country was extracted from the schema but the VC
+        // carries valid coordinates, derive the country via point-in-polygon
+        // against bundled country borders. Lets us fill in country for
+        // methodologies whose project schema has no country field (or whose
+        // mapping was incorrect / rejected).
+        if (!country && geoLngLat) {
+            const [lng, latVal] = geoLngLat;
+            const lookup = await this.reverseGeoService.lookupCountry(latVal, lng);
+            if (lookup) country = lookup.name;
+        }
 
         // Display name: VC-supplied name when present, else project key (so a row
         // exists even before the registration VC lands).
@@ -214,7 +237,19 @@ export class ProjectMapperService {
             policyName: pds.policyName ?? resolved.name ?? null,
         };
         if (name) newFields.name = name;
-        if (country) newFields.country = country;
+        // Country: write the resolved value when truthy. Also explicitly write
+        // null when this VC's schema is the configured Country source but the
+        // extracted value was rejected (length guard above) — that way a stale
+        // bad country left over from a previous mapping gets cleared on
+        // re-extract instead of silently sticking around.
+        const countryMapping = crossSchemaFieldMap['Country'];
+        const sourcesCountry = typeof countryMapping === 'string'
+            && countryMapping.startsWith(`${vcSchemaUuid}.`);
+        if (country) {
+            newFields.country = country;
+        } else if (sourcesCountry && rawCountry) {
+            newFields.country = null;
+        }
         if (lat !== null && lng !== null) {
             newFields.lat = lat;
             newFields.lng = lng;

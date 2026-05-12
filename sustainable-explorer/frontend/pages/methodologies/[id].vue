@@ -394,12 +394,12 @@ async function saveMapping() {
   const baseURL = config.public.apiBaseUrl as string;
   saveMappingPending.value = true;
 
-  // Build body: only send changed keys with non-empty values. The backend merges,
-  // so keys not sent are left unchanged. Empty values (unmap) are not supported by
-  // the backend yet — the select intentionally omits the "None" option.
-  const fieldMap: Record<string, string> = {};
+  // Build body: only send changed keys. Send the new schema path for remapped
+  // entries; send `null` for entries the user cleared (the backend deletes
+  // those labels from the merged map). Keys not sent are left unchanged.
+  const fieldMap: Record<string, string | null> = {};
   for (const [label, value] of Object.entries(pendingChanges.value)) {
-    if (value) fieldMap[label] = value;
+    fieldMap[label] = value || null;
   }
 
   try {
@@ -1062,6 +1062,7 @@ const lifecycleSummary = computed(() => {
                           v-model="formState[row.fieldKey as ResolvedFieldKey]"
                           class="w-full max-w-sm rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         >
+                          <option value="">{{ $t('methodologies.detail.decoded.actions.unmapped') }}</option>
                           <optgroup
                             v-for="group in mappingOptionGroups"
                             :key="group.label"

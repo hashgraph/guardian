@@ -333,7 +333,16 @@ async function triggerReextract() {
                 <div class="min-w-0">
                     <h1 class="text-2xl font-bold text-foreground">{{ project.name }}</h1>
                     <p class="text-sm text-muted-foreground mt-1">
-                        <CountryFlag :code="displayCountryCode" size="sm" class="mr-0.5" /> {{ displayCountry }} &middot; {{ project.registry }} &middot; {{ project.developer }}
+                        <template v-if="displayCountry">
+                            <CountryFlag :code="displayCountryCode" size="sm" class="mr-0.5" /> {{ displayCountry }} &middot;
+                        </template>
+                        <NuxtLink
+                            v-if="project.registry && project.registryDid"
+                            :to="`/registries?did=${encodeURIComponent(project.registryDid)}`"
+                            class="hover:text-primary hover:underline transition-colors"
+                        >{{ project.registry }}</NuxtLink>
+                        <template v-else>{{ project.registry }}</template>
+                        &middot; {{ project.developer }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
@@ -381,7 +390,13 @@ async function triggerReextract() {
                 </div>
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Country</div>
-                    <div class="text-sm font-medium text-foreground flex items-center gap-1.5"><CountryFlag :code="displayCountryCode" size="sm" /> {{ displayCountry }}</div>
+                    <div class="text-sm font-medium text-foreground flex items-center gap-1.5">
+                        <template v-if="displayCountry">
+                            <CountryFlag :code="displayCountryCode" size="sm" />
+                            {{ displayCountry }}
+                        </template>
+                        <span v-else class="text-muted-foreground">—</span>
+                    </div>
                 </div>
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Status</div>
@@ -403,7 +418,14 @@ async function triggerReextract() {
                 </div>
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Registry</div>
-                    <div class="text-sm font-medium text-foreground">{{ project.registry }}</div>
+                    <NuxtLink
+                        v-if="project.registry && project.registryDid"
+                        :to="`/registries?did=${encodeURIComponent(project.registryDid)}`"
+                        class="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                    >
+                        {{ project.registry }}
+                    </NuxtLink>
+                    <div v-else class="text-sm font-medium text-foreground">{{ project.registry || '—' }}</div>
                 </div>
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Developer</div>

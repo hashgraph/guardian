@@ -88,18 +88,23 @@ async function initMap() {
             },
             onEachFeature: (feature, layer) => {
                 const code = feature?.properties?.['ISO3166-1-Alpha-3'] || '';
-                const data = getCountryData(code);
-                if (data) {
-                    layer.on('click', () => {
-                        emit('country-click', code);
-                    });
-                    layer.on('mouseover', function () {
+                if (!code) return;
+                // Attach handlers unconditionally. `onEachFeature` runs only at
+                // layer creation — props.countries is typically still empty at
+                // that moment, so a check-at-attach gate would skip every
+                // country forever. Instead, gate at click/hover *time* so the
+                // handler picks up data once it arrives.
+                layer.on('click', () => {
+                    if (getCountryData(code)) emit('country-click', code);
+                });
+                layer.on('mouseover', function () {
+                    if (getCountryData(code)) {
                         (layer as any).setStyle({ fillOpacity: 0.85, weight: 2.5 });
-                    });
-                    layer.on('mouseout', function () {
-                        geoLayer?.resetStyle(layer);
-                    });
-                }
+                    }
+                });
+                layer.on('mouseout', function () {
+                    if (getCountryData(code)) geoLayer?.resetStyle(layer);
+                });
             },
         }).addTo(map);
     } catch {

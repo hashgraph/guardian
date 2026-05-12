@@ -290,11 +290,18 @@ export class MappingReprocessService {
         }
 
         // ── Validate path format & collect referenced schemaIds ─────────────────
+        // null / empty-string values mean "unset this label" — they skip path
+        // validation and get deleted from the merged map further down.
         const referencedSchemaIds = new Set<string>();
+        const labelsToUnset = new Set<string>();
         for (const [label, value] of Object.entries(body.fieldMap)) {
-            if (!value || typeof value !== 'string') {
+            if (value === null || value === undefined || value === '') {
+                labelsToUnset.add(label);
+                continue;
+            }
+            if (typeof value !== 'string') {
                 throw new BadRequestException(
-                    `fieldMap["${label}"] must be a non-empty string.`,
+                    `fieldMap["${label}"] must be a string or null.`,
                 );
             }
             const dotIdx = value.indexOf('.');
@@ -332,10 +339,12 @@ export class MappingReprocessService {
         }
 
         // ── Merge maps (PATCH semantics — only overwrite provided keys) ──────────
+        // Apply the body, then drop any labels the caller asked to unset.
         const mergedFieldMap: Record<string, string> = {
             ...existingFieldMap,
-            ...body.fieldMap,
+            ...(body.fieldMap as Record<string, string>),
         };
+        for (const label of labelsToUnset) delete mergedFieldMap[label];
 
         // ── Re-derive project meta ───────────────────────────────────────────────
         const projectMeta = derivePerPolicyProjectMeta(mergedFieldMap as FieldMap, []);
