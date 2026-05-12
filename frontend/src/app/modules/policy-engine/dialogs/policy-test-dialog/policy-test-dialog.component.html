@@ -1,7 +1,13 @@
 <div #dialogHeader class="dialog-header">
     <div class="header-container">
         <div class="header-text">Policy Tests</div>
-        <div *ngIf="policy" class="header-item">{{policy.name}}</div>
+        <div class="header-breadcrumb">
+            <span class="header-item">Manage Policies</span>
+            <span *ngIf="policy" class="breadcrumb-separator"> / </span>
+            <span *ngIf="policy" class="header-item">{{policy.name}}</span>
+            <span *ngIf="policy" class="breadcrumb-separator"> / </span>
+            <span *ngIf="policy" class="header-item">Tests</span>
+        </div>
     </div>
     <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
         <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'" svgClass="icon-color-close"></i>
@@ -265,12 +271,20 @@
             </div>
         </div>
         <div class="compare-col">
-            <div class="compare-header">
-                Documents
+            <div class="compare-header-docs">
+                <input type="checkbox"
+                       [checked]="areAllDocsSelected(id, results)"
+                       [attr.disabled]="!results?.length ? true : null"
+                       (change)="toggleAllDocs(id, results)">
+                <div class="compare-header-type">Type</div>
+                <div class="compare-header-schema">Documents</div>
             </div>
 
             <div class="compare-body">
                 <div *ngFor="let item of results; let i=index" class="compare-item">
+                    <input type="checkbox"
+                           [checked]="isDocSelected(id, i)"
+                           (change)="toggleDoc(id, i, results)">
                     <div class="document-type">{{item.type}}</div>
                     <div class="document-schema">
                         <a (click)="openDocument(item)">{{item.schema}}</a>
@@ -280,9 +294,11 @@
             </div>
         </div>
         <div class="more-details">
-            <div 
-                class="guardian-button guardian-button-secondary more-btn" 
-                (click)="onDetails(id)">Show more details</div>
+            <div
+                class="guardian-button guardian-button-secondary more-btn"
+                [attr.disabled]="!hasAnyDocSelected(id, results) ? 'true' : null"
+                [pTooltip]="getDetailsTooltip(id, results)"
+                (click)="onDetails(id, results)">Show more details</div>
         </div>
     </div>
 </ng-template>

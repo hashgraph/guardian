@@ -872,6 +872,14 @@ export class PoliciesComponent implements OnInit {
 
                 this.checkIsAllSelected();
 
+                const openTestsFor = this.route.snapshot.queryParams['openTestsFor'];
+                if (openTestsFor) {
+                    const policy = this.policies.find((p: any) => p.id === openTestsFor);
+                    if (policy) {
+                        this.testDetails(policy);
+                    }
+                }
+
                 this.loadPolicyTags(this.policies);
             }, (e) => {
                 this.loading = false;

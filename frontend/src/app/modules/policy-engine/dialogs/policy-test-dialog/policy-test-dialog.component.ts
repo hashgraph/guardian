@@ -27,6 +27,7 @@ export class PolicyTestDialog {
     private bulkSubscription: Subscription | null = null;
     public isLargeSize: boolean = true;
     public rerunMenuOpen: boolean = false;
+    public selectedDocs: { [testId: string]: Set<string> } = {};
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     constructor(
@@ -400,13 +401,63 @@ export class PolicyTestDialog {
             });
     }
 
-    public onDetails(id: any): void {
+    public isDocSelected(testId: string, index: number): boolean {
+        if (!this.selectedDocs[testId]) { return true; }
+        return this.selectedDocs[testId].has(String(index));
+    }
+
+    public toggleDoc(testId: string, index: number, results: any[]): void {
+        if (!this.selectedDocs[testId]) {
+            this.selectedDocs[testId] = new Set<string>(results.map((_, i) => String(i)));
+        }
+        if (this.selectedDocs[testId].has(String(index))) {
+            this.selectedDocs[testId].delete(String(index));
+        } else {
+            this.selectedDocs[testId].add(String(index));
+        }
+    }
+
+    public areAllDocsSelected(testId: string, results: any[]): boolean {
+        if (!this.selectedDocs[testId]) { return !!results?.length; }
+        return !!results?.length && results.every((_, i) => this.isDocSelected(testId, i));
+    }
+
+    public toggleAllDocs(testId: string, results: any[]): void {
+        const allSelected = this.areAllDocsSelected(testId, results);
+        this.selectedDocs[testId] = allSelected
+            ? new Set<string>()
+            : new Set<string>(results.map((_, i) => String(i)));
+    }
+
+    public hasAnyDocSelected(testId: string, results: any[]): boolean {
+        if (!results?.length) { return false; }
+        if (!this.selectedDocs[testId]) { return true; }
+        return this.selectedDocs[testId].size > 0;
+    }
+
+    public getDetailsTooltip(testId: string, results: any[]): string | undefined {
+        if (!results?.length) { return 'No documents were created by this test'; }
+        if (!this.hasAnyDocSelected(testId, results)) { return 'No documents selected'; }
+        return undefined;
+    }
+
+    public onDetails(id: any, results: any[]): void {
+        if (!this.hasAnyDocSelected(id, results)) { return; }
+        const test = this.tests.find((t: any) => t.id === id);
+        const selected = this.selectedDocs[id];
+        const docFilter = selected && selected.size > 0
+            ? Array.from(selected).join(',')
+            : null;
         this.ref.close(null);
         this.router.navigate(['/test-results'], {
             queryParams: {
                 type: 'policy',
                 policyId: this.policyId,
-                testId: id
+                testId: id,
+                policyName: this.policy?.name || '',
+                testName: test?.name || '',
+                testStatus: test?.status || '',
+                ...(docFilter ? { docFilter } : {})
             }
         });
     }
