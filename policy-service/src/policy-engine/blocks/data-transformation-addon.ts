@@ -50,23 +50,32 @@ export class DataTransformationAddon {
                 },
             });
 
+            // Terminate the worker after the final result / on error so the V8
+            // isolate is released. Without this the worker thread stays alive
+            // after the script body returns, leaking ~30 MB per transformation.
+            const cleanup = () => { worker.terminate().catch(() => { /* noop */ }); };
+
             const done = async (result: any | any[], final: boolean) => {
                 if (!result) {
                     if (final) {
+                        cleanup();
                         resolve(null);
                     }
                     return;
                 }
+                if (final) cleanup();
                 resolve(result);
             }
 
             worker.on('error', (error) => {
+                cleanup();
                 reject(error);
             });
             worker.on('message', async (result: any) => {
                 try {
                     await done(result.result, result.final);
                 } catch (error) {
+                    cleanup();
                     reject(error);
                 }
             });

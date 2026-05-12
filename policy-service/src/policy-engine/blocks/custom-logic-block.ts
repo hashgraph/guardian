@@ -387,18 +387,26 @@ export class CustomLogicBlock {
                                 tablesPack
                             },
                         });
+                    // Terminate the worker after the final 'done' (or on error) so
+                    // the V8 isolate is released. Without this the worker thread
+                    // stays alive after the script body returns, leaking ~30 MB per
+                    // custom-logic invocation.
+                    const cleanup = () => { worker.terminate().catch(() => { /* noop */ }); };
                     worker.on('error', (error) => {
+                        cleanup();
                         reject(error);
                     });
                     worker.on('message', async (data) => {
                         try {
                             if (data?.type === 'done') {
                                 await done(data.result, data.final);
+                                if (data.final) cleanup();
                             }
                             if (data?.type === 'debug') {
                                 ref.debug(data.message);
                             }
                         } catch (error) {
+                            cleanup();
                             reject(error);
                         }
                     });
