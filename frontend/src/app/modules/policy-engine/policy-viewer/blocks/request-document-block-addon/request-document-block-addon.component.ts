@@ -19,7 +19,7 @@ import { RequestDocumentBlockDialog } from '../request-document-block/dialog/req
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { PolicyStatus } from '@guardian/interfaces';
-import { PolicyTestAutomationDraftService } from '../../policy-test-automation/policy-test-automation-draft.service';
+import { PolicyTestAutomationService } from '../../policy-test-automation/policy-test-automation.service';
 
 interface IRequestDocumentAddonData {
     readonly: boolean;
@@ -94,7 +94,7 @@ export class RequestDocumentBlockAddonComponent
         private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
-        private policyTestDraft: PolicyTestAutomationDraftService
+        private policyTest: PolicyTestAutomationService
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -210,8 +210,8 @@ export class RequestDocumentBlockAddonComponent
                 ref: this.ref?.id,
             };
 
-            if (this.dryRun && this.policyTestDraft.draft.captureNextFormSubmit) {
-                this.policyTestDraft.captureInput({
+            if (this.dryRun && this.policyTest.state.captureNextFormSubmit) {
+                this.policyTest.captureInput({
                     policyId: this.policyId,
                     blockId: this.id,
                     blockType: 'requestDocumentBlockAddon',

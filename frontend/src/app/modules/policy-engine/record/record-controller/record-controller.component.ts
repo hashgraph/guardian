@@ -11,7 +11,7 @@ import {
     ImportEntityDialog,
     ImportEntityType
 } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
-import {PolicyTestAutomationDraftService} from '../../policy-viewer/policy-test-automation/policy-test-automation-draft.service';
+import { PolicyTestAutomationService } from '../../policy-viewer/policy-test-automation/policy-test-automation.service';
 import {IRecordPolicyTestMetadata} from '@guardian/interfaces';
 import {
     SavePolicyTestRecordDialog,
@@ -53,7 +53,7 @@ export class RecordControllerComponent implements OnInit {
         private recordService: RecordService,
         private router: Router,
         private dialog: DialogService,
-        private policyTestDraft: PolicyTestAutomationDraftService,
+        private policyTest: PolicyTestAutomationService,
     ) {
         this._showActions = (localStorage.getItem('SHOW_RECORD_ACTIONS') || 'true') === 'true';
         this._overlay = localStorage.getItem('HIDE_RECORD_OVERLAY');
@@ -114,7 +114,7 @@ export class RecordControllerComponent implements OnInit {
     }
 
     public startRecording() {
-        this.policyTestDraft.reset();
+        this.policyTest.reset();
         this.loading = true;
         this.recordItems = [];
         this.recordService.startRecording(this.policyId).subscribe((result) => {
@@ -129,7 +129,7 @@ export class RecordControllerComponent implements OnInit {
     }
 
     public stopRecording() {
-        if (this.policyTestDraft.hasInput()) {
+        if (this.policyTest.hasInput()) {
             this.openNoOutputWarning();
             return;
         }
@@ -166,8 +166,8 @@ export class RecordControllerComponent implements OnInit {
             width: '560px',
             styleClass: 'guardian-dialog',
             data: {
-                name: this.policyTestDraft.draft.name,
-                description: this.policyTestDraft.draft.description
+                name: this.policyTest.state.name,
+                description: this.policyTest.state.description
             }
         });
 
@@ -176,7 +176,7 @@ export class RecordControllerComponent implements OnInit {
                 return;
             }
 
-            this.policyTestDraft.setMetadata(result.name, result.description);
+            this.policyTest.setMetadata(result.name, result.description);
             this.stopRecordingInternal(result, includePolicyTestMetadata);
         });
     }
@@ -194,7 +194,7 @@ export class RecordControllerComponent implements OnInit {
             this.running = false;
             this.updateActive();
             this.loading = false;
-            this.policyTestDraft.reset();
+            this.policyTest.reset();
             if (saveMetadata.saveToFile !== false) {
                 const downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(
@@ -218,7 +218,7 @@ export class RecordControllerComponent implements OnInit {
         includePolicyTestMetadata: boolean
     ): IRecordPolicyTestMetadata {
         const baseMetadata = includePolicyTestMetadata
-            ? this.policyTestDraft.getRecordMetadata()
+            ? this.policyTest.getRecordMetadata()
             : null;
 
         return {
@@ -291,7 +291,7 @@ export class RecordControllerComponent implements OnInit {
             this.recordId = null;
             this.updateActive();
             this.loading = false;
-            this.policyTestDraft.reset();
+            this.policyTest.reset();
         }, (e) => {
             this.running = false;
             this.recordId = null;

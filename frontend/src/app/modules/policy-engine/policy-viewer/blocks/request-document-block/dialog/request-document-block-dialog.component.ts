@@ -18,7 +18,7 @@ import { autosaveValueChanged, getMinutesAgoStream } from 'src/app/utils/autosav
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { PolicyTestAutomationDraftService } from '../../../policy-test-automation/policy-test-automation-draft.service';
+import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -116,7 +116,7 @@ export class RequestDocumentBlockDialog {
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
         private ipfsService: IPFSService,
-        private policyTestDraft: PolicyTestAutomationDraftService,
+        private policyTest: PolicyTestAutomationService,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
@@ -305,13 +305,13 @@ export class RequestDocumentBlockDialog {
             ...(evidence?.length ? { evidence } : {})
         };
 
-        const captureOutput = this.dryRun && !draft && this.policyTestDraft.draft.captureNextFormSubmit;
+        const captureOutput = this.dryRun && !draft && this.policyTest.state.captureNextFormSubmit;
 
         this.policyEngineService
             .setBlockDataWithResult(this.id, this.policyId, payload)
             .subscribe((result) => {
                 if (captureOutput) {
-                    this.policyTestDraft.captureInput({
+                    this.policyTest.captureInput({
                         policyId: this.policyId,
                         blockId: this.id,
                         blockType: 'requestDocumentBlock',

@@ -23,7 +23,7 @@ import { PolicyStatus } from '@guardian/interfaces';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { PolicyTestAutomationDraftService } from '../../policy-test-automation/policy-test-automation-draft.service';
+import { PolicyTestAutomationService } from '../../policy-test-automation/policy-test-automation.service';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -151,7 +151,7 @@ export class RequestDocumentBlockComponent
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
         private ipfsService: IPFSService,
-        private policyTestDraft: PolicyTestAutomationDraftService,
+        private policyTest: PolicyTestAutomationService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -430,7 +430,7 @@ export class RequestDocumentBlockComponent
             ...(evidence?.length ? { evidence } : {})
         };
 
-        const captureOutput = this.dryRun && !draft && this.policyTestDraft.draft.captureNextFormSubmit;
+        const captureOutput = this.dryRun && !draft && this.policyTest.state.captureNextFormSubmit;
 
         let requestSucceeded = false;
 
@@ -450,7 +450,7 @@ export class RequestDocumentBlockComponent
             .subscribe((result) => {
                 requestSucceeded = true;
                 if (captureOutput) {
-                    this.policyTestDraft.captureInput({
+                    this.policyTest.captureInput({
                         policyId: this.policyId,
                         blockId: this.id,
                         blockType: 'requestDocumentBlock',

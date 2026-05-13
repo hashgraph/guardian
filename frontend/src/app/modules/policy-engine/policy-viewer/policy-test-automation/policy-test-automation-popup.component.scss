@@ -143,7 +143,7 @@
     }
 }
 
-.policy-test-draft-item {
+.policy-test-item {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -151,18 +151,18 @@
     font-size: 12px;
 }
 
-.policy-test-draft-item span {
+.policy-test-item span {
     flex-grow: 1;
 }
 
-.policy-test-draft-actions {
+.policy-test-actions {
     display: flex;
     align-items: center;
     gap: 16px;
     padding-right: 8px;
 }
 
-.policy-test-draft-item button {
+.policy-test-item button {
     border: 0;
     background: none;
     display: flex;

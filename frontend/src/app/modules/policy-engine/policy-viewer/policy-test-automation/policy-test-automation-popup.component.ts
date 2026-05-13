@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ViewerDialog } from '../../dialogs/viewer-dialog/viewer-dialog.component';
-import { PolicyTestAutomationDraftService, PolicyTestOutputAnchor } from './policy-test-automation-draft.service';
+import { PolicyTestAutomationService, PolicyTestOutputAnchor } from './policy-test-automation.service';
 
 @Component({
     selector: 'policy-test-automation-popup',
@@ -10,24 +10,24 @@ import { PolicyTestAutomationDraftService, PolicyTestOutputAnchor } from './poli
 })
 export class PolicyTestAutomationPopupComponent {
     constructor(
-        public draftService: PolicyTestAutomationDraftService,
+        public automationService: PolicyTestAutomationService,
         private dialogService: DialogService
     ) {}
 
     public onCaptureChange(checked: boolean): void {
-        this.draftService.setCaptureNextFormSubmit(checked);
+        this.automationService.setCaptureNextFormSubmit(checked);
     }
 
     public discardInput(): void {
-        this.draftService.discardInput();
+        this.automationService.discardInput();
     }
 
     public confirmDocumentResults(): void {
-        this.draftService.confirmOutputFromInput();
+        this.automationService.confirmOutputFromInput();
     }
 
     public inspectInput(): void {
-        const input = this.draftService.draft.input;
+        const input = this.automationService.state.input;
         if (!input) {
             return;
         }
@@ -39,7 +39,7 @@ export class PolicyTestAutomationPopupComponent {
     }
 
     public discardOutput(type: string, id: string): void {
-        this.draftService.discardOutput(type, id);
+        this.automationService.discardOutput(type, id);
     }
 
     private openJson(title: string, value: unknown): void {

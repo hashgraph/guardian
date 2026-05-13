@@ -23,6 +23,7 @@ import { DB_NAME, STORES_NAME } from 'src/app/constants';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
 import { MockDialog } from '../../dialogs/mock-dialog/mock-dialog.component';
+import { PolicyTestAutomationService } from '../policy-test-automation/policy-test-automation.service';
 
 type MockItemType = 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
 const MockTabs = ['API', 'IPFS', 'Topics'];
@@ -102,7 +103,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private changeDetector: ChangeDetectorRef,
         private router: Router,
         private savepointFlow: SavepointFlowService,
-        private indexedDb: IndexedDbRegistryService
+        private indexedDb: IndexedDbRegistryService,
+        private policyTest: PolicyTestAutomationService
     ) {
         this.policy = null;
         this.pageIndex = 0;
@@ -243,6 +245,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
 
         this.policyId = policyId;
+        this.policyTest.loadForPolicy(policyId);
 
         this.policy = null;
         this.isMultipleGroups = false;
@@ -448,6 +451,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             storeNames,
             keyPrefix
         );
+        this.policyTest.reset();
     }
 
     onView(view: string) {
