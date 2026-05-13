@@ -2861,6 +2861,14 @@ export class Guardians extends NatsService {
         return await this.sendMessage<any>(MessageAPI.GET_RECORD_DETAILS, { policyId, owner });
     }
 
+    public async getRecordActionDocuments(
+        policyId: string,
+        recordActionId: string,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.GET_RECORD_ACTION_DOCUMENTS, { policyId, recordActionId, owner });
+    }
+
     /**
      * Fast Forward
      * @param policyId

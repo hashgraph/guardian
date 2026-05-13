@@ -3,6 +3,8 @@ import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     BinaryMessageResponse,
     DatabaseServer,
+    VcDocument as VcDocumentCollection,
+    VpDocument as VpDocumentCollection,
     IRecordResult,
     MessageError,
     MessageResponse, PinoLogger,
@@ -1012,6 +1014,47 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.GET_RECORD_RESULTS, policyId, null);
 
                 const result = await compareResults(details);
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.GET_RECORD_ACTION_DOCUMENTS,
+        async (msg: { policyId: string, recordActionId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId;
+            try {
+                if (!msg) {
+                    throw new Error('Invalid parameters');
+                }
+                const { policyId, recordActionId, owner } = msg;
+                await checkPolicy(policyId, owner);
+                const db = new DatabaseServer(policyId);
+                const vcs = await db.getVcDocuments<VcDocumentCollection>(
+                    { recordActionId } as FilterObject<VcDocumentCollection>
+                ) as VcDocumentCollection[];
+                const vps = await db.getVpDocuments<VpDocumentCollection>(
+                    { recordActionId } as FilterObject<VpDocumentCollection>
+                ) as VpDocumentCollection[];
+                const result = [
+                    ...vcs.map((vc) => ({
+                        id: vc.document?.id,
+                        type: 'vc' as const,
+                        tag: vc.tag,
+                        schema: vc.schema,
+                        document: vc.document,
+                        recordActionId: vc.recordActionId,
+                    })),
+                    ...vps.map((vp) => ({
+                        id: vp.document?.id,
+                        type: 'vp' as const,
+                        tag: vp.tag,
+                        schema: null,
+                        document: vp.document,
+                        recordActionId: vp.recordActionId,
+                    })),
+                ];
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);

@@ -2,7 +2,7 @@ import { Permissions } from '@guardian/interfaces';
 import { EntityOwner, Guardians, InternalException, ONLY_SR, checkPolicyByRecord } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Post, Response, Param, Body, Query } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { InternalServerErrorDTO, RecordActionDTO, RecordStatusDTO, RunningDetailsDTO, RunningResultDTO, Examples} from '#middlewares';
 
@@ -456,6 +456,55 @@ export class RecordApi {
         try {
             const guardians = new Guardians();
             return await guardians.getRecordResults(policyId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get all VC/VP documents produced by a single recorded action
+     */
+    @Get('/:policyId/recording/action-documents')
+    @Auth(
+        Permissions.POLICIES_RECORD_ALL
+    )
+    @ApiOperation({
+        summary: 'Get documents produced by a recorded action.',
+        description: 'Returns all VC and VP documents from the dry-run store that share the given recordActionId.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'recordActionId',
+        type: String,
+        description: 'Record action UUID',
+        required: true,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Object,
+        isArray: true,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getRecordActionDocuments(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Query('recordActionId') recordActionId: string,
+    ) {
+        const owner = new EntityOwner(user);
+        await checkPolicyByRecord(policyId, owner);
+        try {
+            const guardians = new Guardians();
+            return await guardians.getRecordActionDocuments(policyId, recordActionId, owner);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
