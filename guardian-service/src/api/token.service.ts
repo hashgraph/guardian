@@ -1497,7 +1497,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 }
             }, {
                 priority: 20,
-                attempts: 3,
+                attempts: 1,
                 userId: user.id
             });
             notifier.completeStep(STEP_TRANSFER);
@@ -1569,7 +1569,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                         }
                     }, {
                         priority: 20,
-                        attempts: 3,
+                        attempts: 1,
                         userId: user.id
                     })
                 )
