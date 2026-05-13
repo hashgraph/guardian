@@ -1552,34 +1552,34 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 chunks.push(resolvedSerials.slice(i, i + NFT_TRANSFER_MAX_BATCH_SIZE));
             }
 
-            const chunkResults = await Promise.all(
-                chunks.map(chunk =>
-                    workers.addRetryableTask({
-                        type: WorkerTaskType.TRANSFER_NFT,
-                        data: {
-                            hederaAccountId: account.account,
-                            hederaAccountKey: account.key,
-                            tokenId: token.tokenId,
-                            targetAccount,
-                            treasuryId: account.account,
-                            treasuryKey: account.key,
-                            element: chunk,
-                            transactionMemo: memo || '',
-                            payload: { userId: user.id }
-                        }
-                    }, {
-                        priority: 20,
-                        attempts: 1,
-                        userId: user.id
-                    })
-                )
-            );
+            const transferredSerials: number[] = [];
+            for (const chunk of chunks) {
+                const result = await workers.addRetryableTask({
+                    type: WorkerTaskType.TRANSFER_NFT,
+                    data: {
+                        hederaAccountId: account.account,
+                        hederaAccountKey: account.key,
+                        tokenId: token.tokenId,
+                        targetAccount,
+                        treasuryId: account.account,
+                        treasuryKey: account.key,
+                        element: chunk,
+                        transactionMemo: memo || '',
+                        payload: { userId: user.id }
+                    }
+                }, {
+                    priority: 20,
+                    attempts: 1,
+                    userId: user.id
+                });
+                if (!Array.isArray(result)) {
+                    break;
+                }
+                transferredSerials.push(...result);
+            }
             notifier.completeStep(STEP_TRANSFER);
             notifier.complete();
 
-            const transferredSerials: number[] = chunkResults
-                .filter(r => Array.isArray(r))
-                .flat();
             return {
                 status: transferredSerials.length === resolvedSerials.length,
                 serials: transferredSerials
