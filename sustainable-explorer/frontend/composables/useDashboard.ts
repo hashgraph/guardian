@@ -1,24 +1,32 @@
 import type { ActivityItem, MapPoint, MapCountry } from '~/types/models';
+import { SectorType } from '~/types/enums';
 import { formatCredits } from '~/lib/format';
-
-function relativeTime(dateStr: string): string {
-    const now = Date.now();
-    const then = new Date(dateStr).getTime();
-    if (isNaN(then)) return dateStr;
-    const diffMs = now - then;
-    const diffMin = Math.floor(diffMs / 60_000);
-    if (diffMin < 1) return 'just now';
-    if (diffMin < 60) return `${diffMin} minute${diffMin === 1 ? '' : 's'} ago`;
-    const diffHr = Math.floor(diffMin / 60);
-    if (diffHr < 24) return `${diffHr} hour${diffHr === 1 ? '' : 's'} ago`;
-    const diffDay = Math.floor(diffHr / 24);
-    if (diffDay < 30) return `${diffDay} day${diffDay === 1 ? '' : 's'} ago`;
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
 
 export function useDashboard(filters?: Ref<{ developer?: string; registry?: string }>) {
     const { projects, pending } = useProjects();
+    const { t } = useI18n();
+
+    function relativeTime(dateStr: string): string {
+        const now = Date.now();
+        const then = new Date(dateStr).getTime();
+        if (isNaN(then)) return dateStr;
+        const diffMs = now - then;
+        const diffMin = Math.floor(diffMs / 60_000);
+        if (diffMin < 1) return t('dashboard.activity.justNow');
+        if (diffMin < 60) return diffMin === 1
+            ? t('dashboard.activity.minuteAgo', { n: diffMin })
+            : t('dashboard.activity.minutesAgo', { n: diffMin });
+        const diffHr = Math.floor(diffMin / 60);
+        if (diffHr < 24) return diffHr === 1
+            ? t('dashboard.activity.hourAgo', { n: diffHr })
+            : t('dashboard.activity.hoursAgo', { n: diffHr });
+        const diffDay = Math.floor(diffHr / 24);
+        if (diffDay < 30) return diffDay === 1
+            ? t('dashboard.activity.dayAgo', { n: diffDay })
+            : t('dashboard.activity.daysAgo', { n: diffDay });
+        const d = new Date(dateStr);
+        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
     const { network } = useNetwork();
     const config = useRuntimeConfig();
     const baseURL = import.meta.server
@@ -241,7 +249,7 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         for (const p of take) {
             activities.push({
                 time: relativeTime(p.createdAt),
-                action: 'New project registered',
+                action: t('dashboard.activity.newProjectRegistered'),
                 detail: `${p.name} — ${p.registry}`,
                 type: 'project',
             });
@@ -254,7 +262,7 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             const oldest = sortedProjects[sortedProjects.length - 1];
             activities.push({
                 time: oldest ? relativeTime(oldest.createdAt) : '',
-                action: 'Registry indexed',
+                action: t('dashboard.activity.registryIndexed'),
                 detail: uniqueRegistries[0],
                 type: 'registry',
             });
@@ -301,11 +309,12 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
     const sectorBreakdown = computed(() => {
         const groups: Record<string, { projectCount: number; creditCount: number }> = {};
         for (const p of filteredProjects.value) {
-            if (!groups[p.sector]) {
-                groups[p.sector] = { projectCount: 0, creditCount: 0 };
+            const sectorKey = p.sector || SectorType.Undefined;
+            if (!groups[sectorKey]) {
+                groups[sectorKey] = { projectCount: 0, creditCount: 0 };
             }
-            groups[p.sector].projectCount++;
-            groups[p.sector].creditCount += p.credits;
+            groups[sectorKey].projectCount++;
+            groups[sectorKey].creditCount += p.credits;
         }
         return Object.entries(groups)
             .map(([label, data]) => ({
@@ -313,7 +322,11 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
                 projectCount: data.projectCount,
                 creditCount: data.creditCount,
             }))
-            .sort((a, b) => b.projectCount - a.projectCount);
+            .sort((a, b) => {
+                if (a.label === SectorType.Undefined) return 1;
+                if (b.label === SectorType.Undefined) return -1;
+                return b.projectCount - a.projectCount;
+            });
     });
 
     const registryBreakdown = computed(() => {

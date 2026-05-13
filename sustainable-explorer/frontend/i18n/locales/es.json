@@ -137,12 +137,40 @@
     "networkActivityTooltip": "Eventos recientes en la red de Guardian incluyendo nuevos registros de proyectos, emisiones de créditos, publicaciones de políticas y verificaciones.",
     "networkActivitySub": "Cambios recientes en la red de Guardian",
     "noActivity": "No hay actividad reciente que coincida con los filtros seleccionados",
+    "activity": {
+      "newProjectRegistered": "Nuevo proyecto registrado",
+      "registryIndexed": "Registro indexado",
+      "justNow": "ahora mismo",
+      "minuteAgo": "hace {n} minuto",
+      "minutesAgo": "hace {n} minutos",
+      "hourAgo": "hace {n} hora",
+      "hoursAgo": "hace {n} horas",
+      "dayAgo": "hace {n} día",
+      "daysAgo": "hace {n} días"
+    },
     "activeProjects": "Proyectos activos",
     "mtco2TotalReduction": "MtCO2 reducción total",
     "mtco2AnnualEst": "MtCO2 anual est.",
     "sector": "Sector",
     "registry": "Registro",
-    "totalIssuancesLabel": "Emisiones totales"
+    "totalIssuancesLabel": "Emisiones totales",
+    "sectorTypes": {
+      "renewableEnergy": "Energía Renovable",
+      "forestry": "Silvicultura",
+      "blueCarbon": "Carbono Azul",
+      "energyEfficiency": "Eficiencia Energética",
+      "agriculture": "Agricultura",
+      "water": "Agua",
+      "waste": "Residuos",
+      "energy": "Energía",
+      "industrialProcess": "Proceso Industrial",
+      "landUseForestry": "Uso del Suelo y Silvicultura",
+      "fugitiveEmissions": "Emisiones Fugitivas",
+      "transport": "Transporte",
+      "natureBasedSolutions": "Soluciones Basadas en la Naturaleza",
+      "others": "Otros",
+      "undefined": "Sin Categoría"
+    }
   },
   "projects": {
     "title": "Proyectos",
