@@ -1481,7 +1481,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
 
             notifier.startStep(STEP_TRANSFER);
             const decimals = token.decimals || 0;
-            const tokenValue = amount * Math.pow(10, decimals);
+            const tokenValue = Math.round(amount * Math.pow(10, decimals));
             const result = await workers.addRetryableTask({
                 type: WorkerTaskType.TRANSFER_FT,
                 data: {
