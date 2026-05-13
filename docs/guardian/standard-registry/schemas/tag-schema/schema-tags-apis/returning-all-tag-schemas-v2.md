@@ -1,8 +1,8 @@
-# Returning all Schema Tags
+# Returning all Tag Schemas (Api-Version: 2)
 
-**`GET /tags/schemas`**
+**`GET /tags/schemas`** — requires `Api-Version: 2` header
 
-Returns all tag schemas. Only users with the Standard Registry role are allowed to make the request.
+Returns all tag schemas. Version 2 fetches only the required schema fields (optimised payload) via `getTagSchemasV2`. Only users with the Standard Registry role are allowed to make the request.
 
 **Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
@@ -11,6 +11,12 @@ Returns all tag schemas. Only users with the Standard Registry role are allowed 
 ---
 
 ## Request
+
+### Headers
+
+| Header | Value | Required | Description |
+|--------|-------|----------|-------------|
+| `Api-Version` | `2` | Yes | Enables V2 behaviour (optimised field set) |
 
 ### Query Parameters
 
@@ -27,7 +33,7 @@ Returns all tag schemas. Only users with the Standard Registry role are allowed 
 
 **Status:** `200 OK`
 
-Returns an array of tag schema objects. The total item count is provided in the `X-Total-Count` response header.
+Returns an array of tag schema objects containing only required fields. The total item count is provided in the `X-Total-Count` response header.
 
 ```json
 [

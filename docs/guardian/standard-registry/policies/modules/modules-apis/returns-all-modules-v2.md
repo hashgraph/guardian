@@ -1,8 +1,8 @@
-# Returns all Modules
+# Returns all Modules (Api-Version: 2)
 
-**`GET /modules`**
+**`GET /modules`** — requires `Api-Version: 2` header
 
-Returns all modules. Only users with the Standard Registry role are allowed to make the request.
+Returns all modules. Version 2 fetches only the required module fields (optimised payload) via `getModuleV2`. Only users with the Standard Registry role are allowed to make the request.
 
 **Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
@@ -11,6 +11,12 @@ Returns all modules. Only users with the Standard Registry role are allowed to m
 ---
 
 ## Request
+
+### Headers
+
+| Header | Value | Required | Description |
+|--------|-------|----------|-------------|
+| `Api-Version` | `2` | Yes | Enables V2 behaviour (optimised field set) |
 
 ### Query Parameters
 
@@ -27,7 +33,7 @@ Returns all modules. Only users with the Standard Registry role are allowed to m
 
 **Status:** `200 OK`
 
-Returns an array of module objects. The total item count is provided in the `X-Total-Count` response header.
+Returns an array of module objects containing only required fields. The total item count is provided in the `X-Total-Count` response header.
 
 ```json
 [
