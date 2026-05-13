@@ -1,4 +1,5 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsBoolean } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
 
@@ -32,6 +33,15 @@ export class RegistryQueryDto extends PaginationQueryDto {
     @IsOptional()
     @IsString()
     law?: string;
+
+    @ApiPropertyOptional({
+        description: 'When true, hide registries with zero policies, projects, users and issuances.',
+        type: Boolean,
+    })
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }) => value === true || value === 'true' || value === '1')
+    hideEmpty?: boolean;
 }
 
 export class RegistryStats {

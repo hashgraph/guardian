@@ -79,8 +79,8 @@ export const useRegistriesApi = (opts: UseRegistriesApiOptions) => {
         ? (config.apiBaseUrl as string)
         : (config.public.apiBaseUrl as string);
 
-    const buildQuery = (): Record<string, string | number> => {
-        const q: Record<string, string | number> = {
+    const buildQuery = (): Record<string, string | number | boolean> => {
+        const q: Record<string, string | number | boolean> = {
             page: opts.page.value,
             limit: opts.limit.value,
         };
@@ -101,6 +101,8 @@ export const useRegistriesApi = (opts: UseRegistriesApiOptions) => {
                 q[key] = raw;
             }
         }
+        // hideEmpty is a boolean toggle on the filter bar; only forward when true.
+        if (filters['hideEmpty'] === true) q.hideEmpty = true;
         return q;
     };
 

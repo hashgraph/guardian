@@ -28,7 +28,12 @@ const columnToApiSort: Record<ColumnKey, RegistrySortKey | null> = {
 
 // Reactive query state
 const route = useRoute();
-const initialFilters: Record<string, any> = {};
+// hideEmpty defaults to true so the table mirrors the dashboard stat card,
+// which counts only registries with at least one policy/project/user/issuance.
+// `?hideEmpty=false` in the URL turns it off.
+const initialFilters: Record<string, any> = {
+    hideEmpty: route.query.hideEmpty !== 'false',
+};
 if (route.query.did && typeof route.query.did === 'string') {
     initialFilters.did = route.query.did;
 }
@@ -182,6 +187,16 @@ function viewRegistry(r: RegistryDto) {
 
         <div class="px-6 pb-3">
             <DataFilters v-model="filters" :fields="filterFields" />
+            <label class="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
+                <input
+                    type="checkbox"
+                    class="h-3.5 w-3.5 rounded border-border accent-primary cursor-pointer"
+                    :checked="filters.hideEmpty === true"
+                    @change="(e) => { filters = { ...filters, hideEmpty: (e.target as HTMLInputElement).checked }; currentPage = 1; }"
+                />
+                {{ $t('registries.filters.hideEmpty') }}
+                <InfoTooltip :text="$t('registries.tooltips.hideEmpty')" />
+            </label>
         </div>
 
         <div class="px-6 pb-6">

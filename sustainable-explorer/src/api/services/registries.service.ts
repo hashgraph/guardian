@@ -29,6 +29,7 @@ export class RegistriesService {
             tags: query.tags,
             geography: query.geography,
             law: query.law,
+            hideEmpty: query.hideEmpty,
             sortBy: query.sortBy,
             sortDir: query.sortDir,
         });

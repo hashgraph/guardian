@@ -45,7 +45,7 @@ export class PgRegistryRepository extends RegistryRepository {
     }
 
     async findAll(query: RegistryListQuery): Promise<RegistryListResult> {
-        const { page, limit, search, sortBy, sortDir } = query;
+        const { page, limit, search, sortBy, sortDir, hideEmpty } = query;
         const offset = (page - 1) * limit;
 
         const builder = new QueryBuilder(REGISTRY_FIELD_SCHEMA);
@@ -61,6 +61,16 @@ export class PgRegistryRepository extends RegistryRepository {
             geography: query.geography,
             law: query.law,
         });
+
+        // Hide registries with no activity (policies/projects/issuances/users
+        // all zero). The MV is left-joined in the row query but not in the
+        // count query, so we add the JOIN to the count query below when set.
+        if (hideEmpty) {
+            builder.addClause(`COALESCE(
+                s.policy_count + s.project_count + s.issuance_count + s.user_count,
+                0
+            ) > 0`);
+        }
 
         // Special: full-text search with ranking. The tsvector index covers
         // displayName (weight A), registryDid (B), and searchText (C) which
@@ -123,9 +133,16 @@ export class PgRegistryRepository extends RegistryRepository {
         // Count query reuses the same WHERE but no LIMIT/OFFSET, so we slice
         // the params back to before the limit/offset additions.
         const countParams = params.slice(0, params.length - 2);
+        // When hideEmpty is set the WHERE clause references the stats MV, so
+        // the count query must include the same LEFT JOIN. Otherwise we keep
+        // the count query lean (no MV join needed).
+        const countJoin = hideEmpty
+            ? `LEFT JOIN ${MV_REGISTRY_STATS_NAME} s ON s."registryDid" = bv."registryDid"`
+            : '';
         const countSql = `
             SELECT COUNT(*)::int AS total
             FROM business_view bv
+            ${countJoin}
             WHERE ${whereSql}
         `;
 

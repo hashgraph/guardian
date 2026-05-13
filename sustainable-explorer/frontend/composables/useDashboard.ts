@@ -37,7 +37,11 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             const [r, m] = await Promise.all([
                 $fetch<{ meta: { total: number } }>(`/api/v1/${network.value}/registries`, {
                     baseURL,
-                    query: { limit: 1, page: 1 },
+                    // Match the /registries page's default filter: count only
+                    // registries that have produced policies/projects/users/
+                    // issuances. Keeps the stat-card total aligned with the
+                    // visible rows on that page.
+                    query: { limit: 1, page: 1, hideEmpty: true },
                 }),
                 $fetch<{ meta: { total: number } }>(`/api/v1/${network.value}/methodologies`, {
                     baseURL,

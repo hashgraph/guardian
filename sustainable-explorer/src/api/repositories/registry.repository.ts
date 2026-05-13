@@ -16,6 +16,7 @@ export interface RegistryListQuery {
     tags?: string;
     geography?: string;
     law?: string;
+    hideEmpty?: boolean;
     sortBy?: string;
     sortDir?: 'asc' | 'desc';
 }

@@ -73,7 +73,7 @@
     "stats": {
       "registries": "Registries",
       "registriesSub": "Standard Registries",
-      "registriesTooltip": "Number of unique Standard Registries (e.g., Verra, Gold Standard) matching the current filters. The change indicator shows how many new registries joined compared to the previous year.",
+      "registriesTooltip": "Number of unique Standard Registries with data (Methodologies, projects, users, or issuances) matching the current filters. The change indicator shows how many new registries joined compared to the previous year.",
       "methodologies": "Methodologies",
       "methodologiesSub": "Published policies",
       "methodologiesTooltip": "Total number of unique published policy methodologies across all matching registries. The change indicator shows how many new methodologies were published compared to the previous year.",
@@ -503,13 +503,15 @@
       "tags": "Tags",
       "geography": "Geography",
       "law": "Law",
-      "registryDid": "Registry DID"
+      "registryDid": "Registry DID",
+      "hideEmpty": "Hide registries with no methodologies, projects, users, or issuances"
     },
     "errors": {
       "loadFailed": "Failed to load registries."
     },
     "tooltips": {
-      "viewMethodologies": "View methodologies for this registry"
+      "viewMethodologies": "View methodologies for this registry",
+      "hideEmpty": "On by default. Hides registries with 0 methodologies, 0 projects, 0 users, and 0 issuances — the same set counted in the dashboard 'Registries' stat card. Uncheck to see every indexed registry, including announcement-only ones with no on-chain activity yet."
     }
   },
   "developers": {
