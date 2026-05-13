@@ -663,18 +663,6 @@ const lifecycleSummary = computed(() => {
             </div>
           </div>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <a
-            v-if="hashscanUrl"
-            :href="hashscanUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-          >
-            <ExternalLink class="h-4 w-4 text-primary" />
-            {{ $t('methodologies.detail.viewOnHashScan') }}
-          </a>
-        </div>
       </div>
 
       <!-- Summary card -->
