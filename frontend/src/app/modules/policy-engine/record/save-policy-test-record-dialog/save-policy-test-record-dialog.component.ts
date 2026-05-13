@@ -5,6 +5,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 export interface SavePolicyTestRecordResult {
     name: string;
     description: string;
+    saveToFile?: boolean;
 }
 
 @Component({
@@ -27,6 +28,10 @@ export class SavePolicyTestRecordDialog {
 
     public onCancel(): void {
         this.dialogRef.close(null);
+    }
+
+    public onStopWithoutSaving(): void {
+        this.dialogRef.close({ name: '', description: '', saveToFile: false });
     }
 
     public onSubmit(): void {

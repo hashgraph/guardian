@@ -44,6 +44,13 @@
         </div>
         <div class="dialog-button">
             <button
+                (click)="onStopWithoutSaving()"
+                class="guardian-button guardian-button-secondary">
+                Stop & Discard
+            </button>
+        </div>
+        <div class="dialog-button">
+            <button
                 (click)="onSubmit()"
                 class="guardian-button guardian-button-primary"
                 [disabled]="dataForm.invalid">

@@ -114,6 +114,7 @@ export class RecordControllerComponent implements OnInit {
     }
 
     public startRecording() {
+        this.policyTestDraft.reset();
         this.loading = true;
         this.recordItems = [];
         this.recordService.startRecording(this.policyId).subscribe((result) => {
@@ -193,14 +194,17 @@ export class RecordControllerComponent implements OnInit {
             this.running = false;
             this.updateActive();
             this.loading = false;
-            const downloadLink = document.createElement('a');
-            downloadLink.href = window.URL.createObjectURL(
-                new Blob([new Uint8Array(fileBuffer)], {
-                    type: 'application/guardian-policy-record'
-                }));
-            downloadLink.setAttribute('download', filename);
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
+            this.policyTestDraft.reset();
+            if (saveMetadata.saveToFile !== false) {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-policy-record'
+                    }));
+                downloadLink.setAttribute('download', filename);
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+            }
         }, (e) => {
             this.recording = false;
             this.running = false;
@@ -287,6 +291,7 @@ export class RecordControllerComponent implements OnInit {
             this.recordId = null;
             this.updateActive();
             this.loading = false;
+            this.policyTestDraft.reset();
         }, (e) => {
             this.running = false;
             this.recordId = null;
