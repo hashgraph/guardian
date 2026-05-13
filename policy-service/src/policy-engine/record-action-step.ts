@@ -1,7 +1,7 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyLink } from './interfaces';
 
-type Callback = (id: string, timestamp: number, errors: Array<{ message: string; stack?: string }>) => void;
+type Callback = (id: string, timestamp: number, errors: { message: string; stack?: string }[]) => void;
 
 export class RecordActionStep {
     public readonly id: string;
@@ -9,7 +9,7 @@ export class RecordActionStep {
     public readonly syncActions: boolean;
     public readonly withHistory: boolean;
     private readonly results: any[] = [];
-    private readonly errors: Array<{ message: string; stack?: string }> = [];
+    private readonly errors: { message: string; stack?: string }[] = [];
     private readonly actionsMap: Set<string> = new Set();
     public counter: number;
     private callbackFired = false;
@@ -56,7 +56,7 @@ export class RecordActionStep {
         this.errors.push({ message, stack });
     }
 
-    public getErrors(): Array<{ message: string; stack?: string }> {
+    public getErrors(): { message: string; stack?: string }[] {
         return [...this.errors];
     }
 
