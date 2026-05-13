@@ -68,11 +68,12 @@
 
 .context {
     position: relative;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 14px 0 20px 0;
     display: flex;
     flex-direction: row;
-    height: 100%;
     font-family: Inter, serif;
     font-style: normal;
 
@@ -353,6 +354,9 @@
 
 .dialog-body {
     height: 55vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .action-buttons {
