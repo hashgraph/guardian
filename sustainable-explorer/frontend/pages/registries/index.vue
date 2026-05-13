@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Building2, Copy, Check } from 'lucide-vue-next';
+import { Building2, Copy, Check, FileJson } from 'lucide-vue-next';
 import type { FilterField } from '~/components/shared/DataFilters.vue';
-import type { RegistrySortKey, RegistrySortDir } from '~/composables/api/useRegistriesApi';
+import type { RegistrySortKey, RegistrySortDir, RegistryDto } from '~/composables/api/useRegistriesApi';
 import type { SortDirection } from '~/composables/useFilteredPagination';
 
 
@@ -160,6 +160,17 @@ const tagsAsList = (tags: string | null): string[] => {
     if (!tags) return [];
     return tags.split(',').map((t) => t.trim()).filter((t) => t.length > 0);
 };
+
+// Raw-data viewer state — same VcJsonViewer pattern used elsewhere.
+const vcViewerOpen = ref(false);
+const vcViewerTitle = ref('');
+const vcViewerData = ref<Record<string, any> | null>(null);
+
+function viewRegistry(r: RegistryDto) {
+    vcViewerTitle.value = r.name;
+    vcViewerData.value = r as unknown as Record<string, any>;
+    vcViewerOpen.value = true;
+}
 </script>
 
 <template>
@@ -177,22 +188,25 @@ const tagsAsList = (tags: string | null): string[] => {
             <div class="rounded-xl border bg-card overflow-hidden">
                 <table class="w-full text-sm table-fixed">
                     <colgroup>
-                        <col class="w-[16%]" />
+                        <col class="w-[14%]" />
                         <col class="w-[10%]" />
-                        <col class="w-[9%]" />
-                        <col class="w-[9%]" />
+                        <col class="w-[7%]" />
                         <col class="w-[8%]" />
                         <col class="w-[7%]" />
                         <col class="w-[7%]" />
-                        <col class="w-[10%]" />
-                        <col class="w-[14%]" />
-                        <col class="w-[10%]" />
+                        <col class="w-[7%]" />
+                        <col class="w-[7%]" />
+                        <col class="w-[8%]" />
+                        <col class="w-[12%]" />
+                        <col class="w-[8%]" />
+                        <col class="w-[5%]" />
                     </colgroup>
                     <thead>
                         <tr class="border-b bg-muted/30">
                             <SortableHeader :label="$t('registries.columns.name')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('registries.columns.id')" sort-key="relatedTopicId" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('registries.columns.geography')" sort-key="geography" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('registries.columns.website') }}</th>
                             <SortableHeader :label="$t('registries.columns.law')" sort-key="law" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('registries.columns.methodologies')" sort-key="policies" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('registries.columns.projects')" sort-key="projects" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
@@ -200,13 +214,14 @@ const tagsAsList = (tags: string | null): string[] => {
                             <SortableHeader :label="$t('registries.columns.issuances')" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('registries.columns.tags')" sort-key="tags" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('registries.columns.created')" sort-key="createdAt" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('common.viewRawData') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
                         <!-- Loading skeleton -->
                         <template v-if="pending && registries.length === 0">
                             <tr v-for="i in skeletonRows" :key="`sk-${i}`">
-                                <td v-for="col in 10" :key="col" class="py-3 px-4">
+                                <td v-for="col in 12" :key="col" class="py-3 px-4">
                                     <Skeleton class="h-4 w-full max-w-[120px]" />
                                 </td>
                             </tr>
@@ -214,7 +229,7 @@ const tagsAsList = (tags: string | null): string[] => {
 
                         <!-- Error state -->
                         <tr v-else-if="error">
-                            <td colspan="10" class="py-12 text-center text-sm text-destructive">
+                            <td colspan="12" class="py-12 text-center text-sm text-destructive">
                                 {{ $t('registries.errors.loadFailed') }} <button class="underline" @click="() => refresh()">{{ $t('common.retry') }}</button>
                             </td>
                         </tr>
@@ -252,6 +267,19 @@ const tagsAsList = (tags: string | null): string[] => {
                                     <span class="text-xs text-foreground break-words">{{ r.geography ?? '—' }}</span>
                                 </td>
                                 <td class="py-3 px-4">
+                                    <a
+                                        v-if="r.website"
+                                        :href="r.website"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="text-xs text-primary hover:underline break-all"
+                                        @click.stop
+                                    >
+                                        {{ r.website }}
+                                    </a>
+                                    <span v-else class="text-xs text-muted-foreground">—</span>
+                                </td>
+                                <td class="py-3 px-4">
                                     <span class="text-xs text-foreground break-words">{{ r.law ?? '—' }}</span>
                                 </td>
                                 <td class="py-3 px-4 text-right tabular-nums">
@@ -283,9 +311,18 @@ const tagsAsList = (tags: string | null): string[] => {
                                 <td class="py-3 px-4">
                                     <span class="text-xs text-muted-foreground">{{ formatHederaTimestamp(r.sourceTimestamp) }}</span>
                                 </td>
+                                <td class="py-3 px-3 text-center">
+                                    <button
+                                        class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                        :title="$t('common.viewRawData')"
+                                        @click.stop="viewRegistry(r)"
+                                    >
+                                        <FileJson class="h-3.5 w-3.5" />
+                                    </button>
+                                </td>
                             </tr>
                             <tr v-if="registries.length === 0">
-                                <td colspan="10" class="py-12 text-center text-sm text-muted-foreground">{{ $t('registries.noMatch') }}</td>
+                                <td colspan="12" class="py-12 text-center text-sm text-muted-foreground">{{ $t('registries.noMatch') }}</td>
                             </tr>
                         </template>
                     </tbody>
@@ -299,5 +336,7 @@ const tagsAsList = (tags: string | null): string[] => {
                 :total-items="totalCount"
             />
         </div>
+
+        <VcJsonViewer :open="vcViewerOpen" :title="vcViewerTitle" :data="vcViewerData" @close="vcViewerOpen = false" />
     </div>
 </template>

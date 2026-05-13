@@ -60,18 +60,13 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
             SELECT
                 m."consensusTimestamp",
                 CASE ${caseClauses} END,
+                -- For Standard Registry rows, prefer the profile-topic VC's
+                -- OrganizationName over the inline options.name (VC data wins).
+                -- Other types fall back to options.name / options.tokenName.
                 COALESCE(
+                    sr_vc.cs ->> 'OrganizationName',
                     m.options->>'name',
-                    m.options->>'tokenName',
-                    CASE WHEN m.type = 'Standard Registry' THEN (
-                        SELECT vc.documents -> 'credentialSubject' -> 0 ->> 'OrganizationName'
-                        FROM message vc
-                        WHERE vc."topicId" = m.options->>'topicId'
-                          AND vc.type = 'VC-Document'
-                          AND vc.documents -> 'credentialSubject' -> 0 ->> 'OrganizationName' IS NOT NULL
-                        ORDER BY vc."consensusTimestamp" DESC
-                        LIMIT 1
-                    ) END
+                    m.options->>'tokenName'
                 ),
                 COALESCE(m.owner, m.options->>'did'),
                 CASE
@@ -86,7 +81,12 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                     'tokenId', COALESCE(m.options->>'tokenId', tc."tokenId"),
                     'owner', m.owner,
                     'options', m.options,
-                    'documents', m.documents
+                    'documents', m.documents,
+                    -- Registry-only fields sourced from the profile VC.
+                    -- VC Country beats options.geography; options.geography is
+                    -- the fallback when no VC has been fetched yet.
+                    'geography', COALESCE(sr_vc.cs ->> 'Country', m.options->>'geography'),
+                    'website',   sr_vc.cs ->> 'Website'
                 ),
                 -- searchText: concatenation of all searchable fields. Picked up
                 -- by the searchVector tsvector generated column for full-text search.
@@ -94,11 +94,13 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                     m.options->>'name',
                     m.options->>'description',
                     m.options->>'tags',
-                    m.options->>'geography',
+                    COALESCE(sr_vc.cs ->> 'Country', m.options->>'geography'),
                     m.options->>'law',
                     m.options->>'tokenName',
                     m.options->>'tokenSymbol',
-                    m.owner
+                    m.owner,
+                    sr_vc.cs ->> 'OrganizationName',
+                    sr_vc.cs ->> 'Website'
                 ),
                 EXTRACT(EPOCH FROM NOW())::bigint,
                 NOW(),
@@ -106,6 +108,19 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
             FROM message m
             LEFT JOIN token_cache tc
                 ON tc."tokenId" = m.options->>'tokenId'
+            -- For Standard Registry rows, pull the latest VC-Document in the
+            -- registry's profile topic. NULL when no VC has been fetched yet —
+            -- the COALESCEs above degrade to inline options data in that case.
+            LEFT JOIN LATERAL (
+                SELECT vc.documents -> 'credentialSubject' -> 0 AS cs
+                FROM message vc
+                WHERE m.type = 'Standard Registry'
+                  AND vc."topicId" = m.options->>'topicId'
+                  AND vc.type = 'VC-Document'
+                  AND vc.documents IS NOT NULL
+                ORDER BY vc."consensusTimestamp" DESC
+                LIMIT 1
+            ) sr_vc ON true
             WHERE m.type IN (${typeFilter})
               -- For Instance-Policy, only canonical 'publish-policy' actions
               -- count as a real methodology. Other types pass through.
@@ -114,6 +129,11 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 "displayName"    = COALESCE(EXCLUDED."displayName", business_view."displayName"),
                 "registryDid"    = EXCLUDED."registryDid",
                 "relatedTopicId" = EXCLUDED."relatedTopicId",
+                -- Merge new VC-sourced fields onto existing businessData so
+                -- repeated rebuilds promote freshly-fetched profile-VC data
+                -- without losing previously-set keys.
+                "businessData"   = business_view."businessData" || EXCLUDED."businessData",
+                "searchText"     = EXCLUDED."searchText",
                 "lastUpdate"     = EXCLUDED."lastUpdate",
                 "updatedAt"      = NOW()
         `);

@@ -287,6 +287,8 @@
     },
     "filters": {
       "registry": "Registro",
+      "registryId": "ID del Registro",
+      "registryAll": "Todos los registros",
       "registryDid": "DID del Registro",
       "registryName": "Nombre del Registro",
       "registryNamePlaceholder": "Buscar por nombre del registro",

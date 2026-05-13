@@ -61,6 +61,11 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         // fetch was skipped (they arrived before their policy was decoded).
         await this.backfillSuccessfulPolicyVcFetches();
 
+        // Backfill IPFS fetches for Standard Registry profile-topic VCs. These
+        // carry OrganizationName, the fallback display-name source for the 50+
+        // registries that don't publish a name inline on their announcement.
+        await this.backfillRegistryProfileVcFetches();
+
         // Re-run eager project mapping for already-fetched VCs.
         // Opt-in via BACKFILL_PROJECTS_ON_BOOT=true. Used when the mapper logic
         // changed and existing PROJECT rows need to be regenerated from scratch.
@@ -335,6 +340,44 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         if (total > 0) {
             this.logger.log(
                 `Boot backfill: enqueued ${total} deferred VC IPFS fetch(es) across ${policies.length} decoded polic(ies)`,
+            );
+        }
+    }
+
+    /**
+     * Boot-time backfill: for every Standard Registry profile topic, enqueue
+     * IPFS fetches for any VC-Document whose `documents` is still null. These
+     * VCs hold the OrganizationName used as the registry display-name fallback,
+     * and they were skipped by the pre-fix `enqueueVcIpfsFetchIfReady` because
+     * they have no parent policy.
+     */
+    private async backfillRegistryProfileVcFetches(): Promise<void> {
+        const rows: Array<{ consensusTimestamp: string; cid: string }> =
+            await this.dataSource.query(
+                `SELECT m."consensusTimestamp", unnest(m.files) AS cid
+                 FROM message m
+                 WHERE m.type = 'VC-Document'
+                   AND m.documents IS NULL
+                   AND m.files IS NOT NULL
+                   AND m."topicId" IN (
+                       SELECT DISTINCT options->>'topicId'
+                       FROM message
+                       WHERE type = 'Standard Registry'
+                         AND options->>'topicId' IS NOT NULL
+                   )`,
+            );
+
+        for (const row of rows) {
+            await this.ipfsQueue.add(
+                'fetch',
+                { cid: row.cid, messageTimestamp: row.consensusTimestamp },
+                { jobId: `ipfs-${row.cid}` },
+            );
+        }
+
+        if (rows.length > 0) {
+            this.logger.log(
+                `Boot backfill: enqueued ${rows.length} deferred registry profile VC IPFS fetch(es)`,
             );
         }
     }

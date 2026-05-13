@@ -247,6 +247,20 @@ export class MessageProcessProcessor extends WorkerHost {
     ): Promise<void> {
         if (parsed.files.length === 0) return;
 
+        // Registry profile topics aren't under any policy. Their VCs carry the
+        // OrganizationName used as the registry display-name fallback in
+        // BusinessViewBuilderProcessor, so they must fetch eagerly.
+        if (await this.isStandardRegistryProfileTopic(topicId)) {
+            for (const cid of parsed.files) {
+                await this.ipfsQueue.add(
+                    'fetch',
+                    { cid, messageTimestamp: consensusTimestamp },
+                    { jobId: `ipfs-${cid}` },
+                );
+            }
+            return;
+        }
+
         const policyTopicId = await this.resolveParentPolicyTopicId(topicId);
         if (!policyTopicId) {
             this.logger.debug(
@@ -274,6 +288,23 @@ export class MessageProcessProcessor extends WorkerHost {
                 { jobId: `ipfs-${cid}` },
             );
         }
+    }
+
+    /**
+     * Returns true if the given topic is the profile/DID topic of any Standard
+     * Registry (i.e., referenced by `options.topicId` on a `Standard Registry`
+     * announcement message in the root topic).
+     */
+    private async isStandardRegistryProfileTopic(topicId: string): Promise<boolean> {
+        const rows: Array<{ ok: number }> = await this.dataSource.query(
+            `SELECT 1 AS ok
+             FROM message
+             WHERE type = 'Standard Registry'
+               AND options->>'topicId' = $1
+             LIMIT 1`,
+            [topicId],
+        );
+        return rows.length > 0;
     }
 
     /**

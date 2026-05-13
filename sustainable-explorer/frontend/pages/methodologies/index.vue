@@ -7,6 +7,7 @@ import type {
 } from "~/composables/api/useMethodologiesApi";
 import type { SortDirection } from "~/composables/useFilteredPagination";
 import { formatCredits } from "~/lib/format";
+import { useRegistriesApi } from "~/composables/api/useRegistriesApi";
 
 const { t } = useI18n();
 
@@ -48,6 +49,40 @@ const pageSize = ref(10);
 // Placeholder search ref kept for the composable signature.
 const searchQuery = ref("");
 
+// Fetch the registries list once so the registry filter can render as a
+// labeled dropdown (registry name + topic id) rather than a free-text DID.
+const registriesPage = ref(1);
+const registriesLimit = ref(500);
+const registriesSearch = ref('');
+const registriesSortBy = ref(null);
+const registriesSortDir = ref(null);
+const { data: registriesData } = useRegistriesApi({
+  page: registriesPage,
+  limit: registriesLimit,
+  search: registriesSearch,
+  network: computed(() => network.value),
+  sortBy: registriesSortBy as any,
+  sortDir: registriesSortDir as any,
+});
+
+const registryDidOptions = computed(() => {
+  // Surface the registry's topic ID (e.g. 0.0.3054097) as the primary label
+  // — that's the "Registry ID" the rest of the UI shows. The registry name
+  // sits in parens for readability. The submitted value is still the DID,
+  // because that's what the methodologies endpoint filters by.
+  // DataFilters auto-prepends an empty `<option value="">{{ placeholder }}</option>`
+  // for select fields, so we don't include the "All" option here.
+  return (registriesData.value?.data ?? [])
+    .filter((r: any) => r.did && r.relatedTopicId)
+    .map((r: any) => ({
+      value: r.did as string,
+      label: r.name
+        ? `${r.relatedTopicId} — ${r.name}`
+        : (r.relatedTopicId as string),
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+});
+
 const filterFields = computed<FilterField[]>(() => [
   {
     key: "name",
@@ -58,10 +93,11 @@ const filterFields = computed<FilterField[]>(() => [
   },
   {
     key: "registryDid",
-    label: t("methodologies.filters.registryDid"),
-    type: "text",
-    placeholder: "did:hedera:...",
+    label: t("methodologies.filters.registryId"),
+    type: "select",
     width: "md",
+    placeholder: t("methodologies.filters.registryAll"),
+    options: registryDidOptions.value,
   },
   {
     key: "registryName",

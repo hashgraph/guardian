@@ -49,6 +49,7 @@ export function useRegistries(filters?: Ref<{ status?: string; network?: string;
                 status: meta?.status ?? 'Active',
                 network: meta?.network ?? 'Testnet',
                 geography: meta?.geography ?? null,
+                website: null,
                 law: meta?.law ?? null,
                 tags: meta?.tags ?? null,
                 createdAt: meta?.createdAt ?? null,

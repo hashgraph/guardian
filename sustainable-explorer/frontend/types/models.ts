@@ -105,6 +105,7 @@ export interface Registry {
     status: 'Active' | 'Inactive';
     network: 'Mainnet' | 'Testnet';
     geography: string | null;
+    website: string | null;
     law: string | null;
     tags: string | null;
     createdAt: string | null;

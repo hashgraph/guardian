@@ -287,6 +287,8 @@
     },
     "filters": {
       "registry": "Registry",
+      "registryId": "Registry ID",
+      "registryAll": "All Registries",
       "registryDid": "Registry DID",
       "registryName": "Registry Name",
       "registryNamePlaceholder": "Search by registry name",
@@ -484,6 +486,7 @@
       "name": "Name",
       "id": "ID",
       "geography": "Geography",
+      "website": "Website",
       "law": "Law",
       "methodologies": "Methodologies",
       "projects": "Projects",

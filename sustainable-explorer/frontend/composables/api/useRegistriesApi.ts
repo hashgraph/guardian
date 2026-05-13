@@ -31,6 +31,7 @@ export interface RegistryDto {
     topicId: string | null;
     relatedTopicId: string | null;
     geography: string | null;
+    website: string | null;
     law: string | null;
     tags: string | null;
     action: string | null;

@@ -74,6 +74,9 @@ export class RegistryResponseDto {
     geography: string | null;
 
     @ApiProperty({ nullable: true })
+    website: string | null;
+
+    @ApiProperty({ nullable: true })
     law: string | null;
 
     @ApiProperty({ nullable: true })
@@ -106,7 +109,10 @@ export class RegistryResponseDto {
             name: row.displayName,
             topicId: data.topicId || data.options?.topicId || null,
             relatedTopicId: row.relatedTopicId ?? null,
-            geography: data.options?.geography || null,
+            // Prefer top-level geography (set from profile VC's Country by the
+            // business-view builder) over the legacy options.geography.
+            geography: data.geography ?? data.options?.geography ?? null,
+            website: data.website ?? null,
             law: data.options?.law || null,
             tags: data.options?.tags || null,
             action: data.options?.action || null,
