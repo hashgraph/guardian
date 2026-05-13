@@ -9,7 +9,7 @@ A Guardian policy is a directed graph of blocks. External systems interact with 
 | Pattern | Method | URL | When to use |
 |---|---|---|---|
 | Read block state | GET | `/api/v1/policies/{policyId}/blocks/{blockId}` | Get current form schema, document list, or block UI state |
-| Submit data | PUT | `/api/v1/policies/{policyId}/blocks/{blockId}` | Submit a form, trigger a button, select a role |
+| Submit data | POST | `/api/v1/policies/{policyId}/blocks/{blockId}` | Submit a form, trigger a button, select a role |
 | Push external data | POST | `/api/v1/external/{policyId}/{blockTag}` | Push MRV/oracle data without a Guardian user session |
 
 ## Authentication
@@ -35,6 +35,43 @@ When calling `GET /policies/{policyId}/blocks/{blockId}`, Guardian returns a blo
 | policyId | string | Owning policy ID |
 | readonly | boolean | Whether the calling user can submit data to this block |
 | uiMetaData | object | Block-specific display configuration (title, description, type) |
+
+---
+
+## Block Data Submission Response
+
+When calling `POST /policies/{policyId}/blocks/{blockId}` or `POST /policies/{policyId}/tag/{tagName}/blocks`, Guardian acknowledges the submission synchronously and returns a response that includes a `trackingId` for correlating the request with the async completion event.
+
+| Field | Type | Description |
+|---|---|---|
+| trackingId | string | UUID that uniquely identifies this block execution. Matches the `trackingId` in the `external-events.block_complete` event, allowing external systems to correlate requests with async outcomes without polling. |
+| response | object | Present when `history=true`. The direct output of `blockSetData`. |
+| result | object | Present when `history=true`. The final result from the last downstream step. |
+| steps | array | Present when `history=true`. Ordered list of intermediate step results across the async execution chain. Empty array when `history` is not requested. |
+
+**Example response (default):**
+
+```json
+{
+  "trackingId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Example response with `history=true`:**
+
+```json
+{
+  "trackingId": "550e8400-e29b-41d4-a716-446655440000",
+  "response": { "...": "blockSetData output" },
+  "result": { "...": "last step result" },
+  "steps": [
+    { "...": "step 1 result" },
+    { "...": "step 2 result" }
+  ]
+}
+```
+
+> The submission response is returned as soon as the block accepts the data. The full async chain (IPFS uploads, HCS message submissions, downstream block execution) continues in the background and is reported via the `external-events.block_complete` event.
 
 ---
 
@@ -72,7 +109,7 @@ Presents a data entry form based on a schema. The user fills the form and submit
 }
 ```
 
-**PUT request — submit document:**
+**POST request — submit document:**
 
 ```json
 {
@@ -103,7 +140,7 @@ Presents a data entry form based on a schema. The user fills the form and submit
 
 Accepts file uploads or pre-built VC documents.
 
-**PUT request:**
+**POST request:**
 
 ```json
 {
@@ -126,7 +163,7 @@ Accepts file uploads or pre-built VC documents.
 
 ### `interfaceDocumentsSourceBlock`
 
-Displays a list of documents to the user. Read-only; no PUT required.
+Displays a list of documents to the user. Read-only; no POST required.
 
 **GET response:**
 
@@ -189,7 +226,7 @@ Displays action buttons that trigger workflow transitions (e.g., Approve/Reject)
 }
 ```
 
-**PUT request — trigger a button:**
+**POST request — trigger a button:**
 
 ```json
 {
@@ -223,7 +260,7 @@ Assigns a role to the current user within the policy.
 }
 ```
 
-**PUT request — select role:**
+**POST request — select role:**
 
 ```json
 {
@@ -239,7 +276,7 @@ Assigns a role to the current user within the policy.
 
 ### `mintDocumentBlock`
 
-Mints environmental asset tokens after document approval. This is a server-side block (`post: false`, `get: false`) — it is triggered automatically by the policy engine when an upstream block fires a `RunEvent`. There is no direct GET or PUT available from the API.
+Mints environmental asset tokens after document approval. This is a server-side block (`post: false`, `get: false`) — it is triggered automatically by the policy engine when an upstream block fires a `RunEvent`. There is no direct GET or POST available from the API.
 
 The block calculates a token amount by evaluating the configured rule expression against the incoming VC documents, creates a mint VC and VP, publishes both to HCS, and calls the Hedera token service to mint the tokens to the target account.
 
@@ -249,7 +286,7 @@ To observe mint outcomes, query the `interfaceDocumentsSourceBlock` that follows
 
 ### `retirementDocumentBlock`
 
-Retires (wipes) tokens from a holder account. This is a server-side block (`post: false`, `get: false`) — it is triggered automatically by the policy engine when an upstream block fires a `RunEvent`. There is no direct GET or PUT available from the API.
+Retires (wipes) tokens from a holder account. This is a server-side block (`post: false`, `get: false`) — it is triggered automatically by the policy engine when an upstream block fires a `RunEvent`. There is no direct GET or POST available from the API.
 
 The block evaluates the configured rule expression (fungible tokens) or serial number expression (non-fungible tokens) against the incoming VC documents, creates a wipe VC and VP, publishes both to HCS, and calls the Hedera token wipe service.
 
@@ -283,9 +320,9 @@ Presents a token configuration form that allows a user to define and create a ne
 }
 ```
 
-Fields already locked by the policy template will be returned in `data` but cannot be overridden in the PUT — submit only the fields the policy leaves editable.
+Fields already locked by the policy template will be returned in `data` but cannot be overridden in the POST — submit only the fields the policy leaves editable.
 
-**PUT request — submit token configuration:**
+**POST request — submit token configuration:**
 
 ```json
 {
@@ -345,7 +382,7 @@ Prompts the current user to associate (or dissociate) their Hedera account with 
 | tokenName | string | Display name of the token |
 | tokenId | string | Hedera token ID to associate |
 
-**PUT request — confirm association:**
+**POST request — confirm association:**
 
 ```json
 {
@@ -354,7 +391,7 @@ Prompts the current user to associate (or dissociate) their Hedera account with 
 }
 ```
 
-**PUT request — skip:**
+**POST request — skip:**
 
 ```json
 {
@@ -549,7 +586,7 @@ Blocks can also be accessed by tag name instead of UUID:
 
 ```
 GET  /api/v1/policies/{policyId}/tag/{tagName}/blocks
-PUT  /api/v1/policies/{policyId}/tag/{tagName}/blocks
+POST /api/v1/policies/{policyId}/tag/{tagName}/blocks
 ```
 
 This is useful when block UUIDs change between policy versions but tags remain stable.
@@ -592,7 +629,7 @@ Find the `policyRolesBlock` in the block tree. Note its `id`.
 ### Step 4 — Select Role
 
 ```http
-PUT /api/v1/policies/{policyId}/blocks/{rolesBlockId}
+POST /api/v1/policies/{policyId}/blocks/{rolesBlockId}
 Authorization: Bearer eyJhbGciOiJSUzI1NiJ9...
 Content-Type: application/json
 
@@ -611,7 +648,7 @@ Extract the `schema.properties` to determine which fields to populate.
 ### Step 6 — Submit Document
 
 ```http
-PUT /api/v1/policies/{policyId}/blocks/{formBlockId}
+POST /api/v1/policies/{policyId}/blocks/{formBlockId}
 Authorization: Bearer eyJhbGciOiJSUzI1NiJ9...
 Content-Type: application/json
 
@@ -629,11 +666,56 @@ Content-Type: application/json
 }
 ```
 
-### Step 7 — Poll Document Status
+The response includes a `trackingId` to correlate this submission with its async completion event:
+
+```json
+{
+  "trackingId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+### Step 7 — Track Async Completion
+
+Guardian processes block submissions asynchronously. IPFS uploads, HCS message submissions, and downstream blocks all run after the POST returns. There are two ways to observe completion:
+
+**Option A — Subscribe to `external-events.block_complete` (recommended)**
+
+Configure a webhook or SSE listener for the `external-events.block_complete` event. When the full async chain settles, Guardian emits:
+
+```json
+{
+  "trackingId": "550e8400-e29b-41d4-a716-446655440000",
+  "blockType": "requestVcDocumentBlock",
+  "blockTag": "mrv_submission",
+  "blockId": "3f2504e0-4f89-11d3-9a0c-0305e82c3301",
+  "policyId": "6475a9e0-5f27-4ce3-b2f1-123456789abc",
+  "userId": "did:hedera:testnet:z6MkHmF...",
+  "status": "success",
+  "timestamp": 1745123456789
+}
+```
+
+Match the event's `trackingId` to the value returned in Step 6 to confirm your submission completed. When `status` is `"failure"`, the `error` and `errorDetails` fields contain diagnostics.
+
+| Event field | Type | Description |
+|---|---|---|
+| trackingId | string | Matches the value returned by the POST response in Step 6 |
+| blockType | string | Block type that processed the submission |
+| blockTag | string | Block tag identifier |
+| blockId | string | Block UUID |
+| policyId | string | Policy ID |
+| userId | string | DID of the submitting user |
+| status | string | `"success"` or `"failure"` |
+| outputData | object | Optional. Direct output from `blockSetData` when available |
+| error | string | Optional. Human-readable description of the first error (when `status` is `"failure"`) |
+| errorDetails | array | Optional. All errors collected across the async chain — each entry has `message` and optional `stack` |
+| timestamp | number | Unix millisecond timestamp when completion was determined |
+
+**Option B — Poll document status**
 
 ```http
 GET /api/v1/policies/{policyId}/blocks/{viewerBlockId}
 Authorization: Bearer eyJhbGciOiJSUzI1NiJ9...
 ```
 
-Poll until `data[0].option.status` changes to `APPROVED` or `REJECTED`.
+Poll until `data[0].option.status` changes to `APPROVED` or `REJECTED`. Use this when you cannot configure an event listener.
