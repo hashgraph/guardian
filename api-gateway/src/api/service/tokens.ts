@@ -4,7 +4,7 @@ import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
 import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, ObjectExamples, TaskDTO, TokenDTO, TokenInfoDTO, UnprocessableEntityErrorDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, ObjectExamples, TaskDTO, TokenDTO, TokenInfoDTO, TransferTokenDTO, UnprocessableEntityErrorDTO, pageHeader } from '#middlewares';
 import { TOKEN_REQUIRED_PROPS } from '#constants';
 
 /**
@@ -1134,19 +1134,7 @@ export class TokensApi {
         required: true,
         example: Examples.DB_ID
     })
-    @ApiBody({
-        description: 'Transfer details',
-        schema: {
-            type: 'object',
-            properties: {
-                targetAccount: { type: 'string', description: 'Hedera account ID to transfer to', example: '0.0.12345' },
-                amount: { type: 'number', description: 'Amount for FT; number of serials from end for NFT if serialNumbers not provided' },
-                serialNumbers: { type: 'array', items: { type: 'number' }, description: 'Specific NFT serial numbers to transfer' },
-                memo: { type: 'string', description: 'Optional transaction memo' },
-            },
-            required: ['targetAccount'],
-        },
-    })
+    @ApiBody({ type: TransferTokenDTO })
     @ApiOkResponse({
         description: 'Successful operation.',
     })
@@ -1159,22 +1147,11 @@ export class TokensApi {
     async transferToken(
         @AuthUser() user: IAuthUser,
         @Param('tokenId') tokenId: string,
-        @Body() body: {
-            targetAccount: string,
-            amount?: number,
-            serialNumbers?: number[],
-            memo?: string
-        }
+        @Body() body: TransferTokenDTO
     ): Promise<any> {
         try {
             if (!user.did) {
                 throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
-            }
-            if (!body || !body.targetAccount) {
-                throw new HttpException('targetAccount is required.', HttpStatus.BAD_REQUEST);
-            }
-            if (!body.amount && (!body.serialNumbers || body.serialNumbers.length === 0)) {
-                throw new HttpException('Either amount or serialNumbers is required.', HttpStatus.BAD_REQUEST);
             }
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
@@ -1212,19 +1189,7 @@ export class TokensApi {
         required: true,
         example: Examples.DB_ID
     })
-    @ApiBody({
-        description: 'Transfer details',
-        schema: {
-            type: 'object',
-            properties: {
-                targetAccount: { type: 'string', description: 'Hedera account ID to transfer to', example: '0.0.12345' },
-                amount: { type: 'number', description: 'Amount for FT; number of serials from end for NFT if serialNumbers not provided' },
-                serialNumbers: { type: 'array', items: { type: 'number' }, description: 'Specific NFT serial numbers to transfer' },
-                memo: { type: 'string', description: 'Optional transaction memo' },
-            },
-            required: ['targetAccount'],
-        },
-    })
+    @ApiBody({ type: TransferTokenDTO })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: TaskDTO
@@ -1238,21 +1203,10 @@ export class TokensApi {
     async transferTokenAsync(
         @AuthUser() user: IAuthUser,
         @Param('tokenId') tokenId: string,
-        @Body() body: {
-            targetAccount: string,
-            amount?: number,
-            serialNumbers?: number[],
-            memo?: string
-        }
+        @Body() body: TransferTokenDTO
     ): Promise<TaskDTO> {
         if (!user.did) {
             throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
-        if (!body || !body.targetAccount) {
-            throw new HttpException('targetAccount is required.', HttpStatus.BAD_REQUEST);
-        }
-        if (!body.amount && (!body.serialNumbers || body.serialNumbers.length === 0)) {
-            throw new HttpException('Either amount or serialNumbers is required.', HttpStatus.BAD_REQUEST);
         }
         const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
