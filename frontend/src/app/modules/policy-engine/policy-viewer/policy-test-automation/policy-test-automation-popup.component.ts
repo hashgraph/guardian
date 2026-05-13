@@ -22,7 +22,7 @@ export class PolicyTestAutomationPopupComponent {
         this.draftService.discardInput();
     }
 
-    public onAwaitingOutputsClick(): void {
+    public confirmDocumentResults(): void {
         this.draftService.confirmOutputFromInput();
     }
 
