@@ -94,6 +94,7 @@ These events are published by Guardian's core services and represent the primary
 | `external-events.token_mint_complete` | publish | All token minting operations for a batch are complete |
 | `external-events.error_logs` | publish | An error was written to the Guardian logger service |
 | `external-events.block_event` | publish | A policy block execution event occurred |
+| `external-events.block_complete` | publish | Full async execution chain for a block data call has settled |
 | `external-events.ipfs_added_file` | publish | A file was successfully added to IPFS |
 | `external-events.ipfs_before_upload_content` | request | Hook: intercept and optionally transform content before IPFS upload |
 | `external-events.ipfs_after_read_content` | request | Hook: intercept and optionally transform content after reading from IPFS |
@@ -205,6 +206,40 @@ The payload is an array of block event objects. Each object has:
 | `blockTag` | string | The human-readable tag assigned to the block in the policy editor |
 | `userId` | string | Hedera DID of the user who triggered the block action |
 | `data` | object | Block-specific payload; structure varies by block type |
+
+---
+
+### `external-events.block_complete`
+
+**Pattern:** publish
+
+**Trigger:** Triggered when the full async execution chain (downstream blocks, IPFS uploads, Hedera message submissions) for a `SET_BLOCK_DATA` / `SET_BLOCK_DATA_BY_TAG` call has settled — success or failure. The `trackingId` field matches the value returned in the API response, so external systems can correlate the event with their request without polling.
+
+**Payload:**
+
+```json
+{
+  "trackingId": "550e8400-e29b-41d4-a716-446655440000",
+  "blockType": "requestVcDocumentBlock",
+  "blockTag": "request_vc",
+  "blockId": "3f2504e0-4f89-11d3-9a0c-0305e82c3301",
+  "policyId": "6475a9e0-5f27-4ce3-b2f1-123456789abc",
+  "userId": "did:hedera:testnet:z6MkHmF...",
+  "status": "success",
+  "timestamp": 1745123456789
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `trackingId` | string | UUID correlating this event to the originating API call |
+| `blockType` | string | The block's type name |
+| `blockTag` | string | The human-readable tag assigned to the block in the policy editor |
+| `blockId` | string | Unique identifier of the block |
+| `policyId` | string | Identifier of the policy containing the block |
+| `userId` | string | Hedera DID of the user whose action triggered the chain |
+| `status` | string | `success` or `failure` |
+| `timestamp` | number | Unix epoch milliseconds when the chain settled |
 
 ---
 

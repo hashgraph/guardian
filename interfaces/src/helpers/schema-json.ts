@@ -392,7 +392,7 @@ export class SchemaToJson {
 
         if (ic?.field?.name !== undefined) {
             json.if.field = ic.field.name;
-            json.if.fieldValue = ic.fieldfieldValue;
+            json.if.fieldValue = ic.fieldValue;
             return json;
         }
         if (Array.isArray(ic?.predicates) && ic.predicates.length) {

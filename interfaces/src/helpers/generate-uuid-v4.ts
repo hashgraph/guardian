@@ -1,23 +1,14 @@
 /**
- * Generate random UUID
+ * Generate a random RFC 4122 v4 UUID using the Web Crypto API.
  */
-export function GenerateUUIDv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        // tslint:disable-next-line:no-bitwise
-        const r = Math.random() * 16 | 0;
-        // tslint:disable-next-line:no-bitwise
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
+export function GenerateUUIDv4(): string {
+    return globalThis.crypto.randomUUID();
 }
 
 /**
- * Generate random UUID
+ * Generate a 32-character random hex identifier using the Web Crypto API.
  */
-export function GenerateID() {
-    return 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, (c) => {
-        // tslint:disable-next-line:no-bitwise
-        const v = Math.random() * 16 | 0;
-        return v.toString(16);
-    });
+export function GenerateID(): string {
+    const bytes = globalThis.crypto.getRandomValues(new Uint8Array(16));
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }

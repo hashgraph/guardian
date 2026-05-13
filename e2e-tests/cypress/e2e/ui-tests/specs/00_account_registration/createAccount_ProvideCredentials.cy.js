@@ -1,3 +1,4 @@
+import { randomInt } from "../../../../support/random";
 import { HomePage } from "../../pages/homePage";
 const homepage = new HomePage();
 
@@ -6,8 +7,8 @@ const configpage = new ConfigPage();
 
 context("Create User Accounts", { tags: ['ui'] }, () => {
 
-    const SRName = "TestSRUI" + Math.floor(Math.random() * 9999);
-    const userName = "TestUserUI" + Math.floor(Math.random() * 9999);
+    const SRName = "TestSRUI" + randomInt(9999);
+    const userName = "TestUserUI" + randomInt(9999);
     //rofiw
     const HederaIDSR = "0.0.3567105";
     const HederaKeySR = "3030020100300706052b8104000a04220420075cb7e3ec00a9429d4a1a17eb87814fac4cf0a073e374c770aa0df6c4e3e6e4";

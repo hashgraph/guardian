@@ -343,7 +343,6 @@ export class SchemaImport {
         step.start();
         const schemasByIds = schemasIds?.length ? await DatabaseServer.getSchemasByIds(schemasIds) : [];
         const updatedSchemasIriMap = new Map<string, string>();
-        const savedSchemas: any[] = [];
 
         let index = 0;
         for (const file of schemas) {
@@ -394,12 +393,9 @@ export class SchemaImport {
                     updatedSchemasIriMap.set(file.iri, row.iri);
                 }
 
-                savedSchemas.push(row);
-
             } else {
                 const row = await DatabaseServer.saveSchema(schemaObject);
                 this.schemasMapping[index].newID = row.id.toString();
-                savedSchemas.push(row);
             }
 
             _step.complete();
@@ -407,7 +403,8 @@ export class SchemaImport {
         }
 
         if (updatedSchemasIriMap.size > 0) {
-            for (const savedSchema of savedSchemas) {
+            const schemasForRewrite = await DatabaseServer.getSchemas({ topicId: this.topicId });
+            for (const savedSchema of schemasForRewrite) {
                 let needsUpdate = false;
                 let documentStr = JSON.stringify(savedSchema.document);
 

@@ -73,7 +73,7 @@ services:
       - '3333'
 
   ipfs-node:
-    image: ipfs/kubo:v0.39.0
+    image: ipfs/kubo:v0.41.0
     environment:
       IPFS_TELEMETRY: off # valid options: 'on' (default), 'off', 'auto' (https://github.com/ipfs/kubo/blob/master/docs/telemetry.md)
     init: true

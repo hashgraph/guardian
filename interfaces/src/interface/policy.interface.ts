@@ -1,4 +1,11 @@
 /**
+ * Allowed shape of a policy documentation alias.
+ * One or more `[a-z0-9-]+` segments separated by single `/`
+ * (no leading/trailing/double slashes, no empty segments).
+ */
+export const POLICY_ALIAS_REGEX = /^[a-z0-9-]+(?:\/[a-z0-9-]+)*$/;
+
+/**
  * Policy documentation entry
  */
 export interface IPolicyDocumentationEntry {
@@ -19,7 +26,8 @@ export interface IPolicyDocumentationEntry {
    */
   method: string;
   /**
-   * Human-readable alias for the DMRV URL (lowercase, alphanumeric, hyphens)
+   * Human-readable alias for the DMRV URL: lowercase letters, digits, hyphens;
+   * multiple segments may be separated by `/` (e.g. `monitoring-reports/create`).
    */
   alias: string;
   /**
@@ -34,6 +42,10 @@ export interface IPolicyDocumentationEntry {
    * Block type (auto-populated for query params display)
    */
   blockType?: string;
+  /**
+   * Schema IRI bound to the target block (auto-populated by /about)
+   */
+  schemaId?: string;
 }
 
 /**

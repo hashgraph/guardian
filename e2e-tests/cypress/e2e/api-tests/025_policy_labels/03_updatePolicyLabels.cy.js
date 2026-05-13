@@ -1,10 +1,11 @@
+import { randomInt } from "../../../support/random";
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("Update policy labels", { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
     const UserUsername = Cypress.env('User');
-    const labelConfigUUID = Math.floor(Math.random() * 99999).toString();
+    const labelConfigUUID = randomInt(99999).toString();
 
     let policyLabel, issueSchema;
 
