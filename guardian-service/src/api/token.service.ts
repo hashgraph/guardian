@@ -1455,6 +1455,11 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         if (!account) {
             throw new Error('Hedera Account not found');
         }
+
+        if (targetAccount === account.account) {
+            throw new Error('Cannot transfer tokens to the sender account');
+        }
+
         if (account.default) {
             account.key = await (new Wallet()).getKey(user.walletToken, KeyType.KEY, user.did);
         } else {
@@ -1464,10 +1469,6 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             throw new Error('Hedera account key not found');
         }
         notifier.completeStep(STEP_RESOLVE_ACCOUNT);
-
-        if (targetAccount === account.account) {
-            throw new Error('Cannot transfer tokens to the sender account');
-        }
 
         const workers = new Workers();
 
