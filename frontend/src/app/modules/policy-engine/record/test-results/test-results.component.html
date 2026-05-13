@@ -29,9 +29,17 @@
                     </button>
                 </div>
                 <span class="test-breadcrumb">
-                    <span>Manage Policies</span>
-                    <span *ngIf="policyName"> / {{ policyName }}</span>
-                    <span *ngIf="testName"> / Tests / {{ testName }}</span>
+                    <span class="breadcrumb-item">Manage Policies</span>
+                    <ng-container *ngIf="policyName">
+                        <span class="breadcrumb-sep"> / </span>
+                        <span class="breadcrumb-item">{{ policyName }}</span>
+                    </ng-container>
+                    <ng-container *ngIf="testName">
+                        <span class="breadcrumb-sep"> / </span>
+                        <span class="breadcrumb-item">Test</span>
+                        <span class="breadcrumb-sep"> / </span>
+                        <span class="breadcrumb-item">{{ testName }}</span>
+                    </ng-container>
                 </span>
             </div>
             <div class="header-row header-row-controls">

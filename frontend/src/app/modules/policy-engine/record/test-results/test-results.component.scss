@@ -62,11 +62,26 @@
     }
 
     .test-breadcrumb {
-        font-size: 20px;
-        font-weight: bold;
-        color: #686868;
-        padding: 0 8px;
         margin-left: 64px;
+        padding: 0 8px;
+        display: flex;
+        align-items: center;
+
+        .breadcrumb-item {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--guardian-dry-run-color);
+            user-select: none;
+            cursor: default;
+        }
+
+        .breadcrumb-sep {
+            color: #848fa9;
+            font-size: 20px;
+            padding: 0 8px;
+        }
     }
 
     .doc-nav-dropdown {
