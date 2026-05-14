@@ -15,8 +15,8 @@ export class RecordActionStep {
     private timer: ReturnType<typeof setTimeout> | null = null;
     private readonly callback: Callback;
 
-    constructor(callback: Callback, initialCounter = 0, syncActions = false, withHistory = false) {
-        this.id = GenerateUUIDv4();
+    constructor(callback: Callback, initialCounter = 0, syncActions = false, withHistory = false, existingId?: string) {
+        this.id = existingId ?? GenerateUUIDv4();
         this.timestemp = Date.now();
         this.callback = callback;
         this.counter = initialCounter;

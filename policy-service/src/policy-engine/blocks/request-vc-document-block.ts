@@ -196,6 +196,7 @@ export class RequestVcDocumentBlock {
     private async setBlockData(user: PolicyUser, data: IPolicyDocument, actionStatus: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         try {
+            const actionStatusId = actionStatus?.id ?? (ref.dryRun ? data?.recordActionId ?? null : null);
             //Prepare data
             const document = await this.prepareDocument(data);
             const draft = data.draft;
@@ -211,7 +212,7 @@ export class RequestVcDocumentBlock {
                 = await PolicyUtils.getRelayerAccountAndOwner(ref, user, data.relayerAccount, documentRef, inheritRelayerAccount);
 
             //Prepare Credential Subject
-            const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document, actionStatus?.id);
+            const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document, actionStatusId);
 
             //Get relationships
             if (documentRef) {
@@ -241,7 +242,7 @@ export class RequestVcDocumentBlock {
             }
 
             //Create Verifiable Credential
-            const item = await this.createVerifiableCredential(user, documentOwner, relayerAccount, credentialSubject, actionStatus?.id, data.evidence);
+            const item = await this.createVerifiableCredential(user, documentOwner, relayerAccount, credentialSubject, actionStatusId, data.evidence);
             PolicyUtils.setDocumentRef(item, documentRef);
 
             //Update metadata

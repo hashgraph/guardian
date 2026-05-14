@@ -13,6 +13,14 @@ import { ComponentsService } from '../components-service.js';
 import { IDebugContext } from '../../block-engine/block-result.js';
 import { RecordActionStep } from '../../record-action-step.js';
 
+function inheritRecordActionId(data: IPolicyDocument | IPolicyDocument[] | undefined): string | null {
+    const doc = Array.isArray(data) ? data[0] : data;
+    if (!doc) {
+        return null;
+    }
+    return typeof doc.recordActionId === 'string' ? doc.recordActionId : null;
+}
+
 /**
  * Basic block decorator
  * @param options
@@ -456,6 +464,12 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public async runAction(event: IPolicyEvent<any>): Promise<any> {
                 if (this.policyInstance.status === PolicyStatus.DISCONTINUED) {
                     return;
+                }
+                if (this.dryRun && !event.actionStatus) {
+                    const inheritedId = inheritRecordActionId(event.data?.data);
+                    if (inheritedId) {
+                        event.actionStatus = new RecordActionStep(() => {}, 0, false, false, inheritedId);
+                    }
                 }
                 const parent = this.parent as any;
                 if (parent && (typeof parent.changeStep === 'function')) {
