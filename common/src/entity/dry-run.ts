@@ -547,6 +547,12 @@ export class DryRun extends BaseEntity {
     messageHash?: string;
 
     /**
+     * Record action id
+     */
+    @Property({ nullable: true })
+    recordActionId?: string;
+
+    /**
      * Message History
      */
     @Property({ nullable: true })
