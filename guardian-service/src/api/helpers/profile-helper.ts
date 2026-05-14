@@ -285,7 +285,7 @@ export async function createSystemSchemas({
         return null;
     } catch (error) {
         logger.error(error, ['GUARDIAN_SERVICE'], logId);
-        return null;
+        throw error;
     }
 }
 
@@ -479,8 +479,7 @@ export async function createUserProfile({
         await dataBaseServer.update(DidDocumentCollection, null, didRow);
     } catch (error) {
         logger.error(error, ['GUARDIAN_SERVICE'], logId);
-        // didRow.status = DidDocumentStatus.FAILED;
-        // await new DataBaseHelper(DidDocumentCollection).update(didRow);
+        throw error;
     }
     notifier.completeStep(STEP_PUBLISH_DID);
     // ------------------------
@@ -513,11 +512,13 @@ export async function createUserProfile({
         notifier.startStep(STEP_PUBLISH_VC);
         logger.info('Create VC Document', ['GUARDIAN_SERVICE'], logId);
 
+        if (!schemaObject) {
+            throw new Error(`System schema for entity "${entity}" not found.`);
+        }
+
         let credentialSubject: any = { ...vcDocument };
         credentialSubject.id = userDID;
-        if (schemaObject) {
-            credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
-        }
+        credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
 
         const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, currentDidDocument, null, null);
         const vcMessage = new VCMessage(MessageAction.CreateVC);

@@ -8415,5 +8415,42 @@ export const ObjectExamples = {
             tests: [],
             id: '69c81d7fc778760bac62cf66'
         }
-    ]
+    ],
+
+    MINT_REQUEST: [
+        {
+            amount: 100,
+            tokenId: '0.0.6046500',
+            tokenType: 'FUNGIBLE',
+            target: '0.0.6046379',
+            vpMessageId: '1774449622.177353801',
+            isMintNeeded: false,
+            isTransferNeeded: false,
+            wasTransferNeeded: false,
+            memo: 'f3b2a9c1e4d5678901234567',
+            metadata: null,
+            error: null,
+            processDate: '2026-03-25T14:40:28.853Z',
+            policyId: '69b83f18cd6b7c4adf4139bc',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599',
+            id: '69c3ff9de85d8b6ef99ef870'
+        },
+        {
+            amount: 50,
+            tokenId: '0.0.6046500',
+            tokenType: 'NON_FUNGIBLE',
+            target: '0.0.6046379',
+            vpMessageId: '1774449700.283746192',
+            isMintNeeded: true,
+            isTransferNeeded: false,
+            wasTransferNeeded: false,
+            memo: 'a1b2c3d4e5f6789012345678',
+            metadata: null,
+            error: 'INSUFFICIENT_PAYER_BALANCE',
+            processDate: '2026-03-25T15:30:37.191Z',
+            policyId: '69b83f18cd6b7c4adf4139bc',
+            owner: 'did:hedera:testnet:EthnLQfQnh8x6vKyegyekhy72oSAok6cH59pfVssKLDw_0.0.8200599',
+            id: '69c3ff9de85d8b6ef99ef871'
+        }
+    ],
 }
