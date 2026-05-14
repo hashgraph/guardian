@@ -4,7 +4,7 @@ import {
     ChevronDown, ChevronUp, Copy, Check, Users, BookOpen, Target,
     Globe, Leaf, FolderKanban, Layers, BarChart3, Clock, Activity,
     GitBranch, ArrowRight, CheckCircle2, Circle, Zap, FileText, Network, Repeat, Flame,
-    TrendingUp, TrendingDown, AlertTriangle, Database, ExternalLink, RotateCcw,
+    TrendingUp, TrendingDown, AlertTriangle, Database, ExternalLink, RotateCcw, CloudDownload,
 } from 'lucide-vue-next';
 import type { Credit } from '~/types/models';
 import { formatCredits, formatNumber } from '~/lib/format';
@@ -315,6 +315,40 @@ async function triggerReextract() {
         reextractPending.value = false;
     }
 }
+
+// ─── Refresh IPFS + reparse action ────────────────────────────────────────────
+// Stronger than re-extract: clears stale failure records and BullMQ jobs
+// before re-enqueuing IPFS fetches for every VC in the project's topic.
+
+const refreshIpfsPending = ref(false);
+
+async function triggerRefreshIpfs() {
+    if (!import.meta.client) return;
+    const config = useRuntimeConfig();
+    const baseURL = config.public.apiBaseUrl as string;
+    refreshIpfsPending.value = true;
+    try {
+        const res = await $fetch<{ refreshed: number; reparseEnqueued: number }>(
+            `/api/v1/${network.value}/projects/${projectId.value}/refresh-ipfs`,
+            { method: 'POST', baseURL },
+        );
+        const { toast } = await import('vue-sonner');
+        const total = res.refreshed + res.reparseEnqueued;
+        if (total === 0) {
+            toast.info(t('projects.detail.actions.refreshIpfsEmpty'));
+        } else {
+            toast.success(t('projects.detail.actions.refreshIpfsSuccess', {
+                refreshed: res.refreshed,
+                reparse: res.reparseEnqueued,
+            }));
+        }
+    } catch {
+        const { toast } = await import('vue-sonner');
+        toast.error(t('projects.detail.actions.refreshIpfsError'));
+    } finally {
+        refreshIpfsPending.value = false;
+    }
+}
 </script>
 
 <template>
@@ -370,6 +404,15 @@ async function triggerReextract() {
                     >
                         <RotateCcw :class="['h-4 w-4 text-primary', reextractPending ? 'animate-spin' : '']" />
                         {{ $t('projects.detail.actions.reextract') }}
+                    </button>
+                    <button
+                        :disabled="refreshIpfsPending"
+                        :title="$t('projects.detail.actions.refreshIpfsTooltip')"
+                        class="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        @click="triggerRefreshIpfs"
+                    >
+                        <CloudDownload :class="['h-4 w-4 text-primary', refreshIpfsPending ? 'animate-spin' : '']" />
+                        {{ $t('projects.detail.actions.refreshIpfs') }}
                     </button>
                 </div>
             </div>
@@ -945,19 +988,31 @@ async function triggerReextract() {
 
         <!-- Methodology Field Mapping -->
         <div class="rounded-xl border bg-card overflow-hidden">
-            <button
-                class="w-full px-5 py-3.5 border-b bg-muted/30 flex items-center justify-between text-left hover:bg-muted/50 transition-colors"
+            <div
+                class="w-full px-5 py-3.5 border-b bg-muted/30 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors"
                 @click="methodologyMappingOpen = !methodologyMappingOpen"
             >
-                <div>
+                <div class="min-w-0">
                     <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                         <Layers class="h-4 w-4 text-primary" />
                         Methodology Field Mapping
                     </h2>
-                    <p class="text-[11px] text-muted-foreground mt-0.5">{{ fullMethodologyName }} — how project fields map to schema fields</p>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">
+                        <NuxtLink
+                            v-if="project.instanceTopicId"
+                            :to="`/methodologies/${project.instanceTopicId}`"
+                            class="text-primary hover:underline transition-colors inline-flex items-center gap-1"
+                            @click.stop
+                        >
+                            {{ fullMethodologyName }}
+                            <ExternalLink class="h-3 w-3" />
+                        </NuxtLink>
+                        <span v-else>{{ fullMethodologyName }}</span>
+                        — how project fields map to schema fields
+                    </p>
                 </div>
-                <ChevronDown class="h-4 w-4 text-muted-foreground transition-transform" :class="methodologyMappingOpen ? 'rotate-180' : ''" />
-            </button>
+                <ChevronDown class="h-4 w-4 text-muted-foreground transition-transform shrink-0" :class="methodologyMappingOpen ? 'rotate-180' : ''" />
+            </div>
             <div v-if="methodologyMappingOpen">
                 <!-- Loading -->
                 <div v-if="decodedMethodology.pending.value" class="px-5 py-6 text-center text-xs text-muted-foreground">

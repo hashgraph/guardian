@@ -65,6 +65,18 @@ export class ProjectsService {
     }
 
     /**
+     * Re-fetches IPFS for every VC in the project's topic (clearing failed
+     * BullMQ jobs and ipfs_fetch_failure rows) and reparses already-fetched
+     * VCs through the project mapper.
+     */
+    async refreshIpfsAndReparseProject(
+        network: string,
+        id: string,
+    ): Promise<{ refreshed: number; reparseEnqueued: number }> {
+        return this.mappingReprocessService.refreshIpfsAndReparseProject(network, id);
+    }
+
+    /**
      * Returns the raw VC document for a single linked VC, verifying that the
      * requested consensusTimestamp is in the project's linkedVcs list before
      * querying the message table.

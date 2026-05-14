@@ -218,7 +218,12 @@
         "reextract": "Re-extract",
         "reextractSuccess": "Re-extracting from {count} VC(s) — refresh in a few seconds",
         "reextractEmpty": "Nothing to re-extract — no linked VCs on this project yet",
-        "reextractError": "Failed to re-extract"
+        "reextractError": "Failed to re-extract",
+        "refreshIpfs": "Refresh IPFS",
+        "refreshIpfsTooltip": "Force re-fetch IPFS for every VC in this project's topic and reparse. Use when fields are missing because part of the VC chain never came down from IPFS.",
+        "refreshIpfsSuccess": "Queued {refreshed} IPFS fetch(es) and {reparse} reparse(s) — refresh in a few seconds",
+        "refreshIpfsEmpty": "Nothing to refresh — all VCs in this project's topic are already fetched and indexed",
+        "refreshIpfsError": "Failed to refresh IPFS"
       }
     },
     "compare": {

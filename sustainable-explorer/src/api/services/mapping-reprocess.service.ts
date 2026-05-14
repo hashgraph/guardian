@@ -471,6 +471,133 @@ export class MappingReprocessService {
     }
 
     /**
+     * Refresh IPFS for every VC in the project's topic and reparse the project.
+     *
+     * Unlike `reextractProject` (which only replays already-linked VCs), this
+     * targets the underlying topic and forces a clean IPFS re-fetch even for
+     * VCs that previously failed and are parked in BullMQ's failed-set or in
+     * the ipfs_fetch_failure table. After the IPFS jobs land, each VC's
+     * eager project mapper run will re-attach it to the project. Use this
+     * when a project page shows incomplete data because part of its chain
+     * never came down from IPFS.
+     */
+    async refreshIpfsAndReparseProject(
+        network: string,
+        projectId: string,
+    ): Promise<{ refreshed: number; reparseEnqueued: number }> {
+        const ds = this.dataSources.getDataSource(network);
+
+        const projectRows: Array<{ relatedTopicId: string | null }> = await ds.query(
+            `SELECT "relatedTopicId"
+             FROM business_view
+             WHERE "viewType" = 'PROJECT'
+               AND ("sourceTimestamp" = $1 OR "projectKey" = $1)
+             LIMIT 1`,
+            [projectId],
+        );
+
+        if (projectRows.length === 0) {
+            throw new NotFoundException(
+                `Project with ID "${projectId}" not found on ${network}.`,
+            );
+        }
+
+        const topicId = projectRows[0].relatedTopicId;
+        if (!topicId) {
+            throw new BadRequestException(
+                `Project "${projectId}" has no relatedTopicId — cannot resolve its VC topic.`,
+            );
+        }
+
+        // Every VC-Document in the project's topic, with its CIDs and current
+        // fetch state. We re-enqueue IPFS for the ones that don't have
+        // documents yet, and re-enqueue reparse for the ones that do.
+        const vcRows: Array<{
+            consensusTimestamp: string;
+            files: string[] | null;
+            doc_null: boolean;
+        }> = await ds.query(
+            `SELECT "consensusTimestamp", files, (documents IS NULL) AS doc_null
+             FROM message
+             WHERE "topicId" = $1
+               AND type = 'VC-Document'
+             ORDER BY "consensusTimestamp"`,
+            [topicId],
+        );
+
+        const ipfsQueue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.IPFS_FETCH);
+        const reparseQueue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.PROJECT_REPARSE);
+
+        // CIDs to refresh — collect first so we can also clear stale failure
+        // records and BullMQ jobs in one pass.
+        const cidsToRefresh: Array<{ cid: string; ts: string }> = [];
+        const tsToReparse: string[] = [];
+        for (const row of vcRows) {
+            if (row.doc_null && Array.isArray(row.files)) {
+                for (const cid of row.files) {
+                    cidsToRefresh.push({ cid, ts: row.consensusTimestamp });
+                }
+            } else if (!row.doc_null) {
+                tsToReparse.push(row.consensusTimestamp);
+            }
+        }
+
+        // Clear the ipfs_fetch_failure table for these CIDs so the boot-time
+        // safety net doesn't immediately re-park them.
+        if (cidsToRefresh.length > 0) {
+            await ds.query(
+                `DELETE FROM ipfs_fetch_failure WHERE cid = ANY($1::text[])`,
+                [cidsToRefresh.map(c => c.cid)],
+            );
+        }
+
+        // Enqueue IPFS fetches: remove stale BullMQ jobs first so the new
+        // add() actually runs instead of being deduped against a prior
+        // failed/completed job entry.
+        let refreshed = 0;
+        for (const { cid, ts } of cidsToRefresh) {
+            const jobId = `ipfs-${cid}`;
+            try {
+                const stale = await ipfsQueue.getJob(jobId);
+                if (stale) await stale.remove();
+            } catch {
+                // ignore — job missing is fine
+            }
+            await ipfsQueue.add(
+                'fetch',
+                { cid, messageTimestamp: ts },
+                { jobId },
+            );
+            refreshed++;
+        }
+
+        // Reparse already-fetched VCs through the project mapper so any
+        // newly-reachable chain neighbours pull this project's fields in.
+        let reparseEnqueued = 0;
+        for (const ts of tsToReparse) {
+            const bulkJobId = `project-reparse-${ts}`;
+            try {
+                const stale = await reparseQueue.getJob(bulkJobId);
+                if (stale) await stale.remove();
+            } catch {
+                // ignore
+            }
+            const jobData: ProjectReparseJobData = { messageConsensusTimestamp: ts };
+            await reparseQueue.add('reparse', jobData, {
+                jobId: `project-refresh-${ts}-${Date.now()}`,
+            });
+            reparseEnqueued++;
+        }
+
+        this.logger.log(
+            `refreshIpfsAndReparseProject: project="${projectId}" topic=${topicId} ` +
+            `ipfsRefreshed=${refreshed} reparseEnqueued=${reparseEnqueued}`,
+        );
+
+        return { refreshed, reparseEnqueued };
+    }
+
+    /**
      * Fetches the raw VC document for a single linked VC, verifying that the
      * requested `consensusTimestamp` actually appears in the project's
      * `linkedVcs[]` before hitting the message table.

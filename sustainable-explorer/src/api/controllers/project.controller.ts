@@ -95,6 +95,46 @@ export class ProjectsController {
         return this.projectsService.reextractProject(network, id);
     }
 
+    // TODO: gate behind admin auth once decided
+    @Post(':id/refresh-ipfs')
+    @ApiOperation({
+        summary: 'Force IPFS re-fetch + project reparse for every VC in this project\'s topic',
+        description:
+            'Stronger sibling of /re-extract. Targets every VC in the project\'s ' +
+            'relatedTopicId — re-fetches IPFS for those whose documents are still null ' +
+            '(clearing stale failure records and stale BullMQ jobs so the fetches actually ' +
+            'run), and re-enqueues a PROJECT_REPARSE for those already fetched. Use this ' +
+            'when a project page shows incomplete data because part of its VC chain never ' +
+            'came down from IPFS.',
+    })
+    @ApiParam({
+        name: 'network',
+        enum: ['mainnet', 'testnet', 'previewnet'],
+        description: 'Hedera network',
+    })
+    @ApiParam({
+        name: 'id',
+        description: 'HCS consensus timestamp (sourceTimestamp) or projectKey of the project',
+    })
+    @ApiResponse({
+        status: 201,
+        description: 'Refresh + reparse jobs enqueued',
+        schema: {
+            type: 'object',
+            properties: {
+                refreshed: { type: 'number', description: 'Number of IPFS fetch jobs enqueued' },
+                reparseEnqueued: { type: 'number', description: 'Number of reparse jobs enqueued' },
+            },
+        },
+    })
+    @ApiResponse({ status: 404, description: 'Project not found' })
+    async refreshIpfsAndReparseProject(
+        @Param('network') network: string,
+        @Param('id') id: string,
+    ): Promise<{ refreshed: number; reparseEnqueued: number }> {
+        return this.projectsService.refreshIpfsAndReparseProject(network, id);
+    }
+
     @Get(':id/linked-vcs/:consensusTimestamp')
     @ApiOperation({
         summary: 'Get the raw VC document for a single linked VC',

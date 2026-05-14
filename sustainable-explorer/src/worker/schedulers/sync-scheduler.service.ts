@@ -294,6 +294,29 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     }
 
     /**
+     * Enqueue an IPFS fetch with stable jobId, but first remove any prior job
+     * of the same id from BullMQ. Required for backfills: stable jobIds dedupe
+     * during normal sync, but they also block re-runs of jobs that previously
+     * failed and are still parked in BullMQ's failed-set (kept by `removeOnFail`).
+     * The pre-remove forces BullMQ to create a fresh job entry that actually
+     * executes again. Errors from `remove()` are ignored — most commonly the
+     * job didn't exist.
+     */
+    private async requeueIpfsFetch(cid: string, messageTimestamp: string): Promise<void> {
+        const jobId = `ipfs-${cid}`;
+        try {
+            await this.ipfsQueue.remove(jobId);
+        } catch {
+            // Job didn't exist or was already gone — fine.
+        }
+        await this.ipfsQueue.add(
+            'fetch',
+            { cid, messageTimestamp },
+            { jobId },
+        );
+    }
+
+    /**
      * Boot-time backfill: for every successfully decoded policy, enqueue IPFS fetch
      * jobs for any VC-Document messages under that policy's topic subtree that still
      * have documents = NULL (fetch was deferred while the policy was being decoded).
@@ -328,11 +351,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
                 );
 
             for (const row of rows) {
-                await this.ipfsQueue.add(
-                    'fetch',
-                    { cid: row.cid, messageTimestamp: row.consensusTimestamp },
-                    { jobId: `ipfs-${row.cid}` },
-                );
+                await this.requeueIpfsFetch(row.cid, row.consensusTimestamp);
                 total++;
             }
         }
@@ -368,11 +387,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
             );
 
         for (const row of rows) {
-            await this.ipfsQueue.add(
-                'fetch',
-                { cid: row.cid, messageTimestamp: row.consensusTimestamp },
-                { jobId: `ipfs-${row.cid}` },
-            );
+            await this.requeueIpfsFetch(row.cid, row.consensusTimestamp);
         }
 
         if (rows.length > 0) {

@@ -451,14 +451,28 @@ export class ProjectMapperService {
         startTs: string,
         startCsId: string,
     ): Promise<{ projectKey: string; walked: boolean; hadRelationships: boolean }> {
-        let currentTs = startTs;
-        let currentCsId = startCsId;
+        // BFS the ancestor tree via `options.relationships`. We must walk
+        // THROUGH cs.id-less intermediate VCs (e.g. wrapper / system VCs in
+        // some Guardian policies) — they don't claim a project identity but
+        // their parents do. Stopping at the first cs.id-less hop misses
+        // the real Project Registration VC further up.
+        //
+        // The winner is the OLDEST cs.id-carrying VC found anywhere in the
+        // reachable tree (oldest == closest to chain root == Project VC).
+        let oldestTs = startTs;
+        let oldestCsId = startCsId;
         let walked = false;
         let hadRelationships = false;
-        const visited = new Set<string>([currentTs]);
 
-        for (let i = 0; i < 12; i++) {
-            const rows: Array<{ rels: string[] | null }> = await this.dataSource.query(
+        const visited = new Set<string>([startTs]);
+        const queue: string[] = [startTs];
+        let hops = 0;
+
+        while (queue.length > 0 && hops < 24) {
+            const currentTs = queue.shift()!;
+            hops++;
+
+            const relsRow: Array<{ rels: string[] | null }> = await this.dataSource.query(
                 `SELECT
                     CASE
                         WHEN jsonb_typeof(options->'relationships') = 'array'
@@ -470,14 +484,16 @@ export class ProjectMapperService {
                  LIMIT 1`,
                 [currentTs],
             );
-
-            const rels = rows[0]?.rels ?? [];
-            if (i === 0) hadRelationships = rels.length > 0;
-            if (rels.length === 0) break;
+            const rels = relsRow[0]?.rels ?? [];
+            if (currentTs === startTs) hadRelationships = rels.length > 0;
+            if (rels.length === 0) continue;
 
             const fresh = rels.filter(r => !visited.has(r));
-            if (fresh.length === 0) break;
+            if (fresh.length === 0) continue;
 
+            // Fetch all VC-Document parents in this hop (with or without
+            // cs.id) so we can both record candidates AND continue walking
+            // through cs.id-less ones.
             const parents: Array<{ consensusTimestamp: string; cs_id: string | null }> =
                 await this.dataSource.query(
                     `SELECT "consensusTimestamp",
@@ -485,23 +501,22 @@ export class ProjectMapperService {
                      FROM message
                      WHERE "consensusTimestamp" = ANY($1::text[])
                        AND type = 'VC-Document'
-                       AND documents IS NOT NULL
-                       AND documents->'credentialSubject'->0->>'id' IS NOT NULL
-                     ORDER BY "consensusTimestamp" ASC
-                     LIMIT 1`,
+                     ORDER BY "consensusTimestamp" ASC`,
                     [fresh],
                 );
 
-            if (parents.length === 0) break;
-            const parent = parents[0];
-
-            visited.add(parent.consensusTimestamp);
-            currentTs = parent.consensusTimestamp;
-            currentCsId = parent.cs_id!;
-            walked = true;
+            for (const p of parents) {
+                visited.add(p.consensusTimestamp);
+                queue.push(p.consensusTimestamp);
+                if (p.cs_id && p.consensusTimestamp < oldestTs) {
+                    oldestTs = p.consensusTimestamp;
+                    oldestCsId = p.cs_id;
+                    walked = true;
+                }
+            }
         }
 
-        return { projectKey: currentCsId, walked, hadRelationships };
+        return { projectKey: oldestCsId, walked, hadRelationships };
     }
 
     /**
