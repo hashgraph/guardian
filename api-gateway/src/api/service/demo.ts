@@ -16,6 +16,9 @@ export class DemoApi {
      * Returns list of registered users
      */
     @Get('/registered-users')
+    @Auth(
+        Permissions.DEMO_KEY_CREATE,
+    )
     @ApiOperation({
         summary: 'Returns list of registered users.',
         description: 'Returns list of registered users.',
@@ -30,7 +33,9 @@ export class DemoApi {
     })
     @ApiExtraModels(RegisteredUsersDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async registeredUsers(): Promise<RegisteredUsersDTO> {
+    async registeredUsers(
+        @AuthUser() user: any
+    ): Promise<RegisteredUsersDTO> {
         const users = new Users();
         const guardians = new Guardians();
         try {
@@ -46,7 +51,7 @@ export class DemoApi {
 
             return demoUsers
         } catch (error) {
-            await InternalException(error, this.logger, null);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
