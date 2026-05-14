@@ -300,7 +300,8 @@
                                             class="var-picker-search-input"
                                             [class.var-picker-active]="varPickerFormula === item"
                                             placeholder="Search variables..."
-                                            [(ngModel)]="varPickerSearch"
+                                            [ngModel]="varPickerSearchMap.get(item.id) ?? ''"
+                                            (ngModelChange)="varPickerSearchMap.set(item.id, $event)"
                                             (focus)="onVarPickerFocus(item)"
                                             (blur)="onVarPickerBlur(item)"
                                             (click)="$event.stopPropagation()"/>
@@ -310,7 +311,7 @@
                                                     *ngFor="let v of getFilteredVars(item)"
                                                     class="var-picker-item"
                                                     [title]="v.name"
-                                                    (mousedown)="insertFormulaVariable(item, v.name); varPickerFormula = null; varPickerSearch = ''; $event.preventDefault()">
+                                                    (mousedown)="insertFormulaVariable(item, v.name); varPickerSearchMap.delete(item.id); varPickerFormula = null; $event.preventDefault()">
                                                     {{ v.label }}
                                                 </div>
                                                 <div *ngIf="!getFilteredVars(item).length" class="var-picker-empty">

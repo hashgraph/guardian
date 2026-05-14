@@ -176,7 +176,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public readonly: boolean = false;
 
     public varPickerFormula: MathFormula | null = null;
-    public varPickerSearch: string = '';
+    public varPickerSearchMap = new Map<string, string>();
     private activeMathLive: MathLiveComponent | null = null;
     private activeFormula: MathFormula | null = null;
     private varPickerRedirectToMath = false;
@@ -304,13 +304,14 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public onKeyboard($event: boolean) {
         this.keyboard = $event;
         if (!$event && this.varPickerFormula) {
+            this.varPickerSearchMap.delete(this.varPickerFormula.id);
             this.varPickerFormula = null;
-            this.varPickerSearch = '';
         }
     }
 
     public deleteFormula(formula: MathFormula) {
         this.mathLiveMap.delete(formula.id);
+        this.varPickerSearchMap.delete(formula.id);
         if (this.varPickerFormula === formula) {
             this.varPickerFormula = null;
         }
@@ -749,8 +750,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public onVarPickerFocus(formula: MathFormula): void {
         this.activeMathLive?.keepKeyboard();
+        if (this.varPickerFormula && this.varPickerFormula !== formula) {
+            this.varPickerSearchMap.delete(this.varPickerFormula.id);
+        }
         this.varPickerFormula = formula;
-        this.varPickerSearch = '';
+        this.varPickerSearchMap.set(formula.id, '');
     }
 
     public onVarPickerBlur(formula: MathFormula): void {
@@ -762,7 +766,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             }
             if (this.varPickerFormula === formula) {
                 this.varPickerFormula = null;
-                this.varPickerSearch = '';
+                this.varPickerSearchMap.delete(formula.id);
             }
         }, 150);
     }
@@ -820,10 +824,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 result.push({ name: f.name, label: f.functionNameText || f.name });
             }
         }
-        if (!this.varPickerSearch) {
+        const search = this.varPickerSearchMap.get(formula.id) ?? '';
+        if (!search) {
             return result;
         }
-        const q = this.varPickerSearch.toLowerCase();
+        const q = search.toLowerCase();
         return result.filter(v => v.label.toLowerCase().includes(q) || v.name.toLowerCase().includes(q));
     }
 
