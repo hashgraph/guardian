@@ -379,6 +379,16 @@ export class Recording {
     }
 
     /**
+     * Broadcast recording status update without recording a new action step.
+     * Called by the synthetic RecordActionStep when a timer-triggered chain completes.
+     */
+    public notifyUpdate(): void {
+        if (this.isActive()) {
+            this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+        }
+    }
+
+    /**
      * Get status
      * @public
      */

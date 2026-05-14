@@ -1,9 +1,10 @@
 import { Injectable, NgZone } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { openDB, IDBPDatabase } from 'idb';
 import { IRecordPolicyTestMetadata } from '@guardian/interfaces';
 import { STORES_NAME } from 'src/app/constants';
 import { RecordService } from 'src/app/services/record.service';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 const POLICY_TEST_DB = 'POLICY_TEST';
 const POLICY_TEST_DB_VERSION = 1;
@@ -72,11 +73,23 @@ export class PolicyTestAutomationService {
     public readonly state$ = this.stateSubject.asObservable();
     private currentPolicyId: string | null = null;
     private dbPromise: Promise<IDBPDatabase> | null = null;
+    private _recordSub: Subscription | null = null;
 
     constructor(
         private readonly zone: NgZone,
-        private readonly recordService: RecordService
-    ) { }
+        private readonly recordService: RecordService,
+        private readonly wsService: WebSocketService
+    ) {
+        this._recordSub = this.wsService.recordSubscribe((message) => {
+            const testCases = this.state.testCases;
+            if (!testCases.length || !this.currentPolicyId || message.policyId !== this.currentPolicyId) { return; }
+            const last = testCases[testCases.length - 1];
+            const caseId = last.id;
+            const policyId = this.currentPolicyId;
+            const recordActionId = last.recordActionId;
+            this._fetchOutputs(caseId, policyId, recordActionId);
+        });
+    }
 
     public get state(): PolicyTestAutomationState {
         return this.stateSubject.value;

@@ -1,5 +1,6 @@
 import { GenerateUUIDv4, IRecordPolicyTestMetadata, PolicyEvents, TopicType, RecordMethod } from '@guardian/interfaces';
 import { RunningStatus } from './status.type.js';
+import { RecordActionStep } from '../record-action-step.js';
 import { BlockTreeGenerator } from '../block-tree-generator.js';
 import { RecordAction } from './action.type.js';
 import { IPolicyBlock } from '../policy-engine.interface.js';
@@ -465,9 +466,15 @@ export class Running {
                     if (await this.isAvailable(block, userFull)) {
                         const doc = await this.getActionDocument(action, block);
                         if (action.recordActionId) {
-                            this._actionTimings.push({ recordActionId: action.recordActionId, startedAt: new Date() });
+                            await new Promise<void>((resolve) => {
+                                const step = new RecordActionStep(() => resolve(), 0, false, false, action.recordActionId);
+                                block.setData(userFull, doc, null, step).then(() => {
+                                    step.finish();
+                                });
+                            });
+                        } else {
+                            await block.setData(userFull, doc, null, null);
                         }
-                        await block.setData(userFull, doc, null, null);
                         return null;
                     } else {
                         return `Block (${action.target}) not available.`;

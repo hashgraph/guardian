@@ -155,7 +155,8 @@ export class MathBlock {
     private async process(
         documents: IPolicyDocument,
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        recordActionId: string | null = null
     ): Promise<IPolicyDocument> {
         if (!documents) {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
@@ -175,10 +176,10 @@ export class MathBlock {
 
         const newJson = await this.calculate(ref, map, docOwner);
         if (ref.options.unsigned) {
-            return await this.createUnsignedDocument(newJson, ref);
+            return await this.createUnsignedDocument(newJson, ref, recordActionId);
         } else {
             const metadata = await this.aggregateMetadata(contextDocument, ref, userId);
-            return await this.createDocument(newJson, metadata, ref, userId);
+            return await this.createDocument(newJson, metadata, ref, userId, recordActionId);
         }
     }
 
@@ -250,7 +251,8 @@ export class MathBlock {
         json: any,
         metadata: IMetadata,
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        recordActionId: string | null = null
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -296,7 +298,7 @@ export class MathBlock {
             { uuid }
         );
 
-        const item = PolicyUtils.createVC(ref, owner, newVC);
+        const item = PolicyUtils.createVC(ref, owner, newVC, recordActionId);
         item.type = outputSchema.iri;
         item.schema = outputSchema.iri;
         item.relationships = relationships.length ? relationships : null;
@@ -315,10 +317,11 @@ export class MathBlock {
      */
     private async createUnsignedDocument(
         json: any,
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        recordActionId: string | null = null
     ): Promise<IPolicyDocument> {
         const vc = PolicyUtils.createVcFromSubject(json);
-        return PolicyUtils.createUnsignedVC(ref, vc);
+        return PolicyUtils.createUnsignedVC(ref, vc, recordActionId);
     }
 
     /**
@@ -340,12 +343,12 @@ export class MathBlock {
         if (Array.isArray(event.data.data)) {
             const result: IPolicyDocument[] = [];
             for (const doc of event.data.data) {
-                const newVC = await this.process(doc, ref, event?.user?.userId);
+                const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus?.id ?? null);
                 result.push(newVC)
             }
             event.data.data = result;
         } else {
-            event.data.data = await this.process(event.data.data, ref, event?.user?.userId);
+            event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus?.id ?? null);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
