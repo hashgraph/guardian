@@ -51,17 +51,23 @@ function filterGeneratedToSelected(
     recorded: IRecordResult[],
     outputActions?: Record<string, string> | null
 ): IRecordResult[] {
-    return recorded.flatMap((expected) => {
+    const seen = new Set<IRecordResult>();
+    const result: IRecordResult[] = [];
+    for (const expected of recorded) {
         const expectedLink = RecordImportExport.resultLink(expected);
         const expectedActionId = outputActions?.[expectedLink];
         const candidates = documents.filter((document) => isSameResultKind(expected, document));
-        if (!expectedActionId) {
-            return candidates;
+        const filtered = expectedActionId
+            ? candidates.filter((document) => document.recordActionId === expectedActionId)
+            : candidates;
+        for (const doc of filtered) {
+            if (!seen.has(doc)) {
+                seen.add(doc);
+                result.push(doc);
+            }
         }
-        return candidates.filter((document) => {
-            return document.recordActionId === expectedActionId;
-        });
-    });
+    }
+    return result;
 }
 
 export async function compareResults(details: any): Promise<any> {
