@@ -130,10 +130,14 @@ export class BlockEngine {
                 throw new Error('Invalid data.');
             }
             const inputData = await this._getInputData(user, data);
+            // Code-editor "Test" dialog timeout. Pyodide cold start for the Python sandbox
+            // (geopandas + transitives) can take 15-30s before user code runs, so the
+            // default is sized to leave room for that on top of PYTHON_SANDBOX_TIMEOUT_MS.
+            const dryRunTimeoutMs = parseInt(process.env.DRY_RUN_BLOCK_TIMEOUT_MS, 10);
             const timeoutPromise = new Promise<any>((_, reject) => {
                 setTimeout(() => {
                     reject(new Error(`Timeout exceed.`));
-                }, 25 * 1000);
+                }, dryRunTimeoutMs);
             });
             await Promise.race([
                 this._run(user, data, inputData),

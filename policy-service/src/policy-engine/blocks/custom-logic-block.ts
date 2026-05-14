@@ -298,7 +298,7 @@ export class CustomLogicBlock {
                         tablesPack
                     };
 
-                    const pythonTimeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS || '120000', 10);
+                    const pythonTimeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS, 10);
 
                     if (process.env.PYTHON_SANDBOX_MODE === 'docker') {
                         const { runPythonInDocker } = await import('../helpers/workers/custom-logic-python-docker-worker.js');

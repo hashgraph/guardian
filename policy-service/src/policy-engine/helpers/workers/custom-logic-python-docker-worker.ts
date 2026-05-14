@@ -40,7 +40,7 @@ export function runPythonInDocker(
             reject(new Error(`Invalid sandbox image name: ${image}`));
             return;
         }
-        const timeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS || '120000', 10);
+        const timeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS, 10);
         const containerName = `python-sandbox-${crypto.randomUUID()}`;
 
         const args = [

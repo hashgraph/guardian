@@ -2,8 +2,11 @@ FROM python:3.12.10-slim
 
 WORKDIR /sandbox
 
-# Install system dependencies for geospatial libraries
+# Install system dependencies for geospatial libraries.
+# build-essential is required to compile fiona/rasterio from source on
+# platforms (e.g. linux/arm64) where prebuilt wheels are unavailable.
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     gdal-bin libgdal-dev \
     && rm -rf /var/lib/apt/lists/*
 
