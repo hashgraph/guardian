@@ -112,6 +112,8 @@ export class FieldLink {
     public toJson(): IFieldLink {
         return {
             type: this.type,
+            // Preserve the original user notation (e.g. "x,i") in JSON;
+            // CE uses the underscore-normalised variableName internally.
             name: this.variableNameText || '',
             description: this.description || '',
             field: this.field || '',

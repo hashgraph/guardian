@@ -13,6 +13,7 @@ import { MathGroup } from './math-model/math-group';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { DataInputDialogComponent } from 'src/app/modules/common/data-input-dialog/data-input-dialog.component';
 import { AddDocumentDialog } from '../add-document-dialog/add-document-dialog.component';
+import { MathLiveComponent } from 'src/app/modules/common/mathlive/mathlive.component';
 
 class Tooltip {
     public visible: boolean;
@@ -174,6 +175,14 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public tooltip: Tooltip;
     public readonly: boolean = false;
 
+    public varPickerFormula: MathFormula | null = null;
+    public varPickerSearch: string = '';
+    private activeMathLive: MathLiveComponent | null = null;
+    private activeFormula: MathFormula | null = null;
+    private varPickerRedirectToMath = false;
+    private latexCursorSave: { formula: MathFormula; start: number; end: number } | null = null;
+    private mathLiveMap = new Map<string, MathLiveComponent>();
+
     public inputDocumentValue: any = null;
     public inputRelationshipsValue: any[] = [];
 
@@ -294,9 +303,17 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public onKeyboard($event: boolean) {
         this.keyboard = $event;
+        if (!$event && this.varPickerFormula) {
+            this.varPickerFormula = null;
+            this.varPickerSearch = '';
+        }
     }
 
     public deleteFormula(formula: MathFormula) {
+        this.mathLiveMap.delete(formula.id);
+        if (this.varPickerFormula === formula) {
+            this.varPickerFormula = null;
+        }
         this.engine.deleteFormula(formula);
     }
 
@@ -728,6 +745,114 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 this.code.text = this.code.text.slice(0, cursor) + text + this.code.text.slice(cursor);
             }
         });
+    }
+
+    public onVarPickerFocus(formula: MathFormula): void {
+        this.activeMathLive?.keepKeyboard();
+        this.varPickerFormula = formula;
+        this.varPickerSearch = '';
+    }
+
+    public onVarPickerBlur(formula: MathFormula): void {
+        setTimeout(() => {
+            const shouldKeep = this.varPickerRedirectToMath && this.varPickerFormula === formula;
+            this.varPickerRedirectToMath = false;
+            if (shouldKeep) {
+                return;
+            }
+            if (this.varPickerFormula === formula) {
+                this.varPickerFormula = null;
+                this.varPickerSearch = '';
+            }
+        }, 150);
+    }
+
+    public onMathLiveFocus(formula: MathFormula, mathLive: MathLiveComponent): void {
+        this.mathLiveMap.set(formula.id, mathLive);
+        this.activeMathLive = mathLive;
+        this.activeFormula = formula;
+        this.latexCursorSave = null;
+        if (this.varPickerFormula === formula) {
+            this.varPickerRedirectToMath = true;
+        }
+        setTimeout(() => {
+            const el: HTMLElement = mathLive.getElement().nativeElement;
+            (el.closest('.rows-container') || el).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 150);
+    }
+
+    private getLiveMathComponent(formula: MathFormula): MathLiveComponent | null {
+        const ml = this.mathLiveMap.get(formula.id)
+            ?? (this.activeFormula === formula ? this.activeMathLive : null);
+        if (!ml) {
+            return null;
+        }
+        if (!ml.getElement().nativeElement.isConnected) {
+            this.mathLiveMap.delete(formula.id);
+            return null;
+        }
+        return ml;
+    }
+
+    public onLatexFocus(formula: MathFormula): void {
+        this.activeFormula = formula;
+        this.activeMathLive = null;
+    }
+
+    public onLatexBlur(formula: MathFormula, event: FocusEvent): void {
+        const input = event.target as HTMLInputElement;
+        this.latexCursorSave = {
+            formula,
+            start: input.selectionStart ?? formula.functionBodyText.length,
+            end: input.selectionEnd ?? formula.functionBodyText.length,
+        };
+    }
+
+    public getFilteredVars(formula: MathFormula): Array<{ name: string; label: string }> {
+        const result: Array<{ name: string; label: string }> = [];
+        for (const item of this.engine.variables.getItems()) {
+            if (item.validName) {
+                result.push({ name: item.name, label: item.variableNameText || item.name });
+            }
+        }
+        for (const f of this.engine.formulas.getItems()) {
+            if (f !== formula && f.validName) {
+                result.push({ name: f.name, label: f.functionNameText || f.name });
+            }
+        }
+        if (!this.varPickerSearch) {
+            return result;
+        }
+        const q = this.varPickerSearch.toLowerCase();
+        return result.filter(v => v.label.toLowerCase().includes(q) || v.name.toLowerCase().includes(q));
+    }
+
+    public insertFormulaVariable(formula: MathFormula, varName: string): void {
+        const latex = `\\operatorname{${varName}}`;
+
+        if (formula.view === 'formula') {
+            const ml = this.getLiveMathComponent(formula);
+            if (ml) {
+                ml.insert(latex);
+                setTimeout(() => formula.updateBody());
+            } else {
+                formula.functionBodyText = (formula.functionBodyText || '') + latex;
+                formula.updateBody();
+            }
+        } else if (formula.view === 'latex') {
+            if (this.latexCursorSave?.formula === formula) {
+                const { start, end } = this.latexCursorSave;
+                const text = formula.functionBodyText;
+                formula.functionBodyText = text.slice(0, start) + latex + text.slice(end);
+                this.latexCursorSave = { formula, start: start + latex.length, end: start + latex.length };
+            } else {
+                formula.functionBodyText = (formula.functionBodyText || '') + latex;
+            }
+            formula.updateBody();
+        } else {
+            formula.functionBodyText = (formula.functionBodyText || '') + latex;
+            formula.updateBody();
+        }
     }
 
     public onCodeChangeTab(tab: any) {

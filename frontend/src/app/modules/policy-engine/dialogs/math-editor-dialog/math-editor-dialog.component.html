@@ -20,9 +20,9 @@
             <div class="guardian-step-container">
                 <div class="guardian-stepper vertical-stepper">
                     <div class="guardian-step-header">Settings</div>
-                    <div class="guardian-step" 
-                        [attr.action]="step === 'step_1'" 
-                        [attr.highlighted]="step === 'step_1'" 
+                    <div class="guardian-step"
+                        [attr.action]="step === 'step_1'"
+                        [attr.highlighted]="step === 'step_1'"
                         (click)="onStep('step_1')"
                     >
                         <div class="guardian-step-marker">
@@ -34,9 +34,9 @@
                         <div class="guardian-step-name">{{getHeader('step_1')}}</div>
                     </div>
                     <div class="guardian-step-separator"></div>
-                    <div class="guardian-step" 
-                        [attr.action]="step === 'step_2'" 
-                        [attr.highlighted]="step === 'step_2'" 
+                    <div class="guardian-step"
+                        [attr.action]="step === 'step_2'"
+                        [attr.highlighted]="step === 'step_2'"
                         (click)="onStep('step_2')"
                     >
                         <div class="guardian-step-marker">
@@ -48,9 +48,9 @@
                         <div class="guardian-step-name">{{getHeader('step_2')}}</div>
                     </div>
                     <div class="guardian-step-separator"></div>
-                    <div class="guardian-step" 
-                        [attr.action]="step === 'step_3'" 
-                        [attr.highlighted]="step === 'step_3'" 
+                    <div class="guardian-step"
+                        [attr.action]="step === 'step_3'"
+                        [attr.highlighted]="step === 'step_3'"
                         (click)="onStep('step_3')"
                     >
                         <div class="guardian-step-marker">
@@ -63,9 +63,9 @@
                     </div>
 
                     <div class="guardian-step-header">Testing</div>
-                    <div class="guardian-step" 
-                        [attr.action]="step === 'step_4'" 
-                        [attr.highlighted]="step === 'step_4'" 
+                    <div class="guardian-step"
+                        [attr.action]="step === 'step_4'"
+                        [attr.highlighted]="step === 'step_4'"
                         (click)="onStep('step_4')"
                     >
                         <div class="guardian-step-marker">
@@ -77,9 +77,9 @@
                         <div class="guardian-step-name">{{getHeader('step_4')}}</div>
                     </div>
                     <div class="guardian-step-separator"></div>
-                    <div class="guardian-step" 
-                        [attr.action]="step === 'step_5'" 
-                        [attr.highlighted]="step === 'step_5'" 
+                    <div class="guardian-step"
+                        [attr.action]="step === 'step_5'"
+                        [attr.highlighted]="step === 'step_5'"
                         (click)="onStep('step_5')"
                         [attr.disabled]="!result"
                     >
@@ -103,16 +103,16 @@
             <ng-container *ngIf="step === 'step_1'" >
                 <div class="step-container pages">
                     <div *ngIf="variables.length" class="formulas-container">
-                        <div 
+                        <div
                             class="reorder-rows-container"
                             cdkDropList
                             [cdkDropListData]="variables"
                             (cdkDropListDropped)="reorder('variables', $event)"
                             cdkScrollable
                         >
-                            <div 
-                                *ngFor="let item of variables" 
-                                class="rows-container" 
+                            <div
+                                *ngFor="let item of variables"
+                                class="rows-container"
                                 [attr.error]="item.invalid && item.validated"
                                 cdkDrag
                                 cdkDragLockAxis="y"
@@ -129,9 +129,9 @@
                                     <div class="formula-name" [attr.error]="!item.validName">
                                         <div class="guardian-input-container">
                                             <label class="form-label">Variable</label>
-                                            <input 
-                                                [(ngModel)]="item.variableNameText" 
-                                                pInputText 
+                                            <input
+                                                [(ngModel)]="item.variableNameText"
+                                                pInputText
                                                 type="text"
                                                 placeholder="Name"
                                                 (change)="item.update()"/>
@@ -174,8 +174,8 @@
                                     </div>
                                 </div>
                                 <div class="formula-del">
-                                    <button 
-                                        class="guardian-icon-button big" 
+                                    <button
+                                        class="guardian-icon-button big"
                                         (click)="deleteVariable(item)">
                                         <svg-icon
                                             class="icon-btn svg-icon"
@@ -201,9 +201,9 @@
                         </div>
                     </div>
                     <div *ngIf="!variables.length" class="formulas-container-empty">
-                        <svg-icon 
-                            class="svg-icon-32" 
-                            src="/assets/images/icons/32/list.svg" 
+                        <svg-icon
+                            class="svg-icon-32"
+                            src="/assets/images/icons/32/list.svg"
                             svgClass="icon-color-disabled">
                         </svg-icon>
                         <span class="info-text">No variables have been created yet</span>
@@ -217,7 +217,7 @@
                         </button>
                     </div>
                 </div>
-                <pages-control 
+                <pages-control
                     class="pages-control"
                     [items]="engine.variables.pages"
                     [current]="engine.variables.current"
@@ -245,16 +245,16 @@
                         </p-tabView>
                     </div>
                     <div *ngIf="codeTab === 'general' && formulas.length" class="formulas-container">
-                        <div 
+                        <div
                             class="reorder-rows-container"
                             cdkDropList
                             [cdkDropListData]="formulas"
                             (cdkDropListDropped)="reorder('formulas', $event)"
                             cdkScrollable
                         >
-                            <div 
-                                *ngFor="let item of formulas" 
-                                class="rows-container" 
+                            <div
+                                *ngFor="let item of formulas"
+                                class="rows-container"
                                 [attr.error]="item.invalid && item.validated"
                                 cdkDrag
                                 cdkDragLockAxis="y"
@@ -271,9 +271,9 @@
                                     <div class="formula-name" [attr.error]="!item.validName">
                                         <div class="guardian-input-container">
                                             <label class="form-label">Name</label>
-                                            <input 
-                                                [(ngModel)]="item.functionNameText" 
-                                                pInputText 
+                                            <input
+                                                [(ngModel)]="item.functionNameText"
+                                                pInputText
                                                 type="text"
                                                 placeholder="Name"
                                                 (change)="item.updateName()"/>
@@ -294,55 +294,84 @@
                                             [attr.selected]="item.view === 'json'"
                                             (click)="onChangeView(item, 'json')">MathJSON</div>
                                     </div>
+                                    <div class="var-picker-wrapper">
+                                        <input
+                                            type="text"
+                                            class="var-picker-search-input"
+                                            [class.var-picker-active]="varPickerFormula === item"
+                                            placeholder="Search variables..."
+                                            [(ngModel)]="varPickerSearch"
+                                            (focus)="onVarPickerFocus(item)"
+                                            (blur)="onVarPickerBlur(item)"
+                                            (click)="$event.stopPropagation()"/>
+                                        <div *ngIf="varPickerFormula === item" class="var-picker-dropdown" (mousedown)="$event.preventDefault()">
+                                            <div class="var-picker-list">
+                                                <div
+                                                    *ngFor="let v of getFilteredVars(item)"
+                                                    class="var-picker-item"
+                                                    [title]="v.name"
+                                                    (mousedown)="insertFormulaVariable(item, v.name); varPickerFormula = null; varPickerSearch = ''; $event.preventDefault()">
+                                                    {{ v.label }}
+                                                </div>
+                                                <div *ngIf="!getFilteredVars(item).length" class="var-picker-empty">
+                                                    No variables found
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="row-container vertical">
                                     <div *ngIf="item.view === 'formula'" class="formula-tab-body" [attr.error]="!item.validBody">
                                         <div class="guardian-textarea-container">
-                                            <math-live 
-                                                [(value)]="item.functionBodyText" 
+                                            <math-live
+                                                [(value)]="item.functionBodyText"
                                                 [readonly]="false"
                                                 [menu]="false"
                                                 [keyboardType]="'evaluate'"
                                                 [keyboardContainer]="contextBodyRef"
                                                 (keyboard)="onKeyboard($event)"
                                                 (change)="item.updateBody()"
+                                                (focus)="onMathLiveFocus(item, $event)"
                                             ></math-live>
                                         </div>
                                     </div>
                                     <div *ngIf="item.view === 'latex'" class="formula-tab-body" [attr.error]="!item.validBody">
                                         <div class="guardian-input-container">
-                                            <input 
-                                                [(ngModel)]="item.functionBodyText" 
-                                                pInputText 
+                                            <input
+                                                [(ngModel)]="item.functionBodyText"
+                                                pInputText
                                                 type="text"
-                                                (change)="item.updateBody()"/>
+                                                (change)="item.updateBody()"
+                                                (focus)="onLatexFocus(item)"
+                                                (blur)="onLatexBlur(item, $event)"/>
                                         </div>
                                     </div>
                                     <div *ngIf="item.view === 'json'" class="formula-tab-body" [attr.error]="!item.validBody">
                                         <div class="guardian-textarea-container">
-                                            <textarea 
-                                                [(ngModel)]="item.functionBodyJson" 
-                                                pTextarea 
+                                            <textarea
+                                                [(ngModel)]="item.functionBodyJson"
+                                                pTextarea
                                                 [readonly]="readonly"
-                                                rows="8" 
+                                                rows="8"
                                                 (blur)="item.updateBody()"></textarea>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="row-container row-container-last">
                                     <div class="guardian-textarea-container">
                                         <label class="form-label">Notes</label>
-                                        <textarea 
-                                            [(ngModel)]="item.description" 
+                                        <textarea
+                                            [(ngModel)]="item.description"
                                             placeholder="Please enter here notes"
-                                            pTextarea 
-                                            rows="2" 
+                                            pTextarea
+                                            rows="2"
                                             [readonly]="readonly"></textarea>
                                     </div>
                                 </div>
                                 <div class="formula-del">
-                                    <button 
-                                        class="guardian-icon-button big" 
+                                    <button
+                                        class="guardian-icon-button big"
                                         (click)="deleteFormula(item)">
                                         <svg-icon
                                             class="icon-btn svg-icon"
@@ -368,9 +397,9 @@
                         </div>
                     </div>
                     <div *ngIf="codeTab === 'general' && !formulas.length" class="formulas-container-empty">
-                        <svg-icon 
-                            class="svg-icon-32" 
-                            src="/assets/images/icons/32/list.svg" 
+                        <svg-icon
+                            class="svg-icon-32"
+                            src="/assets/images/icons/32/list.svg"
                             svgClass="icon-color-disabled">
                         </svg-icon>
                         <span class="info-text">No results have been created yet</span>
@@ -452,10 +481,10 @@
                                 </div>
                                 <div class="guardian-button-label">Formulas</div>
                             </button>
-                            <div 
+                            <div
                                 class="guardian-label help-label"
-                                pTooltip="To add variable or formula in the code view below, place your cursor where you want to insert a component, then click the button." 
-                                tooltipPosition="top" 
+                                pTooltip="To add variable or formula in the code view below, place your cursor where you want to insert a component, then click the button."
+                                tooltipPosition="top"
                                 [tooltipOptions]="{showDelay: 300}"
                             >
                                 <svg-icon
@@ -466,16 +495,16 @@
                             </div>
                         </div>
                         <div class="code-body">
-                            <ngx-codemirror 
-                                *ngIf="initDialog" 
-                                [(ngModel)]="code.text" 
+                            <ngx-codemirror
+                                *ngIf="initDialog"
+                                [(ngModel)]="code.text"
                                 [options]="codeMirrorOptions"
                                 (ngModelChange)="onChangeCode()"
                                 (cursorActivity)="cursorActivity($event)"></ngx-codemirror>
-                        </div>  
+                        </div>
                     </div>
                 </div>
-                <pages-control 
+                <pages-control
                     *ngIf="codeTab === 'general'"
                     class="pages-control"
                     [items]="engine.formulas.pages"
@@ -490,16 +519,16 @@
             <ng-container *ngIf="step === 'step_3'" >
                 <div class="step-container pages">
                     <div *ngIf="outputs.length" class="formulas-container">
-                        <div 
+                        <div
                             class="reorder-rows-container"
                             cdkDropList
                             [cdkDropListData]="outputs"
                             (cdkDropListDropped)="reorder('outputs', $event)"
                             cdkScrollable
                         >
-                            <div 
-                                *ngFor="let item of outputs" 
-                                class="rows-container" 
+                            <div
+                                *ngFor="let item of outputs"
+                                class="rows-container"
                                 [attr.error]="item.invalid && item.validated"
                                 cdkDrag
                                 cdkDragLockAxis="y"
@@ -533,9 +562,9 @@
                                     <div class="formula-name" [attr.error]="!item.validName">
                                         <div class="guardian-input-container">
                                             <label class="form-label"></label>
-                                            <input 
-                                                [(ngModel)]="item.variableNameText" 
-                                                pInputText 
+                                            <input
+                                                [(ngModel)]="item.variableNameText"
+                                                pInputText
                                                 type="text"
                                                 placeholder="Name"
                                                 (change)="item.update()"/>
@@ -561,8 +590,8 @@
                                     </div>
                                 </div>
                                 <div class="formula-del">
-                                    <button 
-                                        class="guardian-icon-button big" 
+                                    <button
+                                        class="guardian-icon-button big"
                                         (click)="deleteOutput(item)">
                                         <svg-icon
                                             class="icon-btn svg-icon"
@@ -588,9 +617,9 @@
                         </div>
                     </div>
                     <div *ngIf="!outputs.length" class="formulas-container-empty">
-                        <svg-icon 
-                            class="svg-icon-32" 
-                            src="/assets/images/icons/32/list.svg" 
+                        <svg-icon
+                            class="svg-icon-32"
+                            src="/assets/images/icons/32/list.svg"
                             svgClass="icon-color-disabled">
                         </svg-icon>
                         <span class="info-text">No results have been created yet</span>
@@ -604,7 +633,7 @@
                         </button>
                     </div>
                 </div>
-                <pages-control 
+                <pages-control
                     class="pages-control"
                     [items]="engine.outputs.pages"
                     [current]="engine.outputs.current"
@@ -631,8 +660,8 @@
                                     </div>
                                     <div class="col-125">
                                         <div class="input-document-edit">
-                                            <button 
-                                                class="guardian-icon-button big" 
+                                            <button
+                                                class="guardian-icon-button big"
                                                 (click)="editInputDocument(inputDocumentValue)">
                                                 <svg-icon
                                                     class="icon-btn svg-icon"
@@ -642,8 +671,8 @@
                                             </button>
                                         </div>
                                         <div class="input-document-delete">
-                                            <button 
-                                                class="guardian-icon-button big" 
+                                            <button
+                                                class="guardian-icon-button big"
                                                 (click)="deleteInputDocument(inputDocumentValue)">
                                                 <svg-icon
                                                     class="icon-btn svg-icon"
@@ -657,9 +686,9 @@
                             </div>
                         </div>
                         <div *ngIf="!inputDocumentValue" class="formulas-container-empty">
-                            <svg-icon 
-                                class="svg-icon-32" 
-                                src="/assets/images/icons/32/list.svg" 
+                            <svg-icon
+                                class="svg-icon-32"
+                                src="/assets/images/icons/32/list.svg"
                                 svgClass="icon-color-disabled">
                             </svg-icon>
                             <span class="info-text">Nothing uploaded yet</span>
@@ -687,8 +716,8 @@
                                     </div>
                                     <div class="col-125">
                                         <div class="input-document-edit">
-                                            <button 
-                                                class="guardian-icon-button big" 
+                                            <button
+                                                class="guardian-icon-button big"
                                                 (click)="editInputDocument(item)">
                                                 <svg-icon
                                                     class="icon-btn svg-icon"
@@ -698,8 +727,8 @@
                                             </button>
                                         </div>
                                         <div class="input-document-delete">
-                                            <button 
-                                                class="guardian-icon-button big" 
+                                            <button
+                                                class="guardian-icon-button big"
                                                 (click)="deleteInputDocument(item)">
                                                 <svg-icon
                                                     class="icon-btn svg-icon"
@@ -713,9 +742,9 @@
                             </div>
                         </div>
                         <div *ngIf="!inputRelationshipsValue.length" class="formulas-container-empty">
-                            <svg-icon 
-                                class="svg-icon-32" 
-                                src="/assets/images/icons/32/list.svg" 
+                            <svg-icon
+                                class="svg-icon-32"
+                                src="/assets/images/icons/32/list.svg"
                                 svgClass="icon-color-disabled">
                             </svg-icon>
                             <span class="info-text">Nothing uploaded yet</span>
@@ -754,9 +783,9 @@
                                 <div class="formula-name">
                                     <div class="guardian-input-container">
                                         <label class="form-label">Variable</label>
-                                        <input 
-                                            [ngModel]="item.variableNameText" 
-                                            pInputText 
+                                        <input
+                                            [ngModel]="item.variableNameText"
+                                            pInputText
                                             type="text"
                                             [readOnly]="true"/>
                                     </div>
@@ -796,9 +825,9 @@
                     </ng-container>
                 </div>
                 <div *ngIf="!result?.variables?.length" class="formulas-container-empty">
-                    <svg-icon 
-                        class="svg-icon-32" 
-                        src="/assets/images/icons/32/list.svg" 
+                    <svg-icon
+                        class="svg-icon-32"
+                        src="/assets/images/icons/32/list.svg"
                         svgClass="icon-color-disabled">
                     </svg-icon>
                     <span class="info-text">No variables</span>
@@ -811,9 +840,9 @@
                                 <div class="formula-name">
                                     <div class="guardian-input-container">
                                         <label class="form-label">Name</label>
-                                        <input 
-                                            [ngModel]="item.functionNameText" 
-                                            pInputText 
+                                        <input
+                                            [ngModel]="item.functionNameText"
+                                            pInputText
                                             type="text"
                                             [readOnly]="true"/>
                                     </div>
@@ -824,8 +853,8 @@
                                 <div class="formula-tab-body">
                                     <div class="guardian-textarea-container">
                                         <label class="form-label">Formula</label>
-                                        <math-live 
-                                            [value]="item.functionBodyText" 
+                                        <math-live
+                                            [value]="item.functionBodyText"
                                             [readonly]="true"
                                             [keyboardContainer]="contextBodyRef"
                                         ></math-live>
@@ -846,9 +875,9 @@
                     </ng-container>
                 </div>
                 <div *ngIf="!result?.formulas?.length" class="formulas-container-empty">
-                    <svg-icon 
-                        class="svg-icon-32" 
-                        src="/assets/images/icons/32/list.svg" 
+                    <svg-icon
+                        class="svg-icon-32"
+                        src="/assets/images/icons/32/list.svg"
                         svgClass="icon-color-disabled">
                     </svg-icon>
                     <span class="info-text">No formulas</span>
@@ -873,9 +902,9 @@
                                 <div class="formula-name">
                                     <div class="guardian-input-container">
                                         <label class="form-label"></label>
-                                        <input 
-                                            [ngModel]="item.variableNameText" 
-                                            pInputText 
+                                        <input
+                                            [ngModel]="item.variableNameText"
+                                            pInputText
                                             type="text"
                                             [readOnly]="true"/>
                                     </div>
@@ -903,9 +932,9 @@
                     </ng-container>
                 </div>
                 <div *ngIf="!result?.outputs?.length" class="formulas-container-empty">
-                    <svg-icon 
-                        class="svg-icon-32" 
-                        src="/assets/images/icons/32/list.svg" 
+                    <svg-icon
+                        class="svg-icon-32"
+                        src="/assets/images/icons/32/list.svg"
                         svgClass="icon-color-disabled">
                     </svg-icon>
                     <span class="info-text">No outputs</span>
@@ -945,18 +974,18 @@
                     </div>
                     <div class="output-containers">
                         <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'input'">
-                            <ngx-codemirror 
-                                [(ngModel)]="result.input" 
+                            <ngx-codemirror
+                                [(ngModel)]="result.input"
                                 [options]="codeMirrorOptions2"></ngx-codemirror>
                         </div>
                         <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'output'">
-                            <ngx-codemirror 
-                                [(ngModel)]="result.output" 
+                            <ngx-codemirror
+                                [(ngModel)]="result.output"
                                 [options]="codeMirrorOptions2"></ngx-codemirror>
                         </div>
                         <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'errors'">
-                            <ngx-codemirror 
-                                [(ngModel)]="result.error" 
+                            <ngx-codemirror
+                                [(ngModel)]="result.error"
                                 [options]="codeMirrorOptions2"></ngx-codemirror>
                         </div>
                     </div>
@@ -966,11 +995,11 @@
     </div>
     <div *ngIf="!inputSchema" class="context">
         <div class="formulas-container-empty">
-            <svg-icon 
-                class="svg-icon-32" 
-                src="/assets/images/icons/32/list.svg" 
+            <svg-icon
+                class="svg-icon-32"
+                src="/assets/images/icons/32/list.svg"
                 svgClass="icon-color-disabled">
-            </svg-icon> 
+            </svg-icon>
             <span class="info-text">Input schema has't been chosen yet</span>
         </div>
     </div>
