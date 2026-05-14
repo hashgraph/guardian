@@ -60,11 +60,10 @@ function filterGeneratedToSelected(
         const filtered = expectedActionId
             ? candidates.filter((document) => document.recordActionId === expectedActionId)
             : candidates;
-        for (const doc of filtered) {
-            if (!seen.has(doc)) {
-                seen.add(doc);
-                result.push(doc);
-            }
+        const match = filtered.find((doc) => !seen.has(doc));
+        if (match) {
+            seen.add(match);
+            result.push(match);
         }
     }
     return result;
