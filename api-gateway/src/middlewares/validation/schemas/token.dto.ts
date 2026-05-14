@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ArrayMinSize, IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min, ValidateIf } from 'class-validator';
 import { Examples } from '../examples.js';
 
 export class TokenDTO {
@@ -204,4 +205,30 @@ export class TokenInfoDTO {
         example: true
     })
     enableWipe?: boolean;
+}
+
+export class TransferTokenDTO {
+    @ApiProperty({ type: String, description: 'Target Hedera account ID', example: '0.0.12345' })
+    @IsString()
+    @IsNotEmpty()
+    targetAccount: string;
+
+    @ApiProperty({ type: Number, description: 'Amount (FT) or serial count to pick (NFT); must be > 0', required: false, example: 10 })
+    @ValidateIf(o => !o.serialNumbers?.length)
+    @IsNumber()
+    @IsPositive()
+    amount?: number;
+
+    @ApiProperty({ type: [Number], description: 'Specific NFT serial numbers to transfer; positive integers', required: false, example: [1, 2, 3] })
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    @Min(1, { each: true })
+    @ArrayMinSize(1)
+    serialNumbers?: number[];
+
+    @ApiProperty({ type: String, description: 'Optional transaction memo', required: false })
+    @IsOptional()
+    @IsString()
+    memo?: string;
 }

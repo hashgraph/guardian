@@ -508,6 +508,55 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Transfer token
+     * @param tokenId
+     * @param body
+     * @param owner
+     */
+    public async transferToken(
+        tokenId: string,
+        body: {
+            targetAccount: string,
+            amount?: number,
+            serialNumbers?: number[],
+            memo?: string
+        },
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.TRANSFER_TOKEN, {
+            tokenId,
+            body,
+            owner,
+        });
+    }
+
+    /**
+     * Async transfer token
+     * @param tokenId
+     * @param body
+     * @param owner
+     * @param task
+     */
+    public async transferTokenAsync(
+        tokenId: string,
+        body: {
+            targetAccount: string,
+            amount?: number,
+            serialNumbers?: number[],
+            memo?: string
+        },
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.TRANSFER_TOKEN_ASYNC, {
+            tokenId,
+            body,
+            owner,
+            task,
+        });
+    }
+
+    /**
      * Get token info
      * @param tokenId
      * @param username
