@@ -129,7 +129,7 @@ export class RecordControllerComponent implements OnInit {
     }
 
     public stopRecording() {
-        if (this.policyTest.hasInput()) {
+        if (this.policyTest.shouldWarnBeforeStop()) {
             this.openNoOutputWarning();
             return;
         }
@@ -141,10 +141,10 @@ export class RecordControllerComponent implements OnInit {
         const dialogRef = this.dialog.open(ConfirmDialog, {
             width: '560px',
             data: {
-                title: 'Stop and Discard Input?',
+                title: 'Stop Recording?',
                 description: [
-                    'Input test data was not captured or there is no corresponding output document(s) selected.',
-                    'Stop this recording and discard input test data?'
+                    'You have captured test data but no documents are selected.',
+                    'Nothing will be saved to the test record. Stop and discard captured data?'
                 ],
                 submitButton: 'Confirm',
                 cancelButton: 'Cancel'

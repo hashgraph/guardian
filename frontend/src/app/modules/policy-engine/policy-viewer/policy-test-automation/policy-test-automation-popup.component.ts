@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ViewerDialog } from '../../dialogs/viewer-dialog/viewer-dialog.component';
-import { PolicyTestAutomationService, PolicyTestOutputAnchor } from './policy-test-automation.service';
+import { PolicyTestAutomationService } from './policy-test-automation.service';
 
 @Component({
     selector: 'policy-test-automation-popup',
@@ -18,28 +18,29 @@ export class PolicyTestAutomationPopupComponent {
         this.automationService.setCaptureNextFormSubmit(checked);
     }
 
-    public discardInput(): void {
-        this.automationService.discardInput();
+    public discardTestCase(id: string): void {
+        this.automationService.discardTestCase(id);
     }
 
-    public confirmDocumentResults(): void {
-        this.automationService.confirmOutputFromInput();
+    public toggleInputSelected(caseId: string): void {
+        this.automationService.toggleInputSelected(caseId);
     }
 
-    public inspectInput(): void {
-        const input = this.automationService.state.input;
-        if (!input) {
-            return;
-        }
-        this.openJson(input.title || 'Input', input.document);
+    public toggleOutputSelected(caseId: string, documentId: string): void {
+        this.automationService.toggleOutputSelected(caseId, documentId);
     }
 
-    public inspectOutput(output: PolicyTestOutputAnchor): void {
-        this.openJson(output.title || 'Output', output.document || output);
+    public viewInput(caseId: string): void {
+        const tc = this.automationService.state.testCases.find((c) => c.id === caseId);
+        if (!tc?.input?.document) { return; }
+        this.openJson(tc.input.tag || 'Input', tc.input.document);
     }
 
-    public discardOutput(type: string, id: string): void {
-        this.automationService.discardOutput(type, id);
+    public viewOutput(caseId: string, documentId: string): void {
+        const tc = this.automationService.state.testCases.find((c) => c.id === caseId);
+        const out = tc?.outputs.find((o) => o.documentId === documentId);
+        if (!out?.document) { return; }
+        this.openJson(out.tag || 'Document', out.document);
     }
 
     private openJson(title: string, value: unknown): void {

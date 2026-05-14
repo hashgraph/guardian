@@ -311,7 +311,7 @@ export class RequestDocumentBlockDialog {
             .setBlockDataWithResult(this.id, this.policyId, payload)
             .subscribe((result) => {
                 if (captureOutput) {
-                    this.policyTest.captureInput({
+                    this.policyTest.captureTestCase({
                         policyId: this.policyId,
                         blockId: this.id,
                         blockType: 'requestDocumentBlock',

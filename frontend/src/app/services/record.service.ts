@@ -62,6 +62,12 @@ export class RecordService {
         return this.http.get<any>(`${this.url}/${policyId}/running/details`);
     }
 
+    public getRecordActionDocuments(policyId: string, recordActionId: string): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/${policyId}/recording/action-documents`, {
+            params: { recordActionId }
+        });
+    }
+
     public fastForward(policyId: string, data: any): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/running/fast-forward`, data);
     }

@@ -450,7 +450,7 @@ export class RequestDocumentBlockComponent
             .subscribe((result) => {
                 requestSucceeded = true;
                 if (captureOutput) {
-                    this.policyTest.captureInput({
+                    this.policyTest.captureTestCase({
                         policyId: this.policyId,
                         blockId: this.id,
                         blockType: 'requestDocumentBlock',

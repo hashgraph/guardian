@@ -3,6 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 import { openDB, IDBPDatabase } from 'idb';
 import { IRecordPolicyTestMetadata } from '@guardian/interfaces';
 import { STORES_NAME } from 'src/app/constants';
+import { RecordService } from 'src/app/services/record.service';
 
 const POLICY_TEST_DB = 'POLICY_TEST';
 const POLICY_TEST_DB_VERSION = 1;
@@ -22,41 +23,47 @@ export interface PolicyTestInputAnchor {
     capturedAt: string;
 }
 
-export interface PolicyTestOutputAnchor {
-    type: 'vc' | 'vp' | 'schema' | string;
+export interface PolicyTestCaseInput {
+    type: 'vc' | 'vp' | 'schema';
+    documentId: string;
+    tag?: string;
+    schemaId?: string;
+    policyId: string;
+    blockId: string;
+    selected: boolean;
+    document?: any;
+}
+
+export interface PolicyTestCaseOutput {
+    tag: string;
+    schemaId?: string;
+    type: 'vc' | 'vp' | 'schema';
+    documentId: string;
+    recordActionId: string;
+    selected: boolean;
+    document?: any;
+}
+
+export interface PolicyTestCase {
     id: string;
-    title?: string;
-    document?: unknown;
-    source?: {
-        policyId?: string;
-        documentId?: string;
-        recordActionId?: string;
-        schemaId?: string;
-        messageId?: string;
-        rowId?: string;
-        blockId?: string;
-        blockType?: string;
-        inputCapturedAt?: string;
-    };
-    capturedAt: string;
+    name: string;
+    recordActionId: string;
+    input: PolicyTestCaseInput;
+    outputs: PolicyTestCaseOutput[];
 }
 
 export interface PolicyTestAutomationState {
     captureNextFormSubmit: boolean;
-    input: PolicyTestInputAnchor | null;
-    outputs: PolicyTestOutputAnchor[];
+    testCases: PolicyTestCase[];
     name: string;
     description: string;
-    readyToSave: boolean;
 }
 
 const createInitialState = (): PolicyTestAutomationState => ({
     captureNextFormSubmit: false,
-    input: null,
-    outputs: [],
+    testCases: [],
     name: '',
     description: '',
-    readyToSave: false
 });
 
 @Injectable({ providedIn: 'root' })
@@ -66,7 +73,10 @@ export class PolicyTestAutomationService {
     private currentPolicyId: string | null = null;
     private dbPromise: Promise<IDBPDatabase> | null = null;
 
-    constructor(private readonly zone: NgZone) { }
+    constructor(
+        private readonly zone: NgZone,
+        private readonly recordService: RecordService
+    ) { }
 
     public get state(): PolicyTestAutomationState {
         return this.stateSubject.value;
@@ -79,91 +89,67 @@ export class PolicyTestAutomationService {
     }
 
     public setCaptureNextFormSubmit(value: boolean): void {
-        const state = this.state;
-        if (value && state.input) {
-            return;
-        }
         this.update({ captureNextFormSubmit: value });
         this.persistToIdb();
     }
 
-    public captureInput(input: Omit<PolicyTestInputAnchor, 'capturedAt'>): void {
-        if (this.state.input) {
-            return;
-        }
-        this.currentPolicyId = input.policyId;
-        this.update({
-            captureNextFormSubmit: false,
+    public captureTestCase(input: Omit<PolicyTestInputAnchor, 'capturedAt'>): void {
+        const raw = input.result?.data || input.result;
+        const recordActionId: string = raw?.recordActionId;
+        if (!recordActionId) { return; }
+        const documentId: string = raw?.document?.id || raw?.id;
+        const inputType: 'vc' | 'vp' = raw?.type === 'vp' ? 'vp' : 'vc';
+        const caseId = this._uuid();
+        const testCase: PolicyTestCase = {
+            id: caseId,
+            name: input.title || input.blockType || 'Test Data',
+            recordActionId,
             input: {
-                ...this.clone(input),
-                capturedAt: new Date().toISOString()
-            }
-        });
-        this.persistToIdb();
-    }
-
-    public discardInput(): void {
-        this.update({ input: null, captureNextFormSubmit: false });
-        this.persistToIdb();
-    }
-
-    public addOutput(output: Omit<PolicyTestOutputAnchor, 'capturedAt'>): void {
-        const exists = this.state.outputs.some((item) => {
-            return item.type === output.type && item.id === output.id;
-        });
-        if (exists) {
-            return;
-        }
+                type: inputType,
+                documentId,
+                tag: raw?.tag || input.blockType,
+                schemaId: raw?.schema,
+                policyId: input.policyId,
+                blockId: input.blockId,
+                selected: false,
+                document: raw?.document
+            },
+            outputs: []
+        };
         this.update({
-            outputs: [
-                ...this.state.outputs,
-                { ...this.clone(output), capturedAt: new Date().toISOString() }
-            ],
-            readyToSave: false
-        });
-        this.persistToIdb();
-    }
-
-    public discardOutput(type: string, id: string): void {
-        this.update({
-            outputs: this.state.outputs.filter((item) => item.type !== type || item.id !== id),
-            readyToSave: false
-        });
-        this.persistToIdb();
-    }
-
-    public confirmOutputFromInput(): void {
-        const input = this.state.input;
-        if (!input) {
-            return;
-        }
-        const item = input.result?.data || input.result;
-        const document = item?.document;
-        if (document?.id) {
-            const type = item?.type === 'vp' || document?.type?.includes?.('VerifiablePresentation') ? 'vp' : 'vc';
-            this.addOutput({
-                type,
-                id: document.id,
-                title: input.title || item?.tag || type.toUpperCase(),
-                document,
-                source: {
-                    policyId: input.policyId,
-                    blockId: input.blockId,
-                    blockType: input.blockType,
-                    documentId: document.id,
-                    recordActionId: item?.recordActionId,
-                    schemaId: item?.schema,
-                    messageId: item?.messageId,
-                    rowId: item?.id,
-                    inputCapturedAt: input.capturedAt
-                }
-            });
-        }
-        this.update({
-            input: null,
             captureNextFormSubmit: false,
-            readyToSave: false
+            testCases: [...this.state.testCases, testCase]
         });
+        this.persistToIdb();
+        this._fetchOutputs(caseId, input.policyId, recordActionId);
+    }
+
+    public discardTestCase(id: string): void {
+        this.update({ testCases: this.state.testCases.filter((tc) => tc.id !== id) });
+        this.persistToIdb();
+    }
+
+    public toggleInputSelected(caseId: string): void {
+        const testCases = this.state.testCases.map((tc) => {
+            if (tc.id !== caseId) { return tc; }
+            return { ...tc, input: { ...tc.input, selected: !tc.input.selected } };
+        });
+        this.update({ testCases });
+        this.persistToIdb();
+    }
+
+    public toggleOutputSelected(caseId: string, documentId: string): void {
+        const testCases = this.state.testCases.map((tc) => {
+            if (tc.id !== caseId) { return tc; }
+            return {
+                ...tc,
+                outputs: tc.outputs.map((out) => {
+                    if (out.documentId !== documentId) { return out; }
+                    return { ...out, selected: !out.selected };
+                })
+            };
+        });
+        this.update({ testCases });
         this.persistToIdb();
     }
 
@@ -172,40 +158,35 @@ export class PolicyTestAutomationService {
     }
 
     public markReadyToSave(): boolean {
-        const readyToSave = !!this.state.input && this.state.outputs.length > 0;
-        this.update({ readyToSave });
-        return readyToSave;
-    }
-
-    public hasInput(): boolean {
-        return !!this.state.input;
-    }
-
-    public hasOutputs(): boolean {
-        return this.state.outputs.length > 0;
+        return this.state.testCases.length > 0;
     }
 
     public shouldWarnBeforeStop(): boolean {
-        return this.hasInput() && !this.hasOutputs();
+        if (this.state.testCases.length === 0) { return false; }
+        const anySelected = this.state.testCases.some((tc) =>
+            tc.input.selected || tc.outputs.some((out) => out.selected)
+        );
+        return !anySelected;
     }
 
     public getRecordMetadata(): IRecordPolicyTestMetadata | null {
-        const outputs = this.state.outputs.filter((output) => {
-            return output.type === 'vc' || output.type === 'vp' || output.type === 'schema';
-        });
-        if (!outputs.length) {
-            return null;
-        }
-        const outputLinks = outputs.map((output) => {
-            return `results/${btoa(`${output.type}|${output.id}`)}`;
-        });
-        const outputActions = outputs.reduce<Record<string, string>>((acc, output, index) => {
-            if (output.source?.recordActionId) {
-                acc[outputLinks[index]] = output.source.recordActionId;
+        const outputLinks: string[] = [];
+        const outputActions: Record<string, string> = {};
+        for (const tc of this.state.testCases) {
+            if (tc.input.selected && tc.input.documentId) {
+                const link = `results/${btoa(`${tc.input.type}|${tc.input.documentId}`)}`;
+                outputLinks.push(link);
+                outputActions[link] = tc.recordActionId;
             }
-            return acc;
-        }, {});
-
+            for (const out of tc.outputs) {
+                if (out.selected && out.documentId) {
+                    const link = `results/${btoa(`${out.type}|${out.documentId}`)}`;
+                    outputLinks.push(link);
+                    outputActions[link] = out.recordActionId;
+                }
+            }
+        }
+        if (!outputLinks.length) { return null; }
         return {
             outputs: outputLinks,
             outputActions: Object.keys(outputActions).length ? outputActions : null
@@ -216,6 +197,35 @@ export class PolicyTestAutomationService {
         this.clearIdb();
         this.currentPolicyId = null;
         this.stateSubject.next(createInitialState());
+    }
+
+    private _fetchOutputs(caseId: string, policyId: string, recordActionId: string): void {
+        this.recordService.getRecordActionDocuments(policyId, recordActionId).subscribe({
+            next: (docs) => {
+                const outputs: PolicyTestCaseOutput[] = (docs || []).map((doc) => ({
+                    tag: doc.tag || doc.type,
+                    schemaId: doc.schema || undefined,
+                    type: (doc.type === 'vp' ? 'vp' : 'vc') as 'vc' | 'vp',
+                    documentId: doc.document?.id || doc.id,
+                    recordActionId: doc.recordActionId,
+                    selected: false,
+                    document: doc.document
+                }));
+                this.zone.run(() => {
+                    const testCases = this.state.testCases.map((tc) => {
+                        if (tc.id !== caseId) { return tc; }
+                        return { ...tc, outputs };
+                    });
+                    this.update({ testCases });
+                    this.persistToIdb();
+                });
+            },
+            error: () => {}
+        });
+    }
+
+    private _uuid(): string {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2);
     }
 
     private getDb(): Promise<IDBPDatabase> {
@@ -241,8 +251,7 @@ export class PolicyTestAutomationService {
                     this.stateSubject.next({
                         ...createInitialState(),
                         captureNextFormSubmit: stored.captureNextFormSubmit || false,
-                        input: stored.input || null,
-                        outputs: stored.outputs || []
+                        testCases: stored.testCases || []
                     });
                 });
             }
@@ -256,17 +265,18 @@ export class PolicyTestAutomationService {
         });
     }
 
-    private clone<T>(value: T): T {
-        return JSON.parse(JSON.stringify(value));
-    }
-
     private persistToIdb(): void {
         if (!this.currentPolicyId) { return; }
         const policyId = this.currentPolicyId;
-        const { captureNextFormSubmit, input, outputs } = this.state;
+        const { captureNextFormSubmit, testCases } = this.state;
+        const lightweight = testCases.map((tc) => ({
+            ...tc,
+            input: { ...tc.input, document: undefined },
+            outputs: tc.outputs.map((out) => ({ ...out, document: undefined }))
+        }));
         void this.getDb().then((db) => {
             if (this.currentPolicyId !== policyId) { return; }
-            return db.put(STORES_NAME.POLICY_TEST_STORE, { policyId, captureNextFormSubmit, input, outputs });
+            return db.put(STORES_NAME.POLICY_TEST_STORE, { policyId, captureNextFormSubmit, testCases: lightweight });
         }).catch(() => { });
     }
 

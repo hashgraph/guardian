@@ -211,7 +211,7 @@ export class RequestDocumentBlockAddonComponent
             };
 
             if (this.dryRun && this.policyTest.state.captureNextFormSubmit) {
-                this.policyTest.captureInput({
+                this.policyTest.captureTestCase({
                     policyId: this.policyId,
                     blockId: this.id,
                     blockType: 'requestDocumentBlockAddon',
