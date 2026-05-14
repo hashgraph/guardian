@@ -220,6 +220,9 @@ Python code in custom logic blocks runs in a sandboxed environment. The followin
 | :---------- | :----- |
 | JavaScript bridge (`from js import ...`) | Blocked via module stub + import hook |
 | `pyodide.http` network access | Blocked via module stub + import hook |
+| `pyodide.code` (exposes `run_js` → arbitrary Node host code) | Cached entry evicted, stubbed in `sys.modules` *and* on the parent `pyodide` package, blocked via import hook |
+| `pyodide.ffi`, `pyodide.webloop`, `pyodide.console` | Same treatment as `pyodide.code` |
+| `micropip` (would let user code extend the install allowlist) | Removed from `sys.modules` after controlled install, blocked via import hook |
 | `sqlite3` (pulled transitively by geopandas → fiona) | Blocked via module stub + import hook |
 | `os.system`, `os.popen`, `os.exec*`, `os.spawn*` | All replaced with blocked function |
 | `subprocess.run`, `subprocess.Popen` | All execution functions replaced |
@@ -227,6 +230,7 @@ Python code in custom logic blocks runs in a sandboxed environment. The followin
 | `os.environ` (secrets) | Cleared on startup (only HOME/PATH kept) |
 | `importlib.reload` | Blocked to prevent undoing patches |
 | `builtins.__import__` | Guarded via closure to prevent bypass |
+| Dry-run input depth/size | Capped at 64 levels / 100k nodes before `pyodide.toPy` conversion |
 | Execution timeout | Configurable via `PYTHON_SANDBOX_TIMEOUT_MS` (default 120s) |
 
 #### Docker Mode Restrictions
@@ -237,7 +241,7 @@ All restrictions above are provided by Docker container isolation:
 * **File system:** `--read-only` + no host mounts — container sees only its own minimal filesystem
 * **Processes:** commands run inside isolated container only, destroyed after execution
 * **Environment:** `os.environ` cleared before user code runs
-* **Resources:** container destroyed with `--rm` after each execution
+* **Resources:** `--memory` (default 512m, also pins `--memory-swap`), `--cpus` (default 1.0), `--pids-limit` (default 128) bound a misbehaving script; container destroyed with `--rm` after each execution. Each cap is tunable via `PYTHON_SANDBOX_MEMORY` / `PYTHON_SANDBOX_CPUS` / `PYTHON_SANDBOX_PIDS`.
 
 #### Vulnerability Comparison
 
@@ -249,7 +253,7 @@ All restrictions above are provided by Docker container isolation:
 | `os.environ` secrets | Cleared | Cleared + container has own env |
 | `ctypes` C function calls | Not blocked (needed by pandas, harmless in WASM) | Runs inside isolated container |
 | Python introspection bypass | Possible (known limitation) | Irrelevant — container is isolated |
-| Memory/CPU exhaustion | Timeout only | Timeout + container destroyed |
+| Memory/CPU exhaustion | Timeout only | `--memory` / `--cpus` / `--pids-limit` + timeout + container destroyed |
 
 {% hint style="info" %}
 
@@ -265,4 +269,7 @@ All restrictions above are provided by Docker container isolation:
 | `PYTHON_SANDBOX_MODE` | `pyodide` | No (defaults to `pyodide` if unset) | Execution mode: `pyodide` or `docker` |
 | `PYTHON_SANDBOX_TIMEOUT_MS` | `120000` | Yes | Execution timeout in milliseconds (both modes). Provided by all `configs/.env.*.guardian.system` templates; the policy-service has no in-code fallback, so the variable must be present or block execution will fail immediately. |
 | `PYTHON_SANDBOX_IMAGE` | `guardian/python-sandbox:latest` | No (Docker mode only) | Docker sandbox image name |
+| `PYTHON_SANDBOX_MEMORY` | `512m` | No (Docker mode only) | Container memory limit (passed to `docker run --memory` and `--memory-swap`). Accepts the same suffix forms as Docker (`b`, `k`, `m`, `g`). |
+| `PYTHON_SANDBOX_CPUS` | `1.0` | No (Docker mode only) | Container CPU quota (passed to `docker run --cpus`). |
+| `PYTHON_SANDBOX_PIDS` | `128` | No (Docker mode only) | Container PID limit (passed to `docker run --pids-limit`). |
 | `DRY_RUN_BLOCK_TIMEOUT_MS` | `180000` | Yes | Overall timeout for the Policy Editor "Test" dialog (dry-run block execution). Provided by all env templates; no in-code fallback. Must be larger than `PYTHON_SANDBOX_TIMEOUT_MS` to leave room for Pyodide cold start. |

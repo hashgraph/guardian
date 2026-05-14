@@ -92,6 +92,29 @@ class _RestrictedModule:
 sys.modules['js'] = _RestrictedModule('js')
 sys.modules['pyodide.http'] = _RestrictedModule('pyodide.http')
 
+# pyodide.code exposes run_js (arbitrary JS execution in the Node host -> full sandbox escape).
+# pyodide.ffi exposes JsProxy / create_proxy / wrap_in_proxy, similarly bridging to JS.
+# pyodide.webloop and pyodide.console expose more bridge surface.
+# These are pre-cached in sys.modules because the JS side called pyodide.pyimport('pyodide.code')
+# before this hardening ran; evict cached entries (including submodules), stub them, and also
+# overwrite the submodule attribute on the parent pyodide package so that attribute access via
+# 'import pyodide; pyodide.code.run_js(...)' cannot bypass the import hook.
+import pyodide as _pyodide_pkg
+_pyodide_blocked = ('pyodide.code', 'pyodide.ffi', 'pyodide.webloop', 'pyodide.console')
+for _name in _pyodide_blocked:
+    for _cached in [m for m in list(sys.modules) if m == _name or m.startswith(_name + '.')]:
+        del sys.modules[_cached]
+    _stub = _RestrictedModule(_name)
+    sys.modules[_name] = _stub
+    setattr(_pyodide_pkg, _name.split('.', 1)[1], _stub)
+del _pyodide_pkg
+
+# micropip was used by the JS side to install the allowlisted packages; user code must not be
+# able to extend the allowlist by calling micropip.install() itself. Drop it from sys.modules
+# so re-import goes through the meta-path / __import__ blocker below.
+for _cached in [m for m in list(sys.modules) if m == 'micropip' or m.startswith('micropip.')]:
+    del sys.modules[_cached]
+
 # sqlite3 is pulled transitively by geopandas -> fiona (for GeoPackage/SpatiaLite support).
 # Evict any cached entries (including submodules) so the import hook below sees fresh lookups,
 # then stub the top-level name so cached references raise.
@@ -125,11 +148,18 @@ _importlib.reload = _blocked
 # 7. Install import hook to prevent bypassing module restrictions (PEP 451)
 from importlib.abc import MetaPathFinder
 
-_blocked_modules = {'js', 'pyodide.http', 'cffi', '_posixsubprocess', 'sqlite3'}
+_blocked_modules = {
+    'js', 'pyodide.http', 'pyodide.code', 'pyodide.ffi', 'pyodide.webloop', 'pyodide.console',
+    'micropip', 'cffi', '_posixsubprocess', 'sqlite3',
+}
+_blocked_prefixes = (
+    'js.', 'pyodide.http.', 'pyodide.code.', 'pyodide.ffi.', 'pyodide.webloop.', 'pyodide.console.',
+    'micropip.', 'cffi.', 'sqlite3.',
+)
 
 class _SandboxImportBlocker(MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
-        if fullname in _blocked_modules or fullname.startswith(('js.', 'pyodide.http.', 'cffi.', 'sqlite3.')):
+        if fullname in _blocked_modules or fullname.startswith(_blocked_prefixes):
             raise ImportError(f"Import of {fullname} is restricted in this sandbox")
         return None
 
@@ -139,7 +169,7 @@ sys.meta_path.insert(0, _SandboxImportBlocker())
 def _make_guarded_import():
     _orig = builtins.__import__
     def _guarded_import(name, *args, **kwargs):
-        if name in _blocked_modules or any(name.startswith(prefix + '.') for prefix in ('js', 'pyodide.http', 'cffi', 'sqlite3')):
+        if name in _blocked_modules or name.startswith(_blocked_prefixes):
             raise ImportError(f"Import of {name} is restricted in this sandbox")
         return _orig(name, *args, **kwargs)
     return _guarded_import

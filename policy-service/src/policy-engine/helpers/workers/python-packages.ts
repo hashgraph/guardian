@@ -21,10 +21,15 @@ export const PYTHON_PACKAGES = [
 /**
  * Map from top-level Python import name to the package name used by micropip.
  * Only entries where they differ need to be listed (default: same name).
+ *
+ * Null prototype: a plain object literal would resolve `__proto__` and `constructor`
+ * to `Object.prototype` / `Object`, which is harmless under the current `allowed.has`
+ * check but fragile if that check is later loosened. Object.create(null) eliminates
+ * the prototype-walk entirely.
  */
-export const IMPORT_TO_PACKAGE: Record<string, string> = {
+export const IMPORT_TO_PACKAGE: Record<string, string> = Object.assign(Object.create(null), {
     sklearn: 'scikit-learn',
-};
+});
 
 /**
  * Build the subset of PYTHON_PACKAGES that the user code references.

@@ -134,6 +134,9 @@ export class BlockEngine {
             // (geopandas + transitives) can take 15-30s before user code runs, so the
             // default is sized to leave room for that on top of PYTHON_SANDBOX_TIMEOUT_MS.
             const dryRunTimeoutMs = parseInt(process.env.DRY_RUN_BLOCK_TIMEOUT_MS, 10);
+            if (!Number.isFinite(dryRunTimeoutMs) || dryRunTimeoutMs <= 0) {
+                throw new Error('DRY_RUN_BLOCK_TIMEOUT_MS is not configured (must be a positive integer)');
+            }
             const timeoutPromise = new Promise<any>((_, reject) => {
                 setTimeout(() => {
                     reject(new Error(`Timeout exceed.`));
@@ -161,9 +164,47 @@ export class BlockEngine {
             }
         } else {
             const docs: IPolicyDocument[] = this._getDocuments(user, data);
+            // Dry-run input comes straight from the user's Test dialog and ends up being
+            // recursively converted to native Python via pyodide.toPy() in the Custom Logic
+            // block. A crafted deeply-nested document can overflow the WASM stack during
+            // conversion before any user code runs. Cap depth and total node count cheaply
+            // here, with the same fail-fast intent as RAW_REQUEST_LIMIT bounds for HTTP bodies.
+            BlockEngine._assertInputBounds(docs);
             this.setInput({ documents: docs });
             return docs;
         }
+    }
+
+    private static readonly INPUT_MAX_DEPTH = 64;
+    private static readonly INPUT_MAX_NODES = 100_000;
+
+    private static _assertInputBounds(value: unknown): void {
+        let nodes = 0;
+        const walk = (node: unknown, depth: number): void => {
+            if (depth > BlockEngine.INPUT_MAX_DEPTH) {
+                throw new Error(
+                    `Input document exceeds maximum nesting depth (${BlockEngine.INPUT_MAX_DEPTH}).`
+                );
+            }
+            if (++nodes > BlockEngine.INPUT_MAX_NODES) {
+                throw new Error(
+                    `Input document exceeds maximum node count (${BlockEngine.INPUT_MAX_NODES}).`
+                );
+            }
+            if (node === null || typeof node !== 'object') {
+                return;
+            }
+            if (Array.isArray(node)) {
+                for (const item of node) {
+                    walk(item, depth + 1);
+                }
+            } else {
+                for (const key of Object.keys(node as Record<string, unknown>)) {
+                    walk((node as Record<string, unknown>)[key], depth + 1);
+                }
+            }
+        };
+        walk(value, 0);
     }
 
     private _getDocuments(user: PolicyUser, data: BlockData): IPolicyDocument[] {

@@ -299,6 +299,10 @@ export class CustomLogicBlock {
                     };
 
                     const pythonTimeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS, 10);
+                    if (!Number.isFinite(pythonTimeoutMs) || pythonTimeoutMs <= 0) {
+                        safeReject(new Error('PYTHON_SANDBOX_TIMEOUT_MS is not configured (must be a positive integer)'));
+                        return;
+                    }
 
                     if (process.env.PYTHON_SANDBOX_MODE === 'docker') {
                         const { runPythonInDocker } = await import('../helpers/workers/custom-logic-python-docker-worker.js');

@@ -64,6 +64,9 @@ services:
     volumes:
       - ./guardian-service/tls:/usr/local/app/tls:ro
       - ./guardian-service/configs:/usr/local/app/configs:ro
+    environment:
+      OPERATOR_ID: ${OPERATOR_ID}
+      OPERATOR_KEY: ${OPERATOR_KEY}
     <<: *service-template
     expose:
       - '6555'
@@ -204,6 +207,9 @@ services:
     volumes:
       - ./worker-service/tls:/usr/local/app/tls:ro
       - ./worker-service/configs:/usr/local/app/configs:ro
+    environment:
+      OPERATOR_ID: ${OPERATOR_ID}
+      OPERATOR_KEY: ${OPERATOR_KEY}
     <<: *service-template
     deploy:
       replicas: 1
