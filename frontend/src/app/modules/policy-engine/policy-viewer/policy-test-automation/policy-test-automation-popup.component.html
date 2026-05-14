@@ -1,80 +1,53 @@
 <div class="policy-test-automation-popup" *ngIf="automationService.state$ | async as state">
-    <div class="policy-test-automation-header">
-        <div class="policy-test-automation-title">Policy Test Automation</div>
-
-        <span
-            class="policy-test-status-badge"
-            *ngIf="!state.input">
-            AWAITING INPUT
-        </span>
-
-        <span
-            class="policy-test-status-badge policy-test-status-badge-active"
-            *ngIf="state.input">
-            AWAITING OUTPUTS
-        </span>
+    <div class="policy-test-header">
+        <span class="policy-test-title">Policy Test Automation</span>
     </div>
 
-    <div class="policy-test-section">
-        <div class="policy-test-section-title">Input</div>
+    <label class="policy-test-capture-row">
+        <input
+            type="checkbox"
+            [checked]="state.captureNextFormSubmit"
+            (change)="onCaptureChange($any($event.target).checked)"
+        />
+        <span>Capture test data on next form submission</span>
+    </label>
 
-        <div class="policy-test-section-body" [ngClass]="{'policy-test-section-body-captured': state.input}">
-            <div class="policy-test-section-left">
-                <label class="policy-test-checkbox-row" *ngIf="!state.input">
-                    <input
-                        type="checkbox"
-                        [checked]="state.captureNextFormSubmit"
-                        (change)="onCaptureChange($any($event.target).checked)"
-                    />
-                    <span>Capture Form Submission Data</span>
-                </label>
+    <div class="policy-test-cases">
+        <ng-container *ngIf="state.testCases.length === 0">
+            <div class="policy-test-empty-title">Test Data</div>
+            <div class="policy-test-empty-msg">Not captured yet</div>
+        </ng-container>
 
-                <div class="policy-test-item" *ngIf="state.input">
-                    <span>{{ state.input.title || 'Input captured' }}</span>
-                    <div class="policy-test-actions">
-                        <button type="button" (click)="inspectInput()"><i class="pi pi-search"></i>View Input</button>
-                        <button type="button" (click)="discardInput()"><i class="pi pi-trash"></i>Discard</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="policy-test-section-right">
-                <div class="policy-test-help" *ngIf="!state.input">
-                    <i class="pi pi-info-circle"></i>
-                    <span>Data on next form submission will be used for test input</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="policy-test-section" [ngClass]="{'policy-test-section-disabled': !state.input && state.outputs.length === 0}">
-        <div class="policy-test-section-title">Outputs</div>
-
-        <div class="policy-test-section-body" [ngClass]="{'policy-test-section-body-captured': state.outputs.length > 0}">
-            <div class="policy-test-section-left">
-                <div class="policy-test-muted" *ngIf="state.outputs.length === 0">No outputs yet</div>
-
-                <div class="policy-test-item" *ngFor="let output of state.outputs">
-                    <span>{{ output.title || output.type }}</span>
-                    <div class="policy-test-actions">
-                        <button type="button" (click)="inspectOutput(output)"><i class="pi pi-search"></i>View Output</button>
-                        <button type="button" (click)="discardOutput(output.type, output.id)"><i class="pi pi-trash"></i>Discard</button>
-                    </div>
-                </div>
-
-                <button
-                    type="button"
-                    class="policy-test-section-action"
-                    *ngIf="state.input"
-                    (click)="confirmDocumentResults()">
-                    Confirm Document Results
+        <div class="policy-test-case-card" *ngFor="let tc of state.testCases">
+            <div class="test-case-header">
+                <span class="test-case-name">{{ tc.name }}</span>
+                <button type="button" class="test-case-discard-btn" (click)="discardTestCase(tc.id)">
+                    <i class="pi pi-trash"></i> Discard
                 </button>
             </div>
-
-            <div class="policy-test-section-right">
-                <div class="policy-test-help" *ngIf="state.input && state.outputs.length === 0">
-                    <i class="pi pi-info-circle"></i>
-                    <span>Review Document output and confirm they are correct</span>
+            <div class="test-case-body">
+                <div class="test-case-input-col">
+                    <button type="button" class="test-case-link-btn" (click)="viewInput(tc.id)">
+                        <i class="pi pi-search"></i> View Input
+                    </button>
+                </div>
+                <div class="test-case-outputs-col">
+                    <div class="test-case-output-row" *ngFor="let out of tc.outputs">
+                        <label class="test-case-output-check">
+                            <input
+                                type="checkbox"
+                                [checked]="out.selected"
+                                (change)="toggleOutputSelected(tc.id, out.documentId)"
+                            />
+                            <span>{{ out.tag }}</span>
+                        </label>
+                        <button type="button" class="test-case-link-btn" (click)="viewOutput(tc.id, out.documentId)">
+                            <i class="pi pi-search"></i> View Document
+                        </button>
+                    </div>
+                    <div class="test-case-loading" *ngIf="tc.outputs.length === 0">
+                        Loading outputs...
+                    </div>
                 </div>
             </div>
         </div>
