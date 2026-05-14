@@ -232,7 +232,6 @@ export class RecordControllerComponent implements OnInit {
         const value = (name || '')
             .trim()
             .replace(/[<>:"/\\|?*\x00-\x1F]/g, '-')
-            .replace(/\s+/g, '-')
             .replace(/-+/g, '-')
             .replace(/^-|-$/g, '')
             .slice(0, 80);

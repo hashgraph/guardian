@@ -18,9 +18,9 @@
             <div class="policy-test-empty-msg">Not captured yet</div>
         </ng-container>
 
-        <div class="policy-test-case-card" *ngFor="let tc of state.testCases">
+        <div class="policy-test-case-card" *ngFor="let tc of state.testCases; let i = index">
             <div class="test-case-header">
-                <span class="test-case-name">{{ tc.name }}</span>
+                <span class="test-case-name">Test Data {{ i + 1 }}</span>
                 <button type="button" class="test-case-discard-btn" (click)="discardTestCase(tc.id)">
                     <i class="pi pi-trash"></i> Discard
                 </button>

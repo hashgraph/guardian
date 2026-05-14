@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, Subject, Subscription, mergeMap, filter, map, take } from 'rxjs';
 import { openDB, IDBPDatabase } from 'idb';
 import { IRecordPolicyTestMetadata } from '@guardian/interfaces';
 import { STORES_NAME } from 'src/app/constants';
@@ -74,6 +74,9 @@ export class PolicyTestAutomationService {
     private currentPolicyId: string | null = null;
     private dbPromise: Promise<IDBPDatabase> | null = null;
     private _recordSub: Subscription | null = null;
+    private readonly _captureSubject$ = new Subject<{ caseId: string; policyId: string; recordActionId: string }>();
+    private readonly _wsSignal$ = new Subject<string>();
+    private _deferredFetchSub: Subscription | null = null;
 
     constructor(
         private readonly zone: NgZone,
@@ -81,13 +84,20 @@ export class PolicyTestAutomationService {
         private readonly wsService: WebSocketService
     ) {
         this._recordSub = this.wsService.recordSubscribe((message) => {
-            const testCases = this.state.testCases;
-            if (!testCases.length || !this.currentPolicyId || message.policyId !== this.currentPolicyId) { return; }
-            const last = testCases[testCases.length - 1];
-            const caseId = last.id;
-            const policyId = this.currentPolicyId;
-            const recordActionId = last.recordActionId;
-            this._fetchOutputs(caseId, policyId, recordActionId);
+            if (message?.policyId) {
+                this._wsSignal$.next(message.policyId);
+            }
+        });
+        this._deferredFetchSub = this._captureSubject$.pipe(
+            mergeMap((capture) =>
+                this._wsSignal$.pipe(
+                    filter((policyId) => policyId === capture.policyId),
+                    take(1),
+                    map(() => capture)
+                )
+            )
+        ).subscribe((capture) => {
+            this._fetchOutputs(capture.caseId, capture.policyId, capture.recordActionId);
         });
     }
 
@@ -135,6 +145,7 @@ export class PolicyTestAutomationService {
         });
         this.persistToIdb();
         this._fetchOutputs(caseId, input.policyId, recordActionId);
+        this._captureSubject$.next({ caseId, policyId: input.policyId, recordActionId });
     }
 
     public discardTestCase(id: string): void {
@@ -224,10 +235,16 @@ export class PolicyTestAutomationService {
                     selected: false,
                     document: doc.document
                 }));
+                if (!outputs.length) { return; }
                 this.zone.run(() => {
                     const testCases = this.state.testCases.map((tc) => {
                         if (tc.id !== caseId) { return tc; }
-                        return { ...tc, outputs };
+                        const existingIds = new Set(tc.outputs.map((o) => o.documentId));
+                        const merged = [
+                            ...tc.outputs,
+                            ...outputs.filter((o) => !existingIds.has(o.documentId))
+                        ];
+                        return { ...tc, outputs: merged };
                     });
                     this.update({ testCases });
                     this.persistToIdb();
