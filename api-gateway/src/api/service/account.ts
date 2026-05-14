@@ -167,11 +167,7 @@ export class AccountApi {
             if (!parentUser) {
                 throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
             }
-            try {
-                await checkPermission(UserRole.STANDARD_REGISTRY)(parentUser);
-            } catch (error) {
-                await InternalException(error, this.logger, parentUser?.id);
-            }
+            await checkPermission(UserRole.STANDARD_REGISTRY)(parentUser);
         }
         try {
             const { role, username, password } = body;
@@ -253,23 +249,27 @@ export class AccountApi {
             if (!parentUser) {
                 throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
             }
-            try {
-                await checkPermission(UserRole.STANDARD_REGISTRY)(parentUser);
-            } catch (error) {
-                await InternalException(error, this.logger, parentUser?.id);
+            await checkPermission(UserRole.STANDARD_REGISTRY)(parentUser);
+        }
+
+        if (body.hederaAccountId || body.hederaAccountKey) {
+            if (!body.hederaAccountId || !HEDERA_ACCOUNT_ID_REGEX.test(body.hederaAccountId)) {
+                throw new HttpException(
+                    'Invalid hederaAccountId format. Expected format: 0.0.XXXXX',
+                    HttpStatus.UNPROCESSABLE_ENTITY,
+                );
+            }
+            if (!body.hederaAccountKey || !HEDERA_ACCOUNT_KEY_REGEX.test(body.hederaAccountKey)) {
+                throw new HttpException(
+                    'Invalid hederaAccountKey format. Expected a valid Hedera private key',
+                    HttpStatus.UNPROCESSABLE_ENTITY,
+                );
             }
         }
 
-        if (body.hederaAccountKey && !HEDERA_ACCOUNT_ID_REGEX.test(body.hederaAccountId)) {
+        if (body.useFireblocksSigning === true && !body.fireblocksConfig) {
             throw new HttpException(
-                'Invalid hederaAccountId format. Expected format: 0.0.XXXXX',
-                HttpStatus.UNPROCESSABLE_ENTITY,
-            );
-        }
-
-        if (body.hederaAccountId && !HEDERA_ACCOUNT_KEY_REGEX.test(body.hederaAccountKey)) {
-            throw new HttpException(
-                'Invalid hederaAccountKey format. Expected a valid Hedera private key',
+                'fireblocksConfig is required when useFireblocksSigning is true',
                 HttpStatus.UNPROCESSABLE_ENTITY,
             );
         }

@@ -8,13 +8,14 @@ import {
     IsNotEmpty,
     IsNumber,
     IsOptional,
-    IsString
+    IsString,
+    ValidateNested
 } from 'class-validator';
 import { UserRole } from '@guardian/interfaces';
 import { Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Match } from '../../../helpers/decorators/match.validator.js';
-import { DidDocumentDTO, DidKeyDTO, SubjectDTO } from './profiles.js';
+import { DidDocumentDTO, DidKeyDTO, FireblocksConfigDTO, SubjectDTO } from './profiles.js';
 
 export class PermissionGroupResponseDTO {
     @ApiProperty({
@@ -457,9 +458,11 @@ export class OnboardingDTO extends RegisterUserDTO {
     @IsBoolean()
     useFireblocksSigning?: boolean;
 
-    @ApiProperty({ required: false, description: 'Fireblocks configuration (required when useFireblocksSigning is true).' })
+    @ApiProperty({ required: false, type: () => FireblocksConfigDTO, description: 'Fireblocks configuration (required when useFireblocksSigning is true).' })
     @IsOptional()
-    fireblocksConfig?: any;
+    @ValidateNested()
+    @Type(() => FireblocksConfigDTO)
+    fireblocksConfig?: FireblocksConfigDTO;
 }
 
 export class CredentialSubjectDTO {

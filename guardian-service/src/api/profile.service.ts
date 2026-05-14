@@ -24,7 +24,7 @@ import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
-import { ICredentials, IOnboardingPayload, setupUserProfile, validateCommonDid } from './helpers/profile-helper.js';
+import { ICredentials, IFireblocksConfig, IOnboardingPayload, setupUserProfile, validateCommonDid } from './helpers/profile-helper.js';
 
 @Controller()
 export class ProfileController {
@@ -235,16 +235,23 @@ export function profileAPI(logger: PinoLogger) {
                 );
                 notifier.completeStep(STEP_REGISTER);
 
-                const profile = {
-                    ...payload,
-                    hederaAccountId,
-                    hederaAccountKey,
+                const profile: ICredentials = {
                     type: LocationType.LOCAL,
                     entity: payload.role === UserRole.STANDARD_REGISTRY
                         ? SchemaEntity.STANDARD_REGISTRY
                         : SchemaEntity.USER,
                     parent: payload.parent ?? parentUser?.did ?? null,
-                } as unknown as ICredentials;
+                    hederaAccountId,
+                    hederaAccountKey,
+                    vcDocument: payload.vcDocument ?? null,
+                    didDocument: payload.didDocument ?? null,
+                    didKeys: payload.didKeys ?? [],
+                    useFireblocksSigning: payload.useFireblocksSigning ?? false,
+                    // cast is safe: upstream guard ensures fireblocksConfig is present when useFireblocksSigning is true
+                    fireblocksConfig: payload.fireblocksConfig as IFireblocksConfig,
+                    // topicId is populated by setupUserProfile; not known at construction time
+                    topicId: undefined as unknown as string,
+                };
 
                 const did = await setupUserProfile({
                     username: payload.username,
