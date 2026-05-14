@@ -18,7 +18,7 @@ services:
   api-gateway:
     build:
       context: .
-      dockerfile: ./api-gateway/Dockerfile
+      dockerfile: ./api-gateway/Dockerfile.demo
     depends_on:
       - auth-service
       - cache
@@ -36,7 +36,7 @@ services:
   auth-service:
     build:
       context: .
-      dockerfile: ./auth-service/Dockerfile
+      dockerfile: ./auth-service/Dockerfile.demo
     depends_on:
       - logger-service
       - message-broker
@@ -70,9 +70,6 @@ services:
     volumes:
       - ./guardian-service/tls:/usr/local/app/tls:ro
       - ./guardian-service/configs:/usr/local/app/configs:ro
-    environment:
-      OPERATOR_ID: ${OPERATOR_ID}
-      OPERATOR_KEY: ${OPERATOR_KEY}
     <<: *service-template
     expose:
       - '6555'
@@ -194,7 +191,7 @@ services:
   web-proxy:
     build:
       context: .
-      dockerfile: ./web-proxy/Dockerfile.ci
+      dockerfile: ./web-proxy/Dockerfile.demo
     depends_on:
       - api-gateway
       - auth-service
@@ -225,9 +222,6 @@ services:
     volumes:
       - ./worker-service/tls:/usr/local/app/tls:ro
       - ./worker-service/configs:/usr/local/app/configs:ro
-    environment:
-      OPERATOR_ID: ${OPERATOR_ID}
-      OPERATOR_KEY: ${OPERATOR_KEY}
     <<: *service-template
     deploy:
       replicas: 1
