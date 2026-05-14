@@ -454,7 +454,11 @@ const skeletonRows = computed(() =>
                   </span>
                 </td>
                 <td class="py-3 px-4 text-right tabular-nums font-medium">
-                  {{ formatCredits(r.stats.issuanceCount) }}
+                  <span :title="r.stats.issuanceCount !== r.stats.instanceIssuanceCount
+                    ? `${r.stats.issuanceCount} total across all versions`
+                    : undefined">
+                    {{ formatCredits(r.stats.instanceIssuanceCount) }}
+                  </span>
                 </td>
                 <td class="py-3 px-4 text-right tabular-nums">
                   {{ r.stats.schemaCount }}

@@ -20,6 +20,7 @@ export interface MethodologyStats {
     projectCount: number;
     instanceProjectCount: number;
     issuanceCount: number;
+    instanceIssuanceCount: number;
     schemaCount: number;
 }
 

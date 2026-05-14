@@ -134,10 +134,15 @@ export class ProjectQueryDto extends PaginationQueryDto {
     @IsString()
     status?: string;
 
-    @ApiPropertyOptional({ description: 'Filter by policy topic ID (exact match) — returns all projects under the same Guardian policy' })
+    @ApiPropertyOptional({ description: 'Filter by policy topic ID (exact match) — returns all projects under the same Guardian policy (every version of it)' })
     @IsOptional()
     @IsString()
     policyTopicId?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by instance topic ID (exact match) — returns only projects registered against this specific version of the methodology' })
+    @IsOptional()
+    @IsString()
+    instanceTopicId?: string;
 }
 
 export class ProjectResponseDto {

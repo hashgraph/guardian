@@ -26,6 +26,7 @@ interface RawRow {
     project_count: string | null;
     instance_project_count: string | null;
     issuance_count: string | null;
+    instance_issuance_count: string | null;
     schema_count: string | null;
     registry_name: string | null;
     decode_status: string | null;
@@ -170,6 +171,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 s.project_count,
                 s.instance_project_count,
                 s.issuance_count,
+                s.instance_issuance_count,
                 s.schema_count,
                 reg.registry_name,
                 (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
@@ -217,6 +219,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 s.project_count,
                 s.instance_project_count,
                 s.issuance_count,
+                s.instance_issuance_count,
                 s.schema_count,
                 reg.registry_name,
                 (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
@@ -342,6 +345,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             projectCount: parseInt(row.project_count || '0', 10),
             instanceProjectCount: parseInt(row.instance_project_count || '0', 10),
             issuanceCount: parseInt(row.issuance_count || '0', 10),
+            instanceIssuanceCount: parseInt(row.instance_issuance_count || '0', 10),
             schemaCount: parseInt(row.schema_count || '0', 10),
         };
 

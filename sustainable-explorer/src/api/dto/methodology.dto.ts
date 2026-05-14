@@ -56,8 +56,11 @@ export class MethodologyStats {
     @ApiProperty({ description: 'Number of projects published under this specific methodology version (instance topic)' })
     instanceProjectCount: number;
 
-    @ApiProperty({ description: 'Number of credit issuances under this methodology' })
+    @ApiProperty({ description: 'Number of credit issuances under this methodology, across all versions' })
     issuanceCount: number;
+
+    @ApiProperty({ description: 'Number of credit issuances minted for this specific methodology version (instance topic)' })
+    instanceIssuanceCount: number;
 
     @ApiProperty({ description: 'Number of schemas associated with this methodology' })
     schemaCount: number;

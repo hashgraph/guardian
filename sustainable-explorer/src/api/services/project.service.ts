@@ -35,6 +35,7 @@ export class ProjectsService {
             vintage: query.vintage,
             status: query.status,
             policyTopicId: query.policyTopicId,
+            instanceTopicId: query.instanceTopicId,
         });
 
         const data = result.rows.map(row => ProjectResponseDto.fromRow(row, network));

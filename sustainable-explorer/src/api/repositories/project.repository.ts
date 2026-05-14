@@ -56,6 +56,7 @@ export interface ProjectListQuery {
     vintage?: string;
     status?: string;
     policyTopicId?: string;
+    instanceTopicId?: string;
 }
 
 export interface ProjectListResult {

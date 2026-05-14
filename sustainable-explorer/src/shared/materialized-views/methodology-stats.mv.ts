@@ -44,6 +44,27 @@ export const MV_METHODOLOGY_STATS_CREATE_SQL = `
               AND m.type = 'Token'
               AND m.options->>'tokenId' IS NOT NULL
         ), 0)::bigint AS issuance_count,
+        -- Per-version issuances. Each Token-issue message is published in
+        -- the policy topic just BEFORE its version's publish-policy, so we
+        -- attribute each Token to the nearest subsequent publish-policy and
+        -- count those whose instanceTopicId matches this methodology row.
+        COALESCE((
+            SELECT COUNT(*)
+            FROM message tok
+            WHERE tok."topicId" = mb.policy_topic_id
+              AND tok.type = 'Token'
+              AND tok.options->>'tokenId' IS NOT NULL
+              AND (
+                  SELECT p.options->>'instanceTopicId'
+                  FROM message p
+                  WHERE p.type = 'Instance-Policy'
+                    AND p.action = 'publish-policy'
+                    AND p."topicId" = tok."topicId"
+                    AND p."consensusTimestamp" > tok."consensusTimestamp"
+                  ORDER BY p."consensusTimestamp" ASC
+                  LIMIT 1
+              ) = mb."relatedTopicId"
+        ), 0)::bigint AS instance_issuance_count,
         COALESCE((
             SELECT COUNT(DISTINCT ps."schemaId")
             FROM policy_schema ps

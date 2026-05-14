@@ -144,17 +144,20 @@ if (import.meta.client) {
   const config = useRuntimeConfig();
   const baseURL = config.public.apiBaseUrl as string;
 
+  // Linked projects scope to this *version* of the methodology — filtered by
+  // instanceTopicId (the URL id), not policyTopicId, so v0.1 and v0.2 of the
+  // same policy show different project lists.
   watch(
-    [activeTab, policyTopicId],
-    async ([tab, pid], [, oldPid]) => {
-      if (tab !== 'projects' || !pid) return;
-      if (pid === oldPid && linkedProjectsLoaded.value) return;
+    [activeTab, id],
+    async ([tab, instId], [, oldInstId]) => {
+      if (tab !== 'projects' || !instId) return;
+      if (instId === oldInstId && linkedProjectsLoaded.value) return;
       linkedProjectsLoaded.value = false;
       linkedProjectsPending.value = true;
       try {
         const res = await $fetch<{ data: Record<string, any>[]; meta: { total: number } }>(
           `/api/v1/${network.value}/projects`,
-          { baseURL, query: { policyTopicId: pid, limit: 100, page: 1 } },
+          { baseURL, query: { instanceTopicId: instId, limit: 100, page: 1 } },
         );
         linkedProjects.value = res.data ?? [];
       } catch {
