@@ -17,6 +17,7 @@ Endpoints for listing Hedera tokens and managing user token associations, KYC st
 | `PUT` | `/api/v1/tokens/{tokenId}/{username}/revokeKyc` | Revokes KYC status from the user for the token | Yes |
 | `GET` | `/api/v1/tokens/{tokenId}/{username}/info` | Returns token information and status for the specified user | Yes |
 | `GET` | `/api/v1/tokens/{tokenId}/serials` | Returns the serial numbers for the specified token | Yes |
+| `POST` | `/api/v1/tokens/{tokenId}/transfer` | Transfers tokens to a target account | Yes |
 
 ## Endpoints
 
@@ -30,3 +31,4 @@ Endpoints for listing Hedera tokens and managing user token associations, KYC st
 - [Revoke KYC of the User](revoke-kyc-of-the-user.md)
 - [User Info for Selected Token](user-info-for-selected-token.md)
 - [Returns Token Serials](returns-token-serials.md)
+- [Token Transfer](token-transfer.md)
