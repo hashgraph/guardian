@@ -64,6 +64,16 @@ export class IpfsClientClass {
     }
 
     /**
+     * Guard against an uninitialized client.
+     * @private
+     */
+    private assertClientReady(): void {
+        if (!this.client) {
+            throw new Error(`IPFS client not initialized (provider="${this.IPFS_PROVIDER}"); check IPFS_PROVIDER and credentials.`);
+        }
+    }
+
+    /**
      * Create ipfs client
      * @private
      */
@@ -121,6 +131,7 @@ export class IpfsClientClass {
      * @param beforeCallback
      */
     public async addFile(file: Buffer): Promise<string> {
+        this.assertClientReady();
         let cid: string;
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.WEB3STORAGE: {
@@ -152,6 +163,7 @@ export class IpfsClientClass {
      * @param cid
      */
     public async deleteCid(cid: string): Promise<boolean> {
+        this.assertClientReady();
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.LOCAL: {
                 await this.client.pin.rm(cid);

@@ -1,3 +1,4 @@
+import { randomInt } from "../../../support/random";
 
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
@@ -7,7 +8,7 @@ context("Delete Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
-    const moduleName = Math.floor(Math.random() * 999) + "APIModule";
+    const moduleName = randomInt(999) + "APIModule";
 
     const modulesUrl = `${API.ApiServer}${API.ListOfAllModules}`;
 

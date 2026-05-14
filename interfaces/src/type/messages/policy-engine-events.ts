@@ -125,5 +125,7 @@ export enum PolicyEngineEvents {
     GET_POLICY_REPOSITORY_DOCUMENTS = 'policy-engine-policy-repository-documents',
     GET_POLICY_REPOSITORY_SCHEMAS = 'policy-engine-policy-repository-schemas',
     CREATE_NEW_VERSION_VC_DOCUMENT = 'policy-engine-create-new-version-vc-document',
-    GET_All_NEW_VERSION_VC_DOCUMENTS = 'policy-engine-get-all-new-version-vc-documents'
+    GET_All_NEW_VERSION_VC_DOCUMENTS = 'policy-engine-get-all-new-version-vc-documents',
+    RETRY_MINT = 'policy-engine-event-retry-mint',
+    GET_MINT_REQUESTS = 'policy-engine-event-get-mint-requests'
 }

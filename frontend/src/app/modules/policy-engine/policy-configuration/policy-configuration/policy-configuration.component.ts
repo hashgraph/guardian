@@ -1810,7 +1810,8 @@ export class PolicyConfigurationComponent implements OnInit {
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: any) => {
             if (Array.isArray(result)) {
-                this.policyTemplate.policyDocumentation = result;
+                this.policyTemplate.setPolicyDocumentation(result);
+                this.saveState();
             }
         });
     }

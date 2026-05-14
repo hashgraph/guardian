@@ -1,10 +1,11 @@
+import { randomInt } from "../../../support/random";
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
   const SRUsername = Cypress.env('SRUser');
-  const schemaUUID = ("0000b23a-b1ea-408f-a573" + Math.floor(Math.random() * 999999) + "a2060a");
+  const schemaUUID = ("0000b23a-b1ea-408f-a573" + randomInt(999999) + "a2060a");
   let topicUid;
 
   before(() => {

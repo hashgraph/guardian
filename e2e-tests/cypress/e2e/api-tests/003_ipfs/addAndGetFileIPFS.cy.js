@@ -1,3 +1,4 @@
+import { randomInt } from "../../../support/random";
 
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
@@ -10,9 +11,9 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
     const ipfsFileUrl = `${API.ApiServer}${API.IPFSFile}`;
 
     let cid;
-    let firstRandom = Math.floor(Math.random() * 99999);
-    let secondRandom = Math.floor(Math.random() * 99999);
-    let thirdRandom = Math.floor(Math.random() * 99999);
+    let firstRandom = randomInt(99999);
+    let secondRandom = randomInt(99999);
+    let thirdRandom = randomInt(99999);
 
     const addFileWithAuth = (authorization, body) =>
         cy.request({

@@ -46,6 +46,7 @@ import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
 import { importTag } from '../tag/tag-import-helper.js';
 import { ImportToolMap, ImportToolResults } from '../tool/tool-import.interface.js';
 import { importSubTools } from '../tool/tool-import-helper.js';
+import { resolveToolOverrides } from '../tool/tool-override-resolver.js';
 import { ImportTokenMap, ImportTokenResult } from '../token/token-import.interface.js';
 import { ImportArtifactResult } from '../artifact/artifact-import.interface.js';
 import { importTokensByFiles } from '../token/token-import-helper.js';
@@ -375,24 +376,11 @@ export class PolicyImport {
     ) {
         step.start();
 
-        this.toolsMapping = [];
-        if (metadata?.tools) {
-            for (const tool of tools) {
-                if (
-                    metadata.tools[tool.messageId] &&
-                    tool.messageId !== metadata.tools[tool.messageId]
-                ) {
-                    this.toolsMapping.push({
-                        oldMessageId: tool.messageId,
-                        messageId: metadata.tools[tool.messageId],
-                        oldHash: tool.hash,
-                    });
-                    tool.messageId = metadata.tools[tool.messageId];
-                }
-            }
-        }
+        const { toolsMapping, preResolvedTools, toolsToImport } = await resolveToolOverrides(tools, metadata);
+        this.toolsMapping = toolsMapping;
 
-        this.toolsResult = await importSubTools(this.root, tools, user, step, userId);
+        this.toolsResult = await importSubTools(this.root, toolsToImport, user, step, userId);
+        this.toolsResult.tools = [...preResolvedTools, ...this.toolsResult.tools];
 
         for (const toolMapping of this.toolsMapping) {
             const toolByMessageId = this.toolsResult.tools.find((tool) => tool.messageId === toolMapping.messageId);

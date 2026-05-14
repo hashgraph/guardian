@@ -309,6 +309,7 @@ export abstract class TypedMint {
             }
 
             try {
+                this._mintRequest.error = undefined;
                 this._mintRequest.processDate = new Date();
                 await this._db.saveMintRequest(this._mintRequest);
                 await this.mintTokens(notifier, options);
@@ -378,6 +379,7 @@ export abstract class TypedMint {
             }
 
             try {
+                this._mintRequest.error = undefined;
                 this._mintRequest.processDate = new Date();
                 await this._db.saveMintRequest(this._mintRequest);
                 await this.transferTokens(notifier, options);

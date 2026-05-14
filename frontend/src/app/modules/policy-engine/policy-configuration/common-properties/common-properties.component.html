@@ -85,7 +85,7 @@
                 <!-- Meta Data  -->
                 <tr class="propRow" [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Key</td>
+                    <td class="propRowCell cellName">Tag</td>
                     <td class="propRowCell">
                         <input class="prop-input" [(ngModel)]="block.localTag" [readonly]="readonly" (blur)="onSave()">
                     </td>
@@ -317,10 +317,10 @@
                                 <p-dropdown [ngModel]="isInputEvent(item)" [options]="[
                                         { label: 'Input Event', value: true },
                                         { label: 'Output Event', value: false }
-                                    ]" 
-                                    (onChange)="chanceType($event.value, item)" 
+                                    ]"
+                                    (onChange)="chanceType($event.value, item)"
                                     [disabled]="readonly"
-                                    placeholder="Select Event Type" 
+                                    placeholder="Select Event Type"
                                     [appendTo]="'body'">
                                 </p-dropdown>
                             </td>
@@ -339,11 +339,11 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName source-elm">Source</td>
                             <td class="propRowCell">
-                                <select-block 
-                                    [root]="module" 
-                                    [blocks]="module.allBlocks" 
+                                <select-block
+                                    [root]="module"
+                                    [blocks]="module.allBlocks"
                                     [(value)]="item.source"
-                                    [readonly]="readonly" 
+                                    [readonly]="readonly"
                                     type="object"
                                     (change)="onSave()"></select-block>
                             </td>
@@ -391,16 +391,16 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Event Actor</td>
                             <td class="propRowCell">
-                                <p-dropdown 
-                                    [(ngModel)]="item.actor" 
+                                <p-dropdown
+                                    [(ngModel)]="item.actor"
                                     [options]="[
                                         { label: 'Event Initiator', value: '' },
                                         { label: 'Document Owner', value: 'owner' },
                                         { label: 'Document Issuer', value: 'issuer' }
-                                    ]" 
-                                    (onChange)="onSave()" 
+                                    ]"
+                                    (onChange)="onSave()"
                                     [disabled]="readonly"
-                                    placeholder="Select Actor" 
+                                    placeholder="Select Actor"
                                     [appendTo]="'body'">
                                 </p-dropdown>
 
