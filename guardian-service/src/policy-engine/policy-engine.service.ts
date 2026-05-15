@@ -4039,6 +4039,7 @@ export class PolicyEngineService {
                         {
                             uuid: GenerateUUIDv4(),
                             name: file.filename.split('.')[0],
+                            description: recordToImport.policyTest?.description,
                             policyId,
                             owner: owner.creator,
                             status: PolicyTestStatus.New,

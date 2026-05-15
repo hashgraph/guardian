@@ -268,6 +268,13 @@ export class PolicyTestDialog {
         }
     }
 
+    public getOverflowTooltip(element: HTMLElement, text: string): string | undefined {
+        if (!text) {
+            return undefined;
+        }
+        return element.scrollWidth > element.clientWidth ? text : undefined;
+    }
+
     public getTime(duration: number) {
         if (!duration) {
             return 'N\\A';
@@ -301,6 +308,7 @@ export class PolicyTestDialog {
         const s1 = test.error ? 'Failure' : 'Success';
         const s2 = test.result ? (test.result.total === 100 ? 'Success' : 'Failure') : 'Skipped';
         return {
+            description: test.description,
             runStep: {
                 id: test.id,
                 status: s1,

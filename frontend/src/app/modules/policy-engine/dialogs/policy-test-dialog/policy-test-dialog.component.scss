@@ -1,3 +1,14 @@
+::ng-deep .p-tooltip.description-tooltip {
+    max-width: 480px;
+
+    .p-tooltip-text {
+        max-width: 480px;
+        width: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+}
+
 .dialog-actions {
     display: flex;
     align-items: center;
@@ -181,6 +192,27 @@
     margin: 0px;
     padding: 0px;
     font-size: 14px;
+
+    .results-description {
+        padding: 12px 24px 12px 66px;
+        background: var(--guardian-grey-background);
+        border-bottom: 1px solid var(--guardian-grey-color);
+    }
+
+    .results-description-title {
+        color: #23252E;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 20px;
+    }
+
+    .results-description-text {
+        margin-top: 4px;
+        color: #6C7791;
+        font-size: 14px;
+        line-height: 20px;
+        white-space: pre-wrap;
+    }
 
     .results-step {
         .results-step-header {
