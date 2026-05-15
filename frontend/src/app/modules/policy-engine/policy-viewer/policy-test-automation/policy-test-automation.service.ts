@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { BehaviorSubject, Subject, Subscription, mergeMap, filter, map, take } from 'rxjs';
+import { BehaviorSubject, Subject, Subscription, filter, take } from 'rxjs';
 import { openDB, IDBPDatabase } from 'idb';
 import { IRecordPolicyTestMetadata } from '@guardian/interfaces';
 import { STORES_NAME } from 'src/app/constants';
@@ -73,10 +73,13 @@ export class PolicyTestAutomationService {
     public readonly state$ = this.stateSubject.asObservable();
     private currentPolicyId: string | null = null;
     private dbPromise: Promise<IDBPDatabase> | null = null;
-    private _recordSub: Subscription | null = null;
     private readonly _captureSubject$ = new Subject<{ caseId: string; policyId: string; recordActionId: string }>();
+    private _captureSub: Subscription | null = null;
     private readonly _wsSignal$ = new Subject<string>();
-    private _deferredFetchSub: Subscription | null = null;
+    private _recordSub: Subscription | null = null;
+    private readonly _activePolls = new Map<string, Subscription>();
+
+    private static readonly POLL_INTERVAL_MS = 5000;
 
     constructor(
         private readonly zone: NgZone,
@@ -88,17 +91,24 @@ export class PolicyTestAutomationService {
                 this._wsSignal$.next(message.policyId);
             }
         });
-        this._deferredFetchSub = this._captureSubject$.pipe(
-            mergeMap((capture) =>
-                this._wsSignal$.pipe(
-                    filter((policyId) => policyId === capture.policyId),
-                    take(1),
-                    map(() => capture)
-                )
-            )
-        ).subscribe((capture) => {
-            this._fetchOutputs(capture.caseId, capture.policyId, capture.recordActionId);
+        this._captureSub = this._captureSubject$.subscribe((capture) => {
+            this._pollOutputs(capture.caseId, capture.policyId, capture.recordActionId);
         });
+    }
+
+    private _stopPoll(caseId: string): void {
+        const sub = this._activePolls.get(caseId);
+        if (sub) {
+            sub.unsubscribe();
+            this._activePolls.delete(caseId);
+        }
+    }
+
+    private _stopAllPolls(): void {
+        for (const sub of this._activePolls.values()) {
+            sub.unsubscribe();
+        }
+        this._activePolls.clear();
     }
 
     public get state(): PolicyTestAutomationState {
@@ -149,6 +159,7 @@ export class PolicyTestAutomationService {
     }
 
     public discardTestCase(id: string): void {
+        this._stopPoll(id);
         this.update({ testCases: this.state.testCases.filter((tc) => tc.id !== id) });
         this.persistToIdb();
     }
@@ -218,6 +229,7 @@ export class PolicyTestAutomationService {
     }
 
     public reset(): void {
+        this._stopAllPolls();
         this.clearIdb();
         this.currentPolicyId = null;
         this.stateSubject.next(createInitialState());
@@ -226,32 +238,79 @@ export class PolicyTestAutomationService {
     private _fetchOutputs(caseId: string, policyId: string, recordActionId: string): void {
         this.recordService.getRecordActionDocuments(policyId, recordActionId).subscribe({
             next: (docs) => {
-                const outputs: PolicyTestCaseOutput[] = (docs || []).map((doc) => ({
-                    tag: doc.tag || doc.type,
-                    schemaId: doc.schema || undefined,
-                    type: (doc.type === 'vp' ? 'vp' : 'vc') as 'vc' | 'vp',
-                    documentId: doc.document?.id || doc.id,
-                    recordActionId: doc.recordActionId,
-                    selected: false,
-                    document: doc.document
-                }));
-                if (!outputs.length) { return; }
-                this.zone.run(() => {
-                    const testCases = this.state.testCases.map((tc) => {
-                        if (tc.id !== caseId) { return tc; }
-                        const existingIds = new Set(tc.outputs.map((o) => o.documentId));
-                        const merged = [
-                            ...tc.outputs,
-                            ...outputs.filter((o) => !existingIds.has(o.documentId))
-                        ];
-                        return { ...tc, outputs: merged };
-                    });
-                    this.update({ testCases });
-                    this.persistToIdb();
-                });
+                const outputs = this._mapDocsToOutputs(docs);
+                this._mergeOutputsIntoState(caseId, outputs);
             },
             error: () => {}
         });
+    }
+
+    private _pollOutputs(caseId: string, policyId: string, recordActionId: string): void {
+        let cancelled = false;
+
+        const sub = new Subscription();
+        sub.add(() => { cancelled = true; });
+
+        const wsSub = this._wsSignal$.pipe(
+            filter((pid) => pid === policyId),
+            take(1)
+        ).subscribe(() => {
+            if (!cancelled) {
+                this._fetchOutputs(caseId, policyId, recordActionId);
+            }
+        });
+        sub.add(wsSub);
+
+        const tick = (): void => {
+            if (cancelled) { return; }
+            this.recordService.getRecordActionDocuments(policyId, recordActionId).subscribe({
+                next: (docs) => {
+                    if (cancelled) { return; }
+                    const outputs = this._mapDocsToOutputs(docs);
+                    this._mergeOutputsIntoState(caseId, outputs);
+                    setTimeout(tick, PolicyTestAutomationService.POLL_INTERVAL_MS);
+                },
+                error: () => {
+                    if (!cancelled) {
+                        setTimeout(tick, PolicyTestAutomationService.POLL_INTERVAL_MS);
+                    }
+                }
+            });
+        };
+
+        this._activePolls.set(caseId, sub);
+        tick();
+    }
+
+    private _mapDocsToOutputs(docs: any[]): PolicyTestCaseOutput[] {
+        return (docs || []).map((doc) => ({
+            tag: doc.tag || doc.type,
+            schemaId: doc.schema || undefined,
+            type: (doc.type === 'vp' ? 'vp' : 'vc') as 'vc' | 'vp',
+            documentId: doc.document?.id || doc.id,
+            recordActionId: doc.recordActionId,
+            selected: false,
+            document: doc.document
+        }));
+    }
+
+    private _mergeOutputsIntoState(caseId: string, outputs: PolicyTestCaseOutput[]): number {
+        if (!outputs.length) { return 0; }
+        let added = 0;
+        this.zone.run(() => {
+            const testCases = this.state.testCases.map((tc) => {
+                if (tc.id !== caseId) { return tc; }
+                const existingIds = new Set(tc.outputs.map((o) => o.documentId));
+                const newOnes = outputs.filter((o) => !existingIds.has(o.documentId));
+                added = newOnes.length;
+                return { ...tc, outputs: [...tc.outputs, ...newOnes] };
+            });
+            if (added > 0) {
+                this.update({ testCases });
+                this.persistToIdb();
+            }
+        });
+        return added;
     }
 
     private _uuid(): string {
