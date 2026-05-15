@@ -78,9 +78,12 @@ export class TestResultsComponent implements OnInit {
             this.results = results;
             const report = this.results?.documents?.report;
             if (report && report.length > 1) {
-                const docItems = report.slice(1)
-                    .filter((row: any) => row.left_schema)
-                    .map((row: any, i: number) => ({ label: row.left_schema, value: String(i) }));
+                const docItems: { label: string, value: string }[] = [];
+                report.slice(1).forEach((row: any, i: number) => {
+                    if (row.left_schema) {
+                        docItems.push({ label: row.left_schema, value: String(i) });
+                    }
+                });
                 this.docOptions = [{ label: 'Collapse all', value: '__top__' }, ...docItems];
 
                 const namesSet = new Set<string>();

@@ -210,6 +210,7 @@ export class RecordControllerComponent implements OnInit {
             this.running = false;
             this.updateActive();
             this.loading = false;
+            this.policyTest.reset();
         });
     }
 

@@ -154,7 +154,6 @@ export class PolicyTestAutomationService {
             testCases: [...this.state.testCases, testCase]
         });
         this.persistToIdb();
-        this._fetchOutputs(caseId, input.policyId, recordActionId);
         this._captureSubject$.next({ caseId, policyId: input.policyId, recordActionId });
     }
 
