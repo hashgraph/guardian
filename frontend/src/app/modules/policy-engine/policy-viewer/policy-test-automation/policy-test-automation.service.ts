@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { BehaviorSubject, Subject, Subscription, mergeMap, filter, map, take } from 'rxjs';
+import { BehaviorSubject, Subject, Subscription, mergeMap, filter, map, takeUntil } from 'rxjs';
 import { openDB, IDBPDatabase } from 'idb';
 import { IRecordPolicyTestMetadata } from '@guardian/interfaces';
 import { STORES_NAME } from 'src/app/constants';
@@ -75,7 +75,7 @@ export class PolicyTestAutomationService {
     private dbPromise: Promise<IDBPDatabase> | null = null;
     private _recordSub: Subscription | null = null;
     private readonly _captureSubject$ = new Subject<{ caseId: string; policyId: string; recordActionId: string }>();
-    private readonly _wsSignal$ = new Subject<string>();
+    private readonly _wsSignal$ = new Subject<{ policyId: string; status: string }>();
     private _deferredFetchSub: Subscription | null = null;
 
     constructor(
@@ -85,14 +85,24 @@ export class PolicyTestAutomationService {
     ) {
         this._recordSub = this.wsService.recordSubscribe((message) => {
             if (message?.policyId) {
-                this._wsSignal$.next(message.policyId);
+                this._wsSignal$.next({
+                    policyId: message.policyId,
+                    status: message.status
+                });
             }
         });
         this._deferredFetchSub = this._captureSubject$.pipe(
             mergeMap((capture) =>
                 this._wsSignal$.pipe(
-                    filter((policyId) => policyId === capture.policyId),
-                    take(1),
+                    filter((msg) => msg.policyId === capture.policyId),
+                    takeUntil(this._wsSignal$.pipe(
+                        filter((msg) =>
+                            msg.policyId === capture.policyId &&
+                            (msg.status === 'Stopped' ||
+                                msg.status === 'Finished' ||
+                                msg.status === 'Error')
+                        )
+                    )),
                     map(() => capture)
                 )
             )
