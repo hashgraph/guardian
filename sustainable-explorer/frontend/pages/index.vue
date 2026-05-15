@@ -27,6 +27,7 @@ import {
     DONUT_OTHER_COLOR,
     mergeTopBinsWithOther,
 } from '~/lib/chart-colors';
+import { SectorType, SECTOR_I18N_KEYS } from '~/types/enums';
 
 const { t } = useI18n();
 
@@ -114,17 +115,27 @@ function buildDonutRows(
     }));
 }
 
-const sectorDonutRows = computed(() =>
-    buildDonutRows(
-        sectorBreakdown.value.map(({ label, projectCount, creditCount }) => ({
-            label,
-            projectCount,
-            creditCount,
-        })),
-        chartMode.value,
-        'sector',
-    ),
-);
+const UNDEFINED_SECTOR_COLOR = '#a1a1aa';
+
+function translateSector(raw: string): string {
+    const key = SECTOR_I18N_KEYS[raw];
+    return key ? t(`dashboard.sectorTypes.${key}`) : raw;
+}
+
+const sectorDonutRows = computed(() => {
+    const bins = sectorBreakdown.value.map(({ label, projectCount, creditCount }) => ({
+        label,
+        projectCount,
+        creditCount,
+    }));
+    const undefinedBin = bins.find(b => b.label === SectorType.Undefined);
+    const namedBins = bins.filter(b => b.label !== SectorType.Undefined);
+    const rows = buildDonutRows(namedBins, chartMode.value, 'sector');
+    if (undefinedBin) {
+        rows.push({ ...undefinedBin, color: UNDEFINED_SECTOR_COLOR });
+    }
+    return rows;
+});
 
 const registryDonutRows = computed(() =>
     buildDonutRows(
@@ -140,7 +151,7 @@ const registryDonutRows = computed(() =>
 
 const sectorChartSegments = computed(() =>
     sectorDonutRows.value.map(s => ({
-        label: s.label,
+        label: translateSector(s.label),
         value: chartMode.value === 'projects' ? s.projectCount : s.creditCount,
         color: s.color,
     })),
@@ -616,7 +627,7 @@ const filteredStats = computed(() => {
                             <div class="space-y-2 flex-1 min-w-0 pt-1">
                                 <div v-for="s in sectorDonutRows" :key="s.label" class="flex items-center gap-2">
                                     <span class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: s.color }" />
-                                    <span class="text-xs text-muted-foreground truncate flex-1">{{ s.label }}</span>
+                                    <span class="text-xs text-muted-foreground truncate flex-1">{{ translateSector(s.label) }}</span>
                                     <span class="text-xs font-medium text-foreground tabular-nums shrink-0">
                                         {{ sectorTotal > 0 ? ((chartMode === 'projects' ? s.projectCount : s.creditCount) / sectorTotal * 100).toFixed(1) : '0.0' }}%
                                     </span>
@@ -665,13 +676,14 @@ const filteredStats = computed(() => {
                     </div>
                     <div class="px-6 pb-6">
                         <div class="rounded-xl border bg-card overflow-hidden">
-                            <table class="w-full text-sm">
+                            <div class="overflow-x-auto">
+                            <table class="w-full text-sm min-w-[420px]">
                                 <thead>
                                     <tr class="border-b bg-muted/30">
-                                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.name') }}</th>
-                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.policies') }}</th>
-                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.projectsCol') }}</th>
-                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.issuancesCol') }}</th>
+                                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.name') }}</th>
+                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.policies') }}</th>
+                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.projectsCol') }}</th>
+                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.issuancesCol') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
@@ -692,6 +704,7 @@ const filteredStats = computed(() => {
                                     </tr>
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>

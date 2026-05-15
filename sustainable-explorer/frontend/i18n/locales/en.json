@@ -137,12 +137,40 @@
     "networkActivityTooltip": "Recent events on the Guardian network including new project registrations, credit issuances, policy publications, and verifications.",
     "networkActivitySub": "Recent changes across the Guardian network",
     "noActivity": "No recent activity matches the selected filters",
+    "activity": {
+      "newProjectRegistered": "New project registered",
+      "registryIndexed": "Registry indexed",
+      "justNow": "just now",
+      "minuteAgo": "{n} minute ago",
+      "minutesAgo": "{n} minutes ago",
+      "hourAgo": "{n} hour ago",
+      "hoursAgo": "{n} hours ago",
+      "dayAgo": "{n} day ago",
+      "daysAgo": "{n} days ago"
+    },
     "activeProjects": "Active Projects",
     "mtco2TotalReduction": "MtCO2 Total Reduction",
     "mtco2AnnualEst": "MtCO2 Annual Est.",
     "sector": "Sector",
     "registry": "Registry",
-    "totalIssuancesLabel": "Total Issuances"
+    "totalIssuancesLabel": "Total Issuances",
+    "sectorTypes": {
+      "renewableEnergy": "Renewable Energy",
+      "forestry": "Forestry",
+      "blueCarbon": "Blue Carbon",
+      "energyEfficiency": "Energy Efficiency",
+      "agriculture": "Agriculture",
+      "water": "Water",
+      "waste": "Waste",
+      "energy": "Energy",
+      "industrialProcess": "Industrial Process",
+      "landUseForestry": "Land Use & Forestry",
+      "fugitiveEmissions": "Fugitive Emissions",
+      "transport": "Transport",
+      "natureBasedSolutions": "Nature Based Solutions",
+      "others": "Others",
+      "undefined": "Undefined"
+    }
   },
   "projects": {
     "title": "Projects",
