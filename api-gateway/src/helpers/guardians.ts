@@ -57,7 +57,8 @@ import {
     PolicyPreviewDTO,
     ProfileDTO,
     PolicyKeyDTO,
-    ToolVersionDTO
+    ToolVersionDTO,
+    OnboardingDTO
 } from '#middlewares';
 
 /**
@@ -606,6 +607,20 @@ export class Guardians extends NatsService {
         task: NewTask
     ): Promise<NewTask> {
         return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, { user, username, profile, task });
+    }
+
+    /**
+     * Onboard a new user in a single async call.
+     * @param parentUser - the authenticated parent (Standard Registry) or null in demo mode
+     * @param payload    - OnboardingDTO fields
+     * @param task       - task tracking object
+     */
+    public async onboardUserAsync(
+        parentUser: IAuthUser | null,
+        payload: OnboardingDTO,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.ONBOARD_USER_ASYNC, { parentUser, payload, task });
     }
 
     /**
