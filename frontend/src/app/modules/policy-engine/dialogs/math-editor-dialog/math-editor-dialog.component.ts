@@ -177,6 +177,8 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public varPickerFormula: MathFormula | null = null;
     public varPickerSearchMap = new Map<string, string>();
+    public filteredVars: { name: string; label: string }[] = [];
+    private _varPickerBase: { name: string; label: string }[] = [];
     private activeMathLive: MathLiveComponent | null = null;
     private activeFormula: MathFormula | null = null;
     private varPickerRedirectToMath = false;
@@ -755,7 +757,22 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }
         this.varPickerFormula = formula;
         this.varPickerSearchMap.set(formula.id, '');
+        this._varPickerBase = this.getFilteredVars(formula);
+        this.filteredVars = this._varPickerBase;
     }
+
+    public onVarPickerSearch(formula: MathFormula, value: string): void {
+        this.varPickerSearchMap.set(formula.id, value);
+        if (!value) {
+            this.filteredVars = this._varPickerBase;
+            return;
+        }
+        const q = value.toLowerCase();
+        this.filteredVars = this._varPickerBase.filter(
+            v => v.label.toLowerCase().includes(q) || v.name.toLowerCase().includes(q)
+        );
+    }
+
 
     public onVarPickerBlur(formula: MathFormula): void {
         setTimeout(() => {
@@ -812,8 +829,8 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         };
     }
 
-    public getFilteredVars(formula: MathFormula): Array<{ name: string; label: string }> {
-        const result: Array<{ name: string; label: string }> = [];
+    private getFilteredVars(formula: MathFormula): { name: string; label: string }[] {
+        const result: { name: string; label: string }[] = [];
         for (const item of this.engine.variables.getItems()) {
             if (item.validName) {
                 result.push({ name: item.name, label: item.variableNameText || item.name });
@@ -824,12 +841,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 result.push({ name: f.name, label: f.functionNameText || f.name });
             }
         }
-        const search = this.varPickerSearchMap.get(formula.id) ?? '';
-        if (!search) {
-            return result;
-        }
-        const q = search.toLowerCase();
-        return result.filter(v => v.label.toLowerCase().includes(q) || v.name.toLowerCase().includes(q));
+        return result;
     }
 
     public insertFormulaVariable(formula: MathFormula, varName: string): void {

@@ -301,20 +301,20 @@
                                             [class.var-picker-active]="varPickerFormula === item"
                                             placeholder="Search variables..."
                                             [ngModel]="varPickerSearchMap.get(item.id) ?? ''"
-                                            (ngModelChange)="varPickerSearchMap.set(item.id, $event)"
+                                            (ngModelChange)="onVarPickerSearch(item, $event)"
                                             (focus)="onVarPickerFocus(item)"
                                             (blur)="onVarPickerBlur(item)"
                                             (click)="$event.stopPropagation()"/>
                                         <div *ngIf="varPickerFormula === item" class="var-picker-dropdown" (mousedown)="$event.preventDefault()">
                                             <div class="var-picker-list">
                                                 <div
-                                                    *ngFor="let v of getFilteredVars(item)"
+                                                    *ngFor="let v of filteredVars"
                                                     class="var-picker-item"
                                                     [title]="v.name"
                                                     (mousedown)="insertFormulaVariable(item, v.name); varPickerSearchMap.delete(item.id); varPickerFormula = null; $event.preventDefault()">
                                                     {{ v.label }}
                                                 </div>
-                                                <div *ngIf="!getFilteredVars(item).length" class="var-picker-empty">
+                                                <div *ngIf="!filteredVars.length" class="var-picker-empty">
                                                     No variables found
                                                 </div>
                                             </div>
