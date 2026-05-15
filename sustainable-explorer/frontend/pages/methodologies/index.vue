@@ -300,18 +300,19 @@ const skeletonRows = computed(() =>
 
     <div class="px-6 pb-6">
       <div class="rounded-xl border bg-card overflow-hidden">
-        <table class="w-full text-sm table-fixed">
+        <div class="overflow-x-auto">
+        <table class="w-full text-sm table-fixed min-w-[1100px]">
           <colgroup>
-            <col class="w-[18%]" />
-            <col class="w-[13%]" />
-            <col class="w-[9%]" />
-            <col class="w-[7%]" />
+            <col class="w-[14%]" />
+            <col class="w-[12%]" />
             <col class="w-[8%]" />
             <col class="w-[6%]" />
-            <col class="w-[18%]" />
-            <col class="w-[10%]" />
-            <col class="w-[5%]" />
+            <col class="w-[7%]" />
             <col class="w-[6%]" />
+            <col class="w-[15%]" />
+            <col class="w-[12%]" />
+            <col class="w-[8%]" />
+            <col class="w-[12%]" />
           </colgroup>
           <thead>
             <tr class="border-b bg-muted/30">
@@ -377,7 +378,7 @@ const skeletonRows = computed(() =>
                 :sort-dir="sortDir"
                 @sort="toggleSort($event)"
               />
-              <th class="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <th class="py-2.5 pl-4 pr-8 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 {{ $t('methodologies.columns.decoded') }}
               </th>
             </tr>
@@ -473,7 +474,7 @@ const skeletonRows = computed(() =>
                 <td class="py-3 px-4">
                   <div class="group flex items-start gap-2">
                     <code
-                      class="text-[11px] text-muted-foreground/80 font-mono break-all min-w-0"
+                      class="text-[11px] text-muted-foreground/80 font-mono whitespace-nowrap"
                       >{{ r.topicId ?? "—" }}</code
                     >
                     <button
@@ -498,7 +499,7 @@ const skeletonRows = computed(() =>
                   >
                   <span v-else class="text-xs text-muted-foreground">—</span>
                 </td>
-                <td class="py-3 px-4">
+                <td class="py-3 pl-4 pr-8">
                   <span
                     :class="[
                       decodeStatusBadgeClass(r.decodeStatus),
@@ -521,6 +522,7 @@ const skeletonRows = computed(() =>
             </template>
           </tbody>
         </table>
+        </div>
       </div>
 
       <Pagination
