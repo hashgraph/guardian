@@ -80,6 +80,7 @@ export class PolicyTestAutomationService {
     private readonly _activePolls = new Map<string, Subscription>();
 
     private static readonly POLL_INTERVAL_MS = 5000;
+    private static readonly POLL_MAX_DURATION_MS = 600000;
 
     constructor(
         private readonly zone: NgZone,
@@ -247,6 +248,7 @@ export class PolicyTestAutomationService {
 
     private _pollOutputs(caseId: string, policyId: string, recordActionId: string): void {
         let cancelled = false;
+        const startedAt = Date.now();
 
         const sub = new Subscription();
         sub.add(() => { cancelled = true; });
@@ -263,6 +265,10 @@ export class PolicyTestAutomationService {
 
         const tick = (): void => {
             if (cancelled) { return; }
+            if (Date.now() - startedAt > PolicyTestAutomationService.POLL_MAX_DURATION_MS) {
+                this._activePolls.delete(caseId);
+                return;
+            }
             this.recordService.getRecordActionDocuments(policyId, recordActionId).subscribe({
                 next: (docs) => {
                     if (cancelled) { return; }
