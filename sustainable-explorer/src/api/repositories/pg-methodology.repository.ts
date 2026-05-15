@@ -263,22 +263,26 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 raw_vc: Record<string, any> | null;
             }> = await this.dataSource.query(
                 `
-                SELECT
-                    COALESCE(tc."tokenId", bv."businessData"->>'tokenId') AS "tokenId",
-                    COALESCE(tc.name,      bv."displayName")              AS name,
-                    COALESCE(tc.symbol,    bv."businessData"->>'symbol')  AS symbol,
-                    tc.type,
-                    tc."totalSupply"                                      AS supply,
-                    bv."createdAt"                                        AS "mintDate",
-                    m.documents                                           AS raw_vc
-                FROM business_view bv
-                LEFT JOIN token_cache tc
-                    ON tc."tokenId" = bv."businessData"->>'tokenId'
-                LEFT JOIN message m
-                    ON m."consensusTimestamp" = bv."sourceTimestamp"
-                WHERE bv."viewType" = 'CREDIT'
-                  AND bv."relatedTopicId" IN (${placeholders})
-                ORDER BY bv."createdAt" ASC
+                SELECT * FROM (
+                    SELECT DISTINCT ON (COALESCE(tc."tokenId", bv."businessData"->>'tokenId'))
+                        COALESCE(tc."tokenId", bv."businessData"->>'tokenId') AS "tokenId",
+                        COALESCE(tc.name,      bv."displayName")              AS name,
+                        COALESCE(tc.symbol,    bv."businessData"->>'symbol')  AS symbol,
+                        tc.type,
+                        tc."totalSupply"                                      AS supply,
+                        bv."createdAt"                                        AS "mintDate",
+                        m.documents                                           AS raw_vc
+                    FROM business_view bv
+                    LEFT JOIN token_cache tc
+                        ON tc."tokenId" = bv."businessData"->>'tokenId'
+                    LEFT JOIN message m
+                        ON m."consensusTimestamp" = bv."sourceTimestamp"
+                    WHERE bv."viewType" = 'CREDIT'
+                      AND bv."relatedTopicId" IN (${placeholders})
+                    ORDER BY COALESCE(tc."tokenId", bv."businessData"->>'tokenId'),
+                             bv."createdAt" DESC
+                ) deduped
+                ORDER BY "mintDate" ASC
                 `,
                 topicIds,
             );

@@ -149,4 +149,31 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
           AND documents IS NOT NULL
           AND (documents->'credentialSubject'->0->>'type') = 'MintToken'
     `);
+
+    // Pre-computed MintToken → project attribution table.
+    // Eliminates the grouped-project double-counting bug where a topic-scope
+    // join would assign every MintToken in a shared instance topic to all
+    // projects in that topic. The linker walks options.relationships to
+    // resolve each mint to its specific project by sourceTimestamp.
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS project_mint_link (
+            mint_consensus_timestamp VARCHAR(30)  PRIMARY KEY,
+            project_source_timestamp VARCHAR(30)  NOT NULL,
+            project_topic_id         VARCHAR(20)  NOT NULL,
+            token_id                 VARCHAR(20),
+            amount                   BIGINT,
+            mint_date                TIMESTAMPTZ,
+            link_method              VARCHAR(20)  NOT NULL DEFAULT 'topic_scope'
+        )
+    `);
+
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_pml_project_src
+            ON project_mint_link (project_source_timestamp)
+    `);
+
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_pml_token_id
+            ON project_mint_link (token_id)
+    `);
 }
