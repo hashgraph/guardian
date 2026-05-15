@@ -36,8 +36,8 @@ RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
 
 # Stage 4: Build service
 FROM base AS build
-COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
-COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
+COPY --link --from=interfaces /usr/local/app/indexer-interfaces-*.tgz /tmp/indexer-interfaces.tgz
+COPY --link --from=common /usr/local/app/indexer-common-*.tgz /tmp/indexer-common.tgz
 COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
 RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
     yarn install --immutable
