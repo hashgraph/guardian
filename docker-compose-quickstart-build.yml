@@ -18,7 +18,7 @@ services:
   api-gateway:
     build:
       context: .
-      dockerfile: ./api-gateway/Dockerfile
+      dockerfile: ./api-gateway/Dockerfile.demo
     depends_on:
       - auth-service
       - cache
@@ -36,7 +36,7 @@ services:
   auth-service:
     build:
       context: .
-      dockerfile: ./auth-service/Dockerfile
+      dockerfile: ./auth-service/Dockerfile.demo
     depends_on:
       - logger-service
       - message-broker
@@ -79,7 +79,7 @@ services:
       - '5007'
 
   ipfs-node:
-    image: ipfs/kubo:v0.39.0
+    image: ipfs/kubo:v0.41.0
     volumes:
       - ipfs_data:/data/ipfs:rw
       - ipfs_export:/export:rw
@@ -194,7 +194,7 @@ services:
   web-proxy:
     build:
       context: .
-      dockerfile: ./web-proxy/Dockerfile.ci
+      dockerfile: ./web-proxy/Dockerfile.demo
     depends_on:
       - api-gateway
       - auth-service

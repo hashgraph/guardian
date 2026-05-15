@@ -24488,7 +24488,7 @@ paths:
       summary: Get all versions of a VC document.
       tags:
         - policies
-  /dmrv/{policyId}/{alias}:
+  /dmrv/{policyId}/{path}:
     get:
       description: >-
         Resolves a human-readable alias to a policy block and proxies the
@@ -24504,8 +24504,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24555,8 +24556,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24606,8 +24608,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24657,8 +24660,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24708,8 +24712,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24759,8 +24764,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24810,8 +24816,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -24861,8 +24868,9 @@ paths:
         - name: alias
           required: true
           in: path
-          description: Human-readable alias for the block endpoint
+          description: Alias path; one or more lowercase slug segments separated by `/`.
           schema:
+            example: monitoring-reports/create
             type: string
       responses:
         '200':
@@ -31562,6 +31570,117 @@ paths:
       security:
         - bearer: []
       summary: Associate the user with the provided Hedera token.
+      tags:
+        - tokens
+  /tokens/{tokenId}/transfer:
+    post:
+      description: >-
+        Transfers fungible or non-fungible tokens from the authenticated user's
+        Hedera account to the specified target account. For FT, specify amount.
+        For NFT, specify serialNumbers or amount (picks from end).
+      operationId: TokensApi_transferToken
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferTokenDTO'
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Transfers tokens from the authenticated user to the target account.
+      tags:
+        - tokens
+  /tokens/push/{tokenId}/transfer:
+    post:
+      description: >-
+        Transfers fungible or non-fungible tokens asynchronously. Returns a task
+        ID for tracking.
+      operationId: TokensApi_transferTokenAsync
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferTokenDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Transfers tokens from the authenticated user to the target account.
       tags:
         - tokens
   /tokens/{tokenId}/{username}/grant-kyc:
@@ -50330,15 +50449,18 @@ components:
             type: object
         policyDocumentation:
           additionalProperties: true
-          description: User-configured policy API documentation entries
+          description: >-
+            User-configured policy API documentation entries. The `alias` may be
+            a single slug (`create-device`) or a path of slugs separated by `/`
+            (`monitoring-reports/create`).
           example:
             - name: create_device
               description: Send event to create_device
               target: create_device
               method: POST
-              alias: create-device
+              alias: monitoring-reports/create
               url: /api/v1/policies/{policyId}/tag/create_device/blocks
-              dmrvUrl: /api/v1/dmrv/{policyId}/create-device
+              dmrvUrl: /api/v1/dmrv/{policyId}/monitoring-reports/create
           type: array
           items:
             type: object
@@ -55565,6 +55687,31 @@ components:
         - enableFreeze
         - enableKYC
         - enableWipe
+    TransferTokenDTO:
+      type: object
+      properties:
+        targetAccount:
+          type: string
+          description: Target Hedera account ID
+          example: 0.0.12345
+        amount:
+          type: number
+          description: Amount (FT) or serial count to pick (NFT); must be > 0
+          example: 10
+        serialNumbers:
+          description: Specific NFT serial numbers to transfer; positive integers
+          example:
+            - 1
+            - 2
+            - 3
+          type: array
+          items:
+            type: number
+        memo:
+          type: string
+          description: Optional transaction memo
+      required:
+        - targetAccount
     ThemeRoleDTO:
       type: object
       properties:

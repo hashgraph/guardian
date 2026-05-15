@@ -1,3 +1,4 @@
+import { randomInt } from "../../../support/random";
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -26,7 +27,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
 
     it('Register a new user, login with it and set hedera credentials for it', () => {
         const userPassword = 'test'
-        const name = (Math.floor(Math.random() * 999) + 'testUser')
+        const name = (randomInt(999) + 'testUser')
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + 'accounts/register',
@@ -61,7 +62,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
 
     it('Should attempt to register a new user, login with it and set invalid hedera credentials for it', () => {
         const userPassword = 'testTest'
-        const name = (Math.floor(Math.random() * 999) + 'testUser')
+        const name = (randomInt(999) + 'testUser')
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + 'accounts/register',

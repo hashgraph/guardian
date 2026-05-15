@@ -15,11 +15,11 @@ jobs:
           - 6379:6379
     strategy:
       matrix:
-        node-version: [ 20.19.5 ]
+        node-version: [ 20.20.2 ]
         mongodb-version: [ 7.0.21 ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           egress-policy: audit
 
@@ -76,7 +76,7 @@ jobs:
           popd
 
       - name: Start NatsMQ
-        uses: step-security/nats-action@4c3a6529e7e03047bc23f178a4b47ea8f901d215 # v0.1.3
+        uses: step-security/nats-action@2254b4cc4958120e36da3a096e8200dac968be1c # v0.1.4
         with:
           port: '4222'
 

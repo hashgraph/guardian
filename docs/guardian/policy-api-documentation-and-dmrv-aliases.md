@@ -24,7 +24,7 @@ Policy authors can define clean, human-readable API endpoint aliases for their p
 1. Click **+ Add Endpoint**.
 2. Fill in the fields for each row:
 
-<table><thead><tr><th width="225.86328125">Field</th><th>Description</th></tr></thead><tbody><tr><td>Block</td><td>Select a block from the dropdown list</td></tr><tr><td>Method</td><td>Choose <code>BOTH</code>, <code>GET</code> or <code>POST</code></td></tr><tr><td>Name</td><td>Short name (auto-filled from block name)</td></tr><tr><td>Description</td><td>What the endpoint does</td></tr><tr><td>Alias</td><td>URL-friendly identifier, e.g. <code>new-device</code>, <code>create-application</code></td></tr><tr><td>Preview URL</td><td>Read-only: <code>/api/v1/dmrv/{policyId}/{alias}</code></td></tr></tbody></table>
+<table><thead><tr><th width="225.86328125">Field</th><th>Description</th></tr></thead><tbody><tr><td>Block</td><td>Select a block from the dropdown list</td></tr><tr><td>Method</td><td>Choose <code>BOTH</code>, <code>GET</code> or <code>POST</code></td></tr><tr><td>Name</td><td>Short name (auto-filled from block name)</td></tr><tr><td>Description</td><td>What the endpoint does</td></tr><tr><td>Alias</td><td>URL-friendly identifier. Either a single slug (<code>new-device</code>, <code>create-application</code>) or a path of slugs separated by <code>/</code> (<code>monitoring-reports/create</code>).</td></tr><tr><td>Preview URL</td><td>Read-only: <code>/api/v1/dmrv/{policyId}/{alias}</code></td></tr></tbody></table>
 
 <figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -39,11 +39,11 @@ Use the **Add All Endpoints** button at the top of the dialog (next to **+ Add E
 * Adds an entry for every eligible block in the current policy.
 * **Skips blocks that already have an entry** — no duplicates are created.
 * Generates a smart **Name** from the block name.
-* Generates a smart **Alias** (URL-friendly: lowercase, hyphenated) from the block name/tag.
+* Generates a smart **Alias** (URL-friendly: lowercase, hyphenated) from the block name/tag. The auto-generated alias is always a single segment; you can manually edit it into a path (e.g. `monitoring-reports/create`).
 
 ### 1.4. Validation Rules
 
-* **Alias:** only `a-z`, `0-9`, `-` allowed
+* **Alias:** one or more segments of `a-z`, `0-9`, `-`, separated by single `/`. No leading, trailing, or consecutive slashes; no empty segments. Examples: `new-device`, `monitoring-reports/create`.
 * **Block** and **Alias** must be unique
 * **Block** and **Alias** are required
 * **Method** must be supported by the selected **Block** (`GET`, `POST`, or both for `BOTH`)
@@ -82,25 +82,29 @@ Errors appear below the corresponding row.
 ### 3.1. Endpoint
 
 ```
-ANY /api/v1/dmrv/:policyId/:alias
+ANY /api/v1/dmrv/:policyId/<alias-path>
 ```
+
+`<alias-path>` is the configured alias as-is — a single segment (`new-device`) or a multi-segment path (`monitoring-reports/create`). The proxy captures everything after `:policyId` as the alias.
 
 ### 3.2. How It Works
 
 ```
-Request: GET /api/v1/dmrv/{policyId}/new-device
+Request: POST /api/v1/dmrv/{policyId}/monitoring-reports/create
             │
             ▼
-   1. Load policy by policyId
-   2. Find entry: alias="new-device", method="GET"
-   3. Resolve: target="new_device"
-   4. Forward → getBlockByTagName(user, policyId, "new_device")
-   5. Return block response
+   1. Capture alias path = "monitoring-reports/create"
+   2. Validate alias against the rule (lowercase slug segments separated by '/')
+   3. Load policy by policyId
+   4. Find entry: alias="monitoring-reports/create", method="POST"
+   5. Resolve: target="create_monitoring_report"
+   6. Forward → setBlockDataByTag(user, policyId, "create_monitoring_report", body, ...)
+   7. Return block response
 ```
 
 ### 3.3. Method Routing
 
-<table><thead><tr><th width="130.65625">Request Method</th><th width="196.7578125">Internal Call</th><th>Equivalent Standard Endpoint</th></tr></thead><tbody><tr><td><code>GET</code></td><td><code>getBlockByTagName</code></td><td><code>GET /api/v1/policies/:id/tag/:tag</code></td></tr><tr><td><code>POST</code></td><td><code>setBlockDataByTag</code></td><td><code>POST /api/v1/policies/:id/tag/:tag/blocks</code></td></tr></tbody></table>
+<table><thead><tr><th width="130.65625">Request Method</th><th width="196.7578125">Internal Call</th><th>Equivalent Standard Endpoint</th></tr></thead><tbody><tr><td><code>GET</code></td><td><code>getBlockDataByTag</code></td><td><code>GET /api/v1/policies/:id/tag/:tag/blocks</code></td></tr><tr><td><code>POST</code></td><td><code>setBlockDataByTag</code></td><td><code>POST /api/v1/policies/:id/tag/:tag/blocks</code></td></tr></tbody></table>
 
 ### 3.4. Authentication
 
@@ -108,15 +112,25 @@ Standard Bearer token. Required permissions: `POLICIES_POLICY_EXECUTE`, `POLICIE
 
 ### 3.5. Response Codes
 
-<table><thead><tr><th width="134.70703125">Code</th><th>Meaning</th></tr></thead><tbody><tr><td><code>200</code></td><td>Success</td></tr><tr><td><code>401</code></td><td>Unauthorized</td></tr><tr><td><code>404</code></td><td>Policy not found or alias not configured for this method</td></tr><tr><td><code>503</code></td><td>Block Unavailable (block exists but not accessible in current policy state)</td></tr></tbody></table>
+<table><thead><tr><th width="134.70703125">Code</th><th>Meaning</th></tr></thead><tbody><tr><td><code>200</code></td><td>Success</td></tr><tr><td><code>400</code></td><td>Invalid alias path (does not match the slug-segments rule)</td></tr><tr><td><code>401</code></td><td>Unauthorized</td></tr><tr><td><code>404</code></td><td>Policy not found or alias not configured for this method</td></tr><tr><td><code>503</code></td><td>Block Unavailable (block exists but not accessible in current policy state)</td></tr></tbody></table>
 
 ### 3.6. Example
 
-**Request:**
+**Request (single-segment alias):**
 
 ```http
 GET /api/v1/dmrv/69c3dbe9a4d2ac84f75cdfc4/choose-role-alias
 Authorization: Bearer <token>
+```
+
+**Request (multi-segment alias):**
+
+```http
+POST /api/v1/dmrv/69c3dbe9a4d2ac84f75cdfc4/monitoring-reports/create
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{ "field": "value" }
 ```
 
 **Response:**
@@ -135,6 +149,8 @@ Authorization: Bearer <token>
 
 Returns the configured documentation entries.
 
+When the target block references a schema (e.g. `requestVcDocumentBlock`, `documentValidatorBlock`), the entry includes a `schemaId` field with the schema's IRI (without the leading `#`). The field is omitted for blocks that don't reference a schema.
+
 **Response example:**
 
 ```json
@@ -145,7 +161,7 @@ Returns the configured documentation entries.
     "target": "registrant_form_grid",
     "method": "GET",
     "alias": "reg",
-    "url": "/api/v1/policies/69c3dbe9a4d2ac84f75cdfc4/tag/registrant_form_grid",
+    "url": "/api/v1/policies/69c3dbe9a4d2ac84f75cdfc4/tag/registrant_form_grid/blocks",
     "dmrvUrl": "/api/v1/dmrv/69c3dbe9a4d2ac84f75cdfc4/reg",
     "blockType": "interfaceDocumentsSourceBlock",
     "queryParams": [
@@ -156,6 +172,18 @@ Returns the configured documentation entries.
       { "name": "filterByUUID",  "type": "string",   "description": "Filter by document UUID" },
       { "name": "savepointIds",  "type": "string[]", "description": "Savepoint IDs filter (JSON array)" }
     ]
+  },
+  {
+    "name": "Create Application",
+    "description": "Submit a new applicant registration",
+    "target": "create_application",
+    "method": "POST",
+    "alias": "applications/create",
+    "url": "/api/v1/policies/69c3dbe9a4d2ac84f75cdfc4/tag/create_application/blocks",
+    "dmrvUrl": "/api/v1/dmrv/69c3dbe9a4d2ac84f75cdfc4/applications/create",
+    "blockType": "requestVcDocumentBlock",
+    "schemaId": "9bd1c75b-76df-4d3c-8775-1f76d18d7d8c",
+    "queryParams": []
   }
 ]
 ```

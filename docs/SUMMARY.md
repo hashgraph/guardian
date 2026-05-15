@@ -828,6 +828,7 @@
       * [User Session](guardian/users/user-operations/account-apis/user-session.md)
       * [User Login](guardian/users/user-operations/account-apis/user-login.md)
       * [Registering new account](guardian/users/user-operations/account-apis/registering-new-account.md)
+      * [Unified User Onboarding](guardian/users/user-operations/account-apis/unified-onboarding.md)
       * [Returns all Standard Registries](guardian/users/user-operations/account-apis/returns-all-root-authorities.md)
       * [Returns Access Token](guardian/users/user-operations/account-apis/returns-access-token.md)
     * [Profile APIs](guardian/users/user-operations/profile-apis/README.md)
