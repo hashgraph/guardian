@@ -299,7 +299,7 @@ Promise.all([
                     data: {
                         hederaAccountId: OPERATOR_ID,
                         hederaAccountKey: OPERATOR_KEY,
-                        dryRun: false,
+                        dryRun: null,
                         topicMemo: TopicMemo.getGlobalTopicMemo(),
                         payload: { userId: null }
                     }
