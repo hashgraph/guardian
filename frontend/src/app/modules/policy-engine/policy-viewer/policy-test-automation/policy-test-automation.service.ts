@@ -135,7 +135,7 @@ export class PolicyTestAutomationService {
                 policyId: input.policyId,
                 blockId: input.blockId,
                 selected: false,
-                document: raw?.document
+                document: input.document || raw?.document
             },
             outputs: []
         };

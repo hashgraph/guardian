@@ -119,7 +119,10 @@ export class TestResultsComponent implements OnInit {
 
     public onBack(): void {
         this.router.navigate(['/policy-viewer'], {
-            queryParams: { openTestsFor: this.policyId }
+            queryParams: {
+                openTestsFor: this.policyId,
+                openTestId: this.testId
+            }
         });
     }
 }

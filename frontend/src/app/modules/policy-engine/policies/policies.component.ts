@@ -873,10 +873,20 @@ export class PoliciesComponent implements OnInit {
                 this.checkIsAllSelected();
 
                 const openTestsFor = this.route.snapshot.queryParams['openTestsFor'];
+                const openTestId = this.route.snapshot.queryParams['openTestId'];
                 if (openTestsFor) {
                     const policy = this.policies.find((p: any) => p.id === openTestsFor);
                     if (policy) {
-                        this.testDetails(policy);
+                        this.testDetails(policy, openTestId);
+                        this.router.navigate([], {
+                            relativeTo: this.route,
+                            queryParams: {
+                                openTestsFor: null,
+                                openTestId: null
+                            },
+                            queryParamsHandling: 'merge',
+                            replaceUrl: true
+                        });
                     }
                 }
 
@@ -1895,15 +1905,19 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    public testDetails(policy: any) {
+    public testDetails(policy: any, testId?: string) {
         const item = this.policies?.find((e) => e.id === policy?.id);
+        const test = testId
+            ? item?.tests?.find((e: any) => e.id === testId)
+            : null;
         const dialogRef = this.dialogService.open(PolicyTestDialog, {
             showHeader: false,
             header: 'Policy Tests',
             width: '90%',
             styleClass: 'guardian-dialog',
             data: {
-                policy: item
+                policy: item,
+                test
             }
         });
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => { });
