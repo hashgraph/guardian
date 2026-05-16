@@ -24,12 +24,9 @@ export interface MessageProcessJobData {
 // Message types for which IPFS fetch is always enqueued immediately (not VCs).
 const EAGER_IPFS_TYPES = new Set([
     'Standard Registry',
-    'Policy',
-    'Instance-Policy',
-    'Module',
-    'Tool',
+    'Tag',
     'Token',
-    'Schema',
+    //'VP-Document' TODO: Check the relationship attribute whether we can use it
 ]);
 
 @Processor(QUEUE_NAMES.MESSAGE_PARSE)
@@ -50,6 +47,7 @@ export class MessageProcessProcessor extends WorkerHost {
         const { consensusTimestamp, topicId } = job.data;
 
         // Read from message_cache
+        // TODO: Optimise to read bulk
         const rows = await this.dataSource.query(
             `SELECT * FROM message_cache WHERE "consensusTimestamp" = $1 LIMIT 1`,
             [consensusTimestamp],
@@ -295,6 +293,7 @@ export class MessageProcessProcessor extends WorkerHost {
      * Registry (i.e., referenced by `options.topicId` on a `Standard Registry`
      * announcement message in the root topic).
      */
+    // TODO: Optimise this get, cache all the standard registries in memory, to reduct DB load
     private async isStandardRegistryProfileTopic(topicId: string): Promise<boolean> {
         const rows: Array<{ ok: number }> = await this.dataSource.query(
             `SELECT 1 AS ok

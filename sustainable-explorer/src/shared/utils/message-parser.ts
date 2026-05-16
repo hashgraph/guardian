@@ -69,12 +69,16 @@ export function extractFields(json: Record<string, unknown>): ParsedMessage {
     };
 
     // Extract CIDs from various locations
+    // Extract IPFS files only from set of types
+    
     const cids = json['cid'] || json['urls'] || json['files'];
     if (Array.isArray(cids)) {
         result.files = cids.filter((c): c is string => typeof c === 'string');
     } else if (typeof cids === 'string') {
         result.files = [cids];
     }
+    
+    
 
     // Build options based on type
     switch (type) {
@@ -86,13 +90,14 @@ export function extractFields(json: Record<string, unknown>): ParsedMessage {
                 description: json['description'] || null,
                 owner: json['owner'] || json['did'] || null,
                 messageType: json['messageType'] || null,
+                rationale: json['rationale'] || null
             };
             break;
 
         // Policy is the draft message; Instance-Policy is the published version.
         // They share the same field structure — the indexer treats Instance-Policy
         // as the canonical methodology entity (filtered by action='PublishPolicy').
-        case 'Policy':
+        // case 'Policy': // Ignore Policy Type
         case 'Instance-Policy':
             result.options = {
                 uuid: json['uuid'] || null,
@@ -169,11 +174,38 @@ export function extractFields(json: Record<string, unknown>): ParsedMessage {
                 result.tokens.push(json['tokenId'] as string);
             }
             break;
+        case 'Tag': {
+            result.options = {
+                name: json['name'] || null,
+                description: json['description'] || null,
+                topicId: json['topicId'] || null,
+                tokenId: json['tokenId'] || null,
+                target: json['target'] || null,
+                operation: json['operation'] || null,
+                entity: json['entity'] || null
+            };
+            break;
+        }
+        case 'Role-Document': {
+            result.options = {
+                name: json['name'] || null,
+                description: json['description'] || null,
+                topicId: json['topicId'] || null,
+                tokenId: json['tokenId'] || null,
+                issuer: json['issuer'] || null,
+                encodedData: json['encodedData'] || null,
+                role: json['role'] || null,
+                group: json['group'] || null,
+            };
+            if (json['tokenId']) {
+                result.tokens.push(json['tokenId'] as string);
+            }
+            break;
+        }
 
         case 'Module':
         case 'Tool':
         case 'Schema':
-        case 'Role-Document':
         case 'Contract':
         default:
             result.options = {
@@ -195,6 +227,7 @@ export function extractFields(json: Record<string, unknown>): ParsedMessage {
  * Extracts all discoverable topic IDs from a parsed message's options.
  * Returns a deduplicated array of topic IDs (excluding the source topic).
  */
+// TODO: Check this registrantTopicId actually comming
 export function extractDiscoverableTopics(
     parsed: ParsedMessage,
     sourceTopicId: string,

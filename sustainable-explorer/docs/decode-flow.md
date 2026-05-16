@@ -198,3 +198,95 @@ queue, `project-reparse.processor.ts` calls `upsertProjectFromVc`):
 3. After the worker drains the queue (seconds), refresh; the
    `mv_methodology_stats` MV picks up the new counts on its next scheduled
    refresh (default 60 s).
+
+
+
+
+  ┌────────────────────────┬──────────────────────────────────────────────────────────────┐
+  │          Type          │                                      Dropped fields                                       │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ DID-Document           │ url                                                                                       │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Formula                │ policyTopicId, policyInstanceTopicId, uri                                                 │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Guardian-Role-Document │ issuer, encodedData, uri                                                                  │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Instance-Policy        │ url                                                                                       │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Policy                 │ url                                                                                       │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Role-Document          │ issuer, encodedData, uri, role, group                                                     │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Schema                 │ entity, document_cid, document_url, context_cid, context_url                              │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Schema-Package         │ schemas, document_cid, document_uri, context_cid, context_uri, metadata_cid, metadata_uri │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Standard Registry      │ (none in this sample — attributes is kept)                                                │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Tag                    │ target, operation, date, entity, uri                                                      │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Token                  │ decimals                                                                                  │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Tool                   │ tagsTopicId, uri                                                                          │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Topic                  │ rationale                                                                                 │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ User-Permissions       │ issuer, encodedData, uri, user                                                            │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ VC-Document            │ url                                                                                       │
+  ├────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ VP-Document            │ url                                                                                       │
+  └────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────┘
+
+ 
+  Guardian-Role-Document — 1725633629.566705183
+
+  eyJpZCI6IjRhOWY3YWJkLTNiODEtNDg1OC1hZjIwLTY5MzgyOTY0YzA5MiIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6Ikd1YXJkaWFuLVJvbGUtRG9jdW1lbnQiLCJhY3R
+  pb24iOiJjcmVhdGUtcm9sZSIsImxhbmciOiJlbi1VUyIsImlzc3VlciI6ImRpZDpoZWRlcmE6bWFpbm5ldDo2aEdMdEUyYkthN1NIUEx2R3hQMkh3UE5yTG5DNjNXRm1BVT
+  NaYU5zbkJ6XzAuMC43MDA4MzQ5IiwiZW5jb2RlZERhdGEiOmZhbHNlLCJjaWQiOiJiYWZrcmVpZ21xZGx3eG52eG5tYXk3MnlnZXZvYXRhajdtbjZqdGFuaDZzdWo2ZXpiY
+  3J1NWd3cXF6aSIsInVyaSI6ImlwZnM6Ly9iYWZrcmVpZ21xZGx3eG52eG5tYXk3MnlnZXZvYXRhajdtbjZqdGFuaDZzdWo2ZXpiY3J1NWd3cXF6aSIsInV1aWQiOiI3YzEz
+  YTM3MS04MDJlLTQ1OTQtOWI3NC03YTJiNzM2MmZmMzYiLCJuYW1lIjoiRGVmYXVsdCBwb2xpY3kgdXNlciIsImRlc2NyaXB0aW9uIjoiRGVmYXVsdCBwb2xpY3kgdXNlciJ
+  9
+
+  Instance-Policy — 1666705883.609541003
+
+  eyJpZCI6ImM3ZDAxYWNjLTExYjQtNDM1NC1hNTVkLWYyYjQ1ZmFjOTFlYiIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6Ikluc3RhbmNlLVBvbGljeSIsImFjdGlvbiI6InB
+  1Ymxpc2gtcG9saWN5IiwibGFuZyI6ImVuLVVTIiwidXVpZCI6IjM2MmQ1YjE3LTcwZDMtNDcxNi1hZjUzLWNmM2Y3MmY2MTkzYSIsIm5hbWUiOiJBbWFuYSBTb2xhciBSb2
+  9mdG9wIiwiZGVzY3JpcHRpb24iOiJHQ0NNMDAxLSBNZXRob2RvbG9neSBmb3IgUmVuZXdhYmxlIEVuZXJneSBHZW5lcmF0aW9uIFByb2plY3RzIFN1cHBseWluZyBFbGVjd
+  HJpY2l0eSB0byBHcmlkIG9yIENhcHRpdmUgQ29uc3VtZXJzLiBWMy4wIiwidG9waWNEZXNjcmlwdGlvbiI6IlZFUklGSUVEIiwidmVyc2lvbiI6IjEuMC4wIiwicG9saWN5
+  VGFnIjoiNjM1N2U0NDk2MjQwZDllZWM5ZDZhYWY3Iiwib3duZXIiOiJkaWQ6aGVkZXJhOm1haW5uZXQ6NmVUekh6RkZlZFR0aXdQaTFqd2k4NnY4V0JVdlpOSFNTQmhtVU5
+  pa2ZHRVY7aGVkZXJhOm1haW5uZXQ6dGlkPTAuMC4xMzgwNzI1IiwidG9waWNJZCI6IjAuMC4xMzgwOTcwIiwiY2lkIjoiYmFma3JlaWVtZDJnMmx5YWk0YW82ZjJ3ZG83M3
+  ptaXU0M2JtdWE2dmJhdWdrenhocXZ0emxicXFjZ2UiLCJ1cmwiOiJodHRwczovL2lwZnMuaW8vaXBmcy9iYWZrcmVpZW1kMmcybHlhaTRhbzZmMndkbzczem1pdTQzYm11Y
+  TZ2YmF1Z2t6eGhxdnR6bGJxcWNnZSJ9
+
+  Tag — 1694106847.903589041
+
+  eyJpZCI6Ijk2NGM5ZTQyLTU0ODMtNDM4NS1iYTJmLTcxMzI4ZjE3Zjk1MiIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6IlRhZyIsImFjdGlvbiI6InB1Ymxpc2gtdGFnIiw
+  ibGFuZyI6ImVuLVVTIiwidXVpZCI6ImVjZDNlNmI1LWU1ZDktNDExMS1hYWRmLWU5ZWE5ZDViNTc2MyIsIm5hbWUiOiJDb29rc3RvdmUgRWZmaWNpZW5jeSBUZXN0IGFuZC
+  BNb25pdG9yaW5nIE1ldGhvZCIsImRlc2NyaXB0aW9uIjoiIiwib3duZXIiOiJkaWQ6aGVkZXJhOm1haW5uZXQ6NFhqcXZYZU1ZUGVzMWRtUFZFZk1tZXdOZ0VSOHplZEZpc
+  jN1ZlpOMmduTVBfMC4wLjM3MzI2NjUiLCJ0YXJnZXQiOiIxNjk0MTA2NzE0LjU4Mjg2MTUxNyIsIm9wZXJhdGlvbiI6IkNyZWF0ZSIsImRhdGUiOiIyMDIzLTA5LTA3VDE3
+  OjE0OjAxLjkwNFoiLCJlbnRpdHkiOiJQb2xpY3kiLCJjaWQiOiJiYWZrcmVpYWlpaGxlZTY2bW5jcnphaDJoZXIzNXJqZDNzcnIzcmRqdWl5enc2dXp2eWZoc2ZhZWp3ZSI
+  sInVyaSI6ImlwZnM6Ly9iYWZrcmVpYWlpaGxlZTY2bW5jcnphaDJoZXIzNXJqZDNzcnIzcmRqdWl5enc2dXp2eWZoc2ZhZWp3ZSJ9
+
+VC-Document — 1666697348.328880003 ibGFuZyI6ImVuLVVTIiwidXVpZCI6ImVjZDNlNmI1LWU1ZDktNDExMS1hYWRmLWU5ZWE5ZDViNTc2MyIsIm5hbWUiOiJDb29rc3RvdmUgRWZmaWNpZW5jeSBUZXN0IGFuZC BNb25pdG9yaW5nIE1ldGhvZCIsImRlc2NyaXB0aW9uIjoiIiwib3duZXIiOiJkaWQ6aGVkZXJhOm1haW5uZXQ6NFhqcXZYZU1ZUGVzMWRtUFZFZk1tZXdOZ0VSOHplZEZpc jN1ZlpOMmduTVBfMC4wLjM3MzI2NjUiLCJ0YXJnZXQiOiIxNjk0MTA2NzE0LjU4Mjg2MTUxNyIsIm9wZXJhdGlvbiI6IkNyZWF0ZSIsImRhdGUiOiIyMDIzLTA5LTA3VDE3 OjE0OjAxLjkwNFoiLCJlbnRpdHkiOiJQb2xpY3kiLCJjaWQiOiJiYWZrcmVpYWlpaGxlZTY2bW5jcnphaDJoZXIzNXJqZDNzcnIzcmRqdWl5enc2dXp2eWZoc2ZhZWp3ZSI sInVyaSI6ImlwZnM6Ly9iYWZrcmVpYWlpaGxlZTY2bW5jcnphaDJoZXIzNXJqZDNzcnIzcmRqdWl5enc2dXp2eWZoc2ZhZWp3ZSJ9 
+
+VC-Document — 1666697348.328880003 eyJpZCI6Ijk2ZDJiMmQzLTQwYzgtNDk0OC1iMTcyLTY2MTdlOTk0MzA1YiIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6IlZDLURvY3VtZW50IiwiYWN0aW9uIjoiY3JlYXR lLXZjLWRvY3VtZW50IiwibGFuZyI6ImVuLVVTIiwiaXNzdWVyIjoiZGlkOmhlZGVyYTptYWlubmV0OjZlVHpIekZGZWRUdGl3UGkxandpODZ2OFdCVXZaTkhTU0JobVVOaW tmR0VWO2hlZGVyYTptYWlubmV0OnRpZD0wLjAuMTM4MDcyNSIsImNpZCI6ImJhZmtyZWlocnB2bW0zaG9mMzJ6eXc2cHhnYmZmZ3hoMmZucHo0a3dmYmI2c3d1enQ0NDRic zVjajN5IiwidXJsIjoiaHR0cHM6Ly9pcGZzLmlvL2lwZnMvYmFma3JlaWhycHZtbTNob2YzMnp5dzZweGdiZmZneGgyZm5wejRrd2ZiYjZzd3V6dDQ0NGJzNWNqM3kifQ== 
+
+VP-Document — 1666707380.631604003 eyJpZCI6ImQ2ODU4NGI1LTQyOTYtNDYxOC04MzI5LTM2ZjNhNzI1N2I2MSIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6IlZQLURvY3VtZW50IiwiYWN0aW9uIjoiY3JlYXR lLXZwLWRvY3VtZW50IiwibGFuZyI6ImVuLVVTIiwiaXNzdWVyIjpudWxsLCJyZWxhdGlvbnNoaXBzIjpbIjE2NjY3MDczNTQuNjEyNDQ3NDk5IiwiMTY2NjcwNzM2OS45ND lLXZjLWRvY3VtZW50IiwibGFuZyI6ImVuLVVTIiwiaXNzdWVyIjoiZGlkOmhlZGVyYTptYWlubmV0OjZlVHpIekZGZWRUdGl3UGkxandpODZ2OFdCVXZaTkhTU0JobVVOaW tmR0VWO2hlZGVyYTptYWlubmV0OnRpZD0wLjAuMTM4MDcyNSIsImNpZCI6ImJhZmtyZWlocnB2bW0zaG9mMzJ6eXc2cHhnYmZmZ3hoMmZucHo0a3dmYmI2c3d1enQ0NDRic zVjajN5IiwidXJsIjoiaHR0cHM6Ly9pcGZzLmlvL2lwZnMvYmFma3JlaWhycHZtbTNob2YzMnp5dzZweGdiZmZneGgyZm5wejRrd2ZiYjZzd3V6dDQ0NGJzNWNqM3kifQ== 
+
+VP-Document — 1666707380.631604003 eyJpZCI6ImQ2ODU4NGI1LTQyOTYtNDYxOC04MzI5LTM2ZjNhNzI1N2I2MSIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6IlZQLURvY3VtZW50IiwiYWN0aW9uIjoiY3JlYXR BNb25pdG9yaW5nIE1ldGhvZCIsImRlc2NyaXB0aW9uIjoiIiwib3duZXIiOiJkaWQ6aGVkZXJhOm1haW5uZXQ6NFhqcXZYZU1ZUGVzMWRtUFZFZk1tZXdOZ0VSOHplZEZpc jN1ZlpOMmduTVBfMC4wLjM3MzI2NjUiLCJ0YXJnZXQiOiIxNjk0MTA2NzE0LjU4Mjg2MTUxNyIsIm9wZXJhdGlvbiI6IkNyZWF0ZSIsImRhdGUiOiIyMDIzLTA5LTA3VDE3 OjE0OjAxLjkwNFoiLCJlbnRpdHkiOiJQb2xpY3kiLCJjaWQiOiJiYWZrcmVpYWlpaGxlZTY2bW5jcnphaDJoZXIzNXJqZDNzcnIzcmRqdWl5enc2dXp2eWZoc2ZhZWp3ZSI sInVyaSI6ImlwZnM6Ly9iYWZrcmVpYWlpaGxlZTY2bW5jcnphaDJoZXIzNXJqZDNzcnIzcmRqdWl5enc2dXp2eWZoc2ZhZWp3ZSJ9 
+
+VC-Document — 1666697348.328880003 eyJpZCI6Ijk2ZDJiMmQzLTQwYzgtNDk0OC1iMTcyLTY2MTdlOTk0MzA1YiIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6IlZDLURvY3VtZW50IiwiYWN0aW9uIjoiY3JlYXR lLXZjLWRvY3VtZW50IiwibGFuZyI6ImVuLVVTIiwiaXNzdWVyIjoiZGlkOmhlZGVyYTptYWlubmV0OjZlVHpIekZGZWRUdGl3UGkxandpODZ2OFdCVXZaTkhTU0JobVVOaW tmR0VWO2hlZGVyYTptYWlubmV0OnRpZD0wLjAuMTM4MDcyNSIsImNpZCI6ImJhZmtyZWlocnB2bW0zaG9mMzJ6eXc2cHhnYmZmZ3hoMmZucHo0a3dmYmI2c3d1enQ0NDRic zVjajN5IiwidXJsIjoiaHR0cHM6Ly9pcGZzLmlvL2lwZnMvYmFma3JlaWhycHZtbTNob2YzMnp5dzZweGdiZmZneGgyZm5wejRrd2ZiYjZzd3V6dDQ0NGJzNWNqM3kifQ== 
+
+VP-Document — 1666707380.631604003 eyJpZCI6ImQ2ODU4NGI1LTQyOTYtNDYxOC04MzI5LTM2ZjNhNzI1N2I2MSIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6IlZQLURvY3VtZW50IiwiYWN0aW9uIjoiY3JlYXR lLXZwLWRvY3VtZW50IiwibGFuZyI6ImVuLVVTIiwiaXNzdWVyIjpudWxsLCJyZWxhdGlvbnNoaXBzIjpbIjE2NjY3MDczNTQuNjEyNDQ3NDk5IiwiMTY2NjcwNzM2OS45ND QyNjMwNzIiXSwiY2lkIjoiYmFma3JlaWdvbzViZnZhYTRoa2Jjank3aWRxbGFicHJoa2ZlNGN5Mmt6d3pkbno3cGhybHplcXk1enkiLCJ1cmwiOiJodHRwczovL2lwZnMua W8vaXBmcy9iYWZrcmVpZ29vNWJmdmFhNGhrYmNqeTdpZHFsYWJwcmhrZmU0Y3kya3p3emRuejdwaHJsemVxeTV6eSJ9
+
+
+User-Permissions
+
+  1775720163.679868000 — cid: QmaSL2RHvmzEywSJkSrsR72Zef7nfePL2WAtzJHH14ARrj
+
+  eyJpZCI6IjNiOGM1NjllLTZhOTctNDQ1Ni05YmViLTI3ZDJhMjYwOWZkYyIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6IlVzZXItUGVybWlzc2lvbnMiLCJhY3Rpb24iOiJ
+  zZXQtcm9sZSIsImxhbmciOiJlbi1VUyIsImlzc3VlciI6ImRpZDpoZWRlcmE6bWFpbm5ldDpCUEdRZWNNSmMyY3BUM3o2TkpIYXNvS0NEemtQNFJnQ0tUcmhrMVZzRGhhdV
+  8wLjAuOTI4MDc4MCIsImVuY29kZWREYXRhIjpmYWxzZSwiY2lkIjoiUW1hU0wyUkh2bXpFeXdTSmtTcnNSNzJaZWY3bmZlUEwyV0F0ekpISDE0QVJyaiIsInVyaSI6ImlwZ
+  nM6Ly9RbWFTTDJSSHZtekV5d1NKa1Nyc1I3MlplZjduZmVQTDJXQXR6SkhIMTRBUnJqIiwidXNlciI6ImRpZDpoZWRlcmE6bWFpbm5ldDpGeDI2ZEdVWjRSWFdid0hwdVR5
+  WmhDeUxtdFBFUERXWmMydkgxQXBoRDhBal8wLjAuOTI4MDc4MCJ9
