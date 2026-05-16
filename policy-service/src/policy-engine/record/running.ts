@@ -1,5 +1,4 @@
-import { GenerateUUIDv4, IRecordPolicyTestMetadata, PolicyEvents, TopicType, RecordMethod } from '@guardian/interfaces';
-import { RunningStatus } from './status.type.js';
+import { GenerateUUIDv4, IRecordPolicyTestMetadata, PolicyEvents, TopicType, RecordMethod, RecordStatus } from '@guardian/interfaces';
 import { RecordActionStep } from '../record-action-step.js';
 import { BlockTreeGenerator } from '../block-tree-generator.js';
 import { RecordAction } from './action.type.js';
@@ -85,7 +84,7 @@ export class Running {
     /**
      * Status
      */
-    private _status: RunningStatus;
+    private _status: RecordStatus;
     /**
      * Last error
      */
@@ -110,11 +109,6 @@ export class Running {
      * Current delay
      */
     private _currentDelay: any;
-    /**
-     * Per-replayed-action start times. Used at end-of-run to attribute
-     * dry-run VC/VP rows to their action by createDate window.
-     */
-    private readonly _actionTimings: { recordActionId: string; startedAt: Date }[] = [];
 
     constructor(
         policyInstance: IPolicyBlock,
@@ -130,7 +124,7 @@ export class Running {
         this.options = options || {};
         this.tree = new BlockTreeGenerator();
         this._mode = this.options.mode;
-        this._status = RunningStatus.New;
+        this._status = RecordStatus.New;
         this._lastError = null;
         this._id = null;
         this._actions = new RecordItemStack();
@@ -159,7 +153,7 @@ export class Running {
      * @public
      */
     public start(): string {
-        this._status = RunningStatus.Running;
+        this._status = RecordStatus.Running;
         this._lastError = null;
         this._id = GenerateUUIDv4();
         this._generatedItems = [];
@@ -178,7 +172,7 @@ export class Running {
      * @public
      */
     public stop(): boolean {
-        this._status = RunningStatus.Stopped;
+        this._status = RecordStatus.Stopped;
         this._lastError = null;
         this._endTime = Date.now();
         this._updateStatus(this._id).then();
@@ -192,7 +186,7 @@ export class Running {
     public finished(): boolean {
         const oldID = this._id;
         this._id = null;
-        this._status = RunningStatus.Finished;
+        this._status = RecordStatus.Finished;
         this._lastError = null;
         this._endTime = Date.now();
         this._updateStatus(oldID).then();
@@ -205,7 +199,7 @@ export class Running {
      * @public
      */
     public error(message: string): boolean {
-        this._status = RunningStatus.Error;
+        this._status = RecordStatus.Error;
         this._lastError = message;
         this._endTime = Date.now();
         this._updateStatus(this._id).then();
@@ -219,7 +213,7 @@ export class Running {
     public async destroy(): Promise<boolean> {
         const oldID = this._id;
         this._id = null;
-        this._status = RunningStatus.Finished;
+        this._status = RecordStatus.Finished;
         this._lastError = null;
         this._endTime = Date.now();
         await this._updateStatus(oldID);
@@ -231,7 +225,7 @@ export class Running {
      * @public
      */
     public async run(): Promise<IRecordResult[]> {
-        this._status = RunningStatus.Running;
+        this._status = RecordStatus.Running;
         this._lastError = null;
         this._id = GenerateUUIDv4();
         this._generatedItems = [];
@@ -274,8 +268,8 @@ export class Running {
      */
     public async retryStep(): Promise<boolean> {
         try {
-            if (this._status === RunningStatus.Error) {
-                this._status = RunningStatus.Running;
+            if (this._status === RecordStatus.Error) {
+                this._status = RecordStatus.Running;
                 this._lastError = null;
                 this._updateStatus(this._id).then();
                 this._run(this._id).then();
@@ -294,8 +288,8 @@ export class Running {
      */
     public async skipStep(): Promise<boolean> {
         try {
-            if (this._status === RunningStatus.Error) {
-                this._status = RunningStatus.Running;
+            if (this._status === RecordStatus.Error) {
+                this._status = RecordStatus.Running;
                 this._lastError = null;
                 this._actions.next();
                 this._updateStatus(this._id).then();
@@ -314,7 +308,7 @@ export class Running {
      * @public
      */
     public async results(): Promise<IRecordResult[]> {
-        if (this._status !== RunningStatus.Stopped) {
+        if (this._status !== RecordStatus.Stopped) {
             return null;
         }
         const results: IRecordResult[] = [];
@@ -359,7 +353,7 @@ export class Running {
             const status: any = this.getStatus(id);
             this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, status);
             if (this._mode === 'test') {
-                if (this._status === RunningStatus.Running) {
+                if (this._status === RecordStatus.Running) {
                     this.tree.sendMessage(PolicyEvents.TEST_UPDATE_BROADCAST, status);
                 } else {
                     status.result = await this.getResults();
@@ -401,7 +395,7 @@ export class Running {
      * @private
      */
     private isRunning(id: string): boolean {
-        return this._id === id && this._status === RunningStatus.Running;
+        return this._id === id && this._status === RecordStatus.Running;
     }
 
     /**
@@ -483,11 +477,22 @@ export class Running {
                 case RecordAction.SetExternalData: {
                     const doc = await this.getActionDocument(action);
                     if (action.recordActionId) {
-                        this._actionTimings.push({ recordActionId: action.recordActionId, startedAt: new Date() });
-                    }
-                    for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
-                        if (block.policyId === this.policyId) {
-                            await (block as any).receiveData(doc);
+                        await new Promise<void>((resolve) => {
+                            const step = new RecordActionStep(() => resolve(), 0, false, false, action.recordActionId);
+                            (async () => {
+                                for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
+                                    if (block.policyId === this.policyId) {
+                                        await (block as any).receiveData(doc, step);
+                                    }
+                                }
+                                step.finish();
+                            })();
+                        });
+                    } else {
+                        for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
+                            if (block.policyId === this.policyId) {
+                                await (block as any).receiveData(doc);
+                            }
                         }
                     }
                     return null;
@@ -770,62 +775,6 @@ export class Running {
     }
 
     /**
-     * Pick the action whose start-window covers the given createDate.
-     * Windows are half-open: [timings[i].startedAt, timings[i+1].startedAt).
-     * The last action's window extends to the end of the run.
-     */
-    private resolveActionIdForCreateDate(createDate: Date): string | null {
-        const target = createDate.getTime();
-        let chosen: string | null = null;
-        for (const timing of this._actionTimings) {
-            if (timing.startedAt.getTime() <= target) {
-                chosen = timing.recordActionId;
-            } else {
-                break;
-            }
-        }
-        return chosen;
-    }
-
-    /**
-     * Build an in-memory map from VC/VP document.id to the recordActionId
-     * resolved by createDate window. No DB writes needed — VCs are created
-     * asynchronously after block.setData returns, so stamping during replay
-     * is not possible. Attribution is done at end-of-run after all VCs exist.
-     */
-    private async buildActionIdMap(): Promise<Map<string, string>> {
-        const actionIdMap = new Map<string, string>();
-        if (!this._actionTimings.length) {
-            return actionIdMap;
-        }
-        const db = new DatabaseServer(this.policyId);
-        const runWindow = {
-            createDate: {
-                $gte: new Date(this._startTime),
-                $lt: new Date(this._endTime)
-            }
-        };
-
-        const vcs = await db.getVcDocuments<VcDocument>(runWindow) as VcDocument[];
-        for (const vc of vcs) {
-            const attributed = this.resolveActionIdForCreateDate(vc.createDate);
-            if (attributed && vc.document?.id) {
-                actionIdMap.set(vc.document.id, attributed);
-            }
-        }
-
-        const vps = await db.getVpDocuments<VpDocument>(runWindow) as VpDocument[];
-        for (const vp of vps) {
-            const attributed = this.resolveActionIdForCreateDate(vp.createDate);
-            if (attributed && vp.document?.id) {
-                actionIdMap.set(vp.document.id, attributed);
-            }
-        }
-
-        return actionIdMap;
-    }
-
-    /**
      * Get next uuid
      * @public
      */
@@ -886,14 +835,8 @@ export class Running {
      */
     public async getResults(): Promise<any> {
         if (this._id) {
-            const actionIdMap = await this.buildActionIdMap();
             const results = await RecordImportExport
                 .loadRecordResults(this.policyId, this._startTime, this._endTime);
-            for (const result of results) {
-                if (!result.recordActionId && actionIdMap.has(result.id)) {
-                    result.recordActionId = actionIdMap.get(result.id);
-                }
-            }
             return {
                 documents: results,
                 recorded: this._results,

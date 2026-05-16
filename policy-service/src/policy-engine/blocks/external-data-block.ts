@@ -174,7 +174,7 @@ export class ExternalDataBlock {
 
         const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, schema);
 
-        let doc = PolicyUtils.createVC(ref, documentOwner, vc, null);
+        let doc = PolicyUtils.createVC(ref, documentOwner, vc, actionStatus?.id ?? null);
 
         const tags = await PolicyUtils.getBlockTags(ref);
         PolicyUtils.setDocumentTags(doc, tags);

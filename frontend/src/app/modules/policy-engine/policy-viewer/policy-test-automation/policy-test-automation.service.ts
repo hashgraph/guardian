@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject, Subject, Subscription, mergeMap, filter, map, takeUntil } from 'rxjs';
 import { openDB, IDBPDatabase } from 'idb';
-import { IRecordPolicyTestMetadata } from '@guardian/interfaces';
+import { IRecordPolicyTestMetadata, RecordStatus } from '@guardian/interfaces';
 import { STORES_NAME } from 'src/app/constants';
 import { RecordService } from 'src/app/services/record.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -98,9 +98,9 @@ export class PolicyTestAutomationService {
                     takeUntil(this._wsSignal$.pipe(
                         filter((msg) =>
                             msg.policyId === capture.policyId &&
-                            (msg.status === 'Stopped' ||
-                                msg.status === 'Finished' ||
-                                msg.status === 'Error')
+                            (msg.status === RecordStatus.Stopped ||
+                                msg.status === RecordStatus.Finished ||
+                                msg.status === RecordStatus.Error)
                         )
                     )),
                     map(() => capture)

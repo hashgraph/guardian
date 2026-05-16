@@ -3,11 +3,10 @@ import {
     HederaDidDocument,
     Record,
 } from '@guardian/common';
-import { GenerateUUIDv4, ISignOptions, PolicyEvents, RecordMethod } from '@guardian/interfaces';
+import { GenerateUUIDv4, ISignOptions, PolicyEvents, RecordMethod, RecordStatus } from '@guardian/interfaces';
 import { BlockTreeGenerator } from '../block-tree-generator.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
-import { RecordingStatus } from './status.type.js';
 import { RecordAction } from './action.type.js';
 import { RecordItem } from './record-item.js';
 import { FilterObject } from '@mikro-orm/core';
@@ -69,7 +68,7 @@ export class Recording {
     /**
      * Recording status
      */
-    private _status: RecordingStatus;
+    private _status: RecordStatus;
     /**
      * Recording mode
      */
@@ -97,8 +96,8 @@ export class Recording {
         this.hederaOptions = options.hederaOptions;
         this.policyMessageId = options.policyMessageId ?? null;
         this._status = this.mode === 'auto'
-            ? RecordingStatus.Recording
-            : RecordingStatus.New;
+            ? RecordStatus.Recording
+            : RecordStatus.New;
     }
 
     /**
@@ -106,7 +105,7 @@ export class Recording {
      * @private
      */
     private isActive(): boolean {
-        return this.mode === 'auto' || this._status === RecordingStatus.Recording;
+        return this.mode === 'auto' || this._status === RecordStatus.Recording;
     }
 
     /**
@@ -165,7 +164,7 @@ export class Recording {
         if (this.mode === 'auto') {
             return true;
         }
-        if (this._status === RecordingStatus.Recording) {
+        if (this._status === RecordStatus.Recording) {
             return true;
         }
         await DatabaseServer.createRecord({
@@ -178,7 +177,7 @@ export class Recording {
             target: null,
             document: null
         } as FilterObject<Record>);
-        this._status = RecordingStatus.Recording;
+        this._status = RecordStatus.Recording;
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         return true;
     }
@@ -191,7 +190,7 @@ export class Recording {
         if (this.mode === 'auto') {
             return true;
         }
-        if (this._status !== RecordingStatus.Recording) {
+        if (this._status !== RecordStatus.Recording) {
             return false;
         }
         await DatabaseServer.createRecord({
@@ -204,7 +203,7 @@ export class Recording {
             target: null,
             document: null
         } as FilterObject<Record>);
-        this._status = RecordingStatus.Stopped;
+        this._status = RecordStatus.Stopped;
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         return true;
     }
@@ -214,7 +213,7 @@ export class Recording {
      * @public
      */
     public async destroy(): Promise<boolean> {
-        this._status = RecordingStatus.Stopped;
+        this._status = RecordStatus.Stopped;
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         return true;
     }
@@ -392,7 +391,7 @@ export class Recording {
      * Get status
      * @public
      */
-    public get status(): RecordingStatus {
+    public get status(): RecordStatus {
         return this._status;
     }
 
