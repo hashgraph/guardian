@@ -53,8 +53,8 @@ export class FieldLink {
             if (!text) {
                 this.validName = false;
             } else {
-                if ((/^[A-Za-z]\w*$/).test(text)) {
-                    this.variableName = text;
+                if ((/^[A-Za-z]\w*(?:,\w+)*$/).test(text)) {
+                    this.variableName = text.replace(/,/g, '_');
                     this.validName = true;
                 } else {
                     this.validName = false;
@@ -112,7 +112,9 @@ export class FieldLink {
     public toJson(): IFieldLink {
         return {
             type: this.type,
-            name: this.variableName || '',
+            // Preserve the original user notation (e.g. "x,i") in JSON;
+            // CE uses the underscore-normalised variableName internally.
+            name: this.variableNameText || '',
             description: this.description || '',
             field: this.field || '',
             schema: this.schema || ''

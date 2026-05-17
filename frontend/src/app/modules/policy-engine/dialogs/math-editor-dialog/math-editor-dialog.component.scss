@@ -3,7 +3,7 @@
     padding: 14px 0 20px 0;
     display: flex;
     flex-direction: row;
-    font-family: Inter, serif;
+    font-family: Inter, sans-serif;
     font-style: normal;
     height: calc(100vh - 340px);
     overflow: hidden;
@@ -133,7 +133,7 @@
     border-radius: 8px;
     margin-bottom: 16px;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 
     &[error="true"] {
         border: 1px solid var(--guardian-failure-color);
@@ -170,6 +170,7 @@
         justify-content: center;
         align-items: center;
         cursor: move;
+        border-radius: 7px 0 0 7px;
     }
 
     .row-container {
@@ -232,6 +233,74 @@
 
     .formula-tab-body {
         width: 100%;
+    }
+
+    .var-picker-wrapper {
+        position: relative;
+        margin-left: 8px;
+        margin-top: 20px;
+        flex-shrink: 0;
+
+        .var-picker-search-input {
+            width: 260px;
+            padding: 20px 10px;
+            border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+            border-radius: 6px;
+            font-family: Inter, sans-serif;
+            font-size: 13px;
+            outline: none;
+            color: #181818;
+
+            &:focus, &.var-picker-active {
+                border-color: var(--guardian-primary-color, #4169E2);
+            }
+
+            &::placeholder {
+                color: #848FA9;
+            }
+        }
+
+        .var-picker-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            z-index: 200;
+            min-width: 200px;
+            max-width: 360px;
+            background: #fff;
+            border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            padding: 4px;
+
+            .var-picker-list {
+                max-height: 220px;
+                overflow-y: auto;
+
+                .var-picker-item {
+                    padding: 6px 10px;
+                    border-radius: 6px;
+                    font-family: Inter, sans-serif;
+                    font-size: 13px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    user-select: none;
+                    color: #181818;
+
+                    &:hover {
+                        background: var(--guardian-primary-color, #4169E2);
+                        color: #fff;
+                    }
+                }
+
+                .var-picker-empty {
+                    font-family: Inter, sans-serif;
+                    font-size: 13px;
+                    color: #848FA9;
+                    padding: 6px 10px;
+                }
+            }
+        }
     }
 }
 
