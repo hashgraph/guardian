@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { IMapFieldsStrategy } from '../../interfaces/strategies.interface';
-import { FieldDescriptor, FieldMap, SchemaInfo, SchemaLabelMap } from '../../types';
+import { FieldDescriptor, FieldMap, SchemaInfo } from '../../types';
 
 type MappingResult = {
     fieldName: string;
@@ -48,11 +48,10 @@ export class LlmFieldMapperService implements IMapFieldsStrategy {
     private readonly logger = new Logger(LlmFieldMapperService.name);
 
     async execute(
-        schemaMap: SchemaLabelMap,
         schemas: SchemaInfo[],
         fields: FieldDescriptor[],
     ): Promise<FieldMap> {
-        const projectSchema = this.resolveProjectSchema(schemaMap, schemas);
+        const projectSchema = this.resolveProjectSchema(schemas);
         const fieldMap = this.createEmptyFieldMap(fields);
 
         if (!projectSchema) {
@@ -97,26 +96,18 @@ export class LlmFieldMapperService implements IMapFieldsStrategy {
                 continue;
             }
 
-            fieldMap[result.fieldName] = `${projectSchema.id}.${leafDescriptions.paths[String(matchedIndex)]}`;
+            fieldMap[result.fieldName] = [`${projectSchema.id}.${leafDescriptions.paths[String(matchedIndex)]}`];
         }
 
         return fieldMap;
     }
 
-    private resolveProjectSchema(schemaMap: SchemaLabelMap, schemas: SchemaInfo[]): SchemaInfo | null {
-        const schemaId = schemaMap[PROJECT_SCHEMA_LABEL];
-        if (schemaId) {
-            const mappedSchema = schemas.find((schema) => schema.id === schemaId);
-            if (mappedSchema) {
-                return mappedSchema;
-            }
-        }
-
+    private resolveProjectSchema(schemas: SchemaInfo[]): SchemaInfo | null {
         return schemas.find((schema) => schema.name === PROJECT_SCHEMA_LABEL) ?? null;
     }
 
     private createEmptyFieldMap(fields: FieldDescriptor[]): FieldMap {
-        return Object.fromEntries(fields.map((field) => [field.fieldName, '']));
+        return Object.fromEntries(fields.map((field) => [field.fieldName, [] as string[]]));
     }
 
     private parseSchemaDocument(schema: SchemaInfo): Record<string, unknown> | null {

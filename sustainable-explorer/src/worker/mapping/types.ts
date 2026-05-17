@@ -3,18 +3,6 @@
  */
 
 /**
- * Schema label - Restricted to specific schema types
- */
-export type SchemaLabel = 'ProjectSchema' | 'PDD' | 'MonitoringReport' | 'VerificationReport' | 'ValidationReport';
-
-/**
- * Schema Label Map - Output of the Map Schemas step
- * Maps schema names to their IDs for reference
- * Keys are restricted to known schema types
- */
-export type SchemaLabelMap = Partial<Record<SchemaLabel, string>>;
-
-/**
  * Field representation for mapping input
  */
 export interface FieldDescriptor {
@@ -26,12 +14,14 @@ export interface FieldDescriptor {
 }
 
 /**
- * Field mapping result - Output of the Map Fields step
- * Maps field names to fully-qualified schema paths in the form
- * `${policySchema.schemaId}.${path}`.
+ * Field mapping result — Output of the Map Fields step.
+ * Maps each field name to the list of fully-qualified schema paths
+ * `${schemaId}.${path}` that won the per-schema scoring. A field can
+ * therefore have one entry per source schema (e.g. a project name field
+ * appearing in both the registration schema and the methodology schema).
  */
 export interface FieldMap {
-    [fieldName: string]: string;
+    [fieldName: string]: string[];
 }
 
 /**

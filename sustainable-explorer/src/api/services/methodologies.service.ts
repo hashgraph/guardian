@@ -55,8 +55,8 @@ export class MethodologiesService {
      * methodology identified by its policy topic ID.
      *
      * Returns null when the methodology does not exist in business_view at all.
-     * When the methodology exists but has no policy_decode_status row, the
-     * returned DTO carries decodeStatus = 'unknown'.
+     * When the methodology exists but has no policy row yet, the returned DTO
+     * carries decodeStatus = 'unknown'.
      */
     async findDecoded(network: string, id: string): Promise<DecodedMethodologyResponseDto | null> {
         const ds = this.dataSources.getDataSource(network);

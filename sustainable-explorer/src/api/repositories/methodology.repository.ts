@@ -58,7 +58,7 @@ export interface MethodologyRow {
     totalIssued?: number;
     totalRetired?: number;
     totalActive?: number;
-    /** Decode status from policy_decode_status. Null means no row exists yet. */
+    /** Decode status from policy table ('success' / 'pending' / 'failed' / null). */
     decodeStatus: string | null;
 }
 

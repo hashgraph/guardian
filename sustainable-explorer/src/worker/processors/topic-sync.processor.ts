@@ -5,6 +5,7 @@ import { Job, Queue } from 'bullmq';
 import { DataSource } from 'typeorm';
 import { QUEUE_NAMES } from '@shared/config/bullmq.config';
 import { HederaService, TopicMessage } from '../services/hedera.service';
+import { isTopicBlocked } from '@shared/config/topic-blocklist';
 
 export interface TopicSyncJobData {
     topicId: string;
@@ -33,6 +34,11 @@ export class TopicSyncProcessor extends WorkerHost {
 
     async process(job: Job<TopicSyncJobData>): Promise<void> {
         const { topicId, fromSequenceNumber, isOrgTopic } = job.data;
+
+        if (isTopicBlocked(topicId)) {
+            this.logger.debug(`Topic ${topicId} is blocklisted — skipping sync`);
+            return;
+        }
 
         this.logger.log(`Syncing topic ${topicId} from seq ${fromSequenceNumber}`);
 

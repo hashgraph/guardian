@@ -209,7 +209,7 @@ export class MethodologiesController {
         summary: 'Manually edit and save the field mapping for a methodology',
         description:
             'Applies a partial or full update to the cross-schema field map stored on ' +
-            'policy_decode_status."fieldMap". Only the keys present in the request body are ' +
+            'policy."policyMapping". Only the keys present in the request body are ' +
             'overwritten (PATCH semantics). Re-derives projectFieldMap, projectGeoKey, ' +
             'projectGeoSection, and projectSchemaId from the merged map. ' +
             'Does NOT automatically trigger project re-parsing — call POST /:id/reparse-projects ' +

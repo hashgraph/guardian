@@ -5,6 +5,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { WorkerModule } from './worker.module';
 import { getActiveQueues } from '@shared/config/bullmq.config';
 import { ensureDatabaseExists, getDatabaseConfig } from '@shared/config/database.config';
+import { resolveNestLogLevels } from '@shared/config/log-level';
 import { bootstrapSchema } from '@shared/database/schema-bootstrap';
 
 async function bootstrap() {
@@ -21,7 +22,7 @@ async function bootstrap() {
         logger.error(`Database ensure failed: ${err}`);
     }
 
-    // Bootstrap schema (tsvector columns, GIN/trigram indexes, policy_decode_status, etc.)
+    // Bootstrap schema (tsvector columns, GIN/trigram indexes, etc.)
     // BEFORE Nest starts — onModuleInit hooks (e.g. SyncSchedulerService) query these
     // tables, so they must exist before the application context is created.
     try {
@@ -29,7 +30,7 @@ async function bootstrap() {
         await bootstrapDs.initialize();
         try {
             await bootstrapSchema(bootstrapDs);
-            logger.log('Schema bootstrap complete (tsvector + GIN + trigram + policy_decode_status)');
+            logger.log('Schema bootstrap complete (tsvector + GIN + trigram)');
         } finally {
             await bootstrapDs.destroy();
         }
@@ -41,7 +42,7 @@ async function bootstrap() {
     const app = await NestFactory.createApplicationContext(
         WorkerModule.register(),
         {
-            logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+            logger: resolveNestLogLevels(),
         },
     );
 

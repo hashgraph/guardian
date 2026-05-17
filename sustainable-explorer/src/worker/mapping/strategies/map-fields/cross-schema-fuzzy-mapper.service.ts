@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { IMapFieldsStrategy } from '../../interfaces/strategies.interface';
-import { FieldDescriptor, FieldMap, SchemaInfo, SchemaLabelMap } from '../../types';
+import { FieldDescriptor, FieldMap, SchemaInfo } from '../../types';
 import { PROJECT_EXTRACT_FIELDS, ProjectExtractField } from '../../../project-mapper/project-fields';
 import { findGeoJsonDefKey, isGeoJsonProperty } from '../../../project-mapper/helpers';
 
@@ -184,7 +184,6 @@ export class CrossSchemaFuzzyMapperService implements IMapFieldsStrategy {
     private readonly logger = new Logger(CrossSchemaFuzzyMapperService.name);
 
     async execute(
-        _schemaMap: SchemaLabelMap,
         schemas: SchemaInfo[],
         fields: FieldDescriptor[],
     ): Promise<FieldMap> {
@@ -199,13 +198,15 @@ export class CrossSchemaFuzzyMapperService implements IMapFieldsStrategy {
 
         for (const field of fields) {
             const projectField = this.resolveProjectField(field.fieldName);
-            const result = this.scoreBestMatch(field, projectField, candidates);
+            const results = this.scoreBestMatchPerSchema(field, projectField, candidates);
 
-            if (result) {
-                fieldMap[field.fieldName] = `${result.schemaId}.${result.path}`;
-                this.logger.log(
-                    `mapped "${field.fieldName}" -> ${result.schemaId}.${result.path} (score: ${result.score.toFixed(3)})`,
-                );
+            if (results.length > 0) {
+                fieldMap[field.fieldName] = results.map(r => `${r.schemaId}.${r.path}`);
+                for (const r of results) {
+                    this.logger.log(
+                        `mapped "${field.fieldName}" -> ${r.schemaId}.${r.path} (score: ${r.score.toFixed(3)})`,
+                    );
+                }
             } else {
                 unmatched.push(field);
                 this.logger.debug(`no match for "${field.fieldName}" (best score below threshold)`);
@@ -231,55 +232,201 @@ export class CrossSchemaFuzzyMapperService implements IMapFieldsStrategy {
     private collectCandidates(schemas: SchemaInfo[]): Candidate[] {
         const candidates: Candidate[] = [];
 
+        // Registry of all policy schemas keyed by IRI — used to resolve
+        // cross-schema `$ref`s. Without resolution, sub-schemas pulled in via
+        // `{$ref: "#<OtherUUID>"}` are invisible to the matcher.
+        const registry: Record<string, Record<string, unknown>> = {};
+        for (const s of schemas) registry[s.id] = (s.rawSchema ?? {}) as Record<string, unknown>;
+
         for (const schema of schemas) {
             const doc = this.resolveDocument(schema);
             if (!doc) continue;
 
             const geoDefKey = findGeoJsonDefKey(doc as Record<string, any>);
-            const props = (doc['properties'] ?? {}) as Record<string, unknown>;
-
-            for (const [key, propVal] of Object.entries(props)) {
-                if (['@context', 'type', 'id'].includes(key)) continue;
-                if (!propVal || typeof propVal !== 'object') continue;
-
-                const def = propVal as Record<string, unknown>;
-                const isGeoJson = isGeoJsonPropertyExtended(def, geoDefKey);
-
-                candidates.push({
-                    schemaId: schema.id,
-                    path: key,
-                    key,
-                    title: typeof def['title'] === 'string' ? def['title'] : key,
-                    description: typeof def['description'] === 'string' ? def['description'] : '',
-                    comment: typeof def['$comment'] === 'string' ? def['$comment'] : '',
-                    type: typeof def['type'] === 'string' ? def['type'] : '',
-                    isGeoJson,
-                });
-
-                // One level deep
-                const nestedProps = (def['properties'] ?? {}) as Record<string, unknown>;
-                for (const [nestedKey, nestedVal] of Object.entries(nestedProps)) {
-                    if (['@context', 'type', 'id'].includes(nestedKey)) continue;
-                    if (!nestedVal || typeof nestedVal !== 'object') continue;
-
-                    const nestedDef = nestedVal as Record<string, unknown>;
-                    const nestedIsGeoJson = isGeoJsonPropertyExtended(nestedDef, geoDefKey);
-
-                    candidates.push({
-                        schemaId: schema.id,
-                        path: `${key}.${nestedKey}`,
-                        key: nestedKey,
-                        title: typeof nestedDef['title'] === 'string' ? nestedDef['title'] : nestedKey,
-                        description: typeof nestedDef['description'] === 'string' ? nestedDef['description'] : '',
-                        comment: typeof nestedDef['$comment'] === 'string' ? nestedDef['$comment'] : '',
-                        type: typeof nestedDef['type'] === 'string' ? nestedDef['type'] : '',
-                        isGeoJson: nestedIsGeoJson,
-                    });
-                }
-            }
+            this.collectCandidatesRecursive(
+                schema.id, doc, '', geoDefKey, candidates, 0, registry, doc, new Set(),
+            );
         }
 
         return candidates;
+    }
+
+    /**
+     * Recursively walks a JSON-schema document emitting one Candidate per leaf
+     * or container property. Descends into:
+     *   - `properties` (plain object children)
+     *   - `items.properties` (each element of an array of objects)
+     *
+     * The path is a dot-separated chain of property keys; array indices are NOT
+     * embedded in the path because consumers extract values from concrete VCs
+     * (where the array exists once per VC and we want the field key, not an
+     * index). Array-of-object containers contribute their item fields directly
+     * (e.g. `locations.country`).
+     */
+    private collectCandidatesRecursive(
+        schemaId: string,
+        node: Record<string, unknown>,
+        pathPrefix: string,
+        geoDefKey: string | null,
+        out: Candidate[],
+        depth: number,
+        registry: Record<string, Record<string, unknown>>,
+        rootDoc: Record<string, unknown>,
+        visited: Set<string>,
+    ): void {
+        if (depth > 8) return;
+
+        // Descend into composition keywords at this node level (each variant
+        // contributes properties as if inlined at the same path).
+        this.walkComposition(
+            schemaId, node, pathPrefix, geoDefKey, out, depth, registry, rootDoc, visited,
+        );
+
+        const props = (node['properties'] ?? {}) as Record<string, unknown>;
+        for (const [key, propVal] of Object.entries(props)) {
+            if (['@context', 'type', 'id'].includes(key)) continue;
+            if (!propVal || typeof propVal !== 'object') continue;
+
+            const def = propVal as Record<string, unknown>;
+            const path = pathPrefix ? `${pathPrefix}.${key}` : key;
+
+            out.push({
+                schemaId,
+                path,
+                key,
+                title: typeof def['title'] === 'string' ? def['title'] : key,
+                description: typeof def['description'] === 'string' ? def['description'] : '',
+                comment: typeof def['$comment'] === 'string' ? def['$comment'] : '',
+                type: typeof def['type'] === 'string' ? def['type'] : '',
+                isGeoJson: isGeoJsonPropertyExtended(def, geoDefKey),
+            });
+
+            // Composition branches on the property itself.
+            this.walkComposition(
+                schemaId, def, path, geoDefKey, out, depth + 1, registry, rootDoc, visited,
+            );
+
+            if (def['properties']) {
+                this.collectCandidatesRecursive(
+                    schemaId, def, path, geoDefKey, out, depth + 1, registry, rootDoc, visited,
+                );
+                continue;
+            }
+            if (def['type'] === 'array' && def['items'] && typeof def['items'] === 'object') {
+                const items = def['items'] as Record<string, unknown>;
+                if (items['properties']) {
+                    this.collectCandidatesRecursive(
+                        schemaId, items, path, geoDefKey, out, depth + 1, registry, rootDoc, visited,
+                    );
+                    continue;
+                }
+                // Composition inside items (e.g. `items: { oneOf: [...] }`).
+                this.walkComposition(
+                    schemaId, items, path, geoDefKey, out, depth + 1, registry, rootDoc, visited,
+                );
+                // Array-of-$ref: descend into the referenced schema so
+                // `locations.country` (et al.) become candidates.
+                const itemsRef = typeof items['$ref'] === 'string' ? (items['$ref'] as string) : '';
+                if (itemsRef) {
+                    const resolvedItems = this.resolveRef(itemsRef, registry, rootDoc);
+                    if (resolvedItems) {
+                        const refKey = `${path}:items:${itemsRef}`;
+                        if (!visited.has(refKey)) {
+                            const nextVisited = new Set(visited);
+                            nextVisited.add(refKey);
+                            this.collectCandidatesRecursive(
+                                schemaId, resolvedItems, path, geoDefKey, out, depth + 1, registry, rootDoc, nextVisited,
+                            );
+                        }
+                        continue;
+                    }
+                }
+            }
+
+            // $ref resolution — same logic as flatten-schema-fields.
+            const ref = typeof def['$ref'] === 'string' ? (def['$ref'] as string) : '';
+            if (!ref) continue;
+            const resolved = this.resolveRef(ref, registry, rootDoc);
+            if (!resolved) continue;
+            const refKey = `${path}:${ref}`;
+            if (visited.has(refKey)) continue;
+            const nextVisited = new Set(visited);
+            nextVisited.add(refKey);
+            this.collectCandidatesRecursive(
+                schemaId, resolved, path, geoDefKey, out, depth + 1, registry, rootDoc, nextVisited,
+            );
+        }
+    }
+
+    /**
+     * Flatten `oneOf` / `anyOf` / `allOf` variants into the same path context.
+     * Without this, schemas authored with discriminated unions or `allOf` mixins
+     * drop every field from the candidate set.
+     */
+    private walkComposition(
+        schemaId: string,
+        node: Record<string, unknown>,
+        pathPrefix: string,
+        geoDefKey: string | null,
+        out: Candidate[],
+        depth: number,
+        registry: Record<string, Record<string, unknown>>,
+        rootDoc: Record<string, unknown>,
+        visited: Set<string>,
+    ): void {
+        for (const keyword of ['oneOf', 'anyOf', 'allOf'] as const) {
+            const branches = node[keyword];
+            if (!Array.isArray(branches)) continue;
+            for (const branch of branches) {
+                if (!branch || typeof branch !== 'object') continue;
+                const b = branch as Record<string, unknown>;
+                if (b['properties']) {
+                    this.collectCandidatesRecursive(
+                        schemaId, b, pathPrefix, geoDefKey, out, depth + 1, registry, rootDoc, visited,
+                    );
+                }
+                const ref = typeof b['$ref'] === 'string' ? (b['$ref'] as string) : '';
+                if (ref) {
+                    const resolved = this.resolveRef(ref, registry, rootDoc);
+                    if (resolved) {
+                        const refKey = `${pathPrefix}:${keyword}:${ref}`;
+                        if (!visited.has(refKey)) {
+                            const nextVisited = new Set(visited);
+                            nextVisited.add(refKey);
+                            this.collectCandidatesRecursive(
+                                schemaId, resolved, pathPrefix, geoDefKey, out, depth + 1, registry, rootDoc, nextVisited,
+                            );
+                        }
+                    }
+                }
+                if (Array.isArray(b['oneOf']) || Array.isArray(b['anyOf']) || Array.isArray(b['allOf'])) {
+                    this.walkComposition(
+                        schemaId, b, pathPrefix, geoDefKey, out, depth + 1, registry, rootDoc, visited,
+                    );
+                }
+            }
+        }
+    }
+
+    private resolveRef(
+        ref: string,
+        registry: Record<string, Record<string, unknown>>,
+        rootDoc: Record<string, unknown>,
+    ): Record<string, unknown> | null {
+        if (ref.startsWith('#/$defs/') || ref.startsWith('#/definitions/')) {
+            const key = ref.split('/').pop() ?? '';
+            const defs = (rootDoc['$defs'] ?? rootDoc['definitions'] ?? {}) as Record<string, unknown>;
+            const target = defs[key];
+            return (target && typeof target === 'object') ? (target as Record<string, unknown>) : null;
+        }
+        const key = Object.keys(registry).find(k => k === ref || k.endsWith(ref) || ref === k.replace(/^#/, ''));
+        if (!key) return null;
+        const target = registry[key];
+        if (!target || typeof target !== 'object') return null;
+        const doc = (target['document'] && typeof target['document'] === 'object')
+            ? (target['document'] as Record<string, unknown>)
+            : target;
+        return doc;
     }
 
     private resolveDocument(schema: SchemaInfo): Record<string, unknown> | null {
@@ -350,6 +497,86 @@ export class CrossSchemaFuzzyMapperService implements IMapFieldsStrategy {
         return best;
     }
 
+    /**
+     * Returns the best candidate **per schema** (above threshold). Different
+     * schemas in the same policy often carry the same logical field (e.g. a
+     * project name appears in both the registration schema and the methodology
+     * schema). VCs typed against either schema need a mapping entry — keeping
+     * only one global winner would silently drop extraction for the other.
+     *
+     * For the `geo` field there's a special-case admission: any candidate
+     * whose schema structure marks it as GeoJSON (`$ref` to GeoJSON, inline
+     * `{type, coordinates}`, `format: geojson`, `customType: geo` comment,
+     * etc.) is admitted even when its title is anonymized (`field6`) and
+     * therefore can't clear the name-keyword threshold.
+     */
+    private scoreBestMatchPerSchema(
+        field: FieldDescriptor,
+        projectField: ProjectExtractField | undefined,
+        candidates: Candidate[],
+    ): Array<{ schemaId: string; path: string; score: number }> {
+        const keywords = projectField?.keywords ?? field.keywords ?? [];
+        const exclude = projectField?.exclude ?? field.exclude ?? [];
+        const labelLower = field.fieldName.toLowerCase();
+        const isGeoField = projectField?.key === 'geo';
+
+        const KEYWORD_WEIGHT = 0.6;
+        const JW_WEIGHT = 0.4;
+        const THRESHOLD = 0.3;
+        const GEO_STRUCTURAL_SCORE = 0.95;   // strong admission for isGeoJson candidates
+
+        const bestPerSchema = new Map<string, { schemaId: string; path: string; score: number }>();
+
+        for (const candidate of candidates) {
+            // Geo: structural detection ONLY. Name-similarity-only matches
+            // produce false positives (e.g. "project_emission_electricity"
+            // scores > 0.3 vs "Project Location" via Jaro-Winkler). The
+            // GeoJSON shape detector is reliable; if a candidate isn't
+            // structurally GeoJSON, it can't be the geo field.
+            if (isGeoField) {
+                if (!candidate.isGeoJson) continue;
+                const existing = bestPerSchema.get(candidate.schemaId);
+                if (!existing || GEO_STRUCTURAL_SCORE > existing.score) {
+                    bestPerSchema.set(candidate.schemaId, {
+                        schemaId: candidate.schemaId,
+                        path: candidate.path,
+                        score: GEO_STRUCTURAL_SCORE,
+                    });
+                }
+                continue;
+            }
+
+            // GeoJSON-shaped candidates belong to the geo field exclusively
+            // (already handled above). Skip them for every other field so
+            // broad keywords like "location" can't pull a polygon into
+            // country / category / sector.
+            if (candidate.isGeoJson) continue;
+
+            const haystack = `${candidate.title} ${candidate.description} ${candidate.key} ${candidate.comment}`.toLowerCase();
+
+            const matchedKeywords = keywords.filter(kw => haystack.includes(kw.toLowerCase())).length;
+            const tokenScore = keywords.length > 0 ? matchedKeywords / keywords.length : 0;
+            const jwScore = jaroWinkler(labelLower, candidate.title.toLowerCase());
+
+            let score = tokenScore * KEYWORD_WEIGHT + jwScore * JW_WEIGHT;
+            if (exclude.length > 0 && exclude.some(ex => haystack.includes(ex.toLowerCase()))) {
+                score *= 0.2;
+            }
+
+            if (score < THRESHOLD) continue;
+            const existing = bestPerSchema.get(candidate.schemaId);
+            if (!existing || score > existing.score) {
+                bestPerSchema.set(candidate.schemaId, {
+                    schemaId: candidate.schemaId,
+                    path: candidate.path,
+                    score,
+                });
+            }
+        }
+
+        return [...bestPerSchema.values()].sort((a, b) => b.score - a.score);
+    }
+
     // ---------------------------------------------------------------------------
     // LLM fallback
     // ---------------------------------------------------------------------------
@@ -404,7 +631,7 @@ export class CrossSchemaFuzzyMapperService implements IMapFieldsStrategy {
                 if (!Number.isInteger(numIdx) || numIdx < 0 || numIdx >= candidates.length) continue;
 
                 const candidate = candidates[numIdx];
-                fieldMap[fieldName] = `${candidate.schemaId}.${candidate.path}`;
+                fieldMap[fieldName] = [`${candidate.schemaId}.${candidate.path}`];
                 this.logger.log(
                     `LLM fallback mapped "${fieldName}" -> ${candidate.schemaId}.${candidate.path}`,
                 );

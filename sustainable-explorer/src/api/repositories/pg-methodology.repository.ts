@@ -30,8 +30,8 @@ interface RawRow {
     schema_count: string | null;
     registry_name: string | null;
     decode_status: string | null;
-    sectoral_scopes: string[] | null;
-    emission_reduction_approach: string | null;
+    sectoral_scopes: unknown | null;
+    emission_reduction_approach: unknown | null;
 }
 
 /**
@@ -51,31 +51,33 @@ const REGISTRY_NAME_JOIN = `
 `;
 
 /**
- * LEFT JOIN that brings in the decode status for the methodology's policy topic.
+ * Brings in the decode status for the methodology's policy topic.
  * businessData->>'topicId' is the policyTopicId stored by the worker.
- * The join is optional (LEFT) so rows without a decode attempt still appear.
+ *
+ * A single policyTopicId can have N policy rows (one per published version),
+ * so we collapse via LATERAL — prefer the latest decoded row, fall back to
+ * the latest row of any status — to keep methodologies 1:1 with their UI rows.
  */
 const POLICY_DECODE_STATUS_JOIN = `
-    LEFT JOIN policy_decode_status pds
-        ON pds."policyTopicId" = bv."businessData"->>'topicId'
+    LEFT JOIN LATERAL (
+        SELECT *
+        FROM policy
+        WHERE "policyTopicId" = bv."businessData"->>'topicId'
+        ORDER BY ("decodeStatus" = 'decoded') DESC NULLS LAST,
+                 "updatedAt" DESC NULLS LAST
+        LIMIT 1
+    ) p ON TRUE
 `;
 
 /**
  * Effective decode status for display + filtering.
- *
- * Treats a policy as 'success' whenever its schemas have been imported,
- * even if pds.status is currently 'failed'. This handles the case where a
- * decode succeeded once, the IPFS CID later became unreachable, and a retry
- * flipped status to 'failed' — the stored data is still usable, so the UI
- * should reflect that.
+ * Maps policy.decodeStatus ('decoded' / 'pending' / 'failed') to the public
+ * API vocabulary ('success' / 'pending' / 'failed').
  */
 const EFFECTIVE_DECODE_STATUS = `
     CASE
-        WHEN pds."projectSchemaId" IS NOT NULL OR EXISTS (
-            SELECT 1 FROM policy_schema ps
-            WHERE ps."policyTopicId" = bv."businessData"->>'topicId'
-        ) THEN 'success'
-        ELSE pds.status
+        WHEN p."decodeStatus" = 'decoded' THEN 'success'
+        ELSE p."decodeStatus"
     END
 `;
 
@@ -175,8 +177,8 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 s.schema_count,
                 reg.registry_name,
                 (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
-                pds."sectoralScopes" AS sectoral_scopes,
-                pds."emissionReductionApproach" AS emission_reduction_approach,
+                p."policyMapping"->'sectoralScopes' AS sectoral_scopes,
+                p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach,
                 ${rankExpr} AS search_rank
             FROM business_view bv
             LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} s
@@ -223,8 +225,8 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 s.schema_count,
                 reg.registry_name,
                 (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
-                pds."sectoralScopes" AS sectoral_scopes,
-                pds."emissionReductionApproach" AS emission_reduction_approach
+                p."policyMapping"->'sectoralScopes' AS sectoral_scopes,
+                p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach
             FROM business_view bv
             LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} s
                 ON s."relatedTopicId" = bv."relatedTopicId"
@@ -356,10 +358,32 @@ export class PgMethodologyRepository extends MethodologyRepository {
         const data = row.businessData || {};
         const description = typeof data.description === 'string' ? data.description : null;
         const statusValue = typeof data.status === 'string' ? data.status : null;
-        const sectoralScopes: string[] | null =
-            Array.isArray(row.sectoral_scopes) ? row.sectoral_scopes : null;
-        const emissionReductionApproach: string | null =
-            typeof row.emission_reduction_approach === 'string' ? row.emission_reduction_approach : null;
+
+        // sectoralScopes arrives as a JSONB array of policyMapping entries.
+        // Each entry has a `schemaName` field holding the actual scope value.
+        let sectoralScopes: string[] | null = null;
+        if (Array.isArray(row.sectoral_scopes)) {
+            const scopes: string[] = [];
+            for (const entry of row.sectoral_scopes as unknown[]) {
+                if (entry && typeof entry === 'object') {
+                    const val = (entry as Record<string, unknown>)['schemaName'];
+                    if (typeof val === 'string' && val) scopes.push(val);
+                }
+            }
+            if (scopes.length > 0) sectoralScopes = scopes;
+        }
+        // emissionReductionApproach arrives as a JSONB array of policyMapping
+        // entries (one per matching source); the resolved label lives in
+        // entry.schemaName. Pick the first non-empty value.
+        let emissionReductionApproach: string | null = null;
+        if (Array.isArray(row.emission_reduction_approach)) {
+            for (const entry of row.emission_reduction_approach as unknown[]) {
+                if (entry && typeof entry === 'object' && 'schemaName' in entry) {
+                    const v = (entry as Record<string, unknown>)['schemaName'];
+                    if (typeof v === 'string' && v) { emissionReductionApproach = v; break; }
+                }
+            }
+        }
 
         return {
             id: row.id,

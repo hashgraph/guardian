@@ -10,11 +10,11 @@ import { DataSource } from 'typeorm';
 import { QUEUE_NAMES } from '@shared/config/bullmq.config';
 import {
     ParsedMessage,
-    decodeBase64Message,
     parseMessageJson,
     extractDiscoverableTopics,
     extractTokenIds,
 } from '@shared/utils/message-parser';
+import { isTopicBlocked } from '@shared/config/topic-blocklist';
 
 export interface MessageProcessJobData {
     consensusTimestamp: string;
@@ -46,6 +46,11 @@ export class MessageProcessProcessor extends WorkerHost {
     async process(job: Job<MessageProcessJobData>): Promise<void> {
         const { consensusTimestamp, topicId } = job.data;
 
+        if (isTopicBlocked(topicId)) {
+            this.logger.debug(`Topic ${topicId} is blocklisted — skipping message ${consensusTimestamp}`);
+            return;
+        }
+
         // Read from message_cache
         // TODO: Optimise to read bulk
         const rows = await this.dataSource.query(
@@ -62,12 +67,14 @@ export class MessageProcessProcessor extends WorkerHost {
 
         const cacheEntry = rows[0];
 
-        // Base64 decode the message
-        const decoded = decodeBase64Message(cacheEntry.message);
-        if (!decoded) {
-            this.logger.warn(
-                `Failed to base64 decode message ${consensusTimestamp}`,
-            );
+        // Reassemble HCS chunks if needed. Hedera caps each consensus message at
+        // 1024 bytes; larger payloads ship as multiple chunks sharing a chunkId.
+        // Each chunk is independent base64 — decode each to bytes, concat bytes,
+        // then UTF-8 decode the whole thing.
+        const decoded = await this.decodeMessage(cacheEntry, consensusTimestamp);
+        if (decoded === null) return;       // waiting for more chunks
+        if (decoded === '') {
+            this.logger.warn(`Failed to base64 decode message ${consensusTimestamp}`);
             await this.updateCacheStatus(consensusTimestamp, 'DECODE_ERROR');
             return;
         }
@@ -160,11 +167,17 @@ export class MessageProcessProcessor extends WorkerHost {
                 ? optionTopicId
                 : topicId;
 
+            const optionInstanceTopicId = parsed.options['instanceTopicId'];
+            const instanceTopicId = typeof optionInstanceTopicId === 'string' && optionInstanceTopicId.length > 0
+                ? optionInstanceTopicId
+                : null;
+
             for (const cid of parsed.files) {
                 await this.policyDecodeQueue.add('decode', {
                     cid,
                     messageTimestamp: consensusTimestamp,
                     policyTopicId,
+                    instanceTopicId,
                 }, {
                     jobId: `policy-decode-${policyTopicId}-${cid}`,
                 });
@@ -232,11 +245,11 @@ export class MessageProcessProcessor extends WorkerHost {
 
     /**
      * For a VC-Document: walk the topic parent chain to find the nearest policy
-     * topic ID, then check policy_decode_status. Enqueues IPFS fetch only when the
+     * topic ID, then check the policy table. Enqueues IPFS fetch only when the
      * policy is decoded successfully. If the policy topic cannot be resolved, or
-     * its status is not 'success', the fetch is deferred; it will be backfilled by
-     * PolicyDecodeProcessor once that policy succeeds, or by the boot-time backfill
-     * in SyncSchedulerService.
+     * its decodeStatus is not 'decoded', the fetch is deferred; it will be
+     * backfilled by PolicyDecodeProcessor once that policy succeeds, or by the
+     * boot-time backfill in SyncSchedulerService.
      */
     private async enqueueVcIpfsFetchIfReady(
         parsed: ParsedMessage,
@@ -267,12 +280,12 @@ export class MessageProcessProcessor extends WorkerHost {
             return;
         }
 
-        const statusRows: Array<{ status: string }> = await this.dataSource.query(
-            `SELECT status FROM policy_decode_status WHERE "policyTopicId" = $1 LIMIT 1`,
+        const statusRows: Array<{ decodeStatus: string }> = await this.dataSource.query(
+            `SELECT "decodeStatus" FROM policy WHERE "policyTopicId" = $1 LIMIT 1`,
             [policyTopicId],
         );
 
-        if (statusRows.length === 0 || statusRows[0].status !== 'success') {
+        if (statusRows.length === 0 || statusRows[0].decodeStatus !== 'decoded') {
             this.logger.debug(
                 `VC ${consensusTimestamp}: policy=${policyTopicId} not yet decoded — deferring IPFS fetch`,
             );
@@ -371,6 +384,46 @@ export class MessageProcessProcessor extends WorkerHost {
             `UPDATE message_cache SET status = $1, "lastUpdate" = $2 WHERE "consensusTimestamp" = $3`,
             [status, Date.now().toString(), consensusTimestamp],
         );
+    }
+
+    /**
+     * Returns the assembled UTF-8 payload, OR:
+     *   - `null` when this is a multi-chunk message and not all chunks have
+     *     landed yet (the last chunk's processing run will reassemble).
+     *   - `''` when base64 decoding fails (caller marks DECODE_ERROR).
+     */
+    private async decodeMessage(
+        cacheEntry: { message: string; chunkId: string | null; chunkTotal: number | null },
+        consensusTimestamp: string,
+    ): Promise<string | null> {
+        const total = cacheEntry.chunkTotal ?? 1;
+        if (!cacheEntry.chunkId || total <= 1) {
+            try {
+                return Buffer.from(cacheEntry.message, 'base64').toString('utf-8');
+            } catch {
+                return '';
+            }
+        }
+
+        const chunks: Array<{ message: string }> = await this.dataSource.query(
+            `SELECT message FROM message_cache
+             WHERE "chunkId" = $1
+             ORDER BY "chunkNumber"`,
+            [cacheEntry.chunkId],
+        );
+        if (chunks.length < total) {
+            this.logger.debug(
+                `Message ${consensusTimestamp} chunk ${chunks.length}/${total} — waiting for more`,
+            );
+            return null;
+        }
+
+        try {
+            const buffers = chunks.map(c => Buffer.from(c.message, 'base64'));
+            return Buffer.concat(buffers).toString('utf-8');
+        } catch {
+            return '';
+        }
     }
 
     @OnWorkerEvent('failed')

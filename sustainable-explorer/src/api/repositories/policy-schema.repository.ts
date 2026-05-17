@@ -24,6 +24,7 @@ export interface PolicySchemaRow {
     document: Record<string, unknown> | null;
     rawSchema: Record<string, unknown>;
     lastUpdate: string;
+    isProjectSchema: boolean | null;
     createdAt: Date;
     updatedAt: Date;
 }

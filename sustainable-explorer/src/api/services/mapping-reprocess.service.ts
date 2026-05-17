@@ -4,9 +4,7 @@ import { QueueRegistry } from '../queues/queue.registry';
 import { BASE_QUEUE_NAMES } from '@shared/config/bullmq.config';
 import { PolicyDecodeJobData } from '@worker/processors/policy-decode.processor';
 import { ProjectReparseJobData } from '@worker/processors/project-reparse.processor';
-import { derivePerPolicyProjectMeta } from '@worker/mapping/derive-project-meta';
 import { PROJECT_EXTRACT_FIELDS } from '@worker/project-mapper/project-fields';
-import { FieldMap } from '@worker/mapping/types';
 import { UpdateMappingDto } from '../dto/update-mapping.dto';
 import { DecodedMethodologyResponseDto } from '../dto/decoded-methodology.dto';
 import { PgPolicySchemaRepository } from '../repositories/pg-policy-schema.repository';
@@ -15,11 +13,11 @@ import { PgPolicySchemaRepository } from '../repositories/pg-policy-schema.repos
 // Internal row shapes
 // ---------------------------------------------------------------------------
 
-interface PolicyDecodeStatusRow {
+interface PolicyRow {
     policyTopicId: string;
     sourceCid: string;
-    status: string;
-    fieldMap: Record<string, string> | null;
+    decodeStatus: string;
+    policyMapping: Record<string, unknown> | null;
 }
 
 interface VcMessageRow {
@@ -34,6 +32,14 @@ export class MappingReprocessService {
     // validation in updateMapping without being recomputed on every call.
     private static readonly VALID_FIELD_LABELS: ReadonlySet<string> = new Set(
         PROJECT_EXTRACT_FIELDS.map(f => f.label),
+    );
+
+    // The API contract documents fieldMap keys as human-readable labels
+    // ("Country", "Project Title"); the worker reads policyMapping by the
+    // stable field key ("country", "name"). Translate before merging so saved
+    // entries land in the same namespace runtime extraction reads from.
+    private static readonly LABEL_TO_KEY: ReadonlyMap<string, string> = new Map(
+        PROJECT_EXTRACT_FIELDS.map(f => [f.label, f.key]),
     );
 
     constructor(
@@ -59,22 +65,22 @@ export class MappingReprocessService {
         const ds = this.dataSources.getDataSource(network);
         const policyTopicId = await this.resolvePolicyTopicId(network, methodologyId);
 
-        const statusRows: PolicyDecodeStatusRow[] = await ds.query(
-            `SELECT "policyTopicId", "sourceCid", status
-             FROM policy_decode_status
+        const policyRows: PolicyRow[] = await ds.query(
+            `SELECT "policyTopicId", "sourceCid", "decodeStatus"
+             FROM policy
              WHERE "policyTopicId" = $1
              LIMIT 1`,
             [policyTopicId],
         );
 
-        if (statusRows.length === 0) {
+        if (policyRows.length === 0) {
             throw new NotFoundException(
-                `No decode status row for policy topic "${policyTopicId}" on ${network}. ` +
+                `No policy row for policy topic "${policyTopicId}" on ${network}. ` +
                 `The policy must have been processed at least once before re-decoding.`,
             );
         }
 
-        const { sourceCid } = statusRows[0];
+        const { sourceCid } = policyRows[0];
 
         // Recover the original message timestamp for the publish-policy message so
         // the processor can locate the correct source in the message table.
@@ -128,36 +134,37 @@ export class MappingReprocessService {
         const ds = this.dataSources.getDataSource(network);
         const policyTopicId = await this.resolvePolicyTopicId(network, methodologyId);
 
-        const statusRows: Array<{ status: string }> = await ds.query(
-            `SELECT status FROM policy_decode_status WHERE "policyTopicId" = $1 LIMIT 1`,
+        const statusRows: Array<{ decodeStatus: string }> = await ds.query(
+            `SELECT "decodeStatus" FROM policy WHERE "policyTopicId" = $1 LIMIT 1`,
             [policyTopicId],
         );
 
-        if (statusRows.length === 0 || statusRows[0].status !== 'success') {
+        if (statusRows.length === 0 || statusRows[0].decodeStatus !== 'decoded') {
             this.logger.log(
                 `reparseProjects skipped for policyTopicId=${policyTopicId}: ` +
-                `status=${statusRows[0]?.status ?? 'missing'} (must be "success")`,
+                `decodeStatus=${statusRows[0]?.decodeStatus ?? 'missing'} (must be "decoded")`,
             );
             return { enqueued: 0 };
         }
 
-        // Walk the full topic subtree to collect VC-Documents that have been fetched.
-        const vcRows: VcMessageRow[] = await ds.query(
-            `WITH RECURSIVE descendants AS (
-                 SELECT $1::text AS "topicId"
-                 UNION ALL
-                 SELECT t."topicId"
-                 FROM message t
-                 JOIN descendants d ON (t.options->>'parentId') = d."topicId"
-                 WHERE t.type = 'Topic'
-             )
-             SELECT m."consensusTimestamp"
-             FROM message m
-             JOIN descendants d ON d."topicId" = m."topicId"
-             WHERE m.type = 'VC-Document'
-               AND m.documents IS NOT NULL`,
+        // Collect VC-Documents that have been fetched and are linked to this policy
+        // via the indexed message.policyId column.
+        const policyIdRows: Array<{ policyId: string }> = await ds.query(
+            `SELECT "policyId" FROM policy WHERE "policyTopicId" = $1 AND "decodeStatus" = 'decoded'`,
             [policyTopicId],
         );
+        const policyIds = policyIdRows.map(r => r.policyId);
+
+        const vcRows: VcMessageRow[] = policyIds.length > 0
+            ? await ds.query(
+                `SELECT "consensusTimestamp"
+                 FROM message
+                 WHERE "policyId" = ANY($1::varchar[])
+                   AND type = 'VC-Document'
+                   AND documents IS NOT NULL`,
+                [policyIds],
+              )
+            : [];
 
         const queue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.PROJECT_REPARSE);
 
@@ -241,17 +248,31 @@ export class MappingReprocessService {
     }
 
     /**
-     * Applies a partial field-map update to `policy_decode_status."fieldMap"`,
-     * re-derives the per-policy project meta columns, persists them, then returns
-     * the updated DecodedMethodologyResponseDto.
+     * Applies a partial field-map update to `policy."policyMapping"`,
+     * persists it, then returns the updated DecodedMethodologyResponseDto.
      *
      * Validation rules:
      *   1. Each key in `body.fieldMap` must be a known PROJECT_EXTRACT_FIELDS label.
-     *   2. Each value must be non-empty and contain at least one dot (schemaId.path).
-     *   3. The schemaId part of each value must exist in `policy_schema` for this topic.
+     *   2. Each value must be non-empty and contain at least one dot (schemaIri.fieldPath).
+     *   3. The schemaIri part of each value must exist in `policy.rawSchemaJson` for this topic.
      *
      * The update is a PATCH-style merge — only the keys present in `body.fieldMap`
      * are overwritten; other existing entries are preserved.
+     */
+    /**
+     * Applies a partial policyMapping update to policy."policyMapping".
+     *
+     * body.fieldMap keys are field keys from PROJECT_EXTRACT_FIELDS. Each value
+     * has the form "schemaIri.fieldPath" — the same format as the old fieldMap.
+     * The handler merges the incoming keys into the existing policyMapping JSONB
+     * by replacing the first non-mintToken/standardRegistry entry for each
+     * field key with the caller-specified schemaIri+fieldPath. Null/empty values
+     * remove the entry for that key.
+     *
+     * Validation:
+     *   1. Each key must be a known PROJECT_EXTRACT_FIELDS label.
+     *   2. Each value must contain a dot (schemaIri.path).
+     *   3. The schemaIri part must exist in policy.rawSchemaJson for this topic.
      */
     async updateMapping(
         network: string,
@@ -261,22 +282,22 @@ export class MappingReprocessService {
         const ds = this.dataSources.getDataSource(network);
         const policyTopicId = await this.resolvePolicyTopicId(network, methodologyId);
 
-        // ── Fetch existing row ──────────────────────────────────────────────────
-        const statusRows: PolicyDecodeStatusRow[] = await ds.query(
-            `SELECT "policyTopicId", "sourceCid", status, "fieldMap"
-             FROM policy_decode_status
+        // ── Fetch existing policy row ────────────────────────────────────────────
+        const policyRows: PolicyRow[] = await ds.query(
+            `SELECT "policyTopicId", "sourceCid", "decodeStatus", "policyMapping"
+             FROM policy
              WHERE "policyTopicId" = $1
              LIMIT 1`,
             [policyTopicId],
         );
 
-        if (statusRows.length === 0) {
+        if (policyRows.length === 0) {
             throw new NotFoundException(
-                `No decode status row for policy topic "${policyTopicId}" on ${network}.`,
+                `No policy row for policy topic "${policyTopicId}" on ${network}.`,
             );
         }
 
-        const existingFieldMap = statusRows[0].fieldMap ?? {};
+        const existingMapping = (policyRows[0].policyMapping ?? {}) as Record<string, unknown[]>;
 
         // ── Validate field label keys ───────────────────────────────────────────
         const invalidLabels = Object.keys(body.fieldMap).filter(
@@ -289,102 +310,131 @@ export class MappingReprocessService {
             );
         }
 
-        // ── Validate path format & collect referenced schemaIds ─────────────────
-        // null / empty-string values mean "unset this label" — they skip path
-        // validation and get deleted from the merged map further down.
-        const referencedSchemaIds = new Set<string>();
-        const labelsToUnset = new Set<string>();
+        // ── Load known schema IRIs for this policy (latest decoded row) ──────────
+        // Needed up front because Guardian schema IRIs contain dots
+        // (`#uuid&1.0.0`), so we can't split `schemaIri.fieldPath` with a naive
+        // indexOf('.') — we match against the known IRI set longest-first.
+        const rawRows: Array<{ rawSchemaJson: Record<string, unknown> | null }> = await ds.query(
+            `SELECT "rawSchemaJson"
+             FROM policy
+             WHERE "policyTopicId" = $1
+             ORDER BY ("decodeStatus" = 'decoded') DESC NULLS LAST,
+                      "updatedAt" DESC NULLS LAST
+             LIMIT 1`,
+            [policyTopicId],
+        );
+        const rawSchemaJson = (rawRows[0]?.rawSchemaJson ?? {}) as Record<string, unknown>;
+        const knownIris = Object.keys(rawSchemaJson).sort((a, b) => b.length - a.length);
+
+        // ── Validate path format ─────────────────────────────────────────────────
+        // Translate label → key here. The DTO + UI talk in labels ("Country");
+        // the worker writes/reads policyMapping by key ("country"). Without
+        // this translation, every save landed under the wrong namespace and
+        // was invisible to project-mapper.service.ts:139-149.
+        const keysToUnset = new Set<string>();
+        const keyParsed = new Map<string, { schemaIri: string; fieldPath: string; label: string }>();
+
         for (const [label, value] of Object.entries(body.fieldMap)) {
+            const fieldKey = MappingReprocessService.LABEL_TO_KEY.get(label);
+            if (!fieldKey) {
+                // Validation above already rejects unknown labels, but be
+                // defensive in case PROJECT_EXTRACT_FIELDS drifts.
+                throw new BadRequestException(`No key registered for label "${label}".`);
+            }
             if (value === null || value === undefined || value === '') {
-                labelsToUnset.add(label);
+                keysToUnset.add(fieldKey);
                 continue;
             }
             if (typeof value !== 'string') {
+                throw new BadRequestException(`fieldMap["${label}"] must be a string or null.`);
+            }
+
+            let schemaIri = '';
+            let fieldPath = '';
+            for (const iri of knownIris) {
+                if (value.startsWith(iri + '.')) {
+                    schemaIri = iri;
+                    fieldPath = value.slice(iri.length + 1);
+                    break;
+                }
+            }
+            if (!schemaIri) {
                 throw new BadRequestException(
-                    `fieldMap["${label}"] must be a string or null.`,
+                    `fieldMap["${label}"] value "${value}" does not start with any known schema IRI ` +
+                    `for policy "${policyTopicId}". Expected form "schemaIri.fieldPath".`,
                 );
             }
-            const dotIdx = value.indexOf('.');
-            if (dotIdx === -1) {
+            if (!fieldPath) {
                 throw new BadRequestException(
-                    `fieldMap["${label}"] value "${value}" must have the form "schemaId.path".`,
+                    `fieldMap["${label}"] value "${value}" has an empty fieldPath segment.`,
                 );
             }
-            const schemaId = value.slice(0, dotIdx);
-            const path = value.slice(dotIdx + 1);
-            if (!schemaId || !path) {
-                throw new BadRequestException(
-                    `fieldMap["${label}"] value "${value}" has an empty schemaId or path segment.`,
-                );
-            }
-            referencedSchemaIds.add(schemaId);
+            keyParsed.set(fieldKey, { schemaIri, fieldPath, label });
         }
 
-        // ── Verify all referenced schemaIds exist for this policy ───────────────
-        if (referencedSchemaIds.size > 0) {
-            const schemaRows: Array<{ schemaId: string }> = await ds.query(
-                `SELECT "schemaId"
-                 FROM policy_schema
-                 WHERE "policyTopicId" = $1
-                   AND "schemaId" = ANY($2)`,
-                [policyTopicId, [...referencedSchemaIds]],
-            );
-            const knownIds = new Set(schemaRows.map(r => r.schemaId));
-            const unknownIds = [...referencedSchemaIds].filter(id => !knownIds.has(id));
-            if (unknownIds.length > 0) {
-                throw new BadRequestException(
-                    `Schema ID(s) not found for policy "${policyTopicId}": ${unknownIds.join(', ')}.`,
-                );
-            }
+        // ── Merge into policyMapping (PATCH semantics) ───────────────────────────
+        const mergedMapping: Record<string, unknown[]> = { ...existingMapping };
+
+        // Clean up legacy label-keyed entries written by the pre-fix code path
+        // so the same data isn't duplicated under both namespaces.
+        for (const legacyLabel of MappingReprocessService.VALID_FIELD_LABELS) {
+            if (legacyLabel in mergedMapping) delete mergedMapping[legacyLabel];
         }
 
-        // ── Merge maps (PATCH semantics — only overwrite provided keys) ──────────
-        // Apply the body, then drop any labels the caller asked to unset.
-        const mergedFieldMap: Record<string, string> = {
-            ...existingFieldMap,
-            ...(body.fieldMap as Record<string, string>),
-        };
-        for (const label of labelsToUnset) delete mergedFieldMap[label];
+        for (const [fieldKey, parsed] of keyParsed) {
+            const existing = Array.isArray(mergedMapping[fieldKey]) ? [...mergedMapping[fieldKey]] : [];
+            // Replace first non-mintToken/standardRegistry entry, or prepend.
+            const manualEntry = {
+                source: 'schema',
+                schemaIri: parsed.schemaIri,
+                fieldPath: parsed.fieldPath,
+                title: parsed.label,
+                description: '',
+                isProjectSchema: true,
+                score: 999,
+            };
+            const idx = existing.findIndex(e => {
+                if (!e || typeof e !== 'object') return false;
+                const schemaType = (e as Record<string, unknown>)['schemaType'];
+                return schemaType !== 'mintToken' && schemaType !== 'standardRegistry';
+            });
+            if (idx >= 0) {
+                existing[idx] = manualEntry;
+            } else {
+                existing.unshift(manualEntry);
+            }
+            mergedMapping[fieldKey] = existing;
+        }
 
-        // ── Re-derive project meta ───────────────────────────────────────────────
-        const projectMeta = derivePerPolicyProjectMeta(mergedFieldMap as FieldMap, []);
+        for (const fieldKey of keysToUnset) {
+            const existing = Array.isArray(mergedMapping[fieldKey]) ? [...mergedMapping[fieldKey]] : [];
+            // Remove non-mintToken/standardRegistry entries for this key.
+            mergedMapping[fieldKey] = existing.filter(e => {
+                if (!e || typeof e !== 'object') return true;
+                const schemaType = (e as Record<string, unknown>)['schemaType'];
+                return schemaType === 'mintToken' || schemaType === 'standardRegistry';
+            });
+            if ((mergedMapping[fieldKey] as unknown[]).length === 0) delete mergedMapping[fieldKey];
+        }
 
-        const projectSchemaId = projectMeta?.projectSchemaId ?? null;
-        const projectFieldMap = projectMeta?.projectFieldMap ?? null;
-        const projectGeoKey = projectMeta?.projectGeoKey ?? null;
-        const projectGeoSection = projectMeta?.projectGeoSection ?? null;
-
-        // ── Persist updated columns ──────────────────────────────────────────────
+        // ── Persist updated policyMapping ────────────────────────────────────────
         await ds.query(
-            `UPDATE policy_decode_status
-             SET "fieldMap"        = $2::jsonb,
-                 "projectFieldMap" = $3::jsonb,
-                 "projectGeoKey"   = $4,
-                 "projectGeoSection" = $5,
-                 "projectSchemaId" = $6,
-                 "updatedAt"       = now()
+            `UPDATE policy
+             SET "policyMapping" = $2::jsonb,
+                 "updatedAt"     = now()
              WHERE "policyTopicId" = $1`,
-            [
-                policyTopicId,
-                JSON.stringify(mergedFieldMap),
-                projectFieldMap !== null ? JSON.stringify(projectFieldMap) : null,
-                projectGeoKey,
-                projectGeoSection,
-                projectSchemaId,
-            ],
+            [policyTopicId, JSON.stringify(mergedMapping)],
         );
 
         this.logger.log(
-            `Updated fieldMap for policyTopicId=${policyTopicId} ` +
-            `(${Object.keys(body.fieldMap).length} key(s) merged). ` +
-            `projectSchemaId=${projectSchemaId ?? 'none'}`,
+            `Updated policyMapping for policyTopicId=${policyTopicId} ` +
+            `(${Object.keys(body.fieldMap).length} key(s) merged).`,
         );
 
         // ── Return the refreshed decoded response ────────────────────────────────
         const repo = new PgPolicySchemaRepository(ds);
         const row = await repo.findDecoded(methodologyId);
         if (!row) {
-            // Should never happen — we just wrote to the table.
             throw new NotFoundException(
                 `Methodology "${methodologyId}" disappeared after update on ${network}.`,
             );
@@ -667,7 +717,7 @@ export class MappingReprocessService {
      * Resolves the policy topic ID for a methodology given its URL `id` param.
      *
      * The URL param is the methodology's `relatedTopicId` (instance topic). The
-     * policy_decode_status table is keyed on `businessData->>'topicId'` (policy topic).
+     * The policy table is keyed on policyTopicId which equals businessData->>'topicId'.
      * Matches the same lookup logic used by PgPolicySchemaRepository.findDecoded.
      */
     private async resolvePolicyTopicId(network: string, methodologyId: string): Promise<string> {

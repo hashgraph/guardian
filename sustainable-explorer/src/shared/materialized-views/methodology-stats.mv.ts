@@ -52,16 +52,27 @@ export const MV_METHODOLOGY_STATS_CREATE_SQL = `
               AND bv."businessData"->>'tokenId' IS NOT NULL
         ), 0)::bigint AS instance_issuance_count,
         COALESCE((
-            SELECT COUNT(DISTINCT ps."schemaId")
-            FROM policy_schema ps
-            WHERE ps."policyTopicId" = mb.policy_topic_id
+            SELECT COUNT(DISTINCT entry_iri)
+            FROM policy p2,
+                 LATERAL jsonb_object_keys(COALESCE(p2."rawSchemaJson", '{}'::jsonb)) AS entry_iri
+            WHERE p2."policyTopicId" = mb.policy_topic_id
+              AND p2."decodeStatus" = 'decoded'
         ), 0)::bigint AS schema_count,
-        pds.status      AS decode_status,
-        pds.attempts    AS decode_attempts,
-        pds."lastAttemptAt" AS decode_last_attempt_at,
+        p."decodeStatus" AS decode_status,
+        p.attempts       AS decode_attempts,
+        p."lastAttemptAt" AS decode_last_attempt_at,
         mb.last_update
     FROM methodology_base mb
-    LEFT JOIN policy_decode_status pds ON pds."policyTopicId" = mb.policy_topic_id;
+    LEFT JOIN LATERAL (
+        -- A single policyTopicId can have multiple version rows. Pick the most
+        -- recently updated decoded one so the MV stays 1:1 with the unique index.
+        SELECT "decodeStatus", attempts, "lastAttemptAt"
+        FROM policy
+        WHERE "policyTopicId" = mb.policy_topic_id
+          AND "decodeStatus" = 'decoded'
+        ORDER BY "updatedAt" DESC NULLS LAST
+        LIMIT 1
+    ) p ON TRUE;
 `;
 
 // Unique index required for REFRESH MATERIALIZED VIEW CONCURRENTLY

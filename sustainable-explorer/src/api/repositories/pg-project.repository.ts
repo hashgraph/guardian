@@ -350,17 +350,57 @@ export class PgProjectRepository extends ProjectRepository {
 
         const totalActive = totalIssued - totalRetired;
 
-        // Load policy schemas for this project's policyTopicId so the DTO
-        // can render a grouped linked-VCs view without a second round trip.
+        // Load schema metadata for this project's policyTopicId from policy.rawSchemaJson
+        // so the DTO can render a grouped linked-VCs view without a second round trip.
         let policySchemas: PolicySchemaRow[] = [];
         if (policyTopicId) {
-            policySchemas = await this.dataSource.query(
-                `SELECT "schemaId", name, "isProjectSchema"
-                 FROM policy_schema
+            const policySchemaRows: Array<{
+                policyTopicId: string;
+                sourceCid: string;
+                rawSchemaJson: Record<string, unknown> | null;
+                policyMapping: Record<string, unknown> | null;
+                createdAt: Date;
+                updatedAt: Date;
+            }> = await this.dataSource.query(
+                `SELECT "policyTopicId", "sourceCid", "rawSchemaJson", "policyMapping", "createdAt", "updatedAt"
+                 FROM policy
                  WHERE "policyTopicId" = $1
-                 ORDER BY "isProjectSchema" DESC, name ASC`,
+                   AND "decodeStatus" = 'decoded'
+                 LIMIT 1`,
                 [policyTopicId],
             );
+
+            if (policySchemaRows.length > 0) {
+                const pr = policySchemaRows[0];
+                const rawSchemaJson = (pr.rawSchemaJson ?? {}) as Record<string, unknown>;
+                const policyMapping = (pr.policyMapping ?? {}) as Record<string, unknown[]>;
+
+                const projectIris = new Set<string>();
+                for (const entries of Object.values(policyMapping)) {
+                    if (!Array.isArray(entries)) continue;
+                    for (const entry of entries) {
+                        if (!entry || typeof entry !== 'object') continue;
+                        const e = entry as Record<string, unknown>;
+                        if (e['isProjectSchema'] === true && typeof e['schemaIri'] === 'string') {
+                            projectIris.add(e['schemaIri'] as string);
+                        }
+                    }
+                }
+
+                policySchemas = Object.entries(rawSchemaJson).map(([iri, schemaDoc]) => {
+                    const doc = (schemaDoc ?? {}) as Record<string, unknown>;
+                    const name = typeof doc['name'] === 'string' ? doc['name'] : null;
+                    return {
+                        schemaId: iri,
+                        name,
+                        isProjectSchema: projectIris.has(iri),
+                    };
+                }).sort((a, b) => {
+                    if (a.isProjectSchema && !b.isProjectSchema) return -1;
+                    if (!a.isProjectSchema && b.isProjectSchema) return 1;
+                    return (a.name ?? '').localeCompare(b.name ?? '');
+                });
+            }
         }
 
         return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive }, policySchemas);
@@ -380,21 +420,48 @@ export class PgProjectRepository extends ProjectRepository {
 
         const topicId = projectRows[0].relatedTopicId;
 
+        // Resolve the policy for this topic to get schema names from rawSchemaJson.
+        const policyForActivity: Array<{ rawSchemaJson: Record<string, unknown> | null }> =
+            await this.dataSource.query(
+                `SELECT p."rawSchemaJson"
+                 FROM policy p
+                 WHERE p."policyTopicId" IN (
+                     SELECT DISTINCT "policyTopicId"
+                     FROM message
+                     WHERE type = 'Instance-Policy'
+                       AND action = 'publish-policy'
+                       AND options->>'instanceTopicId' = $1
+                     UNION
+                     SELECT $1::varchar
+                 )
+                   AND p."decodeStatus" = 'decoded'
+                 LIMIT 1`,
+                [topicId],
+            );
+
+        const schemaNameMap = new Map<string, string>();
+        if (policyForActivity.length > 0) {
+            const rsj = (policyForActivity[0].rawSchemaJson ?? {}) as Record<string, unknown>;
+            for (const [iri, schemaDoc] of Object.entries(rsj)) {
+                const doc = (schemaDoc ?? {}) as Record<string, unknown>;
+                const name = typeof doc['name'] === 'string' ? doc['name'] : null;
+                if (name) schemaNameMap.set(iri, name);
+            }
+        }
+
         const rows: Array<{
             consensusTimestamp: string;
             type: string;
-            schema_name: string | null;
+            vc_schema_iri: string | null;
         }> = await this.dataSource.query(
             `SELECT
                 m."consensusTimestamp",
                 m.type,
-                ps.name AS schema_name
-             FROM message m
-             LEFT JOIN policy_schema ps
-                ON ps."schemaId" = split_part(
+                split_part(
                     m.documents -> 'credentialSubject' -> 0 ->> 'type',
                     '&', 1
-                )
+                ) AS vc_schema_iri
+             FROM message m
              WHERE m."topicId" = $1
                AND m.type IN ('VC-Document', 'VP-Document')
                AND m.documents IS NOT NULL
@@ -406,7 +473,7 @@ export class PgProjectRepository extends ProjectRepository {
         return rows.map(r => ({
             consensusTimestamp: r.consensusTimestamp,
             messageType: r.type,
-            schemaName: r.schema_name ?? null,
+            schemaName: (r.vc_schema_iri ? schemaNameMap.get(r.vc_schema_iri) : undefined) ?? null,
         }));
     }
 

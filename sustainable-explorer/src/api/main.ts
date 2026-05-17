@@ -7,6 +7,7 @@ import {
     ensureAllNetworkDatabasesExist,
     getConfiguredNetworks,
 } from '@shared/config/database.config';
+import { resolveNestLogLevels } from '@shared/config/log-level';
 
 async function bootstrap() {
     const logger = new Logger('SustainableExplorer:API');
@@ -18,7 +19,7 @@ async function bootstrap() {
     await ensureAllNetworkDatabasesExist();
 
     const app = await NestFactory.create(ApiModule, {
-        logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+        logger: resolveNestLogLevels(),
     });
 
     app.useGlobalPipes(new ValidationPipe({

@@ -13,6 +13,7 @@ export interface IpfsFetchJobData {
     messageTimestamp: string;
 }
 
+
 @Processor(QUEUE_NAMES.IPFS_FETCH)
 export class IpfsFetchProcessor extends WorkerHost implements OnModuleInit {
     private readonly logger = new Logger(IpfsFetchProcessor.name);
@@ -105,7 +106,30 @@ export class IpfsFetchProcessor extends WorkerHost implements OnModuleInit {
             // If this looks like a VC, attempt eager project mapping.
             // Errors here are non-fatal — the batch reconciler is the safety net.
             const isVc = Array.isArray(parsedDocument['credentialSubject']);
-            if (isVc) {
+            if (!isVc) {
+                this.logger.warn(
+                    `VC-shaped document cid=${cid} msg=${messageTimestamp} has no usable credentialSubject array`,
+                );
+            }
+            else {
+                // Stamp policyId on the message row from credentialSubject[0].policyId
+                // so VC -> policy version lookups become a simple indexed query.
+                // Non-project VCs (StandardRegistry, MintToken, UserRole) have
+                // no policyId — column stays null. The "no policyId" warning
+                // (only for VCs that LOOK like project VCs but are missing it)
+                // is emitted by upsertProjectFromVc, where it can be ordered
+                // correctly against the non-project-type skip.
+                const cs = parsedDocument['credentialSubject'] as Array<Record<string, unknown>>;
+                const policyId = cs[0] && typeof cs[0] === 'object'
+                    ? (cs[0]['policyId'] as string | undefined) ?? null
+                    : null;
+                if (policyId) {
+                    await this.dataSource.query(
+                        `UPDATE message SET "policyId" = $1 WHERE files @> ARRAY[$2]`,
+                        [policyId, cid],
+                    );
+                }
+
                 try {
                     await this.projectMapperService.upsertProjectFromVc(messageTimestamp);
                 } catch (err) {

@@ -85,10 +85,10 @@ export class LinkedSchemaDto {
     @ApiProperty({ description: 'Schema UUID from the VC type field, or literal "MintToken" for mint VCs' })
     schemaUuid: string;
 
-    @ApiProperty({ nullable: true, description: 'Human-readable schema name from policy_schema; null for MintToken or unmapped UUIDs' })
+    @ApiProperty({ nullable: true, description: 'Human-readable schema name from the policy zip; null for MintToken or unmapped UUIDs' })
     schemaName: string | null;
 
-    @ApiProperty({ description: 'True when policy_schema.isProjectSchema = true for this UUID' })
+    @ApiProperty({ description: 'True when this schema is flagged isProjectSchema in the policyMapping' })
     isProjectSchema: boolean;
 
     @ApiProperty({ description: 'Number of linked VCs carrying this schema UUID' })
@@ -253,10 +253,20 @@ export class ProjectResponseDto {
     static fromRow(row: ProjectRow, network: string): ProjectResponseDto {
         const data = (row.businessData ?? {}) as Record<string, unknown>;
 
-        // Build a quick-lookup map from policy_schema rows for this project.
+        // Build a quick-lookup map from policy schemas for this project.
+        // Keys are trimmed to bare UUIDs because VC payloads expose only the
+        // UUID portion of the type (e.g. "2c982fa6-..."), while policySchemas
+        // carry full IRIs (e.g. "#2c982fa6-...&1.0.0"). Without trimming, the
+        // lookup below always misses → schemaName=null, isProjectSchema=false.
+        const trimSchemaId = (id: string): string =>
+            id.replace(/^#/, '').split('&')[0].trim();
+
         const schemaMetaMap = new Map<string, Pick<PolicySchemaRow, 'name' | 'isProjectSchema'>>();
         for (const s of (row.policySchemas ?? [])) {
-            schemaMetaMap.set(s.schemaId, { name: s.name, isProjectSchema: s.isProjectSchema });
+            schemaMetaMap.set(trimSchemaId(s.schemaId), {
+                name: s.name,
+                isProjectSchema: s.isProjectSchema,
+            });
         }
 
         // Group linkedVcs entries by schemaUuid.
@@ -290,14 +300,18 @@ export class ProjectResponseDto {
             });
         }
 
-        // Also include schemas that are in policy_schema but have ZERO linked VCs,
+        // Also include schemas that are in the policy zip but have ZERO linked VCs,
         // so the frontend can render "Project schema: 0 VCs" for phantom cases like Capturiant.
+        // Compare on the trimmed UUID (linkedVcs entries store the bare UUID
+        // form, so a full-IRI comparison would always miss and treat every
+        // schema as empty).
         const linkedSchemaUuids = new Set(groupedBySchema.keys());
         const emptySchemas: LinkedSchemaDto[] = [];
         for (const s of (row.policySchemas ?? [])) {
-            if (!linkedSchemaUuids.has(s.schemaId)) {
+            const trimmed = trimSchemaId(s.schemaId);
+            if (!linkedSchemaUuids.has(trimmed)) {
                 emptySchemas.push({
-                    schemaUuid: s.schemaId,
+                    schemaUuid: trimmed,
                     schemaName: s.name,
                     isProjectSchema: s.isProjectSchema,
                     vcCount: 0,

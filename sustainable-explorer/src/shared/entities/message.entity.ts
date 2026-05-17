@@ -72,6 +72,10 @@ export class Message {
     @Column({ type: 'varchar', length: 20, default: 'mirror_node' })
     dataSource: string;
 
+    @Index('idx_message_policy_id')
+    @Column({ type: 'varchar', length: 64, nullable: true })
+    policyId: string | null;
+
     @Index()
     @Column({ type: 'bigint' })
     lastUpdate: string;

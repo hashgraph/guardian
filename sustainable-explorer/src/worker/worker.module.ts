@@ -14,9 +14,10 @@ import { MappingModule } from './mapping/mapping.module';
 // Services
 import { HederaService } from './services/hedera.service';
 import { IpfsService } from './services/ipfs.service';
-import { PolicySchemaImportService } from './services/policy-schema-import.service';
 import { ProjectMapperService } from './services/project-mapper.service';
 import { ReverseGeoService } from './services/reverse-geo.service';
+import { POLICY_ZIP_STORAGE } from './services/storage/policy-zip-storage.interface';
+import { LocalPolicyZipStorage } from './services/storage/local-policy-zip-storage.service';
 
 // Processors
 import { TopicSyncProcessor } from './processors/topic-sync.processor';
@@ -114,9 +115,9 @@ export class WorkerModule {
                 // Services (always available for processors)
                 HederaService,
                 IpfsService,
-                PolicySchemaImportService,
                 ReverseGeoService,
                 ProjectMapperService,
+                { provide: POLICY_ZIP_STORAGE, useClass: LocalPolicyZipStorage },
 
                 // Only processors for active queues
                 ...activeProcessors,

@@ -187,16 +187,21 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
 
         let enqueued = 0;
         for (const topic of topics) {
-            // Use watermark + timestamp in jobId so restarts always create a fresh job
-            // (BullMQ deduplicates stale job IDs from previous runs)
+            // Stable jobId on (topicId, watermark) so concurrent worker boots dedupe
+            // to a single job. Pre-remove clears any completed/failed job from a prior
+            // boot at the same watermark so this boot still re-runs the sync.
             const fromSeq = topic.messages || 0;
+            const jobId = `topic-${topic.topicId}-${fromSeq}`;
+            try {
+                await this.topicQueue.remove(jobId);
+            } catch {
+                // Job didn't exist — fine.
+            }
             await this.topicQueue.add('sync', {
                 topicId: topic.topicId,
                 fromSequenceNumber: fromSeq,
                 isOrgTopic: false,
-            }, {
-                jobId: `topic-${topic.topicId}-${fromSeq}-${Date.now()}`,
-            });
+            }, { jobId });
             enqueued++;
         }
 
@@ -225,17 +230,23 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         }
 
         // Re-sync all NFT tokens from serial 0 to detect retirements.
+        // Stable jobId so concurrent worker boots dedupe to a single job per token;
+        // pre-remove clears the prior boot's completed job so this boot re-runs the check.
         const nftTokens = await this.dataSource.query(
             `SELECT "tokenId" FROM token_cache WHERE type = 'NON_FUNGIBLE_UNIQUE'`,
         );
         for (const token of nftTokens) {
+            const jobId = `token-${token.tokenId}-retirement`;
+            try {
+                await this.tokenQueue.remove(jobId);
+            } catch {
+                // Job didn't exist — fine.
+            }
             await this.tokenQueue.add('sync', {
                 tokenId: token.tokenId,
                 fetchNfts: true,
                 fromSerial: 0,
-            }, {
-                jobId: `token-${token.tokenId}-retirement-${Date.now()}`,
-            });
+            }, { jobId });
         }
 
         this.logger.log(
@@ -249,20 +260,25 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
      * successfully yet, and re-enqueues them for the PolicyDecodeProcessor.
      *
      * Re-enqueue when:
-     *   - No row in policy_decode_status (never attempted), OR
-     *   - status != 'success' (pending or failed — give it another chance).
+     *   - No row in policy table (never attempted), OR
+     *   - decodeStatus != 'decoded' (pending or failed — give it another chance).
      *
-     * Policies with status='success' are NOT re-enqueued. This prevents the
+     * Policies with decodeStatus='decoded' are NOT re-enqueued. This prevents the
      * boot-storm regression where successful decodes get retried every restart,
      * eventually failing once the IPFS CID becomes unreachable and flipping
-     * status from 'success' to 'failed'.
+     * status from 'decoded' to 'failed'.
      */
     private async schedulePolicyDecodeJobs(): Promise<void> {
-        const rows: Array<{ policy_topic_id: string; consensus_timestamp: string; cid: string }> =
-            await this.dataSource.query(`
+        const rows: Array<{
+            policy_topic_id: string;
+            instance_topic_id: string;
+            consensus_timestamp: string;
+            cid: string;
+        }> = await this.dataSource.query(`
                 SELECT
-                    m."topicId"            AS policy_topic_id,
-                    m."consensusTimestamp" AS consensus_timestamp,
+                    m."topicId"                                  AS policy_topic_id,
+                    COALESCE(m.options->>'instanceTopicId', '')  AS instance_topic_id,
+                    m."consensusTimestamp"                       AS consensus_timestamp,
                     f.cid
                 FROM message m
                 CROSS JOIN LATERAL UNNEST(m.files) AS f(cid)
@@ -271,9 +287,11 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
                   AND m.files IS NOT NULL
                   AND array_length(m.files, 1) > 0
                   AND NOT EXISTS (
-                      SELECT 1 FROM policy_decode_status pds
-                      WHERE pds."policyTopicId" = m."topicId"
-                        AND pds.status = 'success'
+                      SELECT 1 FROM policy p
+                      WHERE p."policyTopicId" = m."topicId"
+                        AND COALESCE(p."instanceTopicId", '') =
+                            COALESCE(m.options->>'instanceTopicId', '')
+                        AND p."decodeStatus" = 'decoded'
                   )
             `);
 
@@ -282,11 +300,12 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
                 cid: row.cid,
                 messageTimestamp: row.consensus_timestamp,
                 policyTopicId: row.policy_topic_id,
+                instanceTopicId: row.instance_topic_id,
             };
             // Timestamp suffix ensures a fresh job even if an old completed/failed
             // job with the same logical ID exists in BullMQ history.
             await this.policyDecodeQueue.add('decode', jobData, {
-                jobId: `policy-decode-${row.policy_topic_id}-${row.cid}-${Date.now()}`,
+                jobId: `policy-decode-${row.policy_topic_id}-${row.instance_topic_id}-${row.cid}-${Date.now()}`,
             });
         }
 
@@ -326,7 +345,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
      */
     private async backfillSuccessfulPolicyVcFetches(): Promise<void> {
         const policies: Array<{ policyTopicId: string }> = await this.dataSource.query(
-            `SELECT "policyTopicId" FROM policy_decode_status WHERE status = 'success'`,
+            `SELECT DISTINCT "policyTopicId" FROM policy WHERE "decodeStatus" = 'decoded'`,
         );
 
         let total = 0;

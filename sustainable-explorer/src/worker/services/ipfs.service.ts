@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import CID from 'cids';
+import { POLICY_ZIP_STORAGE, PolicyZipStorage } from '../services/storage/policy-zip-storage.interface';
 
 @Injectable()
 export class IpfsService {
@@ -9,7 +10,7 @@ export class IpfsService {
     private readonly gateways: string[];
     private readonly timeout: number;
 
-    constructor(private readonly configService: ConfigService) {
+    constructor(private readonly configService: ConfigService, @Inject(POLICY_ZIP_STORAGE) private readonly zipStorage: PolicyZipStorage,) {
         const gatewaysRaw = this.configService.get<string>('app.ipfs.gateways');
         if (typeof gatewaysRaw === 'string') {
             this.gateways = gatewaysRaw.split(',').map((g) => g.trim());
@@ -48,6 +49,11 @@ export class IpfsService {
         const v1Cid = this.toV1Base32(cid);
         if (this.gateways.length === 0) {
             throw new Error(`No IPFS gateways configured for CID ${cid}`);
+        }
+
+        if (await this.zipStorage.exists(cid)) {
+            this.logger.debug(`zip cache hit for cid=${cid}`);
+            return this.zipStorage.read(cid);
         }
 
         const controllers = this.gateways.map(() => new AbortController());

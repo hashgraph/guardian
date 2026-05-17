@@ -23,24 +23,24 @@ export const MV_REGISTRY_STATS_CREATE_SQL = `
         --   whose ZIP was decoded successfully.
         COUNT(*) FILTER (
             WHERE bv."viewType" = 'METHODOLOGY'
-              AND pds.status = 'success'
+              AND p."decodeStatus" = 'decoded'
         ) AS methodology_decode_success_count,
         COUNT(*) FILTER (
             WHERE bv."viewType" = 'METHODOLOGY'
-              AND pds.status = 'failed'
+              AND p."decodeStatus" = 'failed'
         ) AS methodology_decode_failed_count,
         COUNT(*) FILTER (
             WHERE bv."viewType" = 'METHODOLOGY'
-              AND pds.status = 'pending'
+              AND p."decodeStatus" = 'pending'
         ) AS methodology_decode_pending_count,
-        -- methodologies with no policy_decode_status row yet (never attempted)
+        -- methodologies with no policy row yet (never attempted)
         COUNT(*) FILTER (
             WHERE bv."viewType" = 'METHODOLOGY'
-              AND pds.status IS NULL
+              AND p."decodeStatus" IS NULL
         ) AS methodology_decode_unknown_count
     FROM business_view bv
-    LEFT JOIN policy_decode_status pds
-           ON pds."policyTopicId" = bv."businessData"->>'topicId'
+    LEFT JOIN policy p
+           ON p."policyTopicId" = bv."businessData"->>'topicId'
           AND bv."viewType" = 'METHODOLOGY'
     WHERE bv."registryDid" IS NOT NULL
       AND bv."viewType" IN ('METHODOLOGY', 'PROJECT', 'CREDIT')

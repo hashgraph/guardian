@@ -341,29 +341,37 @@ export async function loadResolutionMaps(
 
     const maps: ResolutionMaps = { instToMethod, policyTopicToMethod, parentMap, userMethods };
 
-    // Step D — sectoralScopes map from policy_decode_status (source of truth after refactor)
-    const methScopeRows: Array<{ topicId: string; sectoralScopes: unknown }> =
+    // Step D — sectoralScopes map derived from policy.policyMapping entries
+    // where the extract field key is 'sectoralScopes' and source is 'policyJson'.
+    const methScopeRows: Array<{ topicId: string; policyMapping: unknown }> =
         await dataSource.query(`
             SELECT
-                "policyTopicId"  AS "topicId",
-                "sectoralScopes" AS "sectoralScopes"
-            FROM policy_decode_status
-            WHERE "sectoralScopes" IS NOT NULL
-              AND status = 'success'
+                "policyTopicId" AS "topicId",
+                "policyMapping" AS "policyMapping"
+            FROM policy
+            WHERE "decodeStatus" = 'decoded'
+              AND "policyMapping" IS NOT NULL
+              AND "policyMapping" ? 'sectoralScopes'
         `);
 
     const methodScopeMap: Record<string, string[]> = {};
     for (const row of methScopeRows) {
         if (!row.topicId) continue;
         try {
-            const parsed = typeof row.sectoralScopes === 'string'
-                ? JSON.parse(row.sectoralScopes)
-                : row.sectoralScopes;
-            if (Array.isArray(parsed)) {
-                methodScopeMap[row.topicId] = parsed.filter(
-                    (s): s is string => typeof s === 'string',
-                );
+            const mapping = typeof row.policyMapping === 'string'
+                ? JSON.parse(row.policyMapping)
+                : row.policyMapping;
+            if (!mapping || typeof mapping !== 'object') continue;
+            const entries = (mapping as Record<string, unknown>)['sectoralScopes'];
+            if (!Array.isArray(entries)) continue;
+            const scopes: string[] = [];
+            for (const entry of entries) {
+                if (entry && typeof entry === 'object') {
+                    const val = (entry as Record<string, unknown>)['schemaName'];
+                    if (typeof val === 'string' && val) scopes.push(val);
+                }
             }
+            if (scopes.length > 0) methodScopeMap[row.topicId] = scopes;
         } catch { /* ignore malformed */ }
     }
 
@@ -374,9 +382,6 @@ export async function loadResolutionMaps(
  * Resolves project property names to their schema field keys by running the
  * keyword-matching logic once against fieldMap titles and descriptions.
  * Driven entirely by PROJECT_EXTRACT_FIELDS — no hardcoded keyword lists.
- * The result is stored in projectSchemaConfig / policy_decode_status so
- * subsequent mapper runs can do direct key lookups instead of scanning fieldMap
- * on every VC.
  */
 export function resolveFieldPaths(fieldMap: Record<string, FieldDef>): ResolvedFieldPaths {
     const find = (keywords: string[], exclude: string[] = []): string | null => {

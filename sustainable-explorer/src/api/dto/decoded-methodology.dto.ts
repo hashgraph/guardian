@@ -79,7 +79,7 @@ export class SchemaFieldDto {
 }
 
 export class SchemaSummaryDto {
-    @ApiProperty({ description: 'Schema UUID from policy_schema.schemaId' })
+    @ApiProperty({ description: 'Schema IRI / UUID from the policy zip' })
     schemaId: string;
 
     @ApiPropertyOptional({ nullable: true, description: 'Schema name' })
@@ -102,10 +102,10 @@ export class ProjectSchemaDto {
     @ApiProperty({ description: 'UUID of the policy schema identified as the project schema' })
     schemaId: string;
 
-    @ApiPropertyOptional({ nullable: true, description: 'Name of the schema from policy_schema.name' })
+    @ApiPropertyOptional({ nullable: true, description: 'Name of the project schema from the policy zip' })
     schemaName: string | null;
 
-    @ApiPropertyOptional({ nullable: true, description: 'Description of the schema from policy_schema.description' })
+    @ApiPropertyOptional({ nullable: true, description: 'Description of the project schema from the policy zip' })
     schemaDescription: string | null;
 
     @ApiProperty({ description: 'Field key for the GeoJSON geometry field' })
@@ -138,8 +138,8 @@ export class DecodedMethodologyResponseDto {
     @ApiProperty({
         enum: ['success', 'failed', 'pending', 'unknown'],
         description:
-            '"unknown" when no policy_decode_status row exists yet; ' +
-            'otherwise the status stored by the worker.',
+            '"unknown" when no policy row exists yet; ' +
+            'otherwise the decode status stored by the worker.',
     })
     decodeStatus: 'success' | 'failed' | 'pending' | 'unknown';
 
@@ -249,7 +249,7 @@ export class DecodedMethodologyResponseDto {
     }
 
     /**
-     * Summarize a single policy_schema row into the SchemaSummaryDto shape.
+     * Summarize a single schema entry into the SchemaSummaryDto shape.
      * Emits one entry per top-level property AND one entry per nested
      * property (one level deep), so the mapping editor can offer paths like
      * `location.country`. This mirrors the candidate-collection logic in

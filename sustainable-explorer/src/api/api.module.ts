@@ -9,6 +9,7 @@ import { NetworkDataSourceRegistry } from './database/network-datasource.registr
 import { RegistriesController } from './controllers/registries.controller';
 import { MethodologiesController } from './controllers/methodologies.controller';
 import { PolicySchemasController } from './controllers/policy-schemas.controller';
+import { PoliciesController } from './controllers/policies.controller';
 import { ProjectsController } from './controllers/project.controller';
 import { CreditsController } from './controllers/credits.controller';
 import { QueueStatusController } from './controllers/queue-status.controller';
@@ -18,6 +19,7 @@ import { RegistriesService } from './services/registries.service';
 import { MethodologiesService } from './services/methodologies.service';
 import { MappingReprocessService } from './services/mapping-reprocess.service';
 import { PolicySchemasService } from './services/policy-schemas.service';
+import { PoliciesService } from './services/policies.service';
 import { ProjectsService } from './services/project.service';
 import { CreditsService } from './services/credits.service';
 
@@ -36,6 +38,7 @@ import { QueueEventsBus } from './queues/queue-events-bus.service';
         RegistriesController,
         MethodologiesController,
         PolicySchemasController,
+        PoliciesController,
         ProjectsController,
         CreditsController,
         QueueStatusController,
@@ -46,6 +49,7 @@ import { QueueEventsBus } from './queues/queue-events-bus.service';
         MethodologiesService,
         MappingReprocessService,
         PolicySchemasService,
+        PoliciesService,
         ProjectsService,
         CreditsService,
         QueueRegistry,

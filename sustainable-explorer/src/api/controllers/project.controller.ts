@@ -40,7 +40,7 @@ export class ProjectsController {
         summary: 'Get Activity Log for a Project',
         description:
             'Returns a list of activity events derived from VC-Document and VP-Document messages ' +
-            'published on the project\'s Hedera topic, enriched with schema names from policy_schema.',
+            'published on the project\'s Hedera topic, enriched with schema names from the policy zip.',
     })
     @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
     @ApiParam({ name: 'id', description: 'HCS consensus timestamp (sourceTimestamp) of the project' })

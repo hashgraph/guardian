@@ -1,17 +1,15 @@
 import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 // Strategies
-import { GeoJsonMapSchemasService } from './strategies/map-schemas/geo-json-map-schemas.service';
 import { HeuristicFieldMapperService } from './strategies/map-fields/heuristic-field-mapper.service';
 import { LlmFieldMapperService } from './strategies/map-fields/llm-field-mapper.service';
 import { CrossSchemaFuzzyMapperService } from './strategies/map-fields/cross-schema-fuzzy-mapper.service';
 
 // Pipeline Service
 import { MappingPipelineService } from './mapping-pipeline.service';
+import { PolicyMappingPipelineService } from './policy-pipeline.service';
 
 // Providers
-import { mapSchemasStrategyProvider } from './providers/map-schemas.provider';
 import { mapFieldsStrategyProvider } from './providers/map-fields.provider';
 
 /**
@@ -38,26 +36,16 @@ import { mapFieldsStrategyProvider } from './providers/map-fields.provider';
  */
 @Module({
     providers: [
-        // Strategy implementations
-        GeoJsonMapSchemasService,
         HeuristicFieldMapperService,
         LlmFieldMapperService,
         CrossSchemaFuzzyMapperService,
-
-        // Factory providers
-        mapSchemasStrategyProvider,
         mapFieldsStrategyProvider,
-
-        // Orchestration service
         MappingPipelineService,
+        PolicyMappingPipelineService,
     ],
     exports: [
-        // Export the pipeline service for use in other modules
         MappingPipelineService,
-
-        // Also export strategy tokens for advanced use cases
-        // (typically not needed, but available if custom logic is required)
-        mapSchemasStrategyProvider,
+        PolicyMappingPipelineService,
         mapFieldsStrategyProvider,
     ],
 })

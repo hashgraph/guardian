@@ -26,18 +26,36 @@ export function derivePerPolicyProjectMeta(
     fieldMap: FieldMap,
     _schemas: SchemaInfo[],
 ): PerPolicyProjectMeta | null {
-    // Step 1+2: tally schemaId frequency
+    // Step 1+2: tally schemaId frequency.
+    // Guardian schema IRIs contain dots (`#uuid&1.0.0`) so we match against
+    // the known schema-id prefix list longest-first instead of indexOf('.').
     const tally = new Map<string, number>();
-    const parsed = new Map<string, { schemaId: string; path: string }>();
+    const knownIds = _schemas.map(s => s.id).sort((a, b) => b.length - a.length);
 
-    for (const [fieldLabel, value] of Object.entries(fieldMap)) {
-        if (!value) continue;
-        const dotIdx = value.indexOf('.');
-        if (dotIdx === -1) continue;
-        const schemaId = value.slice(0, dotIdx);
-        const path = value.slice(dotIdx + 1);
-        parsed.set(fieldLabel, { schemaId, path });
-        tally.set(schemaId, (tally.get(schemaId) ?? 0) + 1);
+    // fieldMap[label] is now an array of `${schemaId}.${path}` values
+    // (one per source schema). We collect all parsed entries per label and
+    // tally each schemaId so the project-schema heuristic uses every match.
+    const parsedByLabel = new Map<string, Array<{ schemaId: string; path: string }>>();
+    for (const [fieldLabel, values] of Object.entries(fieldMap)) {
+        if (!Array.isArray(values) || values.length === 0) continue;
+        const collected: Array<{ schemaId: string; path: string }> = [];
+        for (const value of values) {
+            if (!value) continue;
+            let schemaId = '';
+            let path = '';
+            for (const id of knownIds) {
+                if (value === id) { schemaId = id; break; }
+                if (value.startsWith(id + '.')) {
+                    schemaId = id;
+                    path = value.slice(id.length + 1);
+                    break;
+                }
+            }
+            if (!schemaId) continue;
+            collected.push({ schemaId, path });
+            tally.set(schemaId, (tally.get(schemaId) ?? 0) + 1);
+        }
+        if (collected.length > 0) parsedByLabel.set(fieldLabel, collected);
     }
 
     if (tally.size === 0) return null;
@@ -52,16 +70,15 @@ export function derivePerPolicyProjectMeta(
         }
     }
 
-    // Step 3: build projectFieldMap for fields in the primary schema
+    // Step 3: build projectFieldMap for fields in the primary schema.
+    // Prefer the candidate whose schemaId matches projectSchemaId; fall back
+    // to the top-scoring candidate when the primary schema has no entry.
     const projectFieldMap: Record<string, string | null> = {};
     for (const field of PROJECT_EXTRACT_FIELDS) {
         if (field.key === 'geo') continue; // handled separately
-        const entry = parsed.get(field.label);
-        if (entry && entry.schemaId === projectSchemaId) {
-            projectFieldMap[field.key] = entry.path;
-        } else {
-            projectFieldMap[field.key] = null;
-        }
+        const candidates = parsedByLabel.get(field.label);
+        const onProject = candidates?.find(c => c.schemaId === projectSchemaId);
+        projectFieldMap[field.key] = onProject?.path ?? null;
     }
 
     // Step 4: geo key
@@ -71,7 +88,8 @@ export function derivePerPolicyProjectMeta(
     // Look up the geo field by its label from PROJECT_EXTRACT_FIELDS
     const geoField = PROJECT_EXTRACT_FIELDS.find(f => f.key === 'geo');
     if (geoField) {
-        const geoEntry = parsed.get(geoField.label);
+        const geoCandidates = parsedByLabel.get(geoField.label);
+        const geoEntry = geoCandidates?.find(c => c.schemaId === projectSchemaId) ?? geoCandidates?.[0];
         if (geoEntry) {
             const geoPath = geoEntry.path;
             const dotIdx = geoPath.indexOf('.');

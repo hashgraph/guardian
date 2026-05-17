@@ -24,13 +24,18 @@ export const PROJECT_EXTRACT_FIELDS: ProjectExtractField[] = [
         key: 'name',
         label: 'Project Title',
         keywords: ['project name', 'project title', 'name', 'title'],
-        exclude: ['methodology', 'reference', 'pdd', 'section', 'table', 'site', 'document'],
+        exclude: ['methodology', 'reference', 'pdd', 'section', 'table', 'document'],
     },
     {
         key: 'country',
         label: 'Country',
-        keywords: ['country'],
-        exclude: ['participant', 'applicant'],
+        // 'location' / 'project location' catches schemas where the country
+        // field is titled "Project Location" / "Location" with a plain string
+        // value (e.g. "India"). The geo field uses structural GeoJSON
+        // detection, so non-GeoJSON Location-labeled fields land here without
+        // double-matching.
+        keywords: ['country', 'location', 'project location'],
+        exclude: ['participant', 'applicant', 'coordinate', 'geojson', 'polygon', 'boundary'],
     },
     {
         key: 'developer',
