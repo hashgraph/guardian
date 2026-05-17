@@ -3,7 +3,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { VcDocumentDefinition as VcDocument } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -30,7 +30,70 @@ import { LocationType } from '@guardian/interfaces';
         output: [
             PolicyOutputEventType.RefreshEvent
         ],
-        defaultEvent: false
+        defaultEvent: false,
+        properties: [
+            {
+                name: 'executionFlow',
+                label: 'Execution Flow',
+                title: 'Execution Flow',
+                type: PropertyType.Select,
+                editable: true,
+                items: [
+                    {label: 'First True', value: 'firstTrue'},
+                    {label: 'All True', value: 'allTrue'}
+                ]
+            }, {
+                name: 'conditions',
+                label: 'Conditions',
+                title: 'Conditions',
+                type: PropertyType.Array,
+                editable: true,
+                items: {
+                    label: 'Condition Type',
+                    value: '',
+                    properties: [
+                        {
+                            name: 'tag',
+                            label: 'Condition tag',
+                            title: 'Condition tag',
+                            type: PropertyType.Input,
+                            editable: true
+                        },
+                        {
+                            name: 'type',
+                            label: 'Type',
+                            title: 'Type',
+                            type: PropertyType.Select,
+                            items: [
+                                { label: 'Equal', value: 'equal'},
+                                { label: 'Not Equal', value: 'not_equal'},
+                                { label: 'Unconditional', value: 'unconditional'}
+                            ],
+                            editable: true
+                        },
+                        {
+                            name: 'condition',
+                            label: 'Condition',
+                            title: 'Condition',
+                            type: PropertyType.Input,
+                            editable: true
+                        },
+                        {
+                            name: 'actor',
+                            label: 'Actor',
+                            title: 'Actor',
+                            type: PropertyType.Select,
+                            editable: true,
+                            items: [
+                                    { label: 'Current User', value: ''},
+                                    { label: 'Document Owner', value: 'owner'},
+                                    { label: 'Document Issuer', value: 'issuer'}
+                                ]
+                        }
+                    ]
+                }
+            },
+        ]
     },
     variables: []
 })
@@ -98,7 +161,7 @@ export class SwitchBlock {
     })
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-
+        const options = await ref.getOptions(event.user);
         ref.log(`switch: ${event.user?.id}`);
 
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
@@ -118,7 +181,7 @@ export class SwitchBlock {
 
         const scope = this.getScope(docs);
 
-        const { conditions, executionFlow } = ref.options;
+        const { conditions, executionFlow } = options;
         const tags: string[] = [];
         for (const condition of conditions) {
             const type = condition.type as string;

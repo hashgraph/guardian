@@ -51,7 +51,8 @@ enum DocumentStatus {
             label: 'Threshold (%)',
             title: 'Number of signatures required to move to the next step, as a percentage of the total number of users in the group.',
             type: PropertyType.Input,
-            default: '50'
+            default: '50',
+            editable: false
         }]
     },
     variables: []
@@ -109,6 +110,7 @@ export class MultiSignBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -131,6 +133,7 @@ export class MultiSignBlock {
      */
     async setData(user: PolicyUser, blockData: any, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+
         const { status, document } = blockData;
         const documentId = document.id;
         const sourceDoc = await ref.databaseServer.getVcDocument(documentId);
@@ -208,9 +211,10 @@ export class MultiSignBlock {
         documentId: string,
         currentUser: PolicyUser,
         userId: string | null,
-        actionStatus: RecordActionStep
+        actionStatus: RecordActionStep,
     ) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+
         const data = await ref.databaseServer.getMultiSignDocuments(ref.uuid, documentId, currentUser.group);
 
         let signed = 0;
@@ -315,6 +319,7 @@ export class MultiSignBlock {
      */
     private async getDocumentStatus(document: IPolicyDocument, user: PolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+
         const confirmationDocument = await ref.databaseServer.getMultiSignStatus(ref.uuid, document.id);
         const data: any[] = await ref.databaseServer.getMultiSignDocuments(ref.uuid, document.id, user.group);
         const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);

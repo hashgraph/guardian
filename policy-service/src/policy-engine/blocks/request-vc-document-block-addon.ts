@@ -142,6 +142,8 @@ export class RequestVcDocumentBlockAddon {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = await ref.getOptions(user);
+
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -150,7 +152,7 @@ export class RequestVcDocumentBlockAddon {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            ...ref.options,
+            ...options,
             schema: { ...this._schema, fields: [], conditions: [] },
         };
         return data;
@@ -187,6 +189,7 @@ export class RequestVcDocumentBlockAddon {
                     );
                 }
                 const document = _data.document;
+                const options = await ref.getOptions(user);
 
                 const disposeTables = await hydrateTablesInObject(
                     document,
@@ -200,7 +203,8 @@ export class RequestVcDocumentBlockAddon {
                 const presetCheck = await this.checkPreset(
                     ref,
                     document,
-                    documentRef
+                    documentRef,
+                    user
                 );
                 if (!presetCheck.valid) {
                     throw new BlockActionError(
@@ -213,8 +217,8 @@ export class RequestVcDocumentBlockAddon {
                 SchemaHelper.updateObjectContext(this._schema, document);
 
                 const _vcHelper = new VcHelper();
-                const idType = ref.options.idType;
-                const forceRelayerAccount = ref.options.forceRelayerAccount;
+                const idType = options.idType;
+                const forceRelayerAccount = options.forceRelayerAccount;
                 const inheritRelayerAccount = PolicyComponentsUtils.IsInheritRelayerAccount(ref.policyId, forceRelayerAccount);
 
                 //Relayer Account
@@ -285,7 +289,7 @@ export class RequestVcDocumentBlockAddon {
                 PolicyUtils.setDocumentTags(item, tags);
 
                 const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, this._schema);
-                const schemaIRI = ref.options.schema;
+                const schemaIRI = options.schema;
                 item.type = schemaIRI;
                 item.schema = schemaIRI;
                 item.accounts = accounts;
@@ -315,14 +319,17 @@ export class RequestVcDocumentBlockAddon {
     private async checkPreset(
         ref: AnyBlockType,
         document: any,
-        documentRef: VcDocumentCollection
+        documentRef: VcDocumentCollection,
+        user?: PolicyUser
     ): Promise<CheckResult> {
+        const options = await ref.getOptions(user);
+
         if (
-            ref.options.presetFields &&
-            ref.options.presetFields.length &&
-            ref.options.presetSchema
+            options.presetFields &&
+            options.presetFields.length &&
+            options.presetSchema
         ) {
-            const readonly = ref.options.presetFields.filter(
+            const readonly = options.presetFields.filter(
                 (item: any) => item.readonly && item.value
             );
             if (!readonly.length || !document || !documentRef) {

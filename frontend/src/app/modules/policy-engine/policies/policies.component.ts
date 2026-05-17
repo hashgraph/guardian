@@ -2142,9 +2142,9 @@ export class PoliciesComponent implements OnInit {
                     this.policyEngineService
                         .disconnect(policy.id)
                         .pipe(takeUntil(this._destroy$))
-                        .subscribe((result) => {
+                        .subscribe((result: any) => {
                             this.loadAllPolicy();
-                        }, (e) => {
+                        }, (e: any) => {
                             this.loading = false;
                         });
                 }
@@ -2222,7 +2222,7 @@ export class PoliciesComponent implements OnInit {
                 this.policyEngineService
                     .reconnect(policy.id)
                     .pipe(takeUntil(this._destroy$))
-                    .subscribe((result) => {
+                    .subscribe((result: any) => {
                         this.loadAllPolicy();
                     }, (e) => {
                         this.loading = false;

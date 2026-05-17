@@ -5,6 +5,7 @@ import {
     MigrationRunsResponse,
     MigrationStatusResponse,
     PolicyAvailability,
+    PolicyEditableFieldDTO,
     PolicyToolMetadata
 } from '@guardian/interfaces';
 import { Observable, firstValueFrom, map } from 'rxjs';
@@ -696,6 +697,14 @@ export class PolicyEngineService {
 
     public getAllVersionVcDocuments(policyId?: string, documentId?: string): Observable<any> {
         return this.http.get<void>(`${this.url}/${policyId}/get-all-version-vc-documents/${documentId}`);
+    }
+
+    public saveParameters(policyId: string, data: PolicyEditableFieldDTO[]): Observable<PolicyEditableFieldDTO[]> {
+        return this.http.post<PolicyEditableFieldDTO[]>(`${this.url}/${policyId}/parameters/`, data);
+    }
+
+    public getParametersConfig(policyId: string): Observable<PolicyEditableFieldDTO[]> {
+        return this.http.get<PolicyEditableFieldDTO[]>(`${this.url}/${policyId}/parameters/config`);
     }
 
     public disconnect(policyId: string): Observable<any> {

@@ -1,0 +1,22 @@
+<div class="element-path">
+    <p-dropdown
+        class="select"
+        [options]="pathOptions"
+        [(ngModel)]="startPath"
+        (onChange)="onInternalChange()"
+        (onBlur)="onBlur()"
+        [disabled]="disabled || readonly"
+        appendTo="body">
+    </p-dropdown>
+
+    <input
+        pInputText
+        class="prop-input"
+        [ngModel]="endPath"
+        (ngModelChange)="endPath = $event; onInternalChange()"
+        (blur)="onBlur()"
+        [readonly]="readonly"
+        [disabled]="disabled || readonly"
+        type="text"
+    />
+</div>

@@ -68,7 +68,7 @@ const Container: IBlockSetting = {
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: ContainerBlockComponent,
-    property: ContainerConfigComponent,
+    property: null,
     code: null,
     allowedChildren: [
         { type: BlockType.Information },
@@ -182,7 +182,7 @@ const GroupManagerBlock: IBlockSetting = {
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: GroupManagerBlockComponent,
-    property: GroupManagerConfigComponent,
+    property: null,
     code: null,
 }
 
@@ -192,7 +192,7 @@ const container: IBlockSetting = {
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: InformationBlockComponent,
-    property: InformationConfigComponent,
+    property: null,
     code: null
 }
 
@@ -314,7 +314,7 @@ const Switch: IBlockSetting = {
     group: BlockGroup.Main,
     header: BlockHeaders.ServerBlocks,
     factory: null,
-    property: SwitchConfigComponent,
+    property: null,
     code: null,
     about: {
         output: (value: any, block: PolicyBlock) => {
@@ -457,7 +457,7 @@ const ExternalData: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
-    property: ExternalDataConfigComponent,
+    property: null,
     code: null,
     allowedChildren: [{
         type: BlockType.DocumentValidatorBlock,
@@ -545,7 +545,7 @@ const ReassigningBlock: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
-    property: ReassigningConfigComponent,
+    property: null,
     code: null,
 }
 
@@ -613,7 +613,7 @@ const DocumentsSourceAddon: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: null,
-    property: SourceAddonConfigComponent,
+    property: null,
     code: null,
     allowedChildren: [{
         type: BlockType.FiltersAddon,
@@ -640,7 +640,7 @@ const DataTransformationAddon: IBlockSetting = {
     group: BlockGroup.UnGrouped,
     header: BlockHeaders.Addons,
     factory: null,
-    property: DataTransformationConfigComponent,
+    property: null,
     code: null,
 }
 
@@ -680,7 +680,7 @@ const DocumentValidatorBlock: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: null,
-    property: DocumentValidatorConfigComponent,
+    property: null,
     code: null
 }
 
@@ -801,7 +801,7 @@ const CalculateMathAddon: IBlockSetting = {
     group: BlockGroup.Calculate,
     header: BlockHeaders.Addons,
     factory: null,
-    property: CalculateMathConfigComponent,
+    property: null,
     code: null,
 }
 

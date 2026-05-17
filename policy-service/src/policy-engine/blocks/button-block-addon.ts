@@ -39,12 +39,14 @@ import { LocationType } from '@guardian/interfaces';
                 title: 'Button Name',
                 type: PropertyType.Input,
                 required: true,
+                editable: true
             },
             {
                 name: 'uiClass',
                 label: 'UI Class',
                 title: 'UI Class',
                 type: PropertyType.Input,
+                editable: true
             },
             {
                 name: 'dialog',
@@ -52,13 +54,15 @@ import { LocationType } from '@guardian/interfaces';
                 title: 'Dialog',
                 type: PropertyType.Checkbox,
                 default: false,
+                editable: true
             },
             {
                 name: 'hideWhenDiscontinued',
                 label: 'Hide when discontinued',
                 title: 'Hide when discontinued',
                 type: PropertyType.Checkbox,
-                default: false
+                default: false,
+                editable: true
             },
             {
                 name: 'dialogOptions',
@@ -72,12 +76,14 @@ import { LocationType } from '@guardian/interfaces';
                         title: 'Dialog Title',
                         type: PropertyType.Input,
                         required: true,
+                        editable: true
                     },
                     {
                         name: 'dialogDescription',
                         label: 'Dialog Description',
                         title: 'Dialog Description',
                         type: PropertyType.Input,
+                        editable: true
                     },
                     {
                         name: 'dialogResultFieldPath',
@@ -86,6 +92,7 @@ import { LocationType } from '@guardian/interfaces';
                         type: PropertyType.Path,
                         required: true,
                         default: 'option.comment',
+                        editable: true
                     },
                 ],
                 visible: 'dialog === true',
@@ -101,6 +108,7 @@ export class ButtonBlockAddon {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = await ref.getOptions(user);
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -109,7 +117,7 @@ export class ButtonBlockAddon {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            ...ref.options,
+            ...options,
         };
         return data;
     }
@@ -129,6 +137,7 @@ export class ButtonBlockAddon {
         actionStatus
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = await ref.getOptions(user);
         const parent = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(
             ref.parent
         );
@@ -137,10 +146,10 @@ export class ButtonBlockAddon {
             ref.tag,
             blockData.documentId,
             (document: any) => {
-                if (ref.options.dialog) {
+                if (options.dialog) {
                     document = setOptions(
                         document,
-                        ref.options.dialogOptions.dialogResultFieldPath,
+                        options.dialogOptions.dialogResultFieldPath,
                         blockData.dialogResult
                     );
                 }
