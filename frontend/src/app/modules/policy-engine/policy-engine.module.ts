@@ -183,8 +183,9 @@ import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-di
 import { PolicyParametersDialog } from './dialogs/policy-parameters-dialog/policy-parameters-dialog.component';
 import { PolicyParameterPropertyComponent } from 'src/app/components/policy-parameter-property/policy-parameter-property.component';
 import { PolicyParametersConfigDialog } from './dialogs/policy-parameters-config-dialog/policy-parameters-config-dialog.component';
-import { ParameterDocumentPath } from './helpers/parameter-document-path/paramter-document-path.component';
+import { ParameterDocumentPathComponent } from './helpers/parameter-document-path/parameter-document-path.component';
 import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
+
 @NgModule({
     declarations: [
         PoliciesComponent,
@@ -324,7 +325,7 @@ import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
         PolicyParametersConfigDialog,
         PolicyParametersDialog,
         PolicyParameterPropertyComponent,
-        ParameterDocumentPath,
+        ParameterDocumentPathComponent,
         MockDialog
     ],
     imports: [

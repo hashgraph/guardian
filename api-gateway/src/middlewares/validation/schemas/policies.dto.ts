@@ -373,6 +373,8 @@ export class PolicyDTO {
     })
     @IsOptional()
     @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => PolicyEditableFieldDTO)
     editableParametersSettings?: PolicyEditableFieldDTO[];
 
     @ApiProperty({

@@ -62,8 +62,10 @@ export class PolicyParametersDialog {
     }
 
     loadConfig() {
-        this.policyEngineService.getParametersConfig(this.policyId).subscribe((response: any) => {
+        this.policyEngineService.getParametersConfig(this.policyId).subscribe((response: PolicyEditableFieldDTO[]) => {
             this.editableParameters = response || [];
+            this.items = [];
+            this.form = new FormGroup({});
             this.loadItems();
         });
     }

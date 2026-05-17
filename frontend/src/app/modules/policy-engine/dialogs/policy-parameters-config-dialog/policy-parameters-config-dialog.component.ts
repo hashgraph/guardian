@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { PolicyBlock, PolicyTemplate } from '../../structures';
@@ -27,11 +27,13 @@ type PolicyForm = {
     styleUrls: ['./policy-parameters-config-dialog.component.scss'],
 })
 export class PolicyParametersConfigDialog implements OnInit {
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLElement>;
+    isLargeSize: boolean = false;
     loading = true;
     submitted = false;
     form: FormGroup<PolicyForm>;
     policyTemplate: PolicyTemplate;
-    policyEditableFields: PolicyEditableField[] = [];    
+    policyEditableFields: PolicyEditableField[] = [];
     filteredBlocks: Map<string, any[]> = new Map();
     currentBlocks: PolicyBlock[] = [];
     additionalOptionsApplyTo = [
@@ -51,7 +53,10 @@ export class PolicyParametersConfigDialog implements OnInit {
         this.policyTemplate = this.config.data.policy;
 
         this.form = this.fb.group<PolicyForm>({
-            fields: this.fb.array(this.policyEditableFields.map(m => this.createFieldGroup(m))),
+            fields: this.fb.array(
+                this.policyEditableFields.map(m => this.createFieldGroup(m)),
+                { validators: [this.duplicateRowsValidator] }
+            ),
         });
     }
 
@@ -59,7 +64,7 @@ export class PolicyParametersConfigDialog implements OnInit {
         this.loading = false;
 
         if(this.policyTemplate.editableParametersSettings) {
-            this.policyEditableFields = this.policyTemplate.editableParametersSettings?.map(ep => PolicyEditableFieldDTO.fromDTO(ep));
+            this.policyEditableFields = this.policyTemplate.editableParametersSettings?.map(ep => PolicyEditableField.fromDTO(ep));
         }
 
         this.policyEngineService.getBlockInformation()
@@ -100,6 +105,10 @@ export class PolicyParametersConfigDialog implements OnInit {
             const g = this.createFieldGroup(formField);
             this.fields.push(g);
         });
+
+        if (this.readonly) {
+            this.form.disable({ emitEvent: false });
+        }
     }
 
     trackByIndex = (i: number) => i;
@@ -118,6 +127,50 @@ export class PolicyParametersConfigDialog implements OnInit {
 
     public propertiesOptions(index: number): any[] {
         return this.policyEditableFields[index]?.properties ?? [];
+    }
+
+    // Reject rows whose (blockTag, property, visible) tuple matches another row.
+    // Runs at the FormArray level and marks the duplicate rows' inner controls
+    // as invalid so the existing is-invalid styling surfaces the error.
+    private duplicateRowsValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+        const rows = (control as FormArray<FormGroup<PolicyEditableFieldForm>>).controls ?? [];
+        const counts = new Map<string, number>();
+        const keys = rows.map(row => this.duplicateRowKey(row));
+        keys.forEach(k => k && counts.set(k, (counts.get(k) ?? 0) + 1));
+
+        let hasDuplicate = false;
+        rows.forEach((row, i) => {
+            const key = keys[i];
+            const isDup = !!key && (counts.get(key) ?? 0) > 1;
+            if (isDup) {
+                hasDuplicate = true;
+            }
+            for (const name of ['blockTag', 'property', 'visible'] as const) {
+                const fc = row.controls[name];
+                const errs = { ...(fc.errors ?? {}) };
+                if (isDup) {
+                    errs.duplicateRow = true;
+                } else {
+                    delete errs.duplicateRow;
+                }
+                const next = Object.keys(errs).length ? errs : null;
+                if ((next?.duplicateRow ?? null) !== (fc.errors?.duplicateRow ?? null)) {
+                    fc.setErrors(next, { emitEvent: false });
+                }
+            }
+        });
+
+        return hasDuplicate ? { duplicateRow: true } : null;
+    };
+
+    private duplicateRowKey(row: FormGroup<PolicyEditableFieldForm>): string | null {
+        const blockTag = row.controls.blockTag.value;
+        const property = row.controls.property.value;
+        const visible = [...(row.controls.visible.value ?? [])].sort();
+        if (!blockTag || !property || visible.length === 0) {
+            return null;
+        }
+        return `${blockTag}::${property}::${visible.join('|')}`;
     }
 
     private propertyInCurrentBlock(): ValidatorFn {
@@ -165,7 +218,7 @@ export class PolicyParametersConfigDialog implements OnInit {
     }
 
     createFieldGroup(m?: Partial<PolicyEditableField>): FormGroup<PolicyEditableFieldForm> {
-        return this.fb.group<PolicyEditableFieldForm>({
+        const group = this.fb.group<PolicyEditableFieldForm>({
             blockTag: this.fb.control(m?.blockTag ?? '', { nonNullable: true, validators: [Validators.required] }),
             property: this.fb.control(m?.propertyPath ?? '', { nonNullable: true, validators: [Validators.required, this.propertyInCurrentBlock()] }),
             visible: this.fb.control(m?.visible ?? [], { nonNullable: true, validators: [Validators.required] }),
@@ -174,6 +227,30 @@ export class PolicyParametersConfigDialog implements OnInit {
             required: this.fb.control(m?.required ?? false, { nonNullable: true }),
             shortDescription: this.fb.control(m?.shortDescription ?? '', { nonNullable: true }),
         });
+        this.bindApplyToExclusion(group.controls.applyTo);
+        return group;
+    }
+
+    // 'All' is exclusive of other applyTo targets.
+    private bindApplyToExclusion(applyTo: FormControl<string[]>): void {
+        let previous: string[] = applyTo.value ?? [];
+        applyTo.valueChanges
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((value: string[]) => {
+                const next = value ?? [];
+                if (next.includes('All') && next.length > 1) {
+                    const allWasPresent = previous.includes('All');
+                    const reduced = allWasPresent
+                        ? next.filter(v => v !== 'All')
+                        : ['All'];
+                    previous = reduced;
+                    // Defer past PrimeNG's own update cycle so the
+                    // overlay checkboxes reflect the normalized value.
+                    setTimeout(() => applyTo.setValue(reduced));
+                    return;
+                }
+                previous = next;
+            });
     }
 
     addField(): void {
@@ -190,6 +267,34 @@ export class PolicyParametersConfigDialog implements OnInit {
     onClose(): void {
         this._destroy$.next();
         this.ref.close();
+    }
+
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            const host = this.dialogHeader?.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement | null;
+            if (!host) {
+                return;
+            }
+            const width = this.isLargeSize ? '90vw' : '1024px';
+            host.style.width = width;
+            host.style.maxWidth = width;
+            host.style.margin = 'auto';
+            host.style.transition = 'all 0.3s ease';
+        }, 100);
+    }
+
+    public get readonly(): boolean {
+        return !this.policyTemplate?.isDraft;
+    }
+
+    public propertyLabel(fg: FormGroup<PolicyEditableFieldForm>, index: number): string {
+        const path = fg.controls.property.value;
+        if (!path) {
+            return '';
+        }
+        const match = this.propertiesOptions(index).find(o => o.path === path);
+        return match?.label || path;
     }
 
     buildFields(): PolicyEditableFieldDTO[]  {

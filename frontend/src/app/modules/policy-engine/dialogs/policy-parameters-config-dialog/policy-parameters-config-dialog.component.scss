@@ -1,12 +1,17 @@
 .context {
     position: relative;
-    overflow-y: auto;
-    padding: 14px 0 20px 0;
+    padding: 14px 4px 20px 0;
     display: flex;
-    flex-direction: row;
-    height: 100%;
+    flex-direction: column;
     font-family: Inter, serif;
     font-style: normal;
+}
+
+.duplicate-row-error {
+    color: #E5252B;
+    font-family: Inter;
+    font-weight: 500;
+    font-size: 12px;
 }
 
 form {
@@ -45,7 +50,8 @@ form {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  width: 210px;
+  width: 100%;
+  min-width: 0;
 
   input {
     height: 40px;
@@ -79,7 +85,7 @@ form {
 }
 
 .required-field{
-  grid-column: 1 / 5;
+  grid-column: 1 / 6;
   display:flex;
   align-items:center;
   gap:10px;
@@ -89,6 +95,10 @@ form {
   font-weight: 500;
   font-size: 14px;
   line-height: 24px;
+
+  .duplicate-row-error {
+    margin-left: auto;
+  }
 }
 
 .group-container {

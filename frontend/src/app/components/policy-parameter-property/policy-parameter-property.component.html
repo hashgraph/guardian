@@ -63,10 +63,10 @@
         <label class="form-label property-label">{{ property.label }}</label>
         <span *ngIf="!isArrayElement" class="property-description">{{ config.shortDescription }}</span>
 
-        <app-paramter-document-path
+        <app-parameter-document-path
             [formControl]="fc"
             [displayTooltip]="true">
-        </app-paramter-document-path>
+        </app-parameter-document-path>
     </div>
 </ng-container>
 

@@ -1,5 +1,16 @@
-<div class="guardian-dialog">
-    <div class="dialog-body">
+<div #dialogHeader class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Policy Parameters</div>
+    </div>
+    <div class="header-icon" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
         <form [formGroup]="form" (ngSubmit)="submit()" class="formgrid grid p-fluid">
             <div formArrayName="fields">
                 <div *ngFor="let fg of fieldGroups; let i = index; trackBy: trackByIndex" [formGroupName]="i">
@@ -11,7 +22,9 @@
                                 [blocks]="currentBlocks"
                                 [value]="fg.controls.blockTag.value"
                                 (valueChange)="onBlockChange($event, i)"
-                                [class.is-invalid]="fg.controls.blockTag.invalid && fg.controls.blockTag.touched && submitted"
+                                [class.is-invalid]="fg.controls.blockTag.hasError('duplicateRow') || (fg.controls.blockTag.invalid && (fg.controls.blockTag.touched || submitted))"
+                                [pTooltip]="fg.controls.blockTag.value || 'Pick the block whose property is being exposed'"
+                                tooltipPosition="top"
                             ></select-block>
                         </div>
                         <div class="field">
@@ -25,6 +38,9 @@
                                 optionValue="path"
                                 [showClear]="false"
                                 aria-required="true"
+                                [class.is-invalid]="fg.controls.property.hasError('duplicateRow') || (fg.controls.property.invalid && (fg.controls.property.touched || submitted))"
+                                [pTooltip]="propertyLabel(fg, i) || 'Pick the block property the user may override'"
+                                tooltipPosition="top"
                                 >
                             </p-dropdown>
                         </div>
@@ -36,9 +52,12 @@
                                 class="parameter-dropdown"
                                 appendTo="body"
                                 placeholder="Select..."
-                                optionLabel="_name" 
+                                optionLabel="_name"
                                 optionValue="_name"
-                                filterBy="_name">
+                                filterBy="_name"
+                                [class.is-invalid]="fg.controls.visible.hasError('duplicateRow') || (fg.controls.visible.invalid && (fg.controls.visible.touched || submitted))"
+                                [pTooltip]="(fg.controls.visible.value || []).join(', ') || 'Roles that may see this parameter at runtime'"
+                                tooltipPosition="top">
                             </p-multiSelect>
                         </div>
                         <div class="field">
@@ -49,13 +68,16 @@
                                 class="parameter-dropdown"
                                 [options]="applyToOptions"
                                 appendTo="body"
-                                optionLabel="_name" 
+                                optionLabel="_name"
                                 optionValue="_name"
                                 filterBy="_name"
+                                [showToggleAll]="false"
+                                [pTooltip]="(fg.controls.applyTo.value || []).join(', ') || 'Scope the override applies to: All users, only Self, or specific roles'"
+                                tooltipPosition="top"
                                 >
                             </p-multiSelect>
                         </div>
-                        <div class="delete-field">
+                        <div *ngIf="!readonly" class="delete-field">
                             <button
                                 class="guardian-icon-button big"
                                 (click)="$event.preventDefault(); removeField(i)"
@@ -83,12 +105,15 @@
                             </p-checkbox>
 
                             <label for="required">Set as required</label>
+                            <small *ngIf="fg.controls.blockTag.hasError('duplicateRow')" class="duplicate-row-error">
+                                Duplicates another row with the same Block, Property and Visible.
+                            </small>
                         </div>
                     </div>
                 </div>
             </div>
         </form>
-        <button (click)="addField()" class="add-button dialog-button guardian-button guardian-button-secondary add-doc-btn">
+        <button *ngIf="!readonly" (click)="addField()" class="add-button dialog-button guardian-button guardian-button-secondary add-doc-btn">
                 <div class="guardian-button-icon">
                     <svg-icon class="icon-btn svg-icon-16" src="/assets/images/icons/16/add.svg"
                         svgClass="icon-color-primary">
@@ -97,19 +122,20 @@
                 <div class="guardian-button-label">Add Field</div>
         </button>
     </div>
-    <div class="dialog-footer">
-        <div class="action-buttons">
-            <div class="dialog-button">
-                <button
-                    (click)="onClose()"
-                    class="guardian-button guardian-button-secondary">Cancel</button>
-            </div>
-            <div class="dialog-button">
-                <button
-                    (click)="submit()"
-                    class="guardian-button guardian-button-primary"> Apply Changes 
-                </button>
-            </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button
+                (click)="onClose()"
+                class="guardian-button guardian-button-secondary">Cancel</button>
+        </div>
+        <div *ngIf="!readonly" class="dialog-button">
+            <button
+                (click)="submit()"
+                [disabled]="form.invalid"
+                class="guardian-button guardian-button-primary"> Apply Changes
+            </button>
         </div>
     </div>
 </div>

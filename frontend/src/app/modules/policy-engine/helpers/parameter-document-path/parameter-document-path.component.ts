@@ -12,18 +12,18 @@ import {
 } from '@angular/forms';
 
 @Component({
-    selector: 'app-paramter-document-path',
+    selector: 'app-parameter-document-path',
     templateUrl: './parameter-document-path.component.html',
     styleUrls: ['./parameter-document-path.component.scss'],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => ParameterDocumentPath),
+            useExisting: forwardRef(() => ParameterDocumentPathComponent),
             multi: true
         }
     ]
 })
-export class ParameterDocumentPath implements ControlValueAccessor {
+export class ParameterDocumentPathComponent implements ControlValueAccessor {
     @Input() displayTooltip!: boolean;
     @Input() readonly!: boolean;
 

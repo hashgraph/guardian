@@ -108,7 +108,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public nestedBlock!: any;
     public openType: 'Root' | 'Sub' = 'Root';
     public openSettings: boolean = false;
-    public openEditibleFields: boolean = false;
+    public openEditableFields: boolean = false;
     public themes!: Theme[];
     public theme!: Theme;
     public categories: IPolicyCategory[] = [];
@@ -1737,12 +1737,12 @@ export class PolicyConfigurationComponent implements OnInit {
         this.openSettings = true;
     }
 
-    public onEditibleFields() {
+    public onEditableFields() {
         const dialogRef = this.dialogService.open(PolicyParametersConfigDialog, {
+            showHeader: false,
             width: '1024px',
-            styleClass: 'custom-dialog',
-            header: 'Policy Parameters',
-            closable: true,
+            styleClass: 'guardian-dialog',
+            contentStyle: { overflow: 'hidden' },
             data: {
                 policy: this.policyTemplate,
                 type: 'module'

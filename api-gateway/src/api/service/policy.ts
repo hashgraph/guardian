@@ -4410,9 +4410,9 @@ export class PolicyApi {
     @Auth(
         Permissions.POLICIES_POLICY_UPDATE,
         Permissions.POLICIES_POLICY_TAG,
+        Permissions.POLICIES_POLICY_READ,
         Permissions.MODULES_MODULE_UPDATE,
-        Permissions.TOOLS_TOOL_UPDATE,
-        Permissions.POLICIES_POLICY_READ
+        Permissions.TOOLS_TOOL_UPDATE
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -8243,7 +8243,7 @@ export class PolicyApi {
     )
     @ApiOperation({
         summary: 'Save policy config with values',
-        description: 'Save policy config with values to the PolicyParameters tale',
+        description: 'Save policy config with values to the PolicyParameters table',
     })
     @ApiBody({
         description: 'Policy parameters.',
@@ -8266,7 +8266,7 @@ export class PolicyApi {
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.savePolicyParameters(new EntityOwner(user), user.did, policyId, body );
+            return await engineService.savePolicyParameters(new EntityOwner(user), policyId, body);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

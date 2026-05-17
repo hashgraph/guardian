@@ -1,16 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Examples } from '../examples.js';
-import { IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PolicyEditableFieldDTO } from '@guardian/interfaces';
 
 export class PolicyParametersDTO {
-    @ApiProperty({
-        type: 'string',
-        required: true,
-        example: Examples.DB_ID
-    })
-    userId: string;
-
     @ApiProperty({
         type: 'string',
         required: true,
@@ -24,7 +18,10 @@ export class PolicyParametersDTO {
         required: false,
         isArray: true,
     })
-    @IsString()
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => PolicyEditableFieldDTO)
     config: PolicyEditableFieldDTO[];
 
     @ApiProperty({
@@ -32,16 +29,7 @@ export class PolicyParametersDTO {
         required: false,
         example: true
     })
-    @IsString()
     @IsOptional()
-    updated: boolean;
-
-    @ApiProperty({
-        type: 'string',
-        required: false,
-        example: 'Prop Value'
-    })
-    @IsString()
-    @IsOptional()
-    propValue?: string;
+    @IsBoolean()
+    updated?: boolean;
 }

@@ -1,9 +1,8 @@
-import { BasePolicyDTO, ExportMessageDTO, MockConfigDTO, MockDataDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
+import { BasePolicyDTO, ExportMessageDTO, MockConfigDTO, MockDataDTO, PoliciesValidationDTO, PolicyCommentCountDTO, PolicyCommentDTO, PolicyCommentRelationshipDTO, PolicyCommentUserDTO, PolicyDiscussionDTO, PolicyDTO, PolicyParametersDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO, SchemaDTO } from '#middlewares';
 import { IAuthUser, MockType, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEditableFieldDTO, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
 import { NewTask } from './task-manager.js';
-import { PolicyParametersDTO } from 'middlewares/validation/schemas/policy-parameters.dto.js';
 
 /**
  * Policy engine service
@@ -1880,21 +1879,21 @@ export class PolicyEngine extends NatsService {
 
     /**
      * Update policy parameters
-     * @param user
+     * @param owner
      * @param policyId
-     * @param data
+     * @param config
      */
     public async savePolicyParameters(
         owner: IOwner,
-        userDID: string,
         policyId: string,
         config: PolicyEditableFieldDTO[],
     ): Promise<PolicyParametersDTO> {
-        return await this.sendMessage(PolicyEngineEvents.SAVE_POLICY_PARAMETERS_VALUES, { owner, userDID, policyId, config });
+        return await this.sendMessage(PolicyEngineEvents.SAVE_POLICY_PARAMETERS_VALUES, { owner, policyId, config });
     }
 
     /**
      * Get policy parameters
+     * @param owner
      * @param user
      * @param policyId
      */
@@ -1902,7 +1901,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         user: IAuthUser,
         policyId: string,
-    ): Promise<any> {
+    ): Promise<PolicyEditableFieldDTO[]> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_PARAMETERS_VALUES, { owner, user, policyId });
     }
 }

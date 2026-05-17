@@ -1,23 +1,19 @@
 export class PolicyEditableFieldDTO {
-	public blockType: string;
-	public blockTag: string;
-	public propertyPath: string;
-	public visible: string[];
-	public applyTo: string[];
-	public label: string;
-	public required: boolean;
-	public shortDescription: string;
+    public blockType: string;
+    public blockTag: string;
+    public propertyPath: string;
+    public visible: string[];
+    public applyTo: string[];
+    public label: string;
+    public required: boolean;
+    public shortDescription: string;
 
-	public value?: any;
-
-	public static fromDTO(dto: PolicyEditableFieldDTO): PolicyEditableField {
-		return Object.assign(new PolicyEditableField(), dto);
-	}
+    public value?: any;
 }
 
 export class PolicyEditableField {
-	public blockType: string = '';
-	public blockTag: string = '';
+    public blockType: string = '';
+    public blockTag: string = '';
     public propertyPath: string = '';
     public visible: string[] = [];
     public applyTo: string[] = [];
@@ -26,20 +22,24 @@ export class PolicyEditableField {
     public properties: any[] = [];
     public roles: any[] = [];
     public targets: any[] = [];
-	public label: string = '';
-	public shortDescription: string = '';
+    public label: string = '';
+    public shortDescription: string = '';
 
-	toDTO(): PolicyEditableFieldDTO {
-		const dto = new PolicyEditableFieldDTO();
-		dto.blockType = this.blockType;
-		dto.blockTag = this.blockTag;
-		dto.propertyPath = this.propertyPath;
-		dto.visible = this.visible;
-		dto.applyTo = this.applyTo;
-		dto.label = this.label;
-		dto.required = this.required;
-		dto.shortDescription = this.shortDescription;
+    public static fromDTO(dto: PolicyEditableFieldDTO): PolicyEditableField {
+        return Object.assign(new PolicyEditableField(), dto);
+    }
 
-		return dto;
-	}
+    public toDTO(): PolicyEditableFieldDTO {
+        const dto = new PolicyEditableFieldDTO();
+        dto.blockType = this.blockType;
+        dto.blockTag = this.blockTag;
+        dto.propertyPath = this.propertyPath;
+        dto.visible = this.visible;
+        dto.applyTo = this.applyTo;
+        dto.label = this.label;
+        dto.required = this.required;
+        dto.shortDescription = this.shortDescription;
+
+        return dto;
+    }
 }

@@ -1,14 +1,17 @@
-import { Entity, Property} from '@mikro-orm/core';
+import { Entity, Index, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
 import { PolicyEditableFieldDTO } from '@guardian/interfaces';
+
+export type PolicyParameterPropertiesMap = Record<string, Record<string, unknown>>;
 
 /**
  * PolicyParameters collection
  */
 @Entity()
+@Index({ properties: ['userDID', 'policyId'], options: { unique: true } })
 export class PolicyParameters extends BaseEntity {
     /**
-     * User ID
+     * User DID
      */
     @Property({ nullable: false })
     userDID: string;
@@ -20,20 +23,20 @@ export class PolicyParameters extends BaseEntity {
     policyId: string;
 
     /**
-     * Config with value
+     * Config with values
      */
     @Property({ nullable: true })
     config: PolicyEditableFieldDTO[];
 
     /**
-     * Updated flag
+     * Cache-invalidation flag
      */
-    @Property({ nullable: false })
-    updated: boolean;
+    @Property({ nullable: false, default: false })
+    updated: boolean = false;
 
     /**
-     * Config with value
+     * Precomputed overlay map
      */
     @Property({ nullable: true })
-    properties?: any;
+    properties?: PolicyParameterPropertiesMap;
 }
