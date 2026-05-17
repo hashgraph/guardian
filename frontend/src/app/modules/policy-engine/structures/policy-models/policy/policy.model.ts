@@ -396,6 +396,13 @@ export class PolicyTemplate {
         this.emitUpdate();
     }
 
+    public setPolicyDocumentation(policyDocumentation: any[] | null | undefined) {
+        this.policyDocumentation = Array.isArray(policyDocumentation)
+            ? policyDocumentation
+            : [];
+        this.emitUpdate();
+    }
+
     public createStep(role: string, index: number) {
         const e = new PolicyNavigationStepModel({
             name: '',
@@ -435,6 +442,7 @@ export class PolicyTemplate {
         this._topicDescription = policy.topicDescription;
         this._projectSchema = policy.projectSchema;
         this._categories = policy.categories;
+        this.policyDocumentation = policy.policyDocumentation ?? [];
 
         this._policyRoles = [];
         if (Array.isArray(policy.policyRoles)) {

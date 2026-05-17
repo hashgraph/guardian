@@ -40,8 +40,33 @@ export function runPythonInDocker(
             reject(new Error(`Invalid sandbox image name: ${image}`));
             return;
         }
-        const timeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS || '120000', 10);
+        const timeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS, 10);
+        if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+            reject(new Error('PYTHON_SANDBOX_TIMEOUT_MS is not configured (must be a positive integer)'));
+            return;
+        }
         const containerName = `python-sandbox-${crypto.randomUUID()}`;
+
+        // Resource caps to bound a misbehaving user script: prevents OOM-killing the host,
+        // CPU saturation, and fork-bombs. Each is env-tunable so operators can size the
+        // sandbox for their workload; the defaults are conservative.
+        // Memory/CPU values are passed through to `docker run`, which validates them.
+        const memory = process.env.PYTHON_SANDBOX_MEMORY || '512m';
+        const cpus = process.env.PYTHON_SANDBOX_CPUS || '1.0';
+        const pidsLimit = process.env.PYTHON_SANDBOX_PIDS || '128';
+        // Restrict to docker's accepted formats so a typo can't smuggle in extra args.
+        if (!/^[0-9]+(\.[0-9]+)?[bkmgBKMG]?$/.test(memory)) {
+            reject(new Error(`Invalid PYTHON_SANDBOX_MEMORY value: ${memory}`));
+            return;
+        }
+        if (!/^[0-9]+(\.[0-9]+)?$/.test(cpus)) {
+            reject(new Error(`Invalid PYTHON_SANDBOX_CPUS value: ${cpus}`));
+            return;
+        }
+        if (!/^[0-9]+$/.test(pidsLimit)) {
+            reject(new Error(`Invalid PYTHON_SANDBOX_PIDS value: ${pidsLimit}`));
+            return;
+        }
 
         const args = [
             'run', '--rm', '-i',
@@ -53,6 +78,10 @@ export function runPythonInDocker(
             '--user=1001:1001',
             '--log-driver=none',
             '--pull=never',
+            `--memory=${memory}`,
+            `--memory-swap=${memory}`,
+            `--cpus=${cpus}`,
+            `--pids-limit=${pidsLimit}`,
             '--tmpfs', '/tmp:rw,noexec,nosuid,size=64m',
             image
         ];

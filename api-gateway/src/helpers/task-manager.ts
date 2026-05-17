@@ -70,6 +70,7 @@ export class TaskManager {
         [TaskAction.PREVIEW_SCHEMA_MESSAGE, 4],
         [TaskAction.CREATE_RANDOM_KEY, 3],
         [TaskAction.CONNECT_USER, 9],
+        [TaskAction.ONBOARD_USER, 9],
         [TaskAction.PREVIEW_POLICY_MESSAGE, 4],
         [TaskAction.CREATE_TOKEN, 4],
         [TaskAction.ASSOCIATE_TOKEN, 4],
@@ -335,6 +336,47 @@ export class TaskManager {
         } else {
             throw new Error(`Task ${taskId} not found.`);
         }
+    }
+
+    /**
+     * Transfer task ownership to a different user.
+     * @param taskId
+     * @param newUserId
+     * @returns {void}
+     */
+    public transferOwnership(taskId: string, newUserId: string): void {
+        const task = this.tasks[taskId];
+        if (task) {
+            task.userId = newUserId;
+        }
+    }
+
+    /**
+     * Return a sanitized onboarding task status by taskId 
+     * @param taskId
+     * @returns {object} - task data
+     */
+    public getOnboardingTask(taskId: string): object | undefined {
+        const task = this.tasks[taskId];
+        if (!task) {
+            return undefined;
+        }
+        if (task.action !== TaskAction.ONBOARD_USER) {
+            const err: any = new Error('This API only exposes onboarding tasks.');
+            err.code = 'TASK_NOT_ONBOARDING';
+            throw err;
+        }
+        // Strip sensitive result fields
+        return {
+            taskId: task.taskId,
+            action: task.action,
+            expectation: task.expectation,
+            completed: task.result != null,
+            failed: task.error != null,
+            error: task.error
+                ? { message: task.error.message ?? 'Task failed' }
+                : null,
+        };
     }
 
     /**

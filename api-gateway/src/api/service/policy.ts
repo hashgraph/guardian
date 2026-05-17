@@ -1,7 +1,7 @@
 import { Auth, AuthUser } from '#auth';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson, FilenameSanitizer } from '#helpers';
-import { IAuthUser, MockType, PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { findBlocks, IAuthUser, MockType, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, MigrationRunStatus, Permissions, PolicyHelper, PolicyStatus, TaskAction, UserRole, PolicyEditableFieldDTO } from '@guardian/interfaces';
 import {
     Body,
@@ -1487,10 +1487,21 @@ export class PolicyApi {
                     { name: 'filterByUUID', type: 'string', description: 'Filter by document UUID' },
                 ],
             };
+            const schemaByTag = new Map<string, string>(
+                entries.length
+                    ? findBlocks(policy.config, (node: any) => !!(node.tag && node.schema))
+                        .map((block: any) => [block.tag, block.schema])
+                    : []
+            );
             return entries.map((entry: any) => {
                 const getParams = getParamsByBlockType[entry.blockType] || [];
+                const rawSchemaId = schemaByTag.get(entry.target);
+                const schemaId = rawSchemaId
+                    ? rawSchemaId.replace(/^#/, '')
+                    : undefined;
                 return {
                     ...entry,
+                    ...(schemaId ? { schemaId } : {}),
                     getQueryParams: entry.method !== 'POST' ? getParams : [],
                     postQueryParams: entry.method !== 'GET' ? postParams : [],
                 };

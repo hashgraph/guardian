@@ -27,6 +27,7 @@ export enum TaskAction {
     DELETE_POLICIES = 'Delete policies',
     CLONE_POLICY = 'Clone policy',
     RESTORE_USER_PROFILE = 'Restore user profile',
+    ONBOARD_USER = 'Onboard user',
     GET_USER_TOPICS = 'Get user topics',
     CREATE_TOOL = 'Create tool',
     PUBLISH_TOOL = 'Publish tool',
@@ -35,5 +36,6 @@ export enum TaskAction {
     MIGRATE_DATA = 'Migrate data',
     PUBLISH_POLICY_LABEL = 'Publish policy label',
     APPROVE_EXTERNAL_POLICY = 'Approve external policy',
-    REJECT_EXTERNAL_POLICY = 'Reject external policy'
+    REJECT_EXTERNAL_POLICY = 'Reject external policy',
+    TRANSFER_TOKEN = 'Transfer token'
 }

@@ -1,3 +1,4 @@
+import { randomInt } from "../../../support/random";
 
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
@@ -58,7 +59,7 @@ context("Edit Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
           delete lastModule.updateDate;
           delete lastModule._id;
           lastModule.config.description = lastModule.description;
-          lastModule.config.id = Math.floor(Math.random() * 99999);
+          lastModule.config.id = randomInt(99999);
           lastModule.config.name = lastModule.name;
           lastModule.config.tag = "Module";
           lastModule.config.children = [
@@ -68,7 +69,7 @@ context("Edit Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
               children: [],
               defaultActive: true,
               events: [],
-              id: Math.floor(Math.random() * 99999),
+              id: randomInt(99999),
               permissions: [],
               tag: tagBlock
             },
@@ -78,7 +79,7 @@ context("Edit Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
               children: [],
               defaultActive: true,
               events: [],
-              id: Math.floor(Math.random() * 99999),
+              id: randomInt(99999),
               permissions: [],
               tag: tagBlock2
             }

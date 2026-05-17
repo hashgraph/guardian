@@ -37,7 +37,7 @@
         "jszip": "^3.7.1",
         "lodash.get": "^4.4.2",
         "lodash.set": "^4.3.2",
-        "mathjs": "^14.4.0",
+        "mathjs": "^15.2.0",
         "moment": "^2.29.2",
         "mongodb": "6.16.0",
         "nats": "^2.6.1",
@@ -66,6 +66,15 @@
     "license": "Apache-2.0",
     "main": "dist/index.js",
     "module": "dist/index.js",
+    "exports": {
+        ".": "./dist/index.js",
+        "./entities": "./dist/entities.js",
+        "./dist/*": "./dist/*",
+        "./package.json": "./package.json"
+    },
+    "sideEffects": [
+        "./dist/entity/**/*.js"
+    ],
     "name": "@guardian/common",
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",

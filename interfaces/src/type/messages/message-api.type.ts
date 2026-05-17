@@ -74,6 +74,7 @@ export enum MessageAPI {
     CREATE_USER_PROFILE_COMMON = 'CREATE_USER_PROFILE_COMMON',
     CREATE_USER_PROFILE_COMMON_ASYNC = 'CREATE_USER_PROFILE_COMMON_ASYNC',
     RESTORE_USER_PROFILE_COMMON_ASYNC = 'RESTORE_USER_PROFILE_COMMON_ASYNC',
+    ONBOARD_USER_ASYNC = 'ONBOARD_USER_ASYNC',
     GET_USER_PROFILE = 'GET_USER_PROFILE',
     GET_USER_BALANCE = 'GET_USER_BALANCE',
     GET_USER_BALANCE_REST = 'GET_USER_BALANCE_REST',
@@ -313,6 +314,9 @@ export enum MessageAPI {
     SET_CREDENTIAL = 'SET_CREDENTIAL',
     GET_CREDENTIALS = 'GET_CREDENTIALS',
     DELETE_CREDENTIAL = 'DELETE_CREDENTIAL',
+
+    TRANSFER_TOKEN = 'TRANSFER_TOKEN',
+    TRANSFER_TOKEN_ASYNC = 'TRANSFER_TOKEN_ASYNC',
 }
 
 /**
@@ -324,6 +328,7 @@ export enum ExternalMessageEvents {
     TOKEN_MINT_FAILED = 'external-events.token_mint_failed',
     ERROR_LOG = 'external-events.error_logs',
     BLOCK_EVENTS = 'external-events.block_event',
+    BLOCK_COMPLETE = 'external-events.block_complete',
     IPFS_ADDED_FILE = 'external-events.ipfs_added_file',
     IPFS_BEFORE_UPLOAD_CONTENT = 'external-events.ipfs_before_upload_content',
     IPFS_AFTER_READ_CONTENT = 'external-events.ipfs_after_read_content',

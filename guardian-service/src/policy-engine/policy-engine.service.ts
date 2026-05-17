@@ -51,6 +51,7 @@ import {
     EntityOwner,
     ExternalMessageEvents,
     GenerateUUIDv4,
+    IBlockCompleteEvent,
     IOwner,
     PolicyEngineEvents,
     PolicyEvents,
@@ -70,7 +71,8 @@ import {
     MigrationRunStatus,
     MintTransactionStatus,
     TokenType,
-    IPolicyDocumentationEntry
+    IPolicyDocumentationEntry,
+    POLICY_ALIAS_REGEX
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
@@ -102,10 +104,12 @@ function buildDocumentationUrls(
     return entries.map((entry) => {
         const tag = entry.target;
         const alias = entry.alias;
-        const method = entry.method;
-        const technicalUrl = method === 'POST'
-            ? `/api/v1/policies/${policyId}/tag/${tag}/blocks`
-            : `/api/v1/policies/${policyId}/tag/${tag}`;
+        if (!alias || !POLICY_ALIAS_REGEX.test(alias)) {
+            throw new Error(
+                `Invalid alias "${alias}" — only lowercase letters, digits, hyphens; segments separated by '/'.`
+            );
+        }
+        const technicalUrl = `/api/v1/policies/${policyId}/tag/${tag}/blocks`;
         const dmrvUrl = `/api/v1/dmrv/${policyId}/${alias}`;
         return {
             ...entry,
@@ -386,6 +390,15 @@ export class PolicyEngineService {
                 const policy = await DatabaseServer.getPolicyById(msg.policyId);
                 if (policy) {
                     this.channel.publish('update-restore', msg);
+                }
+            })
+
+        this.channel.getMessages(PolicyEvents.BLOCK_COMPLETE_BROADCAST,
+            (msg: IBlockCompleteEvent) => {
+                try {
+                    this.channel.sendMessage(ExternalMessageEvents.BLOCK_COMPLETE, msg, false);
+                } catch (error) {
+                    console.error('Error relaying BLOCK_COMPLETE_BROADCAST:', error);
                 }
             })
 

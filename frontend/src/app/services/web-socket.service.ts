@@ -476,9 +476,6 @@ export class WebSocketService {
         error?: (error: any) => void,
         complete?: () => void
     ) {
-        if (this.updateNotification.observers.length > 0) {
-            this.updateNotification = new Subject();
-        }
         return this.updateNotification.subscribe(next, error, complete);
     }
 
@@ -489,9 +486,6 @@ export class WebSocketService {
         error?: (error: any) => void,
         complete?: () => void
     ) {
-        if (this.deleteNotification.observers.length > 0) {
-            this.deleteNotification = new Subject();
-        }
         return this.deleteNotification.subscribe(next, error, complete);
     }
 
@@ -502,9 +496,6 @@ export class WebSocketService {
         error?: (error: any) => void,
         complete?: () => void
     ) {
-        if (this.createProgress.observers.length > 0) {
-            this.createProgress = new Subject();
-        }
         return this.createProgress.subscribe(next, error, complete);
     }
 
@@ -515,9 +506,6 @@ export class WebSocketService {
         error?: (error: any) => void,
         complete?: () => void
     ) {
-        if (this.updateProgress.observers.length > 0) {
-            this.updateProgress = new Subject();
-        }
         return this.updateProgress.subscribe(next, error, complete);
     }
 
@@ -528,9 +516,6 @@ export class WebSocketService {
         error?: (error: any) => void,
         complete?: () => void
     ) {
-        if (this.deleteProgress.observers.length > 0) {
-            this.deleteProgress = new Subject();
-        }
         return this.deleteProgress.subscribe(next, error, complete);
     }
 

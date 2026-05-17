@@ -124,7 +124,7 @@ services:
       - '5007'
 
   ipfs-node:
-    image: ipfs/kubo:v0.39.0
+    image: ipfs/kubo:v0.41.0
     volumes:
       - ipfs_data:/data/ipfs:rw
       - ipfs_export:/export:rw
