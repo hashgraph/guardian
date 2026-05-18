@@ -107,7 +107,7 @@ Two messages are sent:
 1. Message 1 → `commodityType = BEEF`
 2. Message 2 → `commodityType = DAIRY`
 
-<figure><img src="../../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
 

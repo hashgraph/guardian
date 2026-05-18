@@ -1,6 +1,6 @@
 # mathBlock
 
-The _mathBlock_ lets you to define calculations on document data in mathematical notation to be performed directly, without the need or optionally with limited use of coding.
+The _mathBlock_ (also known as _formula calculation block or FCB_) lets you to define calculations on document data in mathematical notation to be performed directly, without the need or optionally with limited use of coding.
 
 <figure><img src="../../../../../.gitbook/assets/image (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -21,9 +21,9 @@ Expression definition is guided by a wizard with in-place test execution, allowi
 
 Use this section to map fields from the input document to short variable names that you can reference in formulas.
 
-<figure><img src="../../../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
-
 <figure><img src="../../../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note 1**: A variable in a formula may reference data from any field in any document, not just the input document itself. However, the referenced document must be associated with the input document (i.e. be part of its 'relationships' chain). If no such relationship exists, the value cannot be resolved at runtime, which may lead to unpredictable or undefined behavior.
@@ -39,7 +39,7 @@ This section provides UI to defined formulas using standard mathematical notatio
 
 <figure><img src="../../../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-**2.1 Formula defintion**
+**2.1 Formula definition**
 
 To define a formula, complete the following steps:
 
@@ -70,7 +70,7 @@ You can reuse defined formulas in other formulas (by name) and in the code on th
 
 When parentheses are not included after the name (e.g., x vs. x()), it is treated as a variable definition. The variable value is calculated at initialization time.
 
-<figure><img src="../../../../../.gitbook/assets/image (6) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (6) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **2.3 Supported Compute Engine Functions**
 

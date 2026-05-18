@@ -339,6 +339,9 @@
         * [Get policy documents. Only users with the Standard Registry role are allowed to request this](guardian/standard-registry/policies/policy-creation/apis-for-asynchronous-execution/get-policy-documents.-only-users-with-the-standard-registry-role-are-allowed-to-request-this.md)
         * [Get policy documents with filters](guardian/standard-registry/policies/policy-creation/apis-for-asynchronous-execution/get-policy-documents-with-filters.md)
         * [Remove multiple policies by their IDs.](guardian/standard-registry/policies/policy-creation/apis-for-asynchronous-execution/remove-multiple-policies-by-their-ids..md)
+        * [Checks whether the user is disconnected from the policy or not](guardian/standard-registry/policies/policy-creation/apis-for-asynchronous-execution/checks-whether-the-user-is-disconnected-from-the-policy-or-not.md)
+        * [Disconnects the user from the selected policy.](guardian/standard-registry/policies/policy-creation/apis-for-asynchronous-execution/disconnects-the-user-from-the-selected-policy..md)
+        * [Restores the user’s participation in the policy after disconnection](guardian/standard-registry/policies/policy-creation/apis-for-asynchronous-execution/restores-the-users-participation-in-the-policy-after-disconnection.md)
     * [Dry Run](guardian/standard-registry/policies/dry-run/README.md)
       * [Dry Run Mode using UI](guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations.md)
       * [Dry Run Mode using APIs](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/README.md)
@@ -703,6 +706,10 @@
       * [Getting Policy Tag Block Map](guardian/standard-registry/live-project-data-migration/apis-related-to-live-project-data-migration/getting-policy-tag-block-map.md)
       * [Getting Policy Virtual Keys](guardian/standard-registry/live-project-data-migration/apis-related-to-live-project-data-migration/getting-policy-virtual-keys.md)
       * [Uploading Policy Virtual Keys](guardian/standard-registry/live-project-data-migration/apis-related-to-live-project-data-migration/uploading-policy-virtual-keys.md)
+      * [Resume migration asynchronous.](guardian/standard-registry/live-project-data-migration/apis-related-to-live-project-data-migration/resume-migration-asynchronous..md)
+      * [Retry failed migration items asynchronous](guardian/standard-registry/live-project-data-migration/apis-related-to-live-project-data-migration/retry-failed-migration-items-asynchronous.md)
+      * [Returns latest migration run status for source/destination pair.](guardian/standard-registry/live-project-data-migration/apis-related-to-live-project-data-migration/returns-latest-migration-run-status-for-source-destination-pair..md)
+      * [Returns migration runs](guardian/standard-registry/live-project-data-migration/apis-related-to-live-project-data-migration/returns-migration-runs.md)
   * [FireBlocks Raw Signing](guardian/standard-registry/fireblocks-raw-signing/README.md)
     * [Fireblocks signing in Guardian UI](guardian/standard-registry/fireblocks-raw-signing/fireblocks-signing-in-guardian-ui.md)
     * [Getting Keys from FireBlocks UI](guardian/standard-registry/fireblocks-raw-signing/getting-keys-from-fireblocks-ui.md)
@@ -801,6 +808,8 @@
     * [Returns the list of existing keys](guardian/decentralized-guardian/apis/returns-the-list-of-existing-keys.md)
     * [Creates a new key](guardian/decentralized-guardian/apis/creates-a-new-key.md)
     * [Deletes the key with the specified ID](guardian/decentralized-guardian/apis/deletes-the-key-with-the-specified-id.md)
+    * [Disconnects the user from the selected remote policy on the current Guardian instance only.](guardian/decentralized-guardian/apis/disconnects-the-user-from-the-selected-remote-policy-on-the-current-guardian-instance-only..md)
+    * [Remove Remote Policy](guardian/decentralized-guardian/apis/remove-remote-policy.md)
 * [Complex iterative review and approval workflows](guardian/complex-iterative-review-and-approval-workflows/README.md)
   * [Demo using UI](guardian/complex-iterative-review-and-approval-workflows/demo-using-ui.md)
   * [Demo using VM0033](guardian/complex-iterative-review-and-approval-workflows/demo-using-vm0033.md)
@@ -1051,6 +1060,15 @@
     * [🔗 VM0033 Integration](methodology-digitization-handbook/_shared/vm0033-integration/README.md)
     * [⚙️ Guardian Integration](methodology-digitization-handbook/_shared/guardian-integration/README.md)
     * [🗂️ Artifacts Collection](methodology-digitization-handbook/_shared/artifacts/README.md)
+
+## AI-ToolKit
+
+* [Hedera Guardian AI Toolkit](ai-toolkit/hedera-guardian-ai-toolkit.md)
+* [Repository and Architecture Walkthrough](ai-toolkit/repository-and-architecture-walkthrough.md)
+* [Installation and Setup from Zero](ai-toolkit/installation-and-setup-from-zero.md)
+* [First Ingestion and Semantic Search](ai-toolkit/first-ingestion-and-semantic-search.md)
+* [Schema and Formula Generation](ai-toolkit/schema-and-formula-generation.md)
+* [Mapping and Transformation](ai-toolkit/mapping-and-transformation.md)
 
 ***
 

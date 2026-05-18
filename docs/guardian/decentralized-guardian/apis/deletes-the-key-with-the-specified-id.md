@@ -4,10 +4,6 @@
 delete /profiles/keys/{id}
 ```
 
-```yaml
-Deletes the key with the provided ID.
-```
-
 **Headers**
 
 | Name          | Value              |
@@ -17,7 +13,7 @@ Deletes the key with the provided ID.
 
 **Body**
 
-<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>id</td><td>string</td><td><p></p><pre class="language-yaml"><code class="lang-yaml">Key Identifier
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>id</td><td>string</td><td><pre class="language-yaml"><code class="lang-yaml">Key Identifier
 </code></pre></td></tr></tbody></table>
 
 **Response**

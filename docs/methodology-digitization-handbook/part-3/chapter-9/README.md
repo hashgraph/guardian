@@ -64,9 +64,9 @@ The first functional field should be your primary conditional logic driver. For 
 Row 5: Yes | Enum | Choose project certific (enum) | | Choose project certification type | No | VCS v4.4
 ```
 
-This creates an enum field that determines which additional requirements appear. The parameter reference "Choose project certific (enum)" points to a separate enum tab defining the options.
+This creates an enum field that determines which additional requirements appear. The parameter reference "Choose project certificate (enum)" points to a separate enum tab defining the options.
 
-**Create the Enum Tab**: Add a new worksheet named "Choose project certific (enum)" with(sheet names might be trimmed to accomodate excel's limitations):
+**Create the Enum Tab**: Add a new worksheet named "Choose project certificate (enum)" with(sheet names might be trimmed to accommodate excel's limitations):
 
 ```excel
 Schema name | Project Description (Auto)

@@ -36,13 +36,13 @@ Example:
 
 <figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-Selecting ‘Custom DID document’ option enables the dialogue text window where the externally-generated/controlled DID document can be pasted from the clip-board. The document must contain Ed25519VerificationKey2018 and Bls12381G2Key2020 verification methods to be useable by Guardian.
+Selecting ‘Custom DID document’ option enables the dialogue text window where the externally-generated/controlled DID document can be pasted from the clip-board. The document must contain Ed25519VerificationKey2018 and Bls12381G2Key2020 verification methods to be usable by Guardian.
 
 ### 1.3 Keys
 
-<figure><img src="../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 For BYO DID of Standard Registries, in the cases where there are multiple verification methods Standard Registry users are required to specify which one of them is to be used in Guardian, and pass the corresponding private key into Guardian to be used for signatures.
 
@@ -86,4 +86,4 @@ For more details, please refer to section [1.3](bring-your-own-byo-dids-ui.md#id
 
 ## 2. Demo Video
 
-[Youtube](https://youtu.be/VVwHSu4LJ_w?si=warN7AxOVopv85G4\&t=117)
+[YouTube](https://youtu.be/VVwHSu4LJ_w?si=warN7AxOVopv85G4\&t=117)

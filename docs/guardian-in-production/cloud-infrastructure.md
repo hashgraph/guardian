@@ -31,7 +31,7 @@ Apache Mesos is a distributed systems kernel that can manage both containers and
 
 **Kubernetes: it can also help to manage and automate container deployments across multiple cloud environments. In fact, Kubernetes has become the standard for services/microservices architecture and our best option for faster support on different cloud providers.**
 
-**Almost every cloud provider has its own implementation of managed kubernetes clusters, which eases the cluster creation and management, and withdrAWS the responsibility to the final user of maintaining the control plane and the worker nodes.**
+**Almost every cloud provider has its own implementation of managed kubernetes clusters, which eases the cluster creation and management, and withdraws the responsibility to the final user of maintaining the control plane and the worker nodes.**
 
 ### Kubernetes packages
 

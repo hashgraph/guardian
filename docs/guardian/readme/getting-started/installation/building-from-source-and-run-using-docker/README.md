@@ -169,7 +169,7 @@ For each service, you must add its secret key \`SERVICE\_JWT\_SECRET\_KEY\` and 
 {% endhint %}
 
 {% hint style="info" %}
-Note: Please use the appropriate Private Key and Public Key as shown in the above iimage.
+Note: Please use the appropriate Private Key and Public Key as shown in the above image.
 {% endhint %}
 
 ## 4. Setup IPFS
