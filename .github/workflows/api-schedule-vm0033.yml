@@ -82,7 +82,7 @@ jobs:
           port: '4222'
 
       - name: Start MongoDB
-        uses: step-security/mongodb-github-action@3079b134a6a02ea8b7b0d6005165a95c78593d63 # v1.12.4
+        uses: step-security/mongodb-github-action@ca72004b9c8ad6d9ed996c3174edbe62f9f7424a
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
 

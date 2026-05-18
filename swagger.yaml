@@ -24521,7 +24521,7 @@ paths:
         - policies
   /policies/{policyId}/parameters:
     post:
-      description: Save policy config with values to the PolicyParameters tale
+      description: Save policy config with values to the PolicyParameters table
       operationId: PolicyApi_savePolicyParametersValues
       parameters:
         - name: policyId
@@ -24623,7 +24623,6 @@ paths:
       summary: Get policy parameters.
       tags:
         - policies
-
   /dmrv/{policyId}/{path}:
     get:
       description: >-
@@ -55315,9 +55314,6 @@ components:
     PolicyParametersDTO:
       type: object
       properties:
-        userId:
-          type: string
-          example: 69aeb71ef8c5b278e3bab4e5
         policyId:
           type: string
           example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
@@ -55328,11 +55324,7 @@ components:
         updated:
           type: boolean
           example: true
-        propValue:
-          type: string
-          example: Prop Value
       required:
-        - userId
         - policyId
     SchemaParentDTO:
       type: object
