@@ -1,5 +1,14 @@
 frontend/.nuxt/**/*
 frontend/.output/**/*
 *.sql
+*.sql.gz
 data/policy-zips/**/*
 policy.json
+
+# Snapshot bundles (built by scripts/export-snapshot.sh).
+# The directory itself is kept (we ship the .gitkeep so the bind mount has a
+# target) but generated dumps and shipped tarballs stay out of git.
+snapshot/postgres-init/*.sql
+snapshot/postgres-init/*.sql.gz
+snapshot/policy-zips/
+sustainable-explorer-snapshot-*.tar.gz
