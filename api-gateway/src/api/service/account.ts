@@ -323,8 +323,8 @@ export class AccountApi {
         taskManager.registerCallback(task, async (completedTask) => {
             if (completedTask.result?.username) {
                 try {
-                    const users = new Users();
-                    const newUser = await users.getUser(completedTask.result.username, parentUser?.id ?? null);
+                    const usersService = new Users();
+                    const newUser = await usersService.getUser(completedTask.result.username, parentUser?.id ?? null);
                     if (newUser?.id) {
                         taskManager.transferOwnership(task.taskId, newUser.id);
                     }
