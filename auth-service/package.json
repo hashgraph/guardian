@@ -19,7 +19,7 @@
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
         "@sendgrid/mail": "^7.7.0",
-        "axios": "^1.8.3",
+        "axios": "^1.15.2",
         "base-x": "^4.0.0",
         "base64url": "^3.0.1",
         "cron": "^2.4.0",
