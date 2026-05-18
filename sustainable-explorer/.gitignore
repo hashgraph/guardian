@@ -12,3 +12,7 @@ snapshot/postgres-init/*.sql
 snapshot/postgres-init/*.sql.gz
 snapshot/policy-zips/
 sustainable-explorer-snapshot-*.tar.gz
+
+# Production compose overlay — kept out of git so per-deployment tweaks
+# (cors origins, public URLs, redict eviction policy, etc.) don't leak.
+docker-compose.prod.yml

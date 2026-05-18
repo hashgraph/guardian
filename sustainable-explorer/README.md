@@ -177,6 +177,12 @@ Add `proxy_buffering off;` to the nginx location block serving `/api/v1/*/queues
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — Data pipeline architecture, deduplication, leader election, horizontal scaling, business data mapping
 - **[.env.example](.env.example)** — All environment variables with descriptions
 
+
+## DB and IPFS Snapshot
+https://xeptagoncom-my.sharepoint.com/:u:/g/personal/palinda_xeptagon_com/IQDgenk8E_kZS4H29G2iumB_AafSq97wjvL8_ZliYnbs0U0?e=1d3GId
+wget --content-disposition --trust-server-names \
+"https://xeptagoncom-my.sharepoint.com/:u:/g/personal/palinda_xeptagon_com/IQDgenk8E_kZS4H29G2iumB_AafSq97wjvL8_ZliYnbs0U0?e=1d3GId&download=1"
+
 ## License
 
 Apache-2.0 (same as Guardian)

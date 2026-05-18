@@ -39,18 +39,47 @@ fi
 
 mkdir -p "$SNAPSHOT_DIR/postgres-init" "$SNAPSHOT_DIR/policy-zips"
 
-echo "==> Dumping all databases from '$POSTGRES_CONTAINER' as user '$DB_USER'..."
-# pg_dumpall captures CREATE ROLE + CREATE DATABASE + per-DB contents in one
-# stream, which the postgres image will re-apply on first init when the data
-# volume is empty (files under /docker-entrypoint-initdb.d are executed in
-# lexical order and *.sql.gz is auto-gunzipped).
-docker exec "$POSTGRES_CONTAINER" \
-    pg_dumpall \
-        --clean \
-        --if-exists \
-        --no-role-passwords \
-        -U "$DB_USER" \
-    | gzip -9 > "$SNAPSHOT_DIR/postgres-init/01-restore.sql.gz"
+echo "==> Dumping per-network databases from '$POSTGRES_CONTAINER' as user '$DB_USER'..."
+# Per-DB pg_dump --create --clean --if-exists, *not* pg_dumpall:
+#
+# The receiving postgres image runs init scripts AS `$DB_USER` (POSTGRES_USER),
+# and that role is provisioned by initdb before the script runs. So role
+# management from pg_dumpall would either (a) try to DROP ROLE explorer —
+# which fails with "current user cannot be dropped" and aborts the whole
+# import under ON_ERROR_STOP=1, or (b) try to CREATE ROLE explorer which
+# already exists.
+#
+# Per-DB dumps with --create emit DROP DATABASE IF EXISTS + CREATE DATABASE +
+# \connect + contents for each app database. Roles are never touched.
+DB_LIST=$(docker exec "$POSTGRES_CONTAINER" \
+    psql -U "$DB_USER" -d postgres -tAc \
+    "SELECT datname FROM pg_database
+     WHERE datistemplate = false
+       AND datname NOT IN ('postgres')
+     ORDER BY datname")
+
+if [ -z "$DB_LIST" ]; then
+    echo "ERROR: no user databases found in '$POSTGRES_CONTAINER'."
+    echo "       Did the workers run long enough to create their per-network DBs?"
+    exit 1
+fi
+
+{
+    # Each pg_dump --create output starts with \connect template1 to issue
+    # DROP/CREATE DATABASE from outside the target; concatenating them is safe.
+    for db in $DB_LIST; do
+        echo "--   $db" >&2
+        docker exec "$POSTGRES_CONTAINER" \
+            pg_dump \
+                --create \
+                --clean \
+                --if-exists \
+                --no-owner \
+                --no-privileges \
+                -U "$DB_USER" \
+                "$db"
+    done
+} | gzip -9 > "$SNAPSHOT_DIR/postgres-init/01-restore.sql.gz"
 
 DB_SIZE="$(du -h "$SNAPSHOT_DIR/postgres-init/01-restore.sql.gz" | cut -f1)"
 echo "    wrote $SNAPSHOT_DIR/postgres-init/01-restore.sql.gz ($DB_SIZE)"
