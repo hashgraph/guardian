@@ -210,23 +210,25 @@ export class RequestDocumentBlockAddonComponent
                 ref: this.ref?.id,
             };
 
-            if (this.dryRun && this.policyTest.state.captureNextFormSubmit) {
-                this.policyTest.captureTestCase({
-                    policyId: this.policyId,
-                    blockId: this.id,
-                    blockType: 'requestDocumentBlockAddon',
-                    ...payload
-                });
-            }
+            const captureOutput = this.dryRun && this.policyTest.state.captureNextFormSubmit;
 
             this.dialogRef.close();
             this.dialogRef = null;
             this.loading = true;
             this.policyEngineService
-                .setBlockData(this.id, this.policyId, payload)
+                .setBlockDataWithResult(this.id, this.policyId, payload)
                 .subscribe(
-                    // tslint:disable-next-line:no-empty
-                    () => { },
+                    (result) => {
+                        if (captureOutput) {
+                            this.policyTest.captureTestCase({
+                                policyId: this.policyId,
+                                blockId: this.id,
+                                blockType: 'requestDocumentBlockAddon',
+                                ...payload,
+                                result: result?.result || result?.response
+                            });
+                        }
+                    },
                     (e) => {
                         this.loading = false;
                     }
