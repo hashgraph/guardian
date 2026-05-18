@@ -504,6 +504,35 @@ export class ProjectMapperService {
             ],
         );
 
+        // Orphan-registration cleanup.
+        //
+        // During fresh ingest IPFS fetches arrive in order, so an early
+        // project-schema VC (e.g. cs.id=Yn886) gets processed BEFORE the
+        // newer canonical (cs.id=A9oX7) lands. At that moment
+        // findCanonicalProjectSchemaCsIdInTopic returns Yn886 (the only
+        // project-schema VC in the topic so far) and seeds a Yn886 row.
+        // When A9oX7 arrives later, its row is created — but the Yn886
+        // orphan stays behind. Sweep it here, scoped to project-schema VCs
+        // only: delete any sibling PROJECT row in the same topic whose
+        // projectKey is NOT referenced by any VC's cs.ref. Genuinely
+        // distinct chain roots in the same topic (e.g. Regenerating
+        // Rajasthan's 554b459b + c21ef213) both have downstream refs, so
+        // neither is deleted.
+        if (isProjectSchemaVc) {
+            await this.dataSource.query(
+                `DELETE FROM business_view bv
+                 WHERE bv."viewType" = 'PROJECT'
+                   AND bv."relatedTopicId" = $1
+                   AND bv."projectKey" <> $2
+                   AND NOT EXISTS (
+                     SELECT 1 FROM message m
+                     WHERE m.type = 'VC-Document'
+                       AND m.documents->'credentialSubject'->0->>'ref' = bv."projectKey"
+                   )`,
+                [vc.topicId, projectKey],
+            );
+        }
+
         this.logger.debug(
             `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} key=${projectKey} ` +
             `fields=[${Object.keys(extracted).join(',')}] credits=${creditsToAdd}`,

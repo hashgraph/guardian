@@ -39,9 +39,21 @@ export const MV_REGISTRY_STATS_CREATE_SQL = `
               AND p."decodeStatus" IS NULL
         ) AS methodology_decode_unknown_count
     FROM business_view bv
-    LEFT JOIN policy p
-           ON p."policyTopicId" = bv."businessData"->>'topicId'
-          AND bv."viewType" = 'METHODOLOGY'
+    -- LATERAL join with LIMIT 1 so a topic with multiple policy versions
+    -- contributes a single row per methodology. Without this the plain join
+    -- multiplied each METHODOLOGY by its policy-version count, inflating
+    -- policy_count and the decode-status buckets (e.g. Gold Standard showed
+    -- 4 methodologies on the registry card vs 2 on the methodologies page).
+    -- Selection rule mirrors PgPolicySchemaRepository.findDecoded: prefer
+    -- the decoded row, then the most recently updated one.
+    LEFT JOIN LATERAL (
+        SELECT pp."decodeStatus"
+        FROM policy pp
+        WHERE pp."policyTopicId" = bv."businessData"->>'topicId'
+        ORDER BY (pp."decodeStatus" = 'decoded') DESC NULLS LAST,
+                 pp."updatedAt" DESC NULLS LAST
+        LIMIT 1
+    ) p ON bv."viewType" = 'METHODOLOGY'
     WHERE bv."registryDid" IS NOT NULL
       AND bv."viewType" IN ('METHODOLOGY', 'PROJECT', 'CREDIT')
     GROUP BY bv."registryDid";

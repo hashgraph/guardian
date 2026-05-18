@@ -25,7 +25,7 @@ export class IpfsService {
      * CIDv0 (Qm...) → CIDv1 (bafy...)
      * CIDv1 passes through unchanged.
      */
-    private toV1Base32(cid: string): string {
+    toV1Base32(cid: string): string {
         try {
             return new CID(cid).toV1().toString('base32');
         } catch {
@@ -47,13 +47,17 @@ export class IpfsService {
      */
     async fetchContent(cid: string): Promise<Buffer> {
         const v1Cid = this.toV1Base32(cid);
-        if (this.gateways.length === 0) {
-            throw new Error(`No IPFS gateways configured for CID ${cid}`);
+
+        // Local-zip cache lookup. Use the canonical v1 base32 form so cache
+        // hits work regardless of whether the caller passed a v0 (`Qm…`) or
+        // v1 (`bafy…`) CID — the on-disk files are named by v1.
+        if (await this.zipStorage.exists(v1Cid)) {
+            this.logger.debug(`zip cache hit for cid=${cid} (v1=${v1Cid})`);
+            return this.zipStorage.read(v1Cid);
         }
 
-        if (await this.zipStorage.exists(cid)) {
-            this.logger.debug(`zip cache hit for cid=${cid}`);
-            return this.zipStorage.read(cid);
+        if (this.gateways.length === 0) {
+            throw new Error(`No IPFS gateways configured for CID ${cid}`);
         }
 
         const controllers = this.gateways.map(() => new AbortController());
@@ -89,6 +93,19 @@ export class IpfsService {
             controllers.forEach((c) => {
                 try { c.abort(); } catch { /* noop */ }
             });
+            // Persist every successful gateway fetch to the local cache (VC
+            // documents AND policy zips). Subsequent restarts replay from disk
+            // when gateways are down — operators can also pre-seed the
+            // directory with archived bundles. Best-effort: a disk error
+            // shouldn't fail the in-memory fetch the caller is waiting on.
+            try {
+                await this.zipStorage.write(v1Cid, result);
+            } catch (err) {
+                this.logger.warn(
+                    `Failed to write IPFS content to local cache cid=${cid} (v1=${v1Cid}): ` +
+                    `${err instanceof Error ? err.message : String(err)}`,
+                );
+            }
             return result;
         } catch {
             throw new Error(

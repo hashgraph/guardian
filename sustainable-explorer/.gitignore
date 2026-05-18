@@ -2,3 +2,4 @@ frontend/.nuxt/**/*
 frontend/.output/**/*
 *.sql
 data/policy-zips/**/*
+policy.json

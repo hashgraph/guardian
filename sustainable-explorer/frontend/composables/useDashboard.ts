@@ -1,10 +1,25 @@
 import type { ActivityItem, MapPoint, MapCountry } from '~/types/models';
 import { SectorType } from '~/types/enums';
 import { formatCredits } from '~/lib/format';
+import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
+
+// Reverse of COUNTRY_ALPHA3 — used to display the human-readable name when a
+// project's country came from reverse-geocoding (we have the ISO3 but not
+// the original raw.country string).
+const CODE_TO_COUNTRY: Record<string, string> = Object.fromEntries(
+    Object.entries(COUNTRY_ALPHA3).map(([name, code]) => [code, name]),
+);
 
 export function useDashboard(filters?: Ref<{ developer?: string; registry?: string }>) {
     const { projects, pending } = useProjects();
     const { t } = useI18n();
+
+    // Reverse-geocode projects whose country field was empty or unrecognized
+    // (countryCode === 'UNK') but that carry valid lat/lng. The composable
+    // populates a module-level cache asynchronously via Nominatim; bucketing
+    // below uses `resolvedCode(p)` so the dashboard map gets the same country
+    // labels the projects table already shows.
+    const { resolvedCode } = useGeocodedCountries(projects);
 
     function relativeTime(dateStr: string): string {
         const now = Date.now();
@@ -118,10 +133,16 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         }> = {};
 
         for (const p of filteredProjects.value) {
-            const code = p.countryCode || 'UNK';
+            // Prefer the reverse-geocoded code when the project's own country
+            // was empty/garbage but its coordinates resolve. Falls back to
+            // p.countryCode (which is 'UNK' for unresolved cases).
+            const code = resolvedCode(p) || p.countryCode || 'UNK';
+            const name = code === 'UNK'
+                ? 'Unknown'
+                : (code === p.countryCode ? p.country : (CODE_TO_COUNTRY[code] || p.country || code));
             if (!countryMap[code]) {
                 countryMap[code] = {
-                    name: code === 'UNK' ? 'Unknown' : p.country,
+                    name,
                     flag: code === 'UNK' ? '' : p.flag,
                     code,
                     projects: 0,
@@ -371,7 +392,9 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         const countryData = countries.value.find(c => c.code === code);
         if (!countryData) return null;
 
-        const countryProjects = filteredProjects.value.filter(p => p.countryCode === code);
+        // Match by the same code source used during bucketing so the detail
+        // panel covers projects that were reverse-geocoded onto this country.
+        const countryProjects = filteredProjects.value.filter(p => (resolvedCode(p) || p.countryCode) === code);
         const totalProjects = countryProjects.length;
 
         // Per-bucket counts AND credits. Percentages prefer credit weighting when

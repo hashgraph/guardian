@@ -209,13 +209,12 @@ export class PolicyDecodeProcessor extends WorkerHost {
     // -----------------------------------------------------------------------
 
     private async loadZip(cid: string): Promise<Buffer> {
-        if (await this.zipStorage.exists(cid)) {
-            this.logger.debug(`zip cache hit for cid=${cid}`);
-            return this.zipStorage.read(cid);
-        }
-        const buffer = await this.ipfsService.fetchContent(cid);
-        await this.zipStorage.write(cid, buffer);
-        return buffer;
+        // IpfsService.fetchContent handles both the cache lookup and the
+        // post-fetch cache write internally (normalizing to v1 base32), so
+        // this method is just a thin pass-through. Keeping it for symmetry
+        // with the rest of the processor and to centralize future zip-only
+        // concerns (e.g. content validation).
+        return this.ipfsService.fetchContent(cid);
     }
 
     private async readJsonFile(zip: JSZip, path: string): Promise<Record<string, unknown> | null> {
