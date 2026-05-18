@@ -142,13 +142,32 @@ function renderPoints() {
     }
 }
 
+let resizeObserver: ResizeObserver | null = null;
+
 onMounted(async () => {
     await nextTick();
     await initMap();
     // Leaflet needs a size recalc after the container is laid out
     setTimeout(() => { map?.invalidateSize(); }, 100);
+
+    // Re-invalidate on parent resize. The dashboard's side panel slides in/out
+    // and changes the map area's width; without this, tiles render offset and
+    // the country shapes appear in the wrong place until the next interaction.
+    if (mapContainer.value && typeof ResizeObserver !== 'undefined') {
+        resizeObserver = new ResizeObserver(() => {
+            map?.invalidateSize();
+        });
+        resizeObserver.observe(mapContainer.value);
+    }
 });
-onUnmounted(() => { map?.remove(); map = null; geoLayer = null; pointsLayer = null; });
+onUnmounted(() => {
+    resizeObserver?.disconnect();
+    resizeObserver = null;
+    map?.remove();
+    map = null;
+    geoLayer = null;
+    pointsLayer = null;
+});
 
 // Re-style country shapes when the data arrives or changes after initial mount.
 // Without this, the map paints countries with `projects = 0` (transparent) on

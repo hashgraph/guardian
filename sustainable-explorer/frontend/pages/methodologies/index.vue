@@ -42,6 +42,14 @@ const initialFilters: Record<string, any> = {};
 if (route.query.registryDid && typeof route.query.registryDid === "string") {
   initialFilters.registryDid = route.query.registryDid;
 }
+// Dashboard top-registries row links here with registryName=<display name>
+// so the user lands on the methodologies list pre-filtered to that registry.
+if (route.query.registryName && typeof route.query.registryName === "string") {
+  initialFilters.registryName = route.query.registryName;
+}
+if (route.query.name && typeof route.query.name === "string") {
+  initialFilters.name = route.query.name;
+}
 const filters = ref<Record<string, any>>(initialFilters);
 const currentPage = ref(1);
 const pageSize = ref(10);

@@ -201,6 +201,25 @@ function onCountryClick(code: string) {
     selectedCountry.value = selectedCountry.value === code ? null : code;
 }
 
+// Route helpers for dashboard click-through navigation.
+//
+// Country table → projects page filtered by the country's display name. UNK
+// (the "Unknown" bucket) has no meaningful country query, so caller short-
+// circuits on c.code !== 'UNK' before invoking navigate().
+function countryRouteFor(c: { name: string; code: string }) {
+    if (c.code === 'UNK') return { path: '/projects' };
+    return { path: '/projects', query: { country: c.name } };
+}
+
+// Sector legend → projects page filtered by sector. Untranslated label is
+// what the API stores, so pass it verbatim. The "Other" aggregate bin (used
+// when there are >15 sectors) has no canonical filter — link to the
+// unfiltered list in that case.
+function sectorRouteFor(label: string) {
+    if (label === t('dashboard.otherCategory')) return { path: '/projects' };
+    return { path: '/projects', query: { sector: label } };
+}
+
 // Activity icons mapping
 const activityIcons: Record<string, any> = {
     project: Plus,
@@ -476,7 +495,9 @@ const filteredStats = computed(() => {
             <div class="px-6 pb-6">
                 <!-- Map view with side panel -->
                 <div v-if="viewMode === 'map'" class="rounded-xl border bg-card overflow-hidden">
-                    <div class="flex" :class="activeDetail ? 'h-[28rem]' : 'h-96'">
+                    <!-- Fixed height regardless of side-panel visibility so the
+                         map doesn't jump (resize Leaflet) on every click. -->
+                    <div class="flex h-[28rem]">
                         <!-- Map -->
                         <div class="flex-1 relative">
                             <ProjectMap :countries="mapCountries" :points="mapPoints" @country-click="onCountryClick" />
@@ -491,27 +512,36 @@ const filteredStats = computed(() => {
                             leave-from-class="w-80 opacity-100"
                             leave-to-class="w-0 opacity-0"
                         >
-                            <div v-if="activeDetail" class="w-80 shrink-0 border-l overflow-y-auto bg-card">
+                            <!-- Panel: hard-locked to 320px (w-80). overflow-hidden
+                                 clips any long registry / country names so the
+                                 box can never grow beyond the declared width;
+                                 inner truncate+min-w-0 keep text from forcing
+                                 the column to flex outward. -->
+                            <div v-if="activeDetail" class="w-80 shrink-0 border-l overflow-y-auto overflow-x-hidden bg-card">
                                 <div class="p-4 space-y-5">
                                     <!-- Country header -->
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-2 min-w-0">
                                             <CountryFlag :code="selectedCountry!" size="lg" />
-                                            <h3 class="text-sm font-semibold text-foreground">{{ activeDetail.name }}</h3>
+                                            <h3 class="text-sm font-semibold text-foreground truncate">{{ activeDetail.name }}</h3>
                                         </div>
                                         <button
-                                            class="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                            class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                                             @click="selectedCountry = null"
                                         >
                                             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                         </button>
                                     </div>
 
-                                    <!-- Key stats -->
-                                    <div class="text-center">
-                                        <div class="text-3xl font-bold text-primary">{{ activeDetail.projects.toLocaleString() }}</div>
-                                        <div class="text-[11px] text-muted-foreground mt-0.5">{{ $t('dashboard.activeProjects') }}</div>
-                                    </div>
+                                    <!-- Key stats — entire block links to the
+                                         projects page filtered by this country. -->
+                                    <NuxtLink
+                                        :to="{ path: '/projects', query: { country: activeDetail.name } }"
+                                        class="block text-center group rounded-lg hover:bg-muted/30 transition-colors py-1"
+                                    >
+                                        <div class="text-3xl font-bold text-primary group-hover:underline tabular-nums">{{ activeDetail.projects.toLocaleString() }}</div>
+                                        <div class="text-[11px] text-muted-foreground mt-0.5">{{ $t('dashboard.activeProjects') }} →</div>
+                                    </NuxtLink>
 
                                     <!-- Sector donut -->
                                     <div>
@@ -519,9 +549,9 @@ const filteredStats = computed(() => {
                                         <div class="flex items-start gap-3">
                                             <DonutChart :segments="activeDetail.sectors" :size="90" />
                                             <div class="space-y-1.5 flex-1 min-w-0">
-                                                <div v-for="s in activeDetail.sectors" :key="s.label" class="flex items-center gap-2">
+                                                <div v-for="s in activeDetail.sectors" :key="s.label" class="flex items-center gap-2 min-w-0">
                                                     <span class="h-2 w-2 shrink-0 rounded-full" :style="{ backgroundColor: s.color }" />
-                                                    <span class="text-[11px] text-muted-foreground truncate">
+                                                    <span class="text-[11px] text-muted-foreground truncate min-w-0">
                                                         <strong class="text-foreground">{{ s.value }}%</strong> {{ s.label }}
                                                     </span>
                                                 </div>
@@ -529,22 +559,24 @@ const filteredStats = computed(() => {
                                         </div>
                                     </div>
 
-                                    <!-- Registry breakdown -->
+                                    <!-- Registry breakdown — vertical list so long
+                                         registry names don't squeeze a horizontal
+                                         row and don't push the panel wider. -->
                                     <div>
                                         <h4 class="text-xs font-semibold text-foreground mb-3">{{ $t('dashboard.registry') }}</h4>
-                                        <div class="flex items-center justify-between gap-2">
-                                            <div v-for="r in activeDetail.registries" :key="r.name" class="text-center flex-1">
-                                                <div class="text-base font-bold text-primary">{{ r.pct }}<span class="text-xs text-muted-foreground">%</span></div>
-                                                <div class="text-[10px] text-muted-foreground leading-tight mt-0.5">{{ r.name }}</div>
+                                        <div class="space-y-1.5">
+                                            <div v-for="r in activeDetail.registries" :key="r.name" class="flex items-center gap-2 min-w-0">
+                                                <span class="text-xs font-semibold text-primary tabular-nums shrink-0 w-10">{{ r.pct }}%</span>
+                                                <span class="text-[11px] text-muted-foreground truncate min-w-0">{{ r.name }}</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- Issuances -->
                                     <div class="pt-2 border-t">
-                                        <div class="flex items-center justify-between">
-                                            <span class="text-xs text-muted-foreground">{{ $t('dashboard.totalIssuancesLabel') }}</span>
-                                            <span class="text-sm font-bold text-foreground">{{ activeDetail.credits }}</span>
+                                        <div class="flex items-center justify-between gap-2 min-w-0">
+                                            <span class="text-xs text-muted-foreground shrink-0">{{ $t('dashboard.totalIssuancesLabel') }}</span>
+                                            <span class="text-sm font-bold text-foreground truncate text-right">{{ activeDetail.credits }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -565,21 +597,29 @@ const filteredStats = computed(() => {
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            <tr
+                            <NuxtLink
                                 v-for="c in countries"
                                 :key="c.name"
-                                class="hover:bg-muted/30 transition-colors"
+                                :to="countryRouteFor(c)"
+                                custom
+                                v-slot="{ navigate }"
                             >
-                                <td class="py-2.5 px-4">
-                                    <span class="flex items-center gap-2">
-                                        <CountryFlag :code="c.code" size="sm" />
-                                        <span class="font-medium text-foreground">{{ c.name }}</span>
-                                    </span>
-                                </td>
-                                <td class="py-2.5 px-4 text-right tabular-nums">{{ c.projects }}</td>
-                                <td class="py-2.5 px-4 text-right tabular-nums">{{ c.credits }}</td>
-                                <td class="py-2.5 px-4 text-right tabular-nums">{{ c.methodologies }}</td>
-                            </tr>
+                                <tr
+                                    class="hover:bg-muted/30 transition-colors"
+                                    :class="c.code !== 'UNK' ? 'cursor-pointer' : ''"
+                                    @click="c.code !== 'UNK' && navigate()"
+                                >
+                                    <td class="py-2.5 px-4">
+                                        <span class="flex items-center gap-2">
+                                            <CountryFlag :code="c.code" size="sm" />
+                                            <span class="font-medium text-foreground">{{ c.name }}</span>
+                                        </span>
+                                    </td>
+                                    <td class="py-2.5 px-4 text-right tabular-nums">{{ c.projects }}</td>
+                                    <td class="py-2.5 px-4 text-right tabular-nums">{{ c.credits }}</td>
+                                    <td class="py-2.5 px-4 text-right tabular-nums">{{ c.methodologies }}</td>
+                                </tr>
+                            </NuxtLink>
                             <tr v-if="countries.length === 0">
                                 <td colspan="4" class="py-8 text-center text-sm text-muted-foreground">{{ $t('dashboard.noCountries') }}</td>
                             </tr>
@@ -625,7 +665,12 @@ const filteredStats = computed(() => {
                         <div class="flex items-start gap-5">
                             <DonutChart :segments="sectorChartSegments" :size="140" />
                             <div class="space-y-2 flex-1 min-w-0 pt-1">
-                                <div v-for="s in sectorDonutRows" :key="s.label" class="flex items-center gap-2">
+                                <NuxtLink
+                                    v-for="s in sectorDonutRows"
+                                    :key="s.label"
+                                    :to="sectorRouteFor(s.label)"
+                                    class="flex items-center gap-2 hover:bg-muted/30 -mx-1 px-1 rounded transition-colors"
+                                >
                                     <span class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: s.color }" />
                                     <span class="text-xs text-muted-foreground truncate flex-1">{{ translateSector(s.label) }}</span>
                                     <span class="text-xs font-medium text-foreground tabular-nums shrink-0">
@@ -634,7 +679,7 @@ const filteredStats = computed(() => {
                                     <span class="text-xs text-muted-foreground tabular-nums shrink-0">
                                         {{ chartMode === 'projects' ? `${s.projectCount} projects` : `${formatCredits(s.creditCount)}` }}
                                     </span>
-                                </div>
+                                </NuxtLink>
                             </div>
                         </div>
                     </div>
@@ -645,7 +690,12 @@ const filteredStats = computed(() => {
                         <div class="flex items-start gap-5">
                             <DonutChart :segments="registryChartSegments" :size="140" />
                             <div class="space-y-2 flex-1 min-w-0 pt-1">
-                                <div v-for="s in registryDonutRows" :key="s.label" class="flex items-center gap-2">
+                                <NuxtLink
+                                    v-for="s in registryDonutRows"
+                                    :key="s.label"
+                                    :to="{ path: '/projects', query: { registry: s.label } }"
+                                    class="flex items-center gap-2 hover:bg-muted/30 -mx-1 px-1 rounded transition-colors"
+                                >
                                     <span class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: s.color }" />
                                     <span class="text-xs text-muted-foreground truncate flex-1">{{ s.label }}</span>
                                     <span class="text-xs font-medium text-foreground tabular-nums shrink-0">
@@ -654,7 +704,7 @@ const filteredStats = computed(() => {
                                     <span class="text-xs text-muted-foreground tabular-nums shrink-0">
                                         {{ chartMode === 'projects' ? `${s.projectCount} projects` : `${formatCredits(s.creditCount)}` }}
                                     </span>
-                                </div>
+                                </NuxtLink>
                             </div>
                         </div>
                     </div>
@@ -687,18 +737,37 @@ const filteredStats = computed(() => {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
-                                    <tr
+                                    <NuxtLink
                                         v-for="org in registries"
                                         :key="org.name"
-                                        class="hover:bg-muted/30 transition-colors cursor-pointer"
+                                        :to="{ path: '/registries', query: { displayName: org.name } }"
+                                        custom
+                                        v-slot="{ navigate }"
                                     >
-                                        <td class="py-2.5 px-4">
-                                            <NuxtLink to="/registries" class="font-medium text-foreground hover:text-primary transition-colors">{{ org.name }}</NuxtLink>
-                                        </td>
-                                        <td class="py-2.5 px-4 text-right tabular-nums">{{ org.policies }}</td>
-                                        <td class="py-2.5 px-4 text-right tabular-nums">{{ org.projects }}</td>
-                                        <td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground">{{ org.credits }}</td>
-                                    </tr>
+                                        <tr
+                                            class="hover:bg-muted/30 transition-colors cursor-pointer"
+                                            @click="navigate()"
+                                        >
+                                            <td class="py-2.5 px-4">
+                                                <span class="font-medium text-foreground">{{ org.name }}</span>
+                                            </td>
+                                            <td class="py-2.5 px-4 text-right tabular-nums">
+                                                <NuxtLink
+                                                    :to="{ path: '/methodologies', query: { registryName: org.name } }"
+                                                    class="hover:text-primary hover:underline"
+                                                    @click.stop
+                                                >{{ org.policies }}</NuxtLink>
+                                            </td>
+                                            <td class="py-2.5 px-4 text-right tabular-nums">
+                                                <NuxtLink
+                                                    :to="{ path: '/projects', query: { registry: org.name } }"
+                                                    class="hover:text-primary hover:underline"
+                                                    @click.stop
+                                                >{{ org.projects }}</NuxtLink>
+                                            </td>
+                                            <td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground">{{ org.credits }}</td>
+                                        </tr>
+                                    </NuxtLink>
                                     <tr v-if="registries.length === 0">
                                         <td colspan="4" class="py-8 text-center text-sm text-muted-foreground">{{ $t('dashboard.noRegistries') }}</td>
                                     </tr>

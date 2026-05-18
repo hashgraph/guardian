@@ -37,6 +37,14 @@ const initialFilters: Record<string, any> = {
 if (route.query.did && typeof route.query.did === 'string') {
     initialFilters.did = route.query.did;
 }
+// Dashboard top-registries row links here with displayName=<name> so the
+// list lands pre-filtered. Also accept the other text filters defined in
+// filterFields for symmetry.
+for (const k of ['displayName', 'id', 'tags', 'geography', 'law'] as const) {
+    if (route.query[k] && typeof route.query[k] === 'string') {
+        initialFilters[k] = route.query[k];
+    }
+}
 const filters = ref<Record<string, any>>(initialFilters);
 const currentPage = ref(1);
 const pageSize = ref(10);
