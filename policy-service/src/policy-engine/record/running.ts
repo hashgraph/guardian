@@ -650,6 +650,17 @@ export class Running {
                 }
             }
         }
+        //request-vc-document-block-addon
+        if (block.blockType === 'requestVcDocumentBlockAddon') {
+            if (obj?.uuid) {
+                const doc = await this.policyInstance
+                    .databaseServer
+                    .getVcDocument({ 'document.id': obj.uuid } as any);
+                if (doc) {
+                    obj.ref = doc.id.toString();
+                }
+            }
+        }
         return obj;
     }
 

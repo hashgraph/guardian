@@ -452,5 +452,14 @@ export class Recording {
                 }
             }
         }
+        //request-vc-document-block-addon
+        if (block.blockType === 'requestVcDocumentBlockAddon') {
+            if (data.ref) {
+                const doc = await (new DatabaseServer(this.uploadToIpfs ? null : this.policyId)).getVcDocument(data.ref);
+                if (doc) {
+                    data.uuid = doc.document?.id;
+                }
+            }
+        }
     }
 }

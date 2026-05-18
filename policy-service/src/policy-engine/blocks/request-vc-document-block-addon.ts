@@ -175,6 +175,7 @@ export class RequestVcDocumentBlockAddon {
 
         const parent =
             PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(ref.parent);
+        let result: IPolicyEventState | undefined;
 
         await parent.onAddonEvent(
             user,
@@ -302,12 +303,14 @@ export class RequestVcDocumentBlockAddon {
                     throw new BlockActionError(error, ref.blockType, ref.uuid);
                 }
 
+                result = state;
                 return state;
             },
             actionStatus
         );
 
         ref.backup();
+        return result?.data;
     }
 
     /**
