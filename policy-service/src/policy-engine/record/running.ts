@@ -460,11 +460,11 @@ export class Running {
                     if (await this.isAvailable(block, userFull)) {
                         const doc = await this.getActionDocument(action, block);
                         if (action.recordActionId) {
-                            await new Promise<void>((resolve) => {
+                            await new Promise<void>((resolve, reject) => {
                                 const step = new RecordActionStep(() => resolve(), 0, false, false, action.recordActionId);
                                 block.setData(userFull, doc, null, step).then(() => {
                                     step.finish();
-                                });
+                                }).catch(reject);
                             });
                         } else {
                             await block.setData(userFull, doc, null, null);
@@ -477,16 +477,19 @@ export class Running {
                 case RecordAction.SetExternalData: {
                     const doc = await this.getActionDocument(action);
                     if (action.recordActionId) {
-                        await new Promise<void>((resolve) => {
+                        await new Promise<void>((resolve, reject) => {
                             const step = new RecordActionStep(() => resolve(), 0, false, false, action.recordActionId);
-                            (async () => {
+                            const receiveExternalData = async () => {
                                 for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
                                     if (block.policyId === this.policyId) {
                                         await (block as any).receiveData(doc, step);
                                     }
                                 }
+                            };
+
+                            receiveExternalData().then(() => {
                                 step.finish();
-                            })();
+                            }).catch(reject);
                         });
                     } else {
                         for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
