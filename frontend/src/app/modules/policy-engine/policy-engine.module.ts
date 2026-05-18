@@ -100,6 +100,7 @@ import { ViewerDialog } from './dialogs/viewer-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './dialogs/compare-modules-dialog/compare-modules-dialog.component';
 import { RecordControllerComponent } from './record/record-controller/record-controller.component';
 import { RecordResultDialog } from './record/record-result-dialog/record-result-dialog.component';
+import { SavePolicyTestRecordDialog } from './record/save-policy-test-record-dialog/save-policy-test-record-dialog.component';
 import { RecordResultsComponent } from './record/record-results/record-results.component';
 import { TestResultsComponent } from './record/test-results/test-results.component';
 import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.component';
@@ -132,6 +133,8 @@ import { SplitButtonModule } from 'primeng/splitbutton';
 import { TabViewModule } from 'primeng/tabview';
 import { DialogModule } from 'primeng/dialog';
 import { DeleteDialogComponent } from './dialogs/delete-dialog/delete-dialog.component';
+import { PolicyDocumentationDialogComponent } from './dialogs/policy-documentation-dialog/policy-documentation-dialog.component';
+import { PolicyApiConfigDialogComponent } from './dialogs/policy-api-config-dialog/policy-api-config-dialog.component';
 import { ProgressTrackerComponent } from './policy-viewer/progress-tracker/progress-tracker.component';
 import { PolicyProgressService } from './services/policy-progress.service';
 import { InputSwitchModule } from 'primeng/inputswitch';
@@ -156,6 +159,7 @@ import { SearchExternalPolicyDialog } from './dialogs/search-external-policy-dia
 import { PolicyRequestsComponent } from './requests/requests.component';
 import { TestCodeDialog } from './dialogs/test-code-dialog/test-code-dialog.component';
 import { ProjectDataExportComponent } from './project-data-export/project-data-export.component';
+import { MintRequestsComponent } from './policy-viewer/mint-requests/mint-requests.component';
 import { TransformationButtonBlockComponent } from './policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
 import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integration-button-block/integration-button-block.component';
 import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
@@ -177,6 +181,12 @@ import { FieldLinkDialog } from './dialogs/field-link-dialog/field-link-dialog.c
 import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
 import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
 import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-dialog.component';
+import { PolicyParametersDialog } from './dialogs/policy-parameters-dialog/policy-parameters-dialog.component';
+import { PolicyParameterPropertyComponent } from 'src/app/components/policy-parameter-property/policy-parameter-property.component';
+import { PolicyParametersConfigDialog } from './dialogs/policy-parameters-config-dialog/policy-parameters-config-dialog.component';
+import { ParameterDocumentPathComponent } from './helpers/parameter-document-path/parameter-document-path.component';
+import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
+import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-automation/policy-test-automation-popup.component';
 
 @NgModule({
     declarations: [
@@ -273,9 +283,12 @@ import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-di
         ViewerDialog,
         SearchBlocksComponent,
         DeleteDialogComponent,
+        PolicyDocumentationDialogComponent,
+        PolicyApiConfigDialogComponent,
         ProgressTrackerComponent,
         RecordControllerComponent,
         RecordResultDialog,
+        SavePolicyTestRecordDialog,
         RecordResultsComponent,
         TestResultsComponent,
         ResizingDirective,
@@ -291,6 +304,7 @@ import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-di
         RequestDocumentBlockDialog,
         DataTransformationConfigComponent,
         ProjectDataExportComponent,
+        MintRequestsComponent,
         ExternalPolicyComponent,
         PolicyRequestsComponent,
         SearchExternalPolicyDialog,
@@ -310,7 +324,13 @@ import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-di
         FieldLinkDialog,
         AddDocumentDialog,
         ChangeBlockSettingsDialog,
-        ApproveUpdateVcDocumentDialogComponent
+        ApproveUpdateVcDocumentDialogComponent,
+        PolicyParametersConfigDialog,
+        PolicyParametersDialog,
+        PolicyParameterPropertyComponent,
+        ParameterDocumentPathComponent,
+        MockDialog,
+        PolicyTestAutomationPopupComponent
     ],
     imports: [
         CommonModule,

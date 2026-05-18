@@ -275,7 +275,6 @@ It is generally best practice to set targets in alignment with the _Science Base
   - Entities: Manually type the specific entity or multiple entities included in the target.
   - Scope: Specify which emission scopes apply.
   - Greenhouse Gases: Select the specific gases covered by the goal.
-
 ![13](Screenshots/13.%20OF%20step%205.png)
 ![14](Screenshots/14.%20OF%20step%205.png)
 ![15](Screenshots/15.%20OF%20step%205.png)

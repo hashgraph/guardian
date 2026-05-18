@@ -143,7 +143,7 @@ If the evaluation was successful the result field would be highlighted in amber 
 
 ![](<../../../../.gitbook/assets/19 (1) (1).png>)
 
-![](<../../../../.gitbook/assets/19 (1) (1) (2).png>)
+![](<../../../../.gitbook/assets/19 (1) (1).png>)
 
 Once all editing is done the template must be saved.
 

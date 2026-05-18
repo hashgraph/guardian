@@ -22,6 +22,7 @@ import {
     CheckResult,
     removeObjectProperties,
     LocationType,
+    SchemaEntity,
 } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/block-action-error.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -37,6 +38,7 @@ import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.
     blockType: 'requestVcDocumentBlockAddon',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Request',
         title: `Add 'Request' Block`,
@@ -140,6 +142,8 @@ export class RequestVcDocumentBlockAddon {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = await ref.getOptions(user);
+
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -148,7 +152,7 @@ export class RequestVcDocumentBlockAddon {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            ...ref.options,
+            ...options,
             schema: { ...this._schema, fields: [], conditions: [] },
         };
         return data;
@@ -171,6 +175,7 @@ export class RequestVcDocumentBlockAddon {
 
         const parent =
             PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(ref.parent);
+        let result: IPolicyEventState | undefined;
 
         await parent.onAddonEvent(
             user,
@@ -185,6 +190,7 @@ export class RequestVcDocumentBlockAddon {
                     );
                 }
                 const document = _data.document;
+                const options = await ref.getOptions(user);
 
                 const disposeTables = await hydrateTablesInObject(
                     document,
@@ -198,7 +204,8 @@ export class RequestVcDocumentBlockAddon {
                 const presetCheck = await this.checkPreset(
                     ref,
                     document,
-                    documentRef
+                    documentRef,
+                    user
                 );
                 if (!presetCheck.valid) {
                     throw new BlockActionError(
@@ -211,8 +218,8 @@ export class RequestVcDocumentBlockAddon {
                 SchemaHelper.updateObjectContext(this._schema, document);
 
                 const _vcHelper = new VcHelper();
-                const idType = ref.options.idType;
-                const forceRelayerAccount = ref.options.forceRelayerAccount;
+                const idType = options.idType;
+                const forceRelayerAccount = options.forceRelayerAccount;
                 const inheritRelayerAccount = PolicyComponentsUtils.IsInheritRelayerAccount(ref.policyId, forceRelayerAccount);
 
                 //Relayer Account
@@ -259,12 +266,22 @@ export class RequestVcDocumentBlockAddon {
                 const groupContext = await PolicyUtils.getGroupContext(ref, user);
                 const uuid = await ref.components.generateUUID(actionStatus?.id);
 
+                let evidenceOptions: { evidence?: { type: string[]; dataType: string; data: string }[]; evidenceContext?: string } = {};
+                if (ref.options.enableAdditionalData && _data.evidence?.length) {
+                    const evidenceSchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.EVIDENCE_ATTACHMENTS);
+                    const evidenceContext = PolicyUtils.getSchemaContext(ref, evidenceSchema);
+                    evidenceOptions = {
+                        evidence: _data.evidence.map((e: any) => ({ type: ['Evidence'], dataType: e.dataType, data: e.data })),
+                        evidenceContext,
+                    };
+                }
+
                 const vc = await PolicyActionsUtils.signVC({
                     ref,
                     subject: credentialSubject,
                     issuer: user.did,
                     relayerAccount,
-                    options: { uuid, group: groupContext },
+                    options: { uuid, group: groupContext, ...evidenceOptions },
                     userId: user.userId
                 });
                 let item = PolicyUtils.createVC(ref, documentOwner, vc, actionStatus?.id);
@@ -273,7 +290,7 @@ export class RequestVcDocumentBlockAddon {
                 PolicyUtils.setDocumentTags(item, tags);
 
                 const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, this._schema);
-                const schemaIRI = ref.options.schema;
+                const schemaIRI = options.schema;
                 item.type = schemaIRI;
                 item.schema = schemaIRI;
                 item.accounts = accounts;
@@ -286,12 +303,14 @@ export class RequestVcDocumentBlockAddon {
                     throw new BlockActionError(error, ref.blockType, ref.uuid);
                 }
 
+                result = state;
                 return state;
             },
             actionStatus
         );
 
         ref.backup();
+        return result?.data;
     }
 
     /**
@@ -303,14 +322,17 @@ export class RequestVcDocumentBlockAddon {
     private async checkPreset(
         ref: AnyBlockType,
         document: any,
-        documentRef: VcDocumentCollection
+        documentRef: VcDocumentCollection,
+        user?: PolicyUser
     ): Promise<CheckResult> {
+        const options = await ref.getOptions(user);
+
         if (
-            ref.options.presetFields &&
-            ref.options.presetFields.length &&
-            ref.options.presetSchema
+            options.presetFields &&
+            options.presetFields.length &&
+            options.presetSchema
         ) {
-            const readonly = ref.options.presetFields.filter(
+            const readonly = options.presetFields.filter(
                 (item: any) => item.readonly && item.value
             );
             if (!readonly.length || !document || !documentRef) {

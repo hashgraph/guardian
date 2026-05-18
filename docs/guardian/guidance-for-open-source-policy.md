@@ -69,4 +69,4 @@ Please check sample example for iREC 4 policy:\
 **IPFS timestamp: 1674821702.668883536**\
 **Policy file:**
 
-{% file src="../.gitbook/assets/IRec Policy 4 (1).policy" %}
+{% file src="../.gitbook/assets/IRec Policy 4.policy" %}

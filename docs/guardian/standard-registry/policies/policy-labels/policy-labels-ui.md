@@ -145,7 +145,7 @@ Label authors can preview (i.e. ‘dry run’ test) their Label functioning once
 
 <figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/image (5) (1) (1) (5).png" alt=""><figcaption></figcaption></figure>
 
@@ -185,7 +185,7 @@ All steps defined in the Label evaluation flow must be followed.
 
 If a Label is evaluated as valid a corresponding document is created containing all Label information. This document can be published to make it accessible externally.
 
-<figure><img src="../../../../.gitbook/assets/image (11) (1) (2) (2) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (11) (1) (2) (2).png" alt=""><figcaption></figcaption></figure>
 
 ### **2.5 Viewing Label documents**
 

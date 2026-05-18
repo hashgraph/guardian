@@ -83,7 +83,8 @@
                     [dryRun]="dryRun" 
                     [getByUser]="getByUser" 
                     [schema]="schema"
-                    [type]="type"></app-document-view>
+                    [type]="type"
+                    [dialogContext]="'viewer'"></app-document-view>
             </ng-container>
             <ng-container *ngIf="viewDocument === false">
                 <ng-container *ngIf="fileSize <= 1; else fileIsTooBigTemplate">

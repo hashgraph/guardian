@@ -10,30 +10,33 @@
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "3.5.1",
-        "@guardian/interfaces": "3.5.1",
+        "@guardian/common": "3.6.0-rc",
+        "@guardian/interfaces": "3.6.0-rc",
         "@meeco/cryppo": "^2.0.2",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
+        "@sendgrid/mail": "^7.7.0",
         "axios": "^1.8.3",
         "base-x": "^4.0.0",
         "base64url": "^3.0.1",
+        "cron": "^2.4.0",
         "dotenv": "^16.0.0",
         "express": "^5.1.0",
-        "gulp": "^5.0.0",
-        "gulp-rename": "^2.0.0",
-        "gulp-sourcemaps": "^3.0.0",
-        "gulp-typescript": "^6.0.0-alpha.1",
         "jsonwebtoken": "^8.5.1",
+        "moment": "^2.29.4",
+        "moment-timezone": "^0.5.45",
+        "node-quickbooks": "^2.0.43",
         "node-vault": "^0.10.0",
         "pako": "^2.1.0",
         "prom-client": "^14.1.1",
         "prometheus-api-metrics": "4.0.0",
         "reflect-metadata": "^0.1.13",
-        "rxjs": "^7.8.1"
+        "rxjs": "^7.8.1",
+        "time2fa": "^1.4.2",
+        "ts-enum-util": "^4.0.2"
     },
     "description": "",
     "devDependencies": {
@@ -60,16 +63,16 @@
         "#utils": "./dist/utils/index.js"
     },
     "scripts": {
-        "build": "gulp build:demo",
-        "build:prod": "gulp build:prod",
-        "build:demo": "gulp build:demo",
+        "build": "cp environments/environment.demo.ts src/environment.ts && tsc",
+        "build:demo": "cp environments/environment.demo.ts src/environment.ts && tsc",
+        "build:prod": "cp environments/environment.prod.ts src/environment.ts && tsc -p tsconfig.production.json",
         "debug": "nodemon dist/index.js",
-        "dev": "gulp watch",
+        "dev": "cp environments/environment.demo.ts src/environment.ts && tsc --watch",
         "dev:docker": "nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
     },
     "type": "module",
-    "version": "3.5.1"
+    "version": "3.6.0-rc"
 }

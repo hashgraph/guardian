@@ -18,6 +18,7 @@ export const RevokedStatus = 'Revoked';
 @BasicBlock({
     blockType: 'revocationBlock',
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Revocation',
         title: `Add 'Revocation' Block`,
@@ -40,6 +41,7 @@ export const RevokedStatus = 'Revoked';
                 title: 'Update previous document status',
                 type: PropertyType.Checkbox,
                 default: false,
+                editable: true
             },
             {
                 name: 'prevDocStatus',
@@ -47,6 +49,7 @@ export const RevokedStatus = 'Revoked';
                 title: 'Status value',
                 type: PropertyType.Input,
                 default: '',
+                editable: true
             },
         ],
     },
@@ -133,6 +136,8 @@ export class RevocationBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<any> {
         const userId = event?.user?.userId;
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
+        const options = await ref.getOptions(event.user);
+
         const data = event.data.data;
         const doc = Array.isArray(data) ? data[0] : data;
 
@@ -140,9 +145,10 @@ export class RevocationBlock {
         const policyTopicsMessages = [];
         for (const topic of policyTopics) {
             const topicMessages = await MessageServer.getMessages({
-                dryRun: ref.dryRun,
                 topicId: topic.topicId,
-                userId
+                userId,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
             policyTopicsMessages.push(...topicMessages);
         }
@@ -197,11 +203,11 @@ export class RevocationBlock {
             }
         }
 
-        if (ref.options.updatePrevDoc && doc.relationships) {
+        if (options.updatePrevDoc && doc.relationships) {
             const prevDocs = await this.findDocumentByMessageIds(doc.relationships);
             const prevDocument = prevDocs[prevDocs.length - 1];
             if (prevDocument) {
-                prevDocument.option.status = ref.options.prevDocStatus;
+                prevDocument.option.status = options.prevDocStatus;
                 await PolicyUtils.updateVC(ref, prevDocument, userId);
                 await PolicyUtils.saveDocumentState(ref, prevDocument);
             }

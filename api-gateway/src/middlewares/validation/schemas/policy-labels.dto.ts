@@ -27,7 +27,7 @@ export class PolicyLabelDTO {
     @ApiProperty({
         type: 'string',
         required: true,
-        example: 'Tool name'
+        example: 'Carbon Label'
     })
     @IsString()
     name: string;

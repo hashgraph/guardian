@@ -15,7 +15,7 @@ Monitoring schemas extend your PDD implementation to handle ongoing project oper
 
 Usually, there's always a section on methodology PDF(including VM0033) on data and parameters to be monitored. Typically, those fields are submitted as part of Monitoring report.
 
-![Subsection of Herbaceous Vegetation Stratum Data for Project in MR schema](<../../../.gitbook/assets/image (38).png>)
+![Subsection of Herbaceous Vegetation Stratum Data for Project in MR schema](<../../../.gitbook/assets/image (39).png>)
 
 ## Building the Primary Monitoring Schema
 

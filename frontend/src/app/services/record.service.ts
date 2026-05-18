@@ -21,10 +21,10 @@ export class RecordService {
         return this.http.post<any>(`${this.url}/${policyId}/recording/start`, null);
     }
 
-    public stopRecording(policyId: string): Observable<ArrayBuffer> {
+    public stopRecording(policyId: string, options: any = {}): Observable<ArrayBuffer> {
         return this.http.post(
             `${this.url}/${policyId}/recording/stop`,
-            null,
+            options || null,
             {
                 responseType: 'arraybuffer'
             });
@@ -60,6 +60,12 @@ export class RecordService {
 
     public getRecordDetails(policyId: string): Observable<any> {
         return this.http.get<any>(`${this.url}/${policyId}/running/details`);
+    }
+
+    public getRecordActionDocuments(policyId: string, recordActionId: string): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/${policyId}/recording/action-documents`, {
+            params: { recordActionId }
+        });
     }
 
     public fastForward(policyId: string, data: any): Observable<any> {

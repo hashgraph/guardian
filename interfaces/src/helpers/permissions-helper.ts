@@ -566,6 +566,19 @@ export class UserPermissions {
         return this.check(Permissions.POLICIES_EXTERNAL_POLICY_UPDATE);
     }
 
+    //WORKER TASKS
+    public get WORKER_TASKS_READ(): boolean {
+        return this.check(Permissions.WORKER_TASKS_READ);
+    }
+
+    public get WORKER_TASKS_EXECUTE(): boolean {
+        return this.check(Permissions.WORKER_TASKS_EXECUTE);
+    }
+
+    public get WORKER_TASKS_DELETE(): boolean {
+        return this.check(Permissions.WORKER_TASKS_DELETE);
+    }
+
     public static isPolicyAdmin(user: any): boolean {
         return (
             UserPermissions.has(user, Permissions.POLICIES_MIGRATION_CREATE) ||

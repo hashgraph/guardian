@@ -1,10 +1,10 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Param, Query, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiExtraModels, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { Guardians, Users, UseCache, ONLY_SR, InternalException } from '#helpers';
 import { Auth, AuthUser } from '#auth';
-import { Examples, InternalServerErrorDTO, VpDocumentDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, ObjectExamples, VpDocumentDTO, pageHeader } from '#middlewares';
 
 @Controller('trust-chains')
 @ApiTags('trust-chains')
@@ -41,28 +41,43 @@ export class TrustChainsApi {
     @ApiQuery({
         name: 'policyId',
         type: String,
-        description: 'Policy Id',
+        description: 'Filter by policy database ID',
         required: false,
         example: Examples.DB_ID
     })
     @ApiQuery({
         name: 'policyOwner',
         type: String,
-        description: 'Policy Owner',
+        description: 'Filter by policy owner DID',
         required: false,
         example: Examples.DID
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns VP documents array and total count in X-Total-Count header.',
         isArray: true,
         headers: pageHeader,
-        type: VpDocumentDTO
+        type: VpDocumentDTO,
+        examples: {
+            withDocuments: {
+                summary: 'VP documents found',
+                value: [ObjectExamples.VP_DOCUMENT]
+            },
+            empty: {
+                summary: 'No VP documents match the filter',
+                value: []
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
-    @ApiExtraModels(VpDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getTrustChains(
         @AuthUser() user: IAuthUser,
@@ -102,40 +117,48 @@ export class TrustChainsApi {
     @ApiParam({
         name: 'hash',
         type: String,
-        description: 'Hash',
+        description: 'VP document hash used to build the trust chain',
         required: true,
-        example: 'hash'
+        example: Examples.HASH
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Successful operation. Returns the trust chain and user map.',
         schema: {
             type: 'object',
             properties: {
                 chain: {
                     type: 'array',
+                    description: 'Ordered array of documents forming the trust chain (from VP to root VC)',
                     items: {
                         type: 'object',
                         properties: {
                             id: {
-                                type: 'string'
+                                type: 'string',
+                                description: 'Document ID or DID'
                             },
                             type: {
-                                type: 'string'
+                                type: 'string',
+                                description: 'Document type (VC, VP, DID)'
                             },
                             tag: {
-                                type: 'string'
+                                type: 'string',
+                                description: 'Policy block tag'
                             },
                             label: {
-                                type: 'string'
+                                type: 'string',
+                                description: 'Human-readable label'
                             },
                             schema: {
-                                type: 'string'
+                                type: 'string',
+                                description: 'Schema identifier'
                             },
                             owner: {
-                                type: 'string'
+                                type: 'string',
+                                description: 'Document owner DID'
                             },
                             document: {
-                                type: 'object'
+                                type: 'object',
+                                description: 'Raw document content'
                             },
                         },
                         required: [
@@ -151,14 +174,17 @@ export class TrustChainsApi {
                 },
                 userMap: {
                     type: 'array',
+                    description: 'Mapping of DIDs to usernames for all users in the trust chain',
                     items: {
                         type: 'object',
                         properties: {
                             did: {
-                                type: 'string'
+                                type: 'string',
+                                description: 'User DID'
                             },
                             username: {
-                                type: 'string'
+                                type: 'string',
+                                description: 'Username'
                             },
                         },
                         required: [
@@ -173,12 +199,23 @@ export class TrustChainsApi {
                 'userMap'
             ],
         },
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.TRUST_CHAIN
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getTrustChainByHash(

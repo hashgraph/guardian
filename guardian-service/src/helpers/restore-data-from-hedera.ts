@@ -180,7 +180,7 @@ export class RestoreDataFromHedera {
     private async loadIPFS<T extends Message>(message: T): Promise<T> {
         try {
             console.log(`Load file: ${message.type}.`);
-            return await MessageServer.loadIPFS(message);
+            return await MessageServer.loadIPFS(message, null, {});
         } catch (error) {
             console.error('Error: ', error);
         }
@@ -663,7 +663,7 @@ export class RestoreDataFromHedera {
                     hederaAccountKey
                 );
 
-                await new PolicyEngine(logger).generateModel(r.id.toString());
+                await new PolicyEngine(logger).generateModel(r.id.toString(), false);
                 // await new BlockTreeGenerator().generate(r.id.toString());
             }
         } catch (e) {

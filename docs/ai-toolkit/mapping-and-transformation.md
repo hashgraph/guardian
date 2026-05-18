@@ -2,7 +2,7 @@
 icon: map
 ---
 
-# Mapping\_And\_Transformation
+# Mapping and Transformation
 
 ## Mapping & Transformation
 
@@ -106,7 +106,7 @@ are distinguished by ancestor chains.
 
 {% stepper %}
 {% step %}
-### Step 1 — Schema Ingestion
+#### Step 1 — Schema Ingestion
 
 Before mapping can occur:
 
@@ -130,7 +130,7 @@ After ingestion:
 {% endstep %}
 
 {% step %}
-### Step 2 — Confirm Index Status
+#### Step 2 — Confirm Index Status
 
 Before mapping, confirm:
 
@@ -145,7 +145,7 @@ Mapping should only begin once indexing is confirmed operational.
 {% endstep %}
 
 {% step %}
-### Step 3 — Multi-Context Semantic Search
+#### Step 3 — Multi-Context Semantic Search
 
 Mapping uses structured semantic search.
 
@@ -169,7 +169,7 @@ Multi-context search gathers comparative evidence before making a decision.
 {% endstep %}
 
 {% step %}
-### Step 4 — Score Comparison & Uniformity Test
+#### Step 4 — Score Comparison & Uniformity Test
 
 When similarity scores are close between candidates, the system enforces structured comparison.
 
@@ -189,7 +189,7 @@ This creates:
 {% endstep %}
 
 {% step %}
-### Step 5 — Mapping Output
+#### Step 5 — Mapping Output
 
 For each source path, the system returns:
 
@@ -208,7 +208,7 @@ In practice, generated mappings align closely with manually created Excel mappin
 {% endstep %}
 
 {% step %}
-### Step 6 — Transformation Use Case
+#### Step 6 — Transformation Use Case
 
 Once mappings are validated, they can be used to:
 

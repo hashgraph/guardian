@@ -16,6 +16,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
     blockType: 'extractDataBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Extract Data',
         title: `Add 'Extract Data' Block`,
@@ -37,6 +38,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
             label: 'Action',
             title: 'Action',
             type: PropertyType.Select,
+            editable: true,
             items: [
                 {
                     label: 'Get',
@@ -52,7 +54,8 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
             name: 'schema',
             label: 'Schema',
             title: 'Schema',
-            type: PropertyType.Schemas
+            type: PropertyType.Schemas,
+            editable: false
         }]
     },
     variables: [
@@ -254,8 +257,9 @@ export class ExtractDataBlock {
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
+        const options = await ref.getOptions(event.user);
 
-        if (ref.options.action === 'set') {
+        if (options.action === 'set') {
             await this.setAction(ref, event);
         } else {
             await this.getAction(ref, event);
@@ -263,7 +267,7 @@ export class ExtractDataBlock {
 
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
-                action: ref.options.action,
+                action: options.action,
                 documents: ExternalDocuments(event.data.data)
             })
         );

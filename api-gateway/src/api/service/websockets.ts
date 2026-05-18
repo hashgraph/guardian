@@ -356,27 +356,17 @@ export class WebSocketsService {
         });
 
         this.channel.subscribe('update-user-balance', async (msg) => {
-            this.wss.clients.forEach((client) => {
-                new Users()
-                    .getUserByAccount(msg.operatorAccountId)
-                    .then((user) => {
-                        {
-                            Object.assign(msg, {
-                                user: user
-                                    ? {
-                                        username: user.username,
-                                        did: user.did,
-                                    }
-                                    : null,
-                            });
-                            if (this.checkUserByName(client, msg)) {
-                                this.send(client, {
-                                    type: 'PROFILE_BALANCE',
-                                    data: msg,
-                                });
-                            }
-                        }
+            this.wss.clients.forEach((client: any) => {
+                const wsUser = client.user;
+                if (wsUser && wsUser.id?.toString() === msg.userId) {
+                    this.send(client, {
+                        type: 'PROFILE_BALANCE',
+                        data: {
+                            ...msg,
+                            user: { username: wsUser.username, did: wsUser.did },
+                        },
                     });
+                }
             });
 
             return new MessageResponse({});
@@ -556,22 +546,6 @@ export class WebSocketsService {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Get User by url
-     * @param client
-     * @param msg
-     * @private
-     */
-    private checkUserByName(client: any, msg: any): boolean {
-        return (
-            client &&
-            client.user &&
-            msg &&
-            msg.user &&
-            client.user.username === msg.user.username
-        );
     }
 
     /**

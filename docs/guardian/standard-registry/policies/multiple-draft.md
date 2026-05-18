@@ -34,7 +34,7 @@ They can select Save Draft to store progress safely, then return later to comple
 
 Saved drafts can be edited, an additional option ‘EditType’ has been added to the request block for this purpose
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Draft Event Logic in Configurator
 
@@ -65,7 +65,7 @@ Guardian includes an auto-save mechanism to prevent data loss during form entry.
 
     > “Last auto-saved at \[timestamp].”
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### Data Restoration
 
@@ -75,4 +75,4 @@ When reopening an AMS-III.AR form, Guardian prompts:
 
 This ensures the user can always recover recent unsaved progress.
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>

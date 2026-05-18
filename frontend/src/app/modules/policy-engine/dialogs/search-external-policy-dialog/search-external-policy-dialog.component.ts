@@ -44,7 +44,7 @@ export class SearchExternalPolicyDialog {
             }, (e) => {
                 this.loading = false;
                 this.step = 0;
-                this.error = 'error';
+                this.error = e?.error?.message;
             });
     }
 
@@ -58,7 +58,7 @@ export class SearchExternalPolicyDialog {
                     this.step = 2;
                 } else {
                     this.step = 0;
-                    this.error = 'error';
+                    this.error = 'Policy not found';
                 }
                 setTimeout(() => {
                     this.loading = false;
@@ -66,7 +66,7 @@ export class SearchExternalPolicyDialog {
             }, (e) => {
                 this.loading = false;
                 this.step = 0;
-                this.error = 'error';
+                this.error = e?.error?.message;
             });
     }
 

@@ -3,7 +3,7 @@ import { DocumentSignature, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyUser } from '../policy-user.js';
@@ -23,6 +23,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'externalDataBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'External Data',
         title: `Add 'External Data' Block`,
@@ -36,7 +37,40 @@ import { RecordActionStep } from '../record-action-step.js';
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true
+        defaultEvent: true,
+        properties: [{
+            name: 'entityType',
+            label: 'Entity Type',
+            title: 'Entity Type',
+            type: PropertyType.Input,
+            editable: false
+        },
+        {
+            name: 'schema',
+            label: 'Schema',
+            title: 'Schema',
+            type: PropertyType.Schemas,
+            editable: false
+        },
+        {
+            name: 'relayerAccount',
+            label: 'Set Relayer Account',
+            title: 'Set Relayer Account',
+            type: PropertyType.Checkbox,
+            editable: false
+        },
+        {
+            name: 'forceRelayerAccount',
+            label: 'Force User Account',
+            title: 'Force User Account',
+            type: PropertyType.Select,
+            items: [
+                { label: '', value: '' },
+                { label: 'Pre-set user account', value: 'preset' },
+                { label: 'Current user account', value: 'current' },
+            ],
+            editable: false
+        }]
     },
     variables: [
         { path: 'options.schema', alias: 'schema', type: 'Schema' }
@@ -161,10 +195,11 @@ export class ExternalDataBlock {
         }
 
         const user: PolicyUser = await PolicyUtils.getDocumentOwner(ref, data, null);
+        const options = await ref.getOptions(user);
         const documentRef = await this.getRelationships(ref, data.ref);
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);
-        const forceRelayerAccount = ref.options.forceRelayerAccount;
+        const forceRelayerAccount = options.forceRelayerAccount;
         const inheritRelayerAccount = PolicyComponentsUtils.IsInheritRelayerAccount(ref.policyId, forceRelayerAccount);
 
         //Relayer Account
@@ -173,13 +208,13 @@ export class ExternalDataBlock {
 
         const accounts = PolicyUtils.getHederaAccounts(vc, relayerAccount, schema);
 
-        let doc = PolicyUtils.createVC(ref, documentOwner, vc, null);
+        let doc = PolicyUtils.createVC(ref, documentOwner, vc, actionStatus?.id ?? null);
 
         const tags = await PolicyUtils.getBlockTags(ref);
         PolicyUtils.setDocumentTags(doc, tags);
 
-        doc.type = ref.options.entityType;
-        doc.schema = ref.options.schema;
+        doc.type = options.entityType;
+        doc.schema = options.schema;
         doc.accounts = accounts;
         doc.relayerAccount = relayerAccount;
         doc.signature = (verify ?

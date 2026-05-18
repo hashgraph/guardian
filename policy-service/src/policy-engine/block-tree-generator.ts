@@ -4,13 +4,14 @@ import { headers } from 'nats';
 import { Inject } from '../helpers/decorators/inject.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import { ComponentsService } from './helpers/components-service.js';
-import { PolicyComponentsUtils } from './policy-components-utils.js';
+import { blockCompleteEvent, PolicyComponentsUtils } from './policy-components-utils.js';
 import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface.js';
 import { PolicyUser } from './policy-user.js';
 import { RecordUtils } from './record-utils.js';
 import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
 import { PolicyActionsService } from './actions-service.js';
 import { RecordActionStep } from './record-action-step.js';
+import { MintService } from './mint/mint-service.js';
 import { PolicyVcDocumentsUtils } from './policy-vc-documents-utils.js';
 
 /**
@@ -94,6 +95,81 @@ export class BlockTreeGenerator extends NatsService {
                 }
             }
         });
+    }
+
+    /**
+     * Shared execution path for SET_BLOCK_DATA and SET_BLOCK_DATA_BY_TAG.
+     */
+    private async executeSetBlockData(
+        block: IPolicyInterfaceBlock,
+        userFull: PolicyUser,
+        data: any,
+        policyId: string,
+        syncEvents: boolean | undefined,
+        history: boolean | undefined,
+        waitRemotePolicy: boolean | undefined,
+    ): Promise<MessageResponse<any> | MessageError<any>> {
+        // <-- Available
+        const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
+        if (error) {
+            return error;
+        }
+        // Available -->
+
+        const baseEvent = {
+            blockType: block.blockType ?? '',
+            blockTag: block.tag ?? '',
+            blockId: block.uuid ?? '',
+            policyId,
+            userId: userFull.did,
+        };
+
+        const actionstep = new RecordActionStep(
+            (recordActionId, actionTimestamp, errors) => {
+                RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestamp);
+                blockCompleteEvent({
+                    ...baseEvent,
+                    trackingId: recordActionId,
+                    status: errors.length === 0 ? 'success' : 'failure',
+                    error: errors[0]?.message,
+                    errorDetails: errors.length > 0 ? errors : undefined,
+                    timestamp: Date.now(),
+                });
+            },
+            0, syncEvents, history
+        );
+
+        const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep, waitRemotePolicy);
+
+        actionstep.finish();
+
+        if (res instanceof MessageError) {
+            actionstep.cancel();
+            blockCompleteEvent({
+                ...baseEvent,
+                trackingId: actionstep.id,
+                status: 'failure',
+                error: res.error,
+                errorDetails: [{ message: res.error }],
+                timestamp: Date.now(),
+            });
+            return res;
+        }
+
+        if (syncEvents) {
+            const results = actionstep.getResults();
+            return new MessageResponse({
+                trackingId: actionstep.id,
+                response: res.body,
+                result: results.at(-1),
+                steps: history ? results : [],
+            }, res.code);
+        } else {
+            return new MessageResponse({
+                trackingId: actionstep.id,
+                ...(res.body ?? {}),
+            }, res.code);
+        }
     }
 
     /**
@@ -199,37 +275,9 @@ export class BlockTreeGenerator extends NatsService {
                 waitRemotePolicy?: boolean
             }) => {
                 const { user, blockId, data, syncEvents, history, waitRemotePolicy } = msg;
-
                 const userFull = await this.getUser(policyInstance, user);
                 const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
-
-                // <-- Available
-                const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
-                if (error) {
-                    return error;
-                }
-                // Available -->
-
-                const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents, history);
-
-                const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep, waitRemotePolicy);
-
-                actionstep.finish();
-
-                if (syncEvents) {
-                    const results = actionstep.getResults();
-                    if (res instanceof MessageError) {
-                        return res;
-                    } else {
-                        return new MessageResponse({
-                            response: res.body,
-                            result: results.at(-1),
-                            steps: history ? results : [],
-                        }, res.code);
-                    }
-                } else {
-                    return res;
-                }
+                return this.executeSetBlockData(block, userFull, data, policyId, syncEvents, history, waitRemotePolicy);
             });
 
         this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId,
@@ -245,34 +293,22 @@ export class BlockTreeGenerator extends NatsService {
                 const { user, tag, data, syncEvents, history, waitRemotePolicy } = msg;
                 const userFull = await this.getUser(policyInstance, user);
                 const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
+                return this.executeSetBlockData(block, userFull, data, policyId, syncEvents, history, waitRemotePolicy);
+            });
 
-                // <-- Available
-                const error = await PolicyComponentsUtils.isAvailableSetData(block, userFull);
-                if (error) {
-                    return error;
-                }
-                // Available -->
-
-                const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordSetBlockData(policyId, userFull, block, data, recordActionId, actionTimestemp), 0, syncEvents, history);
-
-                const res = await PolicyComponentsUtils.blockSetData(block, userFull, data, actionstep, waitRemotePolicy);
-
-                actionstep.finish();
-
-                if (syncEvents) {
-                    const results = actionstep.getResults();
-
-                    if (res instanceof MessageError) {
-                        return res;
-                    } else {
-                        return new MessageResponse({
-                            response: res.body,
-                            result: results.at(-1),
-                            steps: history ? results : [],
-                        }, res.code);
-                    }
-                } else {
-                    return res;
+        this.getPolicyMessages(PolicyEvents.RETRY_MINT, policyId,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                vpMessageId: string
+            }) => {
+                try {
+                    const { user, vpMessageId } = msg;
+                    const userFull = await this.getUser(policyInstance, user);
+                    const result = await MintService.retry(vpMessageId, userFull.did, policy.owner, null, user?.id, true);
+                    return new MessageResponse(result);
+                } catch (error) {
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -465,6 +501,55 @@ export class BlockTreeGenerator extends NatsService {
                 return new MessageResponse(docs);
             }
         );
+
+        this.getPolicyMessages(PolicyEvents.DISCONNECT_POLICY, policyId, async (msg: any) => {
+            try {
+                const { user } = msg;
+                const result = await PolicyComponentsUtils.DisconnectPolicy(policyId, user);
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.RECONNECT_POLICY, policyId, async (msg: any) => {
+            try {
+                const { user } = msg;
+                const result = await PolicyComponentsUtils.ReconnectPolicy(policyId, user);
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.DISCONNECT_REMOTE_POLICY, policyId, async (msg: any) => {
+            try {
+                const { user } = msg;
+                const row = await PolicyComponentsUtils.DisconnectRemotePolicy(policyInstance, policyId, user);
+                return new MessageResponse(row);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_MOCK_CONFIG, policyId, async (_: any) => {
+            try {
+                const config = PolicyComponentsUtils.GetMockConfig(policyId);
+                return new MessageResponse(config);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.SET_MOCK_CONFIG, policyId, async (config: any) => {
+            try {
+                PolicyComponentsUtils.SetMockConfig(policyId, config);
+                const result = PolicyComponentsUtils.GetMockConfig(policyId);
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
     }
 
     /**
@@ -581,7 +666,8 @@ export class BlockTreeGenerator extends NatsService {
         skipRegistration: boolean,
         policyValidator: PolicyValidator,
         logger: PinoLogger,
-        policyOwnerId: string | null
+        policyOwnerId: string | null,
+        enableMock: boolean
     ): Promise<IPolicyBlock | { type: 'error', message: string }> {
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
@@ -620,6 +706,10 @@ export class BlockTreeGenerator extends NatsService {
 
             await PolicyComponentsUtils.RegisterNavigation(policyId, policy.policyNavigation);
 
+            if(enableMock) {
+                PolicyComponentsUtils.MockAll(policyId);
+            }
+
             return rootInstance;
         } catch (error) {
             await logger.error(`Error build policy ${error}`, ['POLICY', policy.name, policyId.toString()], policyOwnerId);
@@ -633,6 +723,18 @@ export class BlockTreeGenerator extends NatsService {
 
     public async destroyModel(policyId: string, logger: PinoLogger, policyOwnerId: string | null): Promise<void> {
         try {
+            const backupService = PolicyComponentsUtils.GetBackupService(policyId);
+            const restoreService = PolicyComponentsUtils.GetRestoreService(policyId);
+            const actionsService = PolicyComponentsUtils.GetActionsService(policyId);
+            if (backupService) {
+                await backupService.destroy();
+            }
+            if (restoreService) {
+                await restoreService.destroy();
+            }
+            if (actionsService) {
+                await actionsService.destroy();
+            }
             await RecordUtils.DestroyRecording(policyId);
             await RecordUtils.DestroyRunning(policyId);
             await PolicyComponentsUtils.UnregisterBlocks(policyId);

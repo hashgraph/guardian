@@ -491,7 +491,7 @@ export class DocumentPropertyModel extends PropertyModel<any> {
             ) {
                 return true;
             }
-            if (type === 'MintToken') {
+            if (type === 'MintToken' || type?.split('&')[0] === 'MintToken') {
                 if (
                     name === 'date'
                 ) {

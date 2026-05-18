@@ -48,7 +48,8 @@ export class PolicyImportExportHelper {
             DatabaseServer.getSystemSchema(SchemaEntity.TOKEN_DATA_SOURCE),
             DatabaseServer.getSystemSchema(SchemaEntity.POLICY_COMMENT),
             DatabaseServer.getSystemSchema(SchemaEntity.POLICY_DISCUSSION),
-            DatabaseServer.getSystemSchema(SchemaEntity.POLICY_EXPORT_PROOF)
+            DatabaseServer.getSystemSchema(SchemaEntity.POLICY_EXPORT_PROOF),
+            DatabaseServer.getSystemSchema(SchemaEntity.EVIDENCE_ATTACHMENTS)
         ]);
 
         for (const schema of schemas) {

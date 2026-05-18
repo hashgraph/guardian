@@ -117,17 +117,30 @@ export class SchemaImport {
             } else if (topicId) {
                 this.topicRow = await TopicConfig.fromObject(await DatabaseServer.getTopicById(topicId), true, userId);
             } else {
-                this.topicRow = await this.topicHelper.create({
-                    type: TopicType.SchemaTopic,
-                    name: TopicType.SchemaTopic,
-                    description: TopicType.SchemaTopic,
-                    owner: user.creator,
-                    policyId: null,
-                    policyUUID: null
-                }, userId);
+                this.topicRow = await this.topicHelper.create(
+                    {
+                        type: TopicType.SchemaTopic,
+                        name: TopicType.SchemaTopic,
+                        description: TopicType.SchemaTopic,
+                        owner: user.creator,
+                        policyId: null,
+                        policyUUID: null
+                    },
+                    {
+                        admin: true,
+                        submit: true
+                    },
+                    {
+                        userId
+                    });
                 await this.topicRow.saveKeys(userId);
                 await DatabaseServer.saveTopic(this.topicRow.toObject());
-                await this.topicHelper.twoWayLink(this.topicRow, null, null, this.owner.id);
+                await this.topicHelper.twoWayLink({
+                    topic: this.topicRow,
+                    parent: null,
+                    rationale: null,
+                    userId: this.owner.id
+                });
             }
         }
         this.topicId = this.topicRow?.topicId || 'draft';
@@ -330,7 +343,6 @@ export class SchemaImport {
         step.start();
         const schemasByIds = schemasIds?.length ? await DatabaseServer.getSchemasByIds(schemasIds) : [];
         const updatedSchemasIriMap = new Map<string, string>();
-        const savedSchemas: any[] = [];
 
         let index = 0;
         for (const file of schemas) {
@@ -381,12 +393,9 @@ export class SchemaImport {
                     updatedSchemasIriMap.set(file.iri, row.iri);
                 }
 
-                savedSchemas.push(row);
-
             } else {
                 const row = await DatabaseServer.saveSchema(schemaObject);
                 this.schemasMapping[index].newID = row.id.toString();
-                savedSchemas.push(row);
             }
 
             _step.complete();
@@ -394,7 +403,8 @@ export class SchemaImport {
         }
 
         if (updatedSchemasIriMap.size > 0) {
-            for (const savedSchema of savedSchemas) {
+            const schemasForRewrite = await DatabaseServer.getSchemas({ topicId: this.topicId });
+            for (const savedSchema of schemasForRewrite) {
                 let needsUpdate = false;
                 let documentStr = JSON.stringify(savedSchema.document);
 
@@ -445,12 +455,12 @@ export class SchemaImport {
         const tags: any[] = [];
         const messageServer = new MessageServer(null);
         for (const id of topics) {
-            const tagMessages = await messageServer.getMessages<TagMessage>(
-                id,
-                userId,
-                MessageType.Tag,
-                MessageAction.PublishTag
-            );
+            const tagMessages = await messageServer.getMessages<TagMessage>({
+                topicId: id,
+                type: MessageType.Tag,
+                action: MessageAction.PublishTag,
+                userId
+            });
             for (const tag of tagMessages) {
                 tags.push({
                     uuid: tag.uuid,

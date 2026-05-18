@@ -4,12 +4,12 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
-import { LocationType } from '@guardian/interfaces';
+import { LocationType, SchemaEntity } from '@guardian/interfaces';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { RecordActionStep } from '../record-action-step.js';
 
@@ -20,6 +20,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'reassigningBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Reassigning',
         title: `Add 'Reassigning' Block`,
@@ -35,7 +36,32 @@ import { RecordActionStep } from '../record-action-step.js';
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true
+        defaultEvent: true,
+        properties: [
+        {
+            name: 'issuer',
+            label: 'Issuer',
+            title: 'Issuer',
+            type: PropertyType.Select,
+            editable: true,
+            items: [
+                { label: 'Current User', value: ''},
+                { label: 'Document Owner', value: 'owner'},
+                { label: 'Policy Owner', value: 'policyOwner'}
+            ]
+        },
+        {
+            name: 'actor',
+            label: 'Actor',
+            title: 'Actor',
+            type: PropertyType.Select,
+            editable: true,
+            items: [
+                { label: 'Current User', value: ''},
+                { label: 'Document Owner', value: 'owner'},
+                { label: 'Document Issuer', value: 'issuer'}
+            ]
+        }]
     },
     variables: []
 })
@@ -64,16 +90,17 @@ export class ReassigningBlock {
         actor: PolicyUser
     }> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const options = await ref.getOptions(user);
         const owner: PolicyUser = await PolicyUtils.getDocumentOwner(ref, document, userId);
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, document, user.userId);
 
         let groupContext: any;
         let issuer: string;
-        if (ref.options.issuer === 'owner') {
+        if (options.issuer === 'owner') {
             const cred = await PolicyUtils.getUserCredentials(ref, document.owner, userId);
             issuer = cred.did;
             groupContext = await PolicyUtils.getGroupContext(ref, owner);
-        } else if (ref.options.issuer === 'policyOwner') {
+        } else if (options.issuer === 'policyOwner') {
             const cred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
             issuer = cred.did;
             groupContext = null;
@@ -84,9 +111,9 @@ export class ReassigningBlock {
         }
 
         let actor: PolicyUser;
-        if (ref.options.actor === 'owner') {
+        if (options.actor === 'owner') {
             actor = await PolicyUtils.getDocumentOwner(ref, document, userId);
-        } else if (ref.options.actor === 'issuer') {
+        } else if (options.actor === 'issuer') {
             actor = await PolicyUtils.getPolicyUser(ref, issuer, document.group, userId);
         } else {
             actor = user;
@@ -94,12 +121,22 @@ export class ReassigningBlock {
 
         const uuid = await ref.components.generateUUID(actionStatus?.id);
         const credentialSubject = document.document.credentialSubject[0];
+        const originalEvidence = document.document.evidence;
+        let evidenceOptions: { evidence?: any[]; evidenceContext?: string } = {};
+        if (originalEvidence?.length) {
+            const evidenceSchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.EVIDENCE_ATTACHMENTS);
+            const evidenceContext = PolicyUtils.getSchemaContext(ref, evidenceSchema);
+            evidenceOptions = {
+                evidence: (Array.isArray(originalEvidence) ? originalEvidence : [originalEvidence]),
+                evidenceContext,
+            };
+        }
         const vc = await PolicyActionsUtils.signVC({
             ref,
             subject: credentialSubject,
             issuer,
             relayerAccount,
-            options: { uuid, group: groupContext },
+            options: { uuid, group: groupContext, ...evidenceOptions },
             userId: user.userId
         });
 

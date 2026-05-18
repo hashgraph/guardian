@@ -31,3 +31,114 @@
     font-size: 20px;
     color: darkgrey;
 }
+
+.content-result {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.test-results-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid var(--guardian-border-color, #e0e0e0);
+    background: #fff;
+    flex-shrink: 0;
+
+    .header-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 48px;
+    }
+
+    .header-row-back {
+        border-bottom: 1px solid var(--guardian-border-color, #e0e0e0);
+        padding-top: 38px;
+        padding-bottom: 28px;
+    }
+
+    .test-breadcrumb {
+        margin-left: 64px;
+        padding: 0 8px;
+        display: flex;
+        align-items: center;
+
+        .breadcrumb-item {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--guardian-dry-run-color);
+            user-select: none;
+            cursor: default;
+        }
+
+        .breadcrumb-sep {
+            color: #848fa9;
+            font-size: 20px;
+            padding: 0 8px;
+        }
+    }
+
+    .doc-nav-dropdown {
+        width: 280px;
+        flex-shrink: 0;
+        padding: 0 8px;
+
+        .p-dropdown {
+            height: 28px;
+
+            .p-inputtext {
+                font-size: 13px;
+            }
+        }
+    }
+
+    .field-status-filter-dropdown {
+        width: 200px;
+        flex-shrink: 0;
+        padding: 0 8px;
+
+        .p-dropdown {
+            height: 28px;
+
+            .p-inputtext {
+                font-size: 13px;
+            }
+        }
+    }
+
+    .field-name-dropdown {
+        width: 220px;
+        flex-shrink: 0;
+        padding: 0 8px;
+
+        .p-dropdown {
+            height: 28px;
+
+            .p-inputtext {
+                font-size: 13px;
+            }
+        }
+    }
+
+    .test-total-info {
+        font-weight: bold;
+        font-size: 20px;
+        color: #686868;
+        flex-shrink: 0;
+        padding: 0 8px;
+
+        span {
+            color: #e70000;
+        }
+
+        &[total="100"] span {
+            color: #008d0c;
+        }
+    }
+}

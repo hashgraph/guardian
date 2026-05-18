@@ -280,7 +280,7 @@
             <div *ngIf="canDrawTable(item)">
                 <p-table [value]="item.list || []">
                     <ng-template pTemplate="header">
-                        <tr>
+                        <tr [attr.accordiontabid]="item.id">
                             <th style="width: 3rem">#</th>
                             <th 
                                 *ngFor="let col of getTableHeaderFields(item)"
@@ -292,9 +292,9 @@
                         </tr>
                     </ng-template>
 
-                    <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
-                    <tr>
-                        <td>{{ rowIndex + 1 }}</td>
+                    <ng-template pTemplate="body" let-rowData>
+                    <tr [attr.accordiontabid]="item.id + '-' + rowData.index2">
+                        <td>{{ rowData.index2 }}</td>
                         <td *ngFor="let itemControl of getTableRowFields(rowData)">
                             <div class="table-content form-field-value">
                                 <span *ngIf="ifRequiredField(itemControl)" class="required-field">*</span>
@@ -864,9 +864,9 @@
                         item.control?.invalid ? 'guardian-accordion-error' : ''
                     }}"
                 >
-                    <p-accordionTab [(selected)]="item.open">
+                    <p-accordionTab [(selected)]="item.open" (selectedChange)="onAccordionSelectEvent($event, item)">
                         <ng-template pTemplate="header">
-                            <div class="group-label-field" id="detail-section">
+                            <div class="group-label-field" id="detail-section" [attr.accordiontabid]="item.id">
                                 <div
                                     *ngIf="
                                         !isChildSchema &&
@@ -1006,6 +1006,7 @@
                                                 isFormForRequestBlock
                                             "
                                             [isEditMode]="isEditMode"
+                                            (onAccordionSelect)="onAccordionSelectEvent($event.isOpen, item, '', $event.path)"
                                         >
                                         </app-schema-form>
                                     </ng-container>
@@ -1046,9 +1047,9 @@
                         item.control?.invalid ? 'guardian-accordion-error' : ''
                     }}"
                 >
-                    <p-accordionTab [(selected)]="item.open">
+                    <p-accordionTab [(selected)]="item.open" (selectedChange)="onAccordionSelectEvent($event, item)">
                         <ng-template pTemplate="header">
-                            <div class="group-label-field" id="detail-section">
+                            <div class="group-label-field" id="detail-section" [attr.accordiontabid]="item.id">
                                 <div
                                     *ngIf="!isChildSchema && formModel.controls && !isEditMode"
                                     class="page-number"
@@ -1140,11 +1141,13 @@
                                 >
                                     <p-accordionTab
                                         [(selected)]="listItem.open"
+                                        (selectedChange)="onAccordionSelectEvent($event, item, listItem.index2)"
                                     >
                                         <ng-template pTemplate="header">
                                             <div
                                                 class="group-label-field"
                                                 id="detail-section"
+                                                [attr.accordiontabid]="item.id + '-' + listItem.index2"
                                             >
                                                 <span
                                                     [attr.default]="
@@ -1255,6 +1258,7 @@
                                                             [isEditMode]="
                                                                 isEditMode
                                                             "
+                                                            (onAccordionSelect)="onAccordionSelectEvent($event.isOpen, item, listItem.index2, $event.path)"
                                                         >
                                                         </app-schema-form>
                                                     </ng-container>

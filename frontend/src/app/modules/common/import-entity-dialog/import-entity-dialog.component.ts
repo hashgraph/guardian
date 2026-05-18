@@ -24,6 +24,7 @@ export enum ImportEntityType {
     Statistic = 'statistic',
     PolicyLabel = 'policy-label',
     Formula = 'formula',
+    Mock = 'mock',
 }
 
 export interface IImportEntityArray {
@@ -207,6 +208,14 @@ export class ImportEntityDialog implements OnInit {
                 this.fileExtension = 'formula';
                 this.placeholder = 'Import Formula .formula file';
                 break;
+            case 'mock':
+                this.type = ImportEntityType.Mock;
+                this.canImportFile = true;
+                this.canImportMessage = false;
+                this.title = 'Import Mock Data';
+                this.fileExtension = 'mock';
+                this.placeholder = 'Import Mock .mock file';
+                break;
             default:
                 this.type = ImportEntityType.Policy;
                 this.canImportFile = true;
@@ -350,6 +359,10 @@ export class ImportEntityDialog implements OnInit {
                     this.formulaFromFile(arrayBuffer);
                     break;
                 }
+                case ImportEntityType.Mock: {
+                    this.mockFromFile(arrayBuffer);
+                    break;
+                }
                 default: {
                     break;
                 }
@@ -395,6 +408,9 @@ export class ImportEntityDialog implements OnInit {
                 return;
             }
             case ImportEntityType.Formula: {
+                return;
+            }
+            case ImportEntityType.Mock: {
                 return;
             }
             default: {
@@ -673,5 +689,13 @@ export class ImportEntityDialog implements OnInit {
             }, (e) => {
                 this.loading = false;
             });
+    }
+
+    private mockFromFile(arrayBuffer: any) {
+        this.loading = true;
+        this.setResult({
+            type: 'file',
+            data: arrayBuffer
+        });
     }
 }

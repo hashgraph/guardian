@@ -28,7 +28,7 @@ Toolbar → Validation → ▾ → Configuration.
 
 From this dialog, users can enable or disable the display of warnings and informational messages by category.
 
-<figure><img src="../../../../.gitbook/assets/unknown (6) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (6) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### Default Behavior
 
@@ -83,13 +83,13 @@ The filtering mechanism allows selective visibility control:
 
 Categories explicitly marked in the validation registry as info (e.g., minor deprecations, legacy hints).
 
-<figure><img src="../../../../.gitbook/assets/unknown (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (3) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/unknown (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (4) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/unknown (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (5) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/unknown (6) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/unknown (6) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Behavior in the Editor
 

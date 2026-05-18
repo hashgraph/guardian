@@ -1,10 +1,10 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, UseCache } from '#helpers';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBody, ApiOkResponse, ApiInternalServerErrorResponse, ApiExtraModels, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
 import { AuthUser, Auth } from '#auth';
-import { Examples, InternalServerErrorDTO, ThemeDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO, ObjectExamples, ThemeDTO, UnprocessableEntityErrorDTO } from '#middlewares';
 import { PREFIXES } from '#constants';
 
 @Controller('themes')
@@ -31,15 +31,26 @@ export class ThemesApi {
         required: true,
         type: ThemeDTO
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: ThemeDTO
+        type: ThemeDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.THEME
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
-    @ApiExtraModels(ThemeDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async setThemes(
         @AuthUser() user: IAuthUser,
@@ -88,13 +99,26 @@ export class ThemesApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: ThemeDTO
+        type: ThemeDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.THEME
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Theme not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Theme not found', value: { statusCode: 404, message: 'Theme not found.' } } } })
+    @ApiUnprocessableEntityResponse({ description: 'Invalid theme ID.', type: UnprocessableEntityErrorDTO, examples: { default: { summary: 'Invalid theme ID', value: { statusCode: 422, message: 'Invalid theme id' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
-    @ApiExtraModels(ThemeDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async updateTheme(
         @AuthUser() user: IAuthUser,
@@ -147,13 +171,29 @@ export class ThemesApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: true
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Invalid theme ID.', type: UnprocessableEntityErrorDTO, examples: { default: { summary: 'Invalid theme ID', value: { statusCode: 422, message: 'Invalid theme id' } } } })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            themeNotFound: {
+                summary: 'Theme not found in guardian-service',
+                value: { statusCode: 500, message: 'Theme is not found' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteTheme(
         @AuthUser() user: IAuthUser,
@@ -195,13 +235,24 @@ export class ThemesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: ThemeDTO,
-        isArray: true
+        isArray: true,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: [ObjectExamples.THEME]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
-    @ApiExtraModels(ThemeDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     @UseCache()
     async getThemes(
@@ -236,15 +287,26 @@ export class ThemesApi {
         description: 'A zip file containing theme to be imported.',
         required: true
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: ThemeDTO
+        type: ThemeDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.THEME
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
-    @ApiExtraModels(ThemeDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async importTheme(
         @AuthUser() user: IAuthUser,
@@ -286,14 +348,24 @@ export class ThemesApi {
         description: 'Theme Identifier',
         example: Examples.DB_ID,
     })
+    @ApiProduces('application/zip')
     @ApiOkResponse({
-        description: 'Successful operation. Response zip file.'
+        description: 'Successful operation. Response zip file.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     @UseCache()
     async exportTheme(

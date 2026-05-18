@@ -14,6 +14,7 @@ import { ModulesApi } from './api/service/module.js';
 import { ToolsApi } from './api/service/tool.js';
 import { ProfileApi } from './api/service/profile.js';
 import { PolicyApi } from './api/service/policy.js';
+import { DmrvApi } from './api/service/dmrv.js';
 import { SchemaApi, SingleSchemaApi } from './api/service/schema.js';
 import { SettingsApi } from './api/service/settings.js';
 import { TagsApi } from './api/service/tags.js';
@@ -49,6 +50,7 @@ import { PolicyRepositoryApi } from './api/service/policy-repository.js';
 import { RelayerAccountsApi } from './api/service/relayer-accounts.js';
 import { FormulasApi } from './api/service/formulas.js';
 import { ExternalPoliciesApi } from './api/service/external-policy.js';
+import { CredentialsApi } from './api/service/credentials.js';
 
 // const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 // const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -84,6 +86,7 @@ import { ExternalPoliciesApi } from './api/service/external-policy.js';
         ToolsApi,
         ProfileApi,
         PolicyApi,
+        DmrvApi,
         SingleSchemaApi,
         SchemaApi,
         SettingsApi,
@@ -108,7 +111,8 @@ import { ExternalPoliciesApi } from './api/service/external-policy.js';
         PolicyCommentsApi,
         PolicyRepositoryApi,
         RelayerAccountsApi,
-        WorkerTasksController
+        WorkerTasksController,
+        CredentialsApi
     ],
     providers: [
         LoggerService,

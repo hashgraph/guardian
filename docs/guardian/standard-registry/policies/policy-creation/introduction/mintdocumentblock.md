@@ -6,6 +6,11 @@ This block is responsible for adding configurations on calculating the amount of
 
 <table><thead><tr><th width="208">Block Property</th><th>Definition</th><th>Example Input</th><th>Status</th></tr></thead><tbody><tr><td>tag</td><td>Unique name for the logic block.</td><td><strong>mintDocumentBlock</strong></td><td></td></tr><tr><td>permissions</td><td>Which entity has rights to interact at this part of the workflow.</td><td>VVB</td><td></td></tr><tr><td>defaultActive</td><td>Shows whether this block is active at this time and whether it needs to be shown.</td><td>Checked or unchecked.</td><td></td></tr><tr><td>On errors</td><td>Called if the system error occurs in the Block</td><td><ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul></td><td></td></tr><tr><td>Stop Propagation</td><td>End processing here, don't pass control to the next block.</td><td>Checked or unchecked.</td><td></td></tr></tbody></table>
 
+### Additional Properties
+
+<table><thead><tr><th width="208">Block Property</th><th>Definition</th><th>Example Input</th><th>Status</th></tr></thead><tbody><tr><td>Round Method</td><td>The method used to round the number of tokens.</td><td>
+Select an option from the dropdown ('Round to nearest' is selected by default):<ul><li>Round up</li><li>Round down</li><li>Round to nearest</li></ul></td><td></td></tr><tr></tbody></table>
+
 ### UI Properties
 
 | UI Property        | Definition                                                                                                                                                          | Example Input                                                                     |

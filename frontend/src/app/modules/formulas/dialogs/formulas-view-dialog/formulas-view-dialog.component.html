@@ -22,8 +22,8 @@
             </p-tabPanel>
         </p-tabView>
     </div>
-    <div *ngIf="activeTab === 'formulas'" class="view-body">
-        <div class="nav-container">
+    <div *ngIf="activeTab === 'formulas'" class="view-body" #contentContainer>
+        <div class="nav-container" #navContainer>
 
             <div *ngIf="nav" class="field-tree">
                 <div *ngFor="let item of nav.data.items" class="field-item" [attr.selected]="item.selected">
@@ -52,7 +52,11 @@
 
 
         </div>
-
+        <div 
+            *ngIf="nav"
+            class="resize-handler" 
+            (mousedown)="onResizeStart($event)"
+        ></div>
         <div class="context">
 
             <ng-container *ngIf="current && current.type === 'constant'">

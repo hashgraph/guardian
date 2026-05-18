@@ -1,7 +1,3 @@
-import 'reflect-metadata';
-
-import * as ent from './entity/index.js';
-
 export * from './models/index.js';
 export * from './decorators/singleton.js';
 export * from './helpers/index.js';
@@ -19,5 +15,3 @@ export * from './topic-listener/topic-listener.js';
 export * from './security/index.js';
 export * from './notification/index.js';
 export * from './integrations/index.js';
-
-export const entities = Object.values(ent);

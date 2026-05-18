@@ -16,6 +16,7 @@
     "license": "Apache-2.0",
     "main": "dist/index.js",
     "module": "dist/index.js",
+    "sideEffects": false,
     "name": "@guardian/interfaces",
     "scripts": {
         "build": "tsc",
@@ -26,5 +27,5 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "type": "module",
-    "version": "3.5.1"
+    "version": "3.6.0-rc"
 }

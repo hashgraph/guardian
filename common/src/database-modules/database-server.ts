@@ -57,17 +57,26 @@ import {
     PolicyComment,
     PolicyDiscussion,
     GlobalEventsReaderStream,
-    GlobalEventsWriterStream
+    GlobalEventsWriterStream,
+    PolicyParameters,
+    MigrationMessageMap,
+    MigrationFailedItem,
+    DeleteCache,
+    DocumentDraft,
+    PolicyDiff,
+    CredentialRecord
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
 import { PolicyTool } from '../entity/tool.js';
 import { Message } from '../hedera-modules/index.js';
-import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../helpers/index.js';
+import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS, Wallet, KeyType } from '../helpers/index.js';
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { BaseEntity } from '../models/index.js';
 import { DryRunSavepointSnapshot } from '../entity/dry-run-savepoint-snapshot.js';
+import { MigrationRun } from '../entity/migration-run.js';
+import { DisconnectedPolicy } from '../entity/disconnected-policy.js';
 
 /**
  * Database server
@@ -956,6 +965,66 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Create Policy Parameters
+     * @param parameters
+     */
+    public static async createPolicyParameters(
+        parameters: PolicyParameters
+    ): Promise<PolicyParameters> {
+        const item = new DataBaseHelper(PolicyParameters).create(parameters);
+        return await new DataBaseHelper(PolicyParameters).save(item);
+    }
+
+    /**
+     * Set flag updated true
+     * @param parameters
+     * @param policyId
+     */
+    public static async setPolicyParametersUpdated(
+        parameters: PolicyParameters[],
+    ): Promise<PolicyParameters[]> {
+        return await new DataBaseHelper(PolicyParameters).updateMany(parameters);
+    }
+
+    /**
+     * Update Policy Parameters
+     * @param label
+     */
+    public static async updatePolicyParameters(
+        parameters: PolicyParameters
+    ): Promise<PolicyParameters> {
+        return await new DataBaseHelper(PolicyParameters).update(parameters);
+    }
+
+    /**
+     * Get Policy Parameters
+     * @param filters
+     */
+    public static async getPolicyParameters(
+        userDID: string,
+        policyId: string
+    ): Promise<PolicyParameters> {
+        return await new DataBaseHelper(PolicyParameters).findOne({
+            userDID,
+            policyId
+        });
+    }
+
+    /**
+     * Get Policy Parameters by Policy Id
+     * @param filters
+     */
+    public static async getPolicyParametersByPolicyId(
+        policyId: string
+    ): Promise<PolicyParameters[]> {
+        return await new DataBaseHelper(PolicyParameters).findAll({
+            where: {
+                policyId
+            }
+        });
+    }
+
+    /**
      * Create Policy Label
      * @param label
      */
@@ -1284,11 +1353,19 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Delete ExternalPolicy
+     * Remove ExternalPolicy
      * @param externalPolicy
      */
     public static async removeExternalPolicy(externalPolicy: ExternalPolicy): Promise<void> {
         return await new DataBaseHelper(ExternalPolicy).remove(externalPolicy);
+    }
+
+    /**
+     * Delete ExternalPolicy
+     * @param filters
+     */
+    public static async deleteExternalPolicy(filters: FilterObject<ExternalPolicy>): Promise<number> {
+        return await new DataBaseHelper(ExternalPolicy).delete(filters);
     }
 
     /**
@@ -1326,7 +1403,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 owner: { $addToSet: '$owner' },
                 creator: { $push: '$creator' },
                 status: { $push: '$status' },
-                username: { $push: '$username' }
+                type: { $first: '$type', },
+                username: { $push: '$username' },
+                types: { $push: { username: '$username', type: '$type' } }
             }
         });
         pipeline.push({
@@ -1343,6 +1422,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 creator: true,
                 status: true,
                 username: true,
+                users: true,
+                type: true,
+                types: true,
                 fullStatus: {
                     $switch: {
                         branches: [
@@ -1445,6 +1527,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
         this.classMap.set(PolicyProperty, 'PolicyProperties');
         this.classMap.set(MintRequest, 'MintRequest');
         this.classMap.set(MintTransaction, 'MintTransaction');
+        this.classMap.set(MigrationRun, 'MigrationRun');
+        this.classMap.set(MigrationMessageMap, 'MigrationMessageMap');
+        this.classMap.set(MigrationFailedItem, 'MigrationFailedItem');
     }
 
     /**
@@ -1948,7 +2033,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
         hederaAccountId: string,
         hederaAccountKey: string,
         active: boolean,
-        systemMode?: boolean
+        systemMode?: boolean,
+        document?: any
     ): Promise<void> {
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
             did,
@@ -1963,6 +2049,22 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 type: did,
                 hederaAccountKey
             }, policyId, 'VirtualKey', !!systemMode));
+        }
+
+        if (document) {
+            if (Array.isArray(document.keys)) {
+                for (const key of document.keys) {
+                    await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
+                        did: key.did,
+                        type: key.type,
+                        hederaAccountKey: key.key
+                    }, policyId, 'VirtualKey', !!systemMode));
+                }
+            }
+            delete document.keys;
+            await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId(
+                document,
+                policyId, 'DidDocumentCollection', !!systemMode));
         }
     }
 
@@ -1996,12 +2098,25 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Overriding the create method
+     * Overriding the delete method
      * @param entityClass
      * @param filters
      */
     public deleteEntity<T extends BaseEntity>(entityClass: new () => T, filters: FilterObject<T> | string | ObjectId): Promise<number> {
         return new DataBaseHelper(entityClass).delete(filters);
+    }
+
+    /**
+     * Overriding the update method
+     * @param entityClass
+     * @param filters
+     */
+    public updateEntity<T extends BaseEntity>(
+        entityClass: new () => T,
+        update: any,
+        filters: FilterObject<T>
+    ): Promise<number> {
+        return new DataBaseHelper(entityClass).updateManyRaw(filters, update);
     }
 
     /**
@@ -2040,6 +2155,55 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async deletePolicyTests(policyId: string): Promise<void> {
         await new DataBaseHelper(PolicyTest).delete({ policyId });
+    }
+
+    /**
+     * Delete credential records and their secrets for a policy
+     * @param policyId
+     * @param userId
+     */
+    public static async deletePolicyCredentials(policyId: string, userId?: string): Promise<number> {
+        const credentialDb = new DataBaseHelper(CredentialRecord);
+        const records = await credentialDb.find({ policyId });
+        if (records.length > 0) {
+            const wallet = new Wallet();
+            for (const record of records) {
+                try {
+                    const keyPath = `${record.serviceType}/${record.policyId || 'global'}/${record.dryRun ? 'dryrun' : 'production'}`;
+                    await wallet.setUserKey(record.ownerId, KeyType.INTEGRATION_KEY, keyPath, '', userId);
+                } catch (_) { /* best effort */ }
+            }
+            await credentialDb.delete({ policyId });
+        }
+        return records.length;
+    }
+
+    /**
+     * Save external credential metadata
+     */
+    public async saveExternalCredentials(item: any): Promise<any> {
+        return await this.save(CredentialRecord, item);
+    }
+
+    /**
+     * Get external credentials by filters
+     */
+    public async getExternalCredentials(filters: any): Promise<any[]> {
+        return await this.find(CredentialRecord, filters);
+    }
+
+    /**
+     * Get single external credential by filters
+     */
+    public async getExternalCredential(filters: any): Promise<any> {
+        return await this.findOne(CredentialRecord, filters);
+    }
+
+    /**
+     * Delete external credentials by filters
+     */
+    public async deleteExternalCredentials(filters: any): Promise<void> {
+        await new DataBaseHelper(CredentialRecord).delete(filters);
     }
 
     /**
@@ -2331,6 +2495,19 @@ export class DatabaseServer extends AbstractDatabaseServer {
             return await (new DataBaseHelper(AssignEntity)).find({ type, did });
         } else {
             return await (new DataBaseHelper(AssignEntity)).find({ did });
+        }
+    }
+
+    /**
+     * Get assigned users
+     * @param did
+     * @param type
+     */
+    public static async getAssignedUsers(entityId: string, type?: AssignedEntityType): Promise<AssignEntity[]> {
+        if (type) {
+            return await (new DataBaseHelper(AssignEntity)).find({ entityId, type });
+        } else {
+            return await (new DataBaseHelper(AssignEntity)).find({ entityId });
         }
     }
 
@@ -3930,7 +4107,12 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param savepointIds
      * @virtual
      */
-    public static async getVirtualUsers(policyId: string, savepointIds?: string[]): Promise<DryRun[]> {
+    public static async getVirtualUsers(
+        policyId: string,
+        savepointIds?: string[],
+        virtualKey?: boolean,
+        document?: boolean,
+    ): Promise<DryRun[]> {
         const filter: any = {
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
@@ -3944,7 +4126,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
             filter.$or.push({ savepointId: { $in: savepointIds } });
         }
 
-        return await new DataBaseHelper(DryRun).find(filter, {
+        const users = await new DataBaseHelper(DryRun).find(filter, {
             fields: [
                 'id',
                 'did',
@@ -3956,6 +4138,77 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 createDate: 1
             }
         });
+
+        if (virtualKey) {
+            for (const user of users) {
+                const key = (await new DataBaseHelper(DryRun).findOne({
+                    dryRunId: policyId,
+                    dryRunClass: 'VirtualKey',
+                    did: user.did,
+                    type: user.did
+                }));
+                user.hederaAccountKey = key?.hederaAccountKey;
+            }
+        }
+        if (document) {
+            for (const user of users) {
+                const doc = (await new DataBaseHelper(DryRun).findOne({
+                    dryRunId: policyId,
+                    dryRunClass: 'DidDocumentCollection',
+                    did: user.did
+                }));
+                if (doc) {
+                    const keys: any[] = [];
+                    const methodIds = Object.values(doc.verificationMethods);
+                    for (const methodId of methodIds) {
+                        const methodKey = (await new DataBaseHelper(DryRun).findOne({
+                            dryRunId: policyId,
+                            dryRunClass: 'VirtualKey',
+                            did: user.did,
+                            type: methodId
+                        }));
+                        if (methodKey) {
+                            keys.push({
+                                did: doc.did,
+                                type: methodKey.type,
+                                key: methodKey.hederaAccountKey
+                            })
+                        }
+                    }
+                    user.document = {
+                        did: doc.did,
+                        document: doc.document,
+                        verificationMethods: doc.verificationMethods,
+                        keys
+                    };
+                }
+            }
+        }
+
+        return users;
+    }
+
+    /**
+     * Count Virtual Users
+     * @param policyId
+     * @param savepointIds
+     * @virtual
+     */
+    public static async countVirtualUsers(policyId: string, savepointIds?: string[]): Promise<number> {
+        const filter: any = {
+            dryRunId: policyId,
+            dryRunClass: 'VirtualUsers',
+            $or: [
+                { savepointId: null },
+                { savepointId: { $exists: false } }
+            ]
+        };
+
+        if (savepointIds) {
+            filter.$or.push({ savepointId: { $in: savepointIds } });
+        }
+
+        return await new DataBaseHelper(DryRun).count(filter);
     }
 
     /**
@@ -4081,11 +4334,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public static async removeAssignEntity(
         type: AssignedEntityType,
         entityId: string,
-        did: string,
+        did?: string,
         owner?: string
     ): Promise<boolean> {
-        const filters: { type: AssignedEntityType, entityId: string, did: string, owner?: string } = { type, entityId, did };
-
+        const filters: {
+            type: AssignedEntityType,
+            entityId: string,
+            did?: string,
+            owner?: string
+        } = { type, entityId };
+        if (did) {
+            filters.did = did;
+        }
         if (owner) {
             filters.owner = owner;
         }
@@ -4509,6 +4769,112 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Save Mock
+     * @param dryRun
+     * @param type
+     * @param data
+     *
+     */
+    public static async saveMock(
+        dryRun: string,
+        type: string,
+        data: any
+    ): Promise<void> {
+        await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
+            ...data,
+            type
+        }, dryRun, 'Mock', false));
+    }
+
+    /**
+     * Save Mock
+     * @param dryRun
+     * @param type
+     * @param data
+     *
+     */
+    public static async updateMock(item: DryRun): Promise<void> {
+        await new DataBaseHelper(DryRun).save(item);
+    }
+    /**
+     * Get Mock
+     * @param dryRun
+     * @param type
+     * @param filters
+     *
+     */
+    public static async getMock(
+        dryRun: string,
+        type: string,
+        filters: any
+    ): Promise<DryRun> {
+        return (await new DataBaseHelper(DryRun).findOne({
+            ...filters,
+            dryRunId: dryRun,
+            dryRunClass: 'Mock',
+            type
+        }));
+    }
+
+    /**
+     * Delete Mock
+     * @param dryRun
+     * @param type
+     * @param filters
+     *
+     */
+    public static async deleteMock(
+        dryRun: string,
+        type: string,
+        filters: any
+    ): Promise<void> {
+        (await new DataBaseHelper(DryRun).delete({
+            ...filters,
+            dryRunId: dryRun,
+            dryRunClass: 'Mock',
+            type
+        }));
+    }
+
+    /**
+     * Get Mocks
+     * @param dryRun
+     */
+    public static async getMocks(
+        dryRun: string,
+        type?: string,
+        filters?: any
+    ): Promise<DryRun[]> {
+        let query: any = {
+            dryRunId: dryRun,
+            dryRunClass: 'Mock',
+        }
+        if (type) {
+            query.type = type
+        }
+        if (filters) {
+            query = {
+                ...query,
+                ...filters
+            }
+        }
+        return (await new DataBaseHelper(DryRun).find(query));
+    }
+
+    /**
+     * Delete Mocks
+     * @param dryRun
+     */
+    public static async deleteMocks(
+        dryRun: string
+    ): Promise<void> {
+        (await new DataBaseHelper(DryRun).delete({
+            dryRunId: dryRun,
+            dryRunClass: 'Mock'
+        }));
+    }
+
+    /**
      * Set Active Group
      *
      * @param policyId
@@ -4860,6 +5226,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
         model.policyGroups = data.policyGroups;
         model.categories = data.categories;
         model.projectSchema = data.projectSchema;
+        model.editableParametersSettings = data.editableParametersSettings;
+        model.policyDocumentation = data.policyDocumentation;
 
         return await new DataBaseHelper(Policy).save(model);
     }
@@ -5202,6 +5570,19 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Get mint requests with count
+     * @param filters Filters
+     * @param options Options
+     * @returns Mint requests and count
+     */
+    public static async getMintRequestsAndCount(
+        filters?: FilterObject<MintRequest>,
+        options?: FindOptions<object>
+    ): Promise<[MintRequest[], number]> {
+        return await new DataBaseHelper(MintRequest).findAndCount(filters, options);
+    }
+
+    /**
      * Get remote requests
      * @param filters
      */
@@ -5497,5 +5878,269 @@ export class DatabaseServer extends AbstractDatabaseServer {
     ): Promise<void> {
         const helper = new DataBaseHelper<GlobalEventsWriterStream>(GlobalEventsWriterStream);
         await helper.delete(stream);
+    }
+
+    /**
+     * Delete policy documents
+     *
+     * @param policyId
+     */
+    public async deletePolicyDocuments(
+        policyId: string
+    ): Promise<void> {
+        await this.deleteEntity(AggregateVC, { policyId });
+        await this.deleteEntity(BlockCache, { policyId });
+        await this.deleteEntity(ApprovalDocumentCollection, { policyId });
+        await this.deleteEntity(BlockStateSavepoint, { policyId });
+        await this.deleteEntity(BlockState, { policyId });
+        await this.deleteEntity(DeleteCache, { policyId });
+        await this.deleteEntity(DidDocumentCollection, { policyId });
+        await this.deleteEntity(DocumentDraft, { policyId });
+        await this.deleteEntity(DocumentState, { policyId });
+        await this.deleteEntity(ExternalDocument, { policyId });
+        await this.deleteEntity(Formula, { policyId });
+        await this.deleteEntity(GlobalEventsReaderStream, { policyId });
+        await this.deleteEntity(GlobalEventsWriterStream, { policyId });
+        await this.deleteEntity(MintRequest, { policyId });
+        await this.deleteEntity(MintTransaction, { policyId });
+        await this.deleteEntity(MultiDocuments, { policyId });
+        await this.deleteEntity(MultiPolicyTransaction, { policyId });
+        await this.deleteEntity(PolicyAction, { policyId });
+        await this.deleteEntity(PolicyCacheData, { policyId });
+        await this.deleteEntity(PolicyComment, { policyId });
+        await this.deleteEntity(PolicyDiff, { policyId });
+        await this.deleteEntity(PolicyDiscussion, { policyId });
+        await this.deleteEntity(PolicyInvitations, { policyId });
+        await this.deleteEntity(PolicyLabelDocument, { policyId });
+        await this.deleteEntity(PolicyLabel, { policyId });
+        await this.deleteEntity(PolicyRolesCollection, { policyId });
+        await this.deleteEntity(PolicyStatisticDocument, { policyId });
+        await this.deleteEntity(PolicyStatistic, { policyId });
+        await this.deleteEntity(Record, { policyId });
+        await this.deleteEntity(SchemaRule, { policyId });
+        await this.deleteEntity(SplitDocuments, { policyId });
+        await this.deleteEntity(Tag, { policyId });
+        await this.deleteEntity(TopicCollection, { policyId });
+        await this.deleteEntity(VcDocumentCollection, { policyId });
+        await this.deleteEntity(VpDocumentCollection, { policyId });
+        await this.deleteEntity(TokenCollection, { policyId });
+    }
+
+    /**
+     * Disconnect policy documents
+     *
+     * @param policyId
+     * @param user
+     */
+    public async disconnectPolicyDocuments(
+        policyId: string,
+        user: IAuthUser
+    ): Promise<void> {
+        await this.updateEntity(AggregateVC, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(ApprovalDocumentCollection, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(ExternalDocument, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(GlobalEventsReaderStream, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, userDid: user.did });
+        await this.updateEntity(GlobalEventsWriterStream, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, userDid: user.did });
+        await this.updateEntity(MultiDocuments, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, did: user.did });
+        await this.updateEntity(MultiPolicyTransaction, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyAction, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyComment, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyDiscussion, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyInvitations, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyRolesCollection, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(SplitDocuments, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, userId: user.id });
+        await this.updateEntity(VcDocumentCollection, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(VpDocumentCollection, {
+            $set: {
+                disconnected: true
+            }
+        }, { policyId, owner: user.did });
+    }
+
+    /**
+     * Reconnect policy documents
+     *
+     * @param policyId
+     * @param user
+     */
+    public async reconnectPolicyDocuments(
+        policyId: string,
+        user: IAuthUser
+    ): Promise<void> {
+        await this.updateEntity(AggregateVC, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(ApprovalDocumentCollection, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(ExternalDocument, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(GlobalEventsReaderStream, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, userDid: user.did });
+        await this.updateEntity(GlobalEventsWriterStream, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, userDid: user.did });
+        await this.updateEntity(MultiDocuments, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, did: user.did });
+        await this.updateEntity(MultiPolicyTransaction, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyAction, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyComment, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyDiscussion, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyInvitations, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(PolicyRolesCollection, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(SplitDocuments, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, userId: user.id });
+        await this.updateEntity(VcDocumentCollection, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+        await this.updateEntity(VpDocumentCollection, {
+            $set: {
+                disconnected: false
+            }
+        }, { policyId, owner: user.did });
+    }
+
+    /**
+     * Get Disconnected Policies
+     *
+     * @param policyId
+     * @param owner
+     *
+     */
+    public static async getDisconnectedPolicy(policyId: string, owner: string): Promise<DisconnectedPolicy> {
+        return await new DataBaseHelper(DisconnectedPolicy).findOne({ policyId, owner });
+    }
+
+    /**
+     * Get Disconnected Policies
+     *
+     * @param owner
+     *
+     */
+    public static async getDisconnectedPolicies(owner: string): Promise<DisconnectedPolicy[]> {
+        return await new DataBaseHelper(DisconnectedPolicy).find({ owner });
+    }
+
+    /**
+     * Disconnect Policy
+     *
+     * @param policyId
+     * @param owner
+     *
+     */
+    public static async disconnectPolicy(policyId: string, owner: string): Promise<DisconnectedPolicy> {
+        const item = new DataBaseHelper(DisconnectedPolicy).create({ policyId, owner });
+        return await new DataBaseHelper(DisconnectedPolicy).save(item);
+    }
+
+    /**
+     * Delete key
+     *
+     * @param policyId
+     * @param owner
+     *
+     */
+    public static async reconnectPolicy(policyId: string, owner: string): Promise<void> {
+        await new DataBaseHelper(DisconnectedPolicy).delete({ policyId, owner });
     }
 }

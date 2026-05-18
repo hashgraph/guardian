@@ -24,16 +24,20 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     public balance: string = '';
     public menuCollapsed: boolean = false;
     public smallMenuMode: boolean = false;
+    public notificationOpen: boolean = false;
     public menuItems: NavbarMenuItem[];
     public activeLink: string = '';
     public activeLinkRoot: string = '';
 
     public policyRequests = 0;
     public newPolicyRequests = 0;
+    public showDocWidget: boolean = true;
+    public readonly docWidgetAvailable: boolean = window.location.protocol === 'https:';
 
     private commonLinksDisabled: boolean = false;
     private balanceType: string;
     private balanceInit: boolean = false;
+    private lastToken: string | null = null;
     private ws!: any;
     private authSubscription!: any;
     private policyRequestsSubscription = new Subscription();
@@ -63,6 +67,8 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         try {
             this.smallMenuMode = localStorage.getItem('MAIN_HEADER') === 'true';
             this.menuCollapsed = this.smallMenuMode;
+            const savedDocWidget = localStorage.getItem('SHOW_DOC_WIDGET');
+            this.showDocWidget = savedDocWidget !== 'false';
         } catch (error) {
             console.error(error)
         }
@@ -70,6 +76,12 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
 
     ngOnInit(): void {
         this.update();
+        const gitBook = (window as any).GitBook;
+
+        if (gitBook && !this.showDocWidget) {
+            gitBook('hide');
+        }
+
         this.ws = this.webSocketService.profileSubscribe((event) => {
             if (event.type === 'PROFILE_BALANCE') {
                 if (event.data && event.data.balance) {
@@ -85,10 +97,12 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             this.balanceType = '';
         });
 
+        this.lastToken = this.auth.getAccessToken();
         this.authSubscription = this.auth.subscribe((token) => {
-            if (token) {
+            if (token && !this.lastToken) {
                 this.getBalance();
             }
+            this.lastToken = token;
         });
 
         this.policyRequestsSubscription.add(
@@ -124,6 +138,12 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             this.authSubscription = null;
         }
         this.policyRequestsSubscription.unsubscribe();
+    }
+
+    private resetBalance() {
+        this.balance = '';
+        this.balanceType = '';
+        this.balanceInit = false;
     }
 
     private getBalance() {
@@ -221,10 +241,32 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     }
 
     public logOut() {
+        this.resetBalance();
         this.auth.removeAccessToken();
         this.auth.removeUsername();
         this.authState.updateState(false);
         this.router.navigate(['/login']);
+    }
+
+    public onNotificationOpenChange(open: boolean) {
+        this.notificationOpen = open;
+        if (!open && this.menuCollapsed !== this.smallMenuMode) {
+            this.menuCollapsed = this.smallMenuMode;
+        }
+    }
+
+    public onNavbarMouseLeave() {
+        if (this.notificationOpen) {
+            return;
+        }
+        this.menuCollapsed = this.smallMenuMode;
+    }
+
+    public onNavbarMouseMove() {
+        if (this.notificationOpen || !this.menuCollapsed) {
+            return;
+        }
+        this.menuCollapsed = false;
     }
 
     public toggleMenuMode() {
@@ -243,6 +285,30 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             localStorage.setItem('MAIN_HEADER', String(this.smallMenuMode));
         } catch (error) {
             console.error(error);
+        }
+    }
+
+    public toggleDocWidget() {
+        if (!this.docWidgetAvailable) {
+            return;
+        }
+        this.showDocWidget = !this.showDocWidget;
+
+        try {
+            localStorage.setItem('SHOW_DOC_WIDGET', String(this.showDocWidget));
+        } catch (error) {
+            console.error(error);
+        }
+
+        const gitBook = (window as any).GitBook;
+
+        if (gitBook) {
+            if (this.showDocWidget) {
+                gitBook('show');
+            } else {
+                gitBook('close');
+                gitBook('hide');
+            }
         }
     }
 

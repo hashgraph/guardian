@@ -1,8 +1,9 @@
-import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISession, IStandardRegistryResponse, IUser, UserCategory, UserRole } from '@guardian/interfaces';
 import { Observable, of, Subject, Subscription } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { SILENT_HTTP_ERRORS } from '../constants';
 import { map } from 'rxjs/operators';
 
 /**
@@ -21,16 +22,36 @@ export class AuthService {
         this.refreshTokenSubject = new Subject();
     }
 
-    public login(username: string, password: string): Observable<any> {
-        return this.http.post<string>(`${this.url}/login`, { username, password });
+    public login(username: string, password: string, otp?: string): Observable<any> {
+        return this.http.post<string>(`${this.url}/login`, { username, password, otp });
     }
 
     public changePassword(username: string, oldPassword: string, newPassword: string): Observable<any> {
         return this.http.post<string>(`${this.url}/change-password`, { username, oldPassword, newPassword });
     }
 
+    public generateOtpSecret(): Observable<any> {
+        return this.http.post<any>(`${this.url}/otp/generate`, {});
+    }
+
+    public confirmOtpSecret(token: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/otp/confirm`, { token });
+    }
+
+    public getOtpStatus(): Observable<any> {
+        return this.http.get<any>(`${this.url}/otp/status`);
+    }
+
+    public deactivateOtp(): Observable<any> {
+        return this.http.post<any>(`${this.url}/otp/deactivate`, {});
+    }
+
     public updateAccessToken(): Observable<any> {
-        return this.http.post<any>(`${this.url}/access-token`, { refreshToken: this.getRefreshToken() }).pipe(
+        return this.http.post<any>(
+            `${this.url}/access-token`,
+            { refreshToken: this.getRefreshToken() },
+            { context: new HttpContext().set(SILENT_HTTP_ERRORS, true) }
+        ).pipe(
             map(result => {
                 const { accessToken } = result;
                 this.setAccessToken(accessToken);

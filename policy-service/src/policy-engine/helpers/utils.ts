@@ -187,11 +187,23 @@ export class PolicyUtils {
      * Token amount
      * @param token
      * @param amount
+     * @param method
      */
-    public static tokenAmount(token: Token, amount: number): [number, string] {
+    public static tokenAmount(token: Token, amount: number, method: string): [number, string] {
         const decimals = parseFloat(token.decimals) || 0;
         const _decimals = Math.pow(10, decimals);
-        const tokenValue = Math.round(amount * _decimals);
+        let tokenValue: number;
+        switch (method) {
+            case 'ceil':
+                tokenValue = Math.ceil(amount * _decimals);
+                break;
+            case 'floor':
+                tokenValue = Math.floor(amount * _decimals);
+                break;
+            case 'round':
+            default:
+                tokenValue = Math.round(amount * _decimals);
+        }
         const tokenAmount = (tokenValue / _decimals).toFixed(decimals);
         return [tokenValue, tokenAmount];
     }
@@ -503,7 +515,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
             await NotificationHelper.info(
                 `Associate token`,
@@ -542,7 +556,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
             await NotificationHelper.info(
                 `Dissociate token`,
@@ -585,7 +601,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
         }
     }
@@ -622,7 +640,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
         }
     }
@@ -660,7 +680,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
         }
     }
@@ -698,7 +720,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
         }
     }
@@ -717,11 +741,31 @@ export class PolicyUtils {
         user: UserCredentials,
         userId: string | null
     ): Promise<Token> {
-        let tokenId;
+        let tokenId: string;
         const owner = user.did;
         const policyId = ref.policyId;
         const adminId = user.hederaAccountId;
-        if (!ref.dryRun) {
+
+        if (ref.mockId) {
+            const workers = new Workers();
+            const hederaAccountKey = await user.loadHederaKey(ref, userId);
+            const createdToken = await workers.addRetryableTask({
+                type: WorkerTaskType.CREATE_TOKEN,
+                data: {
+                    operatorId: user.hederaAccountId,
+                    operatorKey: hederaAccountKey,
+                    payload: { userId },
+                    ...tokenTemplate
+                }
+            }, {
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
+            tokenId = createdToken.tokenId;
+        } else if (ref.dryRun) {
+            tokenId = new TokenId(Date.now()).toString();
+        } else {
             const workers = new Workers();
             const hederaAccountKey = await user.loadHederaKey(ref, userId);
 
@@ -734,7 +778,9 @@ export class PolicyUtils {
                     ...tokenTemplate
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
             tokenId = createdToken.tokenId;
 
@@ -783,8 +829,6 @@ export class PolicyUtils {
                     userId
                 ),
             ]);
-        } else {
-            tokenId = new TokenId(Date.now()).toString();
         }
 
         return await ref.databaseServer.createToken({
@@ -868,11 +912,23 @@ export class PolicyUtils {
                 memoObj: config.memoObj === 'doc'
                     ? memoObj
                     : config
-            }, userId, null);
+            }, {
+                admin: true,
+                submit: true
+            }, {
+                userId,
+                mockId: ref.mockId
+            });
             if (!ref.dryRun) {
                 await topic.saveKeys(userId);
             }
-            await topicHelper.twoWayLink(topic, rootTopic, null, userId);
+            await topicHelper.twoWayLink({
+                topic,
+                parent: rootTopic,
+                rationale: null,
+                userId,
+                mockId: ref.mockId
+            });
             await ref.databaseServer.saveTopic(topic.toObject());
         }
 
@@ -1883,6 +1939,7 @@ export class PolicyUtils {
     }
 
     public static async checkAccountBalance(
+        ref: AnyBlockType,
         relayerAccount?: string | any,
         userId?: string
     ) {
@@ -1896,7 +1953,9 @@ export class PolicyUtils {
                         payload: { userId }
                     }
                 }, {
-                    priority: 20
+                    priority: 20,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId
                 });
                 return (info.balance / 100000000) > 1;
             }
@@ -1998,6 +2057,88 @@ export class PolicyUtils {
             for (const id of vc.relationships) {
                 await PolicyUtils._findRelationships(ref, policyId, id, owner, map);
             }
+        }
+    }
+
+    public static deepAssign(target, ...sources) {
+        if (target === null) {
+            throw new TypeError('Cannot convert undefined or null to object');
+        }
+
+        const isObject = (obj) =>
+            obj && typeof obj === 'object' && !Array.isArray(obj);
+
+        for (const source of sources) {
+            if (!isObject(source) && !Array.isArray(source)) {
+                continue;
+            }
+
+            for (const key of Object.keys(source)) {
+            const value = source[key];
+
+            if (Array.isArray(value)) {
+                target[key] = value.map((item) =>
+                isObject(item) ? PolicyUtils.deepAssign({}, item) : item
+                );
+            } else if (isObject(value)) {
+                if (!isObject(target[key])) {
+                target[key] = {};
+                }
+                PolicyUtils.deepAssign(target[key], value);
+            } else {
+                target[key] = value;
+            }
+            }
+        }
+
+        return target;
+    }
+
+    /**
+     * Get integration credentials for a user and service type.
+     * Priority: policyId-specific first, then global (null policyId).
+     * Returns token string or null if not found.
+     */
+    public static async getIntegrationUserCredentials(
+        ref: AnyBlockType,
+        user: PolicyUser,
+        serviceType: string
+    ): Promise<string | null> {
+        if (!user || !user.did) {
+            return null;
+        }
+
+        const dryRun = !!ref.dryRun;
+
+        // Precedence: user+policy → user+global → SR+policy → SR+global
+        const lookups = [
+            { ownerId: user.did, policyId: ref.policyId },
+            { ownerId: user.did, policyId: null },
+            { ownerId: ref.policyOwner, policyId: ref.policyId },
+            { ownerId: ref.policyOwner, policyId: null },
+        ];
+
+        let record: any = null;
+        for (const { ownerId, policyId } of lookups) {
+            record = await ref.databaseServer.getExternalCredential({ ownerId, serviceType, policyId, dryRun });
+            if (record) {
+                break;
+            }
+        }
+
+        if (!record) {
+            return null;
+        }
+
+        // Get secret key from Wallet
+        try {
+            const keyPath = `${record.serviceType}/${record.policyId || 'global'}/${record.dryRun ? 'dryrun' : 'production'}`;
+            const token = await PolicyUtils.getAccountKey(
+                ref, record.ownerId, KeyType.INTEGRATION_KEY, keyPath, user.userId
+            );
+            return token || null;
+        } catch (e) {
+            return null;
         }
     }
 }

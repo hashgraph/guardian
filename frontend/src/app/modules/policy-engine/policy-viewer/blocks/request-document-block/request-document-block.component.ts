@@ -21,6 +21,9 @@ import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.s
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { PolicyStatus } from '@guardian/interfaces';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
+import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
+import { IPFSService } from 'src/app/services/ipfs.service';
+import { PolicyTestAutomationService } from '../../policy-test-automation/policy-test-automation.service';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -31,6 +34,7 @@ interface IRequestDocumentData {
     restoreData: any;
     data: any;
     relayerAccount: boolean;
+    enableAdditionalData: boolean;
     draft: boolean;
     editType: 'new' | 'edit';
     uiMetaData: {
@@ -110,6 +114,18 @@ export class RequestDocumentBlockComponent
     public submitText: string = 'Validate & Create';
     public isLocalUser: boolean = true;
     public remoteWarning: boolean = false;
+    public enableAdditionalData: boolean = false;
+    public evidenceText: string = '';
+    public evidenceFiles: AttachedFile[] = [];
+    private _evidenceFileMap = new WeakMap<AttachedFile, File>();
+
+    public get isEvidenceUploading(): boolean {
+        return this.evidenceFiles.some(f => !f.loaded && !f.error);
+    }
+
+    public get evidenceStepIndex(): number {
+        return 1;
+    }
 
     public get needRemoteWarning () {
         return !this.isLocalUser && this.relayerAccountType !== 'account';
@@ -134,6 +150,8 @@ export class RequestDocumentBlockComponent
         private savepointFlow: SavepointFlowService,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
+        private ipfsService: IPFSService,
+        private policyTest: PolicyTestAutomationService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -232,6 +250,7 @@ export class RequestDocumentBlockComponent
             this.schema = new Schema(schema);
             this.hideFields = {};
             this.relayerAccount = !!data.relayerAccount && !this.dryRun;
+            this.enableAdditionalData = !!data.enableAdditionalData && !this.dryRun;
             this.draft = isDraft;
             this.draftId = (isDraft && row) ? row.id : null;
             if (uiMetaData.privateFields) {
@@ -275,7 +294,9 @@ export class RequestDocumentBlockComponent
             this.disabled = false;
             this.isExist = false;
         }
-        if (this.relayerAccount) {
+        if (this.enableAdditionalData) {
+            this.submitText = 'Add Evidence Attachments';
+        } else if (this.relayerAccount) {
             this.submitText = 'Select Relayer Account';
         } else {
             this.submitText = (this.edit && !this.draft) ? 'Validate & Update' : 'Validate & Create';
@@ -359,13 +380,14 @@ export class RequestDocumentBlockComponent
             return;
         }
         if (this.dataForm.valid || draft) {
-            if (this.relayerAccount) {
-                if (this.isStep(0)) {
-                    this.setStep(1);
-                    this.loadRelayerAccounts();
-                } else {
-                    await this.onSubmit(draft);
-                }
+            if (this.enableAdditionalData && this.isStep(0)) {
+                this.setStep(1);
+            } else if (this.enableAdditionalData && this.isStep(1) && this.relayerAccount) {
+                this.setStep(2);
+                this.loadRelayerAccounts();
+            } else if (!this.enableAdditionalData && this.relayerAccount && this.isStep(0)) {
+                this.setStep(1);
+                this.loadRelayerAccounts();
             } else {
                 await this.onSubmit(draft);
             }
@@ -397,16 +419,23 @@ export class RequestDocumentBlockComponent
 
         prepareVcData(data);
 
+        const evidence = this.enableAdditionalData ? this.buildEvidence() : undefined;
+
+        const payload = {
+            document: data,
+            ref: this.ref,
+            draft,
+            draftId: this.draftId,
+            relayerAccount: this.getRelayerAccount(),
+            ...(evidence?.length ? { evidence } : {})
+        };
+
+        const captureOutput = this.dryRun && !draft && this.policyTest.state.captureNextFormSubmit;
+
         let requestSucceeded = false;
 
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, {
-                document: data,
-                ref: this.ref,
-                draft,
-                draftId: this.draftId,
-                relayerAccount: this.getRelayerAccount()
-            })
+            .setBlockDataWithResult(this.id, this.policyId, payload)
             .pipe(
                 finalize(async () => {
                     try {
@@ -418,8 +447,17 @@ export class RequestDocumentBlockComponent
                     }
                 })
             )
-            .subscribe(() => {
+            .subscribe((result) => {
                 requestSucceeded = true;
+                if (captureOutput) {
+                    this.policyTest.captureTestCase({
+                        policyId: this.policyId,
+                        blockId: this.id,
+                        blockType: 'requestDocumentBlock',
+                        ...payload,
+                        result: result?.result || result?.response
+                    });
+                }
 
                 setTimeout(() => {
                     this.loading = false;
@@ -438,6 +476,64 @@ export class RequestDocumentBlockComponent
         if (!this.loading) {
             this.onStep(true);
         }
+    }
+
+    public onEvidenceDrop($event: DragEvent) {
+        $event.preventDefault();
+        const files = $event.dataTransfer?.files;
+        if (files?.length) {
+            this.addEvidenceFiles(Array.from(files));
+        }
+    }
+
+    public onEvidenceAttach($event: any) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.multiple = true;
+        input.onchange = (e: any) => {
+            const files: File[] = Array.from(e.target.files || []);
+            if (files.length) {
+                this.addEvidenceFiles(files);
+            }
+        };
+        input.click();
+    }
+
+    public onDeleteEvidenceFile(file: AttachedFile) {
+        const index = this.evidenceFiles.indexOf(file);
+        if (index !== -1) {
+            this.evidenceFiles.splice(index, 1);
+            this._evidenceFileMap.delete(file);
+        }
+    }
+
+    private addEvidenceFiles(files: File[]) {
+        for (const rawFile of files) {
+            if (this.evidenceFiles.some(f => this._evidenceFileMap.get(f)?.name === rawFile.name)) {
+                continue;
+            }
+            const af = AttachedFile.fromFile('', '', '', rawFile);
+            this._evidenceFileMap.set(af, rawFile);
+            this.evidenceFiles.push(af);
+            this.ipfsService.addFile(rawFile).subscribe((cid: string) => {
+                af.cid = cid;
+                af.link = 'ipfs://' + cid;
+                af.loaded = true;
+            }, () => {
+                af.error = true;
+            });
+        }
+    }
+
+    private buildEvidence(): Array<{ dataType: 'message' | 'file'; data: string }> {
+        const entries: Array<{ dataType: 'message' | 'file'; data: string }> = [];
+        if (this.evidenceText?.trim()) {
+            entries.push({ dataType: 'message', data: this.evidenceText.trim() });
+        }
+        for (const file of this.evidenceFiles.filter(f => f.loaded && !f.error)) {
+            entries.push({ dataType: 'file', data: file.link });
+        }
+        return entries;
     }
 
     public preset(document: any) {
@@ -653,7 +749,8 @@ export class RequestDocumentBlockComponent
 
     public ifRelayerAccountDisabled() {
         if (this.relayerAccount) {
-            if (this.isStep(1)) {
+            const relayerStep = this.enableAdditionalData ? 2 : 1;
+            if (this.isStep(relayerStep)) {
                 if (this.relayerAccountType === 'account') {
                     return false;
                 } else if (this.relayerAccountType === 'relayerAccount') {

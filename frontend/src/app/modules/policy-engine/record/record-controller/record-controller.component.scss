@@ -64,10 +64,12 @@
     .recording-menu-label {
         height: 40px;
         min-width: 70px;
-        padding: 11px 12px 11px 10px;
+        padding: 0 12px 0 10px;
         box-sizing: border-box;
         position: relative;
         pointer-events: none;
+        display: flex;
+        align-items: center;
 
         &::after {
             pointer-events: none !important;
@@ -76,8 +78,8 @@
             border-right: 1px solid #838383;
             top: 8px;
             bottom: 8px;
-            right: 4px;
-            width: 4px;
+            right: 0;
+            width: 1px;
         }
     }
 
@@ -88,9 +90,30 @@
         padding: 8px 8px 8px 8px;
         box-sizing: border-box;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         &:hover {
             background: #cbcaca;
+        }
+    }
+
+    .recording-test-btn,
+    .recording-stop-btn {
+        width: auto;
+        padding: 8px 12px;
+        position: relative;
+
+        &::after {
+            pointer-events: none !important;
+            position: absolute;
+            content: "";
+            border-right: 1px solid #838383;
+            top: 8px;
+            bottom: 8px;
+            right: 0;
+            width: 1px;
         }
     }
 }
@@ -266,4 +289,45 @@
     top: 0;
     z-index: 1;
     pointer-events: all;
+}
+
+.recording-test-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #646464;
+
+    span {
+        line-height: 1;
+    }
+
+    i {
+        font-size: 10px;
+    }
+}
+
+.recording-stop-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #f00;
+
+    span {
+        line-height: 1;
+    }
+}
+
+::ng-deep .policy-test-record-overlay {
+    .p-overlayPanel-content {
+        padding: 0;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+    }
 }

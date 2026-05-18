@@ -38,6 +38,7 @@ interface IMetadata {
     blockType: 'customLogicBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Custom Logic',
         title: `Add 'Custom Logic' Block`,
@@ -59,19 +60,22 @@ interface IMetadata {
                 name: 'unsigned',
                 label: 'Unsigned VC',
                 title: 'Unsigned document',
-                type: PropertyType.Checkbox
+                type: PropertyType.Checkbox,
+                editable: true
             },
             {
                 name: 'passOriginal',
                 label: 'Pass original',
                 title: 'Pass original document',
-                type: PropertyType.Checkbox
+                type: PropertyType.Checkbox,
+                editable: true
             },
             {
                 name: 'selectedScriptLanguage',
                 label: 'Script Language',
                 title: 'Select script language',
                 type: PropertyType.Select,
+                editable: true,
                 items: [
                     {
                         label: 'JavaScript',
@@ -113,6 +117,7 @@ export class CustomLogicBlock {
     @CatchErrors()
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+
         try {
             const triggerEvents = async (documents: IPolicyDocument | IPolicyDocument[]) => {
                 if (!documents) {
@@ -172,8 +177,23 @@ export class CustomLogicBlock {
         actionStatus: RecordActionStep
     ): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
+            let settled = false;
+            const safeResolve = (value: any) => {
+                if (!settled) {
+                    settled = true;
+                    resolve(value);
+                }
+            };
+            const safeReject = (err: any) => {
+                if (!settled) {
+                    settled = true;
+                    reject(err);
+                }
+            };
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+                const options = await ref.getOptions(user);
+
                 let documents: IPolicyDocument[];
                 if (Array.isArray(state.data)) {
                     documents = state.data;
@@ -182,7 +202,7 @@ export class CustomLogicBlock {
                 }
 
                 let metadata: IMetadata;
-                if (ref.options.unsigned) {
+                if (options.unsigned) {
                     metadata = null;
                 } else {
                     if (!documents || !documents.length) {
@@ -200,18 +220,18 @@ export class CustomLogicBlock {
                                 //
                             }
 
-                            resolve(null);
+                            safeResolve(null);
                         }
                         return;
                     }
                     const processing = async (json: any): Promise<IPolicyDocument> => {
-                        if (ref.options.passOriginal) {
+                        if (options.passOriginal) {
                             return json;
                         }
-                        if (ref.options.unsigned) {
+                        if (options.unsigned) {
                             return await this.createUnsignedDocument(json, ref, actionStatus?.id);
                         } else {
-                            return await this.createDocument(json, metadata, ref, userId, actionStatus?.id);
+                            return await this.createDocument(json, metadata, ref, userId, actionStatus?.id, user);
                         }
                     }
                     if (Array.isArray(result)) {
@@ -227,7 +247,7 @@ export class CustomLogicBlock {
                                 //
                             }
 
-                            resolve(items);
+                            safeResolve(items);
                         }
                         return;
                     } else {
@@ -239,13 +259,13 @@ export class CustomLogicBlock {
                             } catch {
                                 //
                             }
-                            resolve(item);
+                            safeResolve(item);
                         }
                         return;
                     }
                 }
 
-                const files = Array.isArray(ref.options.artifacts) ? ref.options.artifacts : [];
+                const files = Array.isArray(options.artifacts) ? options.artifacts : [];
                 const execCodeArtifacts = files.filter((file: any) => file.type === ArtifactType.EXECUTABLE_CODE);
                 let execCode = '';
                 for (const execCodeArtifact of execCodeArtifacts) { // todo for python???
@@ -273,39 +293,97 @@ export class CustomLogicBlock {
 
                 collectTablesPack(context.documents, tablesPack);
 
-                const expression = ref.options.expression || '';
-                if (ref.options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
-                    const worker = new Worker(
-                        path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-python-worker.js'),
-                        {
-                            workerData: {
-                                execFunc: `${execCode}${expression}`,
-                                user,
-                                artifacts,
-                                documents: context.documents,
-                                sources: context.sources,
-                                tablesPack
-                            },
-                        });
-                    worker.on('error', (error) => {
-                        reject(error);
-                    });
-                    worker.on('message', async (data) => {
-                        if (data?.error) {
-                            reject(new Error(data.error));
-                            return;
-                        }
+                const expression = options.expression || '';
+                if (options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
+                    const pythonWorkerData = {
+                        execFunc: `${execCode}${expression}`,
+                        user,
+                        artifacts,
+                        documents: context.documents,
+                        sources: context.sources,
+                        tablesPack
+                    };
+
+                    const pythonTimeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS, 10);
+                    if (!Number.isFinite(pythonTimeoutMs) || pythonTimeoutMs <= 0) {
+                        safeReject(new Error('PYTHON_SANDBOX_TIMEOUT_MS is not configured (must be a positive integer)'));
+                        return;
+                    }
+
+                    if (process.env.PYTHON_SANDBOX_MODE === 'docker') {
+                        const { runPythonInDocker } = await import('../helpers/workers/custom-logic-python-docker-worker.js');
                         try {
-                            if (data?.type === 'done') {
-                                await done(data.result, data.final);
-                            }
-                            if (data?.type === 'debug') {
-                                ref.debug(data.message);
+                            const pendingDones: Promise<void>[] = [];
+                            await runPythonInDocker(pythonWorkerData, {
+                                onDone: (result, final) => {
+                                    pendingDones.push(done(result, final).catch(safeReject));
+                                },
+                                onDebug: (result) => {
+                                    ref.debug(result);
+                                }
+                            });
+                            // Wait for all done() calls to complete before resolving
+                            if (pendingDones.length > 0) {
+                                await Promise.all(pendingDones);
+                            } else {
+                                try { disposeTables(); } catch { /* */ }
+                                safeResolve(null);
                             }
                         } catch (error) {
-                            reject(error);
+                            try { disposeTables(); } catch { /* */ }
+                            safeReject(error);
                         }
-                    });
+                    } else {
+                        const worker = new Worker(
+                            path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-python-worker.js'),
+                            { workerData: pythonWorkerData });
+
+                        const pendingDones: Promise<void>[] = [];
+
+                        // Timeout for Pyodide worker
+                        const workerTimer = setTimeout(() => {
+                            worker.terminate();
+                            safeReject(new Error('Python sandbox execution timed out'));
+                        }, pythonTimeoutMs);
+
+                        worker.on('exit', async (code) => {
+                            clearTimeout(workerTimer);
+                            // Wait for all pending done() calls to finish
+                            if (pendingDones.length > 0) {
+                                try { await Promise.all(pendingDones); } catch { /* already handled */ }
+                            } else {
+                                try { disposeTables(); } catch { /* */ }
+                            }
+                            if (code !== 0 && code !== null) {
+                                safeReject(new Error(`Python worker exited with code ${code}`));
+                            } else {
+                                safeResolve(null);
+                            }
+                        });
+                        worker.on('error', (error) => {
+                            clearTimeout(workerTimer);
+                            try { disposeTables(); } catch { /* */ }
+                            safeReject(error);
+                        });
+                        worker.on('message', (data) => {
+                            if (data?.error) {
+                                clearTimeout(workerTimer);
+                                safeReject(new Error(data.error));
+                                return;
+                            }
+                            try {
+                                if (data?.type === 'done') {
+                                    pendingDones.push(done(data.result, data.final).catch(safeReject));
+                                }
+                                if (data?.type === 'debug') {
+                                    ref.debug(data.result);
+                                }
+                            } catch (error) {
+                                clearTimeout(workerTimer);
+                                safeReject(error);
+                            }
+                        });
+                    }
                 } else {
                     const worker = new Worker(
                         path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-worker.js'),
@@ -336,7 +414,7 @@ export class CustomLogicBlock {
                     });
                 }
             } catch (error) {
-                reject(error);
+                safeReject(error);
             }
         });
     }
@@ -359,6 +437,7 @@ export class CustomLogicBlock {
         const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, firstDocument, userId);
         const relationships = [];
+        const options = await ref.getOptions(user);
         let accounts: any = {};
         let tokens: any = {};
         let id: string;
@@ -400,7 +479,7 @@ export class CustomLogicBlock {
         }
 
         let issuer: string;
-        switch (ref.options.documentSigner) {
+        switch (options.documentSigner) {
             case 'owner':
                 issuer = owner.did;
                 break;
@@ -427,6 +506,7 @@ export class CustomLogicBlock {
         ref: IPolicyCalculateBlock,
         userId: string | null,
         actionStatusId: string,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -442,7 +522,9 @@ export class CustomLogicBlock {
         // <-- new vc
         const VCHelper = new VcHelper();
 
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
+        const options = await ref.getOptions(user);
+
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
             ...json
@@ -467,7 +549,7 @@ export class CustomLogicBlock {
 
         const newId = await PolicyActionsUtils.generateId({
             ref,
-            type: ref.options.idType,
+            type: options.idType,
             user: owner,
             relayerAccount,
             userId

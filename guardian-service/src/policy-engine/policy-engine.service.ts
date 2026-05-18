@@ -4,6 +4,7 @@ import {
     DataBaseHelper,
     DatabaseServer,
     DiscussionMessage,
+    DryRun,
     DryRunFiles,
     EncryptUtils,
     findAllEntities,
@@ -18,6 +19,12 @@ import {
     MessageResponse,
     MessageServer,
     MessageType,
+    MigrationFailedItem,
+    MigrationRun,
+    MockEntityType,
+    MockEvent,
+    MockType,
+    MockHelper,
     NatsService,
     NewNotifier,
     NotificationStep,
@@ -27,6 +34,7 @@ import {
     PolicyDiscussion,
     PolicyImportExport,
     PolicyMessage,
+    PolicyParameters,
     RecordImportExport,
     RunFunctionAsync,
     Schema as SchemaCollection,
@@ -34,6 +42,7 @@ import {
     TopicConfig,
     Users,
     VcHelper,
+    MintTransaction,
     XlsxToJson
 } from '@guardian/common';
 import {
@@ -42,6 +51,7 @@ import {
     EntityOwner,
     ExternalMessageEvents,
     GenerateUUIDv4,
+    IBlockCompleteEvent,
     IOwner,
     PolicyEngineEvents,
     PolicyEvents,
@@ -55,10 +65,18 @@ import {
     PolicyActionType,
     PolicyActionStatus,
     IgnoreRule,
-    SchemaStatus
+    SchemaStatus,
+    PolicyEditableFieldDTO,
+    MigrationConfig,
+    MigrationRunStatus,
+    MintTransactionStatus,
+    TokenType,
+    IPolicyDocumentationEntry,
+    POLICY_ALIAS_REGEX
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
+import { createHash } from 'crypto';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
@@ -72,6 +90,35 @@ import { IPolicyUser } from './policy-user.js';
 import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
 import { PolicyCommentsUtils } from './policy-comments-utils.js';
 import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
+
+/**
+ * Build technical and DMRV URLs for user-configured documentation entries.
+ * Called on policy save to enrich entries with generated URLs.
+ */
+function buildDocumentationUrls(
+    policyId: string,
+    entries: IPolicyDocumentationEntry[]
+): IPolicyDocumentationEntry[] {
+    if (!Array.isArray(entries)) {
+        return [];
+    }
+    return entries.map((entry) => {
+        const tag = entry.target;
+        const alias = entry.alias;
+        if (!alias || !POLICY_ALIAS_REGEX.test(alias)) {
+            throw new Error(
+                `Invalid alias "${alias}" — only lowercase letters, digits, hyphens; segments separated by '/'.`
+            );
+        }
+        const technicalUrl = `/api/v1/policies/${policyId}/tag/${tag}/blocks`;
+        const dmrvUrl = `/api/v1/dmrv/${policyId}/${alias}`;
+        return {
+            ...entry,
+            url: technicalUrl,
+            dmrvUrl,
+        };
+    });
+}
 
 /**
  * PolicyEngineChannel
@@ -347,6 +394,15 @@ export class PolicyEngineService {
                 }
             })
 
+        this.channel.getMessages(PolicyEvents.BLOCK_COMPLETE_BROADCAST,
+            (msg: IBlockCompleteEvent) => {
+                try {
+                    this.channel.sendMessage(ExternalMessageEvents.BLOCK_COMPLETE, msg, false);
+                } catch (error) {
+                    console.error('Error relaying BLOCK_COMPLETE_BROADCAST:', error);
+                }
+            })
+
         this.channel.getMessages(PolicyEvents.TEST_UPDATE_BROADCAST,
             async (msg: {
                 id: string,
@@ -587,6 +643,160 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RETRY_MINT,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                vpMessageId: string
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId, vpMessageId } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    const owner = new EntityOwner(user);
+                    await this.policyEngine.accessPolicy(policy, owner, 'execute');
+
+                    if (!policy || owner.creator !== policy.creator) {
+                        const err: any = new Error('Only the policy owner can retry mint requests.');
+                        err.code = 403;
+                        throw err;
+                    }
+
+                    const blockData = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.RETRY_MINT, policyId, {
+                            user,
+                            policyId,
+                            vpMessageId
+                        }, 5 * 60 * 1000) as any;
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MINT_REQUESTS,
+            async (msg: {
+                owner: IOwner,
+                policyId: string,
+                status: string,
+                target: string,
+                vpMessageId: string,
+                pageIndex: string,
+                pageSize: string
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { owner, policyId, status, target, vpMessageId, pageIndex, pageSize } = msg;
+
+                    const parsedPageSize = parseInt(pageSize, 10) || 10;
+                    const parsedPageIndex = parseInt(pageIndex, 10) || 0;
+                    const offset = parsedPageIndex * parsedPageSize;
+                    const limit = parsedPageSize;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+
+                    const filters: any = { policyId };
+
+                    if (!policy || owner.creator !== policy.creator) {
+                        filters.owner = owner.creator;
+                    }
+
+                    if (target) {
+                        filters.target = target;
+                    }
+
+                    if (vpMessageId) {
+                        filters.vpMessageId = vpMessageId;
+                    }
+
+                    if (status === 'error') {
+                        filters.error = { $ne: null };
+                    } else if (status === 'pending') {
+                        filters.error = null;
+                        filters.isMintNeeded = true;
+                    } else if (status === 'success') {
+                        filters.error = null;
+                        filters.isMintNeeded = false;
+                    }
+
+                    const [items, count] = await DatabaseServer.getMintRequestsAndCount(
+                        filters,
+                        {
+                            offset,
+                            limit,
+                            orderBy: { vpMessageId: 'DESC' } as any
+                        }
+                    );
+
+                    const requestIds = items.map((item: any) => item.id);
+                    const allTransactions = requestIds.length > 0
+                        ? await new DataBaseHelper(MintTransaction).find({ mintRequestId: { $in: requestIds } } as any)
+                        : [];
+
+                    const txByRequest = new Map<string, any[]>();
+                    for (const tx of allTransactions) {
+                        const key = tx.mintRequestId;
+                        if (!txByRequest.has(key)) {
+                            txByRequest.set(key, []);
+                        }
+                        txByRequest.get(key)!.push(tx);
+                    }
+
+                    const enrichedItems = items.map((item: any) => {
+                        const plain = typeof item.toJSON === 'function' ? item.toJSON() : { ...item };
+                        const transactions = txByRequest.get(plain.id) || [];
+
+                        let mintedAmount = 0;
+                        let transferredAmount = 0;
+
+                        if (plain.tokenType === TokenType.NON_FUNGIBLE) {
+                            for (const tx of transactions) {
+                                if (tx.mintStatus === MintTransactionStatus.SUCCESS && tx.serials) {
+                                    mintedAmount += tx.serials.length;
+                                }
+                                if (tx.transferStatus === MintTransactionStatus.SUCCESS && tx.serials) {
+                                    transferredAmount += tx.serials.length;
+                                }
+                            }
+                        } else {
+                            const hasSuccessMint = transactions.some(
+                                (tx: any) => tx.mintStatus === MintTransactionStatus.SUCCESS
+                            );
+                            if (hasSuccessMint) {
+                                mintedAmount = plain.decimals > 0
+                                    ? plain.amount / Math.pow(10, plain.decimals)
+                                    : plain.amount;
+                            }
+
+                            const hasSuccessTransfer = transactions.some(
+                                (tx: any) => tx.transferStatus === MintTransactionStatus.SUCCESS
+                            );
+                            if (hasSuccessTransfer) {
+                                transferredAmount = plain.decimals > 0
+                                    ? plain.amount / Math.pow(10, plain.decimals)
+                                    : plain.amount;
+                            }
+                        }
+
+                        const expectedAmount = plain.tokenType === TokenType.NON_FUNGIBLE
+                            ? plain.amount
+                            : (plain.decimals > 0 ? plain.amount / Math.pow(10, plain.decimals) : plain.amount);
+
+                        plain.mintedAmount = mintedAmount;
+                        plain.mintedExpected = expectedAmount;
+                        plain.transferredAmount = transferredAmount;
+                        plain.transferredExpected = plain.wasTransferNeeded ? expectedAmount : 0;
+
+                        return plain;
+                    });
+
+                    return new MessageResponse([enrichedItems, count]);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error, error.code);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.BLOCK_BY_TAG,
             async (msg: {
                 user: IAuthUser,
@@ -804,6 +1014,25 @@ export class PolicyEngineService {
                 return new MessageResponse(result);
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_DISCONNECTED_POLICY,
+            async (msg: {
+                policyId: string,
+                owner: IOwner
+            }) => {
+                const { policyId, owner } = msg;
+                const disconnected = await DatabaseServer.getDisconnectedPolicy(policyId, owner.creator);
+                if (disconnected) {
+                    const policy = await DatabaseServer.getPolicy({ id: policyId });
+                    if (policy) {
+                        const userFull = await (new Users()).getUserById(owner.creator, owner.id);
+                        await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
+                    }
+                    return new MessageResponse(policy);
+                } else {
+                    return new MessageResponse(null);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICIES,
             async (msg: { options: any, owner: IOwner }) => {
                 try {
@@ -845,7 +1074,7 @@ export class PolicyEngineService {
                         otherOptions.limit = 100;
                     }
                     await this.policyEngine.addAccessFilters(_filters, owner);
-                    await this.policyEngine.addLocationFilters(_filters, type);
+                    await this.policyEngine.addLocationFilters(_filters, type, owner);
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
                     const userFull = await (new Users()).getUserById(owner.creator, owner.id);
                     for (const policy of policies) {
@@ -880,7 +1109,7 @@ export class PolicyEngineService {
                         otherOptions.limit = 100;
                     }
                     await this.policyEngine.addAccessFilters(_filters, owner);
-                    await this.policyEngine.addLocationFilters(_filters, type);
+                    await this.policyEngine.addLocationFilters(_filters, type, owner);
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
 
                     const userFull = await (new Users()).getUserById(owner.creator, owner.id);
@@ -1199,6 +1428,9 @@ export class PolicyEngineService {
                     if (policy.status !== PolicyStatus.DRAFT) {
                         throw new Error('Policy is not in draft status.');
                     }
+
+                    model.policyDocumentation = buildDocumentationUrls(policyId, model.policyDocumentation || []);
+
                     let result = await DatabaseServer.updatePolicyConfig(policyId, model);
                     result = await PolicyImportExportHelper.updatePolicyComponents(result, logger, owner.id);
 
@@ -1292,9 +1524,13 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_POLICIES,
-            async (msg: { policyId: string, owner: IOwner }): Promise<IMessageResponse<any>> => {
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                enableMock: boolean
+            }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { policyId, owner } = msg;
+                    const { policyId, owner, enableMock } = msg;
 
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'publish');
@@ -1324,8 +1560,8 @@ export class PolicyEngineService {
                     const errors = await this.policyEngine.validateModel(policyId, true);
                     const isValid = !errors.blocks.some(block => !block.isValid);
                     if (isValid) {
-                        await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger);
-                        await this.policyEngine.generateModel(model.id.toString());
+                        await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger, enableMock);
+                        await this.policyEngine.generateModel(model.id.toString(), enableMock);
                     }
 
                     const savepointsCount = await DatabaseServer.getSavepointsCount(policyId);
@@ -1334,6 +1570,7 @@ export class PolicyEngineService {
                         await DatabaseServer.nullifyInitialDryRunSavepointIds();
                     } else {
                         await DatabaseServer.removeDryRunWithEmptySavepoint(policyId);
+                        PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
                     }
 
                     return new MessageResponse({
@@ -1439,6 +1676,8 @@ export class PolicyEngineService {
 
                     await this.policyEngine.destroyModel(model.id.toString(), owner?.id);
 
+                    PolicyDataMigrator.clearRunCacheByPolicyId(model.id.toString());
+
                     const savepointsCount = await DatabaseServer.getSavepointsCount(model.id.toString());
                     if (savepointsCount === 0) {
                         const databaseServer = new DatabaseServer(model.id.toString());
@@ -1448,6 +1687,48 @@ export class PolicyEngineService {
                     return new MessageResponse(true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DISCONNECT_POLICY,
+            async (msg: { policyId: string, user: IAuthUser, }): Promise<IMessageResponse<boolean>> => {
+                try {
+                    const { policyId, user } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (policy) {
+                        const result = await new GuardiansService()
+                            .sendPolicyMessage<boolean>(PolicyEvents.DISCONNECT_POLICY, policyId, {
+                                user,
+                                policyId,
+                            }) as any
+                        return new MessageResponse(result);
+                    } else {
+                        return new MessageResponse(true);
+                    }
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RECONNECT_POLICY,
+            async (msg: { policyId: string, user: IAuthUser, }): Promise<IMessageResponse<boolean>> => {
+                try {
+                    const { policyId, user } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (policy) {
+                        const result = await new GuardiansService()
+                            .sendPolicyMessage<boolean>(PolicyEvents.RECONNECT_POLICY, policyId, {
+                                user,
+                                policyId,
+                            }) as any
+                        return new MessageResponse(result);
+                    } else {
+                        return new MessageResponse(true);
+                    }
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                     return new MessageError(error);
                 }
             });
@@ -2049,6 +2330,23 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_VIRTUAL_USER,
+            async (msg: { policyId: string, did: string, owner: IOwner }) => {
+                try {
+                    const { policyId, did, owner } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+                    const instanceDB = new DatabaseServer(policyId);
+                    const user = await instanceDB.getVirtualUser(did);
+                    return new MessageResponse(user);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER,
             async (msg: { policyId: string, owner: IOwner, savepointIds?: string[] }) => {
                 try {
@@ -2069,8 +2367,8 @@ export class PolicyEngineService {
                     const did = didObject.getDid();
                     const document = didObject.getDocument();
 
-                    const count = await DatabaseServer.getVirtualUsers(policyId, savepointIds);
-                    const username = `Virtual User ${count.length}`;
+                    const count = await DatabaseServer.countVirtualUsers(policyId, savepointIds);
+                    const username = `Virtual User ${count}`;
 
                     await DatabaseServer.createVirtualUser(
                         policyId,
@@ -2103,6 +2401,72 @@ export class PolicyEngineService {
 
                     const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds);
                     return new MessageResponse(users);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Create Virtual User V2 — returns created user object instead of full list
+         */
+        this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER_V2,
+            async (msg: { policyId: string, owner: IOwner, savepointIds?: string[] }) => {
+                try {
+                    const { policyId, owner, savepointIds } = msg;
+
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    const topic = await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic);
+                    const newPrivateKey = PrivateKey.generate();
+                    const newAccountId = new AccountId(Date.now());
+
+                    const vcHelper = new VcHelper();
+                    const didObject = await vcHelper.generateNewDid(topic.topicId, newPrivateKey);
+                    const did = didObject.getDid();
+                    const document = didObject.getDocument();
+
+                    const count = await DatabaseServer.countVirtualUsers(policyId, savepointIds);
+                    const username = `Virtual User ${count}`;
+
+                    await DatabaseServer.createVirtualUser(
+                        policyId,
+                        username,
+                        did,
+                        newAccountId.toString(),
+                        newPrivateKey.toString(),
+                        false
+                    );
+
+                    const instanceDB = new DatabaseServer(policyId);
+                    const keys = didObject.getPrivateKeys();
+                    const verificationMethods = {};
+                    for (const item of keys) {
+                        const { id, type, key } = item;
+                        verificationMethods[type] = id;
+                        await instanceDB.setVirtualKey(did, id, key);
+                    }
+                    await instanceDB.setVirtualKey(did, did, newPrivateKey.toString());
+                    await instanceDB.saveDid({ did, document, verificationMethods });
+
+                    await (new GuardiansService())
+                        .sendPolicyMessage(PolicyEvents.CREATE_VIRTUAL_USER, policyId, {
+                            did,
+                            data: {
+                                accountId: newAccountId.toString(),
+                                document
+                            }
+                        });
+
+                    return new MessageResponse({
+                        username,
+                        did,
+                        hederaAccountId: newAccountId.toString(),
+                        active: false
+                    });
                 } catch (error) {
                     return new MessageError(error);
                 }
@@ -2145,6 +2509,7 @@ export class PolicyEngineService {
                     }
 
                     await DatabaseServer.clearDryRun(policyId, false);
+                    PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
 
                     await DatabaseServer.clearAllSavepointData(policyId);
 
@@ -2307,6 +2672,7 @@ export class PolicyEngineService {
                     await DatabaseServer.restoreSavepointOptions(policyId, savepointId);
                     await DatabaseServer.removeDryRunWithEmptySavepoint(policyId)
                     await DatabaseServer.setCurrentSavepoint(policyId, savepointId);
+                    PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
 
                     await new GuardiansService().sendPolicyMessage(
                         PolicyEvents.APPLY_SAVEPOINT,
@@ -2467,6 +2833,196 @@ export class PolicyEngineService {
                     return new MessageError(error);
                 }
             });
+
+        this.channel.getMessages<any, any>('MOCK_EVENT_EXECUTE',
+            async (event: MockEvent) => {
+                try {
+                    const result = await MockHelper.execute(event);
+                    return new MessageResponse(result);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MOCK_CONFIG,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+            }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    const config = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.GET_MOCK_CONFIG, policyId, {}) as any
+
+                    return new MessageResponse(config);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_MOCK_CONFIG,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                config: any,
+            }) => {
+                try {
+                    const { policyId, owner, config } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    const result = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.SET_MOCK_CONFIG, policyId, config) as any
+
+                    return new MessageResponse(result);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MOCK_DATA,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+            }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+                    const data = await MockHelper.getMockData(policyId);
+                    return new MessageResponse(data);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_MOCK_DATA,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                data: any
+            }) => {
+                try {
+                    const { policyId, owner, data } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+                    const result = await MockHelper.setMockData(policyId, data);
+                    return new MessageResponse(result);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.IMPORT_MOCK_DATA,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                zip: any
+            }) => {
+                try {
+                    const { policyId, owner, zip } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    await MockHelper.import(policyId, Buffer.from(zip.data));
+
+                    const data = await MockHelper.getMockData(policyId);
+                    return new MessageResponse(data);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.EXPORT_MOCK_DATA,
+            async (msg: {
+                policyId: string,
+                owner: IOwner
+            }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    const zip = await MockHelper.export(policyId);
+                    const file = await zip.generateAsync({
+                        type: 'arraybuffer',
+                        compression: 'DEFLATE',
+                        compressionOptions: {
+                            level: 3,
+                        },
+                        platform: 'UNIX',
+                    });
+                    return new BinaryMessageResponse(file);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.MOCK_REQUEST,
+            async (msg: {
+                policyId: string,
+                owner: IOwner,
+                type: MockType,
+                config: any,
+            }) => {
+                try {
+                    const { policyId, owner, type, config } = msg;
+                    const model = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(model)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+                    if (type === MockType.GET_FILE) {
+                        const result = await MockHelper.execute({
+                            mockId: policyId,
+                            type: MockType.GET_FILE,
+                            data: {
+                                type: MockEntityType.FILE,
+                                cid: config?.cid
+                            }
+                        });
+                        return new MessageResponse(result);
+                    } else if (type === MockType.API) {
+                        const result = await MockHelper.execute({
+                            mockId: policyId,
+                            type: MockType.API,
+                            data: {
+                                type: MockEntityType.API,
+                                method: config.type,
+                                url: config.url,
+                                headers: config.headers,
+                                data: config.body,
+                            }
+                        });
+                        return new MessageResponse(result);
+                    } else {
+                        return new MessageResponse(null);
+                    }
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
         //#endregion
 
         //#region Migrate data endpoints
@@ -2506,6 +3062,53 @@ export class PolicyEngineService {
                     const notifier = await NewNotifier.create(task);
                     RunFunctionAsync(
                         async () => {
+                            await PolicyDataMigrator.assertNoActiveMigrationForUser(owner);
+
+                            const { src, dst } = migrationConfig.policies;
+
+                            const srcPolicy = await DatabaseServer.getPolicyById(src);
+                            const dstPolicy = await DatabaseServer.getPolicyById(dst);
+
+                            if (!srcPolicy) {
+                                throw new Error('Source policy not found');
+                            }
+                            if (!dstPolicy) {
+                                throw new Error('Destination policy not found');
+                            }
+
+                            const srcIsDryRun = PolicyHelper.isDryRunMode(srcPolicy);
+                            const dstIsDryRun = PolicyHelper.isDryRunMode(dstPolicy);
+
+                            if (srcIsDryRun !== dstIsDryRun) {
+                                throw new Error('Source and destination policies must be in the same mode');
+                            }
+
+                            const isDstDryRun = PolicyHelper.isDryRunMode(dstPolicy);
+                            const db = new DatabaseServer(isDstDryRun ? dst : null);
+
+                            const existingRunFilters: Partial<MigrationRun> = isDstDryRun
+                                ? {
+                                    srcPolicyId: src,
+                                    dstPolicyId: dst
+                                }
+                                : {
+                                    srcPolicyId: src,
+                                    dstPolicyId: dst,
+                                    startedBy: owner?.id
+                                };
+
+                            const existingRun = await db.findOne(MigrationRun, existingRunFilters);
+
+                            if (existingRun) {
+                                const normalizedRun = PolicyDataMigrator.mapRunToResponse(existingRun);
+
+                                if (normalizedRun.status === MigrationRunStatus.RUNNING) {
+                                    throw new Error('Migration for this policy pair is already running');
+                                }
+
+                                await db.remove(MigrationRun, existingRun);
+                            }
+
                             const migrationErrors =
                                 await PolicyDataMigrator.migrate(
                                     owner.owner,
@@ -2536,6 +3139,342 @@ export class PolicyEngineService {
                     );
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RESUME_MIGRATE_DATA_ASYNC,
+            async (msg: { runId: string, owner: IOwner, task: any }) => {
+                try {
+                    const { runId, owner, task } = msg;
+                    const notifier = await NewNotifier.create(task);
+
+                    RunFunctionAsync(
+                        async () => {
+                            await PolicyDataMigrator.assertNoActiveMigrationForUser(owner);
+
+                            const db = new DatabaseServer();
+                            let run = await db.findOne(MigrationRun, {
+                                id: runId,
+                                startedBy: owner?.id
+                            } as Partial<MigrationRun>);
+
+                            if (!run) {
+                                const dryRunRaw = await new DataBaseHelper(DryRun).findOne({
+                                    dryRunClass: 'MigrationRun',
+                                    id: runId,
+                                    startedBy: owner?.id
+                                } as any);
+
+                                if (!dryRunRaw?.dryRunId) {
+                                    throw new Error('Migration run not found');
+                                }
+
+                                const dryRunDb = new DatabaseServer(dryRunRaw.dryRunId);
+                                run = await dryRunDb.findOne(MigrationRun, {
+                                    id: runId
+                                } as Partial<MigrationRun>);
+                            }
+
+                            if (!run) {
+                                throw new Error('Migration run not found');
+                            }
+
+                            const normalizedRun = PolicyDataMigrator.mapRunToResponse(run as MigrationRun);
+                            if (normalizedRun.status === MigrationRunStatus.RUNNING) {
+                                throw new Error('Migration run is already running');
+                            }
+
+                            const runConfig = run.config as MigrationConfig;
+                            if (!runConfig?.policies?.dst) {
+                                throw new Error('Migration run config is invalid');
+                            }
+
+                            const srcPolicy = await DatabaseServer.getPolicyById(runConfig.policies.src);
+                            const dstPolicy = await DatabaseServer.getPolicyById(runConfig.policies.dst);
+
+                            if (!srcPolicy) {
+                                throw new Error('Source policy not found');
+                            }
+                            if (!dstPolicy) {
+                                throw new Error('Destination policy not found');
+                            }
+
+                            const srcIsDryRun = PolicyHelper.isDryRunMode(srcPolicy);
+                            const dstIsDryRun = PolicyHelper.isDryRunMode(dstPolicy);
+
+                            if (srcIsDryRun !== dstIsDryRun) {
+                                throw new Error('Source and destination policies must be in the same mode');
+                            }
+
+                            const migrationErrors = await PolicyDataMigrator.migrate(
+                                owner.owner,
+                                runConfig,
+                                owner?.id,
+                                notifier,
+                                run as MigrationRun
+                            );
+
+                            await this.policyEngine.regenerateModel(
+                                runConfig.policies.dst,
+                                owner?.id
+                            );
+
+                            if (migrationErrors.length > 0) {
+                                await logger.warn(
+                                    migrationErrors
+                                        .map((error) => `${error.id}: ${error.message}`)
+                                        .join('\r\n'),
+                                    ['GUARDIAN_SERVICE'],
+                                    owner?.id
+                                );
+                            }
+
+                            notifier.result(migrationErrors);
+                        },
+                        async (error) => {
+                            notifier.fail(error);
+                        }
+                    );
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RETRY_FAILED_MIGRATE_DATA_ASYNC,
+            async (msg: { runId: string, owner: IOwner, task: any }) => {
+                try {
+                    const { runId, owner, task } = msg;
+                    const notifier = await NewNotifier.create(task);
+
+                    RunFunctionAsync(
+                        async () => {
+                            await PolicyDataMigrator.assertNoActiveMigrationForUser(owner);
+
+                            const db = new DatabaseServer();
+                            let run = await db.findOne(MigrationRun, {
+                                id: runId,
+                                startedBy: owner?.id
+                            } as Partial<MigrationRun>);
+
+                            if (!run) {
+                                const dryRunRaw = await new DataBaseHelper(DryRun).findOne({
+                                    dryRunClass: 'MigrationRun',
+                                    id: runId,
+                                    startedBy: owner?.id
+                                } as any);
+
+                                if (!dryRunRaw?.dryRunId) {
+                                    throw new Error('Migration run not found');
+                                }
+
+                                const dryRunDb = new DatabaseServer(dryRunRaw.dryRunId);
+                                run = await dryRunDb.findOne(MigrationRun, {
+                                    id: runId
+                                } as Partial<MigrationRun>);
+                            }
+
+                            if (!run) {
+                                throw new Error('Migration run not found');
+                            }
+
+                            const normalizedRun = PolicyDataMigrator.mapRunToResponse(run as MigrationRun);
+                            if (normalizedRun.status === MigrationRunStatus.RUNNING) {
+                                throw new Error('Migration run is already running');
+                            }
+
+                            const runConfig = run.config as MigrationConfig;
+                            if (!runConfig?.policies?.dst) {
+                                throw new Error('Migration run config is invalid');
+                            }
+
+                            const srcPolicy = await DatabaseServer.getPolicyById(runConfig.policies.src);
+                            const dstPolicy = await DatabaseServer.getPolicyById(runConfig.policies.dst);
+
+                            if (!srcPolicy) {
+                                throw new Error('Source policy not found');
+                            }
+                            if (!dstPolicy) {
+                                throw new Error('Destination policy not found');
+                            }
+
+                            const srcIsDryRun = PolicyHelper.isDryRunMode(srcPolicy);
+                            const dstIsDryRun = PolicyHelper.isDryRunMode(dstPolicy);
+
+                            if (srcIsDryRun !== dstIsDryRun) {
+                                throw new Error('Source and destination policies must be in the same mode');
+                            }
+
+                            const migrationErrors = await PolicyDataMigrator.retryFailedItems(
+                                owner.owner,
+                                run as MigrationRun,
+                                owner?.id,
+                                notifier
+                            );
+
+                            await this.policyEngine.regenerateModel(
+                                runConfig.policies.dst,
+                                owner?.id
+                            );
+
+                            if (migrationErrors.length > 0) {
+                                await logger.warn(
+                                    migrationErrors
+                                        .map((error) => `${error.id}: ${error.message}`)
+                                        .join('\r\n'),
+                                    ['GUARDIAN_SERVICE'],
+                                    owner?.id
+                                );
+                            }
+
+                            notifier.result(migrationErrors);
+                        },
+                        async (error) => {
+                            notifier.fail(error);
+                        }
+                    );
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MIGRATION_STATUS,
+            async (msg: { owner: IOwner, srcPolicyId: string, dstPolicyId: string }) => {
+                try {
+                    const { owner, srcPolicyId, dstPolicyId } = msg;
+
+                    const [srcPolicy, dstPolicy] = await Promise.all([
+                        DatabaseServer.getPolicyById(srcPolicyId),
+                        DatabaseServer.getPolicyById(dstPolicyId)
+                    ]);
+
+                    if (!srcPolicy || !dstPolicy) {
+                        throw new Error('Source or destination policy not found');
+                    }
+
+                    const isDryRun = PolicyHelper.isDryRunMode(dstPolicy);;
+                    const db = new DatabaseServer(isDryRun ? dstPolicyId : null);
+
+                    const filters: Partial<MigrationRun> = isDryRun
+                        ? {
+                            srcPolicyId,
+                            dstPolicyId
+                        }
+                        : {
+                            srcPolicyId,
+                            dstPolicyId,
+                            startedBy: owner?.id
+                        };
+
+                    const options = {
+                        orderBy: { createDate: 'DESC' as const },
+                        limit: 1
+                    };
+
+                    const runs = await db.find(MigrationRun, filters, options);
+                    const run: MigrationRun | null = runs.length ? runs[0] : null;
+
+                    if (!run) {
+                        return new MessageResponse({ items: [] });
+                    }
+
+                    const failedItems = await db.find(
+                        MigrationFailedItem,
+                        { runId: run.id } as Partial<MigrationFailedItem>,
+                        { orderBy: { lastFailedAt: 'DESC' as const } }
+                    );
+
+                    const mappedRun = PolicyDataMigrator.mapRunToResponse(run);
+
+                    return new MessageResponse({
+                        items: [{
+                            ...mappedRun,
+                            isDryRun,
+                            failedItems
+                        }]
+                    });
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MIGRATION_RUNS,
+            async (msg: { owner: IOwner, pageIndex?: number, pageSize?: number, status?: string[] }) => {
+                try {
+                    const { owner } = msg;
+                    const pageIndex = Number(msg?.pageIndex || 0);
+                    const pageSize = Number(msg?.pageSize || 10);
+                    const status = msg?.status;
+
+                    const filters: any = {
+                        startedBy: owner?.id
+                    };
+
+                    if (status?.length) {
+                        filters.status = { $in: status };
+                    }
+
+                    const sortOptions = {
+                        orderBy: { createDate: 'DESC' as const }
+                    };
+
+                    const regularDb = new DatabaseServer();
+                    const regularRuns = (await regularDb.find(MigrationRun, filters, sortOptions)) as MigrationRun[];
+
+                    const dryRunPolicies = await DatabaseServer.getPolicies({
+                        owner: owner?.owner,
+                        status: { $in: [PolicyStatus.DRY_RUN, PolicyStatus.DEMO] }
+                    });
+
+                    const dryRunPolicyIds = (dryRunPolicies || []).map((policy) => policy.id);
+
+                    let dryRuns: MigrationRun[] = [];
+                    if (dryRunPolicyIds.length > 0) {
+                        const dryRunFilters: any = {
+                            dryRunId: { $in: dryRunPolicyIds },
+                            dryRunClass: 'MigrationRun'
+                        };
+
+                        if (status?.length) {
+                            dryRunFilters.status = { $in: status };
+                        }
+
+                        dryRuns = (await new DataBaseHelper(DryRun).find(
+                            dryRunFilters,
+                            sortOptions
+                        )) as unknown as MigrationRun[];
+                    }
+
+                    const merged = [
+                        ...regularRuns.map((run) => ({ ...PolicyDataMigrator.mapRunToResponse(run), isDryRun: false })),
+                        ...dryRuns.map((run) => ({ ...PolicyDataMigrator.mapRunToResponse(run), isDryRun: true }))
+                    ];
+
+                    const uniq = new Map<string, any>();
+                    for (const item of merged) {
+                        const key = `${item.runId}:${item.srcPolicyId}:${item.dstPolicyId}`;
+                        if (!uniq.has(key)) {
+                            uniq.set(key, item);
+                        }
+                    }
+
+                    const itemsAll = Array.from(uniq.values()).sort((a: any, b: any) =>
+                        new Date(b.createDate).getTime() - new Date(a.createDate).getTime()
+                    );
+
+                    const count = itemsAll.length;
+                    const start = pageIndex * pageSize;
+                    const end = start + pageSize;
+
+                    return new MessageResponse({
+                        items: itemsAll.slice(start, end),
+                        count,
+                        pageIndex,
+                        pageSize
+                    });
+                } catch (error) {
                     return new MessageError(error);
                 }
             });
@@ -3101,11 +4040,22 @@ export class PolicyEngineService {
                         throw new Error(`Policy is published`);
                     }
                     const buffer = Buffer.from(file.buffer);
+                    const newHash = createHash('sha256').update(buffer).digest('hex');
+                    const existingTests = await DatabaseServer.getPolicyTests(policyId);
+                    for (const existing of existingTests) {
+                        const existingBuffer = existing.file
+                            ? await DatabaseServer.loadFile(existing.file)
+                            : null;
+                        if (existingBuffer && createHash('sha256').update(existingBuffer).digest('hex') === newHash) {
+                            return new MessageError('Duplicate test file.', 409);
+                        }
+                    }
                     const recordToImport = await RecordImportExport.parseZipFile(buffer);
                     const test = await DatabaseServer.createPolicyTest(
                         {
                             uuid: GenerateUUIDv4(),
                             name: file.filename.split('.')[0],
+                            description: recordToImport.policyTest?.description,
                             policyId,
                             owner: owner.creator,
                             status: PolicyTestStatus.New,
@@ -3163,17 +4113,24 @@ export class PolicyEngineService {
                     }
 
                     await DatabaseServer.clearDryRun(policyId, false);
+                    PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
                     const users = await DatabaseServer.getVirtualUsers(policyId);
                     await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
 
                     const options = { mode: 'test' };
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip));
+                    const selectedOutputs = RecordImportExport.hasSelectedOutputs(recordToImport);
+                    const expectedResults = RecordImportExport.getComparisonResults(recordToImport);
                     const guardiansService = new GuardiansService();
                     const recordId: string = await guardiansService
                         .sendPolicyMessage(PolicyEvents.RUN_RECORD, policyId, {
                             records: recordToImport.records,
-                            results: recordToImport.results,
-                            options
+                            results: expectedResults,
+                            options: {
+                                ...options,
+                                selectedOutputs,
+                                policyTest: recordToImport.policyTest
+                            }
                         });
                     if (recordId) {
                         test.resultId = recordId;
@@ -4536,6 +5493,111 @@ export class PolicyEngineService {
                     return new MessageError(error);
                 }
             })
+
+        this.channel.getMessages(PolicyEngineEvents.SAVE_POLICY_PARAMETERS_VALUES,
+            async (msg: { owner: IOwner, policyId: string, config: PolicyEditableFieldDTO[] }) => {
+                try {
+                    const { owner, policyId, config } = msg;
+                    const userDID = owner?.creator;
+                    if (!userDID) {
+                        return new MessageError('Missing authenticated user identity');
+                    }
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (!policy) {
+                        return new MessageError('Policy not found');
+                    }
+
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, { did: userDID } as IAuthUser);
+
+                    const editableKey = (f: PolicyEditableFieldDTO) => `${f.blockTag}::${f.propertyPath}`;
+                    const editableSet = new Set((policy.editableParametersSettings || []).map(editableKey));
+                    for (const item of config || []) {
+                        if (!editableSet.has(editableKey(item))) {
+                            return new MessageError(`Field ${editableKey(item)} is not editable on this policy`);
+                        }
+                    }
+
+                    let result;
+                    const found = await DatabaseServer.getPolicyParameters(userDID, policyId);
+                    if (found) {
+                        found.config = config;
+                        result = await DatabaseServer.updatePolicyParameters(found);
+                    } else {
+                        const parameters = new PolicyParameters();
+                        parameters.userDID = userDID;
+                        parameters.policyId = policyId;
+                        parameters.config = config;
+                        parameters.properties = {};
+                        parameters.updated = false;
+
+                        result = await DatabaseServer.createPolicyParameters(parameters);
+                    }
+
+                    const allPolicyParameters = await DatabaseServer.getPolicyParametersByPolicyId(policyId);
+                    allPolicyParameters.forEach(parameter => parameter.updated = true);
+                    await DatabaseServer.setPolicyParametersUpdated(allPolicyParameters);
+
+                    const echoedConfig = (result.config || []).filter((item: PolicyEditableFieldDTO) =>
+                        this.hasFieldPermission(item, userRole)
+                    );
+                    return new MessageResponse({ ...result, config: echoedConfig });
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            })
+
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_PARAMETERS_VALUES,
+            async (msg: { owner: IOwner, user: IAuthUser, policyId: string }) => {
+                try {
+                    const { user, policyId } = msg;
+                    let result: PolicyEditableFieldDTO[] = [];
+                    const parameters = await DatabaseServer.getPolicyParameters(user.did, policyId);
+                    if (parameters && parameters.config?.length) {
+                        result = parameters.config;
+                    } else {
+                        const foundPolicy = await DatabaseServer.getPolicyById(policyId);
+                        result = foundPolicy?.editableParametersSettings || [];
+                    }
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
+
+                    result = result.filter((item: PolicyEditableFieldDTO) => this.hasFieldPermission(item, userRole));
+
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            })
         //#endregion
+    }
+
+    /**
+     * Role-token contract used by `visible`:
+     *   - 'ANY_ROLE' — visible to anyone.
+     *   - 'NO_ROLE'  — visible only when GetUserRole returns 'No role'.
+     *   - 'OWNER'    — visible to the policy owner (Administrator).
+     *   - <role>     — verbatim match against a policy role name.
+     */
+    public hasFieldPermission(field: PolicyEditableFieldDTO, userRole: string): boolean {
+        if (!field || !Array.isArray(field.visible)) {
+            return false;
+        }
+        if (field.visible.includes('ANY_ROLE')) {
+            return true;
+        }
+        if (field.visible.includes(userRole)) {
+            return true;
+        }
+        if (field.visible.includes('NO_ROLE') && userRole === 'No role') {
+            return true;
+        }
+        if (field.visible.includes('OWNER') && userRole === 'Administrator') {
+            return true;
+        }
+        return false;
     }
 }

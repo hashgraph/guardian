@@ -8,7 +8,7 @@ import { HederaDidDocument, MessageAction, MessageMemo, MessageServer, Token as 
 import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyTokenBlock } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
@@ -21,6 +21,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'mintDocumentBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Mint',
         title: `Add 'Mint' Block`,
@@ -38,6 +39,27 @@ import { RecordActionStep } from '../record-action-step.js';
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
+        properties: [{
+            name: 'roundMethod',
+            label: 'Round Method',
+            title: 'Round Method',
+            type: PropertyType.Select,
+            items: [
+                {
+                    label: 'Round up',
+                    value: 'ceil'
+                },
+                {
+                    label: 'Round down',
+                    value: 'floor'
+                },
+                {
+                    label: 'Round to nearest',
+                    value: 'round'
+                }
+            ],
+            default: 'round'
+        }],
         defaultEvent: true
     },
     variables: [
@@ -52,15 +74,16 @@ export class MintBlock {
      * @param docs
      * @private
      */
-    private async getToken(ref: AnyBlockType, docs: IPolicyDocument[]): Promise<TokenCollection> {
+    private async getToken(ref: AnyBlockType, docs: IPolicyDocument[], user?: PolicyUser): Promise<TokenCollection> {
         let token: TokenCollection;
-        if (ref.options.useTemplate) {
+        const options = await ref.getOptions(user);
+        if (options.useTemplate) {
             if (docs[0].tokens) {
-                const tokenId = docs[0].tokens[ref.options.template];
+                const tokenId = docs[0].tokens[options.template];
                 token = await ref.databaseServer.getToken(tokenId, ref.dryRun);
             }
         } else {
-            token = await ref.databaseServer.getToken(ref.options.tokenId);
+            token = await ref.databaseServer.getToken(options.tokenId);
         }
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
@@ -74,11 +97,12 @@ export class MintBlock {
      * @param docs
      * @private
      */
-    private getObjects(ref: AnyBlockType, docs: IPolicyDocument[]): any {
+    private async getObjects(ref: AnyBlockType, docs: IPolicyDocument[], user?: PolicyUser): Promise<any> {
         const vcs: VcDocument[] = [];
         const messages: string[] = [];
         const topics: string[] = [];
-        const field = ref.options.accountId || 'default';
+        const options = await ref.getOptions(user);
+        const field = options.accountId || 'default';
         const accounts: string[] = [];
         for (const doc of docs) {
             if (doc.signature === DocumentSignature.INVALID) {
@@ -125,20 +149,22 @@ export class MintBlock {
      * @param userId
      * @private
      */
-    private getAccount(
+    private async getAccount(
         ref: AnyBlockType,
         docs: IPolicyDocument[],
         accounts: string[],
         relayerAccount: string,
-        userId: string | null
-    ): string {
+        userId: string | null,
+        user?: PolicyUser
+    ): Promise<string> {
         let targetAccount: string;
-        if (ref.options.accountType !== 'custom-value') {
+        const options = await ref.getOptions(user);
+        if (options.accountType !== 'custom-value') {
             const firstAccounts = accounts[0];
             if (accounts.find(a => a !== firstAccounts)) {
                 ref.error(`More than one account found! Transfer made on the first (${firstAccounts})`);
             }
-            if (ref.options.accountId) {
+            if (options.accountId) {
                 targetAccount = firstAccounts;
             } else {
                 targetAccount = relayerAccount;
@@ -147,7 +173,7 @@ export class MintBlock {
                 throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
             }
         } else {
-            targetAccount = ref.options.accountIdValue;
+            targetAccount = options.accountIdValue;
         }
         return targetAccount;
     }
@@ -288,15 +314,15 @@ export class MintBlock {
         actionStatus: RecordActionStep
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
-
+        const options = await ref.getOptions(user);
         const tags = await PolicyUtils.getBlockTags(ref);
 
         const uuid: string = await ref.components.generateUUID();
-        const amount = PolicyUtils.aggregate(ref.options.rule, documents);
+        const amount = PolicyUtils.aggregate(options.rule, documents);
         if (Number.isNaN(amount) || !Number.isFinite(amount) || amount < 0) {
             throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);
         }
-        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
+        const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount, ref.options.roundMethod);
 
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref, userId);
@@ -341,7 +367,9 @@ export class MintBlock {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
         const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC, actionStatus?.id);
 
@@ -376,7 +404,9 @@ export class MintBlock {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
         const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp, actionStatus?.id);
@@ -390,7 +420,7 @@ export class MintBlock {
         const savedVp = await ref.databaseServer.saveVP(vpDocument);
         // #endregion
 
-        const transactionMemo = `${vpMessageId} ${MessageMemo.parseMemo(true, ref.options.memo, savedVp)}`.trimEnd();
+        const transactionMemo = `${vpMessageId} ${MessageMemo.parseMemo(true, options.memo, savedVp)}`.trimEnd();
         await MintService.mint({
             ref,
             token,
@@ -507,13 +537,13 @@ export class MintBlock {
         additionalDocs: IPolicyDocument[],
         userId: string | null
     ) {
-        const token = await this.getToken(ref, docs);
-        const { vcs, messages, topics, accounts } = this.getObjects(ref, docs);
+        const token = await this.getToken(ref, docs, user);
+        const { vcs, messages, topics, accounts } = await this.getObjects(ref, docs, event.user);
         const additionalMessages = this.getAdditionalMessages(additionalDocs);
         const topicId = topics[0];
 
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, docs[0], userId);
-        const targetAccount = this.getAccount(ref, docs, accounts, relayerAccount, userId);
+        const targetAccount = await this.getAccount(ref, docs, accounts, relayerAccount, userId, event.user);
 
         const [vp, amount] = await this.mintProcessing(
             token,

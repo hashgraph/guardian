@@ -8,7 +8,7 @@ import {
     PolicyOutputEventType,
     PolicyTagMap
 } from './interfaces/index.js';
-import { BlockType, GenerateUUIDv4, IUser, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, IBlockCompleteEvent, IUser, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
 import {
     ActionType,
     AnyBlockType,
@@ -21,7 +21,7 @@ import {
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface.js';
-import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyAction, PolicyComment, PolicyDiscussion, PolicyRoles, PolicyTool, Users } from '@guardian/common';
+import { DatabaseServer, IAuthUser, MessageError, MessageResponse, Policy, PolicyAction, PolicyComment, PolicyDiscussion, PolicyRoles, PolicyTool, Users } from '@guardian/common';
 import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
@@ -145,6 +145,10 @@ export function infoBlockEvent(user: PolicyUser, policy: Policy): void {
 export function externalBlockEvent(event: ExternalEvent<any>): void {
     const type = 'external';
     new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [event] }, false);
+}
+
+export function blockCompleteEvent(event: IBlockCompleteEvent): void {
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_COMPLETE_BROADCAST, event, false);
 }
 
 export function requestNotificationEvent(row: PolicyAction): void {
@@ -826,7 +830,8 @@ export class PolicyComponentsUtils {
             policyOwner: policy.owner,
             policyStatus: policy.status,
             locationType: policy.locationType,
-            relayerAccount
+            relayerAccount,
+            enableMock: false
         };
         PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
     }
@@ -1469,6 +1474,30 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Get Backup Controller
+     * @param policyId
+     */
+    public static GetBackupService(policyId: string) {
+        return PolicyComponentsUtils.BackupControllers.get(policyId);
+    }
+
+    /**
+     * Get Restore Controller
+     * @param policyId
+     */
+    public static GetRestoreService(policyId: string) {
+        return PolicyComponentsUtils.RestoreControllers.get(policyId);
+    }
+
+    /**
+     * Get Actions Controller
+     * @param policyId
+     */
+    public static GetActionsService(policyId: string) {
+        return PolicyComponentsUtils.ActionsControllers.get(policyId);
+    }
+
+    /**
      * Unregister Backup Controller
      * @param policyId
      */
@@ -1633,7 +1662,7 @@ export class PolicyComponentsUtils {
 
         const relayerAccountConfig = data.relayerAccount;
 
-        const balance = await PolicyUtils.checkAccountBalance(relayerAccountConfig, user.userId);
+        const balance = await PolicyUtils.checkAccountBalance(ref, relayerAccountConfig, user.userId);
         if (balance === false) {
             return 'The relayer account has insufficient balance.';
         }
@@ -1844,5 +1873,103 @@ export class PolicyComponentsUtils {
                 return false;
             }
         }
+    }
+
+    public static async DisconnectPolicy(policyId: string, user: IAuthUser): Promise<boolean> {
+        const db = new DatabaseServer();
+        await DatabaseServer.disconnectPolicy(policyId, user.did);
+        await db.disconnectPolicyDocuments(policyId, user);
+        return true;
+    }
+
+    public static async DisconnectRemotePolicy(
+        policy: IPolicyInstance | AnyBlockType,
+        policyId: string,
+        user: IAuthUser
+    ): Promise<boolean> {
+        if (policy.locationType === LocationType.REMOTE) {
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
+            const userId = policyUser.userId;
+            await PolicyActionsUtils.disconnectPolicy({ policyId, user: policyUser, userId });
+            return true;
+        } else {
+            return true;
+        }
+    }
+
+    public static async ReconnectPolicy(policyId: string, user: IAuthUser): Promise<boolean> {
+        const db = new DatabaseServer();
+        await DatabaseServer.reconnectPolicy(policyId, user.did);
+        await db.reconnectPolicyDocuments(policyId, user);
+        return true;
+    }
+
+    public static GetMockConfig(policyId: string) {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        const instance = PolicyComponentsUtils.PolicyById.get(policyId)
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        const blocks: any[] = []
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component.canMock) {
+                blocks.push({
+                    uuid,
+                    tag: component.tag,
+                    type: component.blockType,
+                    enabled: component.enableMock,
+                })
+            }
+        }
+        const enabled = instance.enableMock;
+        return { enabled, blocks };
+    }
+
+    public static SetMockConfig(policyId: string, config: any) {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        const instance = PolicyComponentsUtils.PolicyById.get(policyId)
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+
+        const blockMap = new Map<string, boolean>();
+        if (Array.isArray(config.blocks)) {
+            for (const block of config.blocks) {
+                blockMap.set(block.uuid, block.enabled);
+            }
+        }
+
+        const enabled = !!config.enabled
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component.canMock) {
+                component.enableMock = !!blockMap.get(uuid);
+                if (component.policyInstance) {
+                    (component.policyInstance as any).enableMock = enabled;
+                }
+
+            }
+        }
+        instance.enableMock = enabled;
+        return true;
+    }
+
+    public static MockAll(policyId: string) {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        const instance = PolicyComponentsUtils.PolicyById.get(policyId)
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component.canMock) {
+                component.enableMock = true;
+                if (component.policyInstance) {
+                    (component.policyInstance as any).enableMock = true;
+                }
+            }
+        }
+        instance.enableMock = true;
     }
 }

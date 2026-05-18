@@ -24,6 +24,7 @@ export class MathLiveComponent implements OnInit, OnDestroy {
 
     private readonly mfe: MathfieldElement;
     private mathVirtualKeyboard: any;
+    private suppressNextHide = false;
 
     constructor() {
         MathfieldElement.keypressSound = null;
@@ -66,7 +67,10 @@ export class MathLiveComponent implements OnInit, OnDestroy {
             if (this.readonly) {
                 return;
             }
-
+            if (this.suppressNextHide) {
+                this.suppressNextHide = false;
+                return;
+            }
             this.keyboard.emit(false);
             this.focus.emit(this);
             if (mathVirtualKeyboard.container) {
@@ -101,6 +105,15 @@ export class MathLiveComponent implements OnInit, OnDestroy {
 
     public getElement(): ElementRef {
         return this.mathLiveContent;
+    }
+
+    public keepKeyboard(): void {
+        this.suppressNextHide = true;
+    }
+
+    public insert(latex: string): void {
+        this.mfe.focus();
+        this.mfe.insert(latex, { selectionMode: 'after' });
     }
 
     private createLayouts() {

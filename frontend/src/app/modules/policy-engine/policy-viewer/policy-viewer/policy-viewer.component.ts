@@ -13,15 +13,21 @@ import { RecordControllerComponent } from '../../record/record-controller/record
 import { PolicyProgressService } from '../../services/policy-progress.service';
 import { IStep } from '../../structures';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
-import { RestoreSavepointDialog, IRestoreSavepointAction } from
-        'src/app/modules/policy-engine/policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
-import { AddSavepointDialog, AddSavepointResult } from
-        'src/app/modules/policy-engine/policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component';
+import { RestoreSavepointDialog, IRestoreSavepointAction } from 'src/app/modules/policy-engine/policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
+import { AddSavepointDialog, AddSavepointResult } from 'src/app/modules/policy-engine/policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component';
 import { DynamicDialogConfig } from 'primeng/dynamicdialog'
-import {OnLoadSavepointDialog} from "../dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
+import { OnLoadSavepointDialog } from "../dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
+import { PolicyParametersDialog } from '../../dialogs/policy-parameters-dialog/policy-parameters-dialog.component';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
+import { MockDialog } from '../../dialogs/mock-dialog/mock-dialog.component';
+import { PolicyTestAutomationService } from '../policy-test-automation/policy-test-automation.service';
+
+type MockItemType = 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
+const MockTabs = ['API', 'IPFS', 'Topics'];
 
 /**
  * Component for choosing a policy and
@@ -68,11 +74,25 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public timer: any;
     private destroy$: Subject<boolean> = new Subject<boolean>();
     public activeTabIndex = 0;
+    public disconnected: boolean = false;
+    public editableParameters: any[] = [];
 
     public currentSavepoint: any = null;
     private restoreDialogOpened: boolean = false;
     private openedOnLoad = false;
     private forceAdminAfterReload = false;
+
+    public mockTab: string = 'API';
+    public mockConfig: any = {
+        enabled: false,
+        blocks: []
+    };
+    public mockIpfs: any[] = [];
+    public mockTopics: any[] = [];
+    public mockTokens: any[] = [];
+    public mockApi: any[] = [];
+    public expandGrid: any = {};
+
 
     constructor(
         private profileService: ProfileService,
@@ -85,7 +105,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private changeDetector: ChangeDetectorRef,
         private router: Router,
         private savepointFlow: SavepointFlowService,
-        private indexedDb: IndexedDbRegistryService
+        private indexedDb: IndexedDbRegistryService,
+        private policyTest: PolicyTestAutomationService
     ) {
         this.policy = null;
         this.pageIndex = 0;
@@ -226,6 +247,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
 
         this.policyId = policyId;
+        this.policyTest.loadForPolicy(policyId);
 
         this.policy = null;
         this.isMultipleGroups = false;
@@ -239,13 +261,30 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.isConfirmed = !!(profile && profile.confirmed);
                 this.role = profile ? profile.role : null;
                 if (this.isConfirmed) {
-                    this.loadPolicyById(this.policyId);
+                    this.checkPolicyStatus(this.policyId);
                 } else {
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
                 }
             }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    async checkPolicyStatus(policyId: string) {
+        this.policyEngineService.getDisconnectedPolicy(policyId)
+            .subscribe((policy: any) => {
+                this.disconnected = !!policy;
+                if (this.disconnected) {
+                    this.policyInfo = policy;
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                } else {
+                    this.loadPolicyById(this.policyId);
+                }
+            }, (e: any) => {
                 this.loading = false;
             });
     }
@@ -258,7 +297,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policyEngineService.policy(policyId),
                 this.policyEngineService.policyBlock(policyId, null),
                 this.policyEngineService.getGroups(policyId, this.savepointIds),
-                this.externalPoliciesService.getActionRequestsCount({ policyId })
+                this.externalPoliciesService.getActionRequestsCount({ policyId }),
+                this.policyEngineService.getParametersConfig(policyId),
             ]))
         ).subscribe(
             (value) => {
@@ -266,6 +306,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policy = value[1];
                 this.groups = value[2] || [];
                 const count: any = value[3]?.body || {};
+                this.editableParameters = value[4];
 
                 this.virtualUsers = [];
                 this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
@@ -304,6 +345,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                 this.newRequestsExist = count.requestsCount > 0;
                 this.newActionsExist = count.actionsCount > 0 || count.delayCount > 0;
+
+                if (this.editableParameters?.length && this.editableParameters.some((p: any) => p.required && !p.value)) {
+                    this.openParametersSettings();
+                }
             }, (e) => {
                 this.loading = false;
             });
@@ -358,8 +403,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.policyEngineService
             .createVirtualUser(this.policyInfo.id, this.savepointIds)
             .subscribe(
-                (users) => {
-                    this.virtualUsers = users;
+                (user) => {
+                    this.virtualUsers.push(user);
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
@@ -414,12 +459,37 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             storeNames,
             keyPrefix
         );
+        this.policyTest.reset();
     }
 
     onView(view: string) {
         this.view = view;
         this.columns = this.columnsMap[this.view];
-        if (this.view !== 'policy') {
+        if (this.view === 'mock_config' || this.view === 'mock_data') {
+            this.loading = true;
+
+            forkJoin([
+                this.policyEngineService.loadMockConfig(this.policyInfo.id),
+                this.policyEngineService.loadMockData(this.policyInfo.id)
+            ]).subscribe(([config, data]) => {
+
+                this.mockConfig = config || {};
+                this.mockIpfs = data?.ipfs || [];
+                this.mockTopics = data?.topics || [];
+                this.mockTokens = data?.tokens || [];
+                this.mockApi = data?.api || [];
+
+                this.updateMockGrid();
+
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+        } else if (this.view === 'policy') {
+            return;
+        } else {
             this.loading = true;
             this.pageIndex = 0;
             this.pageSize = 10;
@@ -457,6 +527,19 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 type: 'JSON',
             }
         });
+        dialogRef.onClose.subscribe(async (result) => { });
+    }
+
+    public openParametersSettings() {
+        const dialogRef = this.dialogService.open(PolicyParametersDialog, {
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
+            data: {
+                policyId: this.policyId
+            },
+        });
+
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -605,11 +688,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     public onTabChange(index: number) {
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: { tab: index },
-        queryParamsHandling: 'merge',
-      });
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { tab: index },
+            queryParamsHandling: 'merge',
+        });
     }
 
     public openAddSavepointDialog(): void {
@@ -766,7 +849,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         closable: false,
                         width: '90%',
                         styleClass: 'guardian-dialog restore-onload-dialog',
-                        data: {policyId: this.policyId, items, currentSavepointId: currentId}
+                        data: { policyId: this.policyId, items, currentSavepointId: currentId }
                     });
 
                     ref.onClose.subscribe((res?: { type: 'apply' | 'close'; savepoint?: any }) => {
@@ -834,5 +917,391 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             catchError(() => of(null)),
             tap(() => { this.forceAdminAfterReload = false; })
         );
+    }
+
+    public reconnect() {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Reconnect',
+                text: 'Are you sure want to reconnect this policy?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Reconnect',
+                    class: 'primary'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Reconnect') {
+                this.loading = true;
+                this.policyEngineService
+                    .reconnect(this.policyId)
+                    .subscribe((result: any) => {
+                        this.checkPolicyStatus(this.policyId);
+                    }, (e: any) => {
+                        this.loading = false;
+                    });
+            }
+        });
+    }
+
+    public onMockTab(tab: any) {
+        this.mockTab = MockTabs[tab.index] || 'IPFS';
+    }
+
+    private serializeMockData(type: MockItemType, item: any) {
+        if (type === 'IPFS') {
+            return {
+                cid: item.cid,
+                content: item.content
+            }
+        } else if (type === 'MESSAGE') {
+            return {
+                topicId: item.topic_id,
+                consensusTimestamp: item.consensus_timestamp,
+                payerAccountId: item.payer_account_id,
+                message: atob(item.message)
+            }
+        } else if (type === 'TOKEN') {
+            return {
+                tokenId: item.token_id,
+                treasuryId: item.treasury_account_id,
+                name: item.name,
+                symbol: item.symbol,
+                type: item.type,
+                decimals: item.decimals,
+                adminKey: item.admin_key,
+                supplyKey: item.supply_key,
+                freezeKey: item.freeze_key,
+                kycKey: item.kyc_key,
+                wipeKey: item.wipe_key
+            }
+        } else if (type === 'ACCOUNT') {
+            return;
+        } else if (type === 'API') {
+            return {
+                method: item.request?.method,
+                url: item.request?.url,
+                responseType: item.request?.responseType,
+                response: item.response
+            };
+        } else {
+            return;
+        }
+    }
+
+    private deserializeMockData(type: MockItemType, item: any) {
+        if (type === 'IPFS') {
+            return {
+                cid: item.cid,
+                content: item.content
+            }
+        } else if (type === 'MESSAGE') {
+            return {
+                id: item.consensusTimestamp,
+                consensus_timestamp: item.consensusTimestamp,
+                topicId: item.topicId,
+                topic_id: item.topicId,
+                payer_account_id: item.payerAccountId,
+                sequence_number: 0,
+                message: btoa(item.message)
+            }
+        } else if (type === 'TOKEN') {
+            return {
+                id: item.tokenId,
+                token_id: item.tokenId,
+                treasury_account_id: item.treasuryId,
+                name: item.name,
+                symbol: item.symbol,
+                type: item.type,
+                decimals: item.decimals,
+                admin_key: item.adminKey,
+                supply_key: item.supplyKey,
+                freeze_key: item.freezeKey,
+                kyc_key: item.kycKey,
+                wipe_key: item.wipeKey,
+            }
+        } else if (type === 'ACCOUNT') {
+            return;
+        } else if (type === 'API') {
+            return {
+                request: {
+                    method: item.method,
+                    url: item.url,
+                    responseType: item.responseType
+                },
+                response: item.response
+            };
+        } else {
+            return;
+        }
+    }
+
+    public editMockData(type: MockItemType, item: any) {
+        const dialogRef = this.dialogService.open(MockDialog, {
+            showHeader: false,
+            width: '80%',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Edit mock data',
+                action: 'Save',
+                type,
+                item: this.serializeMockData(type, item)
+            }
+        });
+        dialogRef.onClose.subscribe((result: any | null) => {
+            if (result) {
+                const newItem: any = this.deserializeMockData(type, result);
+                if (type === 'IPFS') {
+                    const index = this.mockIpfs.indexOf(item);
+                    if (index !== -1) {
+                        this.mockIpfs[index] = newItem;
+                    }
+                } else if (type === 'MESSAGE') {
+                    const oldTopic = this.mockTopics.find((t) => t.topicId === item.topicId);
+                    if (oldTopic) {
+                        if (item.topicId === newItem.topicId) {
+                            const index = oldTopic.messages.indexOf(item);
+                            oldTopic.messages[index] = newItem;
+                        } else {
+                            oldTopic.messages = oldTopic.messages.filter((e: any) => e !== item);
+                            let newTopic = this.mockTopics.find((t) => t.topicId === newItem.topicId);
+                            if (!newTopic) {
+                                newTopic = {
+                                    topicId: newItem.topicId,
+                                    topic: {
+                                        topic_id: newItem.topicId
+                                    },
+                                    messages: []
+                                }
+                                this.mockTopics.push(newTopic);
+                            }
+                            newTopic.messages.push(newItem);
+                        }
+                    }
+                } else if (type === 'TOKEN') {
+                    const index = this.mockTokens.indexOf(item);
+                    if (index !== -1) {
+                        this.mockTokens[index] = newItem;
+                    }
+                } else if (type === 'ACCOUNT') {
+                } else if (type === 'API') {
+                    const index = this.mockApi.indexOf(item);
+                    if (index !== -1) {
+                        this.mockApi[index] = newItem;
+                    }
+                }
+                this.updateMockData();
+            }
+        });
+    }
+
+    public deleteMockData(type: MockItemType, item: any) {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Reconnect',
+                text: 'Are you sure want to delete mock item?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: any | null) => {
+            if (result === 'Delete') {
+                if (type === 'IPFS') {
+                    this.mockIpfs = this.mockIpfs.filter((e) => e !== item);
+                } else if (type === 'MESSAGE') {
+                    const topic = this.mockTopics.find((t) => t.topicId === item.topicId);
+                    if (topic) {
+                        topic.messages = topic.messages.filter((e: any) => e !== item);
+                    }
+                } else if (type === 'TOKEN') {
+                    this.mockTokens = this.mockTokens.filter((e) => e !== item);
+                } else if (type === 'ACCOUNT') {
+                } else if (type === 'API') {
+                    this.mockApi = this.mockApi.filter((e) => e !== item);
+                }
+                this.updateMockData();
+            }
+        });
+    }
+
+    public addMockData(type: MockItemType) {
+        const titles = {
+            'IPFS': 'Add IPFS File Mock',
+            'MESSAGE': 'Add Topic / Message Mock',
+            'TOKEN': '',
+            'ACCOUNT': '',
+            'API': 'Add API Mock',
+        };
+
+        const dialogRef = this.dialogService.open(MockDialog, {
+            showHeader: false,
+            width: '80%',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: titles[type],
+                action: 'Add',
+                type
+            }
+        });
+        dialogRef.onClose.subscribe((result: any | null) => {
+            if (result) {
+                const newItem: any = this.deserializeMockData(type, result);
+                if (type === 'IPFS') {
+                    this.mockIpfs.push(newItem);
+                } else if (type === 'MESSAGE') {
+                    let topic = this.mockTopics.find((t) => t.topicId === newItem.topicId);
+                    if (!topic) {
+                        topic = {
+                            topicId: newItem.topicId,
+                            topic: {
+                                topic_id: newItem.topicId
+                            },
+                            messages: []
+                        }
+                        this.mockTopics.push(topic);
+                    }
+                    topic.messages.push(newItem);
+                } else if (type === 'TOKEN') {
+                    this.mockTokens.push(newItem);
+                } else if (type === 'ACCOUNT') {
+                } else if (type === 'API') {
+                    this.mockApi.push(newItem);
+                }
+                this.updateMockData();
+            }
+        });
+    }
+
+    private updateMockData() {
+        const data = {
+            ipfs: this.mockIpfs,
+            topics: this.mockTopics,
+            tokens: this.mockTokens,
+            api: this.mockApi,
+        }
+        this.loading = true;
+        this.policyEngineService
+            .updateMockData(this.policyInfo.id, data)
+            .subscribe((data: any) => {
+                this.mockIpfs = data?.ipfs || [];
+                this.mockTopics = data?.topics || [];
+                this.mockTokens = data?.tokens || [];
+                this.mockApi = data?.api || [];
+                this.updateMockGrid();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public onImportMock() {
+        const dialogRef = this.dialogService.open(ImportEntityDialog, {
+            showHeader: false,
+            width: '80%',
+            styleClass: 'guardian-dialog',
+            data: {
+                type: ImportEntityType.Mock,
+                policyId: this.policyInfo.id
+            }
+        });
+        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
+            if (result) {
+                this.loading = true;
+                this.policyEngineService
+                    .importMockData(this.policyInfo.id, result.data)
+                    .subscribe((data: any) => {
+                        this.mockIpfs = data?.ipfs || [];
+                        this.mockTopics = data?.topics || [];
+                        this.mockTokens = data?.tokens || [];
+                        this.mockApi = data?.api || [];
+                        this.updateMockGrid();
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
+    }
+
+    public onExportMock() {
+        this.loading = true;
+        this.policyEngineService
+            .exportMockData(this.policyInfo.id)
+            .subscribe((fileBuffer: any) => {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-mock'
+                    })
+                );
+                downloadLink.setAttribute('download', `mock_${Date.now()}.mock`);
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                downloadLink.remove();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public enableMock() {
+        this.mockConfig.enabled = !this.mockConfig.enabled;
+        for (const block of this.mockConfig.blocks) {
+            block.enabled = this.mockConfig.enabled
+        }
+    }
+
+    public enableBlockMock(block: any) {
+        block.enabled = !block.enabled;
+        if (block.enabled) {
+            this.mockConfig.enabled = true;
+        }
+    }
+
+    public onSaveMockConfig() {
+        this.loading = true;
+        this.policyEngineService
+            .saveMockConfig(this.policyInfo.id, this.mockConfig)
+            .subscribe((config: any) => {
+                this.mockConfig = config || {};
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    private updateMockGrid() {
+        for (const topic of this.mockTopics) {
+            if (topic.messages?.length) {
+                for (const message of topic.messages) {
+                    message.__message = atob(message.message);
+                }
+            }
+        }
     }
 }

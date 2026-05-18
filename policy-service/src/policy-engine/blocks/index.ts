@@ -57,4 +57,5 @@ export { HttpRequestUIAddon } from './http-request-ui-addon.js';
 export { TransformationUIAddon } from './transformation-ui-addon.js';
 export { MathBlock } from './math-block.js';
 export { GlobalEventsWriterBlock } from './global-events-writer-block.js';
+export { IpfsTransformationUIAddon } from './ipfs-transformation-ui-addon.js'
 export { default as GlobalEventsReaderBlock } from './global-events-reader-block.js'

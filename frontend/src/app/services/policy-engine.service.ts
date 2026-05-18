@@ -1,6 +1,13 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { MigrationConfig, PolicyAvailability, PolicyToolMetadata } from '@guardian/interfaces';
+import {
+    MigrationConfig,
+    MigrationRunsResponse,
+    MigrationStatusResponse,
+    PolicyAvailability,
+    PolicyEditableFieldDTO,
+    PolicyToolMetadata
+} from '@guardian/interfaces';
 import { Observable, firstValueFrom, map } from 'rxjs';
 import { headersV2 } from '../constants';
 import { API_BASE_URL } from './api';
@@ -62,7 +69,7 @@ export class PolicyEngineService {
     public allWithImportedRecords(policyId: string): Observable<any[]> {
         return this.http.get<any[]>(`${this.url}/with-imported-records/${policyId}`);
     }
-    
+
 
     public create(policy: any): Observable<void> {
         return this.http.post<any>(`${this.url}/`, policy);
@@ -91,8 +98,8 @@ export class PolicyEngineService {
         return this.http.put<any>(`${this.url}/${policyId}/publish`, options);
     }
 
-    public dryRun(policyId: string): Observable<any> {
-        return this.http.put<any>(`${this.url}/${policyId}/dry-run`, null);
+    public dryRun(policyId: string, options: { enableMock: boolean }): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/dry-run`, options);
     }
 
     public discontinue(policyId: string, details: { date?: Date }): Observable<any> {
@@ -153,6 +160,10 @@ export class PolicyEngineService {
 
     public setBlockData(blockId: string, policyId: string, data: any): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/blocks/${blockId}/sync-events`, data).pipe(map(res => res.response));
+    }
+
+    public setBlockDataWithResult(blockId: string, policyId: string, data: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/blocks/${blockId}/sync-events`, data);
     }
 
     public getGetIdByName(blockName: string, policyId: string): Observable<any> {
@@ -218,7 +229,7 @@ export class PolicyEngineService {
             params = params.set('demo', demo);
         }
 
-        if(originalTracking) {
+        if (originalTracking) {
             params = params.set('originalTracking', originalTracking);
         }
 
@@ -287,6 +298,10 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/blocks/about`);
     }
 
+    public getPolicyDocumentation(policyId: string): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/${policyId}/about`);
+    }
+
     public getVirtualUsers(policyId: string, savepointIds: string[] | null): Observable<any[]> {
         let params = new HttpParams();
 
@@ -298,7 +313,9 @@ export class PolicyEngineService {
     }
 
     public createVirtualUser(policyId: string, savepointIds: string[] | null): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/dry-run/user`, { savepointIds });
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/user`, { savepointIds }, {
+            headers: { 'Api-Version': '2' }
+        });
     }
 
     public loginVirtualUser(policyId: string, did: string): Observable<any> {
@@ -414,6 +431,23 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/${policyId}/search-documents`, { observe: 'response', params });
     }
 
+    public getMintRequests(
+        policyId: string,
+        filters: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const params = this.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/${policyId}/mint-requests`, { observe: 'response', params });
+    }
+
+    public retryMint(
+        policyId: string,
+        vpMessageId: string
+    ): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/mint/${vpMessageId}/retry`, {});
+    }
+
     public exportDocuments(
         policyId: string,
         filters: any,
@@ -439,7 +473,53 @@ export class PolicyEngineService {
     }
 
     public migrateDataAsync(migrationConfig: MigrationConfig) {
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/migrate-data`, migrationConfig);
+        return this.http.post<{ taskId: string, expectation: number }>(
+            `${this.url}/push/migrate-data`,
+            migrationConfig,
+        );
+    }
+
+    public resumeMigrateDataAsync(runId: string): Observable<{ taskId: string; expectation: number }> {
+        return this.http.post<{ taskId: string; expectation: number }>(
+            `${this.url}/push/migrate-data/resume`,
+            { runId }
+        );
+    }
+
+    public retryFailedMigrateDataAsync(runId: string): Observable<{ taskId: string; expectation: number }> {
+        return this.http.post<{ taskId: string; expectation: number }>(
+            `${this.url}/push/migrate-data/retry-failed`,
+            { runId }
+        );
+    }
+
+    public getMigrationStatus(
+        srcPolicyId: string,
+        dstPolicyId: string
+    ): Observable<MigrationStatusResponse> {
+        const params = new HttpParams()
+            .set('srcPolicyId', srcPolicyId)
+            .set('dstPolicyId', dstPolicyId);
+
+        return this.http.get<MigrationStatusResponse>(`${this.url}/migrate-data/status`, { params });
+    }
+
+    public getMigrationRuns(
+        pageIndex: number = 0,
+        pageSize: number = 10,
+        status?: string[]
+    ): Observable<MigrationRunsResponse> {
+        let params = new HttpParams()
+            .set('pageIndex', String(pageIndex))
+            .set('pageSize', String(pageSize));
+
+        if (status?.length) {
+            status.forEach((value) => {
+                params = params.append('status', value);
+            });
+        }
+
+        return this.http.get<MigrationRunsResponse>(`${this.url}/migrate-data/runs`, { params });
     }
 
     public getGroups(policyId: string, savepointIds: string[] | null): Observable<any[]> {
@@ -621,5 +701,76 @@ export class PolicyEngineService {
 
     public getAllVersionVcDocuments(policyId?: string, documentId?: string): Observable<any> {
         return this.http.get<void>(`${this.url}/${policyId}/get-all-version-vc-documents/${documentId}`);
+    }
+
+    public saveParameters(policyId: string, data: PolicyEditableFieldDTO[]): Observable<PolicyEditableFieldDTO[]> {
+        return this.http.post<PolicyEditableFieldDTO[]>(`${this.url}/${policyId}/parameters/`, data);
+    }
+
+    public getParametersConfig(policyId: string): Observable<PolicyEditableFieldDTO[]> {
+        return this.http.get<PolicyEditableFieldDTO[]>(`${this.url}/${policyId}/parameters/config`);
+    }
+
+    public disconnect(policyId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/disconnect`, null);
+    }
+
+    public getDisconnectedPolicy(policyId: string) {
+        return this.http.get<any>(`${this.url}/${policyId}/disconnected`);
+    }
+
+    public reconnect(policyId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/reconnect`, null);
+    }
+
+    public loadMockConfig(policyId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/dry-run/mock/config`);
+    }
+
+    public loadMockData(policyId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/dry-run/mock/data`);
+    }
+
+    public saveMockConfig(policyId: string, config: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/mock/config`, config);
+    }
+
+    public importMockData(policyId: string, arrayBuffer: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/mock/import`, arrayBuffer, {
+            headers: {
+                'Content-Type': 'binary/octet-stream',
+            },
+        });
+    }
+
+    public exportMockData(policyId: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${policyId}/dry-run/mock/export`, {
+            responseType: 'arraybuffer',
+        });
+    }
+
+    public updateMockData(policyId: string, data: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/mock/data`, data);
+    }
+
+    public mockApiRequest(
+        policyId: string,
+        config: {
+            type: string,
+            url: string,
+            body: any,
+            headers: any
+        }
+    ): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/mock/request/api`, config);
+    }
+
+    public mockIpfsRequest(
+        policyId: string,
+        cid: string
+    ): Observable<ArrayBuffer> {
+        return this.http.post(`${this.url}/${policyId}/dry-run/mock/request/ipfs`, { cid }, {
+            responseType: 'arraybuffer',
+        });
     }
 }

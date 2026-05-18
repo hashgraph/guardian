@@ -1,6 +1,6 @@
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { fileURLToPath } from 'url';
 import { Worker } from 'node:worker_threads';
@@ -17,6 +17,7 @@ const filename = fileURLToPath(import.meta.url);
     blockType: 'dataTransformationAddon',
     commonBlock: true,
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Data Transformation Addon',
         title: `Add 'Data Transformation' Addon`,
@@ -29,6 +30,13 @@ const filename = fileURLToPath(import.meta.url);
         ],
         output: null,
         defaultEvent: false,
+        properties: [{
+            name: 'expression',
+            label: 'Expression',
+            title: 'Expression',
+            type: PropertyType.Code,
+            editable: true,
+        }]
     },
     variables: []
 })

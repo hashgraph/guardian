@@ -6,7 +6,7 @@ Chapter 14 covered individual workflow blocks. Chapter 15 dissects VM0033's comp
 
 VM0033 represents Guardian's most advanced and production-ready methodology implementation, featuring complex emission calculations, multi-role workflows, and state management across the complete credit certification process.
 
-![VM0033 Policy Editor Overview](<../../../.gitbook/assets/image (73).png>)
+![VM0033 Policy Editor Overview](<../../../.gitbook/assets/image (77).png>)
 
 ## VM0033 Architecture Overview
 
@@ -57,7 +57,7 @@ VM0033's policy metadata defines its scope and stakeholders:
 
 VM0033 implements role-based navigation enabling each stakeholder type to access relevant workflow sections:
 
-![Navigation structure configuration](<../../../.gitbook/assets/image-1 (5).png>)
+![Navigation structure configuration](<../../../.gitbook/assets/image-1 (7).png>)
 
 _Figure 15.2: VM0033's role-based navigation configuration_
 
@@ -69,7 +69,7 @@ _Figure 15.2: VM0033's role-based navigation configuration_
 * Validation & Verification Oversight
 * Trust Chain and Token History
 
-![Actual render in dry run](<../../../.gitbook/assets/image-2 (4).png>)
+![Actual render in dry run](<../../../.gitbook/assets/image-2 (6).png>)
 
 **Project\_Proponent Navigation:**
 
@@ -153,7 +153,7 @@ The VVB approval interface starts with an `interfaceDocumentsSourceBlock` that d
 }
 ```
 
-![VVB approval flow under Verra header](<../../../.gitbook/assets/image-3 (2).png>)
+![VVB approval flow under Verra header](<../../../.gitbook/assets/image-3 (3).png>)
 
 **How This Creates the UI:**
 
@@ -164,7 +164,7 @@ The VVB approval interface starts with an `interfaceDocumentsSourceBlock` that d
 * **Revoke Column**: Revoke button (only for approved VVBs when `bindGroup` matches "documents\_approved")
 * **Status Column**: Plain text showing current status
 
-![VVB Approval Grid Interface](<../../../.gitbook/assets/image-4 (1).png>)
+![VVB Approval Grid Interface](<../../../.gitbook/assets/image-4 (2).png>)
 
 #### 2. Document Source Configuration - The Filtering Engine
 
@@ -311,7 +311,7 @@ The approval buttons are defined in a separate `buttonBlock` that gets embedded 
   * Triggers event to `update_approve_document_status_2` block
   * Red styling (`btn-reject`)
 
-![Reject dialog showing reason input field](../../../.gitbook/assets/image-5.png)
+![Reject dialog showing reason input field](<../../../.gitbook/assets/image-5 (1).png>)
 
 #### 4. Status Update Processing
 
@@ -573,8 +573,6 @@ The OWNER interface uses VM0033's `Verra_header` container that creates a tabbed
 * **Trust Chain History**: Complete audit trail management
 * **Token Management**: VCU issuance and token operations
 
-![OWNER Verra Interface](images/README/owner-verra-interface.png)
-
 ### 1. VVB Management (`approve_VVB`)
 
 **VVB Approval Workflow**: Detailed in Use Case 1, this section manages the complete VVB lifecycle from registration through approval and ongoing management.
@@ -732,8 +730,6 @@ The VVB interface uses VM0033's `VVB_Header` container:
 * **Projects**: Project validation assignments (`Projects_vvb`)
 * **Monitoring Reports**: Report verification (`Monitoring_Reports_vvb`)
 * **Validation & Verifications**: Report submission (`Validation_and_Verification_vvb`)
-
-![VVB Interface](images/README/vvb-interface.png)
 
 ### 1. VVB Registration (`new_VVB`)
 

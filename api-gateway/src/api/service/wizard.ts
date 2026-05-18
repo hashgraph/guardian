@@ -2,8 +2,8 @@ import { Guardians, TaskManager, ServiceError, ONLY_SR, InternalException, Entit
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
-import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiParam, ApiExtraModels } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, TaskDTO, WizardConfigAsyncDTO, WizardConfigDTO, WizardPreviewDTO, WizardResultDTO } from '#middlewares';
+import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiParam } from '@nestjs/swagger';
+import { Examples, InternalServerErrorDTO, ObjectExamples, TaskDTO, WizardConfigAsyncDTO, WizardConfigDTO, WizardPreviewDTO, WizardResultDTO } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 
 @Controller('wizard')
@@ -25,19 +25,35 @@ export class WizardApi {
         description: 'Creates a new policy by wizard.' + ONLY_SR,
     })
     @ApiBody({
-        description: 'Object that contains wizard configuration.',
+        description: 'Wizard configuration containing policy metadata, roles, schemas, and trust chain settings.',
         type: WizardConfigDTO,
-        required: true
+        required: true,
+        examples: {
+            wizardConfig: {
+                value: ObjectExamples.WIZARD_CONFIG
+            }
+        }
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        type: WizardResultDTO
+    @ApiCreatedResponse({
+        description: 'Successful operation. Returns the created policy ID and the wizard configuration used.',
+        type: WizardResultDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.WIZARD_RESULT
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
-    @ApiExtraModels(WizardConfigDTO, WizardResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async setPolicy(
         @AuthUser() user: IAuthUser,
@@ -65,19 +81,35 @@ export class WizardApi {
         description: 'Creates a new policy by wizard.' + ONLY_SR,
     })
     @ApiBody({
-        description: 'Object that contains wizard configuration.',
+        description: 'Wizard configuration with saveState flag. When saveState is true, the wizard state is persisted for future editing.',
         type: WizardConfigAsyncDTO,
-        required: true
+        required: true,
+        examples: {
+            wizardConfigAsync: {
+                value: { saveState: true, wizardConfig: ObjectExamples.WIZARD_CONFIG }
+            }
+        }
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        type: TaskDTO
+    @ApiAcceptedResponse({
+        description: 'Task accepted. Use the returned taskId to poll for the result.',
+        type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { taskId: Examples.UUID, expectation: 0 }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
-    @ApiExtraModels(WizardConfigAsyncDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async setPolicyAsync(
         @AuthUser() user: IAuthUser,
@@ -123,24 +155,34 @@ export class WizardApi {
     @ApiParam({
         name: 'policyId',
         type: String,
-        description: 'Policy Id',
+        description: 'Database ID of the policy to get the wizard configuration for',
         required: true,
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Object that contains wizard configuration.',
+        description: 'Wizard configuration to apply to the existing policy.',
         type: WizardConfigDTO,
-        required: true
+        required: true,
+        examples: {
+            wizardConfig: {
+                value: ObjectExamples.WIZARD_CONFIG
+            }
+        }
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        type: WizardPreviewDTO
+        description: 'Successful operation. Returns the policy config preview and the wizard configuration.',
+        type: WizardPreviewDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
-    @ApiExtraModels(WizardConfigDTO, WizardPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async setPolicyConfig(
         @AuthUser() user: IAuthUser,
