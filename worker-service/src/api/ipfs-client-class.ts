@@ -135,14 +135,14 @@ export class IpfsClientClass {
         let cid: string;
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.WEB3STORAGE: {
-                const result = await this.client.uploadFile(new Blob([file]));
+                const result = await this.client.uploadFile(new Blob([new Uint8Array(file)]));
 
                 cid = result.toString()
                 break;
             }
 
             case IpfsProvider.FILEBASE: {
-                cid = await this.client.storeBlob(new Blob([file]))
+                cid = await this.client.storeBlob(new Blob([new Uint8Array(file)]))
                 break;
             }
 

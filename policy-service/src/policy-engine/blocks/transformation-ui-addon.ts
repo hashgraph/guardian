@@ -28,7 +28,8 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
                 name: 'expression',
                 label: 'Expression',
                 title: 'Expression',
-                type: PropertyType.Code
+                type: PropertyType.Code,
+                editable: true
             }
         ]
     },
@@ -42,7 +43,8 @@ export class TransformationUIAddon {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
+        const options = await ref.getOptions(user);
+
         return {
             id: ref.uuid,
             blockType: ref.blockType,

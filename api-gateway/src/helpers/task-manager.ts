@@ -352,7 +352,7 @@ export class TaskManager {
     }
 
     /**
-     * Return a sanitized onboarding task status by taskId 
+     * Return a sanitized onboarding task status by taskId
      * @param taskId
      * @returns {object} - task data
      */
@@ -371,8 +371,8 @@ export class TaskManager {
             taskId: task.taskId,
             action: task.action,
             expectation: task.expectation,
-            completed: task.result != null,
-            failed: task.error != null,
+            completed: task.result !== null,
+            failed: task.error !== null,
             error: task.error
                 ? { message: task.error.message ?? 'Task failed' }
                 : null,
