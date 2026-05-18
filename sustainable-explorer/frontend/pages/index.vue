@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { onClickOutside } from '@vueuse/core';
 import {
     Globe,
     Table2,
@@ -16,9 +15,6 @@ import {
     CheckCircle2,
     Plus,
     Zap,
-    ChevronDown,
-    X,
-    Check,
     Flame,
 } from 'lucide-vue-next';
 import { formatCredits } from '~/lib/format';
@@ -168,29 +164,53 @@ const registryChartSegments = computed(() =>
 const sectorTotal = computed(() => sectorChartSegments.value.reduce((sum, s) => sum + s.value, 0));
 const registryTotal = computed(() => registryChartSegments.value.reduce((sum, s) => sum + s.value, 0));
 
-const developerDropdownOpen = ref(false);
-const registryDropdownOpen = ref(false);
-const developerRef = ref<HTMLElement | null>(null);
-const registryRef = ref<HTMLElement | null>(null);
+// Dashboard filters expressed as FilterBar options so the dashboard reuses
+// the same chip-style filter visual idiom as Projects/Credits/Developers.
+// Mapping convention: 'all' is FilterBar's no-filter sentinel; the dashboard
+// composable wants the literal labels "All Developers" / "All Registries"
+// so we translate at the boundary.
+const ALL_DEVELOPERS = 'All Developers';
+const ALL_REGISTRIES = 'All Registries';
 
-onClickOutside(developerRef, () => { developerDropdownOpen.value = false; });
-onClickOutside(registryRef, () => { registryDropdownOpen.value = false; });
+const dashboardActiveFilters = computed<Record<string, string>>(() => ({
+    developer: selectedDeveloper.value === ALL_DEVELOPERS ? 'all' : selectedDeveloper.value,
+    registry: selectedRegistry.value === ALL_REGISTRIES ? 'all' : selectedRegistry.value,
+}));
 
-function selectDeveloper(val: string) {
-    selectedDeveloper.value = val;
-    developerDropdownOpen.value = false;
+const dashboardFilterDefs = computed(() => [
+    {
+        key: 'developer',
+        label: t('dashboard.allDevelopers'),
+        options: developerOptions.value
+            .filter(o => o !== ALL_DEVELOPERS)
+            .map(o => ({ value: o, label: o })),
+    },
+    {
+        key: 'registry',
+        label: t('dashboard.allRegistries'),
+        options: registryOptions.value
+            .filter(o => o !== ALL_REGISTRIES)
+            .map(o => ({ value: o, label: o })),
+    },
+]);
+
+function applyDashboardFilter(key: string, value: string) {
+    if (key === 'developer') {
+        selectedDeveloper.value = value === 'all' ? ALL_DEVELOPERS : value;
+    } else if (key === 'registry') {
+        selectedRegistry.value = value === 'all' ? ALL_REGISTRIES : value;
+    }
     syncDashboardUrl();
 }
-function selectRegistry(val: string) {
-    selectedRegistry.value = val;
-    registryDropdownOpen.value = false;
-    syncDashboardUrl();
-}
+
 function clearFilters() {
-    selectedDeveloper.value = 'All Developers';
-    selectedRegistry.value = 'All Registries';
+    selectedDeveloper.value = ALL_DEVELOPERS;
+    selectedRegistry.value = ALL_REGISTRIES;
     syncDashboardUrl();
 }
+
+// Unused: dummy ref so the v-model contract on FilterBar (text search) compiles.
+const dashboardSearchRef = ref('');
 
 const activeDetail = computed(() => {
     if (!selectedCountry.value) return null;
@@ -316,140 +336,55 @@ const filteredStats = computed(() => {
                     <p class="text-sm text-muted-foreground mt-1">{{ $t('dashboard.subtitle') }}</p>
                 </div>
 
-                <!-- Filter dropdowns (right-aligned) -->
+                <!-- Filters — uses the same FilterBar component as Projects /
+                     Credits / Developers so the chip-style visual idiom is
+                     consistent across the app. -->
                 <div class="flex items-center gap-2 shrink-0">
-                <InfoTooltip :text="$t('dashboard.filterTooltip')" />
-                <!-- Developer dropdown -->
-                <div ref="developerRef" class="relative">
-                    <button
-                        class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors"
-                        :class="selectedDeveloper !== 'All Developers'
-                            ? 'border-primary/30 bg-primary/5 text-primary'
-                            : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'"
-                        @click="developerDropdownOpen = !developerDropdownOpen"
-                    >
-                        <span>{{ selectedDeveloper }}</span>
-                        <ChevronDown
-                            class="h-3 w-3 opacity-50 transition-transform"
-                            :class="developerDropdownOpen ? 'rotate-180' : ''"
-                        />
-                    </button>
-                    <Transition
-                        enter-active-class="transition ease-out duration-100"
-                        enter-from-class="opacity-0 scale-95"
-                        enter-to-class="opacity-100 scale-100"
-                        leave-active-class="transition ease-in duration-75"
-                        leave-from-class="opacity-100 scale-100"
-                        leave-to-class="opacity-0 scale-95"
-                    >
-                        <div
-                            v-if="developerDropdownOpen"
-                            class="absolute left-0 top-full mt-1 w-48 rounded-md border bg-popover p-1 shadow-md z-50"
-                        >
-                            <button
-                                v-for="opt in developerOptions"
-                                :key="opt"
-                                class="flex w-full items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
-                                @click="selectDeveloper(opt)"
-                            >
-                                <span class="flex-1 text-left">{{ opt }}</span>
-                                <Check
-                                    v-if="selectedDeveloper === opt"
-                                    class="h-3 w-3 text-primary"
-                                />
-                            </button>
-                        </div>
-                    </Transition>
+                    <InfoTooltip :text="$t('dashboard.filterTooltip')" />
+                    <FilterBar
+                        v-model="dashboardSearchRef"
+                        :filters="dashboardFilterDefs"
+                        :active-filters="dashboardActiveFilters"
+                        :result-count="0"
+                        :total-count="0"
+                        :hide-search="true"
+                        @filter="applyDashboardFilter"
+                        @clear="clearFilters"
+                    />
                 </div>
-
-                <!-- Registry dropdown -->
-                <div ref="registryRef" class="relative">
-                    <button
-                        class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors"
-                        :class="selectedRegistry !== 'All Registries'
-                            ? 'border-primary/30 bg-primary/5 text-primary'
-                            : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'"
-                        @click="registryDropdownOpen = !registryDropdownOpen"
-                    >
-                        <span>{{ selectedRegistry }}</span>
-                        <ChevronDown
-                            class="h-3 w-3 opacity-50 transition-transform"
-                            :class="registryDropdownOpen ? 'rotate-180' : ''"
-                        />
-                    </button>
-                    <Transition
-                        enter-active-class="transition ease-out duration-100"
-                        enter-from-class="opacity-0 scale-95"
-                        enter-to-class="opacity-100 scale-100"
-                        leave-active-class="transition ease-in duration-75"
-                        leave-from-class="opacity-100 scale-100"
-                        leave-to-class="opacity-0 scale-95"
-                    >
-                        <div
-                            v-if="registryDropdownOpen"
-                            class="absolute left-0 top-full mt-1 w-48 rounded-md border bg-popover p-1 shadow-md z-50"
-                        >
-                            <button
-                                v-for="opt in registryOptions"
-                                :key="opt"
-                                class="flex w-full items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
-                                @click="selectRegistry(opt)"
-                            >
-                                <span class="flex-1 text-left">{{ opt }}</span>
-                                <Check
-                                    v-if="selectedRegistry === opt"
-                                    class="h-3 w-3 text-primary"
-                                />
-                            </button>
-                        </div>
-                    </Transition>
-                </div>
-
-                <!-- Clear button -->
-                <Transition
-                    enter-active-class="transition ease-out duration-100"
-                    enter-from-class="opacity-0"
-                    enter-to-class="opacity-100"
-                    leave-active-class="transition ease-in duration-75"
-                    leave-from-class="opacity-100"
-                    leave-to-class="opacity-0"
-                >
-                    <button
-                        v-if="hasActiveFilter"
-                        class="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                        @click="clearFilters"
-                    >
-                        <X class="h-3 w-3" />
-                        <span>{{ $t('common.clear') }}</span>
-                    </button>
-                </Transition>
-            </div>
             </div>
         </div>
 
-        <!-- Stat Cards -->
+        <!-- Stat Cards.
+             Cards stagger in (50 ms each) on first paint so the dashboard
+             "fills in" visually instead of pop-loading all five at once.
+             Hover lifts the card 1px and deepens the shadow — transform/
+             opacity only, no width/height animation, so there's no CLS.
+             Stat values use tabular-nums to avoid horizontal jitter when the
+             filter switches and numbers change. -->
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 px-6 pb-6">
             <template v-if="pending">
                 <Skeleton v-for="n in 5" :key="n" class="h-24 rounded-xl" />
             </template>
             <NuxtLink
                 v-else
-                v-for="s in filteredStats"
+                v-for="(s, i) in filteredStats"
                 :key="s.label"
                 :to="s.to"
-                class="group rounded-xl border bg-card p-4 transition-all hover:shadow-md hover:border-border/80"
+                class="group rounded-xl border bg-card p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md hover:border-border/80 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2"
+                :style="`animation-delay: ${i * 50}ms; animation-fill-mode: backwards;`"
             >
                 <div class="flex items-center justify-between mb-3">
                     <span class="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                         {{ s.label }}
                         <InfoTooltip :text="s.tooltip" />
                     </span>
-                    <div :class="[s.accentBg, 'rounded-lg p-1.5 transition-transform group-hover:scale-110']">
+                    <div :class="[s.accentBg, 'rounded-lg p-1.5 transition-transform duration-200 ease-out group-hover:scale-110 group-hover:rotate-3']">
                         <component :is="s.icon" :class="[s.accent, 'h-3.5 w-3.5']" />
                     </div>
                 </div>
                 <div class="flex items-baseline gap-2">
-                    <span class="text-2xl font-bold text-foreground">{{ s.value }}</span>
+                    <span class="text-2xl font-bold text-foreground tabular-nums">{{ s.value }}</span>
                     <span v-if="s.change" class="flex items-center gap-0.5 text-xs font-medium text-stat-green">
                         <ArrowUpRight class="h-3 w-3" />
                         {{ s.change }}
@@ -503,9 +438,13 @@ const filteredStats = computed(() => {
                             <ProjectMap :countries="mapCountries" :points="mapPoints" @country-click="onCountryClick" />
                         </div>
 
-                        <!-- Side Panel -->
+                        <!-- Side Panel. Spring-flavored cubic-bezier on enter
+                             (overshoots subtly without going past w-80 due to
+                             our clip) and a faster, sharper exit so dismiss
+                             feels responsive. Exit duration is intentionally
+                             ~65% of enter, per Material motion guidance. -->
                         <Transition
-                            enter-active-class="transition-all duration-300 ease-out"
+                            enter-active-class="transition-all duration-300 [transition-timing-function:cubic-bezier(0.34,1.16,0.64,1)]"
                             enter-from-class="w-0 opacity-0"
                             enter-to-class="w-80 opacity-100"
                             leave-active-class="transition-all duration-200 ease-in"
@@ -516,8 +455,20 @@ const filteredStats = computed(() => {
                                  clips any long registry / country names so the
                                  box can never grow beyond the declared width;
                                  inner truncate+min-w-0 keep text from forcing
-                                 the column to flex outward. -->
-                            <div v-if="activeDetail" class="w-80 shrink-0 border-l overflow-y-auto overflow-x-hidden bg-card">
+                                 the column to flex outward.
+                                 `scrollbar-gutter: stable` (set inline so older
+                                 Tailwind builds without the arbitrary-property
+                                 plugin still apply it) reserves the vertical
+                                 scrollbar's ~15px gutter even when no scroll is
+                                 needed — without it the inner content width was
+                                 ~320px for short countries (Peru) but ~305px
+                                 for tall countries (India, many sectors), so
+                                 the panel APPEARED to widen/narrow per country. -->
+                            <div
+                                v-if="activeDetail"
+                                class="w-80 shrink-0 border-l overflow-y-auto overflow-x-hidden bg-card"
+                                style="scrollbar-gutter: stable;"
+                            >
                                 <div class="p-4 space-y-5">
                                     <!-- Country header -->
                                     <div class="flex items-center justify-between gap-2">
@@ -543,11 +494,21 @@ const filteredStats = computed(() => {
                                         <div class="text-[11px] text-muted-foreground mt-0.5">{{ $t('dashboard.activeProjects') }} →</div>
                                     </NuxtLink>
 
-                                    <!-- Sector donut -->
+                                    <!-- Sector donut. The chart column has a hard
+                                         90px width regardless of the inner SVG
+                                         dimensions, so the legend column to its
+                                         right (flex-1 min-w-0) always starts at
+                                         the same horizontal offset across
+                                         countries. Without `w-[90px] shrink-0`
+                                         the inline-flex inside DonutChart could
+                                         drift by a pixel or two depending on
+                                         font/icon metrics. -->
                                     <div>
                                         <h4 class="text-xs font-semibold text-foreground mb-3">{{ $t('dashboard.sector') }}</h4>
-                                        <div class="flex items-start gap-3">
-                                            <DonutChart :segments="activeDetail.sectors" :size="90" />
+                                        <div class="flex items-start gap-3 w-[250px]">
+                                            <div class="w-[90px] h-[90px] shrink-0 flex items-center justify-center">
+                                                <DonutChart :segments="activeDetail.sectors" :size="90" />
+                                            </div>
                                             <div class="space-y-1.5 flex-1 min-w-0">
                                                 <div v-for="s in activeDetail.sectors" :key="s.label" class="flex items-center gap-2 min-w-0">
                                                     <span class="h-2 w-2 shrink-0 rounded-full" :style="{ backgroundColor: s.color }" />

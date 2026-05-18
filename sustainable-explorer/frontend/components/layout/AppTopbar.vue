@@ -315,16 +315,19 @@ function onSearchKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-    <header class="relative z-40 flex shrink-0 items-center h-12 border-b bg-card px-4 gap-4">
-        <!-- Left: sidebar toggle -->
+    <header class="relative z-40 flex shrink-0 items-center h-12 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-4 gap-4">
+        <!-- Left: sidebar toggle. Scale-down on active press for tactile feedback. -->
         <button
-            class="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all duration-150"
+            :aria-label="$t('topbar.toggleSidebar') || 'Toggle sidebar'"
             @click="collapsed = !collapsed"
         >
             <PanelLeft class="h-4 w-4" />
         </button>
 
-        <!-- Breadcrumbs -->
+        <!-- Breadcrumbs. On <md screens the parent crumbs collapse to icons
+             only and the final crumb gets a smaller truncation cap, so the
+             topbar stays usable down to ~375 px without horizontal scroll. -->
         <nav v-if="breadcrumbs.length > 0" class="flex items-center gap-1.5 min-w-0">
             <template v-for="(crumb, idx) in breadcrumbs" :key="idx">
                 <ChevronRight v-if="idx > 0" class="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
@@ -332,13 +335,14 @@ function onSearchKeydown(e: KeyboardEvent) {
                     v-if="crumb.to"
                     :to="crumb.to"
                     class="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                    :title="crumb.label"
                 >
                     <component :is="crumb.icon" v-if="crumb.icon" class="h-3.5 w-3.5" />
-                    {{ crumb.label }}
+                    <span class="hidden md:inline">{{ crumb.label }}</span>
                 </NuxtLink>
                 <span
                     v-else
-                    class="flex items-center gap-1 text-xs font-medium text-foreground truncate max-w-[200px]"
+                    class="flex items-center gap-1 text-xs font-medium text-foreground truncate max-w-[140px] md:max-w-[240px]"
                 >
                     <component :is="crumb.icon" v-if="crumb.icon" class="h-3.5 w-3.5 shrink-0" />
                     {{ crumb.label }}

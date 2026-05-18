@@ -2,6 +2,7 @@ import type { ActivityItem, MapPoint, MapCountry } from '~/types/models';
 import { SectorType } from '~/types/enums';
 import { formatCredits } from '~/lib/format';
 import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
+import { allocateDonutColors } from '~/lib/chart-colors';
 
 // Reverse of COUNTRY_ALPHA3 — used to display the human-readable name when a
 // project's country came from reverse-geocoding (we have the ISO3 but not
@@ -409,29 +410,29 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             totalCredits += p.credits;
         }
 
-        const sectorColorMap: Record<string, string> = {
-            'Renewable Energy': '#1a9850',
-            'Forestry': '#0f6b3a',
-            'Blue Carbon': '#0a97d9',
-            'Energy Efficiency': '#66bd63',
-            'Agriculture': '#d9ef8b',
-            'Water': '#26bde2',
-            'Waste': '#a6d96a',
-        };
-
         const useCredits = totalCredits > 0;
         const denom = useCredits ? totalCredits : (totalProjects || 1);
 
-        const sectors = Object.keys(catCounts)
-            .map(label => {
-                const numerator = useCredits ? catCredits[label] : catCounts[label];
-                return {
-                    label,
-                    value: Math.round((numerator / denom) * 100),
-                    color: sectorColorMap[label] || '#d4d4d8',
-                };
-            })
+        // Allocate colors deterministically per country via the same allocator
+        // the main dashboard sector/registry breakdown uses. The previous
+        // hand-maintained `sectorColorMap` only covered a handful of canonical
+        // labels (Renewable Energy, Forestry, etc.), so any real-world value
+        // (e.g. "Community Services Activities", "Afforestation", or numeric
+        // codes from the DB) fell through to a single gray fallback and the
+        // donut rendered as one uniform ring.
+        const orderedSectors = Object.keys(catCounts)
+            .map(label => ({
+                label,
+                value: Math.round(((useCredits ? catCredits[label] : catCounts[label]) / denom) * 100),
+            }))
             .sort((a, b) => b.value - a.value);
+
+        const sectorColors = allocateDonutColors(orderedSectors.length, `country-sector-${code}`);
+        const sectors = orderedSectors.map((s, i) => ({
+            label: s.label,
+            value: s.value,
+            color: sectorColors[i] ?? '#d4d4d8',
+        }));
 
         const regCredits: Record<string, number> = {};
         const regCounts: Record<string, number> = {};

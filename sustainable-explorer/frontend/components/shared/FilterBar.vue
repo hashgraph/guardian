@@ -19,6 +19,11 @@ const props = defineProps<{
     activeFilters: Record<string, string>;
     resultCount: number;
     totalCount: number;
+    // Hide the text-search input when the host page has no use for it
+    // (e.g. the dashboard's global developer/registry filters). The filter
+    // chips and clear-all button still render so visual idiom stays
+    // identical to the search-enabled variants on Projects/Credits/etc.
+    hideSearch?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -68,7 +73,9 @@ function getActiveLabel(filter: FilterOption): string {
 }
 
 const hasActiveFilters = computed(() => {
-    return props.modelValue.trim() !== '' || Object.values(props.activeFilters).some(v => v && v !== 'all');
+    const chipsActive = Object.values(props.activeFilters).some(v => v && v !== 'all');
+    if (props.hideSearch) return chipsActive;
+    return props.modelValue.trim() !== '' || chipsActive;
 });
 
 // Close dropdown when clicking outside
@@ -90,7 +97,7 @@ if (import.meta.client) {
     <div class="space-y-2">
     <div class="flex flex-wrap items-center gap-2">
         <!-- Text search -->
-        <div class="relative">
+        <div v-if="!hideSearch" class="relative">
             <Search class="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <input
                 :value="modelValue"

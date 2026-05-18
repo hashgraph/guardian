@@ -197,6 +197,23 @@ function widthClass(field: FilterField): string {
     }
 }
 
+// Visual active-state markers — mirror FilterBar's chip pattern so a populated
+// filter input gets the same primary-tint border + background across the app.
+// Reads `localText` for text/number (so the highlight tracks what the user
+// sees, not the debounced value) and falls through to modelValue elsewhere.
+function isFieldActive(field: FilterField): boolean {
+    if (field.type === 'text' || field.type === 'number') {
+        return !isEmpty(localText.value[field.key]);
+    }
+    return !isEmpty(props.modelValue[field.key]);
+}
+
+function fieldActiveClass(field: FilterField): string {
+    return isFieldActive(field)
+        ? 'border-primary/40 bg-primary/5 text-primary'
+        : 'border-input bg-background text-foreground';
+}
+
 // --- Active filters / clear ---
 function isEmpty(value: any): boolean {
     if (value === null || value === undefined) return true;
@@ -264,7 +281,7 @@ function clearAll() {
                     :placeholder="field.placeholder"
                     :value="localText[field.key] ?? ''"
                     :aria-label="field.label"
-                    class="h-8 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    :class="['h-8 w-full rounded-md border px-2 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors', fieldActiveClass(field)]"
                     @input="onTextInput(field, $event)"
                 />
 
@@ -276,7 +293,7 @@ function clearAll() {
                     :placeholder="field.placeholder"
                     :value="localText[field.key] ?? ''"
                     :aria-label="field.label"
-                    class="h-8 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    :class="['h-8 w-full rounded-md border px-2 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors', fieldActiveClass(field)]"
                     @input="onTextInput(field, $event)"
                 />
 
@@ -286,7 +303,7 @@ function clearAll() {
                     :id="`filter-${field.key}`"
                     :value="modelValue[field.key] ?? ''"
                     :aria-label="field.label"
-                    class="h-8 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    :class="['h-8 w-full rounded-md border px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring transition-colors', fieldActiveClass(field)]"
                     @change="onSelect(field, $event)"
                 >
                     <option value="">{{ field.placeholder || $t('common.all') }}</option>
@@ -305,11 +322,11 @@ function clearAll() {
                         type="button"
                         :aria-label="field.label"
                         :aria-expanded="openMultiselect === field.key"
-                        class="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        :class="['flex h-8 w-full items-center justify-between rounded-md border px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring transition-colors', fieldActiveClass(field)]"
                         @click="toggleMultiselect(field.key)"
                     >
                         <span class="truncate">{{ multiselectLabel(field) }}</span>
-                        <ChevronDown class="ml-1 h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <ChevronDown class="ml-1 h-3.5 w-3.5 shrink-0 opacity-60" />
                     </button>
                     <div
                         v-if="openMultiselect === field.key"
@@ -396,14 +413,16 @@ function clearAll() {
             </div>
         </template>
 
+        <!-- Active-count + clear styled to match FilterBar's clear chip so the
+             two filter shells visually rhyme across the app. -->
         <div v-if="activeCount > 0" class="flex items-center gap-2 pb-0.5">
             <span class="text-[11px] text-muted-foreground">{{ $t('common.activeCount', { count: activeCount }) }}</span>
             <button
                 type="button"
-                class="inline-flex h-8 items-center gap-1 rounded-md border border-input bg-background px-2 text-xs text-foreground hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-ring"
+                class="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
                 @click="clearAll"
             >
-                <X class="h-3.5 w-3.5" />
+                <X class="h-3 w-3" />
                 {{ $t('common.clearAll') }}
             </button>
         </div>

@@ -1,3 +1,12 @@
+/*
+ * Geist Sans + Geist Mono (Vercel). Designed to feel close to SF Pro while
+ * being deterministic across operating systems — a dashboard rendered on
+ * macOS, Windows and Linux looks identical. `@import url(...)` must come
+ * before all other rules (including Tailwind's own @imports) per CSS spec;
+ * `display=swap` keeps it off the critical render path.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "vue-sonner/style.css";
@@ -25,9 +34,10 @@
     --color-secondary: hsl(215 16% 93%);
     --color-secondary-foreground: hsl(220 14% 25%);
 
-    /* Muted */
+    /* Muted. muted-foreground bumped from 46% → 42% lightness so the small
+     * secondary-text labels meet WCAG AA (4.5:1) against the card surface. */
     --color-muted: hsl(215 16% 93%);
-    --color-muted-foreground: hsl(220 10% 46%);
+    --color-muted-foreground: hsl(220 10% 42%);
 
     /* Accent */
     --color-accent: hsl(162 30% 93%);
@@ -79,4 +89,44 @@ body {
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /*
+     * Geist Sans (Vercel) — chosen for a uniform appearance across macOS /
+     * Windows / Linux. Falls back to the system stack (SF Pro / Segoe UI /
+     * Roboto) until Geist loads, so the FOUT looks natural instead of
+     * lurching to a serif. `ss01` enables the alternate single-storey `a`
+     * which reads cleaner at small sizes (dashboard chrome / table cells).
+     */
+    font-family:
+        'Geist',
+        -apple-system, BlinkMacSystemFont,
+        'Segoe UI Variable', 'Segoe UI',
+        system-ui,
+        Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-feature-settings: 'ss01', 'cv11';
+}
+
+/* Monospace stack for IDs, hashes, DIDs, timestamps. Geist Mono pairs with
+ * Geist Sans by design — same x-height and weight rhythm so inline code
+ * inside body text doesn't jump. */
+.font-mono,
+code,
+kbd,
+samp,
+pre {
+    font-family:
+        'Geist Mono',
+        ui-monospace, SFMono-Regular, 'SF Mono',
+        Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+/* Respect prefers-reduced-motion globally for any transition Tailwind generates. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
