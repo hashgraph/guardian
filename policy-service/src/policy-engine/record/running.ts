@@ -1,11 +1,11 @@
-import { GenerateUUIDv4, PolicyEvents, TopicType, RecordMethod } from '@guardian/interfaces';
-import { RunningStatus } from './status.type.js';
+import { GenerateUUIDv4, IRecordPolicyTestMetadata, PolicyEvents, TopicType, RecordMethod, RecordStatus } from '@guardian/interfaces';
+import { RecordActionStep } from '../record-action-step.js';
 import { BlockTreeGenerator } from '../block-tree-generator.js';
 import { RecordAction } from './action.type.js';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcDocument as VcDocumentCollection, VcDocument, VcHelper, VpDocument } from '@guardian/common';
+import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcDocument, VpDocument, VcHelper } from '@guardian/common';
 import { RecordItem } from './record-item.js';
 import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, RowDocument, Utils } from './utils.js';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
@@ -13,6 +13,8 @@ import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 interface RecordOptions {
     mode?: string;
     index?: string | number;
+    selectedOutputs?: boolean;
+    policyTest?: IRecordPolicyTestMetadata;
 }
 
 interface IActionResult {
@@ -82,7 +84,7 @@ export class Running {
     /**
      * Status
      */
-    private _status: RunningStatus;
+    private _status: RecordStatus;
     /**
      * Last error
      */
@@ -122,7 +124,7 @@ export class Running {
         this.options = options || {};
         this.tree = new BlockTreeGenerator();
         this._mode = this.options.mode;
-        this._status = RunningStatus.New;
+        this._status = RecordStatus.New;
         this._lastError = null;
         this._id = null;
         this._actions = new RecordItemStack();
@@ -151,7 +153,7 @@ export class Running {
      * @public
      */
     public start(): string {
-        this._status = RunningStatus.Running;
+        this._status = RecordStatus.Running;
         this._lastError = null;
         this._id = GenerateUUIDv4();
         this._generatedItems = [];
@@ -170,7 +172,7 @@ export class Running {
      * @public
      */
     public stop(): boolean {
-        this._status = RunningStatus.Stopped;
+        this._status = RecordStatus.Stopped;
         this._lastError = null;
         this._endTime = Date.now();
         this._updateStatus(this._id).then();
@@ -184,7 +186,7 @@ export class Running {
     public finished(): boolean {
         const oldID = this._id;
         this._id = null;
-        this._status = RunningStatus.Finished;
+        this._status = RecordStatus.Finished;
         this._lastError = null;
         this._endTime = Date.now();
         this._updateStatus(oldID).then();
@@ -197,7 +199,7 @@ export class Running {
      * @public
      */
     public error(message: string): boolean {
-        this._status = RunningStatus.Error;
+        this._status = RecordStatus.Error;
         this._lastError = message;
         this._endTime = Date.now();
         this._updateStatus(this._id).then();
@@ -211,7 +213,7 @@ export class Running {
     public async destroy(): Promise<boolean> {
         const oldID = this._id;
         this._id = null;
-        this._status = RunningStatus.Finished;
+        this._status = RecordStatus.Finished;
         this._lastError = null;
         this._endTime = Date.now();
         await this._updateStatus(oldID);
@@ -223,7 +225,7 @@ export class Running {
      * @public
      */
     public async run(): Promise<IRecordResult[]> {
-        this._status = RunningStatus.Running;
+        this._status = RecordStatus.Running;
         this._lastError = null;
         this._id = GenerateUUIDv4();
         this._generatedItems = [];
@@ -266,8 +268,8 @@ export class Running {
      */
     public async retryStep(): Promise<boolean> {
         try {
-            if (this._status === RunningStatus.Error) {
-                this._status = RunningStatus.Running;
+            if (this._status === RecordStatus.Error) {
+                this._status = RecordStatus.Running;
                 this._lastError = null;
                 this._updateStatus(this._id).then();
                 this._run(this._id).then();
@@ -286,8 +288,8 @@ export class Running {
      */
     public async skipStep(): Promise<boolean> {
         try {
-            if (this._status === RunningStatus.Error) {
-                this._status = RunningStatus.Running;
+            if (this._status === RecordStatus.Error) {
+                this._status = RecordStatus.Running;
                 this._lastError = null;
                 this._actions.next();
                 this._updateStatus(this._id).then();
@@ -306,17 +308,17 @@ export class Running {
      * @public
      */
     public async results(): Promise<IRecordResult[]> {
-        if (this._status !== RunningStatus.Stopped) {
+        if (this._status !== RecordStatus.Stopped) {
             return null;
         }
         const results: IRecordResult[] = [];
         const db = new DatabaseServer(this.policyId);
-        const vcs = await db.getVcDocuments<VcDocumentCollection>({
+        const vcs = await db.getVcDocuments<VcDocument>({
             updateDate: {
                 $gte: new Date(this._startTime),
                 $lt: new Date(this._endTime)
             }
-        }) as VcDocumentCollection[];
+        }) as VcDocument[];
 
         for (const vc of vcs) {
             results.push({
@@ -351,7 +353,7 @@ export class Running {
             const status: any = this.getStatus(id);
             this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, status);
             if (this._mode === 'test') {
-                if (this._status === RunningStatus.Running) {
+                if (this._status === RecordStatus.Running) {
                     this.tree.sendMessage(PolicyEvents.TEST_UPDATE_BROADCAST, status);
                 } else {
                     status.result = await this.getResults();
@@ -393,7 +395,7 @@ export class Running {
      * @private
      */
     private isRunning(id: string): boolean {
-        return this._id === id && this._status === RunningStatus.Running;
+        return this._id === id && this._status === RecordStatus.Running;
     }
 
     /**
@@ -457,7 +459,16 @@ export class Running {
                     const block = PolicyComponentsUtils.GetBlockByTag<any>(this.policyId, action.target);
                     if (await this.isAvailable(block, userFull)) {
                         const doc = await this.getActionDocument(action, block);
-                        await block.setData(userFull, doc, null, null);
+                        if (action.recordActionId) {
+                            await new Promise<void>((resolve, reject) => {
+                                const step = new RecordActionStep(() => resolve(), 0, false, false, action.recordActionId);
+                                block.setData(userFull, doc, null, step).then(() => {
+                                    step.finish();
+                                }).catch(reject);
+                            });
+                        } else {
+                            await block.setData(userFull, doc, null, null);
+                        }
                         return null;
                     } else {
                         return `Block (${action.target}) not available.`;
@@ -465,9 +476,26 @@ export class Running {
                 }
                 case RecordAction.SetExternalData: {
                     const doc = await this.getActionDocument(action);
-                    for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
-                        if (block.policyId === this.policyId) {
-                            await (block as any).receiveData(doc);
+                    if (action.recordActionId) {
+                        await new Promise<void>((resolve, reject) => {
+                            const step = new RecordActionStep(() => resolve(), 0, false, false, action.recordActionId);
+                            const receiveExternalData = async () => {
+                                for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
+                                    if (block.policyId === this.policyId) {
+                                        await (block as any).receiveData(doc, step);
+                                    }
+                                }
+                            };
+
+                            receiveExternalData().then(() => {
+                                step.finish();
+                            }).catch(reject);
+                        });
+                    } else {
+                        for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
+                            if (block.policyId === this.policyId) {
+                                await (block as any).receiveData(doc);
+                            }
                         }
                     }
                     return null;
@@ -814,7 +842,9 @@ export class Running {
                 .loadRecordResults(this.policyId, this._startTime, this._endTime);
             return {
                 documents: results,
-                recorded: this._results
+                recorded: this._results,
+                selectedOutputs: this.options.selectedOutputs,
+                policyTest: this.options.policyTest
             };
         } else {
             return null;

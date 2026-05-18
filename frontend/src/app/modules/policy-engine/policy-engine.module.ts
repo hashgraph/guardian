@@ -100,6 +100,7 @@ import { ViewerDialog } from './dialogs/viewer-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './dialogs/compare-modules-dialog/compare-modules-dialog.component';
 import { RecordControllerComponent } from './record/record-controller/record-controller.component';
 import { RecordResultDialog } from './record/record-result-dialog/record-result-dialog.component';
+import { SavePolicyTestRecordDialog } from './record/save-policy-test-record-dialog/save-policy-test-record-dialog.component';
 import { RecordResultsComponent } from './record/record-results/record-results.component';
 import { TestResultsComponent } from './record/test-results/test-results.component';
 import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.component';
@@ -185,6 +186,7 @@ import { PolicyParameterPropertyComponent } from 'src/app/components/policy-para
 import { PolicyParametersConfigDialog } from './dialogs/policy-parameters-config-dialog/policy-parameters-config-dialog.component';
 import { ParameterDocumentPathComponent } from './helpers/parameter-document-path/parameter-document-path.component';
 import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
+import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-automation/policy-test-automation-popup.component';
 
 @NgModule({
     declarations: [
@@ -286,6 +288,7 @@ import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
         ProgressTrackerComponent,
         RecordControllerComponent,
         RecordResultDialog,
+        SavePolicyTestRecordDialog,
         RecordResultsComponent,
         TestResultsComponent,
         ResizingDirective,
@@ -326,7 +329,8 @@ import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
         PolicyParametersDialog,
         PolicyParameterPropertyComponent,
         ParameterDocumentPathComponent,
-        MockDialog
+        MockDialog,
+        PolicyTestAutomationPopupComponent
     ],
     imports: [
         CommonModule,

@@ -76,6 +76,7 @@ import {
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
+import { createHash } from 'crypto';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
@@ -4039,11 +4040,22 @@ export class PolicyEngineService {
                         throw new Error(`Policy is published`);
                     }
                     const buffer = Buffer.from(file.buffer);
+                    const newHash = createHash('sha256').update(buffer).digest('hex');
+                    const existingTests = await DatabaseServer.getPolicyTests(policyId);
+                    for (const existing of existingTests) {
+                        const existingBuffer = existing.file
+                            ? await DatabaseServer.loadFile(existing.file)
+                            : null;
+                        if (existingBuffer && createHash('sha256').update(existingBuffer).digest('hex') === newHash) {
+                            return new MessageError('Duplicate test file.', 409);
+                        }
+                    }
                     const recordToImport = await RecordImportExport.parseZipFile(buffer);
                     const test = await DatabaseServer.createPolicyTest(
                         {
                             uuid: GenerateUUIDv4(),
                             name: file.filename.split('.')[0],
+                            description: recordToImport.policyTest?.description,
                             policyId,
                             owner: owner.creator,
                             status: PolicyTestStatus.New,
@@ -4107,12 +4119,18 @@ export class PolicyEngineService {
 
                     const options = { mode: 'test' };
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip));
+                    const selectedOutputs = RecordImportExport.hasSelectedOutputs(recordToImport);
+                    const expectedResults = RecordImportExport.getComparisonResults(recordToImport);
                     const guardiansService = new GuardiansService();
                     const recordId: string = await guardiansService
                         .sendPolicyMessage(PolicyEvents.RUN_RECORD, policyId, {
                             records: recordToImport.records,
-                            results: recordToImport.results,
-                            options
+                            results: expectedResults,
+                            options: {
+                                ...options,
+                                selectedOutputs,
+                                policyTest: recordToImport.policyTest
+                            }
                         });
                     if (recordId) {
                         test.resultId = recordId;

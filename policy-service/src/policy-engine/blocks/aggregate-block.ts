@@ -190,8 +190,22 @@ export class AggregateBlock {
         const options = await ref.getOptions(user);
         if (documents.length || options.emptyData) {
             const state: IPolicyEventState = { data: documents };
-            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
-            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
+            // const user = await PolicyUtils.getPolicyUserById(ref, userId);
+            let effectiveActionStatus = actionStatus;
+            if (!effectiveActionStatus && ref.dryRun && documents.length > 0) {
+                const inheritedId = typeof documents[0].recordActionId === 'string' ? documents[0].recordActionId : null;
+                if (inheritedId) {
+                    const policyId = ref.policyId;
+                    effectiveActionStatus = new RecordActionStep(() => {
+                        PolicyComponentsUtils.GetPolicyComponents(policyId)?.recordingController?.notifyUpdate();
+                    }, 0, false, false, inheritedId);
+                }
+            }
+            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, effectiveActionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, effectiveActionStatus);
+            if (effectiveActionStatus !== actionStatus) {
+                effectiveActionStatus.finish();
+            }
             PolicyComponentsUtils.ExternalEventFn(
                 new ExternalEvent(ExternalEventType.TickCron, ref, user, {
                     documents: ExternalDocuments(documents),

@@ -154,12 +154,15 @@ export class MathBlock {
      * @param documents
      * @param ref
      * @param userId
+     * @param recordActionId
+     * @param user
      * @private
      */
     private async process(
         documents: IPolicyDocument,
         ref: IPolicyCalculateBlock,
         userId: string | null,
+        recordActionId: string | null = null,
         user?: PolicyUser
     ): Promise<IPolicyDocument> {
         if (!documents) {
@@ -182,10 +185,10 @@ export class MathBlock {
 
         const newJson = await this.calculate(ref, map, docOwner);
         if (options.unsigned) {
-            return await this.createUnsignedDocument(newJson, ref);
+            return await this.createUnsignedDocument(newJson, ref, recordActionId);
         } else {
             const metadata = await this.aggregateMetadata(contextDocument, ref, userId);
-            return await this.createDocument(newJson, metadata, ref, userId, user);
+            return await this.createDocument(newJson, metadata, ref, userId, recordActionId, user);
         }
     }
 
@@ -253,12 +256,16 @@ export class MathBlock {
      * @param json
      * @param metadata
      * @param ref
+     * @param userId
+     * @param recordActionId
+     * @param user
      */
     private async createDocument(
         json: any,
         metadata: IMetadata,
         ref: IPolicyCalculateBlock,
         userId: string | null,
+        recordActionId: string | null = null,
         user?: PolicyUser
     ): Promise<IPolicyDocument> {
         const {
@@ -307,7 +314,7 @@ export class MathBlock {
             { uuid }
         );
 
-        const item = PolicyUtils.createVC(ref, owner, newVC);
+        const item = PolicyUtils.createVC(ref, owner, newVC, recordActionId);
         item.type = outputSchema.iri;
         item.schema = outputSchema.iri;
         item.relationships = relationships.length ? relationships : null;
@@ -323,13 +330,15 @@ export class MathBlock {
      * Generate unsigned document
      * @param json
      * @param ref
+     * @param recordActionId
      */
     private async createUnsignedDocument(
         json: any,
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        recordActionId: string | null = null
     ): Promise<IPolicyDocument> {
         const vc = PolicyUtils.createVcFromSubject(json);
-        return PolicyUtils.createUnsignedVC(ref, vc);
+        return PolicyUtils.createUnsignedVC(ref, vc, recordActionId);
     }
 
     /**
@@ -351,12 +360,12 @@ export class MathBlock {
         if (Array.isArray(event.data.data)) {
             const result: IPolicyDocument[] = [];
             for (const doc of event.data.data) {
-                const newVC = await this.process(doc, ref, event?.user?.userId, event.user);
+                const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user);
                 result.push(newVC)
             }
             event.data.data = result;
         } else {
-            event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.user);
+            event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);

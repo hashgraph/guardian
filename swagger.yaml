@@ -35864,6 +35864,66 @@ paths:
       summary: Get running results.
       tags:
         - record
+  /record/{policyId}/recording/action-documents:
+    get:
+      description: >-
+        Returns all VC and VP documents from the dry-run store that share the
+        given recordActionId. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: RecordApi_getRecordActionDocuments
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: recordActionId
+          required: true
+          in: query
+          description: Record action UUID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get documents produced by a recorded action.
+      tags:
+        - record
   /record/{policyId}/running/details:
     get:
       description: >-

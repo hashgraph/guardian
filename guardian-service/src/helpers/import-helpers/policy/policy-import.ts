@@ -466,6 +466,7 @@ export class PolicyImport {
                 files.push([{
                     uuid: newUUID,
                     owner: user.creator,
+                    description: recordToImport.policyTest?.description,
                     status: PolicyTestStatus.New,
                     duration: recordToImport.duration,
                     progress: 0,
