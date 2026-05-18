@@ -438,6 +438,37 @@ paths:
       summary: Registers a new user account.
       tags:
         - accounts
+  /accounts/push/onboard:
+    post:
+      description: >-
+        Creates a user account, Hedera account, DID, and cryptographic keys on
+        behalf of the user. If hederaAccountId / hederaAccountKey are omitted
+        the platform generates them. 
+      operationId: AccountApi_registerAndOnboard
+      parameters: []
+      requestBody:
+        required: true
+        description: Registration and optional Hedera / DID credentials.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnboardingDTO'
+      responses:
+        '202':
+          description: Task created — poll for completion.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Registers and fully onboards a new user account.
+      tags:
+        - accounts
   /accounts/login:
     post:
       operationId: AccountApi_login
@@ -30394,6 +30425,40 @@ paths:
       summary: Returns task statuses by Id.
       tags:
         - tasks
+  /tasks/onboard/{taskId}:
+    get:
+      description: Returns task status of user onboarding by Id. No Bearer token required.
+      operationId: TaskApi_getTaskStatus
+      parameters:
+        - name: taskId
+          required: true
+          in: path
+          description: Task Id returned by the initiating endpoint
+          schema:
+            example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskStatusDTO'
+        '401':
+          description: Task exists but is not an onboarding task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Returns task status of user onboarding by Id without authentication.
+      tags:
+        - tasks
   /tokens:
     get:
       description: >-
@@ -49885,6 +49950,211 @@ components:
       required:
         - statusCode
         - message
+    SubjectDTO:
+      type: object
+      properties:
+        '@context':
+          nullable: true
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+          nullable: true
+        type:
+          type: string
+          nullable: true
+      required:
+        - '@context'
+    DidDocumentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: false
+        '@context':
+          nullable: true
+          type: array
+          items:
+            type: string
+        alsoKnownAs:
+          nullable: true
+          type: array
+          items:
+            type: string
+        controller:
+          nullable: true
+          type: array
+          items:
+            type: string
+        verificationMethod:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        authentication:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        assertionMethod:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        keyAgreement:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        capabilityInvocation:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        capabilityDelegation:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        service:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+      required:
+        - id
+        - '@context'
+        - alsoKnownAs
+        - controller
+        - verificationMethod
+        - authentication
+        - assertionMethod
+        - keyAgreement
+        - capabilityInvocation
+        - capabilityDelegation
+        - service
+    DidKeyDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: false
+        key:
+          type: string
+          nullable: false
+      required:
+        - id
+        - key
+    FireblocksConfigDTO:
+      type: object
+      properties:
+        fireBlocksVaultId:
+          type: string
+          example: ''
+        fireBlocksAssetId:
+          type: string
+          example: ''
+        fireBlocksApiKey:
+          type: string
+          example: ''
+        fireBlocksPrivateiKey:
+          type: string
+          example: ''
+          description: >-
+            API property name is `fireBlocksPrivateiKey` (typo preserved for
+            compatibility).
+    OnboardingDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          example: NewStandardRegistry
+        password:
+          type: string
+          example: StrongPassword3#
+        password_confirmation:
+          type: string
+          example: StrongPassword3#
+        role:
+          type: string
+          example: STANDARD_REGISTRY
+        hederaAccountId:
+          type: string
+          description: >-
+            Hedera account ID (e.g. 0.0.12345). Auto-generated from the operator
+            account if omitted.
+          example: 0.0.12345
+        hederaAccountKey:
+          type: string
+          description: >-
+            Hedera account private key. Required when hederaAccountId is
+            provided; auto-generated if omitted.
+        parent:
+          type: string
+          description: >-
+            Standard Registry username or DID. Required for USER role accounts
+            to link them to their registry.
+          example: registry_username
+        vcDocument:
+          description: VC document to publish during profile setup.
+          allOf:
+            - $ref: '#/components/schemas/SubjectDTO'
+        didDocument:
+          description: Pre-created DID document. Auto-generated if omitted.
+          allOf:
+            - $ref: '#/components/schemas/DidDocumentDTO'
+        didKeys:
+          description: Private keys for the DID document methods.
+          type: array
+          items:
+            $ref: '#/components/schemas/DidKeyDTO'
+        useFireblocksSigning:
+          type: boolean
+          default: false
+          description: Use Fireblocks signing instead of local key.
+        fireblocksConfig:
+          description: >-
+            Fireblocks configuration (required when useFireblocksSigning is
+            true).
+          allOf:
+            - $ref: '#/components/schemas/FireblocksConfigDTO'
+      required:
+        - username
+        - password
+        - password_confirmation
+        - role
+    TaskDTO:
+      type: object
+      properties:
+        taskId:
+          type: string
+          description: Task Id
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+        expectation:
+          type: number
+          description: Expected count of task phases
+          example: 8
+        action:
+          type: string
+          description: Task action
+          example: Create tool
+        userId:
+          type: string
+          description: User Id
+          example: 69bcfd90c98df6ceb05e8a78
+      required:
+        - taskId
+        - expectation
+        - action
+        - userId
     LoginUserDTO:
       type: object
       properties:
@@ -53638,30 +53908,6 @@ components:
         - configFileId
         - tools
         - config
-    TaskDTO:
-      type: object
-      properties:
-        taskId:
-          type: string
-          description: Task Id
-          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
-        expectation:
-          type: number
-          description: Expected count of task phases
-          example: 8
-        action:
-          type: string
-          description: Task action
-          example: Create tool
-        userId:
-          type: string
-          description: User Id
-          example: 69bcfd90c98df6ceb05e8a78
-      required:
-        - taskId
-        - expectation
-        - action
-        - userId
     ToolListV2ItemDTO:
       type: object
       properties:
@@ -53982,81 +54228,6 @@ components:
         - tools
         - config
         - schemas
-    DidDocumentDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: false
-        '@context':
-          nullable: true
-          type: array
-          items:
-            type: string
-        alsoKnownAs:
-          nullable: true
-          type: array
-          items:
-            type: string
-        controller:
-          nullable: true
-          type: array
-          items:
-            type: string
-        verificationMethod:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-        authentication:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-        assertionMethod:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-        keyAgreement:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-        capabilityInvocation:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-        capabilityDelegation:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-        service:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-      required:
-        - id
-        - '@context'
-        - alsoKnownAs
-        - controller
-        - verificationMethod
-        - authentication
-        - assertionMethod
-        - keyAgreement
-        - capabilityInvocation
-        - capabilityDelegation
-        - service
     ProfileDidDocumentRecordDTO:
       type: object
       properties:
@@ -54238,52 +54409,6 @@ components:
         - permissions
         - didDocument
         - vcDocument
-    SubjectDTO:
-      type: object
-      properties:
-        '@context':
-          nullable: true
-          type: array
-          items:
-            type: string
-        id:
-          type: string
-          nullable: true
-        type:
-          type: string
-          nullable: true
-      required:
-        - '@context'
-    DidKeyDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: false
-        key:
-          type: string
-          nullable: false
-      required:
-        - id
-        - key
-    FireblocksConfigDTO:
-      type: object
-      properties:
-        fireBlocksVaultId:
-          type: string
-          example: ''
-        fireBlocksAssetId:
-          type: string
-          example: ''
-        fireBlocksApiKey:
-          type: string
-          example: ''
-        fireBlocksPrivateiKey:
-          type: string
-          example: ''
-          description: >-
-            API property name is `fireBlocksPrivateiKey` (typo preserved for
-            compatibility).
     CredentialsDTO:
       type: object
       properties:
