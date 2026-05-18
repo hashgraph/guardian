@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { Users, Globe, FolderKanban } from 'lucide-vue-next';
+import { Users } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 
 const { t } = useI18n();
 const { developers, total, filterOptions } = useDevelopers();
+
+function goToProjectsForDeveloper(name: string) {
+    return navigateTo({ path: '/projects', query: { developer: name } });
+}
 
 const allDevelopers = computed(() => developers.value);
 
@@ -31,14 +35,10 @@ const statusColor: Record<string, string> = {
 <template>
     <div class="space-y-0">
         <div class="px-6 pt-6 pb-4">
-            <h1 class="text-2xl font-bold text-foreground flex items-center gap-2">
+            <h1 class="text-2xl font-bold text-foreground">
                 {{ $t('developers.title') }}
-                <MockDataBadge compact />
             </h1>
             <p class="text-sm text-muted-foreground mt-1">{{ $t('developers.subtitle') }}</p>
-        </div>
-        <div class="px-6 pb-3">
-            <MockDataBadge />
         </div>
 
         <div class="px-6 pb-3">
@@ -74,7 +74,7 @@ const statusColor: Record<string, string> = {
                         <tr
                             v-for="d in paginated"
                             :key="d.id"
-                            class="hover:bg-muted/30 transition-colors cursor-pointer"
+                            class="hover:bg-muted/30 transition-colors"
                         >
                             <td class="py-3 px-4">
                                 <div class="flex items-center gap-2.5">
@@ -86,7 +86,14 @@ const statusColor: Record<string, string> = {
                             </td>
                             <td class="py-3 px-4 text-muted-foreground whitespace-nowrap">{{ d.country }}</td>
                             <td class="py-3 px-4 text-right tabular-nums">{{ d.countries }}</td>
-                            <td class="py-3 px-4 text-right tabular-nums font-medium">{{ d.projects }}</td>
+                            <td class="py-3 px-4 text-right tabular-nums font-medium">
+                                <button
+                                    type="button"
+                                    class="text-primary hover:underline cursor-pointer"
+                                    :title="$t('developers.viewProjects', { name: d.name })"
+                                    @click="goToProjectsForDeveloper(d.name)"
+                                >{{ d.projects }}</button>
+                            </td>
                             <td class="py-3 px-4 text-right tabular-nums font-medium">{{ d.totalIssued }}</td>
                             <td class="py-3 px-4 text-right tabular-nums text-muted-foreground">{{ d.totalRetired }}</td>
                             <td class="py-3 px-4">

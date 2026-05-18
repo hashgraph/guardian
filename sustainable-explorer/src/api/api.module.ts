@@ -13,6 +13,8 @@ import { PoliciesController } from './controllers/policies.controller';
 import { ProjectsController } from './controllers/project.controller';
 import { CreditsController } from './controllers/credits.controller';
 import { QueueStatusController } from './controllers/queue-status.controller';
+import { SdgsController } from './controllers/sdgs.controller';
+import { DevelopersController } from './controllers/developers.controller';
 
 // Services
 import { RegistriesService } from './services/registries.service';
@@ -22,6 +24,8 @@ import { PolicySchemasService } from './services/policy-schemas.service';
 import { PoliciesService } from './services/policies.service';
 import { ProjectsService } from './services/project.service';
 import { CreditsService } from './services/credits.service';
+import { SdgsService } from './services/sdgs.service';
+import { DevelopersService } from './services/developers.service';
 
 // Queue management
 import { QueueRegistry } from './queues/queue.registry';
@@ -42,6 +46,8 @@ import { QueueEventsBus } from './queues/queue-events-bus.service';
         ProjectsController,
         CreditsController,
         QueueStatusController,
+        SdgsController,
+        DevelopersController,
     ],
     providers: [
         NetworkDataSourceRegistry,
@@ -52,6 +58,8 @@ import { QueueEventsBus } from './queues/queue-events-bus.service';
         PoliciesService,
         ProjectsService,
         CreditsService,
+        SdgsService,
+        DevelopersService,
         QueueRegistry,
         QueueEventsBus,
     ],

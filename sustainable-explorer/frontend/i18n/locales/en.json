@@ -554,6 +554,7 @@
     "noMatch": "No developers match your filters",
     "issuedTooltip": "Total issuances across all projects by this developer.",
     "retiredTooltip": "Issuances permanently retired (used for offsetting). Retired issuances cannot be traded or reused.",
+    "viewProjects": "View projects by {name}",
     "columns": {
       "developer": "Developer",
       "hq": "HQ",
@@ -574,6 +575,7 @@
     "subtitle": "Project contributions mapped to the UN SDGs",
     "searchPlaceholder": "Search SDGs...",
     "coverageTooltip": "Percentage of total projects that contribute to this SDG. A project can contribute to multiple SDGs.",
+    "viewProjects": "View projects tagged with {name}",
     "columns": {
       "sdg": "SDG",
       "goal": "Goal",

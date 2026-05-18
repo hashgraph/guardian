@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { Target } from 'lucide-vue-next';
-import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
+
+function goToProjectsForSdg(sdgId: number) {
+    return navigateTo({ path: '/projects', query: { sdgs: String(sdgId) } });
+}
 
 const { sdgStats, totalProjects } = useSdgStats();
 
@@ -32,14 +34,10 @@ function sdgIcon(id: number): string {
 <template>
     <div class="space-y-0">
         <div class="px-6 pt-6 pb-4">
-            <h1 class="text-2xl font-bold text-foreground flex items-center gap-2">
+            <h1 class="text-2xl font-bold text-foreground">
                 {{ $t('sdgs.title') }}
-                <MockDataBadge compact />
             </h1>
             <p class="text-sm text-muted-foreground mt-1">{{ $t('sdgs.subtitle') }}</p>
-        </div>
-        <div class="px-6 pb-3">
-            <MockDataBadge />
         </div>
 
         <div class="px-6 pb-3">
@@ -79,7 +77,7 @@ function sdgIcon(id: number): string {
                         <tr
                             v-for="s in paginated"
                             :key="s.id"
-                            class="hover:bg-muted/30 transition-colors cursor-pointer"
+                            class="hover:bg-muted/30 transition-colors"
                         >
                             <td class="py-3 px-4">
                                 <div class="group relative inline-block">
@@ -96,7 +94,14 @@ function sdgIcon(id: number): string {
                                     <p class="text-[11px] text-muted-foreground/60">SDG {{ s.sdgId }}</p>
                                 </div>
                             </td>
-                            <td class="py-3 px-4 text-right tabular-nums font-medium">{{ s.projects.toLocaleString() }}</td>
+                            <td class="py-3 px-4 text-right tabular-nums font-medium">
+                                <button
+                                    type="button"
+                                    class="text-primary hover:underline cursor-pointer"
+                                    :title="$t('sdgs.viewProjects', { name: s.name })"
+                                    @click="goToProjectsForSdg(s.sdgId)"
+                                >{{ s.projects.toLocaleString() }}</button>
+                            </td>
                             <td class="py-3 px-4 text-right tabular-nums font-medium">{{ s.credits }}</td>
                             <td class="py-3 px-4 text-right tabular-nums">{{ s.developers }}</td>
                             <td class="py-3 px-4 text-right tabular-nums">{{ s.countries }}</td>
@@ -108,10 +113,10 @@ function sdgIcon(id: number): string {
                                     <div class="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
                                         <div
                                             class="h-full rounded-full transition-all"
-                                            :style="{ width: `${Math.min(100, (s.projects / totalProjects) * 100)}%`, backgroundColor: s.color }"
+                                            :style="{ width: `${totalProjects ? Math.min(100, (s.projects / totalProjects) * 100) : 0}%`, backgroundColor: s.color }"
                                         />
                                     </div>
-                                    <span class="text-[10px] text-muted-foreground tabular-nums w-8 text-right">{{ Math.round((s.projects / totalProjects) * 100) }}%</span>
+                                    <span class="text-[10px] text-muted-foreground tabular-nums w-8 text-right">{{ totalProjects ? Math.round((s.projects / totalProjects) * 100) : 0 }}%</span>
                                 </div>
                             </td>
                         </tr>

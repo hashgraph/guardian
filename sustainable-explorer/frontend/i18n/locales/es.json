@@ -546,6 +546,7 @@
     "noMatch": "Ningún desarrollador coincide con tus filtros",
     "issuedTooltip": "Emisiones totales en todos los proyectos de este desarrollador.",
     "retiredTooltip": "Emisiones retiradas permanentemente (usadas para compensación). Las emisiones retiradas no pueden comercializarse ni reutilizarse.",
+    "viewProjects": "Ver proyectos de {name}",
     "columns": {
       "developer": "Desarrollador",
       "hq": "Sede",
@@ -566,6 +567,7 @@
     "subtitle": "Contribuciones de proyectos mapeadas a los ODS de la ONU",
     "searchPlaceholder": "Buscar ODS...",
     "coverageTooltip": "Porcentaje del total de proyectos que contribuyen a este ODS. Un proyecto puede contribuir a varios ODS.",
+    "viewProjects": "Ver proyectos etiquetados con {name}",
     "columns": {
       "sdg": "ODS",
       "goal": "Objetivo",
