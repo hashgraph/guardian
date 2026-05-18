@@ -100,7 +100,16 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         return result;
     });
 
-    // Country stats derived from filtered projects
+    // Country stats derived from filtered projects.
+    //
+    // Projects whose `country` field is empty or unrecognized (anything not in
+    // COUNTRY_ALPHA3) get countryCode='UNK'. Bucketing those by countryCode
+    // collapsed them into a single row whose display name was the FIRST
+    // project's raw country string — e.g. "Israel — 20 projects" even though
+    // only one project genuinely had country=Israel. Show the UNK bucket as
+    // a labelled "Unknown" row instead so the table accounts for every
+    // project; the world map filters this row out separately so unknown
+    // projects don't paint a country shape.
     const countries = computed(() => {
         const countryMap: Record<string, {
             name: string; flag: string; code: string; projects: number;
@@ -109,11 +118,12 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         }> = {};
 
         for (const p of filteredProjects.value) {
-            if (!countryMap[p.countryCode]) {
-                countryMap[p.countryCode] = {
-                    name: p.country,
-                    flag: p.flag,
-                    code: p.countryCode,
+            const code = p.countryCode || 'UNK';
+            if (!countryMap[code]) {
+                countryMap[code] = {
+                    name: code === 'UNK' ? 'Unknown' : p.country,
+                    flag: code === 'UNK' ? '' : p.flag,
+                    code,
                     projects: 0,
                     credits: 0,
                     methodologies: new Set(),
@@ -121,9 +131,9 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
                     registry: p.registry,
                 };
             }
-            countryMap[p.countryCode].projects++;
-            countryMap[p.countryCode].credits += p.credits;
-            countryMap[p.countryCode].methodologies.add(p.methodologyId);
+            countryMap[code].projects++;
+            countryMap[code].credits += p.credits;
+            countryMap[code].methodologies.add(p.methodologyId);
         }
 
         return Object.values(countryMap)
@@ -140,13 +150,18 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             .sort((a, b) => b.projects - a.projects);
     });
 
+    // World-map countries: exclude the 'UNK' bucket. Painting it would map
+    // every unknown project onto the first matching GeoJSON feature (or worse,
+    // a single arbitrary country if 'UNK' happened to alias one).
     const mapCountries = computed<MapCountry[]>(() => {
-        return countries.value.map(c => ({
-            country: c.name,
-            countryCode: c.code,
-            projects: c.projects,
-            credits: c.credits,
-        }));
+        return countries.value
+            .filter(c => c.code !== 'UNK')
+            .map(c => ({
+                country: c.name,
+                countryCode: c.code,
+                projects: c.projects,
+                credits: c.credits,
+            }));
     });
 
     const mapPoints = computed<MapPoint[]>(() => {

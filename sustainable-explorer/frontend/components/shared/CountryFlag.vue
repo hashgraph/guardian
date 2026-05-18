@@ -16,7 +16,8 @@ const cls = sizeClass[props.size || 'md'];
 const alpha3to2: Record<string, string> = {
     KEN: 'ke', BRA: 'br', RWA: 'rw', IDN: 'id', IND: 'in', COL: 'co',
     MOZ: 'mz', UGA: 'ug', NPL: 'np', VNM: 'vn', MEX: 'mx', GHA: 'gh',
-    ETH: 'et', COD: 'cd', KHM: 'kh', MWI: 'mw', ISL: 'is', PER: 'pe',
+    ETH: 'et', COD: 'cd', KHM: 'kh', MWI: 'mw', ISL: 'is', ISR: 'il',
+    PER: 'pe',
     BGD: 'bd', CHE: 'ch', GBR: 'gb', USA: 'us', FRA: 'fr', DEU: 'de',
     AUS: 'au', CAN: 'ca', ZAF: 'za', NGA: 'ng', TZA: 'tz', MMR: 'mm',
     THA: 'th', PHL: 'ph', LKA: 'lk', PAK: 'pk', AFG: 'af', ARG: 'ar',
@@ -25,6 +26,11 @@ const alpha3to2: Record<string, string> = {
     DOM: 'do', HTI: 'ht', CUB: 'cu', JAM: 'jm', TTO: 'tt', BLZ: 'bz',
     CHN: 'cn', JPN: 'jp', KOR: 'kr', TWN: 'tw', MYS: 'my', SGP: 'sg',
 };
+
+// 'UNK' indicates an unknown / unrecognized country. Without this guard the
+// substring fallback below would resolve to 'un' (the UN flag), which would
+// mislabel every empty-country project with a real-looking flag.
+const hasFlag = computed(() => props.code.toUpperCase() !== 'UNK');
 
 const alpha2 = computed(() => {
     const code = props.code.toUpperCase();
@@ -37,9 +43,15 @@ const src = computed(() => `https://flagcdn.com/w40/${alpha2.value}.png`);
 
 <template>
     <img
+        v-if="hasFlag"
         :src="src"
         :alt="code"
         :class="[cls, 'inline-block rounded-sm object-cover']"
         loading="lazy"
+    />
+    <span
+        v-else
+        :class="[cls, 'inline-block rounded-sm bg-muted/40']"
+        aria-hidden="true"
     />
 </template>

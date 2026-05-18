@@ -9,7 +9,7 @@ export const COUNTRY_ALPHA3: Record<string, string> = {
     'Costa Rica': 'CRI', 'Cuba': 'CUB', 'DR Congo': 'COD', 'Ecuador': 'ECU',
     'El Salvador': 'SLV', 'Ethiopia': 'ETH', 'France': 'FRA', 'Germany': 'DEU',
     'Ghana': 'GHA', 'Guatemala': 'GTM', 'Haiti': 'HTI', 'Honduras': 'HND',
-    'Iceland': 'ISL', 'India': 'IND', 'Indonesia': 'IDN', 'Jamaica': 'JAM',
+    'Iceland': 'ISL', 'India': 'IND', 'Indonesia': 'IDN', 'Israel': 'ISR', 'Jamaica': 'JAM',
     'Japan': 'JPN', 'Kenya': 'KEN', 'Malawi': 'MWI', 'Malaysia': 'MYS',
     'Mexico': 'MEX', 'Mozambique': 'MOZ', 'Myanmar': 'MMR', 'Nepal': 'NPL',
     'Nicaragua': 'NIC', 'Nigeria': 'NGA', 'Pakistan': 'PAK', 'Panama': 'PAN',

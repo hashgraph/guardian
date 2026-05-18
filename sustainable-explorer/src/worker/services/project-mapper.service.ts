@@ -180,37 +180,68 @@ export class ProjectMapperService {
 
         // Does THIS VC's schema look like THE project schema for its policy?
         // The decode pipeline flags one schema per policy as isProjectSchema=true
-        // across its mapping entries — we mirror that lookup here.
+        // across its mapping entries — we mirror that lookup here. Also track
+        // whether the policy as a whole has *any* project-schema classification,
+        // so we can be strict in the non-project branch below for classified
+        // policies and permissive (legacy walk) for unclassified ones.
         let isProjectSchemaVc = false;
+        let policyHasProjectSchemaClassification = false;
         for (const entries of Object.values(policyMapping)) {
             if (!Array.isArray(entries)) continue;
             for (const entry of entries) {
                 if (entry?.isProjectSchema !== true || !entry.schemaIri) continue;
+                policyHasProjectSchemaClassification = true;
                 const schemaUuidFromIri = entry.schemaIri.split('&')[0].trim().replace(/^#/, '');
                 if (schemaUuidFromIri === vcSchemaUuid) {
                     isProjectSchemaVc = true;
-                    break;
                 }
             }
-            if (isProjectSchemaVc) break;
         }
 
         let projectKey: string;
         if (csRef) {
-            // Downstream VC pointing at its parent project's DID. The parent's
-            // own VCs will (or already do) carry that DID as their cs.id, so
-            // upsert convergence is automatic on `projectKey`.
-            projectKey = csRef;
+            // Downstream VC pointing at a parent VC's cs.id via `cs.ref`.
+            // That parent may itself carry a `cs.ref` (multi-hop chains
+            // happen when registration / monitoring / verification VCs each
+            // reference the previous one). Walk hop-by-hop to the chain root
+            // — its cs.id is the project's canonical identity. Using the raw
+            // `cs.ref` here would split one project into N rows (one per
+            // intermediate parent).
+            const refWalked = await this.resolveProjectKeyViaRef(vc.consensusTimestamp, csId);
+            projectKey = refWalked?.projectKey ?? csRef;
         } else if (isProjectSchemaVc) {
-            // Project registration VC — cs.id is the project DID itself.
-            projectKey = csId;
+            // Project registration VC. A single logical project sometimes has
+            // MULTIPLE project-schema VCs in the same topic with different
+            // cs.id values (re-registration, DID rotation, replay during
+            // testing). To collapse them, find the cs.id of the LATEST
+            // project-schema VC of the same schema in this topic and use it
+            // as the canonical projectKey for every project-schema VC in the
+            // topic — regardless of whether this VC's own cs.id matches.
+            //
+            // The query is bounded by topicId (indexed) and is a single round
+            // trip per VC. No JSONB cross-join, no N² scan.
+            const canonical = await this.findCanonicalProjectSchemaCsIdInTopic(
+                vc.topicId, vcSchemaUuid,
+            );
+            projectKey = canonical ?? csId;
+        } else if (policyHasProjectSchemaClassification) {
+            // Strict mode for classified policies: the decode pipeline knows
+            // which schema is the project schema, and this VC isn't on it
+            // (handled above) and carries no `cs.ref` to one. Therefore it's
+            // not a project artifact — drop without consulting the relationship
+            // walk. The walk would otherwise happily return another non-project
+            // ancestor's cs.id (e.g. a VVB chain that walks to another VVB),
+            // seeding a phantom row.
+            this.logger.debug(
+                `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} not project schema, ` +
+                `no cs.ref; policy has a classified project schema → skipping`,
+            );
+            return;
         } else {
-            // Non-project schema with no ref. Try the legacy relationship walk
-            // for policies whose schemas weren't classified (older decodes or
+            // Legacy / unclassified policy. Try the relationship walk for
+            // policies whose schemas weren't classified (older decodes or
             // schemas that don't carry isProjectSchema markers). If that
-            // doesn't find an ancestor project, drop this VC rather than
-            // seeding a phantom row keyed by an unrelated entity's cs.id
-            // (e.g. a VVB registration would otherwise appear as a project).
+            // doesn't find an ancestor project, drop this VC.
             const resolved =
                 await this.resolveProjectKeyViaRelationships(vc.consensusTimestamp, csId);
 
@@ -227,9 +258,6 @@ export class ProjectMapperService {
                     );
                     return;
                 }
-                // Non-project schema, no ref, no walkable ancestor: not a
-                // project. Without this guard, VVB / Validator / Verifier
-                // registrations seed phantom project rows.
                 this.logger.debug(
                     `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} is not a project schema and carries no ref/ancestor → skipping`,
                 );
@@ -562,6 +590,34 @@ export class ProjectMapperService {
             [csId, selfTs],
         );
         return row.length > 0;
+    }
+
+    /**
+     * Returns the cs.id of the LATEST project-schema VC (matched by schema
+     * UUID prefix on cs.type) in the given topic. Used as the canonical
+     * projectKey when multiple project-schema VCs in the same topic carry
+     * different cs.id values — they all collapse onto the latest registration's
+     * DID. Returns null when no project-schema VC exists in the topic.
+     *
+     * Query is bounded by the topicId index, then filters cs.type by prefix
+     * on the already-narrow result set. One round trip per project-schema VC.
+     */
+    private async findCanonicalProjectSchemaCsIdInTopic(
+        topicId: string,
+        schemaUuid: string,
+    ): Promise<string | null> {
+        const rows: Array<{ cs_id: string | null }> = await this.dataSource.query(
+            `SELECT documents->'credentialSubject'->0->>'id' AS cs_id
+             FROM message
+             WHERE type = 'VC-Document'
+               AND "topicId" = $1
+               AND documents->'credentialSubject'->0->>'type' LIKE $2 || '&%'
+               AND documents->'credentialSubject'->0->>'id' IS NOT NULL
+             ORDER BY "consensusTimestamp" DESC
+             LIMIT 1`,
+            [topicId, schemaUuid],
+        );
+        return rows[0]?.cs_id ?? null;
     }
 
     /**
