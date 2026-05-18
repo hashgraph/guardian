@@ -100,7 +100,7 @@ Following Guardian's [testing documentation](../../../guardian/standard-registry
 4. **Configure Test Data** - Use schema-based input, JSON editor, or file upload
 5. **Execute Test** - Run the calculation and examine results
 
-![Custom Logic Block Testing UI](<../../../.gitbook/assets/image (148) (1).png>)
+![Custom Logic Block Testing UI](<../../../.gitbook/assets/image (148).png>)
 
 #### Testing Input Methods
 
@@ -130,7 +130,7 @@ Guardian supports three primary input methods for testing:
 
 Using our [Final PDD VC](../../_shared/artifacts/final-PDD-vc.json) artifact, fill in the JSON input data
 
-![VC JSON INPUT](<../../../.gitbook/assets/image-2 (7) (1).png>)
+![VC JSON INPUT](<../../../.gitbook/assets/image-2 (7).png>)
 
 #### Step 2: Execute Test
 
@@ -167,7 +167,7 @@ function calculateBaseline(document) {
 
 Debug output appears in the **Logs** tab of the testing interface.
 
-![Logs Tab UI](<../../../.gitbook/assets/image-3 (4) (1).png>)
+![Logs Tab UI](<../../../.gitbook/assets/image-3 (4).png>)
 
 ## Testing with Guardian's Dry-Run Mode
 

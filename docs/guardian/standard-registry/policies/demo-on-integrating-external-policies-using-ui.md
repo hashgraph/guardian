@@ -13,7 +13,7 @@ Here are the following steps to Integrate external policies as data sources:
 
 2. Once the topicID is entered, second step is to display the policy information associated with the entered topic.
 
-<figure><img src="../../../.gitbook/assets/image (5) (9) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (9).png" alt=""><figcaption></figcaption></figure>
 
 3. Once, policy information is reviewed and confirmed, third step is to select the schemas/documents from the policy to be integrated.
 

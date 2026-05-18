@@ -115,7 +115,7 @@ Successful response looks like:
 
 #### 1.3 Policy Publishing
 
-<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **To publish a policy, use the id field from the previous step in the request:**
 
@@ -418,7 +418,7 @@ Successful response looks like:
 
 **Wait for the request to finish processing:**
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <mark style="color:red;">`GET`</mark> `http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/project_grid_pp_2/blocks`
 
@@ -705,7 +705,7 @@ true
 
 **To create a VVB in the policy, send a request with the VVB name in the body:**
 
-<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 `POST http://localhost:4200/api/v1/policies/68c952870fd12e530dddadf8/tag/create_new_vvb/blocks`
 
@@ -824,7 +824,7 @@ Waiting while `blocks.uiMetaData.title` would be equal "Waiting for approval":
 
 #### 5.2 Add Project
 
-<figure><img src="../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Get the project reference by saving the response data:**
 
@@ -832,7 +832,7 @@ Waiting while `blocks.uiMetaData.title` would be equal "Waiting for approval":
 
 Change the project status from “Waiting to be Added” to “Waiting to Validate”:
 
-<figure><img src="../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ```json5
 {
@@ -2019,7 +2019,7 @@ Successful response looks like:
 
 #### 6.4 Assign Report
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Get the report reference by saving the response data:**
 

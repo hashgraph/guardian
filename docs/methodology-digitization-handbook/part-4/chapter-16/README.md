@@ -60,7 +60,7 @@ function transformProjectData(guardianDocument) {
 }
 ```
 
-![Sample project view in Verra Project Hub](<../../../.gitbook/assets/image (77) (2).png>)
+![Sample project view in Verra Project Hub](<../../../.gitbook/assets/image (74).png>)
 
 ### Implementation Use Cases
 
@@ -264,7 +264,7 @@ External data integration includes validation mechanisms to ensure data quality:
 }
 ```
 
-![External MRV data example - Taken from Metered energy policy](<../../../.gitbook/assets/image-1 (7) (1).png>)
+![External MRV data example - Taken from Metered energy policy](<../../../.gitbook/assets/image-1 (6).png>)
 
 ***
 
@@ -280,7 +280,7 @@ Dry-run mode enables complete policy testing as the name suggests. Policy develo
 
 You can trigger dry run either via policy editor UI or API
 
-![Click dry run on top of menu bar in policy editor UI](<../../../.gitbook/assets/image-2 (6) (1).png>)
+![Click dry run on top of menu bar in policy editor UI](<../../../.gitbook/assets/image-2 (5).png>)
 
 ```bash
 # Via API

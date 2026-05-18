@@ -2,12 +2,12 @@
 
 The _mathBlock_ (also known as _formula calculation block or FCB_) lets you to define calculations on document data in mathematical notation to be performed directly, without the need or optionally with limited use of coding.
 
-<figure><img src="../../../../../.gitbook/assets/image (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (4) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 1.1 Properties
 
 |               |                                                                                             |                       |
-|---------------|---------------------------------------------------------------------------------------------|-----------------------|
+| ------------- | ------------------------------------------------------------------------------------------- | --------------------- |
 | Input Schema  | The input document schema.Required                                                          | Net\_ERR\_Calculation |
 | Output Schema | The output (results) document schema. Optional. If not specified, the input schema is used. | Net\_ERR\_Calculation |
 | Unsigned VC   | Allows the use of a simple JSON document as input (no VC-style proofs required)             | Checked/Unchecked     |
@@ -21,9 +21,9 @@ Expression definition is guided by a wizard with in-place test execution, allowi
 
 Use this section to map fields from the input document to short variable names that you can reference in formulas.
 
-<figure><img src="../../../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
-
 <figure><img src="../../../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../../../.gitbook/assets/image (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note 1**: A variable in a formula may reference data from any field in any document, not just the input document itself. However, the referenced document must be associated with the input document (i.e. be part of its 'relationships' chain). If no such relationship exists, the value cannot be resolved at runtime, which may lead to unpredictable or undefined behavior.
@@ -37,7 +37,7 @@ Use this section to map fields from the input document to short variable names t
 
 This section provides UI to defined formulas using standard mathematical notation and/or LateX or MathJSON formats.
 
-<figure><img src="../../../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **2.1 Formula definition**
 
@@ -46,15 +46,15 @@ To define a formula, complete the following steps:
 * Specify the formula name.
 * Add () after the formula name and list any parameters inside. Separate parameters with a comma (,).
 
-<figure><img src="../../../../../.gitbook/assets/image (3) (1) (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * Create the expression using math notation or an alternative format (LaTeX, MathJSON).
 
-<figure><img src="../../../../../.gitbook/assets/image (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 In some cases, switching between math notation, LaTeX and MathJSON can help you verify or correct a formula. You can edit in any format; the system automatically synchronizes changes across formats.
 
-<figure><img src="../../../../../.gitbook/assets/image (5) (1) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (5) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 You can reuse defined formulas in other formulas (by name) and in the code on the Advanced tab.
 
@@ -79,7 +79,7 @@ Guardian formulas run on the MathLive Compute Engine. The following standard CE 
 **Array functions**
 
 | Function | LaTeX                                                                | Description                                                                                                       |
-|----------|----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| -------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `Map`    | `\mathrm{Map}\left(1..N,\ \mathrm{index} \mapsto \text{expr}\right)` | Applies an expression to each index from `1` to `N` and returns the resulting array.                              |
 | `At`     | `\mathrm{At}\left(\mathrm{arr},\ \mathrm{index}\right)`              | Returns the element at 1-based position `index` from array `arr`. Used inside `Map` to access per-element values. |
 | `Length` | `\mathrm{Length}\left(\mathrm{arr}\right)`                           | Returns the number of elements in array `arr`. Typically used as the upper bound in `Map` or `Sum`.               |
@@ -88,7 +88,7 @@ Guardian formulas run on the MathLive Compute Engine. The following standard CE 
 **Math functions**
 
 | Function | LaTeX                            | Description                        |
-|----------|----------------------------------|------------------------------------|
+| -------- | -------------------------------- | ---------------------------------- |
 | `Max`    | `\mathrm{Max}\left(a,\ b\right)` | Returns the larger of two values.  |
 | `Min`    | `\mathrm{Min}\left(a,\ b\right)` | Returns the smaller of two values. |
 | `Power`  | `base^{exp}`                     | Raises `base` to the power `exp`.  |
@@ -96,7 +96,7 @@ Guardian formulas run on the MathLive Compute Engine. The following standard CE 
 **Logic functions**
 
 | Function | LaTeX                                         | Description                                                                                                                                                                                                                                          |
-|----------|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Boole`  | `\mathrm{Boole}\left(\text{condition}\right)` | Returns 1 if the condition is true, 0 otherwise. Use as a numeric multiplier to conditionally include a term. The condition can be written as an operator (At(qaVal, index) = 1) or as an explicit Equal call (Equal(At(arr1, n), At(arr2, index))). |
 | `Equal`  | `a = b`                                       | Returns true if `a` equals `b`. Works correctly for numbers and for string elements retrieved from arrays via `At()`. For scalar string input fields use `EqualString` instead (see section 2.4).                                                    |
 | `Not`    | `\mathrm{Not}\left(\text{condition}\right)`   | Negates a boolean condition.                                                                                                                                                                                                                         |
@@ -130,7 +130,7 @@ Guardian formulas run on the MathLive Compute Engine. The following standard CE 
 Guardian provides the following built-in functions for looking up values in arrays by key. These are particularly useful when working with per-instance data arrays (e.g. one row per instance).
 
 | Function      | Signature                                   | Description                                                                                                                                                                                |
-|---------------|---------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `Lookup`      | `Lookup(values, keys, id)`                  | Returns the value at the first position where `keys[i] == id`. Returns `0` if not found.                                                                                                   |
 | `LookupTwo`   | `LookupTwo(values, keys1, id1, keys2, id2)` | Returns the value where both `keys1[i] == id1` and `keys2[i] == id2`. Useful for matching on two dimensions (e.g. instance + year). Returns `0` if not found or if array lengths differ.   |
 | `LookupMin`   | `LookupMin(values, keys, id, sortKeys)`     | Among all rows where `keys[i] == id`, returns the value with the minimum `sortKeys[i]`. Useful for selecting the earliest year value. Returns `0` if not found.                            |
@@ -167,7 +167,7 @@ Guardian provides the following built-in functions for looking up values in arra
 
 For complex scenarios where formulas are not sufficient for the required data transformations, use the Advanced (Optional) tab to add logic in JavaScript.
 
-<figure><img src="../../../../../.gitbook/assets/image (7) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 In code, you can reference all defined formulas and variables by name.
 
@@ -271,7 +271,7 @@ Once a policy is published, Guardian generates Formula-Linked Definitions (FLDs)
 
 <figure><img src="../../../../../.gitbook/assets/image (21) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/image (22) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (22) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="warning" %}
 **Note:** The _mathBlock_ code section is not used when automatically generating FLDs and is not represented in any way in the resulting visuals.
@@ -280,7 +280,7 @@ Once a policy is published, Guardian generates Formula-Linked Definitions (FLDs)
 ## 1.3 Known Limitations
 
 | Limitation                                                                                         | Workaround                                                                                                  |
-|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Single-letter variable names (`A`, `R`, etc.) must not be wrapped in `\mathrm{}` in formula bodies | Use bare `A`, `R` in expressions; only multi-character names need `\mathrm{}`                               |
 | `Equal` does not work reliably for scalar string fields (e.g. `Yes`/`No` flags)                    | Use `EqualString(field, "Yes")` instead                                                                     |
 | The JavaScript code section runs **after** formula evaluation                                      | Do not rely on JavaScript to set values that formulas will consume; use JavaScript only for post-processing |
