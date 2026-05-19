@@ -179,9 +179,9 @@ Add `proxy_buffering off;` to the nginx location block serving `/api/v1/*/queues
 
 
 ## DB and IPFS Snapshot
-https://xeptagoncom-my.sharepoint.com/:u:/g/personal/palinda_xeptagon_com/IQDgenk8E_kZS4H29G2iumB_AafSq97wjvL8_ZliYnbs0U0?e=1d3GId
+https://xeptagoncom-my.sharepoint.com/:u:/g/personal/palinda_xeptagon_com/IQDqwQbsnJiEToYRg_FDsW7wAQhprkY5LieaImuQFXGQH_8?e=NW53Jw
 wget --content-disposition --trust-server-names \
-"https://xeptagoncom-my.sharepoint.com/:u:/g/personal/palinda_xeptagon_com/IQDgenk8E_kZS4H29G2iumB_AafSq97wjvL8_ZliYnbs0U0?e=1d3GId&download=1"
+"https://xeptagoncom-my.sharepoint.com/:u:/g/personal/palinda_xeptagon_com/IQDqwQbsnJiEToYRg_FDsW7wAQhprkY5LieaImuQFXGQH_8?e=NW53Jw&download=1"
 
 ## License
 
