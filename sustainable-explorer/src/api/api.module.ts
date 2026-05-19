@@ -15,6 +15,7 @@ import { CreditsController } from './controllers/credits.controller';
 import { QueueStatusController } from './controllers/queue-status.controller';
 import { SdgsController } from './controllers/sdgs.controller';
 import { DevelopersController } from './controllers/developers.controller';
+import { DashboardController } from './controllers/dashboard.controller';
 
 // Services
 import { RegistriesService } from './services/registries.service';
@@ -26,6 +27,7 @@ import { ProjectsService } from './services/project.service';
 import { CreditsService } from './services/credits.service';
 import { SdgsService } from './services/sdgs.service';
 import { DevelopersService } from './services/developers.service';
+import { DashboardService } from './services/dashboard.service';
 
 // Queue management
 import { QueueRegistry } from './queues/queue.registry';
@@ -48,6 +50,7 @@ import { QueueEventsBus } from './queues/queue-events-bus.service';
         QueueStatusController,
         SdgsController,
         DevelopersController,
+        DashboardController,
     ],
     providers: [
         NetworkDataSourceRegistry,
@@ -60,6 +63,7 @@ import { QueueEventsBus } from './queues/queue-events-bus.service';
         CreditsService,
         SdgsService,
         DevelopersService,
+        DashboardService,
         QueueRegistry,
         QueueEventsBus,
     ],

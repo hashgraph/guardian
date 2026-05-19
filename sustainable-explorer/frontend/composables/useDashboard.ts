@@ -13,6 +13,7 @@ const CODE_TO_COUNTRY: Record<string, string> = Object.fromEntries(
 
 export function useDashboard(filters?: Ref<{ developer?: string; registry?: string }>) {
     const { projects, pending } = useProjects();
+    const { mintStats, buildMintSeries, mintedBySector, mintedByRegistry } = useMintStats(filters);
     const { t } = useI18n();
 
     // Reverse-geocode projects whose country field was empty or unrecognized
@@ -226,38 +227,8 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             .sort((a, b) => b.projects - a.projects);
     });
 
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const quarterNames = ['Q1', 'Q2', 'Q3', 'Q4'];
-
-    // Build issuance time series from filtered projects using createdAt + credits
     function buildIssuanceSeries(period: 'monthly' | 'quarterly' | 'yearly'): { label: string; value: number }[] {
-        const map: Record<string, { sortKey: string; label: string; value: number }> = {};
-
-        for (const p of filteredProjects.value) {
-            if (!p.createdAt) continue;
-            const d = new Date(p.createdAt);
-            if (isNaN(d.getTime())) continue;
-            const val = p.credits / 1_000_000;
-            let sortKey: string;
-            let label: string;
-            if (period === 'yearly') {
-                sortKey = String(d.getFullYear());
-                label = sortKey;
-            } else if (period === 'quarterly') {
-                const q = Math.floor(d.getMonth() / 3);
-                sortKey = `${d.getFullYear()}-Q${q}`;
-                label = `${quarterNames[q]} '${String(d.getFullYear()).slice(2)}`;
-            } else {
-                sortKey = `${d.getFullYear()}-${String(d.getMonth()).padStart(2, '0')}`;
-                label = `${monthNames[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`;
-            }
-            if (!map[sortKey]) map[sortKey] = { sortKey, label, value: 0 };
-            map[sortKey].value += val;
-        }
-
-        return Object.values(map)
-            .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
-            .map(e => ({ label: e.label, value: Math.max(Math.round(e.value * 10) / 10, 0.1) }));
+        return buildMintSeries(period);
     }
 
     // No retirement data source — always returns empty
@@ -327,13 +298,11 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
     // that exist but haven't produced any projects yet.
     const stats = computed(() => {
         const set = filteredProjects.value;
-        let totalCredits = 0;
         const uniqueRegistries = new Set<string>();
         const uniqueMethodologies = new Set<string>();
         for (const p of set) {
             if (p.registry) uniqueRegistries.add(p.registry);
             if (p.methodologyId) uniqueMethodologies.add(p.methodologyId);
-            totalCredits += p.credits;
         }
         return {
             registries: hasActiveFilter.value
@@ -343,49 +312,63 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
                 ? uniqueMethodologies.size
                 : methodologyTotal.value,
             projects: set.length,
-            totalCredits,
+            totalCredits: mintStats.value.totalMinted,
         };
     });
 
     const sectorBreakdown = computed(() => {
-        const groups: Record<string, { projectCount: number; creditCount: number }> = {};
+        // Count projects per sector from the local project list.
+        const projectCounts = new Map<string, number>();
         for (const p of filteredProjects.value) {
-            const sectorKey = p.sector || SectorType.Undefined;
-            if (!groups[sectorKey]) {
-                groups[sectorKey] = { projectCount: 0, creditCount: 0 };
-            }
-            groups[sectorKey].projectCount++;
-            groups[sectorKey].creditCount += p.credits;
+            const key = p.sector || SectorType.Undefined;
+            projectCounts.set(key, (projectCounts.get(key) ?? 0) + 1);
         }
-        return Object.entries(groups)
-            .map(([label, data]) => ({
-                label,
-                projectCount: data.projectCount,
-                creditCount: data.creditCount,
-            }))
-            .sort((a, b) => {
-                if (a.label === SectorType.Undefined) return 1;
-                if (b.label === SectorType.Undefined) return -1;
-                return b.projectCount - a.projectCount;
-            });
+
+        // Drive the row list from the API mint data so every sector with real
+        // minted volume is represented, regardless of whether its label matches
+        // a project in filteredProjects. Without this, sectors whose label only
+        // exists in mintedBySector (not in filteredProjects) are silently dropped
+        // and their amounts never appear in the chart total.
+        const seen = new Set<string>();
+        const rows: { label: string; projectCount: number; creditCount: number }[] = [];
+
+        for (const { label, amount } of mintStats.value.bySector) {
+            const key = label || SectorType.Undefined;
+            seen.add(key);
+            rows.push({ label: key, projectCount: projectCounts.get(key) ?? 0, creditCount: amount });
+        }
+
+        // Add sectors that have projects but no mints.
+        for (const [label, count] of projectCounts) {
+            if (!seen.has(label)) rows.push({ label, projectCount: count, creditCount: 0 });
+        }
+
+        return rows.sort((a, b) => {
+            if (a.label === SectorType.Undefined) return 1;
+            if (b.label === SectorType.Undefined) return -1;
+            return b.projectCount - a.projectCount;
+        });
     });
 
     const registryBreakdown = computed(() => {
-        const groups: Record<string, { projectCount: number; creditCount: number }> = {};
+        const projectCounts = new Map<string, number>();
         for (const p of filteredProjects.value) {
-            if (!groups[p.registry]) {
-                groups[p.registry] = { projectCount: 0, creditCount: 0 };
-            }
-            groups[p.registry].projectCount++;
-            groups[p.registry].creditCount += p.credits;
+            if (p.registry) projectCounts.set(p.registry, (projectCounts.get(p.registry) ?? 0) + 1);
         }
-        return Object.entries(groups)
-            .map(([label, data]) => ({
-                label,
-                projectCount: data.projectCount,
-                creditCount: data.creditCount,
-            }))
-            .sort((a, b) => b.projectCount - a.projectCount);
+
+        const seen = new Set<string>();
+        const rows: { label: string; projectCount: number; creditCount: number }[] = [];
+
+        for (const { label, amount } of mintStats.value.byRegistry) {
+            seen.add(label);
+            rows.push({ label, projectCount: projectCounts.get(label) ?? 0, creditCount: amount });
+        }
+
+        for (const [label, count] of projectCounts) {
+            if (!seen.has(label)) rows.push({ label, projectCount: count, creditCount: 0 });
+        }
+
+        return rows.sort((a, b) => b.projectCount - a.projectCount);
     });
 
     // Country detail for the side panel
