@@ -426,77 +426,89 @@ async function triggerRefreshIpfs() {
                     {{ $t('projects.details.projectDetails') }}
                 </h2>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border">
-                <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Project Name</div>
-                    <div class="text-sm font-medium text-foreground">{{ project.name }}</div>
-                </div>
-                <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Country</div>
-                    <div class="text-sm font-medium text-foreground flex items-center gap-1.5">
-                        <template v-if="displayCountry">
-                            <CountryFlag :code="displayCountryCode" size="sm" />
-                            {{ displayCountry }}
-                        </template>
-                        <span v-else class="text-muted-foreground">—</span>
+            <div class="divide-y divide-border">
+                <!-- Row 1 -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
+                    <div class="px-5 py-4">
+                        <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Project Name</div>
+                        <div class="text-sm font-medium text-foreground">{{ project.name }}</div>
+                    </div>
+                    <div class="px-5 py-4">
+                        <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Country</div>
+                        <div class="text-sm font-medium text-foreground flex items-center gap-1.5">
+                            <template v-if="displayCountry">
+                                <CountryFlag :code="displayCountryCode" size="sm" />
+                                {{ displayCountry }}
+                            </template>
+                            <span v-else class="text-muted-foreground">—</span>
+                        </div>
+                    </div>
+                    <div class="px-5 py-4">
+                        <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Status</div>
+                        <div class="flex items-center gap-2">
+                            <span :class="[statusColor[project.status]?.dot || 'bg-muted-foreground', 'h-2 w-2 rounded-full']" />
+                            <span class="text-sm font-medium text-foreground">{{ project.status }}</span>
+                        </div>
                     </div>
                 </div>
-                <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Status</div>
-                    <div class="flex items-center gap-2">
-                        <span :class="[statusColor[project.status]?.dot || 'bg-muted-foreground', 'h-2 w-2 rounded-full']" />
-                        <span class="text-sm font-medium text-foreground">{{ project.status }}</span>
+                <!-- Row 2 -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
+                    <div class="px-5 py-4">
+                        <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Methodology</div>
+                        <NuxtLink
+                            v-if="project.instanceTopicId"
+                            :to="`/methodologies/${project.instanceTopicId}`"
+                            class="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                        >
+                            {{ fullMethodologyName }}
+                        </NuxtLink>
+                        <div v-else class="text-sm font-medium text-foreground">{{ fullMethodologyName }}</div>
+                    </div>
+                    <div class="px-5 py-4">
+                        <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Registry</div>
+                        <NuxtLink
+                            v-if="project.registry && project.registryDid"
+                            :to="`/registries?did=${encodeURIComponent(project.registryDid)}`"
+                            class="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                        >
+                            {{ project.registry }}
+                        </NuxtLink>
+                        <div v-else class="text-sm font-medium text-foreground">{{ project.registry || '—' }}</div>
+                    </div>
+                    <div class="px-5 py-4">
+                        <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Developer</div>
+                        <div class="text-sm font-medium text-foreground">{{ project.developer }}</div>
                     </div>
                 </div>
-                <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Methodology</div>
-                    <NuxtLink
-                        v-if="project.instanceTopicId"
-                        :to="`/methodologies/${project.instanceTopicId}`"
-                        class="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors"
-                    >
-                        {{ fullMethodologyName }}
-                    </NuxtLink>
-                    <div v-else class="text-sm font-medium text-foreground">{{ fullMethodologyName }}</div>
+                <!-- Row 3 -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
+                    <div class="px-5 py-4">
+                        <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Sector</div>
+                        <div class="text-sm font-medium text-foreground">{{ project.sector }}</div>
+                    </div>
+                    <div class="px-5 py-4">
+                        <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Sectoral Scope</div>
+                        <div class="text-sm font-medium text-foreground">{{ project.sectoralScope }}</div>
+                    </div>
+                    <div class="px-5 py-4">
+                        <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Category</div>
+                        <div class="text-sm font-medium text-foreground">{{ project.category }}</div>
+                    </div>
                 </div>
-                <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Registry</div>
-                    <NuxtLink
-                        v-if="project.registry && project.registryDid"
-                        :to="`/registries?did=${encodeURIComponent(project.registryDid)}`"
-                        class="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors"
-                    >
-                        {{ project.registry }}
-                    </NuxtLink>
-                    <div v-else class="text-sm font-medium text-foreground">{{ project.registry || '—' }}</div>
-                </div>
-                <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Developer</div>
-                    <div class="text-sm font-medium text-foreground">{{ project.developer }}</div>
-                </div>
-                <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Sector</div>
-                    <div class="text-sm font-medium text-foreground">{{ project.sector }}</div>
-                </div>
-                <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Sectoral Scope</div>
-                    <div class="text-sm font-medium text-foreground">{{ project.sectoralScope }}</div>
-                </div>
-                <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Category</div>
-                    <div class="text-sm font-medium text-foreground">{{ project.category }}</div>
-                </div>
-                <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Crediting Period Start</div>
-                    <div class="text-sm font-medium text-foreground">{{ creditingPeriodStart }}</div>
-                </div>
-                <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Crediting Period End</div>
-                    <div class="text-sm font-medium text-foreground">{{ creditingPeriodEnd }}</div>
-                </div>
-                <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Projected Emission Reductions</div>
-                    <div class="text-sm font-medium text-foreground">{{ formatNumber(project.credits) }}</div>
+                <!-- Row 4 -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
+                    <div class="px-5 py-4">
+                        <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Crediting Period Start</div>
+                        <div class="text-sm font-medium text-foreground">{{ creditingPeriodStart }}</div>
+                    </div>
+                    <div class="px-5 py-4">
+                        <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Crediting Period End</div>
+                        <div class="text-sm font-medium text-foreground">{{ creditingPeriodEnd }}</div>
+                    </div>
+                    <div class="px-5 py-4">
+                        <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Projected Emission Reductions</div>
+                        <div class="text-sm font-medium text-foreground">{{ formatNumber(project.credits) }}</div>
+                    </div>
                 </div>
             </div>
 

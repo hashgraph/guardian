@@ -180,24 +180,25 @@ const statusColor: Record<string, string> = {
 
         <div class="px-6 pb-6">
             <div class="rounded-xl border bg-card overflow-hidden">
-                <table class="w-full text-sm table-fixed">
+                <div class="overflow-x-auto">
+                <table class="table-fixed text-sm" style="min-width: 1360px; width: 100%">
                     <colgroup>
-                        <col class="w-[3%]" />
-                        <col class="w-[13%]" />
-                        <col class="w-[7%]" />
-                        <col class="w-[9%]" />
-                        <col class="w-[8%]" />
-                        <col class="w-[8%]" />
-                        <col class="w-[7%]" />
-                        <col class="w-[10%]" />
-                        <col class="w-[10%]" />
-                        <col class="w-[7%]" />
-                        <col class="w-[14%]" />
-                        <col class="w-[4%]" />
+                        <col style="width: 40px" />    <!-- compare -->
+                        <col style="width: 240px" />   <!-- project name -->
+                        <col style="width: 110px" />   <!-- country -->
+                        <col style="width: 100px" />   <!-- registry -->
+                        <col style="width: 150px" />   <!-- methodology -->
+                        <col style="width: 120px" />   <!-- sector -->
+                        <col style="width: 90px" />    <!-- issuances -->
+                        <col style="width: 110px" />   <!-- transferred -->
+                        <col style="width: 100px" />   <!-- retired -->
+                        <col style="width: 110px" />   <!-- status -->
+                        <col style="width: 130px" />   <!-- sdgs -->
+                        <col style="width: 60px" />    <!-- raw data -->
                     </colgroup>
                     <thead>
                         <tr class="border-b bg-muted/30">
-                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider w-10">
+                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                 <span class="inline-flex items-center gap-1"><Columns2 class="h-3.5 w-3.5" /></span>
                             </th>
                             <SortableHeader :label="$t('projects.columns.project')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
@@ -209,7 +210,7 @@ const statusColor: Record<string, string> = {
                             <SortableHeader :label="$t('projects.columns.transferred')" sort-key="transferred" align="right" mock :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.retired')" sort-key="retired" align="right" mock :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.status')" sort-key="status" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[160px]">
+                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                 <span class="inline-flex items-center gap-1">
                                     {{ $t('projects.columns.sdgs') }}
                                     <InfoTooltip :text="$t('projects.sdgsTooltip')" />
@@ -259,9 +260,9 @@ const statusColor: Record<string, string> = {
                                 <span v-else class="text-xs">—</span>
                             </td>
                             <td class="py-3 px-4 text-muted-foreground text-xs break-words">{{ p.registry }}</td>
-                            <td class="py-3 px-4">
-                                <div class="group relative inline-block">
-                                    <span class="text-xs bg-muted rounded px-1.5 py-0.5 cursor-default">{{ p.methodology }}</span>
+                            <td class="py-3 px-4 overflow-hidden">
+                                <div class="group relative">
+                                    <span class="block text-xs bg-muted rounded px-1.5 py-0.5 cursor-default truncate">{{ p.methodology }}</span>
                                     <div class="pointer-events-none absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-[100] w-80">
                                         <div class="whitespace-normal rounded-md bg-foreground px-2.5 py-1.5 text-[11px] text-background shadow-lg leading-snug">
                                             {{ p.methodologyLong }}
@@ -270,9 +271,9 @@ const statusColor: Record<string, string> = {
                                     </div>
                                 </div>
                             </td>
-                            <td class="py-3 px-4">
-                                <div class="group relative inline-block">
-                                    <span class="text-xs text-muted-foreground cursor-default">{{ p.sector }}</span>
+                            <td class="py-3 px-4 overflow-hidden">
+                                <div class="group relative">
+                                    <span class="block text-xs text-muted-foreground cursor-default truncate">{{ p.sector }}</span>
                                     <div class="pointer-events-none absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-[100] max-w-xs">
                                         <div class="whitespace-normal rounded-md bg-foreground px-2.5 py-1.5 text-[11px] text-background shadow-lg leading-snug">
                                             {{ $t('projects.sectoralScope', { scope: p.sectoralScope }) }}
@@ -290,7 +291,7 @@ const statusColor: Record<string, string> = {
                                 </span>
                             </td>
                             <td class="py-3 px-4">
-                                <SdgBadges :ids="p.sdgs" :max="4" />
+                                <SdgBadges :ids="p.sdgs" :max="2" />
                             </td>
                             <td class="py-3 px-3 text-center">
                                 <button
@@ -307,6 +308,7 @@ const statusColor: Record<string, string> = {
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <Pagination
