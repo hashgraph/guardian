@@ -358,6 +358,22 @@ export class SchemaHelper {
     }
 
     /**
+     * Clone a SchemaField array
+     */
+    private static cloneFields(fields: SchemaField[]): SchemaField[] {
+        if (!Array.isArray(fields)) {
+            return fields;
+        }
+        return fields.map((f) => {
+            const clone: SchemaField = { ...f };
+            if (Array.isArray(f.fields)) {
+                clone.fields = SchemaHelper.cloneFields(f.fields);
+            }
+            return clone;
+        });
+    }
+
+    /**
      * Parse fields
      * @param document
      * @param contextURL
@@ -415,7 +431,8 @@ export class SchemaHelper {
                     });
                 }
                 const subSchema = schemaCache.get(field.type);
-                field.fields = subSchema.fields;
+                // Clone schema field array to avoid path mutations
+                field.fields = SchemaHelper.cloneFields(subSchema.fields);
                 field.conditions = subSchema.conditions;
             }
             if (field.order === -1) {
