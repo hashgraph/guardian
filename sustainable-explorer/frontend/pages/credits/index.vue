@@ -42,7 +42,7 @@ const allCredits = computed(() => credits.value.map(c => ({
 const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters } =
     useFilteredPagination(allCredits, {
         searchFields: ['name', 'symbol', 'tokenId', 'project', 'registry'],
-        pageSize: 8,
+        pageSize: 10,
         defaultSort: { key: 'supply', dir: 'desc' },
     });
 

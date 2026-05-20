@@ -22,7 +22,7 @@ const allSdgs = computed(() => sdgStats.value.map(s => ({
 const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters } =
     useFilteredPagination(allSdgs, {
         searchFields: ['name', 'topMethodology'],
-        pageSize: 17,
+        pageSize: 25,
         defaultSort: { key: 'projects', dir: 'desc' },
     });
 
