@@ -13,6 +13,7 @@ import { PolicyActionsService } from './actions-service.js';
 import { RecordActionStep } from './record-action-step.js';
 import { MintService } from './mint/mint-service.js';
 import { PolicyVcDocumentsUtils } from './policy-vc-documents-utils.js';
+import { GridActionResolver } from './external/grid-action-resolver.js';
 
 /**
  * Block tree generator
@@ -380,6 +381,63 @@ export class BlockTreeGenerator extends NatsService {
             const userFull = await this.getUser(policyInstance, user, params.savepointIds);
             const navigation = PolicyComponentsUtils.GetNavigation<IPolicyNavigationStep[]>(policyId, userFull);
             return new MessageResponse(navigation);
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_POLICY_GRIDS, policyId, async (msg: any) => {
+            try {
+                const { user } = msg;
+                const userFull = await this.getUser(policyInstance, user);
+                const grids = await GridActionResolver.getGrids(policyId, userFull);
+                return new MessageResponse(grids);
+            } catch (error) {
+                return new MessageError(error.message, error.code || 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_GRID_ACTIONS, policyId, async (msg: any) => {
+            try {
+                const { user, gridId } = msg;
+                const userFull = await this.getUser(policyInstance, user);
+                const actions = await GridActionResolver.getActions(policyId, gridId, userFull);
+                return new MessageResponse(actions);
+            } catch (error) {
+                return new MessageError(error.message, error.code || 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_GRID_RECORDS, policyId, async (msg: any) => {
+            try {
+                const { user, gridId, params } = msg;
+                const userFull = await this.getUser(policyInstance, user);
+                const result = await GridActionResolver.getRecords(policyId, gridId, userFull, params || {});
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageError(error.message, error.code || 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.EXECUTE_GRID_ACTION, policyId, async (msg: any) => {
+            try {
+                const { user, gridId, recordId, actionId, body, syncEvents, history } = msg;
+                const userFull = await this.getUser(policyInstance, user);
+                const resolution = GridActionResolver.resolveAction(policyId, gridId, actionId);
+                const actionstep = new RecordActionStep(
+                    (recordActionId, actionTimestamp) =>
+                        RecordUtils.RecordSetBlockData(
+                            policyId, userFull,
+                            resolution?.actionBlock as IPolicyInterfaceBlock,
+                            body, recordActionId, actionTimestamp
+                        ),
+                    0, syncEvents, history
+                );
+                const result = await GridActionResolver.executeAction(
+                    policyId, gridId, recordId, actionId, body, userFull, actionstep
+                );
+                actionstep.finish();
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageError(error.message, error.code || 500);
+            }
         });
 
         this.getPolicyMessages(PolicyEvents.CREATE_VIRTUAL_USER, policyId, async (msg: any) => {

@@ -8309,4 +8309,369 @@ export class PolicyApi {
         }
     }
     //#endregion
+
+    @Get('/:policyId/grids')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'List grid containers accessible to the caller.',
+        description:
+            'Returns every interfaceDocumentsSourceBlock reachable by the ' +
+            'caller\'s role in the given policy.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID,
+    })
+    @ApiOkResponse({
+        description: 'Array of grid descriptors visible to the caller.',
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    gridId: { type: 'string', example: 'installer_documents_grid' },
+                    title: { type: 'string', example: 'Installer Activity Reports' },
+                    description: { type: 'string' },
+                    filterSchema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                filterId: { type: 'string' },
+                                title: { type: 'string' },
+                                type: { type: 'string', enum: ['dropdown', 'datepicker', 'input'] },
+                                field: { type: 'string' },
+                                operators: { type: 'array', items: { type: 'string' } },
+                            },
+                        },
+                    },
+                    columnSchema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                name: { type: 'string' },
+                                title: { type: 'string' },
+                                type: { type: 'string' },
+                                bindActions: { type: 'array', items: { type: 'string' } },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Policy instance not running.',
+        type: ServiceUnavailableErrorDTO,
+        example: { statusCode: 503, message: 'Block Unavailable' },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' },
+    })
+    @HttpCode(HttpStatus.OK)
+    async getPolicyGrids(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getPolicyGrids(user, policyId);
+        } catch (error) {
+            if (!error.code) {
+                error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            }
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    @Get('/:policyId/grids/:gridId/actions')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'List actions available on a grid for the caller.',
+        description:
+            'Returns all 9-level actions (Approve, Reject, etc.) defined ' +
+            'on the specified grid that the caller\'s role is permitted to ' +
+            'execute. Actions with `requiredRoles` the caller does not hold ' +
+            'are omitted entirely the response never leaks inaccessible actions.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID,
+    })
+    @ApiParam({
+        name: 'gridId',
+        type: String,
+        description: 'Stable grid identifier (policy block tag or hash fallback)',
+        required: true,
+        example: 'installer_documents_grid',
+    })
+    @ApiOkResponse({
+        description: 'Array of action descriptors available to the caller.',
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    actionId: { type: 'string', example: 'approve_action' },
+                    label: { type: 'string', example: 'Approve' },
+                    requiredRoles: { type: 'array', items: { type: 'string' } },
+                    appliesTo: { type: 'string', enum: ['row'] },
+                    inputSchema: { type: 'object' },
+                },
+            },
+        },
+    })
+    @ApiNotFoundResponse({
+        description: 'Grid not found.',
+        type: NotFoundErrorDTO,
+        example: { statusCode: 404, message: 'Grid not found' },
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Grid not available to the caller\'s role.',
+        type: ServiceUnavailableErrorDTO,
+        example: { statusCode: 503, message: 'Block Unavailable' },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' },
+    })
+    @HttpCode(HttpStatus.OK)
+    async getGridActions(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('gridId') gridId: string,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getGridActions(user, policyId, gridId);
+        } catch (error) {
+            if (!error.code) {
+                error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            }
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    @Get('/:policyId/grids/:gridId/records')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Get records for a grid, annotated with executable actions.',
+        description:
+            'Returns the grid\'s filtered, paginated document set. Each ' +
+            'document carries an `_actions` field listing the `actionId` values ' +
+            'the caller may execute on it. Supports the same `page`/`pageSize` ' +
+            'query params as the internal block GET endpoint.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID,
+    })
+    @ApiParam({
+        name: 'gridId',
+        type: String,
+        description: 'Stable grid identifier',
+        required: true,
+        example: 'installer_documents_grid',
+    })
+    @ApiQuery({
+        name: 'page',
+        type: Number,
+        description: '1-based page number (default: 1)',
+        required: false,
+        example: 1,
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'Records per page (default: 20, max: 200)',
+        required: false,
+        example: 20,
+    })
+    @ApiOkResponse({
+        description: 'Paginated grid records annotated with _actions.',
+        schema: {
+            type: 'object',
+            properties: {
+                data: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', example: Examples.DB_ID },
+                            owner: { type: 'string', example: Examples.DID },
+                            option: { type: 'object' },
+                            document: { type: 'object' },
+                            createDate: { type: 'string', format: 'date-time' },
+                            _actions: {
+                                type: 'array',
+                                items: { type: 'string' },
+                                example: ['approve_action', 'reject_action'],
+                            },
+                        },
+                    },
+                },
+                page: { type: 'number', example: 1 },
+                pageSize: { type: 'number', example: 20 },
+                totalCount: { type: 'number', example: 42 },
+                hasNextPage: { type: 'boolean', example: true },
+                hasPreviousPage: { type: 'boolean', example: false },
+            },
+        },
+    })
+    @ApiNotFoundResponse({
+        description: 'Grid not found.',
+        type: NotFoundErrorDTO,
+        example: { statusCode: 404, message: 'Grid not found' },
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Grid not available to the caller\'s role.',
+        type: ServiceUnavailableErrorDTO,
+        example: { statusCode: 503, message: 'Block Unavailable' },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' },
+    })
+    @HttpCode(HttpStatus.OK)
+    async getGridRecords(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('gridId') gridId: string,
+        @Query() query: any,
+    ): Promise<any> {
+        try {
+            const params: any = {};
+            if (query.page !== undefined) params.page = parseInt(query.page, 10);
+            if (query.pageSize !== undefined) params.pageSize = Math.min(parseInt(query.pageSize, 10), 200);
+            const engineService = new PolicyEngine();
+            return await engineService.getGridRecords(user, policyId, gridId, params);
+        } catch (error) {
+            if (!error.code) {
+                error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            }
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    @Post('/:policyId/grids/:gridId/records/:recordId/actions/:actionId')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Execute an action on a grid record.',
+        description:
+            'Executes the named action on the specified record. ' +
+            'The server resolves `gridId` and `actionId` to the appropriate internal block and ' +
+            'option value without exposing any internal block UUID.\n\n' +
+            '**Typical flow:**\n' +
+            '1. `GET /grids` — discover `gridId` values\n' +
+            '2. `GET /grids/{gridId}/actions` — discover `actionId` values\n' +
+            '3. `GET /grids/{gridId}/records` — get `_id` of the target record\n' +
+            '4. `POST /grids/{gridId}/records/{_id}/actions/{actionId}` with body `{}` — execute\n\n' +
+            '**Response body:** `{}` — the action triggers an internal workflow event; ' +
+            'the 200 status code is the success signal.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID,
+    })
+    @ApiParam({
+        name: 'gridId',
+        type: String,
+        description: 'Stable grid identifier',
+        required: true,
+        example: 'installer_documents_grid',
+    })
+    @ApiParam({
+        name: 'recordId',
+        type: String,
+        description: 'Document id from GET /records (MongoDB ObjectId)',
+        required: true,
+        example: Examples.DB_ID,
+    })
+    @ApiParam({
+        name: 'actionId',
+        type: String,
+        description: 'Stable action identifier (from GET /actions)',
+        required: true,
+        example: 'approve_action',
+    })
+    @ApiBody({
+        description:
+            'Action-specific payload. For standard selector/button actions ' +
+            'an empty object `{}` is sufficient. Validated server-side against ' +
+            'the action\'s inputSchema.',
+        schema: { type: 'object' },
+        examples: {
+            'Standard action (empty body)': { value: {} },
+        },
+    })
+    @ApiOkResponse({
+        description: 'Action executed successfully. Returns the block execution result.',
+        schema: { type: 'object' },
+    })
+    @ApiNotFoundResponse({
+        description: 'Grid, action, or record not found.',
+        type: NotFoundErrorDTO,
+        example: { statusCode: 404, message: 'Record not found in grid' },
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Action not available to the caller\'s role.',
+        type: ServiceUnavailableErrorDTO,
+        example: { statusCode: 503, message: 'Block Unavailable' },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' },
+    })
+    @HttpCode(HttpStatus.OK)
+    async executeGridAction(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('gridId') gridId: string,
+        @Param('recordId') recordId: string,
+        @Param('actionId') actionId: string,
+        @Body() body: any,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.executeGridAction(
+                user, policyId, gridId, recordId, actionId, body ?? {}
+            ) ?? {};
+        } catch (error) {
+            if (!error.code) {
+                error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            }
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
 }

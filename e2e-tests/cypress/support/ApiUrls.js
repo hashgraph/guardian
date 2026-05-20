@@ -280,6 +280,13 @@ const API = {
     ReadAll: "notifications/read/all/",
     DeleteNotification: "notifications/delete/",
 
+    //Policy Grid Actions
+    PolicyGrids: (policyId) => `${BASE}policies/${policyId}/grids`,
+    PolicyGridActions: (policyId, gridId) => `${BASE}policies/${policyId}/grids/${gridId}/actions`,
+    PolicyGridRecords: (policyId, gridId) => `${BASE}policies/${policyId}/grids/${gridId}/records`,
+    PolicyGridExecuteAction: (policyId, gridId, recordId, actionId) =>
+        `${BASE}policies/${policyId}/grids/${gridId}/records/${recordId}/actions/${actionId}`,
+
     //Wizard
     WizardPolicy: "wizard/policy/",
     WizardPolicyAsync: "wizard/push/policy/",
