@@ -60,7 +60,7 @@ const allProjects = computed(() => projects.value.map(p => ({
 const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters, applyPreset } =
     useFilteredPagination(allProjects, {
         searchFields: ['name', 'country', 'methodology', 'registry', 'sector', 'sectoralScope'],
-        pageSize: 8,
+        pageSize: 10,
         defaultSort: { key: 'createdAt', dir: 'desc' },
         arrayFields: ['sdgs'],
     });
@@ -311,9 +311,9 @@ const statusColor: Record<string, string> = {
 
             <Pagination
                 v-model:current-page="currentPage"
+                v-model:page-size="pageSize"
                 :total-pages="totalPages"
                 :total-items="filtered.length"
-                :page-size="pageSize"
             />
         </div>
 

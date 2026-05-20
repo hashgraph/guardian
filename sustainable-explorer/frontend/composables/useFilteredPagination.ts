@@ -18,7 +18,7 @@ export function useFilteredPagination<T>(
     const initialQuery = route.query;
     const searchQuery = ref((initialQuery.q as string) || '');
     const currentPage = ref(initialQuery.page ? parseInt(initialQuery.page as string) : 1);
-    const pageSize = opts.pageSize ?? 10;
+    const pageSize = ref(opts.pageSize ?? 10);
     const activeFilters = ref<Record<string, string>>(parseFiltersFromQuery(initialQuery));
     const sortKey = ref<keyof T | null>(
         (initialQuery.sort as keyof T | undefined) ?? opts.defaultSort?.key ?? null,
@@ -139,11 +139,11 @@ export function useFilteredPagination<T>(
         return result;
     });
 
-    const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageSize)));
+    const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageSize.value)));
 
     const paginated = computed(() => {
-        const start = (currentPage.value - 1) * pageSize;
-        return filtered.value.slice(start, start + pageSize);
+        const start = (currentPage.value - 1) * pageSize.value;
+        return filtered.value.slice(start, start + pageSize.value);
     });
 
     function setFilter(key: string, value: string) {
@@ -180,6 +180,10 @@ export function useFilteredPagination<T>(
 
     watch(currentPage, () => {
         syncToUrl();
+    });
+
+    watch(pageSize, () => {
+        currentPage.value = 1;
     });
 
     return {

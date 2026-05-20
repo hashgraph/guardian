@@ -42,7 +42,7 @@ const allCredits = computed(() => credits.value.map(c => ({
 const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters } =
     useFilteredPagination(allCredits, {
         searchFields: ['name', 'symbol', 'tokenId', 'project', 'registry'],
-        pageSize: 8,
+        pageSize: 10,
         defaultSort: { key: 'supply', dir: 'desc' },
     });
 
@@ -111,7 +111,7 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
                     </tbody>
                 </table>
             </div>
-            <Pagination v-model:current-page="currentPage" :total-pages="totalPages" :total-items="filtered.length" :page-size="pageSize" />
+            <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total-pages="totalPages" :total-items="filtered.length" />
         </div>
 
         <VcJsonViewer :open="vcViewerOpen" :title="vcViewerTitle" :data="vcViewerData" @close="vcViewerOpen = false" />

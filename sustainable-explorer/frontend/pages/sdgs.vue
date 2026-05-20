@@ -22,7 +22,7 @@ const allSdgs = computed(() => sdgStats.value.map(s => ({
 const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters } =
     useFilteredPagination(allSdgs, {
         searchFields: ['name', 'topMethodology'],
-        pageSize: 17,
+        pageSize: 10,
         defaultSort: { key: 'projects', dir: 'desc' },
     });
 
@@ -126,9 +126,9 @@ function sdgIcon(id: number): string {
 
             <Pagination
                 v-model:current-page="currentPage"
+                v-model:page-size="pageSize"
                 :total-pages="totalPages"
                 :total-items="filtered.length"
-                :page-size="pageSize"
             />
         </div>
     </div>
