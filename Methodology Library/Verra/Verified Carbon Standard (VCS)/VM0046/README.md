@@ -768,3 +768,8 @@ This DMRV System Description is part of a Verra digitization submission package 
 15. Log in as **SR** and click **Mint** to issue the tokens (VCUs).
 
 <figure><img src="images/15.png" alt=""><figcaption></figcaption></figure>
+
+16. Formulas are now available in the **Formula Linked Definitions** tab.
+
+<figure><img src="images/16.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="images/17.png" alt=""><figcaption></figcaption></figure>
