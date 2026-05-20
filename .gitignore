@@ -25,3 +25,9 @@ runtime-data/
 logs/
 **/logs/
 /.run/
+
+# Claude Code
+.claude/
+.claude/settings.local.json
+!.claude/settings.json
+CLAUDE.local.md
