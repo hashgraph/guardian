@@ -2351,8 +2351,42 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    public backToPolicies() {
-        this.router.navigateByUrl('/policy-viewer');
+    public async backToPolicies() {
+        const isPolicyStorage = await this.storage.getPolicyById(this.policyId);
+
+        if (!isPolicyStorage) {
+            this.router.navigateByUrl('/policy-viewer');
+            return;
+        }
+
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Unsaved Changes',
+                text: 'You have unsaved changes. Save to the server, or leave — your edits will be available the next time you open this policy.',
+                buttons: [{
+                    name: 'Cancel',
+                    class: 'secondary'
+                }, {
+                    name: 'Leave for now',
+                    class: 'secondary'
+                }, {
+                    name: 'Save',
+                    class: 'primary'
+                }]
+            },
+        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
+            if (result === 'Save') {
+                this.asyncUpdatePolicy().pipe(takeUntil(this._destroy$)).subscribe(() => {
+                    this.router.navigateByUrl('/policy-viewer');
+                });
+            } else if (result === 'Leave for now') {
+                this.router.navigateByUrl('/policy-viewer');
+            }
+        });
     }
 
     public backToModules() {
