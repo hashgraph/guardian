@@ -76,8 +76,8 @@ REGISTRY_CONFIG = {
     "gold-standard": {
         "projects": "projects.csv",
         "credits": [
-            {"file": "GSF Registry Credits Export 2026-03-31-issuances.csv", "type": "issuance"},
-            {"file": "GSF Registry Credits Export 2026-03-31-retirements.csv", "type": "retirement"},
+            {"file": "GSF Registry Credits Export 2026-05-21-issuances.csv", "type": "issuance"},
+            {"file": "GSF Registry Credits Export 2026-05-21-retirements.csv", "type": "retirement"},
         ],
     },
     "american-carbon-registry": {
