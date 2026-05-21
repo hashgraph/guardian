@@ -8,7 +8,7 @@ import { GeojsonTypeComponent } from './geojson-type/geojson-type.component';
 import { MaterialModule } from '../common/material.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
-import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { DynamicDialog as DynamicDialogModule } from 'primeng/dynamicdialog';
 import { AgGridModule } from 'ag-grid-angular';
 //Components
 import { SchemaDialog } from './schema-dialog/schema-dialog.component';
@@ -30,7 +30,7 @@ import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dial
 import { ButtonModule } from 'primeng/button';
 import { TabViewModule } from 'primeng/tabview';
 import { InputTextModule } from 'primeng/inputtext';
-import { InputTextareaModule } from 'primeng/inputtextarea';
+import { Textarea as InputTextareaModule } from 'primeng/inputtextarea';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';

@@ -4,6 +4,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { providePrimeNG } from 'primeng/config';
+import Lara from '@primeng/themes/lara';
 import { ToastrModule } from 'ngx-toastr';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -115,7 +117,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { StepsModule } from 'primeng/steps';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { TabViewModule } from 'primeng/tabview';
-import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { DynamicDialog as DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { AISearchService } from './services/ai-search.service';
@@ -127,7 +129,7 @@ import { ForgotPasswordDialogComponent } from './views/login/forgot-password-dia
 import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { CalendarModule } from 'primeng/calendar';
-import { InputTextareaModule } from 'primeng/inputtextarea';
+import { Textarea as InputTextareaModule } from 'primeng/inputtextarea';
 import { ContractEngineModule } from './modules/contract-engine/contract-engine.module';
 import { ProjectComparisonService } from './services/project-comparison.service';
 import { ProjectComparisonModule } from './modules/project-comparison/project-comparison.module';
@@ -305,6 +307,11 @@ import { CredentialsPanelComponent } from './components/credentials/credentials-
             useClass: AuthInterceptor,
             multi: true,
         },
+        providePrimeNG({
+            theme: {
+                preset: Lara
+            }
+        }),
         provideHttpClient(withInterceptorsFromDi(), withJsonpSupport())
     ]
 })

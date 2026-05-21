@@ -480,7 +480,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 title: ['Select Schema', 'Select Field'],
                 value: item.field,
@@ -507,7 +506,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 title: 'Select Field',
                 value: item.field,
@@ -687,7 +685,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 title: this.inputSchema?.name || 'Set Link',
                 view: this.createSchemaView(this.inputSchema),
@@ -734,7 +731,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 title: 'Select components',
                 view: this.createComponentView(),
@@ -885,7 +881,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 schemas: null,
                 schema: this.inputSchema,
@@ -905,7 +900,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 schemas: schemas,
                 schema: null,
@@ -925,7 +919,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 schema: schema,
                 policyId: this.policyId,

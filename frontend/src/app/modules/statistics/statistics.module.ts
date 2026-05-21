@@ -7,7 +7,7 @@ import { AppRoutingModule } from 'src/app/app-routing.module';
 import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { AngularSvgIconModule } from 'angular-svg-icon';
-import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialog as DynamicDialogModule } from 'primeng/dynamicdialog';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
