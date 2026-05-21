@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ContractType, IContract, LocationType, PolicyAvailability, PolicyCategoryType, PolicyStatus, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { DialogService } from 'primeng/dynamicdialog';
-import { forkJoin, Observable, Subject } from 'rxjs';
+import { forkJoin, Observable, of, Subject } from 'rxjs';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { ContractService } from 'src/app/services/contract.service';
@@ -29,7 +29,7 @@ import { OrderOption } from '../../structures/interfaces/order-option.interface'
 import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
 import { PolicyPropertiesComponent } from '../policy-properties/policy-properties.component';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
-import { takeUntil } from 'rxjs/operators';
+import { catchError, takeUntil, tap } from 'rxjs/operators';
 import { TestCodeDialog } from '../../dialogs/test-code-dialog/test-code-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
@@ -445,7 +445,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 return;
             }
 
-            this.loadTagsData();
+            const tags$ = this.loadTagsData();
 
             if (this.user.POLICIES_POLICY_UPDATE) {
                 forkJoin([
@@ -456,6 +456,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     this.toolsService.menuList(),
                     this.policyEngineService.getPolicyCategories(),
                     this.contractService.getContracts({ type: ContractType.WIPE }),
+                    tags$,
                 ]).pipe(takeUntil(this._destroy$)).subscribe(async (data) => {
                     const tokens = data[0] || [];
                     const blockInformation = data[1] || {};
@@ -511,6 +512,10 @@ export class PolicyConfigurationComponent implements OnInit {
                     this.loading = false;
                     console.error(message);
                 });
+            } else {
+                tags$.pipe(takeUntil(this._destroy$)).subscribe(() => {
+                    this.loading = false;
+                });
             }
         }, ({ message }) => {
             this.loading = false;
@@ -518,61 +523,53 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    private loadTagsData() {
-        if (this.user.TAGS_TAG_READ) {
-            const blockIds = this.allBlocks?.map(block => block.id) || [];
-
-            this.tagsService.search(TagType.PolicyBlock, [this.policy.id], blockIds).subscribe((data) => {
-                const policyBlockTags = data[this.policy.id];
-                if (this.allBlocks) {
-                    for (const block of this.allBlocks) {
-                        (block as any)._tags = policyBlockTags?.tags.filter((tag: any) => tag.linkedItems.includes(block.id));
-
-                        policyBlockTags?.tags.forEach((tag: any) => {
-                            const totalTagOptions = [
-                                ...this.tagOptions,
-                                tag.name,
-                            ];
-                            this.tagOptions = [
-                                ...new Set(totalTagOptions),
-                            ];
-                        });
-
-                        let history: TagsHistory;
-                        if ((block as any)._tags) {
-                            history = new TagsHistory(
-                                policyBlockTags.entity || TagType.PolicyBlock,
-                                policyBlockTags.target || this.policy.id,
-                                this.owner,
-                                this.policy.location || LocationType.LOCAL,
-                                [block.id]
-                            );
-                            history.setData((block as any)._tags);
-                            history.setDate(policyBlockTags.refreshDate);
-                        } else {
-                            history = new TagsHistory(
-                                TagType.PolicyBlock,
-                                this.policy.id,
-                                this.owner,
-                                this.policy.location || LocationType.LOCAL,
-                                [block.id]
-                            );
-                        }
-                        this.blockTagHistories.set(block.id, history);
-                    }
-                }
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
-        } else {
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
+    private loadTagsData(): Observable<unknown> {
+        if (!this.user.TAGS_TAG_READ) {
+            return of(null);
         }
+        const blockIds = this.allBlocks?.map(block => block.id) || [];
+
+        return this.tagsService.search(TagType.PolicyBlock, [this.policy.id], blockIds).pipe(
+            tap((data) => {
+                const policyBlockTags = data[this.policy.id];
+                if (!this.allBlocks?.length) {
+                    return;
+                }
+                const tagNames: string[] = policyBlockTags?.tags?.map((tag: any) => tag.name) ?? [];
+                if (tagNames.length > 0) {
+                    this.tagOptions = [...new Set([...this.tagOptions, ...tagNames])];
+                }
+                for (const block of this.allBlocks) {
+                    (block as any)._tags = policyBlockTags?.tags.filter((tag: any) => tag.linkedItems.includes(block.id));
+
+                    let history: TagsHistory;
+                    if ((block as any)._tags) {
+                        history = new TagsHistory(
+                            policyBlockTags.entity || TagType.PolicyBlock,
+                            policyBlockTags.target || this.policy.id,
+                            this.owner,
+                            this.policy.location || LocationType.LOCAL,
+                            [block.id]
+                        );
+                        history.setData((block as any)._tags);
+                        history.setDate(policyBlockTags.refreshDate);
+                    } else {
+                        history = new TagsHistory(
+                            TagType.PolicyBlock,
+                            this.policy.id,
+                            this.owner,
+                            this.policy.location || LocationType.LOCAL,
+                            [block.id]
+                        );
+                    }
+                    this.blockTagHistories.set(block.id, history);
+                }
+            }),
+            catchError((e) => {
+                console.error(e?.error ?? e);
+                return of(null);
+            }),
+        );
     }
 
     private loadModule(): void {
