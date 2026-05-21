@@ -273,6 +273,12 @@
                     >
                         Role: {{ policyInfo.userRoles.join(", ") }}
                     </span>
+                    <button *ngIf="editableParameters?.length"  (click)="openParametersSettings()" class="policy-settings-button guardian-button guardian-button-secondary">
+                        <div class="guardian-button-icon">
+                            <i class="pi pi-cog"></i>
+                        </div>
+                        <div class="guardian-button-label">Policy Settings</div>
+                    </button>
                     <span (click)="group.toggle($event)" *ngIf="isMultipleGroups" class="current-user-group">
                         <span
                             [ngClass]="isDryRun ? 'white-additional-policy-info-text' : ''"
@@ -336,6 +342,9 @@
                     </p-tabPanel>
                     <p-tabPanel [header]="'Export Documents'">
                         <app-project-data-export></app-project-data-export>
+                    </p-tabPanel>
+                    <p-tabPanel *ngIf="permissions?.STANDARD_REGISTRY" [header]="'Mint Requests'">
+                        <app-mint-requests [policyId]="policyId"></app-mint-requests>
                     </p-tabPanel>
                 </p-tabView>
             </ng-container>

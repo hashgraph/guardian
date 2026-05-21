@@ -1,0 +1,202 @@
+curl --location 'https://<YOUR_GUARDIAN_HOST>/api/v1/policies/<POLICY_ID>/blocks/<BLOCK_ID>' \
+--header 'Authorization: Bearer <YOUR_GUARDIAN_API_TOKEN>' \
+--header 'Content-Type: application/json' \
+--data '{
+    "document": {
+        "gsid": "11815",
+        "monitoring_period": {
+            "from": "2024-01-01",
+            "to": "2024-12-31"
+        },
+        "methodology_method": "method_1_wbt",
+        "baseline_emission_case": "CASE 1",
+        "project_fuel": "Electricity",
+        "transition_mode": "new_activity",
+        "leakage_option": "default_2pct",
+        "baseline_emission_tech": {
+            "project_technology": "ATEC eCook induction stove (single-burner)",
+            "project_technology_category": "Electric",
+            "performance_test_protocol": "WBT",
+            "project_tech_useful_lifetime": 10,
+            "ctec_monitoring_mode": "full_census",
+            "metering_system_description": "ATEC Pochi MRV \u2014 embedded meter on every device, daily upload",
+            "baseline_cookstove_type": "Mixed: traditional wood + LPG + natural gas",
+            "methodology_method": "method_1_wbt"
+        },
+        "case1": {
+            "baseline_emission_case_common_values": [
+                {
+                    "fuel_type": "Wood",
+                    "fuel_group": "Non-renewable biomass",
+                    "device_type": "Traditional three-stone",
+                    "apply_fNRB": true,
+                    "is_non_renewable_biomass": true,
+                    "prop_i_j": 0.8,
+                    "proportion_of_cooking_fuel": 0.8,
+                    "ef_b_i_co2": 112,
+                    "ef_b_i_non_co2": 9.46,
+                    "co2EmissionFactorTco2PerTJ_EFb_fuel": 112,
+                    "Nonco2EmissionFactorTco2PerTJ_EFb_fuel": 9.46,
+                    "uef_b_i": 1.5,
+                    "fnrb_i_y": 0.8347,
+                    "nonRenewabilityStatusWoodyBiomass_fNRBi_y": 0.8347,
+                    "netCalorificValueTJPerTonne_NCVb_fuel": 0.0156,
+                    "eta_b_i_j_mean": 0.1,
+                    "efficiency_of_fuel_eta_b_i_j": 0.1,
+                    "eta_b_i_j_ub90": 0.105,
+                    "sc_b_j_mean": 2.83,
+                    "specific_energy_consumption_for_device": 2.83,
+                    "dailyfuelUsageKg": 3.048
+                },
+                {
+                    "fuel_type": "Natural gas",
+                    "fuel_group": "Fossil fuel",
+                    "device_type": "Conventional gas burner",
+                    "apply_fNRB": false,
+                    "is_non_renewable_biomass": false,
+                    "prop_i_j": 0.11,
+                    "proportion_of_cooking_fuel": 0.11,
+                    "ef_b_i_co2": 56.1,
+                    "ef_b_i_non_co2": 0.293,
+                    "co2EmissionFactorTco2PerTJ_EFb_fuel": 56.1,
+                    "Nonco2EmissionFactorTco2PerTJ_EFb_fuel": 0.293,
+                    "uef_b_i": 8.0,
+                    "fnrb_i_y": 1.0,
+                    "nonRenewabilityStatusWoodyBiomass_fNRBi_y": 1.0,
+                    "netCalorificValueTJPerTonne_NCVb_fuel": 0.0442,
+                    "eta_b_i_j_mean": 0.5,
+                    "efficiency_of_fuel_eta_b_i_j": 0.5,
+                    "eta_b_i_j_ub90": 0.52,
+                    "sc_b_j_mean": 0.69,
+                    "specific_energy_consumption_for_device": 0.69,
+                    "dailyfuelUsageKg": 0.1156
+                },
+                {
+                    "fuel_type": "LPG",
+                    "fuel_group": "Fossil fuel",
+                    "device_type": "LPG burner",
+                    "apply_fNRB": false,
+                    "is_non_renewable_biomass": false,
+                    "prop_i_j": 0.09,
+                    "proportion_of_cooking_fuel": 0.09,
+                    "ef_b_i_co2": 63.1,
+                    "ef_b_i_non_co2": 0.89,
+                    "co2EmissionFactorTco2PerTJ_EFb_fuel": 63.1,
+                    "Nonco2EmissionFactorTco2PerTJ_EFb_fuel": 0.89,
+                    "uef_b_i": 6.0,
+                    "fnrb_i_y": 1.0,
+                    "nonRenewabilityStatusWoodyBiomass_fNRBi_y": 1.0,
+                    "netCalorificValueTJPerTonne_NCVb_fuel": 0.0473,
+                    "eta_b_i_j_mean": 0.6,
+                    "efficiency_of_fuel_eta_b_i_j": 0.6,
+                    "eta_b_i_j_ub90": 0.62,
+                    "sc_b_j_mean": 0.69,
+                    "specific_energy_consumption_for_device": 0.69,
+                    "dailyfuelUsageKg": 0.1752
+                }
+            ],
+            "EFb_useful": 896.0842111,
+            "SCp": 0.000276,
+            "EGp_useful_y": 1.63819665,
+            "BE_y": 1467.96215,
+            "n_users_y": 6000,
+            "p_cap": 0.005
+        },
+        "project_emission_electricity": {
+            "no_people_per_hh_electricity": 4,
+            "mwhToTjConversionFactor_electricity": 0.0036,
+            "no_of_days_per_year": 365,
+            "energy_efficiency_pd_\u03b7p_d_y": 0.9235,
+            "EFel_y": 0.412,
+            "TDL_j_y": 0.1041,
+            "EGp_useful_y_electricity": 1.63819665,
+            "EGp_d_y": 492.75,
+            "PE_y": 224.15,
+            "meter_mpe_pct": 1.5,
+            "data_source_type": "meter",
+            "ctec_population_coverage_pct": 98.5,
+            "excluded_device_count": 0,
+            "eta_p_mean": 0.9235,
+            "eta_p_lb90": 0.91
+        },
+        "project_consumption_cap": {
+            "people_count": 6000,
+            "household_count": 1500,
+            "people_per_household": 4,
+            "monitored_per_capita_per_day": 0.225,
+            "reference_value": 1.0,
+            "reference_unit": "kWh/capita/day",
+            "is_substantiated": true,
+            "substantiation_status": "Substantiated",
+            "substantiation_evidence_ref": "ATEC Pochi MRV daily-usage logs Q4 2024",
+            "total_monitored_consumption_kwh": 492750,
+            "total_monitored_consumption_gj": 1773.9
+        },
+        "leakage_emission": {
+            "leakage_emission_factor": 0.02,
+            "n_disseminated_y": 1500,
+            "leakage_option": "default_2pct"
+        },
+        "emission_reduction": {
+            "er_y": 1214.45291,
+            "ER_y": 1214.45291
+        },
+        "ctec_integrity_summary": {
+            "ctec_monitoring_mode": "full_census",
+            "total_devices_deployed": 1500,
+            "total_devices_reporting": 1478,
+            "ctec_population_coverage_pct": 98.5,
+            "ctec_assessment_status": "compliant",
+            "ctec_notes": "22 devices flagged offline >7 days; excluded from monitored consumption."
+        },
+        "data_gap_summary": {
+            "total_devices": 1500,
+            "devices_with_gaps": 22,
+            "devices_gap_under_50_pct": 22,
+            "devices_gap_at_or_above_50_pct": 0,
+            "devices_excluded_due_gap": 0,
+            "gap_rule_applied": "25th_percentile",
+            "conservative_fill_method": "25th_percentile",
+            "data_gap_notes": "All gap-flagged devices below 50%; 25th-percentile fill applied."
+        },
+        "performance_monitoring_summary": {
+            "last_performance_test_date": "2024-03-15",
+            "next_retest_due_date": "2026-03-15",
+            "performance_test_protocol": "wbt",
+            "performance_result_summary": "Project device efficiency confirmed; no degradation since deployment.",
+            "degradation_detected": false,
+            "updated_eta_p": 0.9235,
+            "updated_sc_p": 0.000276,
+            "updated_kpt_p": 0
+        },
+        "baseline_consistency_check": {
+            "consistency_check_date": "2024-12-15",
+            "baseline_mix_source": "ATEC PDD baseline survey (n=200 households, Bangladesh, 2021)",
+            "baseline_mix_version": "PDD v1.0 (2021-09-12)",
+            "pdd_prop_value": 0.8,
+            "survey_prop_value": 0.8,
+            "delta_pct": 0.0,
+            "materiality_threshold_pct": 10.0,
+            "recalculation_required": false,
+            "consistency_confirmed": true,
+            "consistency_notes": "End-period survey re-confirmed 80% wood share; no drift, no recalculation triggered."
+        },
+        "dynamic_fnrb_update": {
+            "fnrb_source": "country_default",
+            "fnrb_value_current": 0.8347,
+            "fnrb_value_previous": 0.8347,
+            "fnrb_update_date": "2024-01-01",
+            "fnrb_update_reason": "Bangladesh country default (Gold Standard approved source).",
+            "fnrb_capped_at_previous": false
+        },
+        "usage_and_demographic_monitoring": {
+            "n_users_y": 6000,
+            "people_per_household": 4,
+            "household_count": 1500,
+            "operational_device_count": 1478,
+            "hs_p": 4,
+            "monitoring_date": "2024-12-15",
+            "demographic_source": "ATEC end-user registration database, cross-verified with Pochi MRV"
+        }
+    }
+}'

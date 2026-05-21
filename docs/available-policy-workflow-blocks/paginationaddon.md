@@ -25,7 +25,7 @@ Selected policy ID
 Selected Block UUID
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Succesful Operation" %}
+{% swagger-response status="200: OK" description="Successful Operation" %}
 ```
 {
 		  "size": 5,

@@ -65,7 +65,8 @@ export class InterfaceDocumentsSource {
 
     async onAddonEvent(user: PolicyUser, tag: string, documentId: string, handler: (document: any) => Promise<IPolicyEventState>, actionStatus) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
-        const fields = ref.options?.uiMetaData?.fields?.filter((field) =>
+        const options = await ref.getOptions(user);
+        const fields = options?.uiMetaData?.fields?.filter((field) =>
             field?.bindBlocks?.includes(tag)
         );
 
@@ -73,7 +74,7 @@ export class InterfaceDocumentsSource {
         const savepointIds = saved.__savepointIds as string[] | undefined;
 
         const enableCommonSorting =
-            !!ref.options?.uiMetaData?.enableSorting
+            !!options?.uiMetaData?.enableSorting
 
         const sourceAddons = fields
             ?.filter((field) => field.bindGroup)
@@ -148,6 +149,7 @@ export class InterfaceDocumentsSource {
      */
     async getData(user: PolicyUser, uuid: string, queryParams: any): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
+        const options = await ref.getOptions(user);
 
         let ret: IPolicyGetData = {
             id: ref.uuid,
@@ -229,7 +231,7 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField)
+        const enableCommonSorting = options.uiMetaData.enableSorting || (sortDirection && sortField)
 
         let sortState = this.state[user.id] || {};
         if (sortDirection && sortField) {
@@ -329,7 +331,7 @@ export class InterfaceDocumentsSource {
                 blocks: filters,
                 commonAddons,
             },
-            Object.assign(ref.options.uiMetaData, {
+            Object.assign(options.uiMetaData, {
                 viewHistory: !!history,
             }),
             sortState

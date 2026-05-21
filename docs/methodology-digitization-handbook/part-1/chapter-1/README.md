@@ -118,7 +118,7 @@ VM0033 (Methodology for Tidal Wetland and Seagrass Restoration) serves as the id
 * **Variable Monitoring**: Requirements vary by project activities, ecosystem types, carbon pools
 * **Role-Based Access**: Sophisticated user management and workflow coordination required
 
-![Roles Available for VM0033](<../../../.gitbook/assets/image (36).png>)
+![Roles Available for VM0033](<../../../.gitbook/assets/image (8).png>)
 
 ### Calculation Methodology and Technical Requirements
 
@@ -136,7 +136,7 @@ VM0033 (Methodology for Tidal Wetland and Seagrass Restoration) serves as the id
 * **Geographic Boundaries**: Dynamic boundaries affected by sea level rise over time
 * **Uncertainty Analysis**: Sophisticated error propagation across multiple variables
 
-![A calculation code sample](<../../../.gitbook/assets/image-1 (12).png>)
+![A calculation code sample](<../../../.gitbook/assets/image-1 (1).png>)
 
 ### Guardian Implementation Patterns
 
@@ -156,7 +156,7 @@ VM0033 (Methodology for Tidal Wetland and Seagrass Restoration) serves as the id
 * **Compliance Maintained**: Full adherence to VM0033's scientific and regulatory requirements
 * **Process Streamlining**: Digital implementation reduces development time while improving accuracy
 
-![Allcot ABC Mangrove Project](<../../../.gitbook/assets/image-2 (9).png>)
+![Allcot ABC Mangrove Project](<../../../.gitbook/assets/image-2 (1).png>)
 
 ### About Blue Carbon Projects
 

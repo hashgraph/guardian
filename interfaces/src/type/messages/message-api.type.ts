@@ -74,6 +74,7 @@ export enum MessageAPI {
     CREATE_USER_PROFILE_COMMON = 'CREATE_USER_PROFILE_COMMON',
     CREATE_USER_PROFILE_COMMON_ASYNC = 'CREATE_USER_PROFILE_COMMON_ASYNC',
     RESTORE_USER_PROFILE_COMMON_ASYNC = 'RESTORE_USER_PROFILE_COMMON_ASYNC',
+    ONBOARD_USER_ASYNC = 'ONBOARD_USER_ASYNC',
     GET_USER_PROFILE = 'GET_USER_PROFILE',
     GET_USER_BALANCE = 'GET_USER_BALANCE',
     GET_USER_BALANCE_REST = 'GET_USER_BALANCE_REST',
@@ -202,6 +203,7 @@ export enum MessageAPI {
     STOP_RUNNING = 'STOP_RUNNING',
     GET_RECORD_RESULTS = 'GET_RECORD_RESULTS',
     GET_RECORD_DETAILS = 'GET_RECORD_DETAILS',
+    GET_RECORD_ACTION_DOCUMENTS = 'GET_RECORD_ACTION_DOCUMENTS',
     FAST_FORWARD = 'FAST_FORWARD',
     RECORD_RETRY_STEP = 'RECORD_RETRY_STEP',
     RECORD_SKIP_STEP = 'RECORD_SKIP_STEP',
@@ -314,6 +316,9 @@ export enum MessageAPI {
     GET_CREDENTIALS = 'GET_CREDENTIALS',
     DELETE_CREDENTIAL = 'DELETE_CREDENTIAL',
 
+    TRANSFER_TOKEN = 'TRANSFER_TOKEN',
+    TRANSFER_TOKEN_ASYNC = 'TRANSFER_TOKEN_ASYNC',
+
     // Policy data query — read-only dynamic query for policy-committed documents
     GET_POLICY_DATA_DOCUMENTS = 'GET_POLICY_DATA_DOCUMENTS',
 }
@@ -327,6 +332,7 @@ export enum ExternalMessageEvents {
     TOKEN_MINT_FAILED = 'external-events.token_mint_failed',
     ERROR_LOG = 'external-events.error_logs',
     BLOCK_EVENTS = 'external-events.block_event',
+    BLOCK_COMPLETE = 'external-events.block_complete',
     IPFS_ADDED_FILE = 'external-events.ipfs_added_file',
     IPFS_BEFORE_UPLOAD_CONTENT = 'external-events.ipfs_before_upload_content',
     IPFS_AFTER_READ_CONTENT = 'external-events.ipfs_after_read_content',

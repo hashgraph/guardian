@@ -1,3 +1,4 @@
+import { randomInt } from "../../../../support/random";
 import { HomePage } from "../../pages/homePage";
 const homePage = new HomePage();
 
@@ -7,7 +8,7 @@ const policiesPage = new PoliciesPage();
 context("Tags Policy", { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = Math.floor(Math.random() * 999) + "testName";
+    const name = randomInt(999) + "testName";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);

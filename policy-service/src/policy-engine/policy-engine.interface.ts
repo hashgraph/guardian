@@ -490,6 +490,8 @@ export interface IPolicyBlock {
         value: T,
         user?: PolicyUser | string
     ): Promise<void>;
+
+    getOptions(user?: PolicyUser | null): Promise<any>;
 }
 
 /**

@@ -201,6 +201,12 @@ export class AggregateVC extends BaseEntity {
     disconnected?: boolean;
 
     /**
+     * Recording action step identifier
+     */
+    @Property({ nullable: true })
+    recordActionId?: string;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

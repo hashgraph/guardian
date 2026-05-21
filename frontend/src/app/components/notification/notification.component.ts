@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationType, NotifyAPI, } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
@@ -18,7 +18,7 @@ export class NotificationComponent implements OnInit {
     menuOpened: boolean = false;
     subscription = new Subscription();
 
-    @Input() menuCollapsed: boolean;
+    @Output() menuOpenedChange = new EventEmitter<boolean>();
 
     viewDetails($event: MouseEvent, notification: any) {
         if (!notification.action) {

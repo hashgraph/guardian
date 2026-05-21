@@ -20,7 +20,7 @@ Users are able to filter the list of standard registries by policy name and geog
 
 <figure><img src="https://lh4.googleusercontent.com/FL15XAuxEEC7ca2rTKg6YIak_85f2nUVmzQ1TIiC6fANve2h1X6ijvJvmUabELconFm1HTdmEhQ3gAT2HJSpBo2igGvPEkajhtJHztSeOnARJhhzhqy4KXy4QnI9tN5w-8dz4eZAYmqlbxGhLZ-LsiU" alt=""><figcaption></figcaption></figure>
 
-One the user has clicked on "Apply" they can see the Standard Registry related by the policy name and geography.
+Once the user has clicked on "Apply" they can see the Standard Registry related by the policy name and geography.
 
 <figure><img src="https://lh5.googleusercontent.com/KS92dHn6P_yf8Mmd8aDa9wBQ9zEVSZTmCmvpKRgRbSlm9SfpmdGorMjlvHCYUpEqG6-Dn_phkOf7LTvxCkX1nOzY8nfncEf07eHndssb6Ou9js7UBtLYcPceeqot7whiJj4dxyi-gMjIH3GUA2Svdfg" alt=""><figcaption></figcaption></figure>
 

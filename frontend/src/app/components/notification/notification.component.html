@@ -12,8 +12,8 @@
         <p-overlayPanel
             #notificationMenu
             appendTo="body"
-            (onShow)="menuOpened = true"
-            (onHide)="menuOpened = false"
+            (onShow)="menuOpened = true; menuOpenedChange.emit(true)"
+            (onHide)="menuOpened = false; menuOpenedChange.emit(false)"
             class="notification-menu-panel"
         >
             <div class="notification-menu">
@@ -24,8 +24,8 @@
                             class="link-btn">Mark all as read
                     </button>
                 </div>
-                <div (scroll)="onScrollNotifications($event)" *ngIf="progressNotifications.length"
-                     class="notification-list">
+                <div *ngIf="progressNotifications.length"
+                     class="notification-list notification-list--progress">
                     <div *ngFor="let notification of progressNotifications" [attr.unread]="true" class="notification">
                         <div *ngIf="notification.taskId" [routerLink]="'/task/' + notification.taskId"
                              style="display: flex; flex-direction: column; max-width: calc(100% - 32px);">
@@ -47,7 +47,7 @@
                 </div>
                 <div class="notification-menu__delimiter" *ngIf="progressNotifications.length && notifications.length">
                 </div>
-                <div class="notification-list" *ngIf="notifications.length" (scroll)="onScrollNotifications($event)">
+                <div class="notification-list notification-list--feed" *ngIf="notifications.length" (scroll)="onScrollNotifications($event)">
                     <div (click)="viewDetails($event, notification)"
                          *ngFor="let notification of notifications"
                          [attr.notificationId]="notification.id"

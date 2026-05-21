@@ -8,7 +8,7 @@ import {
     PolicyOutputEventType,
     PolicyTagMap
 } from './interfaces/index.js';
-import { BlockType, GenerateUUIDv4, IUser, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, IBlockCompleteEvent, IUser, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
 import {
     ActionType,
     AnyBlockType,
@@ -145,6 +145,10 @@ export function infoBlockEvent(user: PolicyUser, policy: Policy): void {
 export function externalBlockEvent(event: ExternalEvent<any>): void {
     const type = 'external';
     new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [event] }, false);
+}
+
+export function blockCompleteEvent(event: IBlockCompleteEvent): void {
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_COMPLETE_BROADCAST, event, false);
 }
 
 export function requestNotificationEvent(row: PolicyAction): void {

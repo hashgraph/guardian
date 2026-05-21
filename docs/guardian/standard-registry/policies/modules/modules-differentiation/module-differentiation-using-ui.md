@@ -99,7 +99,7 @@ Input:
 
 "childrenLvl":"0" – depth (level) of child block comparison (0/1/2)
 
-"idLvl":"0" – depth (level) of uuid comparision (0/1)
+"idLvl":"0" – depth (level) of uuid comparison (0/1)
 
 }
 

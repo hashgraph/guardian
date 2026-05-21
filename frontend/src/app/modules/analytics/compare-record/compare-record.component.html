@@ -1,5 +1,5 @@
 <div class="content" [style.min-width.px]="minWidth">
-    <div *ngIf="!headers.length && type==='tree'" class="total-info" [attr.total]="totalRate">
+    <div *ngIf="!headers.length && type==='tree' && showTotal" class="total-info" [attr.total]="totalRate">
         Documents are <span>{{ totalRate }}%</span> the same.
     </div>
 
@@ -80,6 +80,7 @@
                          [attr.type-4]="_type4">
 
                         <div *ngFor="let row of treeContext" class="report-item report-item-number"
+                             [id]="'doc-row-' + row.index"
                              [attr.hidden]="row.hidden"
                              [style.grid-template-columns]="_gridStyle">
 
@@ -212,7 +213,7 @@
         </div> -->
         <div class="prop">
             <div class="prop-name">Document Rate:</div>
-            <div class="prop-value" [attr.rate]="data.documentRate">{{ data.documentRate }}</div>
+            <div class="prop-value" [attr.rate]="data.totalRate">{{ data.totalRate }}</div>
         </div>
 
         <div class="prop-delimiter"></div>
@@ -253,26 +254,28 @@
                 </div>
             </div>
             <div class="prop-table-body">
-                <div *ngFor="let field of data.fields" class="prop-table-row"
-                     [attr.fantom]="field.fantom"
-                     [attr.type]="field.type"
-                     [attr.offset]="field.lvl"
-                     [attr.index]="data.index"
-                     [attr.system]="field.system">
-                    <div class="prop-table-name"
-                         [style.padding-left.px]="field.offset"
-                         [title]="field.name">
-                        {{ field.label }}:
-                    </div>
-                    <div class="prop-table-value" [attr.prop-type]="field.propType">
-                        <div class="compare-btn" (click)="compareSchema(field)">
-                            <i class="pi pi-search"></i>
+                <ng-container *ngFor="let field of data.fields">
+                    <div *ngIf="isFieldVisible(field)" class="prop-table-row"
+                         [attr.fantom]="field.fantom"
+                         [attr.type]="field.type"
+                         [attr.offset]="field.lvl"
+                         [attr.index]="data.index"
+                         [attr.system]="field.system">
+                        <div class="prop-table-name"
+                             [style.padding-left.px]="field.offset"
+                             [title]="field.name">
+                            {{ field.label }}:
                         </div>
-                        <span *ngIf="field.propType" [title]="field.value">
-                            {{ field.value }}
-                        </span>
+                        <div class="prop-table-value" [attr.prop-type]="field.propType">
+                            <div class="compare-btn" (click)="compareSchema(field)">
+                                <i class="pi pi-search"></i>
+                            </div>
+                            <span *ngIf="field.propType" [title]="field.value">
+                                {{ field.value }}
+                            </span>
+                        </div>
                     </div>
-                </div>
+                </ng-container>
             </div>
         </div>
 

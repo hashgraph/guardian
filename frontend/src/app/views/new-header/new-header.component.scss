@@ -62,7 +62,6 @@
 #remoteButton.collapse-button,
 .collapse-button {
     left: calc(var(--header-width-collapse) - 1px) !important;
-    transform: translate(-50%, -50%) rotate(180deg);
 }
 
 .collapsed-notify-counter {
@@ -394,6 +393,11 @@
     cursor: pointer;
     background: #FFFFFF3D;
     border: 1px solid #FFFFFF52;
+
+    &--disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
 }
 
 .doc-toggle {

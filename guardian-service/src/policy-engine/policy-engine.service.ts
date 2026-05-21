@@ -34,6 +34,7 @@ import {
     PolicyDiscussion,
     PolicyImportExport,
     PolicyMessage,
+    PolicyParameters,
     RecordImportExport,
     RunFunctionAsync,
     Schema as SchemaCollection,
@@ -41,6 +42,7 @@ import {
     TopicConfig,
     Users,
     VcHelper,
+    MintTransaction,
     XlsxToJson
 } from '@guardian/common';
 import {
@@ -49,6 +51,7 @@ import {
     EntityOwner,
     ExternalMessageEvents,
     GenerateUUIDv4,
+    IBlockCompleteEvent,
     IOwner,
     PolicyEngineEvents,
     PolicyEvents,
@@ -63,11 +66,17 @@ import {
     PolicyActionStatus,
     IgnoreRule,
     SchemaStatus,
-    MigrationConfig, MigrationRunStatus,
-    IPolicyDocumentationEntry
+    PolicyEditableFieldDTO,
+    MigrationConfig,
+    MigrationRunStatus,
+    MintTransactionStatus,
+    TokenType,
+    IPolicyDocumentationEntry,
+    POLICY_ALIAS_REGEX
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
+import { createHash } from 'crypto';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
@@ -96,10 +105,12 @@ function buildDocumentationUrls(
     return entries.map((entry) => {
         const tag = entry.target;
         const alias = entry.alias;
-        const method = entry.method;
-        const technicalUrl = method === 'POST'
-            ? `/api/v1/policies/${policyId}/tag/${tag}/blocks`
-            : `/api/v1/policies/${policyId}/tag/${tag}`;
+        if (!alias || !POLICY_ALIAS_REGEX.test(alias)) {
+            throw new Error(
+                `Invalid alias "${alias}" — only lowercase letters, digits, hyphens; segments separated by '/'.`
+            );
+        }
+        const technicalUrl = `/api/v1/policies/${policyId}/tag/${tag}/blocks`;
         const dmrvUrl = `/api/v1/dmrv/${policyId}/${alias}`;
         return {
             ...entry,
@@ -383,6 +394,15 @@ export class PolicyEngineService {
                 }
             })
 
+        this.channel.getMessages(PolicyEvents.BLOCK_COMPLETE_BROADCAST,
+            (msg: IBlockCompleteEvent) => {
+                try {
+                    this.channel.sendMessage(ExternalMessageEvents.BLOCK_COMPLETE, msg, false);
+                } catch (error) {
+                    console.error('Error relaying BLOCK_COMPLETE_BROADCAST:', error);
+                }
+            })
+
         this.channel.getMessages(PolicyEvents.TEST_UPDATE_BROADCAST,
             async (msg: {
                 id: string,
@@ -619,6 +639,160 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RETRY_MINT,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                vpMessageId: string
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId, vpMessageId } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    const owner = new EntityOwner(user);
+                    await this.policyEngine.accessPolicy(policy, owner, 'execute');
+
+                    if (!policy || owner.creator !== policy.creator) {
+                        const err: any = new Error('Only the policy owner can retry mint requests.');
+                        err.code = 403;
+                        throw err;
+                    }
+
+                    const blockData = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.RETRY_MINT, policyId, {
+                            user,
+                            policyId,
+                            vpMessageId
+                        }, 5 * 60 * 1000) as any;
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MINT_REQUESTS,
+            async (msg: {
+                owner: IOwner,
+                policyId: string,
+                status: string,
+                target: string,
+                vpMessageId: string,
+                pageIndex: string,
+                pageSize: string
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { owner, policyId, status, target, vpMessageId, pageIndex, pageSize } = msg;
+
+                    const parsedPageSize = parseInt(pageSize, 10) || 10;
+                    const parsedPageIndex = parseInt(pageIndex, 10) || 0;
+                    const offset = parsedPageIndex * parsedPageSize;
+                    const limit = parsedPageSize;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+
+                    const filters: any = { policyId };
+
+                    if (!policy || owner.creator !== policy.creator) {
+                        filters.owner = owner.creator;
+                    }
+
+                    if (target) {
+                        filters.target = target;
+                    }
+
+                    if (vpMessageId) {
+                        filters.vpMessageId = vpMessageId;
+                    }
+
+                    if (status === 'error') {
+                        filters.error = { $ne: null };
+                    } else if (status === 'pending') {
+                        filters.error = null;
+                        filters.isMintNeeded = true;
+                    } else if (status === 'success') {
+                        filters.error = null;
+                        filters.isMintNeeded = false;
+                    }
+
+                    const [items, count] = await DatabaseServer.getMintRequestsAndCount(
+                        filters,
+                        {
+                            offset,
+                            limit,
+                            orderBy: { vpMessageId: 'DESC' } as any
+                        }
+                    );
+
+                    const requestIds = items.map((item: any) => item.id);
+                    const allTransactions = requestIds.length > 0
+                        ? await new DataBaseHelper(MintTransaction).find({ mintRequestId: { $in: requestIds } } as any)
+                        : [];
+
+                    const txByRequest = new Map<string, any[]>();
+                    for (const tx of allTransactions) {
+                        const key = tx.mintRequestId;
+                        if (!txByRequest.has(key)) {
+                            txByRequest.set(key, []);
+                        }
+                        txByRequest.get(key)!.push(tx);
+                    }
+
+                    const enrichedItems = items.map((item: any) => {
+                        const plain = typeof item.toJSON === 'function' ? item.toJSON() : { ...item };
+                        const transactions = txByRequest.get(plain.id) || [];
+
+                        let mintedAmount = 0;
+                        let transferredAmount = 0;
+
+                        if (plain.tokenType === TokenType.NON_FUNGIBLE) {
+                            for (const tx of transactions) {
+                                if (tx.mintStatus === MintTransactionStatus.SUCCESS && tx.serials) {
+                                    mintedAmount += tx.serials.length;
+                                }
+                                if (tx.transferStatus === MintTransactionStatus.SUCCESS && tx.serials) {
+                                    transferredAmount += tx.serials.length;
+                                }
+                            }
+                        } else {
+                            const hasSuccessMint = transactions.some(
+                                (tx: any) => tx.mintStatus === MintTransactionStatus.SUCCESS
+                            );
+                            if (hasSuccessMint) {
+                                mintedAmount = plain.decimals > 0
+                                    ? plain.amount / Math.pow(10, plain.decimals)
+                                    : plain.amount;
+                            }
+
+                            const hasSuccessTransfer = transactions.some(
+                                (tx: any) => tx.transferStatus === MintTransactionStatus.SUCCESS
+                            );
+                            if (hasSuccessTransfer) {
+                                transferredAmount = plain.decimals > 0
+                                    ? plain.amount / Math.pow(10, plain.decimals)
+                                    : plain.amount;
+                            }
+                        }
+
+                        const expectedAmount = plain.tokenType === TokenType.NON_FUNGIBLE
+                            ? plain.amount
+                            : (plain.decimals > 0 ? plain.amount / Math.pow(10, plain.decimals) : plain.amount);
+
+                        plain.mintedAmount = mintedAmount;
+                        plain.mintedExpected = expectedAmount;
+                        plain.transferredAmount = transferredAmount;
+                        plain.transferredExpected = plain.wasTransferNeeded ? expectedAmount : 0;
+
+                        return plain;
+                    });
+
+                    return new MessageResponse([enrichedItems, count]);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error, error.code);
                 }
             });
@@ -3866,11 +4040,22 @@ export class PolicyEngineService {
                         throw new Error(`Policy is published`);
                     }
                     const buffer = Buffer.from(file.buffer);
+                    const newHash = createHash('sha256').update(buffer).digest('hex');
+                    const existingTests = await DatabaseServer.getPolicyTests(policyId);
+                    for (const existing of existingTests) {
+                        const existingBuffer = existing.file
+                            ? await DatabaseServer.loadFile(existing.file)
+                            : null;
+                        if (existingBuffer && createHash('sha256').update(existingBuffer).digest('hex') === newHash) {
+                            return new MessageError('Duplicate test file.', 409);
+                        }
+                    }
                     const recordToImport = await RecordImportExport.parseZipFile(buffer);
                     const test = await DatabaseServer.createPolicyTest(
                         {
                             uuid: GenerateUUIDv4(),
                             name: file.filename.split('.')[0],
+                            description: recordToImport.policyTest?.description,
                             policyId,
                             owner: owner.creator,
                             status: PolicyTestStatus.New,
@@ -3934,12 +4119,18 @@ export class PolicyEngineService {
 
                     const options = { mode: 'test' };
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip));
+                    const selectedOutputs = RecordImportExport.hasSelectedOutputs(recordToImport);
+                    const expectedResults = RecordImportExport.getComparisonResults(recordToImport);
                     const guardiansService = new GuardiansService();
                     const recordId: string = await guardiansService
                         .sendPolicyMessage(PolicyEvents.RUN_RECORD, policyId, {
                             records: recordToImport.records,
-                            results: recordToImport.results,
-                            options
+                            results: expectedResults,
+                            options: {
+                                ...options,
+                                selectedOutputs,
+                                policyTest: recordToImport.policyTest
+                            }
                         });
                     if (recordId) {
                         test.resultId = recordId;
@@ -5302,6 +5493,111 @@ export class PolicyEngineService {
                     return new MessageError(error);
                 }
             })
+
+        this.channel.getMessages(PolicyEngineEvents.SAVE_POLICY_PARAMETERS_VALUES,
+            async (msg: { owner: IOwner, policyId: string, config: PolicyEditableFieldDTO[] }) => {
+                try {
+                    const { owner, policyId, config } = msg;
+                    const userDID = owner?.creator;
+                    if (!userDID) {
+                        return new MessageError('Missing authenticated user identity');
+                    }
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (!policy) {
+                        return new MessageError('Policy not found');
+                    }
+
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, { did: userDID } as IAuthUser);
+
+                    const editableKey = (f: PolicyEditableFieldDTO) => `${f.blockTag}::${f.propertyPath}`;
+                    const editableSet = new Set((policy.editableParametersSettings || []).map(editableKey));
+                    for (const item of config || []) {
+                        if (!editableSet.has(editableKey(item))) {
+                            return new MessageError(`Field ${editableKey(item)} is not editable on this policy`);
+                        }
+                    }
+
+                    let result;
+                    const found = await DatabaseServer.getPolicyParameters(userDID, policyId);
+                    if (found) {
+                        found.config = config;
+                        result = await DatabaseServer.updatePolicyParameters(found);
+                    } else {
+                        const parameters = new PolicyParameters();
+                        parameters.userDID = userDID;
+                        parameters.policyId = policyId;
+                        parameters.config = config;
+                        parameters.properties = {};
+                        parameters.updated = false;
+
+                        result = await DatabaseServer.createPolicyParameters(parameters);
+                    }
+
+                    const allPolicyParameters = await DatabaseServer.getPolicyParametersByPolicyId(policyId);
+                    allPolicyParameters.forEach(parameter => parameter.updated = true);
+                    await DatabaseServer.setPolicyParametersUpdated(allPolicyParameters);
+
+                    const echoedConfig = (result.config || []).filter((item: PolicyEditableFieldDTO) =>
+                        this.hasFieldPermission(item, userRole)
+                    );
+                    return new MessageResponse({ ...result, config: echoedConfig });
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            })
+
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_PARAMETERS_VALUES,
+            async (msg: { owner: IOwner, user: IAuthUser, policyId: string }) => {
+                try {
+                    const { user, policyId } = msg;
+                    let result: PolicyEditableFieldDTO[] = [];
+                    const parameters = await DatabaseServer.getPolicyParameters(user.did, policyId);
+                    if (parameters && parameters.config?.length) {
+                        result = parameters.config;
+                    } else {
+                        const foundPolicy = await DatabaseServer.getPolicyById(policyId);
+                        result = foundPolicy?.editableParametersSettings || [];
+                    }
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
+
+                    result = result.filter((item: PolicyEditableFieldDTO) => this.hasFieldPermission(item, userRole));
+
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            })
         //#endregion
+    }
+
+    /**
+     * Role-token contract used by `visible`:
+     *   - 'ANY_ROLE' — visible to anyone.
+     *   - 'NO_ROLE'  — visible only when GetUserRole returns 'No role'.
+     *   - 'OWNER'    — visible to the policy owner (Administrator).
+     *   - <role>     — verbatim match against a policy role name.
+     */
+    public hasFieldPermission(field: PolicyEditableFieldDTO, userRole: string): boolean {
+        if (!field || !Array.isArray(field.visible)) {
+            return false;
+        }
+        if (field.visible.includes('ANY_ROLE')) {
+            return true;
+        }
+        if (field.visible.includes(userRole)) {
+            return true;
+        }
+        if (field.visible.includes('NO_ROLE') && userRole === 'No role') {
+            return true;
+        }
+        if (field.visible.includes('OWNER') && userRole === 'Administrator') {
+            return true;
+        }
+        return false;
     }
 }

@@ -1,3 +1,4 @@
+import { randomInt } from "../../../support/random";
 import { STATUS_CODE, METHOD } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -6,7 +7,7 @@ import * as Authorization from "../../../support/authorization";
 context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const tagName = "tagSchemaAPI";
-    const tagId = "d0e99e70-3511-486668e-bf6f-10041e9a0cb7" + Math.floor(Math.random() * 999999);
+    const tagId = "d0e99e70-3511-486668e-bf6f-10041e9a0cb7" + randomInt(999999);
     let schemaId, schemaCreator, schemaUuid;
 
     before(() => {

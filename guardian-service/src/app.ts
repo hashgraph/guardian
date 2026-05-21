@@ -31,10 +31,10 @@ import {
     ValidateConfiguration,
     Wallet,
     Workers,
-    entities,
     JwtServicesValidator,
     NotificationEvents
 } from '@guardian/common';
+import { entities } from '@guardian/common/dist/entities.js';
 import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hiero-ledger/sdk';
 import { ipfsAPI } from './api/ipfs.service.js';
@@ -301,7 +301,7 @@ Promise.all([
                     data: {
                         hederaAccountId: OPERATOR_ID,
                         hederaAccountKey: OPERATOR_KEY,
-                        dryRun: false,
+                        dryRun: null,
                         topicMemo: TopicMemo.getGlobalTopicMemo(),
                         payload: { userId: null }
                     }

@@ -73,7 +73,7 @@ We are uploading Verifiable Presentation document to IPFS and CID will be attach
 (ONLY NFT) Open tokens page, click on appropriate token or open ledger works explorer manually https://explore.lworks.io/testnet/tokens/{tokenId} ([https://explore.lworks.io/testnet/tokens/0.0.4554172](https://explore.lworks.io/testnet/tokens/0.0.4554172)), open "NFT HOLDERS" tab and click on appropriate serial, click on "OVERVIEW" tab and in metadata you can get VP message identifier (1721049137.243457003).&#x20;
 
 \
-(FT, NFT) Open tokens page, copy appropriate token identifier, open dragonglass explorer https://testnet.dragonglass.me/tokens/{tokenId} ([https://testnet.dragonglass.me/tokens/0.0.4554298](https://testnet.dragonglass.me/tokens/0.0.4554298)), click on "All transactions" tab, click on appropriate mint transaction, in memo you can get VP message identifier (1721049808.933544003).&#x20;
+(FT, NFT) Open tokens page, copy appropriate token identifier, open Dragonglass explorer https://testnet.dragonglass.me/tokens/{tokenId} ([https://testnet.dragonglass.me/tokens/0.0.4554298](https://testnet.dragonglass.me/tokens/0.0.4554298)), click on "All transactions" tab, click on appropriate mint transaction, in memo you can get VP message identifier (1721049808.933544003).&#x20;
 
 \
 In our case it will be [https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1721049137.243457003](https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1721049137.243457003)\

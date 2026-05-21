@@ -1461,7 +1461,7 @@ export class HederaSDKHelper {
                 receipt = await this.receiptQuery(client, transaction.transactionId);
             }
             await this.transactionEndLog(id, type, userId, transaction, metadata);
-            HederaSDKHelper.transactionResponse(account);
+            HederaSDKHelper.transactionResponse(account, userId);
             return receipt;
         } catch (error) {
             await this.transactionErrorLog(id, type, transaction, error, userId);
@@ -1549,7 +1549,7 @@ export class HederaSDKHelper {
                 );
             }
             await this.transactionEndLog(id, type, userId, transaction, metadata);
-            HederaSDKHelper.transactionResponse(account);
+            HederaSDKHelper.transactionResponse(account, userId);
             return record;
         } catch (error) {
             await this.transactionErrorLog(id, type, transaction, error, userId);
@@ -1640,12 +1640,13 @@ export class HederaSDKHelper {
     /**
      * Transaction response
      * @param account
+     * @param userId
      * @private
      */
-    private static transactionResponse(account: string) {
+    private static transactionResponse(account: string, userId: string | null) {
         if (HederaSDKHelper.fn) {
             try {
-                const result = HederaSDKHelper.fn(account);
+                const result = HederaSDKHelper.fn(account, userId);
                 if (typeof result.then === 'function') {
                     result.then(null, (error) => {
                         console.error(error);

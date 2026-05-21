@@ -5,6 +5,7 @@ import {
     MigrationRunsResponse,
     MigrationStatusResponse,
     PolicyAvailability,
+    PolicyEditableFieldDTO,
     PolicyToolMetadata
 } from '@guardian/interfaces';
 import { Observable, firstValueFrom, map } from 'rxjs';
@@ -159,6 +160,10 @@ export class PolicyEngineService {
 
     public setBlockData(blockId: string, policyId: string, data: any): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/blocks/${blockId}/sync-events`, data).pipe(map(res => res.response));
+    }
+
+    public setBlockDataWithResult(blockId: string, policyId: string, data: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/blocks/${blockId}/sync-events`, data);
     }
 
     public getGetIdByName(blockName: string, policyId: string): Observable<any> {
@@ -426,6 +431,23 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/${policyId}/search-documents`, { observe: 'response', params });
     }
 
+    public getMintRequests(
+        policyId: string,
+        filters: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const params = this.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/${policyId}/mint-requests`, { observe: 'response', params });
+    }
+
+    public retryMint(
+        policyId: string,
+        vpMessageId: string
+    ): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/mint/${vpMessageId}/retry`, {});
+    }
+
     public exportDocuments(
         policyId: string,
         filters: any,
@@ -679,6 +701,14 @@ export class PolicyEngineService {
 
     public getAllVersionVcDocuments(policyId?: string, documentId?: string): Observable<any> {
         return this.http.get<void>(`${this.url}/${policyId}/get-all-version-vc-documents/${documentId}`);
+    }
+
+    public saveParameters(policyId: string, data: PolicyEditableFieldDTO[]): Observable<PolicyEditableFieldDTO[]> {
+        return this.http.post<PolicyEditableFieldDTO[]>(`${this.url}/${policyId}/parameters/`, data);
+    }
+
+    public getParametersConfig(policyId: string): Observable<PolicyEditableFieldDTO[]> {
+        return this.http.get<PolicyEditableFieldDTO[]>(`${this.url}/${policyId}/parameters/config`);
     }
 
     public disconnect(policyId: string): Observable<any> {

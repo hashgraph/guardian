@@ -1,8 +1,8 @@
 import { Auth, AuthUser } from '#auth';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson, FilenameSanitizer } from '#helpers';
-import { IAuthUser, MockType, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, MigrationRunStatus, Permissions, PolicyHelper, PolicyStatus, TaskAction, UserRole } from '@guardian/interfaces';
+import { findBlocks, IAuthUser, MockType, PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { DocumentType, MigrationRunStatus, Permissions, PolicyHelper, PolicyStatus, TaskAction, UserRole, PolicyEditableFieldDTO } from '@guardian/interfaces';
 import {
     Body,
     Controller,
@@ -74,6 +74,7 @@ import {
     ServiceUnavailableErrorDTO,
     TaskDTO,
     ResponseDTOWithSyncEvents,
+    PolicyParametersDTO,
     MigrationRunsResponseDTO,
     MigrationRunStatusDTO,
     MigrationStatusResponseDTO,
@@ -1486,10 +1487,21 @@ export class PolicyApi {
                     { name: 'filterByUUID', type: 'string', description: 'Filter by document UUID' },
                 ],
             };
+            const schemaByTag = new Map<string, string>(
+                entries.length
+                    ? findBlocks(policy.config, (node: any) => !!(node.tag && node.schema))
+                        .map((block: any) => [block.tag, block.schema])
+                    : []
+            );
             return entries.map((entry: any) => {
                 const getParams = getParamsByBlockType[entry.blockType] || [];
+                const rawSchemaId = schemaByTag.get(entry.target);
+                const schemaId = rawSchemaId
+                    ? rawSchemaId.replace(/^#/, '')
+                    : undefined;
                 return {
                     ...entry,
+                    ...(schemaId ? { schemaId } : {}),
                     getQueryParams: entry.method !== 'POST' ? getParams : [],
                     postQueryParams: entry.method !== 'GET' ? postParams : [],
                 };
@@ -1642,6 +1654,7 @@ export class PolicyApi {
             model.policyGroups = policy.policyGroups;
             model.categories = policy.categories;
             model.projectSchema = policy.projectSchema;
+            model.editableParametersSettings = policy.editableParametersSettings;
             model.policyDocumentation = policy.policyDocumentation;
 
             const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`, `${PREFIXES.SCHEMES}schema-with-sub-schemas`];
@@ -3693,6 +3706,211 @@ export class PolicyApi {
     }
 
     /**
+     * Get mint requests for a policy
+     */
+    @Get('/:policyId/mint-requests')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Get mint requests for a policy.',
+        description: 'Returns paginated mint requests for the specified policy with optional filters.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        description: 'Status filter (error, pending, success)',
+        required: false,
+        example: 'error'
+    })
+    @ApiQuery({
+        name: 'target',
+        type: String,
+        description: 'Account ID filter',
+        required: false,
+        example: '0.0.6046379'
+    })
+    @ApiQuery({
+        name: 'vpMessageId',
+        type: String,
+        description: 'VP Message ID filter',
+        required: false,
+        example: '1775659196.584626142'
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Mint requests.',
+        isArray: true,
+        headers: pageHeader,
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    amount: { type: 'number', description: 'Amount to mint', example: 100 },
+                    tokenId: { type: 'string', description: 'Token identifier', example: '0.0.6046500' },
+                    tokenType: { type: 'string', enum: ['FUNGIBLE', 'NON_FUNGIBLE'], description: 'Token type' },
+                    target: { type: 'string', description: 'Target account', example: '0.0.6046379' },
+                    vpMessageId: { type: 'string', description: 'VP message identifier', example: '1774449622.177353801' },
+                    isMintNeeded: { type: 'boolean', description: 'Whether minting is still needed' },
+                    isTransferNeeded: { type: 'boolean', description: 'Whether transfer is needed' },
+                    memo: { type: 'string', description: 'Transaction memo' },
+                    metadata: { type: 'string', nullable: true, description: 'Metadata' },
+                    error: { type: 'string', nullable: true, description: 'Error message if mint failed' },
+                    processDate: { type: 'string', format: 'date-time', nullable: true, description: 'Last process date' },
+                    policyId: { type: 'string', description: 'Associated policy ID' },
+                    owner: { type: 'string', nullable: true, description: 'Owner DID' },
+                    id: { type: 'string', description: 'Mint request ID' },
+                    mintedAmount: { type: 'number', description: 'Minted amount from successful transactions' },
+                    mintedExpected: { type: 'number', description: 'Expected total mint amount' },
+                    transferredAmount: { type: 'number', description: 'Transferred amount from successful transactions' },
+                    transferredExpected: { type: 'number', description: 'Expected total transfer amount' },
+                    wasTransferNeeded: { type: 'boolean', description: 'Whether transfer was needed' },
+                }
+            }
+        },
+        example: ObjectExamples.MINT_REQUEST
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getMintRequests(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('policyId') policyId: string,
+        @Query('status') status?: string,
+        @Query('target') target?: string,
+        @Query('vpMessageId') vpMessageId?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            const [requests, count] = await engineService.getMintRequests(
+                new EntityOwner(user),
+                policyId,
+                status,
+                target,
+                vpMessageId,
+                pageIndex,
+                pageSize,
+            );
+            return res.header('X-Total-Count', count).send(requests);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Retry mint for the specified VP message
+     */
+    @Post('/:policyId/mint/:vpMessageId/retry')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Retry mint by VP message ID.',
+        description:
+            'Retries failed mint/transfer operations for the specified VP message within the given policy. ' +
+            'Fire-and-forget: the endpoint performs synchronous validation (policy access, owner check, per-request cooldown / in-progress checks) and returns as soon as validation passes; the actual Hedera mint/transfer runs in the background. ' +
+            'Poll GET /policies/{policyId}/mint-requests to observe progress and final state.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'vpMessageId',
+        type: String,
+        description: 'VP Message Id',
+        required: true,
+        example: '1774449700.283746192'
+    })
+    @ApiOkResponse({
+        description: 'Validation passed; retry has been queued (fire-and-forget). `warnings` contains any per-request messages surfaced synchronously during validation (e.g. cooldown or already-in-progress); an empty array means every request was accepted for background processing. `message` is set only when no retry was needed because every mint request for the VP is already fully minted and transferred.',
+        examples: {
+            queued: {
+                summary: 'Fresh retry accepted and queued',
+                value: { warnings: [] }
+            },
+            cooldown: {
+                summary: 'Request is on cooldown after a recent attempt',
+                value: {
+                    warnings: [
+                        'Mint process for 1776887993.927747137 can\'t be retried. Try after 6 minutes'
+                    ]
+                }
+            },
+            allMinted: {
+                summary: 'No retry needed — every mint request is complete',
+                value: {
+                    warnings: [],
+                    message: 'All tokens for 1776887993.927747137 are minted and transferred'
+                }
+            }
+        }
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden. Only the policy owner can retry mint requests.',
+        example: { statusCode: 403, message: 'Only the policy owner can retry mint requests.', error: 'Forbidden' }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.OK)
+    async retryMint(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('vpMessageId') vpMessageId: string,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.retryMint(user, policyId, vpMessageId);
+        } catch (error) {
+            if (!error.code) {
+                error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            }
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Sends data to the specified block
      */
     @Post('/:policyId/blocks/:uuid/sync-events')
@@ -4192,6 +4410,7 @@ export class PolicyApi {
     @Auth(
         Permissions.POLICIES_POLICY_UPDATE,
         Permissions.POLICIES_POLICY_TAG,
+        Permissions.POLICIES_POLICY_READ,
         Permissions.MODULES_MODULE_UPDATE,
         Permissions.TOOLS_TOOL_UPDATE
         // UserRole.STANDARD_REGISTRY,
@@ -8009,6 +8228,83 @@ export class PolicyApi {
             return await engineService.getAllVersionVcDocuments(user, policyId, documentId);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Save Parameters Values
+     */
+    @Post('/:policyId/parameters')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Save policy config with values',
+        description: 'Save policy config with values to the PolicyParameters table',
+    })
+    @ApiBody({
+        description: 'Policy parameters.',
+        isArray: true,
+        type: PolicyEditableFieldDTO,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyParametersDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async savePolicyParametersValues(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: PolicyEditableFieldDTO[],
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.savePolicyParameters(new EntityOwner(user), policyId, body);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get Parameters
+     */
+    @Get('/:policyId/parameters/config')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+    )
+    @ApiOperation({
+        summary: 'Get policy parameters.',
+        description: 'Get policy parameters.',
+    })
+    @ApiBody({
+        description: 'Policy parameters.',
+        isArray: true,
+        type: PolicyEditableFieldDTO,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyParametersDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPolicyParametersConfig(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getPolicyParametersConfig(new EntityOwner(user), user, policyId );
+        } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
     }

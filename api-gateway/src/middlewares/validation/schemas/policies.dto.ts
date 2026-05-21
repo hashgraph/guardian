@@ -1,6 +1,6 @@
 import { ApiExtraModels, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {ArrayNotEmpty, IsArray, IsBoolean, IsIn, IsNumber, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
-import { PolicyAvailability, PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
+import { PolicyAvailability, PolicyEditableFieldDTO, PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
 import { Examples } from '../examples.js';
 import { ValidationErrorsDTO } from './blocks.js';
 import {Type} from 'class-transformer';
@@ -368,6 +368,16 @@ export class PolicyDTO {
     originalChanged?: boolean;
 
     @ApiProperty({
+        type: () => PolicyEditableFieldDTO,
+        isArray: true
+    })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => PolicyEditableFieldDTO)
+    editableParametersSettings?: PolicyEditableFieldDTO[];
+
+    @ApiProperty({
         type: 'object',
         additionalProperties: true,
     })
@@ -510,15 +520,15 @@ export class PolicyDTO {
         type: 'object',
         additionalProperties: true,
         isArray: true,
-        description: 'User-configured policy API documentation entries',
+        description: 'User-configured policy API documentation entries. The `alias` may be a single slug (`create-device`) or a path of slugs separated by `/` (`monitoring-reports/create`).',
         example: [{
             name: 'create_device',
             description: 'Send event to create_device',
             target: 'create_device',
             method: 'POST',
-            alias: 'create-device',
+            alias: 'monitoring-reports/create',
             url: '/api/v1/policies/{policyId}/tag/create_device/blocks',
-            dmrvUrl: '/api/v1/dmrv/{policyId}/create-device'
+            dmrvUrl: '/api/v1/dmrv/{policyId}/monitoring-reports/create'
         }]
     })
     @IsOptional()

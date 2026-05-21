@@ -61,6 +61,7 @@ export * from './policy-keys.js';
 export * from './document-draft.js';
 export * from './policy-comment.js';
 export * from './policy-discussion.js';
+export * from './policy-parameters.js';
 export * from './migration-run.js';
 export * from './migration-failed-item.js';
 export * from './migration-message-map.js';

@@ -8,7 +8,7 @@ We can also look at the code that has been created programmatically from the def
 
 ![](../.gitbook/assets/PW\_image\_34.png)
 
-The full coded version of the policy we just demoed is below (Reminder the coded version of this policy is for Guardian verison 1.0.2):
+The full coded version of the policy we just demoed is below (Reminder the coded version of this policy is for Guardian version 1.0.2):
 
 ```
 //Policy logic starts with block 1.

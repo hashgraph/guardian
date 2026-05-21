@@ -23,6 +23,7 @@ export enum PolicyEvents {
     BLOCK_BY_TAG = 'policy-event-block-by-tag',
     GET_BLOCK_PARENTS = 'policy-event-get-block-parents',
     BLOCK_UPDATE_BROADCAST = 'policy-event-block-update-broadcast',
+    BLOCK_COMPLETE_BROADCAST = 'policy-event-block-complete-broadcast',
     MRV_DATA = 'policy-event-mrv-data',
     MRV_DATA_CUSTOM = 'policy-event-mrv-data-custom',
     GET_BLOCK_ABOUT = 'policy-event-get-block-about',
@@ -62,4 +63,5 @@ export enum PolicyEvents {
     GET_ALL_NEW_VERSION_VC_DOCUMENTS = 'policy-event-get-all-new-version-vc-documents',
     GET_MOCK_CONFIG = 'policy-event-get-mock-config',
     SET_MOCK_CONFIG = 'policy-event-set-mock-config',
+    RETRY_MINT = 'policy-event-retry-mint',
 }

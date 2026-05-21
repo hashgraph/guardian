@@ -58,6 +58,7 @@ import {
     PolicyDiscussion,
     GlobalEventsReaderStream,
     GlobalEventsWriterStream,
+    PolicyParameters,
     MigrationMessageMap,
     MigrationFailedItem,
     DeleteCache,
@@ -961,6 +962,66 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async removeSchemaRule(rule: SchemaRule): Promise<void> {
         return await new DataBaseHelper(SchemaRule).remove(rule);
+    }
+
+    /**
+     * Create Policy Parameters
+     * @param parameters
+     */
+    public static async createPolicyParameters(
+        parameters: PolicyParameters
+    ): Promise<PolicyParameters> {
+        const item = new DataBaseHelper(PolicyParameters).create(parameters);
+        return await new DataBaseHelper(PolicyParameters).save(item);
+    }
+
+    /**
+     * Set flag updated true
+     * @param parameters
+     * @param policyId
+     */
+    public static async setPolicyParametersUpdated(
+        parameters: PolicyParameters[],
+    ): Promise<PolicyParameters[]> {
+        return await new DataBaseHelper(PolicyParameters).updateMany(parameters);
+    }
+
+    /**
+     * Update Policy Parameters
+     * @param label
+     */
+    public static async updatePolicyParameters(
+        parameters: PolicyParameters
+    ): Promise<PolicyParameters> {
+        return await new DataBaseHelper(PolicyParameters).update(parameters);
+    }
+
+    /**
+     * Get Policy Parameters
+     * @param filters
+     */
+    public static async getPolicyParameters(
+        userDID: string,
+        policyId: string
+    ): Promise<PolicyParameters> {
+        return await new DataBaseHelper(PolicyParameters).findOne({
+            userDID,
+            policyId
+        });
+    }
+
+    /**
+     * Get Policy Parameters by Policy Id
+     * @param filters
+     */
+    public static async getPolicyParametersByPolicyId(
+        policyId: string
+    ): Promise<PolicyParameters[]> {
+        return await new DataBaseHelper(PolicyParameters).findAll({
+            where: {
+                policyId
+            }
+        });
     }
 
     /**
@@ -5165,6 +5226,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         model.policyGroups = data.policyGroups;
         model.categories = data.categories;
         model.projectSchema = data.projectSchema;
+        model.editableParametersSettings = data.editableParametersSettings;
         model.policyDocumentation = data.policyDocumentation;
 
         return await new DataBaseHelper(Policy).save(model);
@@ -5505,6 +5567,19 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async getMintRequests(filters: FilterObject<MintRequest>): Promise<MintRequest[]> {
         return await this.find(MintRequest, filters);
+    }
+
+    /**
+     * Get mint requests with count
+     * @param filters Filters
+     * @param options Options
+     * @returns Mint requests and count
+     */
+    public static async getMintRequestsAndCount(
+        filters?: FilterObject<MintRequest>,
+        options?: FindOptions<object>
+    ): Promise<[MintRequest[], number]> {
+        return await new DataBaseHelper(MintRequest).findAndCount(filters, options);
     }
 
     /**

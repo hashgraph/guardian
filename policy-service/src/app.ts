@@ -1,4 +1,5 @@
-import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, entities, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet, OldSecretManager, MockService } from '@guardian/common';
+import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet, OldSecretManager, MockService } from '@guardian/common';
+import { entities } from '@guardian/common/dist/entities.js';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from './helpers/policy-container.js';
 import { BlockService } from './policy-engine/block-service.js';
@@ -10,6 +11,25 @@ import { BlockTreeGenerator } from './policy-engine/block-tree-generator.js';
 import { warmupPyodideCache } from './policy-engine/helpers/workers/pyodide-warmup.js';
 
 export const obj = {};
+
+// Fail-fast validation for required Python-sandbox timeout env vars. Without these,
+// parseInt(undefined, 10) returns NaN -> setTimeout(cb, NaN) clamps to 1ms, which makes
+// every Python execution abort instantly with a misleading "Timeout exceed." error.
+// Crash loudly at boot instead of silently breaking every dry-run in production.
+function requirePositiveIntEnv(name: string): number {
+    const raw = process.env[name];
+    const n = parseInt(raw ?? '', 10);
+    if (!Number.isFinite(n) || n <= 0) {
+        throw new Error(
+            `Environment variable ${name} must be a positive integer (got: ${JSON.stringify(raw)}). ` +
+            `See configs/.env.template.guardian.system for the expected value.`
+        );
+    }
+    return n;
+}
+
+requirePositiveIntEnv('PYTHON_SANDBOX_TIMEOUT_MS');
+requirePositiveIntEnv('DRY_RUN_BLOCK_TIMEOUT_MS');
 
 Promise.all([
     MikroORM.init<MongoDriver>({

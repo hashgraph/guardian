@@ -41,7 +41,7 @@ Every Guardian schema follows this Excel structure:
 
 Let's build a PDD schema step-by-step, starting with the main schema definition like VM0033's "Project Description (Auto)" tab.
 
-![Project description tab Excel Screenshot](<../../../.gitbook/assets/image (61) (1).png>)
+![Project description tab Excel Screenshot](<../../../.gitbook/assets/image (38).png>)
 
 ### Step 1: Create Main Schema Header
 
@@ -64,9 +64,9 @@ The first functional field should be your primary conditional logic driver. For 
 Row 5: Yes | Enum | Choose project certific (enum) | | Choose project certification type | No | VCS v4.4
 ```
 
-This creates an enum field that determines which additional requirements appear. The parameter reference "Choose project certific (enum)" points to a separate enum tab defining the options.
+This creates an enum field that determines which additional requirements appear. The parameter reference "Choose project certificate (enum)" points to a separate enum tab defining the options.
 
-**Create the Enum Tab**: Add a new worksheet named "Choose project certific (enum)" with(sheet names might be trimmed to accomodate excel's limitations):
+**Create the Enum Tab**: Add a new worksheet named "Choose project certificate (enum)" with(sheet names might be trimmed to accommodate excel's limitations):
 
 ```excel
 Schema name | Project Description (Auto)
@@ -345,7 +345,7 @@ Before importing to Guardian, verify:
 5. **Review and rename field keys** for meaningful calculation code
 6. Update the schema ID in relevant policy workflow block
 
-![alt text](<../../../.gitbook/assets/image-1 (4) (1).png>)
+![alt text](<../../../.gitbook/assets/image-1 (1) (1).png>)
 
 #### Important: Field Key Management
 
@@ -364,7 +364,7 @@ When Guardian imports Excel schemas, it generates default field keys that may no
    * `carbon_stock_baseline_t` instead of `carbonStockBaselineT`
    * `emission_reduction_total` instead of `emissionReductionTotal`
 
-![Guardian schema UI showing field key editing interface](<../../../.gitbook/assets/image-3 (6).png>)
+![Guardian schema UI showing field key editing interface](<../../../.gitbook/assets/image-3 (1).png>)
 
 **Why This Matters**: Meaningful field keys make calculation code much easier to write and maintain:
 

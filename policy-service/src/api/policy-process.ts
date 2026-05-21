@@ -2,7 +2,6 @@ import '../config.js'
 import {
     COMMON_CONNECTION_CONFIG,
     DatabaseServer,
-    entities,
     Environment,
     ExternalEventChannel,
     GenerateTLSOptionsNats,
@@ -22,6 +21,7 @@ import {
     Wallet,
     Workers
 } from '@guardian/common';
+import { entities } from '@guardian/common/dist/entities.js';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';

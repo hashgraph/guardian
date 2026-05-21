@@ -32,9 +32,10 @@
     "js-yaml": "^4.1.0",
     "leader-line": "^1.0.7",
     "mark.js": "^8.11.1",
-    "mathjs": "^14.4.0",
+    "mathjs": "^15.2.0",
     "mathlive": "^0.103.0",
     "moment": "^2.29.2",
+    "multiformats": "^9.9.0",
     "ngx-colors": "3.6.0",
     "ngx-drag-drop": "^18.0.2",
     "ngx-file-drop": "^16.0.0",
@@ -92,5 +93,5 @@
     "test": "ng test",
     "watch": "ng build --watch --configuration development --output-path ../www-data"
   },
-  "version": "3.5.0"
+  "version": "3.6.0-rc"
 }
