@@ -361,9 +361,6 @@ export class SchemaHelper {
      * Clone a SchemaField array
      */
     private static cloneFields(fields: SchemaField[]): SchemaField[] {
-        if (!Array.isArray(fields)) {
-            return fields;
-        }
         return fields.map((f) => {
             const clone: SchemaField = { ...f };
             if (Array.isArray(f.fields)) {
