@@ -3,6 +3,36 @@ import { Dictionary } from './dictionary.js';
 import { IPoint } from './workbook.js';
 import { TableHeader } from './table-header.js';
 
+export class SharedEnumTable {
+    static readonly COL_SCHEMA = 1;
+    static readonly COL_FIELD  = 2;
+    static readonly COL_IPFS   = 3;
+    static readonly COL_VALUE  = 4;
+    static readonly HEADER_ROW     = 1;
+    static readonly FIRST_DATA_ROW = 2;
+
+    public readonly headerStyle: Partial<ExcelJS.Style> = {
+        font: { size: 14, bold: true },
+        border: {
+            left:   { style: 'thin', color: { argb: 'FF000000' } },
+            right:  { style: 'thin', color: { argb: 'FF000000' } },
+            top:    { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } }
+        }
+    };
+
+    public readonly itemStyle: Partial<ExcelJS.Style> = {
+        font: { size: 11, bold: false },
+        alignment: { wrapText: true },
+        border: {
+            left:   { style: 'thin', color: { argb: 'FF000000' } },
+            right:  { style: 'thin', color: { argb: 'FF000000' } },
+            top:    { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } }
+        }
+    };
+}
+
 export class EnumTable {
     private readonly _headers: Map<string, TableHeader>;
 
