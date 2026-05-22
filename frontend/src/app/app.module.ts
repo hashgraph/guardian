@@ -5,7 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { providePrimeNG } from 'primeng/config';
-import Lara from '@primeuix/themes/lara';
+import Aura from '@primeuix/themes/aura';
 import { ToastrModule } from 'ngx-toastr';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -219,7 +219,7 @@ import { CredentialsPanelComponent } from './components/credentials/credentials-
         ToastrModule.forRoot(),
         QRCodeComponent,
         ButtonModule,
-        InputTextModule,        
+        InputTextModule,
         ClipboardModule,
         SelectButtonModule,
         SelectModule,
@@ -309,7 +309,7 @@ import { CredentialsPanelComponent } from './components/credentials/credentials-
         },
         providePrimeNG({
             theme: {
-                preset: Lara
+                preset: Aura
             }
         }),
         provideHttpClient(withInterceptorsFromDi(), withJsonpSupport())
