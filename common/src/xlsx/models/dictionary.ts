@@ -30,6 +30,8 @@ export enum Dictionary {
     ENUM_SCHEMA_NAME = 'Schema name',
     ENUM_FIELD_NAME = 'Field name',
     ENUM_IPFS = 'Loaded to IPFS',
+    ENUM_VALUE = 'Value',
+    SHARED_ENUM_SHEET = 'Enum',
     DEFAULT = 'Default',
     SUGGEST = 'Suggest',
 }
@@ -304,6 +306,18 @@ export class FieldTypes {
             customType: undefined,
             hidden: false,
             pars: (value: any) => String(value)
+        },
+        {
+            name: 'Sub-Schema',
+            type: null,
+            format: undefined,
+            pattern: undefined,
+            isRef: true,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: 'subSchema',
+            hidden: false,
+            pars: (value: any) => value
         },
     ];
 
