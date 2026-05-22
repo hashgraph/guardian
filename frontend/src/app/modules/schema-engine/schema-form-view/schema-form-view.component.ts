@@ -433,7 +433,7 @@ export class SchemaFormViewComponent implements OnInit {
             width: '90%',
             styleClass: 'guardian-dialog',
             data: formulas,
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any) => { });
     }
 

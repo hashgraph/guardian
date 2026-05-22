@@ -72,7 +72,7 @@
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Project Schema</td>
                         <td class="propRowCell">
-                            <p-dropdown
+                            <p-select
                                 [(ngModel)]="projectSchema"
                                 [options]="policySchemas"
                                 optionLabel="name"
@@ -82,7 +82,7 @@
                                 (onChange)="setProjectSchema($event.value)"
                                 [appendTo]="'body'"
                             >
-                            </p-dropdown>
+                            </p-select>
                         </td>
                     </tr>
 
@@ -99,7 +99,7 @@
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Sectoral scope</td>
                         <td class="propRowCell">
-                            <p-dropdown
+                            <p-select
                                 [(ngModel)]="sectoralScopeSelected"
                                 [options]="allCategories.sectoralScopeOptions"
                                 optionLabel="name"
@@ -115,14 +115,14 @@
                                     </span>
                                     <span *ngIf="!selectedItem">Select a sectoral scope</span>
                                 </ng-template>
-                            </p-dropdown>
+                            </p-select>
                         </td>
                     </tr>
                     <tr [attr.collapse]="propHidden.categorization" class="propRow">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Project Scale</td>
                         <td class="propRowCell">
-                            <p-dropdown
+                            <p-select
                                 [(ngModel)]="projectScaleSelected"
                                 [options]="allCategories?.projectScaleOptions"
                                 optionLabel="name"
@@ -138,14 +138,14 @@
                                     </span>
                                     <span *ngIf="!selectedItem">Select a project scale</span>
                                 </ng-template>
-                            </p-dropdown>
+                            </p-select>
                         </td>
                     </tr>
                     <tr [attr.collapse]="propHidden.categorization" class="propRow">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Applied Technology Type</td>
                         <td class="propRowCell">
-                            <p-dropdown
+                            <p-select
                                 [(ngModel)]="appliedTechnologyTypeSelected"
                                 [options]="allCategories?.appliedTechnologyTypeOptions"
                                 optionLabel="name"
@@ -160,7 +160,7 @@
                                     </span>
                                     <span *ngIf="!selectedItem">Select a technology type</span>
                                 </ng-template>
-                            </p-dropdown>
+                            </p-select>
                         </td>
                     </tr>
                     <tr [attr.collapse]="propHidden.categorization" class="propRow">
@@ -343,7 +343,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Creator role</td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     [(ngModel)]="item.creator"
                                     [options]="policy && policy.policyRoles"
                                     optionLabel="name"
@@ -352,7 +352,7 @@
                                     (onChange)="onEditGroup(item)"
                                     [appendTo]="'body'"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
@@ -375,7 +375,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Relationship Type</td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     [(ngModel)]="item.groupRelationshipType"
                                     [options]="groupRelationshipTypeOptions"
                                     optionLabel="label"
@@ -385,14 +385,14 @@
                                     (onChange)="onEditGroup(item)"
                                     [appendTo]="'body'"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Access Type</td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     [(ngModel)]="item.groupAccessType"
                                     [options]="groupAccessTypeOptions"
                                     optionLabel="label"
@@ -402,7 +402,7 @@
                                     (onChange)="onEditGroup(item)"
                                     [appendTo]="'body'"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
                     </ng-container>
@@ -452,7 +452,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Type</td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     [(ngModel)]="item.type"
                                     [options]="groupDocumentOptions"
                                     optionLabel="label"
@@ -461,7 +461,7 @@
                                     placeholder="Select type"
                                     [appendTo]="'body'"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
@@ -476,7 +476,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Memo Parameters Object</td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     [(ngModel)]="item.memoObj"
                                     [options]="memoObjOptions"
                                     optionLabel="label"
@@ -485,7 +485,7 @@
                                     placeholder="Select memo object"
                                     [appendTo]="'body'"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
@@ -551,7 +551,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Token Type</td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     placeholder="To be specified by user"
                                     [(ngModel)]="item.tokenType"
                                     [options]="tokenTypeOptions"
@@ -561,7 +561,7 @@
                                     (onChange)="onTokenTypeChange(item)"
                                     [appendTo]="'body'"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
                         <tr class="propRow subRow" *ngIf="item.tokenType==='fungible'"
@@ -577,7 +577,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Enable Admin</td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     placeholder="To be specified by user"
                                     [(ngModel)]="item.enableAdmin"
                                     [options]="enableAdminOptions"
@@ -586,14 +586,14 @@
                                     [disabled]="readonly"
                                     [appendTo]="'body'"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Enable Freeze</td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     placeholder="To be specified by user"
                                     [(ngModel)]="item.enableFreeze"
                                     [options]="enableFreezeOptions"
@@ -602,14 +602,14 @@
                                     [disabled]="readonly"
                                     [appendTo]="'body'"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Enable KYC</td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     placeholder="To be specified by user"
                                     [(ngModel)]="item.enableKYC"
                                     [options]="enableKYCOptions"
@@ -618,14 +618,14 @@
                                     [disabled]="readonly"
                                     [appendTo]="'body'"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Enable Wipe</td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     placeholder="To be specified by user"
                                     [(ngModel)]="item.enableWipe"
                                     [options]="enableWipeOptions"
@@ -635,14 +635,14 @@
                                     (onChange)="onEnableWipeChange(item)"
                                     [appendTo]="'body'"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
                         <tr class="propRow subRow" *ngIf="item.enableWipe" [attr.collapse]="propHidden.tokensGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Wipe Contract</td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     placeholder="To be specified by user"
                                     [(ngModel)]="item.wipeContractId"
                                     [options]="getWipeContractOptions()"
@@ -651,7 +651,7 @@
                                     [disabled]="readonly"
                                     [appendTo]="'body'"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
                     </ng-container>

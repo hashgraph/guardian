@@ -29,14 +29,14 @@
                     </div>
                     <div *ngIf="hasTagOptions" class="p-fluid policy-filters__control">
                         <label for="tagsDropdown">Tags</label>
-                        <p-dropdown
+                        <p-select
                             id="tagsDropdown"
                             formControlName="tag"
                             [options]="getTagOptions()"
                             placeholder="Select a Tag"
                             [appendTo]="'body'"
                         >
-                        </p-dropdown>
+                        </p-select>
                     </div>
                 </div>
 

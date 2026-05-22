@@ -7,10 +7,11 @@
 
     <ng-container *ngIf="type == 'tabs'">
         <div *ngIf="blocks && canDisplayTabs()" class="header">
-            <p-tabView (onChange)="onBlockChange($event)" [activeIndex]="selectedIndex">
-                <p-tabPanel *ngFor="let block of blocks" [header]="getTitle(block)">
-                </p-tabPanel>
-            </p-tabView>
+            <p-tabs (valueChange)="onBlockChange($event)" [(value)]="selectedIndex">
+                <p-tablist>
+                    <p-tab *ngFor="let block of blocks; let i = index" [value]="i">{{ getTitle(block) }}</p-tab>
+                </p-tablist>
+            </p-tabs>
         </div>
         <div *ngIf="activeBlock" class="body">
             <render-block [block]="activeBlock" [dryRun]="dryRun" [policyId]="policyId" [savepointIds]="savepointIds" [policyStatus]="policyStatus"></render-block>

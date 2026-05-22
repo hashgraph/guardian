@@ -90,7 +90,7 @@ export class RelayerAccountDetailsDialog {
                 viewDocument: true,
                 canExport: false,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

@@ -149,7 +149,7 @@ export class IntegrationButtonBlockComponent implements OnInit {
                     }
                 ]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

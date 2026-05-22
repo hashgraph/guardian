@@ -140,7 +140,7 @@ export class RolesViewComponent implements OnInit, OnDestroy {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.loading = true;

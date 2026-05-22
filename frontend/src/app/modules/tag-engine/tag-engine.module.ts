@@ -8,7 +8,7 @@ import { TagCreateDialog } from './tags-create-dialog/tags-create-dialog.compone
 import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { ButtonModule } from 'primeng/button';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { MultipleTagsExplorerDialog } from './multiple-tags-explorer-dialog/multiple-tags-explorer-dialog.component';
 
@@ -26,7 +26,7 @@ import { MultipleTagsExplorerDialog } from './multiple-tags-explorer-dialog/mult
         MaterialModule,
         SchemaEngineModule,
         ButtonModule,
-        DropdownModule,
+        SelectModule,
         AngularSvgIconModule.forRoot()
     ],
     exports: [

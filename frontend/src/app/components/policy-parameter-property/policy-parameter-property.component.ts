@@ -108,7 +108,7 @@ export class PolicyParameterPropertyComponent implements OnInit {
                 expression: this.fc.value,
                 readonly: this.readonly
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.fc.setValue(result.expression);

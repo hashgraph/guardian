@@ -13,14 +13,14 @@
         <div *ngIf="roles && roles.length" class="link-content">
             <div class="p-fluid">
                 <label for="roleDropdown">Role</label>
-                <p-dropdown
+                <p-select
                     id="roleDropdown"
                     [(ngModel)]="role"
                     [options]="roles"
                     placeholder="Select a role"
                     appendTo="body"
                 >
-                </p-dropdown>
+                </p-select>
             </div>
 
             <div class="generate-btn" (click)="onInvite()">

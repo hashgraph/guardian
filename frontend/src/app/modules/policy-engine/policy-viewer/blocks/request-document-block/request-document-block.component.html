@@ -185,7 +185,7 @@
                             </label>
                         </div>
                         <div class="relayer-account-type-config" [attr.selected]="relayerAccountType==='relayerAccount'">
-                            <p-dropdown
+                            <p-select
                                 [(ngModel)]="currentRelayerAccount"
                                 [options]="relayerAccounts"
                                 [showClear]="false"
@@ -194,7 +194,7 @@
                                 optionValue="account"
                                 placeholder="Select Relayer Account"
                                 panelStyleClass="guardian-dropdown-panel">
-                            </p-dropdown>
+                            </p-select>
                         </div>
 
                         <div class="relayer-account-type-value">

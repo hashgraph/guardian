@@ -18,7 +18,7 @@
             <div *ngIf="isUUIDLvl" class="f1">
                 <div class="p-fluid">
                     <label for="uuidDropdown" class="dropdown-border-label">UUID:</label>
-                    <p-dropdown
+                    <p-select
                         id="uuidDropdown"
                         [(ngModel)]="idLvl"
                         [options]="uuidOptions"
@@ -28,13 +28,13 @@
                         class="guardian-dropdown"
                         panelStyleClass="guardian-dropdown-panel"
                     >
-                    </p-dropdown>
+                    </p-select>
                 </div>
             </div>
             <div *ngIf="isPropertiesLvl" class="f1">
                 <div class="p-fluid">
                     <label for="propertiesDropdown" class="dropdown-border-label">Properties:</label>
-                    <p-dropdown
+                    <p-select
                         id="propertiesDropdown"
                         [(ngModel)]="propLvl"
                         [options]="propertyOptions"
@@ -44,13 +44,13 @@
                         class="guardian-dropdown"
                         panelStyleClass="guardian-dropdown-panel"
                     >
-                    </p-dropdown>
+                    </p-select>
                 </div>
             </div>
             <div *ngIf="isEventsLvl" class="f1">
                 <div class="p-fluid">
                     <label for="eventsDropdown" class="dropdown-border-label">Events:</label>
-                    <p-dropdown
+                    <p-select
                         id="eventsDropdown"
                         [(ngModel)]="eventsLvl"
                         [options]="eventOptions"
@@ -60,13 +60,13 @@
                         class="guardian-dropdown"
                         panelStyleClass="guardian-dropdown-panel"
                     >
-                    </p-dropdown>
+                    </p-select>
                 </div>
             </div>
             <div *ngIf="isChildrenLvl" class="f1">
                 <div class="p-fluid">
                     <label for="childrenDropdown" class="dropdown-border-label">Children:</label>
-                    <p-dropdown
+                    <p-select
                         id="childrenDropdown"
                         [(ngModel)]="childrenLvl"
                         [options]="childrenOptions"
@@ -76,7 +76,7 @@
                         class="guardian-dropdown"
                         panelStyleClass="guardian-dropdown-panel"
                     >
-                    </p-dropdown>
+                    </p-select>
                 </div>
             </div>
         </div>
@@ -104,7 +104,7 @@
             <div class="f2">
                 <div class="p-fluid">
                     <label for="typeDropdown" class="dropdown-border-label">Type:</label>
-                    <p-dropdown
+                    <p-select
                         id="typeDropdown"
                         [(ngModel)]="visibleType"
                         [options]="typeOptions"
@@ -113,7 +113,7 @@
                         class="guardian-dropdown"
                         panelStyleClass="guardian-dropdown-panel"
                     >
-                    </p-dropdown>
+                    </p-select>
                 </div>
             </div>
         </div>

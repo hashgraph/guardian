@@ -173,7 +173,7 @@ export class RelayerAccountsComponent implements OnInit {
             data: {
                 relayerAccount: item
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 

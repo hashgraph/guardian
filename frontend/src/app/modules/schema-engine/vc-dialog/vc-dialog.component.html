@@ -60,7 +60,7 @@
                     class="compare-container"
                     buttonStyle="guardian"></app-compare-btn>
 
-                <p-dropdown
+                <p-select
                     *ngIf="allVcDocs.length > 1"
                     [options]="versionOptions"
                     [(ngModel)]="selectedVersionIndex"
@@ -69,7 +69,7 @@
                     class="version-dropdown"
                     [appendTo]="'body'"
                     styleClass="guardian-dropdown"
-                ></p-dropdown>
+                ></p-select>
             </div>
         </div>
         <div class="view-dialog-content">

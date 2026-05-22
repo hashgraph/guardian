@@ -3,19 +3,17 @@
 
     <div class="actions">
         <div class="tabs-nav">
-            <p-tabView>
-                <p-tabPanel *ngFor="let tab of schemasTypes" [selected]="tab.value === type">
-                    <ng-template pTemplate="header">
-                        <div (click)="onChangeType(tab.value)" class="tabview-label">{{ tab.label }}</div>
-                    </ng-template>
-                </p-tabPanel>
-            </p-tabView>
+            <p-tabs >
+                <p-tablist>
+                    <p-tab *ngFor="let tab of schemasTypes; let i = index" [value]="i" (click)="onChangeType(tab.value)"><div class="tabview-label">{{ tab.label }}</div></p-tab>
+                </p-tablist>
+            </p-tabs>
         </div>
 
         <div class="actions-controls-container">
             <div class="policy-dropdown-container">
                 <div *ngIf="isPolicy" class="topic-search">
-                    <p-dropdown
+                    <p-select
                         (onChange)="onFilter($event)"
                         [(ngModel)]="currentTopic"
                         [options]="allPolicies"
@@ -36,10 +34,10 @@
                                 <span class="guardian-dropdown-item">All Policies</span>
                             </div>
                         </ng-template>
-                    </p-dropdown>
+                    </p-select>
                 </div>
                 <div *ngIf="isTool" class="topic-search">
-                    <p-dropdown
+                    <p-select
                         (onChange)="onFilter($event)"
                         [(ngModel)]="currentTopic"
                         [options]="tools"
@@ -60,7 +58,7 @@
                                 <span class="guardian-dropdown-item">All Tools</span>
                             </div>
                         </ng-template>
-                    </p-dropdown>
+                    </p-select>
                 </div>
                 <div *ngIf="isPolicy || isTool || isModule" class="guardian-input-container text-search">
                     <p-multiSelect
@@ -637,7 +635,7 @@
     <div class="preloader-image preloader-image-l-size"></div>
 </div>
 
-<p-overlayPanel #schemaMenu>
+<p-popover #schemaMenu>
     <div class="menu-container">
         <p-button
             (click)="ifCanExport(element) ? onExport(element) : null"
@@ -734,7 +732,7 @@
                 [svgClass]="ifCanDelete(element) ? 'accent-color-red' : 'disabled-color'"></svg-icon>
         </p-button>
     </div>
-</p-overlayPanel>
+</p-popover>
 
 <div *ngIf="isAnyItemSelected()" class="options-footer-container">
     <div class="options-footer">

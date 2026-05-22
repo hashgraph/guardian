@@ -223,7 +223,7 @@
                         class="form-field-input guardian-input-container form-field-enum"
                         [attr.readonly-field]="isEditMode && !item.isUpdatable"
                     >
-                        <p-dropdown
+                        <p-select
                             class="guardian-dropdown"
                             [formControl]="item.control"
                             [options]="item.enumValues"
@@ -241,7 +241,7 @@
                                     <div class="guardian-loading-image"></div>
                                 </div>
                             </ng-template>
-                        </p-dropdown>
+                        </p-select>
                     </div>
 
                     <div *ngIf="isPostfix(item)" class="form-field-postfix">
@@ -430,7 +430,7 @@
                                         class="form-field-input guardian-input-container"
                                         [attr.readonly-field]="isEditMode && !itemControl.isUpdatable"
                                     >
-                                        <p-dropdown
+                                        <p-select
                                             class="guardian-dropdown"
                                             [formControl]="itemControl.control"
                                             [options]="itemControl.enumValues"
@@ -440,7 +440,7 @@
                                             [appendTo]="'body'"
                                             panelStyleClass="guardian-dropdown-panel"
                                         >
-                                        </p-dropdown>
+                                        </p-select>
                                     </div>
 
                                     <div 
@@ -776,7 +776,7 @@
                                     isEditMode && !item.isUpdatable
                                 "
                             >
-                                <p-dropdown
+                                <p-select
                                     class="guardian-dropdown"
                                     [formControl]="listItem.control"
                                     [options]="item.enumValues"
@@ -796,7 +796,7 @@
                                             ></div>
                                         </div>
                                     </ng-template>
-                                </p-dropdown>
+                                </p-select>
                             </div>
 
                             <div
@@ -864,7 +864,9 @@
                         item.control?.invalid ? 'guardian-accordion-error' : ''
                     }}"
                 >
-                    <p-accordionTab [(selected)]="item.open" (selectedChange)="onAccordionSelectEvent($event, item)">
+                    <p-accordion-panel>
+    <p-accordion-header></p-accordion-header>
+    <p-accordion-content>
                         <ng-template pTemplate="header">
                             <div class="group-label-field" id="detail-section" [attr.accordiontabid]="item.id">
                                 <div
@@ -1031,7 +1033,8 @@
                                 </div>
                             </button>
                         </ng-container>
-                    </p-accordionTab>
+                        </p-accordion-content>
+</p-accordion-panel>
                 </p-accordion>
             </div>
 
@@ -1047,7 +1050,9 @@
                         item.control?.invalid ? 'guardian-accordion-error' : ''
                     }}"
                 >
-                    <p-accordionTab [(selected)]="item.open" (selectedChange)="onAccordionSelectEvent($event, item)">
+                    <p-accordion-panel>
+    <p-accordion-header></p-accordion-header>
+    <p-accordion-content>
                         <ng-template pTemplate="header">
                             <div class="group-label-field" id="detail-section" [attr.accordiontabid]="item.id">
                                 <div
@@ -1139,10 +1144,9 @@
                                             : ''
                                     }}"
                                 >
-                                    <p-accordionTab
-                                        [(selected)]="listItem.open"
-                                        (selectedChange)="onAccordionSelectEvent($event, item, listItem.index2)"
-                                    >
+                                    <p-accordion-panel>
+    <p-accordion-header></p-accordion-header>
+    <p-accordion-content>
                                         <ng-template pTemplate="header">
                                             <div
                                                 class="group-label-field"
@@ -1265,7 +1269,8 @@
                                                 </div>
                                             </div>
                                         </ng-container>
-                                    </p-accordionTab>
+                                        </p-accordion-content>
+</p-accordion-panel>
                                 </p-accordion>
                             </div>
 
@@ -1287,7 +1292,8 @@
                                 </div>
                             </button>
                         </ng-container>
-                    </p-accordionTab>
+                        </p-accordion-content>
+</p-accordion-panel>
                 </p-accordion>
             </div>
         </div>

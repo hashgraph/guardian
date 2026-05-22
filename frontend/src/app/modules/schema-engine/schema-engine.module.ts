@@ -28,12 +28,12 @@ import { SchemaFieldConfigurationComponent } from './schema-field-configuration/
 import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dialog.component';
 import { ButtonModule } from 'primeng/button';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { InputTextModule } from 'primeng/inputtext';
-import { Textarea as InputTextareaModule } from 'primeng/inputtextarea';
+import { Textarea as InputTextareaModule } from 'primeng/textarea';
 import { CheckboxModule } from 'primeng/checkbox';
-import { DropdownModule } from 'primeng/dropdown';
-import { CalendarModule } from 'primeng/calendar';
+import { SelectModule } from 'primeng/select';
+import { DatePickerModule } from 'primeng/datepicker';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ServiceUnavailableDialog } from './service-unavailable-dialog/service-unavailable-dialog.component';
 import { SchemaFormDialog } from './schema-form-dialog/schema-form-dialog.component';
@@ -99,12 +99,12 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         CodemirrorModule,
         ArtifactEngineModule,
         ButtonModule,
-        TabViewModule,
+        TabsModule,
         InputTextModule,
         InputTextareaModule,
         CheckboxModule,
-        DropdownModule,
-        CalendarModule,
+        SelectModule,
+        DatePickerModule,
         TooltipModule,
         RadioButtonModule,
         SelectButtonModule,

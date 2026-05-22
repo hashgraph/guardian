@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, Output, SimpleChanges, ViewChild} from '@angular/core';
 import {IStandardRegistryResponse} from '@guardian/interfaces';
-import {OverlayPanel} from 'primeng/overlaypanel';
+import {Popover as OverlayPanel} from 'primeng/popover';
 
 @Component({
     selector: 'app-standard-registry-card',

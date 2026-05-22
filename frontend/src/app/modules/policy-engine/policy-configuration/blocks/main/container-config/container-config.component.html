@@ -27,7 +27,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <p-dropdown [(ngModel)]="properties.uiMetaData.type"
+            <p-select [(ngModel)]="properties.uiMetaData.type"
                         [options]="uiMetaDataTypeOptions"
                         [disabled]="readonly"
                         (onChange)="onSave()"
@@ -36,7 +36,7 @@
                         optionValue="value"
                         [appendTo]="'body'"
             >
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
 </table>

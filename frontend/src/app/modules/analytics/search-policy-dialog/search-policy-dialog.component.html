@@ -21,7 +21,7 @@
 
         <form [formGroup]="filtersForm" class="filters">
             <div class="filter-row">
-                <p-dropdown
+                <p-select
                     [options]="types"
                     appendTo="body"
                     class="type-dropdown"
@@ -35,7 +35,7 @@
                         <span class="dropdown-type">Type:</span>
                         <span>{{ filterSelectedProperty.name }}</span>
                     </ng-template>
-                </p-dropdown>
+                </p-select>
                 <span class="p-input-icon-right">
                     <input
                         class="search-policy-input"
@@ -79,7 +79,7 @@
             <div class="filter-group" [hidden]="!showMoreFilters">
                 <div class="filter-row">
                     <div class="filter">
-                        <p-dropdown
+                        <p-select
                             [options]="options"
                             appendTo="body"
                             class="type-dropdown"
@@ -91,7 +91,7 @@
                                 <span class="dropdown-type">Minted Tokens:</span>
                                 <span>{{ filterSelectedProperty.name }}</span>
                             </ng-template>
-                        </p-dropdown>
+                        </p-select>
                         <div [attr.hidden]="!filtersForm.value.tokens">
                             <span>Min Amount:</span>
                             <p-inputNumber
@@ -102,7 +102,7 @@
                         </div>
                     </div>
                     <div class="filter">
-                        <p-dropdown
+                        <p-select
                             [options]="options"
                             appendTo="body"
                             class="type-dropdown"
@@ -114,7 +114,7 @@
                                 <span class="dropdown-type">VC Documents:</span>
                                 <span>{{ filterSelectedProperty.name }}</span>
                             </ng-template>
-                        </p-dropdown>
+                        </p-select>
                         <div [attr.hidden]="!filtersForm.value.vcDocuments">
                             <span>Min Amount:</span>
                             <p-inputNumber
@@ -127,7 +127,7 @@
                 </div>
                 <div class="filter-row">
                     <div class="filter">
-                        <p-dropdown
+                        <p-select
                             [options]="options"
                             appendTo="body"
                             class="type-dropdown"
@@ -139,7 +139,7 @@
                                 <span class="dropdown-type">VP Documents:</span>
                                 <span>{{ filterSelectedProperty.name }}</span>
                             </ng-template>
-                        </p-dropdown>
+                        </p-select>
                         <div [attr.hidden]="!filtersForm.value.vpDocuments">
                             <span>Min Amount:</span>
                             <p-inputNumber

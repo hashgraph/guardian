@@ -17,7 +17,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Id Type</td>
         <td class="propRowCell">
-            <p-dropdown
+            <p-select
                 [(ngModel)]="properties.idType"
                 [disabled]="readonly"
                 (onChange)="onSave()"
@@ -25,7 +25,7 @@
                 [options]="idTypeOptions"
                 [appendTo]="'body'"
             >
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
 
@@ -33,7 +33,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Edit type</td>
         <td class="propRowCell">
-            <p-dropdown
+            <p-select
                 [(ngModel)]="properties.editType"
                 [disabled]="readonly"
                 (onChange)="onSave()"
@@ -41,7 +41,7 @@
                 [options]="editType"
                 [appendTo]="'body'"
             >
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
 
@@ -90,7 +90,7 @@
             tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
         >Force User Account</td>
         <td class="propRowCell multi-line">
-            <p-dropdown
+            <p-select
                 [(ngModel)]="properties.forceRelayerAccount"
                 [disabled]="readonly"
                 (onChange)="onSave()"
@@ -98,7 +98,7 @@
                 [options]="accountTypes"
                 [appendTo]="'body'"
             >
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
 
@@ -123,14 +123,14 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <p-dropdown
+            <p-select
                 [(ngModel)]="properties.uiMetaData.type"
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 [appendTo]="'body'"
                 placeholder="Select a UI type"
                 [options]="uiMetaDataTypeOptions">
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
 
@@ -267,7 +267,7 @@
                 Preset Field
             </td>
             <td class="propRowCell">
-                <p-dropdown
+                <p-select
                     [(ngModel)]="field.value"
                     [disabled]="readonly"
                     (onChange)="onSave()"
@@ -277,7 +277,7 @@
                     optionValue="value"
                     [appendTo]="'body'"
                 >
-                </p-dropdown>
+                </p-select>
             </td>
         </tr>
         <tr *ngIf="field.value" class="propRow subRow"

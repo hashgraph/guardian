@@ -103,7 +103,7 @@ export class TagsExplorerDialog {
                 schemas: this.schemas,
                 inheritTagsOption: this.inheritTagsOption,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.create(result);
@@ -224,7 +224,7 @@ export class TagsExplorerDialog {
                 viewDocument: true,
                 toggle: true
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 }

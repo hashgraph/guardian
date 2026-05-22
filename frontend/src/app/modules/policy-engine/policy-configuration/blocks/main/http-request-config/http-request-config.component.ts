@@ -88,7 +88,7 @@ export class HttpRequestConfigComponent implements OnInit {
                 expression: this.properties.messageBody,
                 readonly: this.readonly
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.properties.messageBody = result.expression;
@@ -117,7 +117,7 @@ export class HttpRequestConfigComponent implements OnInit {
                         { name: 'Yes', class: 'primary'   }
                     ]
                 }
-            });
+            })!;
 
             dialogRef.onClose.subscribe(result => {
                 if (!result) {

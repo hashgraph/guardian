@@ -21,7 +21,7 @@
         <div>
             <div class="guardian-input-container">
                 <label class="form-label" htmlFor="availability">* Availability</label>
-                <p-dropdown
+                <p-select
                     [(ngModel)]="currentType"
                     [options]="types"
                     [showClear]="false"
@@ -31,7 +31,7 @@
                     appendTo="body"
                     placeholder="Not selected"
                     panelStyleClass="guardian-dropdown-panel">
-                </p-dropdown>
+                </p-select>
             </div>
         </div>
         <div>

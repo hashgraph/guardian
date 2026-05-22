@@ -128,7 +128,7 @@ export class UserContractConfigComponent implements OnInit {
             styleClass: 'g-dialog pools-dialog',
             modal: true,
             closable: false,
-        });
+        })!;
         dialogRef.onClose.subscribe((result) => {
             if (!result) {
                 return;
@@ -171,7 +171,7 @@ export class UserContractConfigComponent implements OnInit {
                 document: document.document,
                 type: 'VC',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

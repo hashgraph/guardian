@@ -91,7 +91,7 @@ export class MultipleTagsExplorerDialog {
                     schemas: this.schemas,
                     inheritTagsOption: this.inheritTagsOption,
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
                 if (result) {
                     this.create(result, history);
@@ -186,7 +186,7 @@ export class MultipleTagsExplorerDialog {
                 schemas: this.schemas,
                 inheritTagsOption: this.inheritTagsOption,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.createMultiple(result, this.histories);

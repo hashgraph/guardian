@@ -44,7 +44,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Icon Type</td>
         <td class="propRowCell">
-            <p-dropdown [(ngModel)]="properties.iconType"
+            <p-select [(ngModel)]="properties.iconType"
                         [options]="iconTypeOptions"
                         [disabled]="readonly"
                         (onChange)="onSave()"
@@ -52,7 +52,7 @@
                         placeholder="Select Icon Type"
                         optionLabel="label"
                         optionValue="value">
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
 
@@ -126,7 +126,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Type</td>
                 <td class="propRowCell">
-                    <p-dropdown [(ngModel)]="properties.dynamicFilters[i].type"
+                    <p-select [(ngModel)]="properties.dynamicFilters[i].type"
                                 [options]="filterTypeOptions"
                                 [disabled]="readonly"
                                 (onChange)="onSave()"
@@ -134,7 +134,7 @@
                                 placeholder="Select Filter Type"
                                 optionLabel="label"
                                 optionValue="value">
-                    </p-dropdown>
+                    </p-select>
                 </td>
             </tr>
             <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
@@ -287,7 +287,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
-                <p-dropdown [(ngModel)]="properties.filters[i].type"
+                <p-select [(ngModel)]="properties.filters[i].type"
                             [options]="filterTypeOptions"
                             [disabled]="readonly"
                             (onChange)="onSave()"
@@ -295,14 +295,14 @@
                             optionLabel="label"
                             appendTo="body"
                             optionValue="value">
-                </p-dropdown>
+                </p-select>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Variable Type</td>
             <td class="propRowCell">
-                <p-dropdown [(ngModel)]="properties.filters[i].typeValue"
+                <p-select [(ngModel)]="properties.filters[i].typeValue"
                             [options]="typeValueOptions"
                             [disabled]="readonly"
                             (onChange)="onSave()"
@@ -310,7 +310,7 @@
                             optionLabel="label"
                             appendTo="body"
                             optionValue="value">
-                </p-dropdown>
+                </p-select>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">

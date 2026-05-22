@@ -275,7 +275,7 @@ export class PreviewPolicyDialog {
             data: {
                 name: toolConfig.name
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result) {
                 this.toolForm.controls[toolConfig.messageId]?.setValue(result);

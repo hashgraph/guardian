@@ -5,14 +5,19 @@
         </div>
 
         <p-accordion [multiple]="true">
-            <p-accordionTab header="Description" [selected]="true">
+            <p-accordion-panel>
+    <p-accordion-header>Description</p-accordion-header>
+    <p-accordion-content>
                 <div class="info-container">
                     <ng-container *ngTemplateOutlet="moduleInfo; context: { module: module1 }"></ng-container>
                     <ng-container *ngTemplateOutlet="moduleInfo; context: { module: module2 }"></ng-container>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Input Events">
+            <p-accordion-panel>
+    <p-accordion-header>Input Events</p-accordion-header>
+    <p-accordion-content>
                 <div *ngIf="inputEvents?.length" class="merge-tree">
                     <div *ngFor="let item of inputEvents" class="report-item report-item-small"
                          [attr.type]="item.type" [attr.rate]="item.total_rate">
@@ -31,9 +36,12 @@
                         </div>
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Output Events">
+            <p-accordion-panel>
+    <p-accordion-header>Output Events</p-accordion-header>
+    <p-accordion-content>
                 <div *ngIf="outputEvents?.length" class="merge-tree">
                     <div *ngFor="let item of outputEvents" class="report-item report-item-small"
                          [attr.type]="item.type" [attr.rate]="item.total_rate">
@@ -52,9 +60,12 @@
                         </div>
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Variables">
+            <p-accordion-panel>
+    <p-accordion-header>Variables</p-accordion-header>
+    <p-accordion-content>
                 <div *ngIf="variables?.length" class="merge-tree">
                     <div *ngFor="let item of variables" class="report-item report-item-small"
                          [attr.type]="item.type" [attr.rate]="item.total_rate">
@@ -73,9 +84,12 @@
                         </div>
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Policy Blocks" [selected]="true">
+            <p-accordion-panel>
+    <p-accordion-header>Policy Blocks</p-accordion-header>
+    <p-accordion-content>
                 <div class="merge-container">
                     <div class="legend" [attr.type-1]="type1" [attr.type-2]="type2"
                          [attr.type-3]="type3" [attr.type-4]="type4">
@@ -191,7 +205,8 @@
                         </div>
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
         </p-accordion>
     </div>
 </div>

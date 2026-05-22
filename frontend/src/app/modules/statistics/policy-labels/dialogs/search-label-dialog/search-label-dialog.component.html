@@ -17,7 +17,7 @@
 
         <form [formGroup]="filtersForm" class="filters">
             <div class="filter-row">
-                <!-- <p-dropdown
+                <!-- <p-select
                     (onChange)="changeType()"
                     formControlName="type"
                     [options]="types"
@@ -30,7 +30,7 @@
                         <span class="dropdown-type">Type:</span>
                         <span>{{ filterSelectedProperty?.name }}</span>
                     </ng-template>
-                </p-dropdown> -->
+                </p-select> -->
 
                 <span class="p-input-icon-right">
                     <input
@@ -69,7 +69,7 @@
             <div class="filter-group" [hidden]="!showMoreFilters">
                 <div class="filter-row">
                     <div class="filter">
-                        <p-dropdown
+                        <p-select
                             formControlName="components"
                             [options]="options"
                             [showClear]="false"
@@ -81,7 +81,7 @@
                                 <span class="dropdown-type">Type:</span>
                                 <span>{{ filterSelectedProperty?.name }}</span>
                             </ng-template>
-                        </p-dropdown>
+                        </p-select>
                     </div>
                     <div class="filter">
                         <span class="p-input-icon-right">

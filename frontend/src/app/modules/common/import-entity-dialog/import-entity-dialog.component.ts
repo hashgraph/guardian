@@ -81,6 +81,7 @@ export class ImportEntityDialog implements OnInit {
 
     public type: ImportEntityType = ImportEntityType.Policy;
     public importType: ImportType = ImportType.FILE;
+    public tabIndex: number = 0;
     public recordSource: 'file' | 'imported' | 'otherPolicy' = 'file';
     public selectedPolicy: { id?: string; name?: string } | null = null;
     public policiesWithImportedRecords: { id?: string; name?: string }[] = [];
@@ -273,8 +274,9 @@ export class ImportEntityDialog implements OnInit {
         }
     }
 
-    public setImportType(event: any): void {
-        this.importType = event.index;
+    public setImportType(index: string | number | undefined): void {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        this.importType = tabIndex;
         this.changeDetectorRef.detectChanges();
     }
 

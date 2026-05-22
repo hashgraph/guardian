@@ -301,52 +301,59 @@
             class="policy-body"
         >
             <ng-container *ngIf="!isDryRun; else dryRunContent">
-                <p-tabView [(activeIndex)]="activeTabIndex" (activeIndexChange)="onTabChange($event)">
-                    <p-tabPanel [header]="'General'">
-                        <div class="policy-container {{!navigationFooterDisabled ? 'step-container' : 'no-step-container' }}">
-                            <progress-tracker
-                                *ngIf="steps && steps.length > 0"
-                                [steps]="steps"
-                            ></progress-tracker>
-                            <div class="policy-container-body">
-                                <render-block
-                                    [block]="policy"
-                                    [dryRun]="isDryRun"
-                                    [policyId]="policyId"
-                                    [policyStatus]="policyInfo.status"
-                                    style="width: 100%;"
-                                    [savepointIds]="savepointIds"
-                                ></render-block>
+                <p-tabs [(value)]="activeTabIndex" (valueChange)="onTabChange($event)">
+                    <p-tablist>
+                        <p-tab [value]="0">General</p-tab>
+                        <p-tab [value]="1">Export Documents</p-tab>
+                        <p-tab *ngIf="permissions?.STANDARD_REGISTRY" [value]="2">Mint Requests</p-tab>
+                    </p-tablist>
+                    <p-tabpanels>
+                        <p-tabpanel [value]="0">
+                            <div class="policy-container {{!navigationFooterDisabled ? 'step-container' : 'no-step-container' }}">
+                                <progress-tracker
+                                    *ngIf="steps && steps.length > 0"
+                                    [steps]="steps"
+                                ></progress-tracker>
+                                <div class="policy-container-body">
+                                    <render-block
+                                        [block]="policy"
+                                        [dryRun]="isDryRun"
+                                        [policyId]="policyId"
+                                        [policyStatus]="policyInfo.status"
+                                        style="width: 100%;"
+                                        [savepointIds]="savepointIds"
+                                    ></render-block>
 
-                                <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
-                                    <div class="progress-footer">
-                                        <button
-                                            (click)="onNavigationPrevButton()"
-                                            [disabled]="prevButtonDisabled"
-                                            class="button"
-                                            label="Previous"
-                                            pButton
-                                            type="button"></button>
-                                        <div *ngIf="!nextButtonDisabled">
+                                    <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
+                                        <div class="progress-footer">
                                             <button
-                                                (click)="onNavigationNextButton()"
-                                                class="p-button"
-                                                label="Next"
+                                                (click)="onNavigationPrevButton()"
+                                                [disabled]="prevButtonDisabled"
+                                                class="button"
+                                                label="Previous"
                                                 pButton
                                                 type="button"></button>
+                                            <div *ngIf="!nextButtonDisabled">
+                                                <button
+                                                    (click)="onNavigationNextButton()"
+                                                    class="p-button"
+                                                    label="Next"
+                                                    pButton
+                                                    type="button"></button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </p-tabPanel>
-                    <p-tabPanel [header]="'Export Documents'">
-                        <app-project-data-export></app-project-data-export>
-                    </p-tabPanel>
-                    <p-tabPanel *ngIf="permissions?.STANDARD_REGISTRY" [header]="'Mint Requests'">
-                        <app-mint-requests [policyId]="policyId"></app-mint-requests>
-                    </p-tabPanel>
-                </p-tabView>
+                        </p-tabpanel>
+                        <p-tabpanel [value]="1">
+                            <app-project-data-export></app-project-data-export>
+                        </p-tabpanel>
+                        <p-tabpanel *ngIf="permissions?.STANDARD_REGISTRY" [value]="2">
+                            <app-mint-requests [policyId]="policyId"></app-mint-requests>
+                        </p-tabpanel>
+                    </p-tabpanels>
+                </p-tabs>
             </ng-container>
             <ng-template #dryRunContent>
                 <div class="policy-container {{!navigationFooterDisabled ? 'step-container' : 'no-step-container' }}">
@@ -571,23 +578,13 @@
                     </button>
                 </div>
                 <div class="mock-tabs-nav">
-                    <p-tabView (onChange)="onMockTab($event)" class="guardian-header-tabs">
-                        <p-tabPanel [selected]="mockTab === 'API'">
-                            <ng-template pTemplate="header">
-                                <div class="tabview-label">API Mocks</div>
-                            </ng-template>
-                        </p-tabPanel>
-                        <p-tabPanel [selected]="mockTab === 'IPFS'">
-                            <ng-template pTemplate="header">
-                                <div class="tabview-label">IPFS Files</div>
-                            </ng-template>
-                        </p-tabPanel>
-                        <p-tabPanel [selected]="mockTab === 'Topics'">
-                            <ng-template pTemplate="header">
-                                <div class="tabview-label">Topics / Messages</div>
-                            </ng-template>
-                        </p-tabPanel>
-                    </p-tabView>
+                    <p-tabs [(value)]="mockTabIndex" (valueChange)="onMockTab($event)" class="guardian-header-tabs">
+                        <p-tablist>
+                            <p-tab [value]="0"><div class="tabview-label">API Mocks</div></p-tab>
+                            <p-tab [value]="1"><div class="tabview-label">IPFS Files</div></p-tab>
+                            <p-tab [value]="2"><div class="tabview-label">Topics / Messages</div></p-tab>
+                        </p-tablist>
+                    </p-tabs>
                 </div>  
                 <div *ngIf="mockTab === 'IPFS'" class="mock-grid-container">
                     <div *ngIf="mockIpfs" class="dialog-grid-container">
@@ -782,7 +779,7 @@
     ></app-record-controller>
 </div>
 
-<p-overlayPanel #menu>
+<p-popover #menu>
     <div
         (click)="setVirtualUser(item, menu)"
         *ngFor="let item of virtualUsers"
@@ -793,9 +790,9 @@
         <div class="debug-user-did">{{ item.hederaAccountId }}</div>
         <div class="debug-user-did">{{ item.did }}</div>
     </div>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel #group>
+<p-popover #group>
     <div class="group-header">
         Select Group
     </div>
@@ -829,7 +826,7 @@
             <span>Role: </span><span>Not Set</span>
         </div>
     </div>
-</p-overlayPanel>
+</p-popover>
 
 <ng-template #preloader>
     <div class="preloader-image"></div>

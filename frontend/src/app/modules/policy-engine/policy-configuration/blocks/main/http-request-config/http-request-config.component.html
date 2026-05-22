@@ -19,7 +19,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Method</td>
         <td class="propRowCell">
-            <p-dropdown [(ngModel)]="properties.method"
+            <p-select [(ngModel)]="properties.method"
                         [options]="httpMethodsOptions"
                         [disabled]="readonly"
                         (onChange)="onSave()"
@@ -27,7 +27,7 @@
                         placeholder="Select HTTP Method"
                         optionLabel="label"
                         optionValue="value">
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.options">

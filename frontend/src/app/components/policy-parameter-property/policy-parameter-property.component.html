@@ -46,7 +46,7 @@
     <div class="element-container">
         <label class="form-label property-label">{{ isArrayElement ? property.label : config.label }} </label>
         <span *ngIf="!isArrayElement" class="property-description">{{ config.shortDescription }}</span>
-        <p-dropdown
+        <p-select
             [options]="property.items"
             [disabled]="readonly"
             placeholder="Select an option"
@@ -54,7 +54,7 @@
             [appendTo]="'body'"
             [formControl]="fc"
         >
-        </p-dropdown>
+        </p-select>
     </div>
 </ng-container>
 

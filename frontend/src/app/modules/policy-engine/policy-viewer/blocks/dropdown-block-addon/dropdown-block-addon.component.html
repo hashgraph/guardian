@@ -1,5 +1,5 @@
 <div class="content-dropdown" [attr.readonly-block]="readonly">
-    <p-dropdown
+    <p-select
         class="guardian-dropdown"
         panelStyleClass="guardian-dropdown-panel"
         [(ngModel)]="currentValue"
@@ -12,7 +12,7 @@
         placeholder="Select"  
         (onChange)="onDropdown($event.value)"    
     >
-    </p-dropdown>
+    </p-select>
 </div>
 
 <ng-template #preloader>

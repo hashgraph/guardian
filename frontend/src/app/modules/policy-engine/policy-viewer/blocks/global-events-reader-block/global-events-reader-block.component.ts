@@ -393,7 +393,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                 filterFieldsByBranch: row.filterFieldsByBranch || {},
                 branchDocumentTypeByBranch,
             },
-        });
+        })!;
 
         this.filtersDialogCloseSub = this.filtersDialogRef.onClose.subscribe((result: FiltersDialogResult | null) => {
             if (!result) {
@@ -543,7 +543,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                     },
                 ],
             },
-        });
+        })!;
 
         this.confirmDialogRef.onClose.subscribe((action: string | null) => {
             this.confirmDialogRef = null;

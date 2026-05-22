@@ -25,7 +25,7 @@ import { CompareViewerComponent } from './compare-viewer/compare-viewer.componen
 import { AlertComponent } from './alert/alert.component';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ButtonModule } from 'primeng/button';
 import { PaginatorComponent } from './paginator/paginator.component';
@@ -36,7 +36,7 @@ import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-button.component';
 import { ImportEntityDialog } from './import-entity-dialog/import-entity-dialog.component';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { TooltipModule } from 'primeng/tooltip';
 import { MathLiveComponent } from './mathlive/mathlive.component';
 import { MenuButton } from './menu-button/menu-button.component';
@@ -102,10 +102,10 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         NgxMaskDirective,
         DialogModule,
         InputTextModule,
-        DropdownModule,
+        SelectModule,
         ProgressBarModule,
         ButtonModule,
-        TabViewModule,
+        TabsModule,
         DynamicDialogModule,
         AngularSvgIconModule.forRoot(),
         TooltipModule,

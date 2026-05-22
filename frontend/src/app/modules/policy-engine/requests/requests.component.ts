@@ -315,7 +315,7 @@ export class PolicyRequestsComponent implements OnInit {
                     class: 'primary'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Approve') {
                 this.loading = true;
@@ -346,7 +346,7 @@ export class PolicyRequestsComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Reject') {
                 this.loading = true;
@@ -377,7 +377,7 @@ export class PolicyRequestsComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Cancel') {
                 this.loading = true;
@@ -473,7 +473,7 @@ export class PolicyRequestsComponent implements OnInit {
                         title: 'Document',
                         type: 'JSON',
                     }
-                });
+                })!;
                 dialogRef.onClose.subscribe(async (result) => {
                 });
                 setTimeout(() => {

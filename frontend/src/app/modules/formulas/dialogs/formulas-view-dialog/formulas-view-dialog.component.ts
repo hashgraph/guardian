@@ -38,6 +38,7 @@ export class FormulasViewDialog {
     ];
 
     public activeTab: string = 'formulas';
+    public tabIndex: number = 0;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -95,8 +96,9 @@ export class FormulasViewDialog {
         this.nav.updateSelected();
     }
 
-    public setTab(event: any): void {
-        const opt = this.viewDocumentOptions[event.index];
+    public setTab(index: string | number | undefined): void {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        const opt = this.viewDocumentOptions[tabIndex];
         this.activeTab = opt?.key || 'formulas';
     }
 

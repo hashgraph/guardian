@@ -123,7 +123,7 @@ export class MintRequestsComponent implements OnInit, OnDestroy {
                     { name: 'Retry', class: 'primary' },
                 ],
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Retry') {
                 this.policyEngineService

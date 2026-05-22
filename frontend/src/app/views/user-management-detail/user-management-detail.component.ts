@@ -310,8 +310,8 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         }
     }
 
-    public onChange(event: any) {
-        this.selectedIndex = event;
+    public onChange(index: string | number | undefined) {
+        this.selectedIndex = typeof index === 'number' ? index : 0;
         this.loadData();
     }
 

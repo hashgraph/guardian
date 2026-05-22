@@ -145,7 +145,7 @@ export class CommonPropertyComponent implements OnInit {
                     { name: 'Yes', class: 'primary' }
                 ]
             }
-        });
+        })!;
 
         dialogRef.onClose.subscribe(result => {
             if (result !== 'Yes') {
@@ -177,7 +177,7 @@ export class CommonPropertyComponent implements OnInit {
                 expression: this.value,
                 readonly: this.readonly
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.value = result.expression;

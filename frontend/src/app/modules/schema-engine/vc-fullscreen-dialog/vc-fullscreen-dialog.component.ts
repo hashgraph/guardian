@@ -539,7 +539,7 @@ export class VCFullscreenDialog {
                 modal: true,
                 closable: true,
             }
-        );
+        )!;
 
         dialogRef.onClose.subscribe(async (result) => {
             if (!result) {

@@ -228,7 +228,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                 tool: tool,
                 isFile: type === 'file'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 if (type === 'message') {
@@ -285,7 +285,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                 type: ImportEntityType.Tool,
                 timeStamp: messageId
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
@@ -302,7 +302,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             data: {
                 type: 'Tool'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.itemId1 && result.itemId2) {
                 const items = btoa(JSON.stringify({
@@ -353,7 +353,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             data: {
                 type: 'tool'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 const tool = {
@@ -392,7 +392,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.loading = true;
@@ -415,7 +415,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             header: 'Publish Tool',
             width: '600px',
             styleClass: 'guardian-dialog'
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
             if (options) {
                 this.loading = true;

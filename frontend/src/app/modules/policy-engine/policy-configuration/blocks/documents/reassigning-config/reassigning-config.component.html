@@ -4,7 +4,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Issuer</td>
         <td class="propRowCell">
-            <p-dropdown
+            <p-select
                 [(ngModel)]="properties.issuer"
                 [disabled]="readonly"
                 (onChange)="onSave()"
@@ -12,14 +12,14 @@
                 [options]="issuerOptions"
                 [appendTo]="'body'"
             >
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Actor</td>
         <td class="propRowCell">
-            <p-dropdown
+            <p-select
                 [(ngModel)]="properties.actor"
                 [disabled]="readonly"
                 (onChange)="onSave()"
@@ -27,7 +27,7 @@
                 [options]="actorOptions"
                 [appendTo]="'body'"
             >
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
 </table>

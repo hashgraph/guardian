@@ -370,7 +370,7 @@ export class RequestDocumentBlockDialog {
                         class: 'primary'
                     }]
                 },
-            });
+            })!;
 
             dialogOptionRef.onClose.subscribe((result: string) => {
                 if (result == 'Confirm') {

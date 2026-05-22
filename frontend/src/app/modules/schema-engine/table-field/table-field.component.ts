@@ -387,7 +387,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
             header: 'Edit table',
             width: '90%',
             data: { columnDefs, rowData: parsedRows },
-        });
+        })!;
 
         ref.onClose.subscribe(async (result: any) => {
             if (!result) { return; }

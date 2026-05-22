@@ -51,7 +51,7 @@
         </div>
         <div class="guardian-input-container">
             <label class="form-label" htmlFor="sectoralScope">Sectoral scope</label>
-            <p-dropdown
+            <p-select
                 class="guardian-dropdown"
                 panelStyleClass="guardian-dropdown-panel width-825"
                 #operationDropdown
@@ -66,11 +66,11 @@
                 <ng-template pTemplate="selectedItem" let-selectedItem>
                     {{ selectedItem ? selectedItem.name : 'Not selected' }}
                 </ng-template>
-            </p-dropdown>
+            </p-select>
         </div>
         <div class="guardian-input-container">
             <label class="form-label" htmlFor="projectScale">Project Scale</label>
-            <p-dropdown
+            <p-select
                 class="guardian-dropdown"
                 panelStyleClass="guardian-dropdown-panel width-825"
                 #operationDropdown
@@ -85,7 +85,7 @@
                 <ng-template pTemplate="selectedItem" let-selectedItem>
                     {{ selectedItem ? selectedItem.name : 'Not selected' }}
                 </ng-template>
-            </p-dropdown>
+            </p-select>
         </div>
         <div class="guardian-input-container">
             <label class="form-label" htmlFor="applicabilityConditions">Conditions for applicability</label>
@@ -131,7 +131,7 @@
         <h3>Categorization</h3>
         <div class="guardian-input-container">
             <label class="form-label" htmlFor="appliedTechnologyType">Applied Technology Type/Measure</label>
-            <p-dropdown
+            <p-select
                 class="guardian-dropdown"
                 panelStyleClass="guardian-dropdown-panel width-825"
                 #operationDropdown
@@ -146,7 +146,7 @@
                 <ng-template pTemplate="selectedItem" let-selectedItem>
                     {{ selectedItem ? selectedItem.name : 'Not selected' }}
                 </ng-template>
-            </p-dropdown>
+            </p-select>
         </div>
         <div class="guardian-input-container">
             <label class="form-label" htmlFor="migrationActivityType">Mitigation Activity Type</label>
@@ -291,7 +291,7 @@
         <div class="form-field-info mb-24">
             <div class="policy-schemas-input">
                 <label class="form-label">Produced schema:</label>
-                <p-dropdown
+                <p-select
                     class="guardian-dropdown"
                     panelStyleClass="guardian-dropdown-panel width-825"
                     [options]="selectedSchemas"
@@ -300,21 +300,21 @@
                     optionLabel="name"
                     optionValue="iri"
                     placeholder="Select Schema"
-                ></p-dropdown>
+                ></p-select>
             </div>
             <p-button
                 class="info-btn pi pi-info-circle"
                 styleClass="p-button-rounded p-button-primary"
                 (click)="op.toggle($event)">
             </p-button>
-            <p-overlayPanel #op>
+            <p-popover #op>
                 <img [src]="'/assets/produced-schema.gif'" class="help-img"/>
-            </p-overlayPanel>
+            </p-popover>
         </div>
 
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Relationship schema:</label>
-            <p-dropdown
+            <p-select
                 class="guardian-dropdown"
                 panelStyleClass="guardian-dropdown-panel width-825"
                 [options]="selectedSchemas"
@@ -323,7 +323,7 @@
                 optionLabel="name"
                 optionValue="iri"
                 placeholder="Select Schema"
-            ></p-dropdown>
+            ></p-select>
         </div>
         <div class="form-field-info mb-24">
             <div class="policy-schemas-input">
@@ -344,9 +344,9 @@
                 styleClass="p-button-rounded p-button-primary"
                 (click)="initialStepGif.toggle($event)">
             </p-button>
-            <p-overlayPanel #initialStepGif>
+            <p-popover #initialStepGif>
                 <img [src]="'/assets/initial-step.gif'" class="help-img"/>
-            </p-overlayPanel>
+            </p-popover>
         </div>
         <ng-container
             *ngTemplateOutlet="
@@ -362,7 +362,7 @@
         </ng-container>
 
         <div class="input-switch-container mb-24">
-            <p-inputSwitch formControlName="isMintSchema"></p-inputSwitch>
+            <p-toggleswitch formControlName="isMintSchema"></p-toggleswitch>
             <span class="input-switch-label">Minting tokens</span>
         </div>
     </form>
@@ -372,7 +372,7 @@
     >
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Token:</label>
-            <p-dropdown
+            <p-select
                 class="guardian-dropdown"
                 panelStyleClass="guardian-dropdown-panel width-825"
                 [options]="tokens"
@@ -381,11 +381,11 @@
                 optionLabel="tokenName"
                 optionValue="tokenId"
                 placeholder="Select Schema"
-            ></p-dropdown>
+            ></p-select>
         </div>
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Field:</label>
-            <p-dropdown
+            <p-select
                 class="guardian-dropdown"
                 panelStyleClass="guardian-dropdown-panel width-825"
                 [options]="mintFields"
@@ -394,7 +394,7 @@
                 optionLabel="description"
                 optionValue="name"
                 placeholder="Select Schema"
-            ></p-dropdown>
+            ></p-select>
         </div>
     </form>
 </ng-template>
@@ -486,7 +486,7 @@
                 </div>
                 <div class="guardian-input-container policy-schemas-input w-45">
                     <label class="form-label">* Field:</label>
-                    <p-dropdown
+                    <p-select
                         class="guardian-dropdown"
                         panelStyleClass="guardian-dropdown-panel width-825"
                         #fieldSelect
@@ -495,7 +495,7 @@
                         optionLabel="description"
                         optionValue="name"
                         placeholder="Select Field"
-                    ></p-dropdown>
+                    ></p-select>
                 </div>
                 <p-button (click)="onAddColumn(titleInput.value, fieldSelect.value, gridColumns)"
                           class="add-role-button"
@@ -528,7 +528,7 @@
     <form [formGroup]="control">
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Minting Schema:</label>
-            <p-dropdown
+            <p-select
                 class="guardian-dropdown"
                 panelStyleClass="guardian-dropdown-panel width-825"
                 [options]="mintedSchemas"
@@ -537,10 +537,10 @@
                 optionLabel="name"
                 optionValue="iri"
                 placeholder="Select Schema"
-            ></p-dropdown>
+            ></p-select>
         </div>
         <div class="input-switch-container">
-            <p-inputSwitch formControlName="viewOnlyOwnDocuments"></p-inputSwitch>
+            <p-toggleswitch formControlName="viewOnlyOwnDocuments"></p-toggleswitch>
             <span class="input-switch-label">View only own VPs</span>
         </div>
     </form>
@@ -555,7 +555,7 @@
 >
     <div class="info-btn-container" *ngIf="visible">
         <div class="input-switch-container mb-24">
-            <p-inputSwitch [formControl]="formControl"></p-inputSwitch>
+            <p-toggleswitch [formControl]="formControl"></p-toggleswitch>
             <span class="input-switch-label">{{ title }}</span>
         </div>
         <p-button
@@ -564,8 +564,8 @@
             [disabled]="!helpSrc"
             (click)="someHelpGif.toggle($event)">
         </p-button>
-        <p-overlayPanel #someHelpGif>
+        <p-popover #someHelpGif>
             <img [src]="helpSrc" class="help-img"/>
-        </p-overlayPanel>
+        </p-popover>
     </div>
 </ng-template>

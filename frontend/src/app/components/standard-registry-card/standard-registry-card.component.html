@@ -24,14 +24,14 @@
                 ></i>
             </div>
 
-            <p-overlayPanel #policiesOverlay>
+            <p-popover #policiesOverlay>
                 <ul class="policies-list">
                     <li *ngFor="let policy of registry.policies" class="policies-list__item">
                         <span>{{ policy.name }}</span>
                         <span *ngIf="policy.version">({{ policy.version }})</span>
                     </li>
                 </ul>
-            </p-overlayPanel>
+            </p-popover>
 
         </ng-container>
 

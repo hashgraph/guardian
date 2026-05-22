@@ -128,7 +128,7 @@ export class PolicyTestDialog {
                 multiple: true,
                 type: 'File'
             }
-        });
+        })!;
 
         dialogRef.onClose.subscribe((files: File[] | null) => {
             if (!files) {
@@ -496,7 +496,7 @@ export class PolicyTestDialog {
                 dryRun: true,
                 type: 'JSON',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {});
     }
 

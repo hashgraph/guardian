@@ -906,7 +906,7 @@ export class MessagesReportBlockComponent implements OnInit {
                     type: 'JSON',
                     viewDocument: false
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
             });
         } else {
@@ -923,7 +923,7 @@ export class MessagesReportBlockComponent implements OnInit {
                     viewDocument: true,
                     schema: message.__schema,
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
             });
         }

@@ -113,7 +113,7 @@
             <span *ngIf="property.required" class="required-fields">*</span> {{ property.label }}
         </td>
         <td class="propRowCell ns" [ngSwitch]="property.items">
-            <p-dropdown
+            <p-select
                 *ngSwitchCase="'Roles'"
                 [(ngModel)]="value"
                 [options]="roles"
@@ -124,8 +124,8 @@
                 (onChange)="onSave()"
                 [appendTo]="'body'"
             >
-            </p-dropdown>
-            <p-dropdown
+            </p-select>
+            <p-select
                 *ngSwitchDefault
                 [(ngModel)]="value"
                 [options]="property.items"
@@ -136,7 +136,7 @@
                 (onChange)="onSave()"
                 [appendTo]="'body'"
             >
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
 </ng-container>

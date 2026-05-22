@@ -366,7 +366,7 @@ export class TokenConfigComponent implements OnInit {
                 readonly: this.readonlyForm,
                 currentTokenId: this.currentTokenId,
             }
-        }).onClose.subscribe((dataForm: UntypedFormGroup) => {
+        })!.onClose.subscribe((dataForm: UntypedFormGroup) => {
             if (!dataForm) {
                 return;
             }
@@ -519,7 +519,7 @@ export class TokenConfigComponent implements OnInit {
             data: {
                 notificationText: 'Are you sure want to delete this token?'
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
             if (!result) {
                 return;
@@ -594,7 +594,7 @@ export class TokenConfigComponent implements OnInit {
                 currentTokenId: this.currentTokenId,
                 policyId: this.currentPolicy
             }
-        }).onClose.subscribe((dataForm: UntypedFormGroup) => {
+        })!.onClose.subscribe((dataForm: UntypedFormGroup) => {
             if (!dataForm) {
                 return;
             }
@@ -714,7 +714,7 @@ export class TokenConfigComponent implements OnInit {
                     notificationText: 'Are you sure want to delete these tokens?',
                     itemNames: this.selectedItems.map(item => item.tokenName + ' (' + item.tokenId + ')'),
                 },
-            });
+            })!;
             dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 if (!result) {
                     return;

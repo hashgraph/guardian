@@ -15,7 +15,7 @@
 
         <div *ngIf="!userRole" class="p-fluid content__role-select">
             <label for="roleDropdown">Role</label>
-            <p-dropdown
+            <p-select
                 id="roleDropdown"
                 [(ngModel)]="selectedRole"
                 [options]="roles"
@@ -23,7 +23,7 @@
                 [required]="true"
                 [appendTo]="'body'"
                 placeholder="Select Role">
-            </p-dropdown>
+            </p-select>
         </div>
     </div>
 </div>

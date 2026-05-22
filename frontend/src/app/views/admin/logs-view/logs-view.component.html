@@ -48,7 +48,7 @@
                         placeholder="Message"
                     />
                 </span>
-                <p-dropdown
+                <p-select
                     [formControlName]="'type'"
                     [appendTo]="'body'"
                     [options]="types"
@@ -66,15 +66,15 @@
                             <div>{{ item.label }}</div>
                         </div>
                     </ng-template>
-                </p-dropdown>
-                <p-calendar
+                </p-select>
+                <p-datepicker
                     [formControl]="dateRangeForm"
                     [placeholder]="'Enter date range'"
                     [showIcon]="true"
                     [showTime]="true"
                     dateFormat="mm/dd/yy"
                     selectionMode="range">
-                </p-calendar>
+                </p-datepicker>
             </div>
         </form>
       <div class="flex flex-column-gap-8" style="flex-wrap: wrap; row-gap: 8px;">

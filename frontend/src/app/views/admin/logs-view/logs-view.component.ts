@@ -277,7 +277,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
         this.dialog.open(DetailsLogDialog, {
             data: element,
             header: 'Details Log'
-        }).onClose.subscribe(() => {
+        })!.onClose.subscribe(() => {
             return;
         })
     }

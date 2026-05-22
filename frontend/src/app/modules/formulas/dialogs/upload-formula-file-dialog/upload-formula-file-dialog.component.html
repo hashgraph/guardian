@@ -13,15 +13,11 @@
             <div class="guardian-loading-image"></div>
         </div>
 
-        <p-tabView class="guardian-tabs action-tabs" (onChange)="setImportType($event)">
-            <p-tabPanel *ngFor="let tab of items; let i = index">
-                <ng-template pTemplate="header">
-                    <div class="tabview-label">
-                        {{ tab.label }}
-                    </div>
-                </ng-template>
-            </p-tabPanel>
-        </p-tabView>
+        <p-tabs class="guardian-tabs action-tabs" [(value)]="tabIndex" (valueChange)="setImportType($event)">
+            <p-tablist>
+                <p-tab *ngFor="let tab of items; let i = index" [value]="i"><div class="tabview-label">{{ tab.label }}</div></p-tab>
+            </p-tablist>
+        </p-tabs>
 
         <div class="form-container">
 

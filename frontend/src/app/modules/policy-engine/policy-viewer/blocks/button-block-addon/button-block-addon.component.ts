@@ -162,7 +162,7 @@ export class ButtonBlockAddonComponent implements OnInit {
                 title: this.dialogOptions!.dialogTitle,
                 description: this.dialogOptions!.dialogDescription,
             },
-        });
+        })!;
 
         dialogRef.onClose.subscribe((result) => {
             if (result) {

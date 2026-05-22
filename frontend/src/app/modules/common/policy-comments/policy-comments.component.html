@@ -69,7 +69,7 @@
                     svgClass="icon-color-close">
                 </svg-icon>
             </button>
-            <p-overlayPanel #groupMenu styleClass="guardian-popup">
+            <p-popover #groupMenu styleClass="guardian-popup">
                 <div *ngFor="let item of currentDiscussion._users" class="discussion-user">
                     <svg-icon
                         class="icon-btn discussion-user-icon"
@@ -80,7 +80,7 @@
                         {{item.label}}
                     </div>
                 </div>
-            </p-overlayPanel>
+            </p-popover>
         </div>
     </div>
 
@@ -135,7 +135,7 @@
 
                     <div class="guardian-input-container">
                         <label class="form-label" htmlFor="version">Type</label>
-                        <p-dropdown 
+                        <p-select 
                             formControlName="privacy"
                             [options]="privacyList"
                             [showClear]="false" 
@@ -145,7 +145,7 @@
                             optionLabel="label" 
                             optionValue="value"
                             panelStyleClass="guardian-dropdown-panel">
-                        </p-dropdown>
+                        </p-select>
                     </div>
 
                     <div *ngIf="discussionForm.value.privacy==='roles'" class="guardian-input-container">

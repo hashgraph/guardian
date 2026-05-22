@@ -40,7 +40,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
-                <p-dropdown [(ngModel)]="button.type"
+                <p-select [(ngModel)]="button.type"
                             [options]="buttonTypeOptions"
                             [disabled]="readonly"
                             (onChange)="onSave()"
@@ -49,7 +49,7 @@
                             optionValue="value"
                             [appendTo]="'body'"
                 >
-                </p-dropdown>
+                </p-select>
             </td>
         </tr>
 
@@ -242,7 +242,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Type</td>
                 <td class="propRowCell">
-                    <p-dropdown [(ngModel)]="filter.type"
+                    <p-select [(ngModel)]="filter.type"
                                 [options]="filterTypeOptions"
                                 [disabled]="readonly"
                                 (onChange)="onSave()"
@@ -251,7 +251,7 @@
                                 optionValue="value"
                                 [appendTo]="'body'"
                     >
-                    </p-dropdown>
+                    </p-select>
                 </td>
             </tr>
             <tr class="propRow subRow-4"

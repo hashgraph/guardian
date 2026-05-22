@@ -19,7 +19,7 @@
 <ng-template #actionsContainer>
     <div class="actions-container">
         <div class="dropdown-block">
-            <p-dropdown (onChange)="onFilter()" [(ngModel)]="currentPolicy" [options]="filterOptions!">
+            <p-select (onChange)="onFilter()" [(ngModel)]="currentPolicy" [options]="filterOptions!">
                 <ng-template pTemplate="selectedItem">
                     <div *ngIf="currentPolicy">
                         <span class="dropdown-label">Policy</span>
@@ -31,7 +31,7 @@
                         {{ policy.name + (policy.id !== 'all' ? ' (' + policy.id + ')' : '') }}
                     </div>
                 </ng-template>
-            </p-dropdown>
+            </p-select>
         </div>
         <div class="flex flex-column-gap-8">
             <button

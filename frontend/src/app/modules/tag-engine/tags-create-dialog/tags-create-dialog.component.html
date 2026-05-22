@@ -34,7 +34,7 @@
     </form>
 
     <div *ngIf="schemas && schemas.length" class="artifact-container">
-        <p-dropdown 
+        <p-select 
             *ngIf="canAddDocument" 
             [appendTo]="'body'" 
             [(ngModel)]="schema" 
@@ -53,7 +53,7 @@
                     <div>{{ schema.name }}</div>
                 </div>
             </ng-template>
-        </p-dropdown>
+        </p-select>
 
         <div *ngIf="schema" class="artifact-form">
             <div class="artifact-form-label">

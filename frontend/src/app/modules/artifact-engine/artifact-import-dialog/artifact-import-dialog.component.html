@@ -7,13 +7,13 @@
 
             <div class="p-fluid">
                 <label for="policyDropdown">Policy Identifier</label>
-                <p-dropdown
+                <p-select
                     id="policyDropdown"
                     [formControl]="policyId"
                     [options]="getPolicyOptions()"
                     optionLabel="label"
                     placeholder="Select a Policy">
-                </p-dropdown>
+                </p-select>
             </div>
             <app-file-drag-n-drop
                 fileExtension="*" [multiple]="true" (onFileLoaded)="importFiles($event)"

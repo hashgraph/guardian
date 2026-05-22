@@ -15,7 +15,7 @@
     <button pButton (click)="menu.toggle($event)" class="add-artifact-button p-button-rounded p-button-text">
         <i class="pi pi-plus toolbar-icons"></i>
     </button>
-    <p-overlayPanel #menu>
+    <p-popover #menu>
         <div *ngFor="let artifact of policyArtifacts" class="artifact-row">
             <button
                 pButton
@@ -26,5 +26,5 @@
                 {{ artifact.name }} ({{ artifact.type }})
             </button>
         </div>
-    </p-overlayPanel>
+    </p-popover>
 </div>

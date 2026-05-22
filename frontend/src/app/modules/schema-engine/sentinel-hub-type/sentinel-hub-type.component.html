@@ -18,10 +18,10 @@
 </div>
 <div class="type-selector">
     <label for="from">From</label>
-    <p-calendar #dateFrom id="from" [formControl]="fromControl" [showTime]="false" appendTo="body"></p-calendar>
+    <p-datepicker #dateFrom id="from" [formControl]="fromControl" [showTime]="false" appendTo="body"></p-datepicker>
 </div>
 <div class="type-selector">
     <label for="to">To</label>
-    <p-calendar #dateTo id="to" [formControl]="toControl" [showTime]="false" appendTo="body"></p-calendar>
+    <p-datepicker #dateTo id="to" [formControl]="toControl" [showTime]="false" appendTo="body"></p-datepicker>
 </div>
 <img *ngIf="formattedImageLink" [src]="formattedImageLink" class="image" />

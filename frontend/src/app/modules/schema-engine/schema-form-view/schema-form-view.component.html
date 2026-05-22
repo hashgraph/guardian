@@ -243,7 +243,9 @@
 
             <div *ngIf="ifSubSchema(item)" class="form-field-group">
                 <p-accordion class="guardian-accordion">
-                    <p-accordionTab [(selected)]="item.open" (selectedChange)="emitAccordionSelect($event, item)">
+                    <p-accordion-panel>
+    <p-accordion-header></p-accordion-header>
+    <p-accordion-content>
                         <ng-template pTemplate="header">
                             <div class="label-field-accordion" [attr.accordiontabid]="item.fullPath">{{item.description}}</div>
                         </ng-template>
@@ -282,7 +284,8 @@
                                 </div>
                             </div>
                         </ng-container>
-                    </p-accordionTab>
+                        </p-accordion-content>
+</p-accordion-panel>
                 </p-accordion>
             </div>
 
@@ -422,7 +425,9 @@
 
             <div *ngIf="ifSubSchemaArray(item) && !canDrawTable(item)" class="form-field-group schema-form-field-array-group">
                 <p-accordion class="guardian-accordion">
-                    <p-accordionTab [(selected)]="item.open" (selectedChange)="emitAccordionSelect($event, item)">
+                    <p-accordion-panel>
+    <p-accordion-header></p-accordion-header>
+    <p-accordion-content>
                         <ng-template pTemplate="header">
                             <div class="label-field-accordion" [attr.accordiontabid]="item.fullPath">{{item.description}}</div>
                         </ng-template>
@@ -477,7 +482,8 @@
                                 (page)="onPage(item, $event)"
                             ></app-paginator>
                         </ng-container>
-                    </p-accordionTab>
+                        </p-accordion-content>
+</p-accordion-panel>
                 </p-accordion>
             </div>
 

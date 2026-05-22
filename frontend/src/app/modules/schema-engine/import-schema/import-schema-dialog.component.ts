@@ -59,8 +59,8 @@ export class ImportSchemaDialog {
         this.innerHeight = window.innerHeight;
     }
 
-    handleChangeTab(order: number): void {
-        this.setImportType(order);
+    handleChangeTab(order: string | number | undefined): void {
+        this.setImportType(typeof order === 'number' ? order : 0);
     }
 
     setImportType(importType: ImportType) {

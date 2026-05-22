@@ -265,7 +265,7 @@ export class ButtonBlockComponent implements OnInit {
                 title: button.title,
                 description: button.description,
             },
-        });
+        })!;
 
         dialogRef.onClose.subscribe((result) => {
             if (result) {

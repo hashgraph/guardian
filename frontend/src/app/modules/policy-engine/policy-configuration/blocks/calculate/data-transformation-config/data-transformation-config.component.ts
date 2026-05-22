@@ -53,7 +53,7 @@ export class DataTransformationConfigComponent implements OnInit {
                 expression: this.properties.expression,
                 readonly: this.readonly
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.properties.expression = result.expression;

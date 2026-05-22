@@ -24,7 +24,7 @@
                 ></select-schema>
             </td>
             <td *ngIf="item.type ==='Token'" class="propRowCell">
-                <p-dropdown [(ngModel)]="properties[item.key]"
+                <p-select [(ngModel)]="properties[item.key]"
                             [options]="tokens"
                             [disabled]="readonly"
                             [appendTo]="'body'"
@@ -32,10 +32,10 @@
                             placeholder="Select Token"
                             optionLabel="name"
                             optionValue="value">
-                </p-dropdown>
+                </p-select>
             </td>
             <td *ngIf="item.type ==='Role'" class="propRowCell">
-                <p-dropdown [(ngModel)]="properties[item.key]"
+                <p-select [(ngModel)]="properties[item.key]"
                             [options]="roles"
                             [disabled]="readonly"
                             (onChange)="onSave()"
@@ -44,10 +44,10 @@
                             optionValue="value"
                             [appendTo]="'body'"
                 >
-                </p-dropdown>
+                </p-select>
             </td>
             <td *ngIf="item.type ==='Group'" class="propRowCell">
-                <p-dropdown [(ngModel)]="properties[item.key]"
+                <p-select [(ngModel)]="properties[item.key]"
                             [options]="groups"
                             [disabled]="readonly"
                             (onChange)="onSave()"
@@ -55,10 +55,10 @@
                             placeholder="Select Group"
                             optionLabel="name"
                             optionValue="value">
-                </p-dropdown>
+                </p-select>
             </td>
             <td *ngIf="item.type ==='TokenTemplate'" class="propRowCell">
-                <p-dropdown [(ngModel)]="properties[item.key]"
+                <p-select [(ngModel)]="properties[item.key]"
                             [options]="tokenTemplate"
                             [disabled]="readonly"
                             (onChange)="onSave()"
@@ -66,10 +66,10 @@
                             placeholder="Select Template"
                             optionLabel="name"
                             optionValue="value">
-                </p-dropdown>
+                </p-select>
             </td>
             <td *ngIf="item.type ==='Topic'" class="propRowCell">
-                <p-dropdown [(ngModel)]="properties[item.key]"
+                <p-select [(ngModel)]="properties[item.key]"
                             [options]="topics"
                             [disabled]="readonly"
                             [appendTo]="'body'"
@@ -100,7 +100,7 @@
                             Create new topic
                         </span>
                     </ng-template>
-                </p-dropdown>
+                </p-select>
             </td>
             <td *ngIf="item.type ==='String'" class="propRowCell">
                 <input class="prop-input" [(ngModel)]="properties[item.key]" [readonly]="readonly" (blur)="onSave()">

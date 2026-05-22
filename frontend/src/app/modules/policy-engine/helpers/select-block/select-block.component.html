@@ -1,4 +1,4 @@
-<p-dropdown
+<p-select
     *ngIf="!multiple"
     dataKey="id"
     [(ngModel)]="selectedOption"
@@ -38,7 +38,7 @@
             {{ item.name || '' }}
         </div>
     </ng-template>
-</p-dropdown>
+</p-select>
 
 <p-multiSelect
     *ngIf="multiple"

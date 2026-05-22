@@ -89,7 +89,7 @@ export class PolicyTestResult {
                 policy: this.policy,
                 test: last
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 

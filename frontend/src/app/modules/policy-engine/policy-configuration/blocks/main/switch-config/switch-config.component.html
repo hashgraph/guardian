@@ -12,7 +12,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Execution Flow</td>
         <td class="propRowCell">
-            <p-dropdown [(ngModel)]="properties.executionFlow"
+            <p-select [(ngModel)]="properties.executionFlow"
                         [options]="executionFlowOptions"
                         [disabled]="readonly"
                         (onChange)="onSave()"
@@ -20,7 +20,7 @@
                         placeholder="Select Execution Flow"
                         optionLabel="label"
                         optionValue="value">
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
     <tr class="propHeader">
@@ -65,7 +65,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Condition Type</td>
             <td class="propRowCell">
-                <p-dropdown [(ngModel)]="condition.type"
+                <p-select [(ngModel)]="condition.type"
                             [options]="conditionTypeOptions"
                             [disabled]="readonly"
                             (onChange)="onSave()"
@@ -73,7 +73,7 @@
                             placeholder="Select Condition Type"
                             optionLabel="label"
                             optionValue="value">
-                </p-dropdown>
+                </p-select>
             </td>
         </tr>
         <tr class="propRow subRow" *ngIf="condition.type!='unconditional'"
@@ -89,7 +89,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Actor</td>
             <td class="propRowCell">
-                <p-dropdown [(ngModel)]="condition.actor"
+                <p-select [(ngModel)]="condition.actor"
                             [options]="actorOptions"
                             [disabled]="readonly"
                             (onChange)="onSave()"
@@ -97,7 +97,7 @@
                             placeholder="Select Actor"
                             optionLabel="label"
                             optionValue="value">
-                </p-dropdown>
+                </p-select>
             </td>
         </tr>
     </ng-container>

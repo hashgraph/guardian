@@ -4,7 +4,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Data Type</td>
         <td class="propRowCell">
-            <p-dropdown
+            <p-select
                 [(ngModel)]="properties.dataType"
                 [disabled]="readonly"
                 (onChange)="onSave()"
@@ -12,7 +12,7 @@
                 [options]="dataTypeOptions"
                 appendTo="body"
             >
-            </p-dropdown>
+            </p-select>
 
         </td>
     </tr>
@@ -80,7 +80,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Order Direction</td>
         <td class="propRowCell">
-            <p-dropdown
+            <p-select
                 [(ngModel)]="properties.orderDirection"
                 [disabled]="readonly"
                 (onChange)="onSave()"
@@ -88,7 +88,7 @@
                 [options]="orderDirectionOptions"
                 appendTo="body"
             >
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
 
@@ -126,7 +126,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
-                <p-dropdown
+                <p-select
                     [(ngModel)]="field.type"
                     [disabled]="readonly"
                     (onChange)="onSave()"
@@ -135,7 +135,7 @@
                     [options]="fieldTypeOptions"
                     appendTo="body"
                 >
-                </p-dropdown>
+                </p-select>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">

@@ -13,7 +13,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token Template</td>
         <td class="propRowCell">
-            <p-dropdown [(ngModel)]="properties.template"
+            <p-select [(ngModel)]="properties.template"
                         [options]="tokenTemplate"
                         [disabled]="readonly"
                         (onChange)="onSave()"
@@ -21,7 +21,7 @@
                         placeholder="Select Template"
                         optionLabel="name"
                         optionValue="value">
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
 

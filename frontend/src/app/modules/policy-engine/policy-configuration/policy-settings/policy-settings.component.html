@@ -31,7 +31,7 @@
                 <div class="settings-select">
                     <div class="p-fluid">
                         <label for="themeDropdown" class="dropdown-label">Theme</label>
-                        <p-dropdown
+                        <p-select
                             [(ngModel)]="theme"
                             [options]="themes"
                             optionLabel="name"
@@ -48,7 +48,7 @@
                             <ng-template let-option pTemplate="item">
                                 {{ option.name }}
                             </ng-template>
-                        </p-dropdown>
+                        </p-select>
                     </div>
 
                 </div>
@@ -106,14 +106,14 @@
 
                                 <div class="rule-condition-header">Condition</div>
                                 <div class="rule-condition-select">
-                                    <p-dropdown
+                                    <p-select
                                         placeholder="Type"
                                         [(ngModel)]="rule.type"
                                         [options]="dropdownTypesOptions"
                                         optionLabel="label"
                                         class="guardian-dropdown guardian-dropdown-cell"
                                         appendTo="body">
-                                    </p-dropdown>
+                                    </p-select>
                                 </div>
 
                                 <div *ngIf="rule.type === 'type' || rule.type === 'api' || rule.type === 'role'"
@@ -134,7 +134,7 @@
                                 </div>
 
                                 <div *ngIf="rule.type === 'api'" class="rule-condition-select">
-                                    <p-dropdown
+                                    <p-select
                                         placeholder="Type"
                                         [(ngModel)]="rule.singleValue"
                                         [options]="dropdownAccessesOptions"
@@ -142,11 +142,11 @@
                                         optionValue="value"
                                         class="guardian-dropdown guardian-dropdown-cell"
                                         appendTo="body">
-                                    </p-dropdown>
+                                    </p-select>
                                 </div>
 
                                 <div *ngIf="rule.type === 'role'" class="rule-condition-select">
-                                    <p-dropdown
+                                    <p-select
                                         placeholder="Type"
                                         [(ngModel)]="rule.singleValue"
                                         [options]="dropdownRolesOptions"
@@ -154,7 +154,7 @@
                                         optionValue="value"
                                         class="guardian-dropdown guardian-dropdown-cell"
                                         appendTo="body">
-                                    </p-dropdown>
+                                    </p-select>
                                 </div>
 
                                 <div *ngIf="rule.type === 'custom'" class="rule-condition-select prop-condition">
@@ -193,7 +193,7 @@
 
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-select">
-                                        <p-dropdown
+                                        <p-select
                                             placeholder="Type"
                                             [(ngModel)]="rule.shape"
                                             [options]="dropdownShapeOptions"
@@ -206,13 +206,13 @@
                                             <ng-template pTemplate="selectedItem" let-shape>
                                                 <div [ngClass]="'shape-' + shape.value"></div>
                                             </ng-template>
-                                        </p-dropdown>
+                                        </p-select>
                                     </div>
                                     <div class="rule-color-prop-name">Shape</div>
                                 </div>
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-select">
-                                        <p-dropdown
+                                        <p-select
                                             placeholder="Type"
                                             [(ngModel)]="rule.borderWidth"
                                             [options]="dropdownBorderWidthOptions"
@@ -221,7 +221,7 @@
                                             class="guardian-dropdown guardian-dropdown-cell"
                                             appendTo="body"
                                         >
-                                        </p-dropdown>
+                                        </p-select>
                                     </div>
                                     <div class="rule-color-prop-name">Border Width</div>
                                 </div>
@@ -286,7 +286,7 @@
 
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-select">
-                                        <p-dropdown
+                                        <p-select
                                             placeholder="Type"
                                             [(ngModel)]="theme.default.shape"
                                             [options]="dropdownThemeShapeOptions"
@@ -301,13 +301,13 @@
                                             <ng-template pTemplate="selectedItem" let-shape>
                                                 <div [ngClass]="'shape-' + shape.value"></div>
                                             </ng-template>
-                                        </p-dropdown>
+                                        </p-select>
                                     </div>
                                     <div class="rule-color-prop-name">Shape</div>
                                 </div>
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-select">
-                                        <p-dropdown
+                                        <p-select
                                             placeholder="Type"
                                             [(ngModel)]="theme.default.borderWidth"
                                             [options]="dropdownBorderWidthOptions"
@@ -315,7 +315,7 @@
                                             optionValue="value"
                                             class="guardian-dropdown guardian-dropdown-cell"
                                             appendTo="body">
-                                        </p-dropdown>
+                                        </p-select>
                                     </div>
                                     <div class="rule-color-prop-name">Border Width</div>
                                 </div>

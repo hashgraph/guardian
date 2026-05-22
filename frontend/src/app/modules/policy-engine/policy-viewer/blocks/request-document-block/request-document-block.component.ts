@@ -624,7 +624,7 @@ export class RequestDocumentBlockComponent
                     class: 'primary'
                 }]
             },
-        });
+        })!;
 
         dialogOptionRef.onClose.subscribe(async (result: string) => {
             if (result != 'Cancel') {

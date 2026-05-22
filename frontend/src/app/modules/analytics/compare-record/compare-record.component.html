@@ -16,7 +16,9 @@
 
     <div *ngIf="resultContext" class="list">
         <p-accordion [multiple]="true">
-            <p-accordionTab header="Description" [selected]="true">
+            <p-accordion-panel>
+    <p-accordion-header>Description</p-accordion-header>
+    <p-accordion-content>
                 <div class="info-container" [style.grid-template-columns]="_gridStyle">
                     <ng-container *ngFor="let context of resultContext">
                         <div class="middle-compare-result compare-result"
@@ -36,9 +38,12 @@
                         </div>
                     </ng-container>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Policy Documents" [selected]="true">
+            <p-accordion-panel>
+    <p-accordion-header>Policy Documents</p-accordion-header>
+    <p-accordion-content>
                 <div class="merge-container">
                     <div class="legend"
                          [attr.type-1]="_type1"
@@ -178,7 +183,8 @@
                         </div>
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
         </p-accordion>
 
     </div>

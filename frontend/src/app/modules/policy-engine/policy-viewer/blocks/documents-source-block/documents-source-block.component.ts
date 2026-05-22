@@ -291,7 +291,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     policyId: this.policyId,
                     dryRun: this.dryRun
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
             });
         } else {
@@ -312,7 +312,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     openComments: comments,
                     destroy: this._destroy$
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
             });
         }
@@ -467,7 +467,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 type: 'TEXT',
                 viewDocument: false
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -499,7 +499,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 value: links,
                 dryRun: this.dryRun
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

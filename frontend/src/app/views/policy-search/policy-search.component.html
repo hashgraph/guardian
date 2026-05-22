@@ -2,22 +2,23 @@
     <div class="policy-search">
         <h1>Search for Policies</h1>
 
-        <p-tabView
-            (onChange)="onChange($event)"
+        <p-tabs (valueChange)="onChange($event)"
             *ngIf="!loading && isConfirmed"
-            [activeIndex]="selectedIndex"
+            [value]="selectedIndex"
             [ngStyle]="{'height': 'calc(100vh - 120px)'}">
-
-            <ng-container *useWithServiceDecorator="'AI_SERVICE'">
-                <p-tabPanel [header]="'Search with AI'">
+            <p-tablist>
+                <p-tab [value]="0">Search with AI</p-tab>
+                <p-tab [value]="1">Guided Search</p-tab>
+            </p-tablist>
+            <p-tabpanels>
+                <p-tabpanel [value]="0">
                     <app-policy-ai-search class="possible-problems-with-empty-tab-here"></app-policy-ai-search>
-                </p-tabPanel>
-            </ng-container>
-
-            <p-tabPanel [header]="'Guided Search'">
+                                </p-tabpanel>
+                <p-tabpanel [value]="1">
                 <app-policy-guided-search></app-policy-guided-search>
-            </p-tabPanel>
-        </p-tabView>
+                            </p-tabpanel>
+            </p-tabpanels>
+        </p-tabs>
 
         <div *ngIf="!loading && !isConfirmed" class="not-exist">
             Before starting work you need to get DID

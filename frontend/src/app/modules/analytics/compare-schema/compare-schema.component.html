@@ -6,14 +6,19 @@
         </div>
 
         <p-accordion [multiple]="true">
-            <p-accordionTab header="Description" [selected]="true">
+            <p-accordion-panel>
+    <p-accordion-header>Description</p-accordion-header>
+    <p-accordion-content>
                 <div class="info-container">
                     <ng-container *ngTemplateOutlet="schemaInfo; context: { schema: schema1 }"></ng-container>
                     <ng-container *ngTemplateOutlet="schemaInfo; context: { schema: schema2 }"></ng-container>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Schema Fields" [selected]="true">
+            <p-accordion-panel>
+    <p-accordion-header>Schema Fields</p-accordion-header>
+    <p-accordion-content>
                 <div class="merge-container">
 
                     <div class="legend"
@@ -143,7 +148,8 @@
                     </div>
 
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
         </p-accordion>
     </div>
 </div>

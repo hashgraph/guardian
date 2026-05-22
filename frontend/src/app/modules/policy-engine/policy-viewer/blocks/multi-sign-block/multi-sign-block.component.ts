@@ -3,7 +3,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import {OverlayPanel} from 'primeng/overlaypanel';
+import {Popover as OverlayPanel} from 'primeng/popover';
 
 /**
  * Component for display block of 'multiSignBlock' types.

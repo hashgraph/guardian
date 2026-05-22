@@ -50,6 +50,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
 
     public nodeLoading: boolean = true;
     public searchField: string = '';
+    public tabIndex: number = 0;
 
     public stepper = [true, false, false];
 
@@ -478,8 +479,9 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         }
     }
 
-    public schemaConfigChange($event: any) {
-        if ($event.index === 1) {
+    public schemaConfigChange(index: string | number | undefined) {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        if (tabIndex === 1) {
             this.schemaFilterType = 2;
         } else {
             this.schemaFilterType = 1;
@@ -526,7 +528,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.formulas.delete(formula);
@@ -555,7 +557,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.scores.delete(score);
@@ -573,7 +575,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             data: {
                 score: JSON.parse(JSON.stringify(score))
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 score.description = result.description;
@@ -647,7 +649,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             data: {
                 item
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -667,7 +669,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
                         class: 'secondary'
                     }]
                 },
-            });
+            })!;
             dialogRef.onClose.subscribe((result) => { });
         } else {
             const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
@@ -685,7 +687,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
                         class: 'primary'
                     }]
                 },
-            });
+            })!;
             dialogRef.onClose.subscribe((result: string) => {
                 if (result === 'Publish') {
                     this.loading = true;

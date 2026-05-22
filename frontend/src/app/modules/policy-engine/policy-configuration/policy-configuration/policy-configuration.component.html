@@ -1112,7 +1112,7 @@
     </div>
 </div>
 
-<p-overlayPanel #publishMenu>
+<p-popover #publishMenu>
     <div (click)="tryPublishPolicy(); publishMenu.hide()" *ngIf="user.POLICIES_POLICY_REVIEW"
         class="toolbar-menu all-status publish-color" title="Release version into public domain.">
         <i class="pi pi-globe publish-color"></i>
@@ -1124,17 +1124,17 @@
         <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build dry-run-color"></svg-icon>
         <span class="dry-run-color">Dry Run</span>
     </div>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel #publishMenu2>
+<p-popover #publishMenu2>
     <div (click)="tryPublishModule(); publishMenu2.hide()" class="toolbar-menu all-status publish-color"
         title="Release version into public domain.">
         <i class="pi pi-globe publish-color"></i>
         <span class="publish-color">Publish</span>
     </div>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel #publishMenu3>
+<p-popover #publishMenu3>
     <div (click)="tryPublishTool(); publishMenu3.hide()" class="toolbar-menu all-status publish-color"
         title="Release version into public domain.">
         <i class="pi pi-globe publish-color"></i>
@@ -1146,9 +1146,9 @@
         <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build dry-run-color"></svg-icon>
         <span class="dry-run-color">Dry Run</span>
     </div>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel #dryRunMenu>
+<p-popover #dryRunMenu>
     <div (click)="tryPublishPolicy(); dryRunMenu.hide()" class="toolbar-menu all-status publish-color"
         title="Release version into public domain.">
         <i class="pi pi-globe publish-color"></i>
@@ -1160,9 +1160,9 @@
         <i class="pi pi-pencil edit-color"></i>
         <span class="edit-color">Stop</span>
     </div>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel #validationMenu
+<p-popover #validationMenu
     (onShow)="publishMenu?.hide(); publishMenu2?.hide(); publishMenu3?.hide();
     dryRunMenu?.hide(); eventMenu?.hide(); viewMenu?.hide(); themesMenu?.hide()"
 >
@@ -1173,9 +1173,9 @@
         <i class="pi" [ngClass]="hasActiveRules ? 'pi-filter-fill' : 'pi-filter'"></i>
         <span>Configuration</span>
     </div>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel #dryRunMenu2>
+<p-popover #dryRunMenu2>
     <div (click)="tryPublishTool(); dryRunMenu2.hide()" class="toolbar-menu all-status publish-color"
         title="Release version into public domain.">
         <i class="pi pi-globe publish-color"></i>
@@ -1187,9 +1187,9 @@
         <i class="pi pi-pencil edit-color"></i>
         <span class="edit-color">Stop</span>
     </div>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel #eventMenu>
+<p-popover #eventMenu>
     <div (click)="onShowEvent('All'); eventMenu.hide()" class="toolbar-menu all-status event-color">
         <svg-icon class="icon-style-flash_on event-color" src="/assets/images/icons/flash_on.svg"
             svgClass="icon-style-flash_on event-color"></svg-icon>
@@ -1212,9 +1212,9 @@
             svgClass="icon-style-flash_on event-color"></svg-icon>
         <span class="action-color">Hide All Events</span>
     </div>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel #viewMenu>
+<p-popover #viewMenu>
     <div (click)="onView('blocks'); viewMenu.hide()" class="toolbar-menu all-status event-color">
         <svg-icon src="/assets/images/icons/view_agenda.svg" svgClass="icon-style-view_agenda"></svg-icon>
         <span class="action-color">Tree</span>
@@ -1227,14 +1227,14 @@
         <i class="pi pi-align-right action-color"></i>
         <span class="action-color">YAML</span>
     </div>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel #themesMenu>
+<p-popover #themesMenu>
     <div (click)="setTheme(t); themesMenu.hide()" *ngFor="let t of themes" class="toolbar-menu all-status">
         <i [ngClass]="t === theme ? 'pi pi-palette action-color' : 'pi pi-palette no-action-color'"></i>
         <span [class]="t === theme ? 'action-color' : 'no-action-color'">{{ t.name }}</span>
     </div>
-</p-overlayPanel>
+</p-popover>
 
 <ng-template #preloader>
     <div class="preloader-image"></div>

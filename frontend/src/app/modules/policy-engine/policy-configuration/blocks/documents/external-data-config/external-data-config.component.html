@@ -46,7 +46,7 @@
             tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
         >Force User Account</td>
         <td class="propRowCell multi-line">
-            <p-dropdown
+            <p-select
                 [(ngModel)]="properties.forceRelayerAccount"
                 [disabled]="readonly"
                 (onChange)="onSave()"
@@ -54,7 +54,7 @@
                 [options]="accountTypes"
                 [appendTo]="'body'"
             >
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
 </table>

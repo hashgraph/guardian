@@ -77,7 +77,7 @@
             <div *ngIf="mode==='version'" class="field-container">
                 <div class="field-header">Version of</div>
                 <div class="field-value">
-                    <p-dropdown
+                    <p-select
                         [(ngModel)]="versionOfTopicId"
                         [options]="policies"
                         appendTo="body"
@@ -87,7 +87,7 @@
                         optionLabel="name"
                         optionValue="topicId"
                         placeholder="Select Policy"
-                ></p-dropdown>
+                ></p-select>
                 </div>
             </div>
         </div>

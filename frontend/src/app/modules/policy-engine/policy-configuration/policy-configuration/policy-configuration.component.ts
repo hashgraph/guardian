@@ -897,7 +897,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         class: 'primary'
                     }]
                 },
-            });
+            })!;
             dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: string) => {
                 if (result === 'Confirm') {
                     this.loadState(this.storage.current);
@@ -1246,7 +1246,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     class: 'primary'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
             this.loading = true;
             this.policyEngineService
@@ -1636,7 +1636,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 readonly: this.readonly,
                 policyId: this.rootId
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -1748,7 +1748,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 policy: this.policyTemplate,
                 type: 'module'
             }
-        });
+        })!;
 
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (policy) => {
             if(this.policyTemplate && policy) {
@@ -1829,7 +1829,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 root: this.policyTemplate,
                 entries: this.policyTemplate.policyDocumentation || [],
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: any) => {
             if (Array.isArray(result)) {
                 this.policyTemplate.setPolicyDocumentation(result);
@@ -1849,7 +1849,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     ? PolicyAction.CREATE_NEW_POLICY
                     : null
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result && this.policyTemplate) {
                 this.loading = true;
@@ -1935,7 +1935,7 @@ export class PolicyConfigurationComponent implements OnInit {
             data: {
                 policy: this.policyTemplate
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
             if (options) {
                 this.publishPolicy(options);
@@ -1998,7 +1998,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         class: 'primary'
                     }]
                 },
-            });
+            })!;
             dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
                 if (result === 'Save') {
                     this.asyncUpdatePolicy().pipe(takeUntil(this._destroy$)).subscribe(() => {
@@ -2030,7 +2030,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         class: 'primary'
                     }]
                 },
-            });
+            })!;
             dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
                 if (result === 'Save') {
                     this.asyncUpdatePolicy().pipe(takeUntil(this._destroy$)).subscribe(() => {
@@ -2113,7 +2113,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 type: 'module'
             }
             // data: module
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (!result) {
                 return;
@@ -2151,7 +2151,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 data: {
                     type: 'module'
                 }
-            });
+            })!;
             dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
                 if (!result) {
                     return;
@@ -2222,7 +2222,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     ? ToolSaveAction.CREATE_NEW_TOOL
                     : null
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result && this.toolTemplate) {
                 this.loading = true;
@@ -2299,7 +2299,7 @@ export class PolicyConfigurationComponent implements OnInit {
             header: 'Publish Tool',
             width: '600px',
             styleClass: 'guardian-dialog'
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
             if (options) {
                 this.loading = true;
@@ -2498,7 +2498,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 rules: this.ignoreRules ?? [],
                 presetRuleOptions: this.validationRuleOptions,
             },
-        });
+        })!;
 
         dialogRef.onClose
             .pipe(takeUntil(this._destroy$))
@@ -2560,7 +2560,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     items: Array.from(this.selectedBlocks.values()),
                     inheritTagsOption: true,
                 }
-            });
+            })!;
             dialogRef
                 .onClose
                 .subscribe(async (result) =>
@@ -2584,7 +2584,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         schemas: this.tagSchemas,
                         inheritTagsOption: true,
                     }
-                });
+                })!;
                 dialogRef
                     .onClose
                     .subscribe(async (result) =>
@@ -2599,7 +2599,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         schemas: this.tagSchemas,
                         inheritTagsOption: true,
                     }
-                });
+                })!;
                 dialogRef.onClose.subscribe(async (result) => {
                     if (result) {
                         this.onCreateTag(result, this.currentBlock!.id);

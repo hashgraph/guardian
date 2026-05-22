@@ -152,7 +152,7 @@ export class AuditComponent implements OnInit {
                 type: 'VP',
                 viewDocument: true
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

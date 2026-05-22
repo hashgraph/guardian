@@ -330,7 +330,7 @@ export class TestCodeDialog {
                 title: 'Document',
                 type: 'JSON',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 

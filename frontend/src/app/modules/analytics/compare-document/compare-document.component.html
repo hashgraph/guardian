@@ -12,7 +12,9 @@
 
     <div *ngIf="resultContext" class="list">
         <p-accordion [multiple]="true">
-            <p-accordionTab *ngIf="!disableHeader" [selected]="true" header="Description">
+            <p-accordion-panel *ngIf="!disableHeader">
+    <p-accordion-header>Description</p-accordion-header>
+    <p-accordion-content>
                 <div class="info-container" [style.grid-template-columns]="_gridStyle">
                     <ng-container *ngFor="let context of resultContext">
                         <div [style.grid-column-start]="2 * context.index"
@@ -31,9 +33,12 @@
                         </div>
                     </ng-container>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab *ngIf="treeContext" [selected]="true" header="{{ comparationLabels.documentsLabel }}">
+            <p-accordion-panel *ngIf="treeContext">
+    <p-accordion-header>{{ comparationLabels.documentsLabel }}</p-accordion-header>
+    <p-accordion-content>
                 <div class="merge-container">
                     <div [attr.type-1]="_type1" [attr.type-2]="_type2" class="legend"
                          [attr.type-3]="_type3" [attr.type-4]="_type4">
@@ -166,7 +171,8 @@
                     </div>
 
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
         </p-accordion>
     </div>
 

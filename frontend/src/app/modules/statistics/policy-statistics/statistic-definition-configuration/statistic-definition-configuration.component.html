@@ -133,7 +133,7 @@
 
                 <!-- <div class="guardian-input-container">
                     <label class="form-label" htmlFor="version">* Launch</label>
-                    <p-dropdown
+                    <p-select
                         formControlName="method"
                         [options]="methods"
                         [showClear]="false"
@@ -141,7 +141,7 @@
                         appendTo="body"
                         placeholder="Not selected"
                         panelStyleClass="guardian-dropdown-panel">
-                    </p-dropdown>
+                    </p-select>
                 </div> -->
             </form>
         </div>
@@ -264,8 +264,14 @@
                         </div>
                     </div>
                     <div class="schema-config">
-                        <p-tabView class="guardian-tabs" (onChange)="schemaConfigChange($event)">
-                            <p-tabPanel header="Select Fields">
+                        <p-tabs class="guardian-tabs" [(value)]="tabIndex" (valueChange)="schemaConfigChange($event)">
+                            <p-tablist>
+                                <p-tab [value]="0">Select Fields</p-tab>
+                                <p-tab [value]="1">Select Properties</p-tab>
+                                <p-tab [value]="2">Set Rules</p-tab>
+                            </p-tablist>
+                            <p-tabpanels>
+                            <p-tabpanel [value]="0">
                                 <div class="field-list">
                                     <div class="field-search">
                                         <div class="guardian-search">
@@ -317,8 +323,8 @@
                                         </div>
                                     </div>
                                 </div>
-                            </p-tabPanel>
-                            <p-tabPanel header="Select Properties">
+                            </p-tabpanel>
+                            <p-tabpanel [value]="1">
                                 <div class="field-list">
                                     <div class="field-search">
                                         <div class="guardian-search">
@@ -372,8 +378,8 @@
                                         </div>
                                     </div>
                                 </div>
-                            </p-tabPanel>
-                            <p-tabPanel header="Set Rules">
+                            </p-tabpanel>
+                            <p-tabpanel [value]="2">
                                 <div *ngIf="rule" class="rules-list">
                                     <div class="schema-rule">
                                         <div class="schema-rule-name">
@@ -458,8 +464,9 @@
                                         </div>
                                     </div> -->
                                 </div>
-                            </p-tabPanel>
-                        </p-tabView>
+                            </p-tabpanel>
+                            </p-tabpanels>
+                        </p-tabs>
                     </div>
                 </div>
             </div>
@@ -663,7 +670,7 @@
                                 <div class="cell-focus"></div>
                             </div>
                             <div class="variables-grid-cell cell-200 cell-select">
-                                <p-dropdown
+                                <p-select
                                     [(ngModel)]="formula.type"
                                     [options]="formulaTypes"
                                     [showClear]="false"
@@ -671,7 +678,7 @@
                                     appendTo="body"
                                     placeholder="Not selected"
                                     panelStyleClass="guardian-dropdown-panel">
-                                </p-dropdown>
+                                </p-select>
                                 <div class="cell-focus"></div>
                             </div>
                             <div class="variables-grid-cell cell-300">

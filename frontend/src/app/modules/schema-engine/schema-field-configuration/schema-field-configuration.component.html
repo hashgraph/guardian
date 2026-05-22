@@ -126,7 +126,7 @@
         <div class="extended-config">
             <div class="dropdown-field guardian-input-container">
                 <label class="form-label">Property</label>
-                <p-dropdown
+                <p-select
                     class="guardian-dropdown"
                     panelStyleClass="guardian-dropdown-panel width-825"
                     [filterBy]="'title'"
@@ -138,14 +138,14 @@
                     optionLabel="title"
                     optionValue="title"
                     placeholder="Select a property"
-                ></p-dropdown>
+                ></p-select>
             </div>
         </div>
 
         <div class="custom-fields-main-container">
             <div class="dropdown-field max-width-50 guardian-input-container">
                 <label class="form-label">Field type</label>
-                <p-dropdown
+                <p-select
                     class="guardian-dropdown"
                     panelStyleClass="guardian-dropdown-panel width-825"
                     (onChange)="onTypeChange($event)"
@@ -164,7 +164,7 @@
                             <span *ngIf="item.version" class="sub-schema-version">{{ item.version }}</span>
                         </div>
                     </ng-template>
-                </p-dropdown>
+                </p-select>
             </div>
 
             <div *ngIf="unit" class="input-field-container guardian-input-container">
@@ -223,7 +223,7 @@
             <ng-template #notHelpText>
                 <div class="dropdown-field guardian-input-container">
                     <label class="form-label">Required</label>
-                    <p-dropdown
+                    <p-select
                         class="guardian-dropdown"
                         panelStyleClass="guardian-dropdown-panel"
                         [formControl]="fieldType"
@@ -232,7 +232,7 @@
                         optionLabel="label"
                         optionValue="value"
                         placeholder="Required"
-                    ></p-dropdown>
+                    ></p-select>
                 </div>
 
                 <div *ngIf="!field.autocalculated.value" class="checkbox-field-container">

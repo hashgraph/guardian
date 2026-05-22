@@ -1,7 +1,7 @@
 <div class="container">
     <ng-container [ngTemplateOutlet]="header"></ng-container>
     <div class="page-filters">
-        <p-dropdown
+        <p-select
             (onChange)="onFilter($event)"
             [options]="statuses"
             [(ngModel)]="currentStatus"
@@ -10,7 +10,7 @@
             appendTo="body"
             class="guardian-dropdown"
             placeholder="Status"
-        ></p-dropdown>
+        ></p-select>
     </div>
     <ng-container *ngIf="!loading">
         <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>

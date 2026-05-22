@@ -246,7 +246,7 @@ export class FormulaConfigurationComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.config.delete(item);
@@ -270,7 +270,7 @@ export class FormulaConfigurationComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.config.deleteFile(file);
@@ -333,7 +333,7 @@ export class FormulaConfigurationComponent implements OnInit {
                     ...this.formulas
                 ]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: IFormulaLink | null) => {
             if (result) {
                 item.link = result
@@ -384,7 +384,7 @@ export class FormulaConfigurationComponent implements OnInit {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {},
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any) => {
             if(result) {
                 this.config.addFile(result);

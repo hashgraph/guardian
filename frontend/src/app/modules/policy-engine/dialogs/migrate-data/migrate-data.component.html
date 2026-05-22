@@ -1,18 +1,12 @@
 <div class="migrate-data-root">
     <div class="dialog-body">
-        <p-tabView class="guardian-header-tabs migrate-tabs" [activeIndex]="activeTabIndex"
-                   (onChange)="onTabChange($event)">
-            <p-tabPanel>
-                <ng-template pTemplate="header">
-                    <div class="tabview-label">Create New</div>
-                </ng-template>
-            </p-tabPanel>
-            <p-tabPanel>
-                <ng-template pTemplate="header">
-                    <div class="tabview-label">History</div>
-                </ng-template>
-            </p-tabPanel>
-        </p-tabView>
+        <p-tabs class="guardian-header-tabs migrate-tabs" [(value)]="activeTabIndex"
+                   (valueChange)="onTabChange($event)">
+            <p-tablist>
+                <p-tab [value]="0"><div class="tabview-label">Create New</div></p-tab>
+                <p-tab [value]="1"><div class="tabview-label">History</div></p-tab>
+            </p-tablist>
+        </p-tabs>
 
         <div *ngIf="activeTabIndex === 0" class="content create-tab">
             <div class="create-layout">
@@ -47,7 +41,7 @@
                                 <div class="policy-dropdown-container">
                                     <label class="form-label" htmlFor="firstPolicy">Source Policy</label>
                                     <div class="source-policy-selector">
-                                        <p-dropdown
+                                        <p-select
                                             (onChange)="onChange()"
                                             [(ngModel)]="migrationConfig.src"
                                             [options]="pList1"
@@ -59,7 +53,7 @@
                                             optionValue="id"
                                             [styleClass]="hasPolicySelectionError ? 'migration-policy-dropdown migration-policy-dropdown-error' : 'migration-policy-dropdown'"
                                             placeholder="Select Policy"
-                                            class="source-policy-selector__dropdown"></p-dropdown>
+                                            class="source-policy-selector__dropdown"></p-select>
                                         <button pButton pRipple (click)="onUploadData()" icon="pi pi-download"
                                                 [disabled]="!!runningMigrationWarning"
                                                 class="p-button-rounded source-policy-selector__upload-button"></button>
@@ -73,7 +67,7 @@
 
                                 <div class="policy-dropdown-container">
                                     <label class="form-label" htmlFor="firstPolicy">Destination Policy</label>
-                                    <p-dropdown
+                                    <p-select
                                         (onChange)="onChange()"
                                         [(ngModel)]="migrationConfig.dst"
                                         [options]="pList2"
@@ -84,7 +78,7 @@
                                         optionLabel="name"
                                         optionValue="id"
                                         [styleClass]="hasPolicySelectionError ? 'migration-policy-dropdown migration-policy-dropdown-error' : 'migration-policy-dropdown'"
-                                        placeholder="Select Policy"></p-dropdown>
+                                        placeholder="Select Policy"></p-select>
                                     <div class="policy-meta">
                                         <span>Version: {{ getPolicyVersion(migrationConfig.dst) }}</span>
                                         <span>Status: {{ getPolicyStatus(migrationConfig.dst) }}</span>
@@ -116,12 +110,12 @@
                                     </div>
                                 </div>
                                 <div style="margin-top: 10px;" *ngIf="showMigrateRetirePools">
-                                    <p-dropdown appendTo="body"
+                                    <p-select appendTo="body"
                                                 *ngIf="migrationConfig.migrateRetirePools && migrationConfig.migrateState"
                                                 [(ngModel)]="migrationConfig.retireContractId" [options]="contracts"
                                                 [showClear]="true"
                                                 optionLabel="description" optionValue="contractId" [appendTo]="'body'"
-                                                placeholder="Select contract"></p-dropdown>
+                                                placeholder="Select contract"></p-select>
                                     <div class="mapping-content"
                                          *ngIf="getObjectKeys(this.migrationConfig.tokensMap).length > 0 && migrationConfig.migrateRetirePools && migrationConfig.migrateState">
                                         <div *ngFor="let token of getObjectKeys(this.migrationConfig.tokensMap)"
@@ -132,10 +126,10 @@
                                             <span>:</span>
                                             <div class="map-right">
                                                 <div>
-                                                    <p-dropdown appendTo="body"
+                                                    <p-select appendTo="body"
                                                                 [(ngModel)]="migrationConfig.tokensMap[token]"
                                                                 [options]="dstTokenMap" [showClear]="true"
-                                                                placeholder="Select token"></p-dropdown>
+                                                                placeholder="Select token"></p-select>
                                                 </div>
                                             </div>
                                         </div>
@@ -376,7 +370,7 @@
                                                     [tooltipDisabled]="!isDropdownLabelOverflow(schemaTargetDropdown)"
                                                     tooltipPosition="top"
                                                 >
-                                                    <p-dropdown
+                                                    <p-select
                                                         appendTo="body"
                                                         [(ngModel)]="migrationConfig.schemas[schema]"
                                                         (onChange)="migrationConfig.updateSchemasValidity()"
@@ -385,7 +379,7 @@
                                                         optionLabel="name"
                                                         optionValue="iri"
                                                         placeholder="Select schema"
-                                                    ></p-dropdown>
+                                                    ></p-select>
                                                 </div>
                                                 <div class="schemas-meta-row">
                                                     <span>Version: {{ getDestinationSchemaVersion(schema) }}</span>
@@ -437,14 +431,14 @@
                                             </div>
                                             <div class="roles-target-cell">
                                                 <div class="roles-target-dropdown">
-                                                    <p-dropdown
+                                                    <p-select
                                                         appendTo="body"
                                                         [(ngModel)]="migrationConfig.roles[role]"
                                                         [options]="dstRoles"
                                                         [showClear]="true"
                                                         placeholder="Select role"
                                                         [appendTo]="'body'"
-                                                    ></p-dropdown>
+                                                    ></p-select>
                                                 </div>
                                             </div>
                                         </div>
@@ -500,11 +494,11 @@
                                                     [tooltipDisabled]="!isDropdownLabelOverflow(groupTargetDropdown)"
                                                     tooltipPosition="top"
                                                 >
-                                                    <p-dropdown appendTo="body"
+                                                    <p-select appendTo="body"
                                                                 [(ngModel)]="migrationConfig.groups[group]"
                                                                 [options]="dstGroups"
                                                                 [showClear]="true"
-                                                                placeholder="Select group"></p-dropdown>
+                                                                placeholder="Select group"></p-select>
                                                 </div>
                                             </div>
                                         </div>
@@ -560,11 +554,11 @@
                                                     [tooltipDisabled]="!isDropdownLabelOverflow(tokenTargetDropdown)"
                                                     tooltipPosition="top"
                                                 >
-                                                    <p-dropdown appendTo="body"
+                                                    <p-select appendTo="body"
                                                                 [(ngModel)]="migrationConfig.tokens[token]"
                                                                 [options]="dstTokens"
                                                                 [showClear]="true"
-                                                                placeholder="Select token"></p-dropdown>
+                                                                placeholder="Select token"></p-select>
                                                 </div>
                                             </div>
                                         </div>
@@ -622,7 +616,7 @@
                                                     [tooltipDisabled]="!isDropdownLabelOverflow(blockTargetDropdown)"
                                                     tooltipPosition="top"
                                                 >
-                                                    <p-dropdown
+                                                    <p-select
                                                         appendTo="body"
                                                         [(ngModel)]="migrationConfig.blocks[block]"
                                                         (onChange)="migrationConfig.updateSchemasValidity()"
@@ -631,7 +625,7 @@
                                                         optionLabel="tag"
                                                         optionValue="id"
                                                         placeholder="Select block"
-                                                    ></p-dropdown>
+                                                    ></p-select>
                                                 </div>
                                             </div>
                                         </div>

@@ -72,7 +72,7 @@ export class TimerConfigComponent implements OnInit {
                 },
                 modal: true,
                 closable: false,
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
                 if (result) {
                     this.properties.periodMask = result.mask;

@@ -46,7 +46,7 @@
                 <span class="test-total-info" [attr.total]="results?.total">
                     Documents are <span>{{ results?.total }}%</span> the same.
                 </span>
-                <p-dropdown
+                <p-select
                     *ngIf="docOptions.length"
                     class="guardian-dropdown doc-nav-dropdown"
                     [options]="computedDocOptions"
@@ -61,8 +61,8 @@
                     <ng-template pTemplate="item" let-option>
                         <span [title]="option.label">{{ option.label }}</span>
                     </ng-template>
-                </p-dropdown>
-                <p-dropdown
+                </p-select>
+                <p-select
                     class="guardian-dropdown field-status-filter-dropdown"
                     [options]="[
                         { label: 'All fields', value: 'all' },
@@ -77,7 +77,7 @@
                     <ng-template pTemplate="item" let-option>
                         <span [title]="option.label">{{ option.label }}</span>
                     </ng-template>
-                </p-dropdown>
+                </p-select>
             </div>
         </div>
         <app-compare-record

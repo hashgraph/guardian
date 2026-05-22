@@ -7,7 +7,7 @@
 
                 <div *ngIf="!isGroup" class="role-value">
                     <label class="form-label" htmlFor="role">Role</label>
-                    <p-dropdown
+                    <p-select
                         #operationDropdown
                         [options]="roles"
                         formControlName="roleOrGroup"
@@ -17,7 +17,7 @@
                         class="guardian-dropdown"
                         panelStyleClass="guardian-dropdown-panel"
                     >
-                    </p-dropdown>
+                    </p-select>
                 </div>
                 <div *ngIf="isGroup" aria-label="Select an option">
                     <div>
@@ -34,7 +34,7 @@
                         <div class="group-value" [attr.disabled]="type !== 'new'">
                             <div class="form-group groups-container">
                                 <label for="groupDropdown" class="form-label">Group Template</label>
-                                <p-dropdown
+                                <p-select
                                     id="groupDropdown"
                                     [options]="groups"
                                     [appendTo]="'body'"
@@ -44,7 +44,7 @@
                                     optionValue="value"
                                     class="full-width"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </div>
                             <div *ngIf="ifPrivateGroup()" class="form-group group-label-container">
                                 <label for="groupLabelInput" class="form-label">Group Label</label>

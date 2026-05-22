@@ -138,7 +138,7 @@ export class TrustChainComponent implements OnInit {
                 title: title,
                 type: 'VC'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -158,7 +158,7 @@ export class TrustChainComponent implements OnInit {
                 title: title,
                 type: 'VP'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -177,7 +177,7 @@ export class TrustChainComponent implements OnInit {
                 title: title,
                 type: 'JSON',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

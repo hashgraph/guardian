@@ -15,7 +15,7 @@
         svgClass="icon-color-secondary">
     </svg-icon>
 </div>
-<p-dropdown
+<p-select
     #dropdownMenu
     [ngModel]="current"
     [options]="options"
@@ -37,4 +37,4 @@
             <div class="menu-option-label {{option.color}}">{{option.text}}</div>
         </div>
     </ng-template>
-</p-dropdown>
+</p-select>

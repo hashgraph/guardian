@@ -6,7 +6,7 @@
     <div class="row-container">
         <div class="policy-dropdown-container">
             <label class="form-label" htmlFor="firstPolicy">{{ entityType }}</label>
-            <p-dropdown
+            <p-select
                     (onChange)="onChange()"
                     [(ngModel)]="topicId1"
                     [options]="policies"
@@ -16,12 +16,12 @@
                     optionLabel="name"
                     optionValue="topicId"
                     [placeholder]="entityTypePlaceholder"
-            ></p-dropdown>
+            ></p-select>
         </div>
 
         <div class="policy-dropdown-container">
             <label class="form-label" htmlFor="firstSchema">First Schema</label>
-            <p-dropdown
+            <p-select
                     (onChange)="onChange()"
                     [(ngModel)]="schemaId1"
                     [options]="list1"
@@ -31,14 +31,14 @@
                     optionLabel="fullName"
                     optionValue="id"
                     placeholder="Select Schema"
-            ></p-dropdown>
+            ></p-select>
         </div>
     </div>
 
     <div class="row-container">
         <div class="policy-dropdown-container">
             <label class="form-label" htmlFor="secondPolicy">{{ entityType }}</label>
-            <p-dropdown
+            <p-select
                     (onChange)="onChange()"
                     [(ngModel)]="topicId2"
                     [options]="policies"
@@ -48,14 +48,14 @@
                     optionLabel="name"
                     optionValue="topicId"
                     [placeholder]="entityTypePlaceholder"
-            ></p-dropdown>
+            ></p-select>
         </div>
 
         <div class="policy-dropdown-container">
             <label class="form-label" htmlFor="secondPolicy"
             >Second Schema</label
             >
-            <p-dropdown
+            <p-select
                     (onChange)="onChange()"
                     [(ngModel)]="schemaId2"
                     [options]="list2"
@@ -65,7 +65,7 @@
                     optionLabel="fullName"
                     optionValue="id"
                     placeholder="Select Schema"
-            ></p-dropdown>
+            ></p-select>
         </div>
     </div>
 </div>

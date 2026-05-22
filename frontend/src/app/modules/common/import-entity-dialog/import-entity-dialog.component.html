@@ -12,20 +12,16 @@
             <div class="guardian-loading-image"></div>
         </div>
 
-        <p-tabView *ngIf="canImportFile && canImportMessage" class="action-tabs" (onChange)="setImportType($event)">
-            <p-tabPanel *ngFor="let tab of items; let i = index">
-                <ng-template pTemplate="header">
-                    <div class="tabview-label">
-                        {{ tab.label }}
-                    </div>
-                </ng-template>
-            </p-tabPanel>
-        </p-tabView>
+        <p-tabs *ngIf="canImportFile && canImportMessage" class="action-tabs" [(value)]="tabIndex" (valueChange)="setImportType($event)">
+            <p-tablist>
+                <p-tab *ngFor="let tab of items; let i = index" [value]="i"><div class="tabview-label">{{ tab.label }}</div></p-tab>
+            </p-tablist>
+        </p-tabs>
 
         <div class="form-container">
             <div class="record-source-selector" *ngIf="type === 'record' && canUseImportedRecords">
                 <label class="form-label">Record source</label>
-                <p-dropdown
+                <p-select
                     [options]="recordSourceOptions"
                     [(ngModel)]="recordSource"
                     appendTo="body"
@@ -33,7 +29,7 @@
                     styleClass="guardian-dropdown"
                     class="guardian-dropdown"
                     panelStyleClass="guardian-dropdown-panel"
-                ></p-dropdown>
+                ></p-select>
             </div>
             <div class="record-sync-checkbox" *ngIf="type === 'record' && recordSource === 'imported'">
                 <p-checkbox
@@ -44,7 +40,7 @@
             </div>
             <div class="record-policy-selector" *ngIf="type === 'record' && recordSource === 'otherPolicy'">
                 <label class="form-label">Policy with imported records</label>
-                <p-dropdown
+                <p-select
                     #policyDropdown
                     [(ngModel)]="selectedPolicy"
                     [options]="policiesWithImportedRecords"
@@ -65,7 +61,7 @@
                     <ng-template let-item pTemplate="selectedItem" >
                         <span [title]="item.name">{{ item?.name }}</span>
                     </ng-template>
-                </p-dropdown>
+                </p-select>
             </div>
 
             <app-file-drag-n-drop

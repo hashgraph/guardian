@@ -19,7 +19,7 @@
             <div class="token-row" *ngFor="let tokenControl of tokenControls; let i = index" [formGroupName]="i">
                 <div class="token-row__field token-row__field--token">
                     <label for="token-{{ i }}">Token</label>
-                    <p-dropdown
+                    <p-select
                         id="token-{{ i }}"
                         formControlName="token"
                         [options]="getTokenList(tokenControl?.value?.token?.tokenId || '')"
@@ -34,7 +34,7 @@
                         <ng-template let-option pTemplate="item">
                             {{ option.tokenSymbol }} ({{ option.tokenId }})
                         </ng-template>
-                    </p-dropdown>
+                    </p-select>
                 </div>
 
                 <div class="token-row__field token-row__field--count">

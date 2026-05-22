@@ -19,14 +19,14 @@
                         type="text"/>
                     <i class="pi pi-search search-icon"></i>
                 </span>
-                <p-dropdown
+                <p-select
                     [options]="tagOptions"
                     [(ngModel)]="tagFilter"
                     appendTo="body"
                     class="tags-dropdown"
                     placeholder="Tags"
                     [appendTo]="'body'"
-                ></p-dropdown>
+                ></p-select>
                 <button (click)="applyFilters()"
                         class="button ml-8"
                         label="Apply Filters"
@@ -251,7 +251,7 @@
 
                                 <div *ngIf="user.TOOLS_TOOL_REVIEW">
                                     <ng-container *ngIf="showStatus(tool)">
-                                        <p-dropdown
+                                        <p-select
                                             class="status-actions-dropdown {{tool.status}}-dropdown"
                                             appendTo="body"
                                             tooltipPosition="bottom"
@@ -271,7 +271,7 @@
                                                     </span>
                                                 </div>
                                             </ng-template>
-                                        </p-dropdown>
+                                        </p-select>
                                     </ng-container>
                                     <ng-container *ngIf="!showStatus(tool)">
                                         <div

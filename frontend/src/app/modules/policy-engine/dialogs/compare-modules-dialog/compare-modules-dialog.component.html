@@ -6,7 +6,7 @@
 
         <div class="policy-dropdown-container">
             <label class="form-label" for="firstModule">* First {{ type }}</label>
-            <p-dropdown
+            <p-select
                 (onChange)="onChange()"
                 [(ngModel)]="itemId1"
                 [options]="list1"
@@ -16,12 +16,12 @@
                 id="firstModule"
                 optionLabel="name"
                 optionValue="id"
-            ></p-dropdown>
+            ></p-select>
         </div>
 
         <div class="policy-dropdown-container">
             <label class="form-label" for="secondaryModule">* Secondary  {{ type }}</label>
-            <p-dropdown
+            <p-select
                 (onChange)="onChange()"
                 [(ngModel)]="itemId2"
                 [options]="list2"
@@ -30,7 +30,7 @@
                 id="secondaryModule"
                 optionLabel="name"
                 optionValue="id"
-            ></p-dropdown>
+            ></p-select>
         </div>
     </div>
 </div>

@@ -231,18 +231,20 @@
             <ng-container *ngIf="step === 'step_2'" >
                 <div class="step-container {{codeTab === 'general' ? 'pages' : ''}}">
                     <div class="tabs-nav">
-                        <p-tabView (onChange)="onCodeChangeTab($event)" class="guardian-header-tabs">
-                            <p-tabPanel [selected]="codeTab === 'general'">
-                                <ng-template pTemplate="header">
-                                    <div class="tabview-label">General</div>
-                                </ng-template>
-                            </p-tabPanel>
-                            <p-tabPanel [selected]="codeTab === 'advanced'">
-                                <ng-template pTemplate="header">
-                                    <div class="tabview-label">Advanced (Optional)</div>
-                                </ng-template>
-                            </p-tabPanel>
-                        </p-tabView>
+                        <p-tabs (valueChange)="onCodeChangeTab($event)" class="guardian-header-tabs">
+                            <p-tablist>
+                                <p-tab [value]="0"><div class="tabview-label">General</div></p-tab>
+                                <p-tab [value]="1"><div class="tabview-label">Advanced (Optional)</div></p-tab>
+                            </p-tablist>
+                            <p-tabpanels>
+                                <p-tabpanel [value]="0">
+                                
+                                                            </p-tabpanel>
+                                <p-tabpanel [value]="1">
+                                
+                                                            </p-tabpanel>
+                            </p-tabpanels>
+                        </p-tabs>
                     </div>
                     <div *ngIf="codeTab === 'general' && formulas.length" class="formulas-container">
                         <div

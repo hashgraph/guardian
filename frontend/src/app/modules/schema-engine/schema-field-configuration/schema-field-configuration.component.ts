@@ -410,7 +410,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 enumValue: this.field.controlEnum.value,
                 errorHandler: this.errorHandler.bind(this),
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((res: { enumValue: string; loadToIpfs: boolean }) => {
             if (!res) {
                 return;
@@ -557,7 +557,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 helpContext,
                 validate: true,
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.field.expression.setValidators([Validators.required]);

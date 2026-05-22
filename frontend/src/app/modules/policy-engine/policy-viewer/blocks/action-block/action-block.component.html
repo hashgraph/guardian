@@ -11,7 +11,7 @@
 </div>
 
 <div *ngIf="type == 'dropdown'" class="content-dropdown" [attr.readonly-block]="readonly">
-    <p-dropdown
+    <p-select
         class="guardian-dropdown"
         panelStyleClass="guardian-dropdown-panel"
         [(ngModel)]="currentValue"
@@ -21,7 +21,7 @@
         placeholder="Select"
         [appendTo]="'body'"
     >
-    </p-dropdown>
+    </p-select>
 </div>
 
 <div *ngIf="type == 'transformation'" class="content" [attr.readonly-block]="readonly">

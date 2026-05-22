@@ -322,7 +322,7 @@ export class StatisticAssessmentViewComponent implements OnInit {
                 viewDocument: true,
                 schema: this.schema
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {});
     }
 }

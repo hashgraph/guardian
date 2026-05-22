@@ -1,14 +1,10 @@
 <div class="dialog-body">
     <ng-container *ngIf="!loading">
-        <p-tabView>
-            <p-tabPanel *ngFor="let tab of items; let i = index">
-                <ng-template pTemplate="header">
-                    <div (click)="handleChangeTab(i)" class="tabview-label">
-                        {{ tab.label }}
-                    </div>
-                </ng-template>
-            </p-tabPanel>
-        </p-tabView>
+        <p-tabs [(value)]="importType" (valueChange)="handleChangeTab($event)">
+            <p-tablist>
+                <p-tab *ngFor="let tab of items; let i = index" [value]="i"><div class="tabview-label">{{ tab.label }}</div></p-tab>
+            </p-tablist>
+        </p-tabs>
 
         <ng-container *ngIf="isImportTypeSelected" [ngSwitch]="this.importType">
             <ng-template [ngSwitchCase]="0">

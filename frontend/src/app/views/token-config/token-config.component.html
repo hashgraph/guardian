@@ -18,7 +18,7 @@
         <div *ngIf="!loading" class="guardian-user-page-toolbar">
             <div class="guardian-user-page-filters">
                 <div *ngIf="policies" class="dropdown-block">
-                    <p-dropdown 
+                    <p-select 
                         (onChange)="onFilter()" 
                         [appendTo]="'body'" 
                         [(ngModel)]="policyDropdownItem" 
@@ -34,7 +34,7 @@
                                 {{ policy.name + (policy.id !== -1 ? ' (' + policy.id + ')' : '') }}
                             </div>
                         </ng-template>
-                    </p-dropdown>
+                    </p-select>
                 </div>
             </div>
             <div class="guardian-user-page-buttons">

@@ -223,7 +223,7 @@ export class PolicySettingsComponent implements OnInit {
                 type,
                 theme: newTheme
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (r) => {
             if (r) {
                 if (r.name) {
@@ -252,7 +252,7 @@ export class PolicySettingsComponent implements OnInit {
             },
             modal: true,
             closable: false,
-        });
+        })!;
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.loading = true;
@@ -278,7 +278,7 @@ export class PolicySettingsComponent implements OnInit {
             data: {
                 type: ImportEntityType.Theme,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 const {data} = result;
@@ -335,7 +335,7 @@ export class PolicySettingsComponent implements OnInit {
                 type: 'edit',
                 theme: theme
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 theme.name = result.name;

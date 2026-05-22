@@ -270,7 +270,7 @@ export class RequestDocumentBlockAddonComponent
             width: '90%',
             styleClass: 'guardian-dialog',
             data: this
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             //
         });

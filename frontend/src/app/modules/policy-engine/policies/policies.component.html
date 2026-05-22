@@ -12,23 +12,13 @@
 
     <ng-container *ngIf="isConfirmed">
         <div class="tabs-nav">
-            <p-tabView (onChange)="onChangeTab($event)" class="guardian-header-tabs">
-                <p-tabPanel [selected]="tab === 'local'">
-                    <ng-template pTemplate="header">
-                        <div class="tabview-label">Local Policies</div>
-                    </ng-template>
-                </p-tabPanel>
-                <p-tabPanel [selected]="tab === 'remote'">
-                    <ng-template pTemplate="header">
-                        <div class="tabview-label">Remote Policies</div>
-                    </ng-template>
-                </p-tabPanel>
-                <p-tabPanel *ngIf="user.POLICIES_POLICY_EXECUTE && !user.POLICIES_POLICY_MANAGE" [selected]="tab === 'disconnected'">
-                    <ng-template pTemplate="header">
-                        <div class="tabview-label">Disconnected Policies</div>
-                    </ng-template>
-                </p-tabPanel>
-            </p-tabView>
+            <p-tabs [(value)]="tabIndex" (valueChange)="onChangeTab($event)" class="guardian-header-tabs">
+                <p-tablist>
+                    <p-tab [value]="0"><div class="tabview-label">Local Policies</div></p-tab>
+                    <p-tab [value]="1"><div class="tabview-label">Remote Policies</div></p-tab>
+                    <p-tab *ngIf="user.POLICIES_POLICY_EXECUTE && !user.POLICIES_POLICY_MANAGE" [value]="2"><div class="tabview-label">Disconnected Policies</div></p-tab>
+                </p-tablist>
+            </p-tabs>
         </div>
     </ng-container>
 
@@ -46,14 +36,14 @@
                             type="text"/>
                         <i class="pi pi-search search-icon"></i>
                     </span>
-                    <p-dropdown
+                    <p-select
                         [options]="tagOptions"
                         appendTo="body"
                         class="tags-dropdown"
                         formControlName="tag"
                         placeholder="Tags"
                         [appendTo]="'body'"
-                    ></p-dropdown>
+                    ></p-select>
                     <button (click)="applyFilters()"
                             class="button ml-8"
                             label="Apply Filters"
@@ -464,7 +454,7 @@
 
                                     <div *ngIf="user.POLICIES_POLICY_REVIEW">
                                         <ng-container *ngIf="showStatus(policy)">
-                                            <p-dropdown
+                                            <p-select
                                                 class="status-actions-dropdown {{policy.status}}-dropdown"
                                                 appendTo="body"
                                                 tooltipPosition="bottom"
@@ -487,7 +477,7 @@
                                                         </span>
                                                     </div>
                                                 </ng-template>
-                                            </p-dropdown>
+                                            </p-select>
                                         </ng-container>
                                         <ng-container *ngIf="!showStatus(policy)">
                                             <div
@@ -613,7 +603,7 @@
     </ng-container>
 </div>
 
-<p-overlayPanel #policyMenu>
+<p-popover #policyMenu>
     <ng-container *ngFor="let group of selectedMenuData?.groups; let last = last">
         <ng-container *ngIf="group.visible">
             <ng-container *ngIf="group.group">
@@ -650,9 +640,9 @@
             <div *ngIf="!last" class="policy-menu-delimiter"></div>
         </ng-container>
     </ng-container>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel #policySubMenu [styleClass]="'sub-menu-overlay-container'">
+<p-popover #policySubMenu [styleClass]="'sub-menu-overlay-container'">
     <div class="sub-menu-container" (click)="policySubMenu.hide()">
         <ng-container *ngFor="let button of selectedSubMenuData">
             <p-button
@@ -670,7 +660,7 @@
             </p-button>
         </ng-container>
     </div>
-</p-overlayPanel>
+</p-popover>
 
 <ng-template #noData>
     <div class="not-exist">

@@ -8,7 +8,7 @@
     </div>
     <div class="grouped-content">
         <div *ngIf="queryType === 'user_defined'" class="type-select user-defined-select">
-            <p-dropdown
+            <p-select
                 [options]="userDefinedOptions"
                 optionLabel="name"
                 optionValue="value"
@@ -22,7 +22,7 @@
                         <span *ngIf="selectedOption">{{ selectedOption.name }}</span>
                         <span *ngIf="!selectedOption">Not selected</span>
                     </ng-template>
-            </p-dropdown>
+            </p-select>
         </div>
         <div *ngIf="queryType !== 'user_defined'" class="content-type readonly-type">
             <span *ngIf="!currentType" class="common-prefix-dropdown">Equal</span>
@@ -37,7 +37,7 @@
         </div>
 
         <div *ngIf="type == 'dropdown'" class="content-select" [attr.valid]="valid">
-            <p-dropdown
+            <p-select
                 *ngIf="!(currentType === 'in' || currentType === 'not_in' || currentType === 'nin')"
                 autoWidth="false"
                 [(ngModel)]="currentValue"
@@ -53,7 +53,7 @@
                     <span *ngIf="selectedOption"> {{ selectedOption.name }}</span>
                     <span *ngIf="!selectedOption">Not selected</span>
                 </ng-template>
-            </p-dropdown>
+            </p-select>
             <p-multiSelect
                 *ngIf="currentType === 'in' || currentType === 'not_in' || currentType === 'nin'"
                 autoWidth="false"
@@ -71,7 +71,7 @@
             </p-multiSelect>
         </div>
         <div *ngIf="type == 'datepicker'" class="content-select" [attr.valid]="valid">
-            <p-calendar
+            <p-datepicker
                 [style]="{'border-left': '0', 'border-radius': '0 8px 8px 0'}"
                 [(ngModel)]="currentValue"
                 (onSelect)="onFilters($event)"
@@ -79,7 +79,7 @@
                 [showIcon]="true"
                 placeholder="Select date"
                 dateFormat="yy-mm-dd">
-            </p-calendar>
+            </p-datepicker>
         </div>
         <div *ngIf="type == 'input'" class="content-select" [attr.valid]="valid">
             <input class="input-filter" [(ngModel)]="currentValue" (change)="onFilters($event)">

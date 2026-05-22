@@ -488,7 +488,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 view,
                 groups
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 item.field = result.value;
@@ -512,7 +512,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 value: item.field,
                 view: this.createSchemaView(schema),
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 item.field = result.value;
@@ -690,7 +690,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 title: this.inputSchema?.name || 'Set Link',
                 view: this.createSchemaView(this.inputSchema),
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 const cursor = this.getCursor();
@@ -737,7 +737,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 view: this.createComponentView(),
                 subName: false
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 const cursor = this.getCursor();
@@ -869,8 +869,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }
     }
 
-    public onCodeChangeTab(tab: any) {
-        this.codeTab = tab.index === 0 ? 'general' : 'advanced';
+    public onCodeChangeTab(index: string | number | undefined) {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        this.codeTab = tabIndex === 0 ? 'general' : 'advanced';
     }
 
     public cursorActivity($event: any) {
@@ -887,7 +888,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 schema: this.inputSchema,
                 policyId: this.policyId
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 this.inputDocumentValue = result;
@@ -906,7 +907,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 schema: null,
                 policyId: this.policyId
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 this.inputRelationshipsValue.push(result);
@@ -925,7 +926,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 policyId: this.policyId,
                 value: item.document
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 item.document = result.document;
@@ -1112,7 +1113,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 title: 'Rename',
                 button: 'Save'
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any) => {
             if (!result) {
                 return;
@@ -1137,7 +1138,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 pages.delete($event);

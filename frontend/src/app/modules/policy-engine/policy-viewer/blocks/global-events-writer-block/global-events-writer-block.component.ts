@@ -379,7 +379,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
                     { name: 'Create', class: 'primary' },
                 ],
             },
-        });
+        })!;
 
         this.confirmDialogRef.onClose.subscribe((action: string | null) => {
             this.confirmDialogRef = null;

@@ -21,7 +21,7 @@
                     </span>
                 </div>
                 <div class="filter-container">
-                    <p-dropdown
+                    <p-select
                         (onChange)="onFilter()"
                         [appendTo]="'body'"
                         [(ngModel)]="roleFilterValue"
@@ -37,10 +37,10 @@
                                 {{ option?.name }}
                             </div>
                         </ng-template>
-                    </p-dropdown>
+                    </p-select>
                 </div>
                 <div class="filter-container">
-                    <p-dropdown
+                    <p-select
                         (onChange)="onFilter()"
                         [appendTo]="'body'"
                         [(ngModel)]="statusFilterValue"
@@ -58,7 +58,7 @@
                                 {{ option.name }}
                             </div>
                         </ng-template>
-                    </p-dropdown>
+                    </p-select>
 
                 </div>
             </div>

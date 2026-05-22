@@ -52,7 +52,7 @@
     </div>
 </div>
 
-<p-overlayPanel #menu styleClass="guardian-menu">
+<p-popover #menu styleClass="guardian-menu">
     <div class="menu-items">
         <div 
             *ngFor="let item of items" 
@@ -65,9 +65,9 @@
             </div>
         </div>
     </div>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel #itemMenu styleClass="guardian-menu">
+<p-popover #itemMenu styleClass="guardian-menu">
     <div class="menu-container" (click)="itemMenu.hide()">
         <button 
             *ngFor="let button of menuData"
@@ -83,4 +83,4 @@
             <div class="guardian-button-label">{{button.tooltip}}</div>
         </button>
     </div>
-</p-overlayPanel>
+</p-popover>

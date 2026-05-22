@@ -60,7 +60,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
-                <p-dropdown
+                <p-select
                     [(ngModel)]="field.type"
                     (onChange)="onSelectFieldType(field)"
                     [disabled]="readonly"
@@ -68,7 +68,7 @@
                     [options]="fieldTypeOptions"
                     [appendTo]="'body'"
                 >
-                </p-dropdown>
+                </p-select>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
@@ -139,7 +139,7 @@
                     Action
                 </td>
                 <td class="propRowCell">
-                    <p-dropdown
+                    <p-select
                         [(ngModel)]="field.action"
                         [disabled]="readonly"
                         (onChange)="onSave()"
@@ -147,7 +147,7 @@
                         [options]="actionOptions"
                         [appendTo]="'body'"
                     >
-                    </p-dropdown>
+                    </p-select>
                 </td>
             </tr>
             <ng-container *ngIf="field.action=='link'">

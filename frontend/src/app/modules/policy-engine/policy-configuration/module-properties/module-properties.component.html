@@ -97,7 +97,7 @@
                                 Variable Type
                             </td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     [(ngModel)]="item.type"
                                     [options]="typeOptions"
                                     optionLabel="label"
@@ -107,7 +107,7 @@
                                     (onChange)="onEditVariable(item)"
                                     [appendTo]="'body'"
                                 >
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
                         <tr *ngIf="item.type === 'Schema'" [attr.collapse]="propHidden.variables[i]"

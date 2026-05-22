@@ -37,7 +37,7 @@
                     </span>
                 </div>
             </div>
-            <p-overlayPanel #subMenu1 class="sub-nav-menu sub-nav-backdrop">
+            <p-popover #subMenu1 class="sub-nav-menu sub-nav-backdrop">
                 <div class="sub-nav-list">
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOKENS_LIST')"
                          (click)="routActive('SR_TOKENS_LIST')">
@@ -52,8 +52,8 @@
                         Token Pairs
                     </div>
                 </div>
-            </p-overlayPanel>
-            <p-overlayPanel #subMenu2 class="sub-nav-menu sub-nav-backdrop">
+            </p-popover>
+            <p-popover #subMenu2 class="sub-nav-menu sub-nav-backdrop">
                 <div class="sub-nav-list">
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_SCHEMAS')"
                          (click)="routActive('SR_SCHEMAS')">
@@ -96,8 +96,8 @@
                         Search
                     </div>
                 </div>
-            </p-overlayPanel>
-            <p-overlayPanel #subMenu3 class="sub-nav-menu sub-nav-backdrop">
+            </p-popover>
+            <p-popover #subMenu3 class="sub-nav-menu sub-nav-backdrop">
                 <div class="sub-nav-list">
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_SETTINGS')"
                          (click)="routActive('SR_SETTINGS')">
@@ -116,7 +116,7 @@
                         About
                     </div>
                 </div>
-            </p-overlayPanel>
+            </p-popover>
 
             <div *ngIf="isLogin && role==='USER'" class="nav-list" [attr.disabled]="commonLinksDisabled">
                 <div class="nav-list-item" [attr.active]="isActiveLink('USER_UP')" (click)="routActive('USER_UP')">
@@ -135,7 +135,7 @@
                 </div>
             </div>
 
-            <p-overlayPanel #subMenuUserTokens class="sub-nav-backdrop sub-nav-menu">
+            <p-popover #subMenuUserTokens class="sub-nav-backdrop sub-nav-menu">
                 <div class="sub-nav-list">
                     <div (click)="routActive('USER_TOKENS')" [attr.active]="isActiveLink('USER_TOKENS')"
                          class="nav-list-item">
@@ -146,7 +146,7 @@
                         Retirement
                     </div>
                 </div>
-            </p-overlayPanel>
+            </p-popover>
 
             <div *ngIf="isLogin && role==='AUDITOR'" class="nav-list" [attr.disabled]="commonLinksDisabled">
                 <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_UP')"
@@ -365,7 +365,7 @@
                 </button>
             </div>
         </div>
-        <p-overlayPanel #menu>
+        <p-popover #menu>
             <button *ngIf="isLogin && role === 'STANDARD_REGISTRY'" mat-menu-item (click)="doBranding()">Branding
             </button>
             <button *ngIf="isLogin" mat-menu-item (click)="logOut()">Log out</button>
@@ -401,6 +401,6 @@
                     </div>
                 </div>
             </div>
-        </p-overlayPanel>
+        </p-popover>
     </p-toolbar>
 </div>

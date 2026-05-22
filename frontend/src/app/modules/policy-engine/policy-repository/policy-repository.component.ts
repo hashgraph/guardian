@@ -231,7 +231,7 @@ export class PolicyRepositoryComponent implements OnInit {
                 commentsReadonly: true,
                 destroy: this._destroy$
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 

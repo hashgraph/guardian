@@ -32,7 +32,7 @@
 
     <div class="guardian-user-page-toolbar">
         <div class="guardian-user-page-filters">
-            <p-dropdown
+            <p-select
                 (onChange)="onFilter($event)"
                 [(ngModel)]="currentPolicy"
                 [options]="allPolicies"
@@ -59,7 +59,7 @@
                         <span>All</span>
                     </div>
                 </ng-template>
-            </p-dropdown>
+            </p-select>
         </div>
         <div class="guardian-user-page-buttons">
             <button

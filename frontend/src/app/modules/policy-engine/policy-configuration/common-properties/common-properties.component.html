@@ -143,10 +143,10 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">On errors</td>
                     <td class="propRowCell">
-                        <p-dropdown [(ngModel)]="block.properties.onErrorAction" [options]="errorActions"
+                        <p-select [(ngModel)]="block.properties.onErrorAction" [options]="errorActions"
                             [disabled]="readonly" (onChange)="onSave()" optionLabel="label" optionValue="value"
                             placeholder="Select Action" [appendTo]="'body'">
-                        </p-dropdown>
+                        </p-select>
                     </td>
                 </tr>
                 <tr *ngIf="block.properties.onErrorAction === 'retry'" class="propRow"
@@ -314,7 +314,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Event Type</td>
                             <td class="propRowCell">
-                                <p-dropdown [ngModel]="isInputEvent(item)" [options]="[
+                                <p-select [ngModel]="isInputEvent(item)" [options]="[
                                         { label: 'Input Event', value: true },
                                         { label: 'Output Event', value: false }
                                     ]"
@@ -322,7 +322,7 @@
                                     [disabled]="readonly"
                                     placeholder="Select Event Type"
                                     [appendTo]="'body'">
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
 
@@ -352,10 +352,10 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName source-elm">Output Event</td>
                             <td class="propRowCell">
-                                <p-dropdown [(ngModel)]="item.output" [options]="getOutputEvents(item)"
+                                <p-select [(ngModel)]="item.output" [options]="getOutputEvents(item)"
                                     [disabled]="readonly" (onChange)="onSave()" [appendTo]="'body'"
                                     placeholder="Select an event">
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
 
@@ -380,10 +380,10 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName target-elm">Input Event</td>
                             <td class="propRowCell">
-                                <p-dropdown [(ngModel)]="item.input" [options]="getPreparedInputEvents(item)"
+                                <p-select [(ngModel)]="item.input" [options]="getPreparedInputEvents(item)"
                                     [disabled]="readonly" (onChange)="onSave()" placeholder="Select Input"
                                     [appendTo]="'body'">
-                                </p-dropdown>
+                                </p-select>
                             </td>
                         </tr>
 
@@ -391,7 +391,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Event Actor</td>
                             <td class="propRowCell">
-                                <p-dropdown
+                                <p-select
                                     [(ngModel)]="item.actor"
                                     [options]="[
                                         { label: 'Event Initiator', value: '' },
@@ -402,7 +402,7 @@
                                     [disabled]="readonly"
                                     placeholder="Select Actor"
                                     [appendTo]="'body'">
-                                </p-dropdown>
+                                </p-select>
 
                             </td>
                         </tr>

@@ -15,7 +15,7 @@
         <div class="optional-row">
             <div *ngIf="isPolicy" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="policy">* Policy</label>
-                <p-dropdown
+                <p-select
                     *ngIf="isNewSchema"
                     class="guardian-dropdown"
                     panelStyleClass="guardian-dropdown-panel width-825"
@@ -27,8 +27,8 @@
                     optionLabel="name"
                     optionValue="topicId"
                     placeholder="Policy"
-                ></p-dropdown>
-                <p-dropdown
+                ></p-select>
+                <p-select
                     *ngIf="!isNewSchema"
                     class="guardian-dropdown"
                     panelStyleClass="guardian-dropdown-panel width-825"
@@ -41,12 +41,12 @@
                     optionLabel="name"
                     optionValue="topicId"
                     placeholder="Policy"
-                ></p-dropdown>
+                ></p-select>
             </div>
 
             <div *ngIf="isTool" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="tools">* Tool</label>
-                <p-dropdown
+                <p-select
                     class="guardian-dropdown"
                     panelStyleClass="guardian-dropdown-panel width-825"
                     [options]="tools"
@@ -57,12 +57,12 @@
                     optionValue="topicId"
                     placeholder="No binding"
                     [attr.disabled-dropdown]="!isNewSchema"
-                ></p-dropdown>
+                ></p-select>
             </div>
 
             <div *ngIf="isSystem" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="forSystemEntity">For (Entity)</label>
-                <p-dropdown
+                <p-select
                     class="guardian-dropdown"
                     panelStyleClass="guardian-dropdown-panel"
                     [options]="systemEntityOptions"
@@ -72,12 +72,12 @@
                     optionLabel="label"
                     optionValue="value"
                     placeholder="Entity"
-                ></p-dropdown>
+                ></p-select>
             </div>
 
             <div *ngIf="isPolicy || isModule" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="forPolicyModuleEntity">For (Entity)</label>
-                <p-dropdown
+                <p-select
                     class="guardian-dropdown"
                     panelStyleClass="guardian-dropdown-panel"
                     [options]="policyModuleEntityOptions"
@@ -87,7 +87,7 @@
                     optionLabel="label"
                     optionValue="value"
                     placeholder="Entity"
-                ></p-dropdown>
+                ></p-select>
             </div>
         </div>
 
@@ -173,7 +173,7 @@
                         <div class="condition-item">
                             <div class="condition-if-container">
                                 <div class="if-mode-dropdown guardian-input-container" style="min-width: 180px;">
-                                    <p-dropdown
+                                    <p-select
                                         class="guardian-dropdown"
                                         panelStyleClass="guardian-dropdown-panel"
                                         [options]="ifModeOptions"
@@ -181,7 +181,7 @@
                                         appendTo="body"
                                         placeholder="IF mode"
                                         (onChange)="onIfModeChange(condition)">
-                                    </p-dropdown>
+                                    </p-select>
                                 </div>
                                 <ng-container [ngSwitch]="getOperatorValue(condition)">
                                     <div *ngSwitchCase="'SINGLE'" class="if-label-mode">
@@ -204,7 +204,7 @@
                                         *ngFor="let row of getIfRows(condition); let i = index">
                                         <div class="if-dropdown-field guardian-input-container">
                                             <label class="form-label">* Field</label>
-                                            <p-dropdown
+                                            <p-select
                                                 class="guardian-dropdown"
                                                 panelStyleClass="guardian-dropdown-panel"
                                                 [options]="getFieldsForCondition(condition)"
@@ -213,7 +213,7 @@
                                                 placeholder="Field"
                                                 [formControl]="getRowFieldControl(row)"
                                                 (onChange)="onIfRowFieldChange(condition, i, $event)">
-                                            </p-dropdown>
+                                            </p-select>
                                         </div>
 
                                         <div *ngIf="getRowField(row)" class="equal-label">=</div>
@@ -252,22 +252,22 @@
                                             <div *ngSwitchCase="isFieldType3(getRowField(row))"
                                                 class="form-group required-form-field guardian-input-container">
                                                 <label class="form-label">Choose a date &amp; time</label>
-                                                <p-calendar
+                                                <p-datepicker
                                                     class="guardian-datepicker"
                                                     [formControl]="getRowValueControl(row)"
                                                     [showTime]="true"
                                                     [hourFormat]="'12'"
-                                                    appendTo="body"></p-calendar>
+                                                    appendTo="body"></p-datepicker>
                                             </div>
 
                                             <div *ngSwitchCase="isFieldType4(getRowField(row))"
                                                 class="form-group example-full-width required-form-field">
                                                 <label class="form-label">Choose a date</label>
-                                                <p-calendar
+                                                <p-datepicker
                                                     class="guardian-datepicker"
                                                     [formControl]="getRowValueControl(row)"
                                                     [showTime]="false"
-                                                    appendTo="body"></p-calendar>
+                                                    appendTo="body"></p-datepicker>
                                             </div>
 
                                             <div *ngSwitchCase="isFieldType5(getRowField(row))"

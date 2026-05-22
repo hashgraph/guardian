@@ -13,7 +13,7 @@
 
         <div class="guardian-input-container">
             <label class="form-label" htmlFor="version">Template</label>
-            <p-dropdown
+            <p-select
                 (onChange)="onSelectTemplate()"
                 [(ngModel)]="template"
                 [options]="templates"
@@ -24,7 +24,7 @@
                 panelStyleClass="guardian-dropdown-panel"
                 optionLabel="label"
                 optionValue="value">
-            </p-dropdown>
+            </p-select>
         </div>
 
         <ng-container *ngIf="template === 'formula'">
@@ -155,7 +155,7 @@
 <ng-template #conditionTemplate let-value="value">
     <div class="condition-value-container">
         <div class="condition-value-type">
-            <p-dropdown
+            <p-select
                 [(ngModel)]="value.type"
                 [options]="conditionTypes"
                 [showClear]="false"
@@ -165,7 +165,7 @@
                 panelStyleClass="guardian-dropdown-panel"
                 optionLabel="label"
                 optionValue="value">
-            </p-dropdown>
+            </p-select>
         </div>
         <div *ngIf="value.type === 'formula'" class="condition-value">
             <!-- <input class="guardian-input" pInputText [(ngModel)]="value.formula" type="text"/> -->
@@ -189,7 +189,7 @@
                     </svg-icon>
                 </span>
                 <span class="variable-name variable-name-dropdown">
-                    <p-dropdown
+                    <p-select
                         [(ngModel)]="value.variable"
                         [options]="variables"
                         [showClear]="false"
@@ -205,7 +205,7 @@
                         <ng-template let-item pTemplate="item">
                             {{item.value}} - {{item.label}}
                         </ng-template>
-                    </p-dropdown>
+                    </p-select>
                 </span>
                 <span class="variable-symbol">
                     <svg-icon class="icon-btn svg-icon"
@@ -222,7 +222,7 @@
         <div *ngIf="value.type === 'text'" class="condition-value condition-text">
             <div class="variable-container">
                 <span class="variable-name variable-name-dropdown">
-                    <p-dropdown
+                    <p-select
                         [(ngModel)]="value.variable"
                         [options]="variables"
                         [showClear]="false"
@@ -238,7 +238,7 @@
                         <ng-template let-item pTemplate="item">
                             {{item.value}} - {{item.label}}
                         </ng-template>
-                    </p-dropdown>
+                    </p-select>
                 </span>
                 <span class="variable-symbol">=</span>
             </div>
@@ -249,7 +249,7 @@
         <div *ngIf="value.type === 'enum'" class="condition-value condition-text">
             <div class="variable-container">
                 <span class="variable-name variable-name-dropdown">
-                    <p-dropdown
+                    <p-select
                         [(ngModel)]="value.variable"
                         [options]="enumVariables"
                         [showClear]="false"
@@ -265,7 +265,7 @@
                         <ng-template let-item pTemplate="item">
                             {{item.value}} - {{item.label}}
                         </ng-template>
-                    </p-dropdown>
+                    </p-select>
                 </span>
                 <span class="variable-symbol">=</span>
             </div>
@@ -294,7 +294,7 @@
 <ng-template #conditionValueTemplate let-value="value">
     <div class="condition-value-container">
         <div class="condition-value-type">
-            <p-dropdown
+            <p-select
                 [(ngModel)]="value.type"
                 [options]="valueTypes"
                 [showClear]="false"
@@ -304,7 +304,7 @@
                 panelStyleClass="guardian-dropdown-panel"
                 optionLabel="label"
                 optionValue="value">
-            </p-dropdown>
+            </p-select>
         </div>
         <div *ngIf="value.type === 'formula'" class="condition-value">
             <!-- <input class="guardian-input" pInputText [(ngModel)]="value.formula" type="text"/> -->

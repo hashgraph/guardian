@@ -3,14 +3,14 @@
         <div class="status status-{{confirmationStatus}}" (click)="menu1.toggle($event)">
             {{ confirmationStatus }}
         </div>
-        <p-overlayPanel #menu1>
+        <p-popover #menu1>
             <div (click)="onClickMenu($event)">
                 <div *ngFor="let doc of documents" class="documents">
                     <div class="doc-did" [title]="doc.did">{{ doc.username }}</div>
                     <div class="doc-status status-{{doc.status}}">{{ doc.status }}</div>
                 </div>
             </div>
-        </p-overlayPanel>
+        </p-popover>
     </div>
     <div *ngIf="!confirmationStatus && documentStatus === 'NEW'">
         <div class="btn-option btn-SIGN" (click)="onSelect('SIGNED')">
@@ -41,7 +41,7 @@
                 <i class="pi pi-info-circle"></i>
             </div>
         </div>
-        <p-overlayPanel #menu2>
+        <p-popover #menu2>
             <div (click)="onClickMenu($event)">
                 <div>
                     <div class="details">Required number of signatures</div>
@@ -78,7 +78,7 @@
                     </div>
                 </div>
             </div>
-        </p-overlayPanel>
+        </p-popover>
     </div>
 </div>
 

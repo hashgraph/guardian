@@ -172,7 +172,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 title: 'Import module',
                 module,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 if (type === 'message') {
@@ -205,7 +205,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 type: ImportEntityType.Module,
                 timeStamp: messageId
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
@@ -221,7 +221,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
             data: {
                 type: 'Module'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.itemId1 && result.itemId2) {
                 const items = btoa(JSON.stringify({
@@ -268,7 +268,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
             header: 'New Module',
             width: '650px',
             styleClass: 'custom-dialog',
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 const module = {

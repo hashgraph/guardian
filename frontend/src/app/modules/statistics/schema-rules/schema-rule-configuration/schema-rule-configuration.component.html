@@ -203,8 +203,13 @@
                         </div>
                     </div>
                     <div class="schema-config">
-                        <p-tabView class="guardian-tabs" (onChange)="schemaConfigChange($event)">
-                            <p-tabPanel header="Select Fields">
+                        <p-tabs class="guardian-tabs" [(value)]="tabIndex" (valueChange)="schemaConfigChange($event)">
+                            <p-tablist>
+                                <p-tab [value]="0">Select Fields</p-tab>
+                                <p-tab [value]="1">Select Properties</p-tab>
+                            </p-tablist>
+                            <p-tabpanels>
+                            <p-tabpanel [value]="0">
                                 <div class="field-list">
                                     <div class="field-search">
                                         <div class="guardian-search">
@@ -256,8 +261,8 @@
                                         </div>
                                     </div>
                                 </div>
-                            </p-tabPanel>
-                            <p-tabPanel header="Select Properties">
+                            </p-tabpanel>
+                            <p-tabpanel [value]="1">
                                 <div class="field-list">
                                     <div class="field-search">
                                         <div class="guardian-search">
@@ -311,8 +316,9 @@
                                         </div>
                                     </div>
                                 </div>
-                            </p-tabPanel>
-                        </p-tabView>
+                            </p-tabpanel>
+                            </p-tabpanels>
+                        </p-tabs>
                     </div>
                 </div>
             </div>

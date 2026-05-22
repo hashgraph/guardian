@@ -12,15 +12,11 @@
 <div class="dialog-body">
 
     <div class="view-bar">
-        <p-tabView class="guardian-tabs action-tabs" (onChange)="setTab($event)">
-            <p-tabPanel *ngFor="let tab of viewDocumentOptions; let i = index">
-                <ng-template pTemplate="header">
-                    <div class="tabview-label">
-                        {{ tab.label }}
-                    </div>
-                </ng-template>
-            </p-tabPanel>
-        </p-tabView>
+        <p-tabs class="guardian-tabs action-tabs" [(value)]="tabIndex" (valueChange)="setTab($event)">
+            <p-tablist>
+                <p-tab *ngFor="let tab of viewDocumentOptions; let i = index" [value]="i"><div class="tabview-label">{{ tab.label }}</div></p-tab>
+            </p-tablist>
+        </p-tabs>
     </div>
     <div *ngIf="activeTab === 'formulas'" class="view-body" #contentContainer>
         <div class="nav-container" #navContainer>

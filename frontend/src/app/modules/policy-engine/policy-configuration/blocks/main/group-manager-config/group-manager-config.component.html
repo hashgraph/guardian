@@ -4,7 +4,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Can Invite</td>
         <td class="propRowCell">
-            <p-dropdown [(ngModel)]="properties.canInvite"
+            <p-select [(ngModel)]="properties.canInvite"
                         [options]="canInviteOptions"
                         [disabled]="readonly"
                         (onChange)="onSave()"
@@ -13,14 +13,14 @@
                         optionValue="value"
                         [appendTo]="'body'"
             >
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Can Delete</td>
         <td class="propRowCell">
-            <p-dropdown [(ngModel)]="properties.canDelete"
+            <p-select [(ngModel)]="properties.canDelete"
                         [options]="canDeleteOptions"
                         [disabled]="readonly"
                         (onChange)="onSave()"
@@ -28,7 +28,7 @@
                         placeholder="Select Permission"
                         optionLabel="label"
                         optionValue="value">
-            </p-dropdown>
+            </p-select>
         </td>
     </tr>
 </table>

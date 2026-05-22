@@ -14,7 +14,9 @@
     </div>
 
     <p-accordion [multiple]="true">
-        <p-accordionTab header="Description" [selected]="true">
+        <p-accordion-panel>
+    <p-accordion-header>Description</p-accordion-header>
+    <p-accordion-content>
             <div class="info-container" [style.grid-template-columns]="_gridStyle">
                 <ng-container *ngFor="let context of resultContext">
                     <div class="middle-compare-result compare-result"
@@ -33,9 +35,12 @@
                     </div>
                 </ng-container>
             </div>
-        </p-accordionTab>
+            </p-accordion-content>
+</p-accordion-panel>
 
-        <p-accordionTab header="Input Events" *ngIf="inputEvents?.length">
+        <p-accordion-panel *ngIf="inputEvents?.length">
+    <p-accordion-header>Input Events</p-accordion-header>
+    <p-accordion-content>
             <div class="merge-tree" [attr.tree-size]="size">
                 <div *ngFor="let item of inputEvents" class="report-item report-item-small"
                      [attr.type]="item.type"
@@ -61,9 +66,12 @@
                     </ng-container>
                 </div>
             </div>
-        </p-accordionTab>
+            </p-accordion-content>
+</p-accordion-panel>
 
-        <p-accordionTab header="Output Events" *ngIf="outputEvents?.length">
+        <p-accordion-panel *ngIf="outputEvents?.length">
+    <p-accordion-header>Output Events</p-accordion-header>
+    <p-accordion-content>
             <div class="merge-tree" [attr.tree-size]="size">
                 <div *ngFor="let item of outputEvents" class="report-item report-item-small"
                      [attr.type]="item.type"
@@ -89,9 +97,12 @@
                     </ng-container>
                 </div>
             </div>
-        </p-accordionTab>
+            </p-accordion-content>
+</p-accordion-panel>
 
-        <p-accordionTab header="Variables" *ngIf="variables?.length">
+        <p-accordion-panel *ngIf="variables?.length">
+    <p-accordion-header>Variables</p-accordion-header>
+    <p-accordion-content>
             <div class="merge-tree" [attr.tree-size]="size">
                 <div *ngFor="let item of variables"
                      class="report-item report-item-small"
@@ -118,9 +129,12 @@
                     </ng-container>
                 </div>
             </div>
-        </p-accordionTab>
+            </p-accordion-content>
+</p-accordion-panel>
 
-        <p-accordionTab header="Tool Blocks" *ngIf="blocks" [selected]="true">
+        <p-accordion-panel *ngIf="blocks">
+    <p-accordion-header>Tool Blocks</p-accordion-header>
+    <p-accordion-content>
             <div class="merge-container">
                 <div class="legend"
                      [attr.type-1]="_type1"
@@ -264,7 +278,8 @@
                 </div>
 
             </div>
-        </p-accordionTab>
+            </p-accordion-content>
+</p-accordion-panel>
     </p-accordion>
 
 </div>

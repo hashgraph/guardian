@@ -89,7 +89,7 @@
                     <p class="location-name">Location: {{i + 1}}</p>
                     <div class="form-group type-selector">
                         <p class="location-form-label">Type</p>
-                        <p-dropdown
+                        <p-select
                             id="typeDropdown"
                             [(ngModel)]="geometry.type"
                             [options]="typeOptions"
@@ -97,7 +97,7 @@
                             placeholder="None"
                             class="full-width"
                             (onChange)="onTypeChange(geometry)">
-                        </p-dropdown>
+                        </p-select>
                         <small *ngIf="!type" class="p-error">This field is required.</small>
                     </div>
                     <div class="form-group type-selector">

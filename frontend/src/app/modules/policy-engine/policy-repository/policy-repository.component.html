@@ -29,7 +29,7 @@
     <div class="guardian-user-page-toolbar">
         <div class="guardian-user-page-filters">
 
-            <p-dropdown
+            <p-select
                 (onChange)="onFilter($event)"
                 [options]="schemas"
                 [(ngModel)]="currentSchema"
@@ -38,8 +38,8 @@
                 appendTo="body"
                 class="guardian-dropdown"
                 placeholder="Schema"
-            ></p-dropdown>
-            <p-dropdown
+            ></p-select>
+            <p-select
                 (onChange)="onFilter($event)"
                 [options]="users"
                 [(ngModel)]="currentUser"
@@ -48,7 +48,7 @@
                 appendTo="body"
                 class="guardian-dropdown"
                 placeholder="Owner"
-            ></p-dropdown>
+            ></p-select>
         </div>
         <div class="guardian-user-page-buttons">
         </div>

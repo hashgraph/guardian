@@ -60,7 +60,7 @@
                 buttonStyle="guardian"
             ></app-compare-btn>
 
-            <p-dropdown
+            <p-select
                 *ngIf="allVcDocs.length > 1 && !isEditMode"
                 [options]="versionOptions"
                 [(ngModel)]="selectedVersionIndex"
@@ -69,7 +69,7 @@
                 class="version-dropdown"
                 [appendTo]="'body'"
                 styleClass="guardian-dropdown"
-            ></p-dropdown>
+            ></p-select>
             <button
                 *ngIf="isCurrentUserOwner"
                 pButton
@@ -200,10 +200,12 @@
         <div *ngFor="let item of subjects" class="guardian-accordion-container">
             <p-accordion
                 [multiple]="true"
-                [activeIndex]="[0]"
+                [value]="['0']"
                 class="guardian-accordion"
             >
-                <p-accordionTab header="{{ getCredentialSubject(item) }}">
+                <p-accordion-panel>
+    <p-accordion-header>{{ getCredentialSubject(item) }}</p-accordion-header>
+    <p-accordion-content>
                     <form [formGroup]="dataForm">
                         <app-schema-form-root
                             tabindex="0"
@@ -225,7 +227,8 @@
                         >
                         </app-schema-form-root>
                     </form>
-                </p-accordionTab>
+                    </p-accordion-content>
+</p-accordion-panel>
             </p-accordion>
         </div>
     </div>

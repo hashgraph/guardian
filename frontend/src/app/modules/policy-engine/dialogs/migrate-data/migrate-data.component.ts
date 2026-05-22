@@ -1316,7 +1316,7 @@ export class MigrateData {
                         4
                     ),
                 },
-            })
+            })!
             .onClose.subscribe((result: any) => {
             if (!result) {
                 return;

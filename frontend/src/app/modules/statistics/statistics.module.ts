@@ -10,15 +10,15 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { NewPolicyStatisticsDialog } from './policy-statistics/dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { CheckboxModule } from 'primeng/checkbox';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ScoreDialog } from './policy-statistics/dialogs/score-dialog/score-dialog.component';
-import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { PopoverModule } from 'primeng/popover';
 import { DragDropModule } from 'primeng/dragdrop';
 import { TreeModule } from 'primeng/tree';
 import { TreeDragDropService } from 'primeng/api';
@@ -81,13 +81,13 @@ import { PolicyLabelDocumentConfigurationComponent } from './policy-labels/polic
         TableModule,
         TooltipModule,
         InputTextModule,
-        DropdownModule,
-        TabViewModule,
+        SelectModule,
+        TabsModule,
         CheckboxModule,
         RadioButtonModule,
         CodemirrorModule,
         MultiSelectModule,
-        OverlayPanelModule,
+        PopoverModule,
         DragDropModule,
         TreeModule,
         TieredMenuModule,

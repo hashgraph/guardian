@@ -293,7 +293,7 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
                 viewDocument: true,
                 // schema: this.schema
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -312,7 +312,7 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
                 viewDocument: true,
                 // schema: this.schema
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 }

@@ -1,4 +1,4 @@
-<p-dropdown
+<p-select
     #dropdown
     *ngIf="!disabled"
     [options]="list"
@@ -24,7 +24,7 @@
             </span>
         </div>
     </ng-template>
-</p-dropdown>
+</p-select>
 <div *ngIf="disabled" class="guardian-disabled-status status-{{status}}">
     {{label}}
 </div>

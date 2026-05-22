@@ -254,7 +254,7 @@ export class FormulasComponent implements OnInit {
                 policy: this.currentPolicy,
                 action: 'Create'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.loading = true;
@@ -281,7 +281,7 @@ export class FormulasComponent implements OnInit {
             data: {
                 type: ImportEntityType.Formula,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
@@ -302,7 +302,7 @@ export class FormulasComponent implements OnInit {
                 policy: this.currentPolicy,
                 formula
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.policyId) {
                 this.loading = true;
@@ -358,7 +358,7 @@ export class FormulasComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.loading = true;
@@ -399,7 +399,7 @@ export class FormulasComponent implements OnInit {
                     class: 'primary'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Publish') {
                 this.loading = true;

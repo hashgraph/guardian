@@ -134,7 +134,7 @@
                                     placeholder="Search by Project Title" />
                             </form>
                         </span>
-                        <p-dropdown (onChange)="sortData()" [(ngModel)]="selectedSortByOption" [options]="sortByOption"
+                        <p-select (onChange)="sortData()" [(ngModel)]="selectedSortByOption" [options]="sortByOption"
                             class="sort-by-dropdown offset">
                             <ng-template pTemplate="selectedItem">
                                 <span class="sort-by-label">Sort By</span>
@@ -143,7 +143,7 @@
                             <ng-template let-sort pTemplate="item">
                                 <div>{{ sort.name }}</div>
                             </ng-template>
-                        </p-dropdown>
+                        </p-select>
                     </div>
                     <div class="table">
                         <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>

@@ -160,7 +160,7 @@ export class ArtifactConfigComponent implements OnInit {
             },
             modal: true,
             closable: false,
-        });
+        })!;
 
         dialogRef.onClose.subscribe((result) => {
             if (!result) {

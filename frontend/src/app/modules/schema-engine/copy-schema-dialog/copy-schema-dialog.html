@@ -18,23 +18,23 @@
             </div>
             <div *ngIf="isPolicy" class="form-group">
                 <label for="policyDropdown" class="form-label">* Policy</label>
-                <p-dropdown id="policyDropdown" formControlName="topicId" [options]="getPoliciesWithDefault()"
+                <p-select id="policyDropdown" formControlName="topicId" [options]="getPoliciesWithDefault()"
                     optionLabel="name" optionValue="topicId" [appendTo]="'body'" placeholder="Select a policy"
                     (onChange)="onFilter($event)" class="full-width">
-                </p-dropdown>
+                </p-select>
             </div>
             <div *ngIf="isTool" class="form-group">
                 <label for="toolDropdown" class="form-label">* Tool</label>
-                <p-dropdown id="toolDropdown" formControlName="topicId" [options]="getToolsWithDefault()"
+                <p-select id="toolDropdown" formControlName="topicId" [options]="getToolsWithDefault()"
                     optionLabel="name" optionValue="topicId" placeholder="Select a tool" (onChange)="onFilter($event)"
                     class="full-width">
-                </p-dropdown>
+                </p-select>
             </div>
             <div *ngIf="isSystem" class="form-group">
                 <label for="entityDropdown" class="form-label">For (Entity)</label>
-                <p-dropdown id="entityDropdown" formControlName="entity" [options]="getEntitiesWithDefault()"
+                <p-select id="entityDropdown" formControlName="entity" [options]="getEntitiesWithDefault()"
                     optionLabel="label" optionValue="value" placeholder="Select an entity" class="full-width">
-                </p-dropdown>
+                </p-select>
             </div>
             <div class="copy-nested-checkbox">
                 <p-checkbox binary="true" id="copyNested" formControlName="copyNested" />

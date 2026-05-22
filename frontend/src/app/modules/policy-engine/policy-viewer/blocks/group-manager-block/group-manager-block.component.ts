@@ -161,7 +161,7 @@ export class GroupManagerBlockComponent implements OnInit {
             styleClass: 'g-dialog',
             modal: true,
             closable: false,
-        });
+        })!;
         dialogRef.onClose.subscribe(async () => {
         });
     }
@@ -180,7 +180,7 @@ export class GroupManagerBlockComponent implements OnInit {
             data: {title, description},
             modal: true,
             closable: false,
-        });
+        })!;
 
         dialogRef.onClose.subscribe((result) => {
             if (result) {

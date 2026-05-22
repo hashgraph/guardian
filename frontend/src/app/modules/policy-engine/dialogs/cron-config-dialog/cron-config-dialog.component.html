@@ -4,7 +4,7 @@
         <div class="c1">
             <div class="f1">
                 <label for="startDate">Start Date:</label>
-                <p-calendar
+                <p-datepicker
                     id="startDate"
                     formControlName="startDate"
                     dateFormat="dd/mm/yy"
@@ -13,7 +13,7 @@
                     [showTime]="true"
                     [stepHour]="true"
                     [stepMinute]="true"
-                ></p-calendar>
+                ></p-datepicker>
             </div>
 
             <div class="f1">
@@ -30,14 +30,14 @@
 
             <div class="f1">
                 <label for="period">Period:</label>
-                <p-dropdown
+                <p-select
                     id="period"
                     formControlName="period"
                     [options]="periodOptions"
                     placeholder="Select a period"
                     (onChange)="selectPeriod()"
                     [appendTo]="'body'"
-                ></p-dropdown>
+                ></p-select>
             </div>
         </div>
 
@@ -51,13 +51,16 @@
 
         <div class="delimiter"></div>
         <p-accordion [multiple]="true">
-            <p-accordionTab header="Cron Mask (advanced)">
+            <p-accordion-panel>
+    <p-accordion-header>Cron Mask (advanced)</p-accordion-header>
+    <p-accordion-content>
                 <div class="form-group input-mask-container">
                     <label>* Mask: minute hour day(month) month day(week)</label>
                     <input pInputText type="text" placeholder="* * * * *" formControlName="mask"
                            class="example-full-width"/>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
         </p-accordion>
 
         <div class="dialog-actions">

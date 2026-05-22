@@ -16,8 +16,13 @@
 
     <div class="page-title">{{ username }}</div>
 
-    <p-tabView [(activeIndex)]="selectedIndex" (onChange)="onChange($event)">
-        <p-tabPanel header="User Roles">
+    <p-tabs [(value)]="selectedIndex" (valueChange)="onChange($event)">
+        <p-tablist>
+            <p-tab [value]="0">User Roles</p-tab>
+            <p-tab [value]="1">Assigned Policies</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+            <p-tabpanel [value]="0">
             <div class="permissions-content">
                 <div class="selected-roles">
                     <div class="role-header">Selected Roles</div>
@@ -148,13 +153,12 @@
                     </button>
                 </div>
             </div>
-        </p-tabPanel>
-
-        <p-tabPanel header="Assigned Policies">
+                    </p-tabpanel>
+            <p-tabpanel [value]="1">
             <div class="tab-container">
                 <div class="filters-container">
                     <div class="filter-container">
-                        <p-dropdown [(ngModel)]="statusFilterValue"
+                        <p-select [(ngModel)]="statusFilterValue"
                                     [appendTo]="'body'"
                                     [options]="statusFilterOption"
                                     (onChange)="onFilter()">
@@ -167,7 +171,7 @@
                             <ng-template let-option pTemplate="item">
                                 <div class="dropdown-item">{{ option.name }}</div>
                             </ng-template>
-                        </p-dropdown>
+                        </p-select>
                     </div>
                 </div>
 
@@ -218,6 +222,7 @@
                     ></app-paginator>
                 </div>
             </div>
-        </p-tabPanel>
-    </p-tabView>
+                    </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
 </div>

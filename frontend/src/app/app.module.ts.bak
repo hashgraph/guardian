@@ -5,7 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { providePrimeNG } from 'primeng/config';
-import Lara from '@primeuix/themes/lara';
+import Lara from '@primeng/themes/lara';
 import { ToastrModule } from 'ngx-toastr';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -108,15 +108,15 @@ import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-t
 // PrimeNG
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import { SelectModule } from 'primeng/select';
+import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
-import { StepperModule } from 'primeng/stepper';
+import { StepsModule } from 'primeng/steps';
 import { ProgressBarModule } from 'primeng/progressbar';
-import { TabsModule } from 'primeng/tabs';
+import { TabViewModule } from 'primeng/tabview';
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -128,8 +128,8 @@ import { AccountTypeSelectorDialogComponent } from './views/login/register-dialo
 import { ForgotPasswordDialogComponent } from './views/login/forgot-password-dialog/forgot-password-dialog.component';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton';
-import { DatePickerModule } from 'primeng/datepicker';
-import { Textarea as InputTextareaModule } from 'primeng/textarea';
+import { CalendarModule } from 'primeng/calendar';
+import { Textarea as InputTextareaModule } from 'primeng/inputtextarea';
 import { ContractEngineModule } from './modules/contract-engine/contract-engine.module';
 import { ProjectComparisonService } from './services/project-comparison.service';
 import { ProjectComparisonModule } from './modules/project-comparison/project-comparison.module';
@@ -222,22 +222,22 @@ import { CredentialsPanelComponent } from './components/credentials/credentials-
         InputTextModule,        
         ClipboardModule,
         SelectButtonModule,
-        SelectModule,
+        DropdownModule,
         ButtonModule,
         DialogModule,
         TagModule,
         TableModule,
         TooltipModule,
-        StepperModule,
+        StepsModule,
         ProgressBarModule,
-        TabsModule,
+        TabViewModule,
         DynamicDialogModule,
         ColorPickerModule,
         ProgressSpinnerModule,
         PasswordModule,
         MultiSelectModule,
         RadioButtonModule,
-        DatePickerModule,
+        CalendarModule,
         InputTextareaModule,
         ContractEngineModule,
         ProjectComparisonModule,
