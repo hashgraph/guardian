@@ -21,7 +21,7 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
-        "@hiero-ledger/sdk": "2.79.0",
+        "@hiero-ledger/sdk": "2.84.0",
         "axios": "^1.12.0",
         "commander": "^10.0.0",
         "solc": "0.8.28",
