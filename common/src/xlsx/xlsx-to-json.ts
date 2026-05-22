@@ -1,4 +1,4 @@
-import { Workbook, Worksheet } from './models/workbook.js';
+import { Range, Workbook, Worksheet } from './models/workbook.js';
 import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
 import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit, xlsxToVisibility } from './models/value-converters.js';
 import { Table } from './models/table.js';
@@ -7,7 +7,7 @@ import { XlsxSchemaConditions } from './models/schema-condition.js';
 import { SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
 import { XlsxResult } from './models/xlsx-result.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
-import { EnumTable } from './models/enum-table.js';
+import { EnumTable, SharedEnumTable } from './models/enum-table.js';
 import { XlsxSchema, XlsxTool } from './models/xlsx-schema.js';
 import { XlsxExpressions } from './models/xlsx-expressions.js';
 import { IFieldKey } from './interfaces/field-key.interface.js';
@@ -32,6 +32,17 @@ export class XlsxToJson {
             await workbook.read(buffer as any);
             const worksheets = workbook.getWorksheets();
 
+            // Pass 0: shared enum tab
+            for (const worksheet of worksheets) {
+                if (XlsxToJson.isSharedEnumSheet(worksheet)) {
+                    const enums = await XlsxToJson.readSharedEnumSheet(worksheet, xlsxResult, preview);
+                    for (const item of enums) {
+                        xlsxResult.addEnum(item);
+                    }
+                }
+            }
+
+            // Pass 1: per-tab enum sheets (backward compatibility)
             for (const worksheet of worksheets) {
                 if (XlsxToJson.isEnum(worksheet)) {
                     const item = await XlsxToJson.readEnumSheet(worksheet, xlsxResult);
@@ -50,6 +61,7 @@ export class XlsxToJson {
                 }
             }
 
+            // Pass 2: schema sheets
             for (const worksheet of worksheets) {
                 if (XlsxToJson.isSchema(worksheet)) {
                     const schema = await XlsxToJson.readSchemaSheet(worksheet, xlsxResult);
@@ -75,7 +87,22 @@ export class XlsxToJson {
         }
     }
 
+    private static isSharedEnumSheet(worksheet: Worksheet): boolean {
+        if (worksheet.name !== Dictionary.SHARED_ENUM_SHEET) {
+            return false;
+        }
+        return (
+            worksheet.getValue<string>(SharedEnumTable.COL_SCHEMA, SharedEnumTable.HEADER_ROW) === Dictionary.ENUM_SCHEMA_NAME &&
+            worksheet.getValue<string>(SharedEnumTable.COL_FIELD,  SharedEnumTable.HEADER_ROW) === Dictionary.ENUM_FIELD_NAME  &&
+            worksheet.getValue<string>(SharedEnumTable.COL_IPFS,   SharedEnumTable.HEADER_ROW) === Dictionary.ENUM_IPFS        &&
+            worksheet.getValue<string>(SharedEnumTable.COL_VALUE,  SharedEnumTable.HEADER_ROW) === Dictionary.ENUM_VALUE
+        );
+    }
+
     private static isEnum(worksheet: Worksheet): boolean {
+        if (XlsxToJson.isSharedEnumSheet(worksheet)) {
+            return false;
+        }
         return !XlsxToJson.isSchema(worksheet);
     }
 
@@ -149,6 +176,74 @@ export class XlsxToJson {
         }
         _enum.setData(Array.from(items));
         return _enum;
+    }
+
+    private static async readSharedEnumSheet(
+        worksheet: Worksheet,
+        xlsxResult: XlsxResult,
+        preview: boolean
+    ): Promise<XlsxEnum[]> {
+        const result: XlsxEnum[] = [];
+        const range = worksheet.getRange();
+        const endRow = range.e.r;
+
+        let currentSchemaName: string = null;
+        let currentFieldName: string = null;
+        let currentIpfs: boolean = false;
+        let currentItems: string[] = [];
+        let groupStartRow: number = SharedEnumTable.FIRST_DATA_ROW;
+
+        const flushGroup = async (endDataRow: number): Promise<void> => {
+            if (!currentSchemaName || !currentFieldName) {
+                return;
+            }
+            const _enum = new XlsxEnum(worksheet);
+            _enum.setSchemaName(currentSchemaName);
+            _enum.setFieldName(currentFieldName);
+            _enum.setIPFS(currentIpfs);
+            _enum.setData([...currentItems]);
+            _enum.setRange(Range.fromRows(groupStartRow, endDataRow - 1, SharedEnumTable.COL_VALUE));
+            const loaded = await _enum.upload(preview);
+            if (!loaded) {
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Failed to upload enum "${currentSchemaName}/${currentFieldName}".`,
+                    message: `Failed to upload enum "${currentSchemaName}/${currentFieldName}".`,
+                    worksheet: worksheet.name
+                }, null);
+            }
+            result.push(_enum);
+        };
+
+        for (let row = SharedEnumTable.FIRST_DATA_ROW; row < endRow; row++) {
+            const schemaName = worksheet.getValue<string>(SharedEnumTable.COL_SCHEMA, row);
+            const fieldName  = worksheet.getValue<string>(SharedEnumTable.COL_FIELD,  row);
+            const ipfsRaw    = worksheet.getValue<string>(SharedEnumTable.COL_IPFS,   row);
+            const value      = worksheet.getValue<string>(SharedEnumTable.COL_VALUE,  row);
+
+            if (!schemaName && !fieldName && !value) {
+                continue;
+            }
+
+            const isNewGroup = (schemaName && schemaName !== currentSchemaName) ||
+                               (fieldName  && fieldName  !== currentFieldName);
+
+            if (isNewGroup) {
+                await flushGroup(row);
+                currentSchemaName = schemaName || currentSchemaName;
+                currentFieldName  = fieldName  || currentFieldName;
+                currentIpfs       = xlsxToBoolean(ipfsRaw);
+                currentItems      = [];
+                groupStartRow     = row;
+            }
+
+            if (value) {
+                currentItems.push(value);
+            }
+        }
+        await flushGroup(endRow);
+
+        return result;
     }
 
     private static async readSchemaSheet(
@@ -250,7 +345,8 @@ export class XlsxToJson {
                     worksheet,
                     table,
                     row,
-                    xlsxResult
+                    xlsxResult,
+                    schema.name
                 );
                 if (field) {
                     allFields.set(field.title, field);
@@ -267,6 +363,16 @@ export class XlsxToJson {
                             XlsxToJson.addFieldByName(worksheet, table, row, xlsxResult, parent.fields, field);
                         }
                     }
+                }
+            }
+
+            // Create schemas for inline sub-schema fields
+            for (const field of fields) {
+                if (field.isRef && field.customType === 'subSchema') {
+                    const syntheticSchema = new XlsxSchema(worksheet);
+                    syntheticSchema.name = field.description;
+                    syntheticSchema.update(field.fields || [], [], new XlsxExpressions());
+                    xlsxResult.addInlineSchema(syntheticSchema, worksheet.name);
                 }
             }
 
@@ -373,7 +479,8 @@ export class XlsxToJson {
         worksheet: Worksheet,
         table: Table,
         row: number,
-        xlsxResult: XlsxResult
+        xlsxResult: XlsxResult,
+        schemaName: string = ''
     ): SchemaField {
         if (worksheet.empty(table.start.c, table.end.c, row)) {
             return null;
@@ -429,7 +536,8 @@ export class XlsxToJson {
                     field,
                     fieldType,
                     row,
-                    xlsxResult
+                    xlsxResult,
+                    schemaName
                 );
             } else if (type) {
                 const hyperlink = worksheet
@@ -502,7 +610,8 @@ export class XlsxToJson {
         field: SchemaField,
         fieldType: IFieldTypes,
         row: number,
-        xlsxResult: XlsxResult
+        xlsxResult: XlsxResult,
+        schemaName: string = ''
     ): void {
         try {
             const param = worksheet.getValue<string>(table.getCol(Dictionary.PARAMETER), row);
@@ -518,16 +627,23 @@ export class XlsxToJson {
                     .getFormat();
                 field.unit = xlsxToUnit(format);
             }
+            if (fieldType.name === 'Sub-Schema') {
+                const subSchemaName = field.description;
+                field.type = xlsxResult.addLink(subSchemaName, null);
+            }
             if (fieldType.name === 'Enum') {
-                // field.enum = worksheet
-                //     .getCell(table.getCol(Dictionary.ANSWER), row)
-                //     .getList()
-                // field.enum = param.split(/\r?\n/);
-                const hyperlink = worksheet
-                    .getCell(table.getCol(Dictionary.PARAMETER), row)
-                    .getLink();
-                const enumName = hyperlink?.worksheet || param;
-                const enumObject = xlsxResult.getEnum(enumName);
+                let enumObject = xlsxResult.getEnumByField(schemaName, field.description);
+
+                let enumName: string;
+                if (!enumObject) {
+                    const hyperlink = worksheet
+                        .getCell(table.getCol(Dictionary.PARAMETER), row)
+                        .getLink();
+                    enumName = hyperlink?.worksheet || param;
+                    enumObject = xlsxResult.getEnum(enumName);
+                } else {
+                    enumName = field.description;
+                }
 
                 if (enumObject) {
                     if (enumObject.loaded) {

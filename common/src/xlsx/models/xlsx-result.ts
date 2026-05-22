@@ -303,4 +303,22 @@ export class XlsxResult {
         }
         return null;
     }
+
+    public getEnumByField(schemaName: string, fieldName: string): XlsxEnum | null {
+        for (const item of this._enums) {
+            if (item.schemaName === schemaName && item.fieldName === fieldName) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public addInlineSchema(schema: XlsxSchema, parentWorksheetName: string): void {
+        this._schemas.push(schema);
+        this._schemaCache.push({
+            name: schema.schema.name,
+            worksheet: parentWorksheetName,
+            iri: schema.schema.iri
+        });
+    }
 }
