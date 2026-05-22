@@ -14,6 +14,7 @@ import { SchemaType } from '../../policy-engine/structures/types/schema-type.typ
     selector: 'schema-dialog',
     templateUrl: './schema-dialog.component.html',
     styleUrls: ['./schema-dialog.component.scss'],
+    standalone: false
 })
 export class SchemaDialog {
     public header: string;

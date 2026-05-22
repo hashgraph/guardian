@@ -10,6 +10,7 @@ export interface SelectorDialogOptions {
     selector: 'app-selector-dialog',
     templateUrl: './selector-dialog.component.html',
     styleUrls: ['./selector-dialog.component.scss'],
+    standalone: false
 })
 export class SelectorDialogComponent implements OnInit {
     public title!: string;

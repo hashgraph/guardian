@@ -15,7 +15,8 @@ import { LocationType, UserPermissions } from '@guardian/interfaces';
 @Component({
     selector: 'tags-explorer-dialog',
     templateUrl: './tags-explorer-dialog.component.html',
-    styleUrls: ['./tags-explorer-dialog.component.scss']
+    styleUrls: ['./tags-explorer-dialog.component.scss'],
+    standalone: false
 })
 export class TagsExplorerDialog {
     public loading = false;

@@ -6,6 +6,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'app-json-editor-dialog',
     templateUrl: './json-editor-dialog.component.html',
     styleUrls: ['./json-editor-dialog.component.scss'],
+    standalone: false
 })
 export class JsonEditorDialogComponent implements OnInit {
     result: any;

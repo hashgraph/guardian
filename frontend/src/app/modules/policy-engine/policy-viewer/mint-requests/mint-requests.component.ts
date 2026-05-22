@@ -9,6 +9,7 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
     selector: 'app-mint-requests',
     templateUrl: './mint-requests.component.html',
     styleUrls: ['./mint-requests.component.scss'],
+    standalone: false
 })
 export class MintRequestsComponent implements OnInit, OnDestroy {
     @Input() policyId: string;

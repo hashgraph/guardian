@@ -37,6 +37,7 @@ const MockTabs = ['API', 'IPFS', 'Topics'];
     selector: 'app-policy-viewer',
     templateUrl: './policy-viewer.component.html',
     styleUrls: ['./policy-viewer.component.scss'],
+    standalone: false
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
     private subscription = new Subscription();

@@ -21,7 +21,8 @@ import {
 @Component({
     selector: 'app-record-controller',
     templateUrl: './record-controller.component.html',
-    styleUrls: ['./record-controller.component.scss']
+    styleUrls: ['./record-controller.component.scss'],
+    standalone: false
 })
 export class RecordControllerComponent implements OnInit {
     @Input('policyId') policyId!: string;

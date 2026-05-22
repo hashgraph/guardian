@@ -7,7 +7,8 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'app-data-transformation-config',
     templateUrl: './data-transformation-config.component.html',
     styleUrls: ['./data-transformation-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class DataTransformationConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

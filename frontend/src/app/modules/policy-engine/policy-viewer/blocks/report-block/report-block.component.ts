@@ -25,7 +25,8 @@ interface IAdditionalDocument {
 @Component({
     selector: 'app-report-block',
     templateUrl: './report-block.component.html',
-    styleUrls: ['./report-block.component.scss']
+    styleUrls: ['./report-block.component.scss'],
+    standalone: false
 })
 export class ReportBlockComponent implements OnInit {
     @Input('id') id!: string;

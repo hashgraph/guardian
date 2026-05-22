@@ -55,6 +55,7 @@ import { PolicyApiConfigDialogComponent } from '../../dialogs/policy-api-config-
         './policy-configuration.component.scss',
         '../../styles/properties.scss'
     ],
+    standalone: false
 })
 export class PolicyConfigurationComponent implements OnInit {
     private _searchTimeout!: any;

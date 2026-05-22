@@ -8,7 +8,8 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 @Component({
     selector: 'tags-create-dialog',
     templateUrl: './tags-create-dialog.component.html',
-    styleUrls: ['./tags-create-dialog.component.scss']
+    styleUrls: ['./tags-create-dialog.component.scss'],
+    standalone: false
 })
 export class TagCreateDialog {
     started = false;

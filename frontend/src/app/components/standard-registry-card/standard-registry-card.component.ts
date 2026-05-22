@@ -6,6 +6,7 @@ import {OverlayPanel} from 'primeng/overlaypanel';
     selector: 'app-standard-registry-card',
     templateUrl: './standard-registry-card.component.html',
     styleUrls: ['./standard-registry-card.component.scss'],
+    standalone: false
 })
 export class StandardRegistryCardComponent {
     @ViewChild('policiesOverlay') policiesOverlay!: OverlayPanel;

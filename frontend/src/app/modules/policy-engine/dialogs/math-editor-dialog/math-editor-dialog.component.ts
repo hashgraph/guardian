@@ -102,7 +102,8 @@ class Tooltip {
 @Component({
     selector: 'math-editor-dialog',
     templateUrl: './math-editor-dialog.component.html',
-    styleUrls: ['./math-editor-dialog.component.scss']
+    styleUrls: ['./math-editor-dialog.component.scss'],
+    standalone: false
 })
 export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     @ViewChild('contextBody', { static: false }) contextBodyRef: ElementRef;

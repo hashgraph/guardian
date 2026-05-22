@@ -7,6 +7,7 @@ import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common
     selector: 'formulas-view-dialog',
     templateUrl: './formulas-view-dialog.component.html',
     styleUrls: ['./formulas-view-dialog.component.scss'],
+    standalone: false
 })
 export class FormulasViewDialog {
     public loading = true;

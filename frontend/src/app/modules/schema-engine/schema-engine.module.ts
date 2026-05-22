@@ -8,7 +8,7 @@ import { GeojsonTypeComponent } from './geojson-type/geojson-type.component';
 import { MaterialModule } from '../common/material.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
-import { DynamicDialog as DynamicDialogModule } from 'primeng/dynamicdialog';
+import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { AgGridModule } from 'ag-grid-angular';
 //Components
 import { SchemaDialog } from './schema-dialog/schema-dialog.component';

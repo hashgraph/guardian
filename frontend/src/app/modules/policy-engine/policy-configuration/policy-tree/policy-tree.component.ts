@@ -28,7 +28,8 @@ const debugMode: string[] = [
 @Component({
     selector: 'policy-tree',
     templateUrl: './policy-tree.component.html',
-    styleUrls: ['./policy-tree.component.scss']
+    styleUrls: ['./policy-tree.component.scss'],
+    standalone: false
 })
 export class PolicyTreeComponent implements OnInit {
     @Input('module') module!: PolicyFolder;

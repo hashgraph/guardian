@@ -38,7 +38,8 @@ interface IColumn {
     selector: 'app-token-config',
     templateUrl: './token-config.component.html',
     styleUrls: ['./token-config.component.scss'],
-    providers: [DialogService]
+    providers: [DialogService],
+    standalone: false
 })
 export class TokenConfigComponent implements OnInit {
     public isConfirmed: boolean = false;

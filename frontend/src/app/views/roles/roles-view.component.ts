@@ -13,7 +13,8 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
 @Component({
     selector: 'app-roles-view',
     templateUrl: './roles-view.component.html',
-    styleUrls: ['./roles-view.component.scss']
+    styleUrls: ['./roles-view.component.scss'],
+    standalone: false
 })
 export class RolesViewComponent implements OnInit, OnDestroy {
     public loading: boolean = true;

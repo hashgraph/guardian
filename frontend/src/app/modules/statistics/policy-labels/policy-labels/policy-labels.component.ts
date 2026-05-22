@@ -24,6 +24,7 @@ interface IColumn {
     selector: 'app-policy-labels',
     templateUrl: './policy-labels.component.html',
     styleUrls: ['./policy-labels.component.scss'],
+    standalone: false
 })
 export class PolicyLabelsComponent implements OnInit {
     public readonly title: string = 'Policy Labels';

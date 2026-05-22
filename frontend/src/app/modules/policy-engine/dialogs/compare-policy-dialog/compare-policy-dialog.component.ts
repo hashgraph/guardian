@@ -14,6 +14,7 @@ interface IItem {
     selector: 'compare-policy-dialog',
     templateUrl: './compare-policy-dialog.component.html',
     styleUrls: ['./compare-policy-dialog.component.scss'],
+    standalone: false
 })
 export class ComparePolicyDialog {
     public loading = true;

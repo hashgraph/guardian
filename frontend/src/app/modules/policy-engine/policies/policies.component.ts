@@ -223,6 +223,7 @@ const columns = [{
     selector: 'app-policies',
     templateUrl: './policies.component.html',
     styleUrls: ['./policies.component.scss'],
+    standalone: false
 })
 export class PoliciesComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();

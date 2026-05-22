@@ -12,6 +12,7 @@ import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialo
         './test-code-dialog.component.scss',
         '../../styles/properties.scss'
     ],
+    standalone: false
 })
 export class TestCodeDialog {
     public initDialog = false;

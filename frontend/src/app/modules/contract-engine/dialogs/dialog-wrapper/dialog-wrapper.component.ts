@@ -4,6 +4,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
     selector: 'app-dialog-wrapper',
     templateUrl: './dialog-wrapper.component.html',
     styleUrls: ['./dialog-wrapper.component.scss'],
+    standalone: false
 })
 export class DialogWrapperComponent implements OnInit {
     @Output() cancel: EventEmitter<void> = new EventEmitter<void>();

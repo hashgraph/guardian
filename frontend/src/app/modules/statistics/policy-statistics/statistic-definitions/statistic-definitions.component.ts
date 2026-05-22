@@ -25,6 +25,7 @@ interface IColumn {
     selector: 'app-statistic-definitions',
     templateUrl: './statistic-definitions.component.html',
     styleUrls: ['./statistic-definitions.component.scss'],
+    standalone: false
 })
 export class StatisticDefinitionsComponent implements OnInit {
     public readonly title: string = 'Statistics';

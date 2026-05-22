@@ -38,6 +38,7 @@ function NoBindingValidator(control: UntypedFormControl): ValidationErrors | nul
     selector: 'app-schema-configuration',
     templateUrl: './schema-configuration.component.html',
     styleUrls: ['./schema-configuration.component.scss'],
+    standalone: false
 })
 export class SchemaConfigurationComponent implements OnInit {
     @Input('type') type!: 'new' | 'edit' | 'version';

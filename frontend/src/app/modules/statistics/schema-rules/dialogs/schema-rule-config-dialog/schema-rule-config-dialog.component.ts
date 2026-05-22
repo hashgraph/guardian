@@ -60,6 +60,7 @@ export class EnumValue {
     selector: 'schema-rule-config-dialog',
     templateUrl: './schema-rule-config-dialog.component.html',
     styleUrls: ['./schema-rule-config-dialog.component.scss'],
+    standalone: false
 })
 export class SchemaRuleConfigDialog {
     public loading = true;

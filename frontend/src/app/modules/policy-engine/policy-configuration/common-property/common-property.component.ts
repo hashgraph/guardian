@@ -13,6 +13,7 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
     templateUrl: './common-property.component.html',
     styleUrls: ['./common-property.component.scss'],
     encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class CommonPropertyComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

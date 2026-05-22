@@ -73,6 +73,7 @@ export interface GlobalEventsReaderGetDataResponse {
     templateUrl: './global-events-reader-block.component.html',
     styleUrls: ['./global-events-reader-block.component.scss'],
     providers: [DialogService],
+    standalone: false
 })
 export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
     @Input('id')

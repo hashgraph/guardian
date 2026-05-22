@@ -56,7 +56,8 @@ interface IRequestDocumentData {
 @Component({
     selector: 'request-document-block',
     templateUrl: './request-document-block.component.html',
-    styleUrls: ['./request-document-block.component.scss']
+    styleUrls: ['./request-document-block.component.scss'],
+    standalone: false
 })
 export class RequestDocumentBlockComponent
     extends AbstractUIBlockComponent<IRequestDocumentData>

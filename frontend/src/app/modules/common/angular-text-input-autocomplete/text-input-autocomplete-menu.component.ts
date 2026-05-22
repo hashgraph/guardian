@@ -5,7 +5,8 @@ import { AutocompleteItem } from './autocomplete-item';
 @Component({
     selector: 'mwl-text-input-autocomplete-menu',
     templateUrl: './text-input-autocomplete-menu.component.html',
-    styleUrls: ['./text-input-autocomplete-menu.component.scss']
+    styleUrls: ['./text-input-autocomplete-menu.component.scss'],
+    standalone: false
 })
 export class TextInputAutocompleteMenuComponent {
     @ViewChild('dropdownMenu') dropdownMenuElement: ElementRef<HTMLUListElement>;

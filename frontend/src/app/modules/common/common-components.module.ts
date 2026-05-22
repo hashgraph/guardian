@@ -35,7 +35,7 @@ import { CustomConfirmDialogComponent } from './custom-confirm-dialog/custom-con
 import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-button.component';
 import { ImportEntityDialog } from './import-entity-dialog/import-entity-dialog.component';
-import { DialogService, DynamicDialog as DynamicDialogModule } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { TabViewModule } from 'primeng/tabview';
 import { TooltipModule } from 'primeng/tooltip';
 import { MathLiveComponent } from './mathlive/mathlive.component';

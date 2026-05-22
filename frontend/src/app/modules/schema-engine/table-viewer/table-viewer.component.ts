@@ -16,7 +16,8 @@ type TableRefLike = { type?: string; fileId?: string; cid?: string } | string | 
     selector: 'table-viewer',
     templateUrl: './table-viewer.component.html',
     styleUrls: ['./table-viewer.component.scss'],
-    providers: [DialogService]
+    providers: [DialogService],
+    standalone: false
 })
 
 export class TableViewerComponent implements OnChanges, OnDestroy {

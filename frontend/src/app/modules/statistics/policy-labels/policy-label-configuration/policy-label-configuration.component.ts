@@ -19,6 +19,7 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
     selector: 'app-policy-label-configuration',
     templateUrl: './policy-label-configuration.component.html',
     styleUrls: ['./policy-label-configuration.component.scss'],
+    standalone: false
 })
 export class PolicyLabelConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';

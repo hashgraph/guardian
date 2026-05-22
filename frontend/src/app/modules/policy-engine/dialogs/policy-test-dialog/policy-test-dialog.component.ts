@@ -13,6 +13,7 @@ import { PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
     selector: 'policy-test-dialog',
     templateUrl: './policy-test-dialog.component.html',
     styleUrls: ['./policy-test-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyTestDialog {
     public loading = true;

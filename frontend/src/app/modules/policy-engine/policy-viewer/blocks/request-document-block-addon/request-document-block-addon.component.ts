@@ -43,6 +43,7 @@ interface IRequestDocumentAddonData {
     selector: 'request-document-block-addon',
     templateUrl: './request-document-block-addon.component.html',
     styleUrls: ['./request-document-block-addon.component.scss'],
+    standalone: false
 })
 export class RequestDocumentBlockAddonComponent
     extends AbstractUIBlockComponent<IRequestDocumentAddonData>

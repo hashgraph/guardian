@@ -13,6 +13,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'import-schema-dialog',
     templateUrl: './import-schema-dialog.component.html',
     styleUrls: ['./import-schema-dialog.component.scss'],
+    standalone: false
 })
 export class ImportSchemaDialog {
     importType?: ImportType = 0;

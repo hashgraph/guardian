@@ -16,7 +16,8 @@ import { DB_NAME, STORES_NAME } from 'src/app/constants';
     selector: 'button-block',
     templateUrl: './button-block.component.html',
     styleUrls: ['./button-block.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ButtonBlockComponent implements OnInit {
     @Input('id') id!: string;

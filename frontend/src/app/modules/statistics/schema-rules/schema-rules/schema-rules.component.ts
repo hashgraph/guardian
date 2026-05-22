@@ -24,6 +24,7 @@ interface IColumn {
     selector: 'app-schema-rules',
     templateUrl: './schema-rules.component.html',
     styleUrls: ['./schema-rules.component.scss'],
+    standalone: false
 })
 export class SchemaRulesComponent implements OnInit {
     public readonly title: string = 'Schema Rules';

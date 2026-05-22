@@ -10,6 +10,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
     selector: 'app-notification',
     templateUrl: './notification.component.html',
     styleUrls: ['./notification.component.scss'],
+    standalone: false
 })
 export class NotificationComponent implements OnInit {
     notifications: any[] = [];

@@ -191,7 +191,8 @@ class Line {
 @Component({
     selector: 'app-messages-report-block',
     templateUrl: './messages-report-block.component.html',
-    styleUrls: ['./messages-report-block.component.scss']
+    styleUrls: ['./messages-report-block.component.scss'],
+    standalone: false
 })
 export class MessagesReportBlockComponent implements OnInit {
     private _topics1!: any[];

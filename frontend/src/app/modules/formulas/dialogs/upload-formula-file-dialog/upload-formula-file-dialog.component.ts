@@ -8,6 +8,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
     selector: 'upload-formula-file-dialog',
     templateUrl: './upload-formula-file-dialog.component.html',
     styleUrls: ['./upload-formula-file-dialog.component.scss'],
+    standalone: false
 })
 export class UploadFormulaFileDialog {
     public loading = true;

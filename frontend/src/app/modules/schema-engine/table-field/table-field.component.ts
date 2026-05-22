@@ -22,6 +22,7 @@ export interface ITableFieldRequired extends ITableField {
     templateUrl: './table-field.component.html',
     styleUrls: ['./table-field.component.scss'],
     providers: [DialogService],
+    standalone: false
 })
 
 export class TableFieldComponent implements OnInit, OnDestroy {

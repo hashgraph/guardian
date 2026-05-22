@@ -25,7 +25,8 @@ enum OperationMode {
     selector: 'app-list-of-tokens-user',
     templateUrl: './list-of-tokens-user.component.html',
     styleUrls: ['./list-of-tokens-user.component.scss'],
-    providers: [DialogService]
+    providers: [DialogService],
+    standalone: false
 })
 export class ListOfTokensUserComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();

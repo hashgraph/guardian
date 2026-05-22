@@ -9,7 +9,8 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 @Component({
     selector: 'artifact-import-dialog',
     templateUrl: './artifact-import-dialog.component.html',
-    styleUrls: ['./artifact-import-dialog.component.css']
+    styleUrls: ['./artifact-import-dialog.component.css'],
+    standalone: false
 })
 export class ArtifactImportDialog {
     public policyId = this.fb.control('', [Validators.required]);

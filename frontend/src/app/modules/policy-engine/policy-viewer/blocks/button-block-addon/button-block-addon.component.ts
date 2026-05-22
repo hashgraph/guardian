@@ -13,6 +13,7 @@ import { PolicyStatus } from '@guardian/interfaces';
     selector: 'button-block-addon',
     templateUrl: './button-block-addon.component.html',
     styleUrls: ['./button-block-addon.component.scss'],
+    standalone: false
 })
 export class ButtonBlockAddonComponent implements OnInit {
     @Input('id') id!: string;

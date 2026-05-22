@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock, SchemaVariables} from '../../../../struct
     selector: 'source-addon-config',
     templateUrl: './source-addon-config.component.html',
     styleUrls: ['./source-addon-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class SourceAddonConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

@@ -4,6 +4,7 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '
     selector: 'app-new-versions',
     templateUrl: './new-versions.component.html',
     styleUrls: ['./new-versions.component.scss'],
+    standalone: false
 })
 export class NewVersionsComponent implements OnInit {
     @Input('type') type: string;

@@ -12,7 +12,8 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 @Component({
     selector: 'app-otp-disable-dialog',
     templateUrl: './otp-disable-dialog.component.html',
-    styleUrls: ['./otp-disable-dialog.component.scss']
+    styleUrls: ['./otp-disable-dialog.component.scss'],
+    standalone: false
 })
 export class OtpDisableDialogComponent implements OnInit {
     

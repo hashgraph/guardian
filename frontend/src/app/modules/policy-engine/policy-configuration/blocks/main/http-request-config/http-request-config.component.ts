@@ -11,7 +11,8 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
     selector: 'http-request-config',
     templateUrl: './http-request-config.component.html',
     styleUrls: ['./http-request-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class HttpRequestConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

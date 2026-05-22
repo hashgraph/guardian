@@ -33,7 +33,8 @@ enum OperationMode {
 @Component({
     selector: 'app-modules-list',
     templateUrl: './modules-list.component.html',
-    styleUrls: ['./modules-list.component.css']
+    styleUrls: ['./modules-list.component.css'],
+    standalone: false
 })
 export class ModulesListComponent implements OnInit, OnDestroy {
     public loading: boolean = true;

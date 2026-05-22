@@ -40,6 +40,7 @@ export interface WriterGetDataResponse {
     templateUrl: './global-events-writer-block.component.html',
     styleUrls: ['./global-events-writer-block.component.scss'],
     providers: [DialogService],
+    standalone: false
 })
 export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     @Input('id')

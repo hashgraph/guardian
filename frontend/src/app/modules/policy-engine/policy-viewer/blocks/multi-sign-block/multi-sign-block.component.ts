@@ -12,6 +12,7 @@ import {OverlayPanel} from 'primeng/overlaypanel';
     selector: 'app-multi-sign-block',
     templateUrl: './multi-sign-block.component.html',
     styleUrls: ['./multi-sign-block.component.scss'],
+    standalone: false
 })
 export class MultiSignBlockComponent implements OnInit {
     @Input('id') id!: string;

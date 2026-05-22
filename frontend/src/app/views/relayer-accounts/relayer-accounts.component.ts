@@ -22,6 +22,7 @@ interface IColumn {
     selector: 'app-relayer-accounts',
     templateUrl: './relayer-accounts.component.html',
     styleUrls: ['./relayer-accounts.component.scss'],
+    standalone: false
 })
 export class RelayerAccountsComponent implements OnInit {
     public readonly title: string = 'Relayer Accounts';

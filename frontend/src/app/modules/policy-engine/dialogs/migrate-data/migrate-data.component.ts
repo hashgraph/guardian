@@ -333,6 +333,7 @@ class MigrationConfig {
     selector: 'migrate-data',
     templateUrl: './migrate-data.component.html',
     styleUrls: ['./migrate-data.component.scss'],
+    standalone: false
 })
 export class MigrateData {
     loading = false;

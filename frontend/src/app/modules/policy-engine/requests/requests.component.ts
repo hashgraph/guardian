@@ -25,6 +25,7 @@ interface IColumn {
     selector: 'app-policy-requests',
     templateUrl: './requests.component.html',
     styleUrls: ['./requests.component.scss'],
+    standalone: false
 })
 export class PolicyRequestsComponent implements OnInit {
     public readonly title: string = 'Incoming Requests';

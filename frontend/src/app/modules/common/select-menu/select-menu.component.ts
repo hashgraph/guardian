@@ -6,7 +6,8 @@ import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@
 @Component({
     selector: 'select-menu-button',
     templateUrl: './select-menu.component.html',
-    styleUrls: ['./select-menu.component.css']
+    styleUrls: ['./select-menu.component.css'],
+    standalone: false
 })
 export class SelectMenuButton {
     @Input('options') options!: {

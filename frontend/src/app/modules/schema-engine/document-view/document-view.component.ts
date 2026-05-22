@@ -16,7 +16,8 @@ import { SchemaFormViewNavigationComponent } from '../schema-form-view-navigatio
     selector: 'app-document-view',
     templateUrl: './document-view.component.html',
     styleUrls: ['./document-view.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class DocumentViewComponent implements OnInit {
     @Input() dialogContext?: 'fullscreen' | 'viewer';

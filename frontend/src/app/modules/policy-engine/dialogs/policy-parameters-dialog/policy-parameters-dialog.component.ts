@@ -20,7 +20,8 @@ interface PolicyParameterItem {
 @Component({
     selector: 'policy-parameters-dialog',
     templateUrl: './policy-parameters-dialog.component.html',
-    styleUrls: ['./policy-parameters-dialog.component.scss']
+    styleUrls: ['./policy-parameters-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyParametersDialog {
     public blockInfo: any;

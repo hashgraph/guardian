@@ -63,6 +63,7 @@ interface IColumn {
     selector: 'app-user-profile',
     templateUrl: './user-profile.component.html',
     styleUrls: ['./user-profile.component.scss'],
+    standalone: false
 })
 export class UserProfileComponent implements OnInit {
     public loading: boolean = true;

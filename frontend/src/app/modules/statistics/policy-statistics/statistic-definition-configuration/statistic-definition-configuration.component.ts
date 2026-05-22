@@ -25,6 +25,7 @@ import { CustomConfirmDialogComponent } from '../../../common/custom-confirm-dia
     selector: 'app-statistic-definition-configuration',
     templateUrl: './statistic-definition-configuration.component.html',
     styleUrls: ['./statistic-definition-configuration.component.scss'],
+    standalone: false
 })
 export class StatisticDefinitionConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';

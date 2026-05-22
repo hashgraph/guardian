@@ -13,7 +13,8 @@ import {ProfileService} from '../../services/profile.service';
 @Component({
     selector: 'app-policy-searchh',
     templateUrl: './policy-search.component.html',
-    styleUrls: ['./policy-search.component.scss']
+    styleUrls: ['./policy-search.component.scss'],
+    standalone: false
 })
 export class PolicySearchComponent implements OnInit {
     loading: boolean = false;

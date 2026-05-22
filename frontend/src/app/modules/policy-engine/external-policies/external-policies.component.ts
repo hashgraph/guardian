@@ -23,6 +23,7 @@ interface IColumn {
     selector: 'app-external-policies',
     templateUrl: './external-policies.component.html',
     styleUrls: ['./external-policies.component.scss'],
+    standalone: false
 })
 export class ExternalPolicyComponent implements OnInit {
     public title: string = 'Remote Policy Request';

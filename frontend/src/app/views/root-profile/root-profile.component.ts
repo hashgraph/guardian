@@ -46,6 +46,7 @@ interface IColumn {
     selector: 'app-root-profile',
     templateUrl: './root-profile.component.html',
     styleUrls: ['./root-profile.component.scss'],
+    standalone: false
 })
 export class RootProfileComponent implements OnInit, OnDestroy {
     @ViewChild('actionMenu') actionMenu: any;

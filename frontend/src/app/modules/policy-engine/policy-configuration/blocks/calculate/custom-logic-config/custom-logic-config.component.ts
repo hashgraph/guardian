@@ -9,7 +9,8 @@ import { ScriptLanguageOption } from '@guardian/interfaces';
     selector: 'app-custom-logic-config',
     templateUrl: './custom-logic-config.component.html',
     styleUrls: ['./custom-logic-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class CustomLogicConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

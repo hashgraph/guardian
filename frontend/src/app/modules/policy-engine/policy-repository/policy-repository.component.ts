@@ -24,6 +24,7 @@ interface IColumn {
     selector: 'app-policy-repository',
     templateUrl: './policy-repository.component.html',
     styleUrls: ['./policy-repository.component.scss'],
+    standalone: false
 })
 export class PolicyRepositoryComponent implements OnInit {
     public readonly title: string = 'Policy Workflow Repository';

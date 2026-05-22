@@ -24,6 +24,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
     selector: 'app-schema-rule-configuration',
     templateUrl: './schema-rule-configuration.component.html',
     styleUrls: ['./schema-rule-configuration.component.scss'],
+    standalone: false
 })
 export class SchemaRuleConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';

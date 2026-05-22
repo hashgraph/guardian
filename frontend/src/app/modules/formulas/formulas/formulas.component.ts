@@ -24,6 +24,7 @@ interface IColumn {
     selector: 'app-formulas',
     templateUrl: './formulas.component.html',
     styleUrls: ['./formulas.component.scss'],
+    standalone: false
 })
 export class FormulasComponent implements OnInit {
     public readonly title: string = 'Formulas';

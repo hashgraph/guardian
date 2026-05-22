@@ -12,7 +12,8 @@ import { LocationType, UserPermissions } from '@guardian/interfaces';
 @Component({
     selector: 'multiple-tags-explorer-dialog',
     templateUrl: './multiple-tags-explorer-dialog.component.html',
-    styleUrls: ['./multiple-tags-explorer-dialog.component.scss']
+    styleUrls: ['./multiple-tags-explorer-dialog.component.scss'],
+    standalone: false
 })
 export class MultipleTagsExplorerDialog {
     public loading = false;

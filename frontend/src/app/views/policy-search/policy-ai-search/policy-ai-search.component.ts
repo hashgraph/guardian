@@ -10,7 +10,8 @@ import { Router } from '@angular/router';
 @Component({
     selector: 'app-policy-ai-search',
     templateUrl: './policy-ai-search.component.html',
-    styleUrls: ['./policy-ai-search.component.scss']
+    styleUrls: ['./policy-ai-search.component.scss'],
+    standalone: false
 })
 export class PolicyAISearchComponent implements OnInit {
     loading: boolean = false;

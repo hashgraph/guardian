@@ -17,6 +17,7 @@ import { UploadFormulaFileDialog } from '../dialogs/upload-formula-file-dialog/u
     selector: 'app-formula-configuration',
     templateUrl: './formula-configuration.component.html',
     styleUrls: ['./formula-configuration.component.scss'],
+    standalone: false
 })
 export class FormulaConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';

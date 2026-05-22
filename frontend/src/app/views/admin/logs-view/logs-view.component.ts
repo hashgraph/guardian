@@ -18,6 +18,7 @@ import { WebSocketService } from '../../../services/web-socket.service';
     selector: 'app-logs-view',
     templateUrl: './logs-view.component.html',
     styleUrls: ['./logs-view.component.scss'],
+    standalone: false
 })
 export class LogsViewComponent implements OnInit, OnDestroy {
     @ViewChild('searchInput') searchInput: any;

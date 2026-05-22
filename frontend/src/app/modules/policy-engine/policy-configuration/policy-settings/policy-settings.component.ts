@@ -18,7 +18,8 @@ import {DialogService} from 'primeng/dynamicdialog';
 @Component({
     selector: 'policy-settings',
     templateUrl: './policy-settings.component.html',
-    styleUrls: ['./policy-settings.component.scss']
+    styleUrls: ['./policy-settings.component.scss'],
+    standalone: false
 })
 export class PolicySettingsComponent implements OnInit {
     @Output('update') update = new EventEmitter();

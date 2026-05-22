@@ -15,6 +15,7 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'app-group-manager-block',
     templateUrl: './group-manager-block.component.html',
     styleUrls: ['./group-manager-block.component.scss'],
+    standalone: false
 })
 export class GroupManagerBlockComponent implements OnInit {
     @Input('id') id!: string;

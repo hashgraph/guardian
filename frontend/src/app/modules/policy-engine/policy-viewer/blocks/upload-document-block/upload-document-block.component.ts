@@ -13,7 +13,8 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'request-document-block',
     templateUrl: './upload-document-block.component.html',
     styleUrls: ['./upload-document-block.component.scss'],
-    providers: [DialogService]
+    providers: [DialogService],
+    standalone: false
 })
 export class UploadDocumentBlockComponent implements OnInit {
     @Input('id') id!: string;

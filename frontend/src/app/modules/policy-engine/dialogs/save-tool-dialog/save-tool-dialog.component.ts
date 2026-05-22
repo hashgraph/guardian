@@ -15,7 +15,8 @@ export enum ToolSaveAction {
 @Component({
     selector: 'save-tool-dialog',
     templateUrl: './save-tool-dialog.component.html',
-    styleUrls: ['./save-tool-dialog.component.scss']
+    styleUrls: ['./save-tool-dialog.component.scss'],
+    standalone: false
 })
 export class SaveToolDialog {
     action?: ToolSaveAction;

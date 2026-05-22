@@ -94,7 +94,7 @@ import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
 import { SuggestionsService } from './services/suggestions.service';
 import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
-import { QRCodeModule } from 'angularx-qrcode';
+import { QRCodeComponent } from 'angularx-qrcode';
 import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
 import { CompareStorage } from './services/compare-storage.service';
 import { ToolsService } from './services/tools.service';
@@ -117,7 +117,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { StepsModule } from 'primeng/steps';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { TabViewModule } from 'primeng/tabview';
-import { DynamicDialog as DynamicDialogModule } from 'primeng/dynamicdialog';
+import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { AISearchService } from './services/ai-search.service';
@@ -217,7 +217,7 @@ import { CredentialsPanelComponent } from './components/credentials/credentials-
         TagEngineModule,
         CompareModule,
         ToastrModule.forRoot(),
-        QRCodeModule,
+        QRCodeComponent,
         ButtonModule,
         InputTextModule,        
         ClipboardModule,

@@ -12,7 +12,8 @@ import { PolicyStatus } from '@guardian/interfaces';
     selector: 'transformation-button-block',
     templateUrl: './transformation-button-block.component.html',
     styleUrls: ['./transformation-button-block.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class TransformationButtonBlockComponent implements OnInit {
     @Input('id') id!: string;

@@ -12,7 +12,8 @@ import { DialogService } from 'primeng/dynamicdialog';
 @Component({
     selector: 'tags-explorer',
     templateUrl: './tags-explorer.component.html',
-    styleUrls: ['./tags-explorer.component.scss']
+    styleUrls: ['./tags-explorer.component.scss'],
+    standalone: false
 })
 export class TagsExplorer {
     @Input('data') data!: any;

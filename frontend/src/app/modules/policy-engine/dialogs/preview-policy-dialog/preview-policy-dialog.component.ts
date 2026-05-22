@@ -12,6 +12,7 @@ import { SearchToolDialog } from '../search-tool-dialog/search-tool-dialog.compo
     selector: 'preview-policy-dialog',
     templateUrl: './preview-policy-dialog.component.html',
     styleUrls: ['./preview-policy-dialog.component.scss'],
+    standalone: false
 })
 export class PreviewPolicyDialog {
     public loading = true;

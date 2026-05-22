@@ -30,6 +30,7 @@ import { OtpDialogComponent } from './otp-dialog/otp-dialog.component';
     selector: 'app-login',
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss'],
+    standalone: false
 })
 export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
     testUsers$: Observable<any[]>;

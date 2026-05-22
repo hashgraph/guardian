@@ -91,7 +91,8 @@ const tagSchemaColumns: string[] = [
 @Component({
     selector: 'app-schema-config',
     templateUrl: './schemas.component.html',
-    styleUrls: ['./schemas.component.scss']
+    styleUrls: ['./schemas.component.scss'],
+    standalone: false
 })
 export class SchemaConfigComponent implements OnInit {
     public loading: boolean = true;

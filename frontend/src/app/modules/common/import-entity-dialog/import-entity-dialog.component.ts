@@ -70,6 +70,7 @@ export type IImportEntityResult = IImportEntityArray | IImportEntityMessage;
     selector: 'import-entity-dialog',
     templateUrl: './import-entity-dialog.component.html',
     styleUrls: ['./import-entity-dialog.component.scss'],
+    standalone: false
 })
 export class ImportEntityDialog implements OnInit {
     public loading: boolean = false;

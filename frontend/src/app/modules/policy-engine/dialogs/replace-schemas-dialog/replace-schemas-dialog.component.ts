@@ -14,10 +14,11 @@ export interface SchemaOption {
 }
 
 @Component({
-  selector: 'replace-schemas-dialog',
-  templateUrl: './replace-schemas-dialog.component.html',
-  styleUrls: ['./replace-schemas-dialog.component.scss'],
-  providers: [DialogService],
+    selector: 'replace-schemas-dialog',
+    templateUrl: './replace-schemas-dialog.component.html',
+    styleUrls: ['./replace-schemas-dialog.component.scss'],
+    providers: [DialogService],
+    standalone: false
 })
 export class ReplaceSchemasDialogComponent implements OnDestroy {
   title = 'Select Schemas';

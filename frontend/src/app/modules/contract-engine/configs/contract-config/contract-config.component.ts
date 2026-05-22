@@ -21,6 +21,7 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'contract-config',
     templateUrl: './contract-config.component.html',
     styleUrls: ['./contract-config.component.css'],
+    standalone: false
 })
 export class ContractConfigComponent implements OnInit, OnDestroy {
     public user: UserPermissions = new UserPermissions();

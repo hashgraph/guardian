@@ -15,6 +15,7 @@ import { SchemaService } from '../../../../services/schema.service';
     selector: 'app-policy-wizard-dialog',
     templateUrl: './policy-wizard-dialog.component.html',
     styleUrls: ['./policy-wizard-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     @ViewChild(SeparateStepperComponent) matTree!: SeparateStepperComponent;

@@ -34,6 +34,7 @@ import { EditorHelpContext } from '../../policy-engine/dialogs/code-editor-dialo
     selector: 'schema-field-configuration',
     templateUrl: './schema-field-configuration.component.html',
     styleUrls: ['./schema-field-configuration.component.scss'],
+    standalone: false
 })
 export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('readonly') readonly!: boolean;

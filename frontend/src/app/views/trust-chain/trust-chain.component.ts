@@ -15,7 +15,8 @@ import {DialogService} from 'primeng/dynamicdialog';
 @Component({
     selector: 'app-trust-chain',
     templateUrl: './trust-chain.component.html',
-    styleUrls: ['./trust-chain.component.css']
+    styleUrls: ['./trust-chain.component.css'],
+    standalone: false
 })
 export class TrustChainComponent implements OnInit {
     loading: boolean = true;

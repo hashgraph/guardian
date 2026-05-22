@@ -9,7 +9,8 @@ import { PermissionsGroup } from 'src/app/utils/index';
 @Component({
     selector: 'app-user-management-detail',
     templateUrl: './user-management-detail.component.html',
-    styleUrls: ['./user-management-detail.component.scss']
+    styleUrls: ['./user-management-detail.component.scss'],
+    standalone: false
 })
 export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     public loading: boolean = true;

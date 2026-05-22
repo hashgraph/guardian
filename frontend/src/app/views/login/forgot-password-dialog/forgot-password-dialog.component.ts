@@ -5,7 +5,8 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 @Component({
     selector: 'app-forgot-password-dialog',
     templateUrl: './forgot-password-dialog.component.html',
-    styleUrls: ['./forgot-password-dialog.component.scss']
+    styleUrls: ['./forgot-password-dialog.component.scss'],
+    standalone: false
 })
 export class ForgotPasswordDialogComponent implements OnInit {
     forgotPasswordFormGroup: UntypedFormGroup = new UntypedFormGroup({

@@ -22,6 +22,7 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'user-contract-config',
     templateUrl: './user-contract-config.component.html',
     styleUrls: ['./user-contract-config.component.css'],
+    standalone: false
 })
 export class UserContractConfigComponent implements OnInit {
     contractRequests: any[] = [];

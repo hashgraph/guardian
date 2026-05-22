@@ -30,7 +30,8 @@ enum OperationMode {
 @Component({
     selector: 'app-tools-list',
     templateUrl: './tools-list.component.html',
-    styleUrls: ['./tools-list.component.scss']
+    styleUrls: ['./tools-list.component.scss'],
+    standalone: false
 })
 export class ToolsListComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
