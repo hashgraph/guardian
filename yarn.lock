@@ -3332,15 +3332,15 @@
     "@stablelib/wipe" "^1.0.1"
     "@stablelib/xchacha20" "^1.0.1"
 
-"@storacha/access@^1.6.4":
-  version "1.6.4"
-  resolved "https://registry.yarnpkg.com/@storacha/access/-/access-1.6.4.tgz#de40ec9b9b8d7a5afac5f68fb7542b67906bca0a"
-  integrity sha512-yhTevN9dGx9y9cnubzpQOGXyTL0C3aAkPRVo2hIdHUXGvJpYF4ZK1s8fcUJo+l2m6GsjxIaxlYRYJZdTyRAwxA==
+"@storacha/access@^1.6.9":
+  version "1.6.9"
+  resolved "https://registry.yarnpkg.com/@storacha/access/-/access-1.6.9.tgz#be6359d00c5c05842604ca6dc2ebb0773a53bfe5"
+  integrity sha512-hdEyVg6gvYmYbKN1K3h+U7m/BbTwxnegMfi9ZJm/7D7Vk3kuttURv49DmsmfH/LPHCqAiP1+pEcFUzkZv4oAKg==
   dependencies:
     "@ipld/car" "^5.4.0"
     "@ipld/dag-ucan" "^3.4.5"
     "@scure/bip39" "^1.2.1"
-    "@storacha/capabilities" "^1.12.0"
+    "@storacha/capabilities" "^2.3.1"
     "@storacha/did-mailto" "^1.0.2"
     "@storacha/one-webcrypto" "^1.0.1"
     "@ucanto/client" "^9.0.2"
@@ -3356,13 +3356,13 @@
     type-fest "^4.9.0"
     uint8arrays "^5.1.0"
 
-"@storacha/blob-index@^1.2.4":
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/@storacha/blob-index/-/blob-index-1.2.4.tgz#84af565e5bdaaaa656f5d131dfb3c5c24c0b86e9"
-  integrity sha512-N30A3rgVXrXlrW0ofF9NCam+fNgVFzfMqGXtV6fZy7VmV4Ytl9gbibvFAEHLa15LYDv5oDVoyuviqL84W9slig==
+"@storacha/blob-index@^1.2.9":
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/@storacha/blob-index/-/blob-index-1.2.9.tgz#7556ae5db33590fc987cabf116f598d0eaa340cf"
+  integrity sha512-6tsnh4c/bTNJGKw4uuXZGTVYcxy19jdsK/DHE4aZajPha96bW9RnZTxLO1e0VIXPWNBXo/Hvxb0nik+OfTQHkw==
   dependencies:
     "@ipld/dag-cbor" "^9.0.6"
-    "@storacha/capabilities" "^1.12.0"
+    "@storacha/capabilities" "^2.3.1"
     "@storacha/one-webcrypto" "^1.0.1"
     "@ucanto/core" "^10.4.5"
     "@ucanto/interface" "^11.0.1"
@@ -3371,10 +3371,10 @@
     sade "^1.8.1"
     uint8arrays "^5.0.3"
 
-"@storacha/capabilities@^1.12.0":
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/@storacha/capabilities/-/capabilities-1.12.0.tgz#0e2c58a33782009c54eb005af6b9886cd7636f5f"
-  integrity sha512-d4YTllc9eoe/aZU8OCMszJgSnNHsXWpUNHRVlU+u3BDVCTqN6SZHEqR7HhYpr9IDC+pOz/f6nOj5iICiH3t77g==
+"@storacha/capabilities@^2.3.1":
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/@storacha/capabilities/-/capabilities-2.3.1.tgz#9c8fdeaaee1cd3bfc1c436d59f1d7b02d804ab48"
+  integrity sha512-cXSdRdqZoyKpIAHMvr+rqJpS+xdJ/n8e3w7CIbswuaHVo+vj54PeGOLm3YuQA+K7AX1GEn2mPVmW1V192NmBwg==
   dependencies:
     "@ucanto/core" "^10.4.5"
     "@ucanto/interface" "^11.0.1"
@@ -3384,18 +3384,18 @@
     "@web3-storage/data-segment" "^5.2.0"
     multiformats "^13.3.6"
 
-"@storacha/client@1.8.21":
-  version "1.8.21"
-  resolved "https://registry.yarnpkg.com/@storacha/client/-/client-1.8.21.tgz#902060341e24bc1a91c401ee8a8966807d0e7809"
-  integrity sha512-E6AfTr3TYF3gYOPmXx3SmaLDFcFdD7nw+eELF+CRQ7kuIGSW8Kqbmw6ynLbBDfAjYg+VaUbVPfQAORyzbSg5Lg==
+"@storacha/client@2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@storacha/client/-/client-2.1.4.tgz#7ed40916b52b4e12b5eaa3cbe36a1fcad797fd22"
+  integrity sha512-nW2E5AWBW0fSGRSZUs6mUhLgFCv1V6wPoV8xSniXbhfxyxaWFxUi2eyVDvkv7Vxa9Tith8cDcO/ddWGc3zXEeQ==
   dependencies:
     "@ipld/dag-ucan" "^3.4.5"
-    "@storacha/access" "^1.6.4"
-    "@storacha/blob-index" "^1.2.4"
-    "@storacha/capabilities" "^1.12.0"
+    "@storacha/access" "^1.6.9"
+    "@storacha/blob-index" "^1.2.9"
+    "@storacha/capabilities" "^2.3.1"
     "@storacha/did-mailto" "^1.0.2"
-    "@storacha/filecoin-client" "^1.0.15"
-    "@storacha/upload-client" "^1.3.6"
+    "@storacha/filecoin-client" "^1.0.20"
+    "@storacha/upload-client" "^1.4.2"
     "@ucanto/client" "^9.0.2"
     "@ucanto/core" "^10.4.5"
     "@ucanto/interface" "^11.0.1"
@@ -3408,13 +3408,13 @@
   resolved "https://registry.yarnpkg.com/@storacha/did-mailto/-/did-mailto-1.0.2.tgz#6e9cbd161fa423842604eef44b377b363a424208"
   integrity sha512-0ee1t15yG4xdyIYz2iL+wP06VnGQf8zJ/xpszjf4sdP2sTgAVzx92LfEgHcuIbFF4sabcJXzHFAcMi8l8u64Mg==
 
-"@storacha/filecoin-client@^1.0.15":
-  version "1.0.15"
-  resolved "https://registry.yarnpkg.com/@storacha/filecoin-client/-/filecoin-client-1.0.15.tgz#c709424f76746d13c579f74e944651bf66a6855d"
-  integrity sha512-VO/QdK4rIyX46YFThm3itR8JmpZ1YznJpb/+9DjH1zbKuIMl+f2w7d+v8YFacYJzgniVuexn2sCNjQmNMogbUg==
+"@storacha/filecoin-client@^1.0.20":
+  version "1.0.20"
+  resolved "https://registry.yarnpkg.com/@storacha/filecoin-client/-/filecoin-client-1.0.20.tgz#c70913d1ac471830c2157e16228147cb30bd36fd"
+  integrity sha512-vcc2490ji1mveErErPFKYuX0gf0D+RbloxiArd3v0uPkPfgO/xxZG/gtMQeq2EwAbHD2BRVD+X4lxHUOlVoDZg==
   dependencies:
     "@ipld/dag-ucan" "^3.4.5"
-    "@storacha/capabilities" "^1.12.0"
+    "@storacha/capabilities" "^2.3.1"
     "@ucanto/client" "^9.0.2"
     "@ucanto/core" "^10.4.5"
     "@ucanto/interface" "^11.0.1"
@@ -3425,18 +3425,18 @@
   resolved "https://registry.yarnpkg.com/@storacha/one-webcrypto/-/one-webcrypto-1.0.1.tgz#4465090c2cf27e110d6490c84e52c298a3057e6f"
   integrity sha512-bD+vWmcgsEBqU0Dz04BR43SA03bBoLTAY29vaKasY9Oe8cb6XIP0/vkm0OS2UwKC13c8uRgFW4rjJUgDCNLejQ==
 
-"@storacha/upload-client@^1.3.6":
-  version "1.3.6"
-  resolved "https://registry.yarnpkg.com/@storacha/upload-client/-/upload-client-1.3.6.tgz#3aa7d6047f27f9231efc3ba638a61eff385224b2"
-  integrity sha512-4q30A+2wEOuaKO9lS8XIXUYa/b5pHuwYG0wvgKtgE2Vjn89qwNia6HtLCdtl9jph9oF8ieupqKIyZxN37rHUmg==
+"@storacha/upload-client@^1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@storacha/upload-client/-/upload-client-1.4.2.tgz#3abcf74b58e176eb6eb32c12399245ac39260dc0"
+  integrity sha512-vXn6ZMa39DXOJL0IbnxOfLDPHzA7CV1zmGk3mXr4bHhvAJekgWiZq+KluiMt9AfumnpPI7Nknrs0ZmUnwzrOYQ==
   dependencies:
     "@ipld/car" "^5.2.2"
     "@ipld/dag-cbor" "^9.0.6"
     "@ipld/dag-ucan" "^3.4.5"
     "@ipld/unixfs" "^3.0.0"
-    "@storacha/blob-index" "^1.2.4"
-    "@storacha/capabilities" "^1.12.0"
-    "@storacha/filecoin-client" "^1.0.15"
+    "@storacha/blob-index" "^1.2.9"
+    "@storacha/capabilities" "^2.3.1"
+    "@storacha/filecoin-client" "^1.0.20"
     "@ucanto/client" "^9.0.2"
     "@ucanto/core" "^10.4.5"
     "@ucanto/interface" "^11.0.1"
