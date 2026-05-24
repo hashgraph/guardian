@@ -5,6 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { providePrimeNG } from 'primeng/config';
+import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import { ToastrModule } from 'ngx-toastr';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
@@ -147,6 +148,22 @@ import { RelayerAccountsService } from './services/relayer-accounts.service';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
 import { TreeTableModule } from 'primeng/treetable';
 import { CredentialsPanelComponent } from './components/credentials/credentials-panel/credentials-panel.component';
+
+const GuardianPreset = definePreset(Aura, {
+    semantic: {
+        primary: {
+            50: '{blue.50}', 100: '{blue.100}', 200: '{blue.200}', 300: '{blue.300}',
+            400: '{blue.400}', 500: '{blue.500}', 600: '{blue.600}', 700: '{blue.700}',
+            800: '{blue.800}', 900: '{blue.900}', 950: '{blue.950}'
+        },
+        colorScheme: {
+            light: { primary: { color: 'var(--primary-color)', contrastColor: '#ffffff',
+                hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' } },
+            dark:  { primary: { color: 'var(--primary-color)', contrastColor: '#ffffff',
+                hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' } }
+        }
+    }
+});
 
 @NgModule({
     declarations: [
@@ -309,7 +326,7 @@ import { CredentialsPanelComponent } from './components/credentials/credentials-
         },
         providePrimeNG({
             theme: {
-                preset: Aura
+                preset: GuardianPreset
             }
         }),
         provideHttpClient(withInterceptorsFromDi(), withJsonpSupport())

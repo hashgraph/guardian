@@ -38,6 +38,13 @@
     --primary-color: #4169E2;
     --text-color: #000;
 
+    /* PrimeNG styled-mode bridge: old flat palette names removed in the v18 migration,
+       mapped to the new --p-* tokens so existing screens keep their colors. */
+    --blue-100: var(--p-blue-100);
+    --blue-700: var(--p-blue-700);
+    --gray-500: var(--p-gray-500);
+    --surface-border: var(--p-content-border-color);
+
     --header-width-expand: 280px;
     --header-width-collapse: 80px;
     --header-color-primary: #0031ff;
