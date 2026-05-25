@@ -70,7 +70,7 @@ const PROJECT_LINK_JOIN = `
             FROM message mt
             WHERE mt.type = 'VC-Document'
               AND mt.documents IS NOT NULL
-              AND mt.documents->'credentialSubject'->0->>'type' = 'MintToken'
+              AND mt.documents->'credentialSubject'->0->>'type' LIKE 'MintToken%'
               AND mt.documents->'credentialSubject'->0->>'tokenId'
                   = COALESCE(bv."businessData"->>'tokenId', tc."tokenId")
             ORDER BY mt."consensusTimestamp" DESC
@@ -324,7 +324,7 @@ export class PgCreditRepository extends CreditRepository {
              FROM message
              WHERE type = 'VC-Document'
                AND documents IS NOT NULL
-               AND documents->'credentialSubject'->0->>'type'    = 'MintToken'
+               AND documents->'credentialSubject'->0->>'type'    LIKE 'MintToken%'
                AND documents->'credentialSubject'->0->>'tokenId' = $1
              ORDER BY "consensusTimestamp" ASC
              LIMIT 200`,

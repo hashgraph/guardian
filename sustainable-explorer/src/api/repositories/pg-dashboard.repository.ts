@@ -20,7 +20,7 @@ export interface DashboardMintQuery {
  * extra round trips.
  *
  * Performance notes:
- *  - project_mint_link.project_source_timestamp has idx_pml_project_src —
+ *  - project_mint_link.project_key has idx_pml_project_key —
  *    the JOIN to business_view hits that index.
  *  - The LATERAL registry lookup is O(log n) per row.
  *  - No per-project loop; the DB engine handles the aggregation in one plan.
@@ -59,7 +59,7 @@ export class PgDashboardRepository {
                 SUM(pml.amount)::bigint                                      AS amount
             FROM project_mint_link pml
             JOIN business_view bv
-                ON bv."sourceTimestamp" = pml.project_source_timestamp
+                ON bv."projectKey" = pml.project_key
                AND bv."viewType" = 'PROJECT'
             LEFT JOIN LATERAL (
                 SELECT "displayName" AS registry_name
