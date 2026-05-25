@@ -404,7 +404,7 @@ a[disabled="true"] {
 
 :host::ng-deep {
     .hedera-form-item {
-        .p-dropdown {
+        .p-select {
             width: 100%;
             border-radius: 8px;
         }
@@ -1241,7 +1241,7 @@ mat-radio-button {
     min-width: 110px !important;
 }
 
-:host ::ng-deep .p-tabview-nav-link {
+:host ::ng-deep .p-tab {
     text-decoration: none !important;
 }
 

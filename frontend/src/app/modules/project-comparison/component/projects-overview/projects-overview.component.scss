@@ -65,7 +65,7 @@ h1 {
     }
 }
 
-:host ::ng-deep .p-dropdown {
+:host ::ng-deep .p-select {
     min-width: 300px !important;
 }
 
@@ -141,7 +141,7 @@ h1 {
         min-width: 0 !important;
     }
 
-    .p-dropdown,
+    .p-select,
     .p-multiselect {
         width: 100%;
         max-width: 228px;
@@ -149,7 +149,7 @@ h1 {
         border-radius: 6px;
         background: var(--grey-white, #FFF);
 
-        .p-dropdown-label {
+        .p-select-label {
             color: var(--primary-primary, #4169E2);
             font-family: Inter, sans-serif;
             font-size: 14px;
@@ -160,7 +160,7 @@ h1 {
         }
     }
 
-    .p-dropdown {
+    .p-select {
         border: 1px solid var(--primary-primary, #4169E2);
         width: 250px;
     }

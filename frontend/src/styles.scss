@@ -570,7 +570,7 @@ input:checked+.slider:before {
     }
 }
 
-::ng-deep .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+::ng-deep .p-tabs .p-tablist-tab-list li.p-highlight .p-tab {
     background: #ffffff;
     border-color: var(--color-primary);
     color: var(--color-primary);

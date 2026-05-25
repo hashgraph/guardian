@@ -269,8 +269,8 @@ form {
                     }
                 }
 
-                p-dropdown::ng-deep {
-                    .p-dropdown {
+                p-select::ng-deep {
+                    .p-select {
                         border-color: var(--guardian-warning-color, #da9b22);
                     }
                 }
@@ -288,8 +288,8 @@ form {
                     }
                 }
 
-                p-dropdown::ng-deep {
-                    .p-dropdown {
+                p-select::ng-deep {
+                    .p-select {
                         border-color: var(--guardian-warning-color, #19be47);
                     }
                 }

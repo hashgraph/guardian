@@ -307,15 +307,15 @@
     justify-content: space-between;
 }
 
-:host ::ng-deep .p-dropdown {
+:host ::ng-deep .p-select {
     width: 400px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #fff;
 }
 
-:host ::ng-deep .p-dropdown-panel,
-.p-dropdown-items-wrapper {
+:host ::ng-deep .p-select-overlay,
+.p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #fff;
@@ -409,14 +409,14 @@ button[disabled] {
     align-content: center;
 }
 
-:host ::ng-deep .topic-id-field .p-dropdown {
+:host ::ng-deep .topic-id-field .p-select {
     width: 200px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #fff;
 }
 
-:host ::ng-deep.p-dropdown {
+:host ::ng-deep.p-select {
     width: 100px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
@@ -760,7 +760,7 @@ mat-radio-button {
     min-width: 110px !important;
 }
 
-:host ::ng-deep .p-tabview-nav-link {
+:host ::ng-deep .p-tab {
     text-decoration: none !important;
 }
 

@@ -77,7 +77,7 @@
     padding-top: 2px;
 }
 
-:host ::ng-deep .p-dropdown {
+:host ::ng-deep .p-select {
     width: 400px;
     border-radius: 8px !important;
     border: 1px solid var(--color-grey-3);
@@ -95,8 +95,8 @@
     /* 114.286% */
 }
 
-:host ::ng-deep .p-dropdown-panel,
-.p-dropdown-items-wrapper {
+:host ::ng-deep .p-select-overlay,
+.p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #FFF;
@@ -376,7 +376,7 @@ button[disabled] {
     align-content: center;
 }
 
-:host ::ng-deep .p-dropdown {
+:host ::ng-deep .p-select {
     width: 280px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
@@ -398,7 +398,7 @@ button[disabled] {
     }
 }
 
-:host ::ng-deep .p-calendar {
+:host ::ng-deep .p-datepicker {
     width: 330px;
     border-radius: 8px;
 
@@ -415,7 +415,7 @@ button[disabled] {
     }
 }
 
-:host ::ng-deep .p-calendar-w-btn .p-inputtext {
+:host ::ng-deep .p-datepicker .p-inputtext {
     border: 1px solid var(--color-grey-3);
     border-radius: 8px;
 }

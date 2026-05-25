@@ -8,24 +8,24 @@
     flex-direction: column;
 
     ::ng-deep {
-        .p-tabview .p-tabview-nav {
+        .p-tabs .p-tablist-tab-list {
             li:first-child {
                 margin-left: 48px;
             }
         }
 
-        .p-tabview {
+        .p-tabs {
             height: 100%;
             display: flex;
             flex-direction: column;
         }
 
-        .p-tabview-nav-container {
+        .p-tablist {
             height: 50px;
             min-height: 50px;
         }
 
-        .p-tabview-panels {
+        .p-tabpanels {
             background: none;
             padding: 0;
             height: 100%;
@@ -33,7 +33,7 @@
             width: 100%;
             overflow: hidden;
 
-            .p-tabview-panel {
+            .p-tabpanel {
                 height: 100%;
                 position: relative;
             }
@@ -969,7 +969,7 @@ a.go-back-link svg {
     margin-bottom: 16px;
 
     ::ng-deep {
-        .p-tabview .p-tabview-nav {
+        .p-tabs .p-tablist-tab-list {
             li:first-child {
                 margin-left: 8px !important;
             }

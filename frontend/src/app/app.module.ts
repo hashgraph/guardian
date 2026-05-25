@@ -326,7 +326,13 @@ const GuardianPreset = definePreset(Aura, {
         },
         providePrimeNG({
             theme: {
-                preset: GuardianPreset
+                preset: GuardianPreset,
+                options: {
+                    cssLayer: {
+                        name: 'primeng',
+                        order: 'app-styles, primeng'
+                    }
+                }
             }
         }),
         provideHttpClient(withInterceptorsFromDi(), withJsonpSupport())

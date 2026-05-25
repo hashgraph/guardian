@@ -44,7 +44,7 @@
             border-color: #f00;
         }
 
-        .p-dropdown {
+        .p-select {
             border-color: #f00;
         }
 
@@ -72,7 +72,7 @@
     height: 38px;
 }
 
-p-dropdown,
+p-select,
 p-calendar {
     height: 40px;
 }
@@ -105,11 +105,11 @@ p-calendar {
     box-shadow: none;
 }
 
-.content ::ng-deep .filter-dropdown .p-dropdown {
+.content ::ng-deep .filter-dropdown .p-select {
     border-radius: 0 8px 8px 0;
     border-left: 0;
 
-    .p-dropdown-label {
+    .p-select-label {
         font-size: 14px;
         color: #23252E;
         height: 36px;

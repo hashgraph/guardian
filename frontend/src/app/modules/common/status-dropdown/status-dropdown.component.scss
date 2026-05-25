@@ -2,7 +2,7 @@
     height: 30px;
     width: 140px;
 
-    .p-dropdown {
+    .p-select {
         width: 140px;
         height: 30px;
         border-radius: 6px;
@@ -17,54 +17,54 @@
         }
     }
 
-    .p-dropdown-trigger .p-dropdown-trigger-icon {
+    .p-select-dropdown .p-select-dropdown-icon {
         font-size: 12px;
         font-weight: bold;
     }
 }
 
 .guardian-dropdown.guardian-dropdown-status.status-DRAFT::ng-deep {
-    .p-dropdown {
+    .p-select {
         border-color: var(--guardian-primary-color, #4169E2);
         color: var(--guardian-primary-color, #4169E2);
     }
 
-    .p-dropdown-trigger .p-dropdown-trigger-icon {
+    .p-select-dropdown .p-select-dropdown-icon {
         color: var(--guardian-primary-color, #4169E2);
     }
 }
 
 .guardian-dropdown.guardian-dropdown-status.status-DRY_RUN::ng-deep {
-    .p-dropdown {
+    .p-select {
         border-color: var(--guardian-primary-color, #4169E2);
         color: var(--guardian-primary-color, #4169E2);
     }
 
-    .p-dropdown-trigger .p-dropdown-trigger-icon {
+    .p-select-dropdown .p-select-dropdown-icon {
         color: var(--guardian-primary-color, #4169E2);
     }
 }
 
 .guardian-dropdown.guardian-dropdown-status.status-PUBLISHED::ng-deep {
-    .p-dropdown {
+    .p-select {
         background: var(--guardian-success-background, #CAFDD9);
         color: var(--guardian-success-color, #19BE47);
         border: 1px solid var(--guardian-success-color, #19BE47);
     }
 
-    .p-dropdown-trigger .p-dropdown-trigger-icon {
+    .p-select-dropdown .p-select-dropdown-icon {
         color: var(--guardian-success-color, #19BE47);
     }
 }
 
 .guardian-dropdown.guardian-dropdown-status.status-ERROR::ng-deep {
-    .p-dropdown {
+    .p-select {
         background: var(--guardian-failure-background, #FFEAEA);
         color: var(--guardian-failure-color, #FF432A);
         border: 1px solid var(--guardian-failure-color, #FF432A);
     }
 
-    .p-dropdown-trigger .p-dropdown-trigger-icon {
+    .p-select-dropdown .p-select-dropdown-icon {
         color: var(--guardian-failure-color, #FF432A);
     }
 }
@@ -72,7 +72,7 @@
 ::ng-deep .guardian-dropdown-panel.guardian-dropdown-status-panel {
     border-radius: 4px;
 
-    .p-dropdown-item {
+    .p-select-option {
         height: auto;
         padding: 12px 16px !important;
         font-family: Inter;

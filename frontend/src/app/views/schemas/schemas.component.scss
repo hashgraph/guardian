@@ -17,20 +17,20 @@
 }
 
 :host ::ng-deep {
-    .p-tabview-nav-link {
+    .p-tab {
         padding: 0 !important;
         color: var(--color-grey-5) !important;
     }
 
-    .p-tabview-nav {
+    .p-tablist-tab-list {
         background: none;
     }
 
-    .p-tabview-panels {
+    .p-tabpanels {
         background: none;
     }
 
-    .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+    .p-tabs .p-tablist-tab-list li.p-highlight .p-tab {
         color: var(--color-primary) !important;
     }
 }
@@ -168,7 +168,7 @@ a {
 }
 
 :host ::ng-deep .table-paginator {
-    .p-dropdown {
+    .p-select {
         width: 125px;
         height: 40px;
         border-radius: 8px;
@@ -429,7 +429,7 @@ a {
 
 .policy-dropdown {
     ::ng-deep {
-        .p-dropdown {
+        .p-select {
             width: 400px;
             height: 40px;
             border-radius: 8px;
@@ -501,7 +501,7 @@ a {
     color: var(--color-grey-5);
 }
 
-::ng-deep .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+::ng-deep .p-tabs .p-tablist-tab-list li.p-highlight .p-tab {
     border-color: var(--color-primary);
 }
 

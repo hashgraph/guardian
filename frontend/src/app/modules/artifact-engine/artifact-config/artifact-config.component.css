@@ -68,14 +68,14 @@
     justify-content: space-between;
 }
 
-:host ::ng-deep .p-dropdown {
+:host ::ng-deep .p-select {
     width: 100%;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #FFF;
 }
 
-:host ::ng-deep .p-dropdown-panel, .p-dropdown-items-wrapper {
+:host ::ng-deep .p-select-overlay, .p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #FFF;

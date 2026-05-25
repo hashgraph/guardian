@@ -212,15 +212,15 @@
     }
 }
 
-.container ::ng-deep .p-dropdown {
+.container ::ng-deep .p-select {
     width: 166px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #FFF;
 }
 
-.container ::ng-deep .p-dropdown-panel,
-.p-dropdown-items-wrapper {
+.container ::ng-deep .p-select-overlay,
+.p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #FFF;

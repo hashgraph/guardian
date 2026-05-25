@@ -352,7 +352,7 @@ form {
     flex-direction: column;
 
     ::ng-deep {
-        .p-dropdown {
+        .p-select {
             width: 100%;
         }
     }
@@ -366,7 +366,7 @@ form {
     min-width: calc(50% - 25px);
 
     ::ng-deep {
-        .p-dropdown {
+        .p-select {
             width: 100%;
         }
     }
@@ -405,7 +405,7 @@ form {
     pointer-events: none !important;
 
     &::ng-deep {
-        .p-dropdown-trigger {
+        .p-select-dropdown {
             display: none !important;
         }
     }
