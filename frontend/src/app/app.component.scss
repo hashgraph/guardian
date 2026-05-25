@@ -498,7 +498,8 @@ body {
     min-height: 36px;
 }
 
-::ng-deep .p-tablist-tab-list li.p-highlight .p-tab {
+::ng-deep .p-tabs .p-tab.p-tab-active,
+::ng-deep .p-tabs .p-tab[data-p-active='true'] {
     color: var(--color-primary);
     border-color: var(--color-primary);
 }
