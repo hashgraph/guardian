@@ -9,7 +9,6 @@ import {
     Target,
     BarChart3,
     Activity,
-    Leaf,
     CheckCircle2,
 } from 'lucide-vue-next';
 
@@ -46,23 +45,35 @@ const navItems = computed(() => [
         :class="collapsed ? 'w-[var(--sidebar-width-collapsed)]' : 'w-[var(--sidebar-width)]'"
     >
         <!-- Logo -->
-        <div class="flex h-12 items-center gap-2.5 px-4">
-            <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary ring-1 ring-primary/20 transition-transform hover:scale-105">
-                <Leaf class="h-3.5 w-3.5 text-primary-foreground" />
+        <div class="flex flex-col">
+            <div class="flex h-12 items-center px-4">
+                <Transition
+                    enter-active-class="transition-all duration-200 delay-100 ease-out"
+                    enter-from-class="opacity-0 -translate-x-2"
+                    enter-to-class="opacity-100 translate-x-0"
+                    leave-active-class="transition-all duration-100 ease-in"
+                    leave-from-class="opacity-100"
+                    leave-to-class="opacity-0 -translate-x-2"
+                    mode="out-in"
+                >
+                    <img
+                        v-if="!collapsed"
+                        key="full"
+                        src="/logo/SA-transparent.png"
+                        alt="Sustainability Atlas"
+                        style="margin-left: -10px;"
+                        class="h-25 max-w-full object-contain object-left"
+                    />
+                    <img
+                        v-else
+                        key="icon"
+                        src="/logo-clean.png"
+                        alt="Sustainability Atlas"
+                        class="h-8 w-8"
+                    />
+                </Transition>
             </div>
-            <Transition
-                enter-active-class="transition-all duration-200 delay-100 ease-out"
-                enter-from-class="opacity-0 -translate-x-2"
-                enter-to-class="opacity-100 translate-x-0"
-                leave-active-class="transition-all duration-100 ease-in"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0 -translate-x-2"
-            >
-                <div v-if="!collapsed" class="flex items-baseline gap-1.5 whitespace-nowrap">
-                    <span class="text-sm font-semibold text-foreground tracking-tight">{{ $t('nav.sustainable') }}</span>
-                    <span class="text-xs text-muted-foreground">{{ $t('nav.explorer') }}</span>
-                </div>
-            </Transition>
+            <div class="mx-3 h-px bg-gradient-to-r from-primary/40 via-primary/15 to-transparent" />
         </div>
 
         <!-- Navigation. The `group` parent + `before:` pseudo-element draws an
