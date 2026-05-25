@@ -155,6 +155,9 @@ export class ProjectResponseDto {
     @ApiProperty({ nullable: true, description: 'Project display name' })
     name: string | null;
 
+    @ApiProperty({ nullable: true, description: 'Project description or summary' })
+    description: string | null;
+
     @ApiProperty({ nullable: true, description: 'Country where the project is located' })
     country: string | null;
 
@@ -206,7 +209,10 @@ export class ProjectResponseDto {
     @ApiProperty({ nullable: true, description: 'Project creation / start date (ISO string or year)' })
     createdAt: string | null;
 
-    @ApiProperty({ nullable: true, description: 'Crediting period end date (ISO string) extracted from the project registration VC' })
+    @ApiProperty({ nullable: true, description: 'Crediting period start date (ISO string)' })
+    creditingPeriodStart: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Crediting period end date (ISO string)' })
     creditingPeriodEnd: string | null;
 
     @ApiProperty({ nullable: true, description: 'Hedera topic ID of the first project VC' })
@@ -344,6 +350,7 @@ export class ProjectResponseDto {
             id: row.id,
             network,
             name: row.displayName,
+            description: typeof data['description'] === 'string' ? data['description'] : null,
             country: typeof data['country'] === 'string' ? data['country'] : null,
             lat: typeof data['lat'] === 'number' ? data['lat'] : null,
             lng: typeof data['lng'] === 'number' ? data['lng'] : null,
@@ -361,6 +368,7 @@ export class ProjectResponseDto {
             sector: typeof data['sector'] === 'string' ? data['sector'] : null,
             sectoralScope: typeof data['sectoralScope'] === 'string' ? data['sectoralScope'] : null,
             createdAt: typeof data['createdAt'] === 'string' ? data['createdAt'] : null,
+            creditingPeriodStart: typeof data['creditingPeriodStart'] === 'string' ? data['creditingPeriodStart'] : null,
             creditingPeriodEnd: typeof data['creditingPeriodEnd'] === 'string' ? data['creditingPeriodEnd'] : null,
             topicId: typeof data['topicId'] === 'string' ? data['topicId'] : null,
             policyTopicId: typeof data['policyTopicId'] === 'string' ? data['policyTopicId'] : null,

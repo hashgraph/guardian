@@ -312,12 +312,16 @@ export class ProjectMapperService {
         // Crediting period (object {from, to}) — try the geo-path approach but our
         // current fieldMap stores only top-level keys. Fall back: scan cs values.
         let createdAt: string | null = extracted['vintageRaw'] ?? null;
+        let creditingPeriodStart: string | null = extracted['creditingPeriodStart'] ?? null;
         let creditingPeriodEnd: string | null = null;
         for (const v of Object.values(cs)) {
             if (v && typeof v === 'object' && !Array.isArray(v)
                 && 'from' in (v as object) && 'to' in (v as object)) {
                 const obj = v as Record<string, unknown>;
-                if (typeof obj['from'] === 'string') createdAt = obj['from'] as string;
+                if (typeof obj['from'] === 'string') {
+                    createdAt = obj['from'] as string;
+                    if (!creditingPeriodStart) creditingPeriodStart = obj['from'] as string;
+                }
                 if (typeof obj['to'] === 'string') creditingPeriodEnd = obj['to'] as string;
                 break;
             }
@@ -412,7 +416,9 @@ export class ProjectMapperService {
         if (extracted['category']) newFields.category = extracted['category'];
         if (sector) newFields.sector = sector;
         if (sectoralScope) newFields.sectoralScope = sectoralScope;
+        if (extracted['description']) newFields.description = extracted['description'];
         if (createdAt) newFields.createdAt = createdAt;
+        if (creditingPeriodStart) newFields.creditingPeriodStart = creditingPeriodStart;
         if (creditingPeriodEnd) newFields.creditingPeriodEnd = creditingPeriodEnd;
         newFields.status = 'Issuing';
 

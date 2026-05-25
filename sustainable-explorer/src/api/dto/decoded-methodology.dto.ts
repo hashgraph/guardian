@@ -20,6 +20,9 @@ export class ResolvedFieldsDto {
     name: ResolvedFieldDto | null;
 
     @ApiPropertyOptional({ type: ResolvedFieldDto, nullable: true })
+    description: ResolvedFieldDto | null;
+
+    @ApiPropertyOptional({ type: ResolvedFieldDto, nullable: true })
     country: ResolvedFieldDto | null;
 
     @ApiPropertyOptional({ type: ResolvedFieldDto, nullable: true })
@@ -39,6 +42,9 @@ export class ResolvedFieldsDto {
 
     @ApiPropertyOptional({ type: ResolvedFieldDto, nullable: true })
     creditingPeriod: ResolvedFieldDto | null;
+
+    @ApiPropertyOptional({ type: ResolvedFieldDto, nullable: true })
+    creditingPeriodStart: ResolvedFieldDto | null;
 
     @ApiPropertyOptional({ type: ResolvedFieldDto, nullable: true })
     sdgOrCobenefits: ResolvedFieldDto | null;
@@ -226,6 +232,7 @@ export class DecodedMethodologyResponseDto {
             section: typeof config.section === 'string' ? config.section : null,
             resolvedFields: {
                 name: buildResolvedField(resolvedFields['name']),
+                description: buildResolvedField(resolvedFields['description']),
                 country: buildResolvedField(resolvedFields['country']),
                 developer: buildResolvedField(resolvedFields['developer']),
                 category: buildResolvedField(resolvedFields['category']),
@@ -233,6 +240,7 @@ export class DecodedMethodologyResponseDto {
                 sector: buildResolvedField(resolvedFields['sector']),
                 vintageRaw: buildResolvedField(resolvedFields['vintageRaw']),
                 creditingPeriod: buildResolvedField(resolvedFields['creditingPeriod']),
+                creditingPeriodStart: buildResolvedField(resolvedFields['creditingPeriodStart']),
                 sdgOrCobenefits: buildResolvedField(resolvedFields['sdgOrCobenefits']),
             },
             fieldMap: Object.entries(fieldMap)
