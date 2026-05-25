@@ -282,6 +282,7 @@
       "symbol": "Símbolo",
       "type": "Tipo",
       "supply": "Suministro",
+      "mintDate": "Fecha de emisión",
       "project": "Proyecto",
       "registry": "Registro",
       "rawData": "Datos brutos"

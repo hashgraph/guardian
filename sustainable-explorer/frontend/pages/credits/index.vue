@@ -3,8 +3,16 @@ import { Coins, FileJson } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const { network } = useNetwork();
+
+const localeTag = computed(() => (locale.value === 'es' ? 'es-ES' : 'en-US'));
+const formatDate = (d: string | null) => {
+    if (!d) return '—';
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return d;
+    return dt.toLocaleDateString(localeTag.value);
+};
 const { credits, total, filterOptions } = useCredits();
 
 const config = useRuntimeConfig();
@@ -74,6 +82,7 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
                             <SortableHeader :label="$t('credits.columns.symbol')" sort-key="symbol" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('credits.columns.type')" sort-key="type" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('credits.columns.supply')" sort-key="supply" align="right" :tooltip="$t('credits.supplyTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('credits.columns.mintDate')" sort-key="mintDate" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('credits.columns.project')" sort-key="project" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('credits.columns.registry')" sort-key="registry" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider"><span class="inline-flex items-center gap-1">{{ $t('credits.columns.rawData') }} <InfoTooltip :text="$t('tooltips.viewRawData')" /></span></th>
@@ -85,6 +94,7 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
                             <td class="py-3 px-4 font-mono text-xs">{{ c.symbol }}</td>
                             <td class="py-3 px-4"><span :class="[typeColor[c.type], 'text-xs font-medium rounded-full px-2 py-0.5']">{{ c.type }}</span></td>
                             <td class="py-3 px-4 text-right tabular-nums font-medium">{{ c.supplyFormatted }}</td>
+                            <td class="py-3 px-4 text-muted-foreground text-xs tabular-nums whitespace-nowrap">{{ formatDate(c.mintDate) }}</td>
                             <td class="py-3 px-4 text-muted-foreground">
                                 <NuxtLink
                                     v-if="c.projectId"
@@ -107,7 +117,7 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
                                 </button>
                             </td>
                         </tr>
-                        <tr v-if="paginated.length === 0"><td colspan="7" class="py-12 text-center text-sm text-muted-foreground">{{ $t('credits.noMatch') }}</td></tr>
+                        <tr v-if="paginated.length === 0"><td colspan="8" class="py-12 text-center text-sm text-muted-foreground">{{ $t('credits.noMatch') }}</td></tr>
                     </tbody>
                 </table>
             </div>
