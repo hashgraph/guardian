@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { useDebounceFn } from '@vueuse/core';
 import {
     AlertCircle,
+    Check,
     CheckCircle2,
     ChevronDown,
     Clock,
+    Copy,
+    FileWarning,
     Loader2,
     RefreshCw,
     X,
@@ -384,6 +388,123 @@ async function confirmRetryJob(job: FailedJobDto) {
         state.pending = false;
         state.confirming = false;
     }
+}
+
+// ─── IPFS Documents ───────────────────────────────────────────────────────────
+
+const ipfsFailuresPanelOpen = ref(true);
+const ipfsTopicFilterRaw = ref('');
+const ipfsTopicFilter = ref('');
+const ipfsErrorCategoryFilter = ref('');
+const ipfsStatusFilter = ref('');
+const ipfsFailurePage = ref(1);
+const ipfsFailurePageSize = ref(20);
+
+const applyTopicFilter = useDebounceFn((val: string) => {
+    ipfsTopicFilter.value = val;
+    ipfsFailurePage.value = 1;
+}, 400);
+
+watch(ipfsTopicFilterRaw, (val) => applyTopicFilter(val));
+watch(ipfsErrorCategoryFilter, () => { ipfsFailurePage.value = 1; });
+watch(ipfsStatusFilter, () => { ipfsFailurePage.value = 1; });
+
+const {
+    data: ipfsFailuresData,
+    pending: ipfsFailuresPending,
+    refresh: refreshIpfsFailures,
+} = useIpfsCidStatusApi({
+    network,
+    topicId: ipfsTopicFilter,
+    page: ipfsFailurePage,
+    limit: ipfsFailurePageSize,
+    errorCategory: ipfsErrorCategoryFilter,
+    status: ipfsStatusFilter,
+});
+
+const ipfsFailures = computed(() => ipfsFailuresData.value?.data ?? []);
+const ipfsFailuresTotal = computed(() => ipfsFailuresData.value?.meta.total ?? 0);
+const ipfsFailuresTotalPages = computed(() => ipfsFailuresData.value?.meta.totalPages ?? 0);
+
+const ipfsFiltersActive = computed(() => !!ipfsTopicFilterRaw.value || !!ipfsErrorCategoryFilter.value || !!ipfsStatusFilter.value);
+
+// Show "Retry All for Topic" only when a topic filter is active and there are failed rows visible
+const ipfsHasFailedRows = computed(() => ipfsFailures.value.some((r) => r.status === 'failed'));
+
+function clearIpfsFilters() {
+    ipfsTopicFilterRaw.value = '';
+    ipfsTopicFilter.value = '';
+    ipfsErrorCategoryFilter.value = '';
+    ipfsStatusFilter.value = '';
+    ipfsFailurePage.value = 1;
+}
+
+function ipfsErrorCategoryBadgeClass(category: string | null): string {
+    if (category === 'transient') return 'bg-stat-amber/10 text-stat-amber';
+    if (category === 'permanent') return 'bg-stat-rose/10 text-stat-rose';
+    return 'bg-muted text-muted-foreground';
+}
+
+function ipfsStatusBadgeClass(status: string): string {
+    if (status === 'fetched') return 'bg-stat-green/10 text-stat-green';
+    if (status === 'failed') return 'bg-stat-rose/10 text-stat-rose';
+    return 'bg-stat-amber/10 text-stat-amber'; // pending
+}
+
+const copiedValue = ref<string | null>(null);
+async function copyToClipboard(value: string) {
+    try {
+        await navigator.clipboard.writeText(value);
+        copiedValue.value = value;
+        setTimeout(() => { if (copiedValue.value === value) copiedValue.value = null; }, 2000);
+    } catch {}
+}
+
+const ipfsRetryPending = ref<Record<string, boolean>>({});
+
+async function retryIpfsFailure(cid: string) {
+    ipfsRetryPending.value[cid] = true;
+    try {
+        await $fetch(`/api/v1/${network.value}/ipfs-status/${encodeURIComponent(cid)}/retry`, {
+            method: 'POST',
+            baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
+        });
+        showToast(`CID ${cid.slice(0, 20)}… queued for retry`);
+        await refreshIpfsFailures();
+    } catch (err: any) {
+        showToast(`Retry failed: ${err?.message ?? 'Unknown error'}`, 'error');
+    } finally {
+        ipfsRetryPending.value[cid] = false;
+    }
+}
+
+const ipfsRetryAllTopicPending = ref(false);
+
+async function retryAllIpfsForTopic() {
+    if (!ipfsTopicFilter.value) return;
+    ipfsRetryAllTopicPending.value = true;
+    try {
+        await $fetch(`/api/v1/${network.value}/ipfs-status/retry-by-topic`, {
+            method: 'POST',
+            body: { topicId: ipfsTopicFilter.value },
+            baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
+        });
+        showToast(`Retry queued for all failures on topic ${ipfsTopicFilter.value}`);
+        await refreshIpfsFailures();
+    } catch (err: any) {
+        showToast(`Retry all failed: ${err?.message ?? 'Unknown error'}`, 'error');
+    } finally {
+        ipfsRetryAllTopicPending.value = false;
+    }
+}
+
+function onIpfsFailurePageChange(page: number) {
+    ipfsFailurePage.value = page;
+}
+
+function onIpfsFailurePageSizeChange(size: number) {
+    ipfsFailurePageSize.value = size;
+    ipfsFailurePage.value = 1;
 }
 
 // ─── Activity feed — filter ───────────────────────────────────────────────────
@@ -818,6 +939,257 @@ function formatTs(ts: number): string {
                             @update:pageSize="onSyncTokenPageSizeChange"
                         />
                     </div>
+                </div>
+            </Transition>
+        </div>
+
+        <!-- Section E-pre: IPFS Documents (collapsible) -->
+        <div class="border-t">
+            <button
+                class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-muted/20 transition-colors"
+                @click="ipfsFailuresPanelOpen = !ipfsFailuresPanelOpen"
+            >
+                <div class="flex items-center gap-2">
+                    <FileWarning class="h-4 w-4 text-muted-foreground" />
+                    <div>
+                        <h2 class="text-base font-semibold text-foreground">IPFS Documents</h2>
+                    </div>
+                    <span
+                        v-if="ipfsFailuresTotal > 0"
+                        class="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium px-2 py-0.5 min-w-6"
+                    >
+                        {{ ipfsFailuresTotal.toLocaleString() }}
+                    </span>
+                    <span
+                        v-else-if="!ipfsFailuresPending"
+                        class="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium px-2 py-0.5 min-w-6"
+                    >
+                        0
+                    </span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button
+                        v-if="ipfsTopicFilter && ipfsHasFailedRows && !ipfsFailuresPending"
+                        class="inline-flex items-center gap-1 text-xs text-stat-rose border border-stat-rose/50 hover:bg-stat-rose/5 rounded px-2 py-1 transition-colors disabled:opacity-50"
+                        :disabled="ipfsRetryAllTopicPending"
+                        @click.stop="retryAllIpfsForTopic"
+                    >
+                        <Loader2 v-if="ipfsRetryAllTopicPending" class="h-3 w-3 animate-spin" />
+                        <RefreshCw v-else class="h-3 w-3" />
+                        Retry All for Topic
+                    </button>
+                    <ChevronDown
+                        class="h-4 w-4 text-muted-foreground transition-transform"
+                        :class="{ 'rotate-180': ipfsFailuresPanelOpen }"
+                    />
+                </div>
+            </button>
+
+            <Transition
+                enter-active-class="transition-all duration-200 ease-out"
+                enter-from-class="opacity-0 -translate-y-1"
+                enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition-all duration-150 ease-in"
+                leave-from-class="opacity-100 translate-y-0"
+                leave-to-class="opacity-0 -translate-y-1"
+            >
+                <div v-if="ipfsFailuresPanelOpen" class="px-6 pb-6 space-y-3">
+                    <!-- Filter bar -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <input
+                            v-model="ipfsTopicFilterRaw"
+                            type="text"
+                            placeholder="Filter by topic ID..."
+                            class="h-9 rounded-md border border-input bg-card px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-56"
+                        />
+                        <!-- Status filter -->
+                        <select
+                            v-model="ipfsStatusFilter"
+                            class="h-9 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                            <option value="">All statuses</option>
+                            <option value="fetched">Fetched</option>
+                            <option value="failed">Failed</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                        <!-- Error category filter — only relevant when showing failed items -->
+                        <select
+                            v-if="ipfsStatusFilter === 'failed' || ipfsStatusFilter === ''"
+                            v-model="ipfsErrorCategoryFilter"
+                            class="h-9 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                            <option value="">All categories</option>
+                            <option value="transient">Transient</option>
+                            <option value="permanent">Permanent</option>
+                            <option value="unknown">Unknown</option>
+                        </select>
+                        <button
+                            v-if="ipfsFiltersActive"
+                            class="inline-flex items-center gap-1 h-9 rounded-md px-3 text-sm border border-border hover:bg-muted transition-colors text-muted-foreground"
+                            @click="clearIpfsFilters"
+                        >
+                            <X class="h-3.5 w-3.5" />
+                            Clear
+                        </button>
+                        <button
+                            class="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors ml-auto"
+                            :disabled="ipfsFailuresPending"
+                            @click="refreshIpfsFailures()"
+                        >
+                            <RefreshCw class="h-3.5 w-3.5" :class="{ 'animate-spin': ipfsFailuresPending }" />
+                            Refresh
+                        </button>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="rounded-xl border bg-card overflow-hidden">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b bg-muted/30">
+                                    <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">CID</th>
+                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">CID v1</th>
+                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Topic ID</th>
+                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
+                                    <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Error</th>
+                                    <th class="text-right py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Attempts</th>
+                                    <th class="text-right py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Failed</th>
+                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <!-- Loading skeleton -->
+                                <template v-if="ipfsFailuresPending && ipfsFailures.length === 0">
+                                    <tr v-for="i in 4" :key="i" class="animate-pulse">
+                                        <td class="py-3 px-4"><div class="h-4 bg-muted rounded w-32" /></td>
+                                        <td class="py-3 px-3"><div class="h-4 bg-muted rounded w-28" /></td>
+                                        <td class="py-3 px-3"><div class="h-4 bg-muted rounded w-20" /></td>
+                                        <td class="py-3 px-3"><div class="h-4 bg-muted rounded w-20" /></td>
+                                        <td class="py-3 px-3"><div class="h-5 bg-muted rounded-full w-16 mx-auto" /></td>
+                                        <td class="py-3 px-3"><div class="h-4 bg-muted rounded w-48" /></td>
+                                        <td class="py-3 px-3"><div class="h-4 bg-muted rounded w-8 ml-auto" /></td>
+                                        <td class="py-3 px-3"><div class="h-4 bg-muted rounded w-16 ml-auto" /></td>
+                                        <td class="py-3 px-3"><div class="h-6 bg-muted rounded w-14" /></td>
+                                    </tr>
+                                </template>
+
+                                <!-- Empty state -->
+                                <tr v-else-if="ipfsFailures.length === 0 && !ipfsFailuresPending">
+                                    <td colspan="9" class="py-12 text-center text-sm text-muted-foreground">
+                                        No IPFS documents found
+                                    </td>
+                                </tr>
+
+                                <!-- CID rows -->
+                                <tr
+                                    v-for="row in ipfsFailures"
+                                    :key="row.cid"
+                                    class="hover:bg-muted/30 transition-colors"
+                                >
+                                    <!-- CID (mono, truncated, with copy) -->
+                                    <td class="py-3 px-4 max-w-[160px]">
+                                        <div class="group flex items-center gap-1.5">
+                                            <span :title="row.cid" class="block truncate font-mono text-xs text-foreground">{{ row.cid }}</span>
+                                            <button
+                                                class="opacity-0 group-hover:opacity-100 transition-opacity flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                title="Copy CID"
+                                                @click.stop="copyToClipboard(row.cid)"
+                                            >
+                                                <Check v-if="copiedValue === row.cid" class="h-3 w-3 text-stat-green" />
+                                                <Copy v-else class="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    </td>
+
+                                    <!-- CID v1 (mono, truncated, with copy) -->
+                                    <td class="py-3 px-3 max-w-[160px]">
+                                        <div class="group flex items-center gap-1.5">
+                                            <span :title="row.cidV1" class="block truncate font-mono text-xs text-muted-foreground">{{ row.cidV1 }}</span>
+                                            <button
+                                                class="opacity-0 group-hover:opacity-100 transition-opacity flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                title="Copy CID v1"
+                                                @click.stop="copyToClipboard(row.cidV1)"
+                                            >
+                                                <Check v-if="copiedValue === row.cidV1" class="h-3 w-3 text-stat-green" />
+                                                <Copy v-else class="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    </td>
+
+                                    <!-- Topic ID -->
+                                    <td class="py-3 px-3 font-mono text-xs text-muted-foreground">
+                                        {{ row.topicId ?? '—' }}
+                                    </td>
+
+                                    <!-- Message type -->
+                                    <td class="py-3 px-3 text-xs text-muted-foreground">
+                                        <span v-if="row.messageType" class="bg-muted rounded px-1.5 py-0.5 text-xs">{{ row.messageType }}</span>
+                                        <span v-else class="text-muted-foreground">—</span>
+                                    </td>
+
+                                    <!-- Status badge -->
+                                    <td class="py-3 px-3 text-center">
+                                        <span
+                                            class="inline-flex items-center text-xs font-medium rounded-full px-2 py-0.5 capitalize"
+                                            :class="ipfsStatusBadgeClass(row.status)"
+                                        >
+                                            {{ row.status }}
+                                        </span>
+                                    </td>
+
+                                    <!-- Error (only meaningful for failed) -->
+                                    <td class="py-3 px-3 text-xs text-muted-foreground max-w-[240px]">
+                                        <span v-if="row.status === 'failed' && row.lastError" :title="row.lastError" class="block truncate">
+                                            {{ row.lastError }}
+                                        </span>
+                                        <span v-else class="text-muted-foreground">—</span>
+                                    </td>
+
+                                    <!-- Attempts (only meaningful for failed) -->
+                                    <td class="py-3 px-3 text-right tabular-nums text-sm">
+                                        <span
+                                            v-if="row.status === 'failed' && row.attemptCount !== null"
+                                            :class="(row.attemptCount ?? 0) > 5 ? 'text-stat-rose font-medium' : 'text-muted-foreground'"
+                                        >
+                                            {{ row.attemptCount }}
+                                        </span>
+                                        <span v-else class="text-muted-foreground">—</span>
+                                    </td>
+
+                                    <!-- Last failed (relative time, only for failed) -->
+                                    <td class="py-3 px-3 text-right text-xs text-muted-foreground tabular-nums">
+                                        <span v-if="row.status === 'failed'">{{ formatRelativeTime(row.lastFailedAt) }}</span>
+                                        <span v-else>—</span>
+                                    </td>
+
+                                    <!-- Actions (Retry only for failed rows) -->
+                                    <td class="py-3 px-3">
+                                        <button
+                                            v-if="row.status === 'failed'"
+                                            class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs border border-stat-rose/50 text-stat-rose hover:bg-stat-rose/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                            :disabled="!!ipfsRetryPending[row.cid]"
+                                            @click="retryIpfsFailure(row.cid)"
+                                        >
+                                            <Loader2 v-if="ipfsRetryPending[row.cid]" class="h-3 w-3 animate-spin" />
+                                            <RefreshCw v-else class="h-3 w-3" />
+                                            Retry
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <Pagination
+                        v-if="ipfsFailuresTotal > 0"
+                        :currentPage="ipfsFailurePage"
+                        :totalPages="ipfsFailuresTotalPages"
+                        :totalItems="ipfsFailuresTotal"
+                        :pageSize="ipfsFailurePageSize"
+                        @update:currentPage="onIpfsFailurePageChange"
+                        @update:pageSize="onIpfsFailurePageSizeChange"
+                    />
                 </div>
             </Transition>
         </div>

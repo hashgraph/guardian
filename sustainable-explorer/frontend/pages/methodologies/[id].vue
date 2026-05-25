@@ -361,15 +361,32 @@ const mappingSelectOptions = computed<SelectOption[]>(() => {
   const options: SelectOption[] = [];
   const schemas = decodedData.value.availableSchemas ?? [];
   for (const schema of schemas) {
+    if (!schema.fields?.length) continue;
     const groupLabel = schema.schemaName || schema.schemaId;
     for (const field of schema.fields) {
-      // Skip GeoJSON fields — they have special backend semantics.
       if (field.isGeoJson) continue;
       options.push({
         value: `${schema.schemaId}.${field.fieldKey}`,
         label: `${field.title || field.fieldKey} (${field.fieldKey})`,
         groupLabel,
       });
+    }
+  }
+  // Ensure the projectSchema's own fieldMap entries are present as options
+  // even if they aren't found in availableSchemas (data consistency edge case).
+  if (decodedData.value.projectSchema) {
+    const ps = decodedData.value.projectSchema;
+    const existingValues = new Set(options.map(o => o.value));
+    const groupLabel = ps.schemaName || ps.schemaId;
+    for (const entry of ps.fieldMap ?? []) {
+      const value = `${ps.schemaId}.${entry.fieldKey}`;
+      if (!existingValues.has(value)) {
+        options.push({
+          value,
+          label: `${entry.title || entry.fieldKey} (${entry.fieldKey})`,
+          groupLabel,
+        });
+      }
     }
   }
   return options;

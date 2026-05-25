@@ -360,12 +360,16 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
                          JOIN descendants d ON (t.options->>'parentId') = d."topicId"
                          WHERE t.type = 'Topic'
                      )
-                     SELECT m."consensusTimestamp", unnest(m.files) AS cid
+                     SELECT m."consensusTimestamp", c.cid
                      FROM message m
                      JOIN descendants d ON d."topicId" = m."topicId"
+                     CROSS JOIN LATERAL unnest(m.files) AS c(cid)
                      WHERE m.type = 'VC-Document'
                        AND m.documents IS NULL
-                       AND m.files IS NOT NULL`,
+                       AND m.files IS NOT NULL
+                       AND NOT EXISTS (
+                           SELECT 1 FROM ipfs_fetch_failure ff WHERE ff.cid = c.cid
+                       )`,
                     [policy.policyTopicId],
                 );
 
@@ -392,8 +396,9 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     private async backfillRegistryProfileVcFetches(): Promise<void> {
         const rows: Array<{ consensusTimestamp: string; cid: string }> =
             await this.dataSource.query(
-                `SELECT m."consensusTimestamp", unnest(m.files) AS cid
+                `SELECT m."consensusTimestamp", c.cid
                  FROM message m
+                 CROSS JOIN LATERAL unnest(m.files) AS c(cid)
                  WHERE m.type = 'VC-Document'
                    AND m.documents IS NULL
                    AND m.files IS NOT NULL
@@ -402,6 +407,9 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
                        FROM message
                        WHERE type = 'Standard Registry'
                          AND options->>'topicId' IS NOT NULL
+                   )
+                   AND NOT EXISTS (
+                       SELECT 1 FROM ipfs_fetch_failure ff WHERE ff.cid = c.cid
                    )`,
             );
 

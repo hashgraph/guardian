@@ -21,11 +21,15 @@ import {
     ApiQuery,
     ApiResponse,
     ApiBody,
+    ApiProperty,
+    ApiPropertyOptional,
 } from '@nestjs/swagger';
 import { Job } from 'bullmq';
 import { Observable } from 'rxjs';
-import { IsBoolean, IsInt, IsOptional, Min, Max } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, IsIn, Min, Max } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import CID from 'cids';
+import { BASE_QUEUE_NAMES } from '@shared/config/bullmq.config';
 import { QueueRegistry } from '../queues/queue.registry';
 import { QueueEventsBus } from '../queues/queue-events-bus.service';
 import { NetworkDataSourceRegistry } from '../database/network-datasource.registry';
@@ -107,6 +111,116 @@ class SyncStatusQueryDto {
     @Min(1)
     @Max(100)
     tokenPageSize?: number = 10;
+}
+
+class IpfsStatusQueryDto {
+    @IsOptional()
+    @IsString()
+    topicId?: string;
+
+    @IsOptional()
+    @IsString()
+    cid?: string;
+
+    @IsOptional()
+    @IsString()
+    @IsIn(['transient', 'permanent', 'unknown'])
+    errorCategory?: string;
+
+    @IsOptional()
+    @IsString()
+    @IsIn(['fetched', 'failed', 'pending'])
+    status?: string;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    page?: number = 1;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    @Max(100)
+    limit?: number = 20;
+
+    @IsOptional()
+    @IsString()
+    @IsIn(['lastFailedAt', 'attemptCount', 'firstFailedAt', 'status'])
+    sortBy?: string = 'status';
+
+    @IsOptional()
+    @IsString()
+    @IsIn(['asc', 'desc'])
+    sortDir?: string = 'desc';
+}
+
+class RetryByTopicBodyDto {
+    @ApiProperty({ description: 'Hedera topic ID whose IPFS failures should be retried' })
+    @IsString()
+    topicId: string;
+}
+
+class IpfsCidStatusDto {
+    @ApiProperty({ description: 'IPFS content identifier (CID)' })
+    cid: string;
+
+    @ApiProperty({ description: 'CIDv1 base32 form (bafy...)' })
+    cidV1: string;
+
+    @ApiPropertyOptional({ description: 'Hedera topic ID of the linked message', nullable: true })
+    topicId: string | null;
+
+    @ApiPropertyOptional({ description: 'Message type from the linked message row', nullable: true })
+    messageType: string | null;
+
+    @ApiProperty({ description: 'Fetch status', enum: ['fetched', 'failed', 'pending'] })
+    status: string;
+
+    @ApiPropertyOptional({ description: 'Last error message recorded for this CID', nullable: true })
+    lastError: string | null;
+
+    @ApiPropertyOptional({
+        description: 'Error category',
+        enum: ['transient', 'permanent', 'unknown'],
+        nullable: true,
+    })
+    errorCategory: string | null;
+
+    @ApiPropertyOptional({ description: 'Total number of automatic fetch attempts made', nullable: true })
+    attemptCount: number | null;
+
+    @ApiPropertyOptional({ description: 'Number of times an operator manually triggered a retry', nullable: true })
+    manualRetryCount: number | null;
+
+    @ApiPropertyOptional({ description: 'ISO timestamp of the first recorded failure', nullable: true })
+    firstFailedAt: string | null;
+
+    @ApiPropertyOptional({ description: 'ISO timestamp of the most recent failure', nullable: true })
+    lastFailedAt: string | null;
+}
+
+class IpfsCidStatusMetaDto {
+    @ApiProperty({ description: 'Current page number' })
+    page: number;
+
+    @ApiProperty({ description: 'Items per page' })
+    limit: number;
+
+    @ApiProperty({ description: 'Total matching records' })
+    total: number;
+
+    @ApiProperty({ description: 'Total number of pages' })
+    totalPages: number;
+}
+
+class IpfsCidStatusListDto {
+    @ApiProperty({ type: [IpfsCidStatusDto] })
+    data: IpfsCidStatusDto[];
+
+    @ApiProperty({ type: IpfsCidStatusMetaDto })
+    meta: IpfsCidStatusMetaDto;
 }
 
 // ---------------------------------------------------------------------------
@@ -578,5 +692,352 @@ export class QueueStatusController {
             tokenPageSize,
             tokens,
         };
+    }
+
+    // -------------------------------------------------------------------------
+    // GET /:network/ipfs-status — paginated IPFS CID status list (all CIDs)
+    // -------------------------------------------------------------------------
+
+    @Get(':network/ipfs-status')
+    @ApiOperation({
+        summary: 'List all IPFS CIDs referenced by messages, with their fetch status',
+        description:
+            'Returns a paginated list of every CID found in message.files, ' +
+            'enriched with the linked message\'s topicId and type, plus a derived status: ' +
+            '"fetched" (exists in ipfs_files), "failed" (exists in ipfs_fetch_failure), ' +
+            'or "pending" (neither). Supports filtering by topicId, CID substring, ' +
+            'errorCategory, and status.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiQuery({ name: 'topicId', required: false, type: String, description: 'Filter by message topicId' })
+    @ApiQuery({ name: 'cid', required: false, type: String, description: 'Filter by CID (partial ILIKE match)' })
+    @ApiQuery({
+        name: 'errorCategory',
+        required: false,
+        type: String,
+        enum: ['transient', 'permanent', 'unknown'],
+        description: 'Filter by error category (only meaningful when status is "failed")',
+    })
+    @ApiQuery({
+        name: 'status',
+        required: false,
+        type: String,
+        enum: ['fetched', 'failed', 'pending'],
+        description: 'Filter by derived fetch status',
+    })
+    @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default 1)' })
+    @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default 20, max 100)' })
+    @ApiQuery({
+        name: 'sortBy',
+        required: false,
+        type: String,
+        enum: ['lastFailedAt', 'attemptCount', 'firstFailedAt', 'status'],
+        description: 'Sort column (default status)',
+    })
+    @ApiQuery({ name: 'sortDir', required: false, type: String, enum: ['asc', 'desc'], description: 'Sort direction (default desc)' })
+    @ApiResponse({ status: 200, type: IpfsCidStatusListDto })
+    @ApiResponse({ status: 404, description: 'Network not configured on this API instance' })
+    async listIpfsStatus(
+        @Param('network') network: string,
+        @Query() query: IpfsStatusQueryDto,
+    ): Promise<IpfsCidStatusListDto> {
+        const ds = this.dataSources.getDataSource(network);
+
+        const page = query.page ?? 1;
+        const limit = query.limit ?? 20;
+        const sortBy = query.sortBy ?? 'status';
+        const sortDir = (query.sortDir ?? 'desc').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const offset = (page - 1) * limit;
+
+        // The derived status expression is reused in ORDER BY and status filter.
+        const statusExpr = `CASE WHEN ipfs.cid IS NOT NULL THEN 'fetched' WHEN f.cid IS NOT NULL THEN 'failed' ELSE 'pending' END`;
+
+        // Map sort columns to SQL expressions.
+        const sortColMap: Record<string, string> = {
+            lastFailedAt: 'f."lastFailedAt"',
+            attemptCount: 'f."attemptCount"',
+            firstFailedAt: 'f."firstFailedAt"',
+            status: statusExpr,
+        };
+        const orderExpr = `${sortColMap[sortBy] ?? statusExpr} ${sortDir}`;
+
+        // Build WHERE clauses incrementally. Start with an always-true sentinel
+        // so subsequent AND clauses can always be appended uniformly.
+        const params: unknown[] = [];
+        const conditions: string[] = ['1 = 1'];
+
+        if (query.topicId) {
+            params.push(query.topicId);
+            conditions.push(`m."topicId" = $${params.length}`);
+        }
+
+        if (query.cid) {
+            params.push(`%${query.cid}%`);
+            conditions.push(`c.cid ILIKE $${params.length}`);
+        }
+
+        if (query.errorCategory) {
+            params.push(query.errorCategory);
+            conditions.push(`f."errorCategory" = $${params.length}`);
+        }
+
+        // status filter: translate the derived value into concrete join conditions.
+        if (query.status === 'fetched') {
+            conditions.push(`ipfs.cid IS NOT NULL`);
+        } else if (query.status === 'failed') {
+            conditions.push(`f.cid IS NOT NULL`);
+        } else if (query.status === 'pending') {
+            conditions.push(`ipfs.cid IS NULL AND f.cid IS NULL`);
+        }
+
+        const whereClause = conditions.join(' AND ');
+
+        // Core FROM + JOIN fragment shared by count and data queries.
+        const fromFragment = `
+            FROM message m,
+                 unnest(m.files) AS c(cid)
+            LEFT JOIN ipfs_files ipfs ON ipfs.cid = c.cid
+            LEFT JOIN ipfs_fetch_failure f ON f.cid = c.cid
+        `;
+
+        // Total count (same joins + filters, no pagination).
+        const countSql = `
+            SELECT COUNT(DISTINCT c.cid)::int AS total
+            ${fromFragment}
+            WHERE ${whereClause}
+        `;
+
+        // Data rows.
+        params.push(limit);
+        const limitPlaceholder = `$${params.length}`;
+        params.push(offset);
+        const offsetPlaceholder = `$${params.length}`;
+
+        const dataSql = `
+            SELECT DISTINCT
+                c.cid,
+                m."topicId"                   AS "topicId",
+                m.type                        AS "messageType",
+                ${statusExpr}                 AS status,
+                f."lastError",
+                f."errorCategory",
+                f."attemptCount",
+                f."manualRetryCount",
+                f."firstFailedAt",
+                f."lastFailedAt"
+            ${fromFragment}
+            WHERE ${whereClause}
+            ORDER BY ${orderExpr}
+            LIMIT ${limitPlaceholder} OFFSET ${offsetPlaceholder}
+        `;
+
+        const [[countRow], rows]: [
+            Array<{ total: number }>,
+            Array<{
+                cid: string;
+                topicId: string | null;
+                messageType: string | null;
+                status: string;
+                lastError: string | null;
+                errorCategory: string | null;
+                attemptCount: number | null;
+                manualRetryCount: number | null;
+                firstFailedAt: string | null;
+                lastFailedAt: string | null;
+            }>,
+        ] = await Promise.all([
+            ds.query(countSql, params.slice(0, params.length - 2)),
+            ds.query(dataSql, params),
+        ]);
+
+        const total = Number(countRow?.total ?? 0);
+
+        const toV1 = (raw: string): string => {
+            try { return new CID(raw).toV1().toString('base32'); }
+            catch { return raw; }
+        };
+
+        const data: IpfsCidStatusDto[] = rows.map((r) => ({
+            cid: r.cid,
+            cidV1: toV1(r.cid),
+            topicId: r.topicId ?? null,
+            messageType: r.messageType ?? null,
+            status: r.status,
+            lastError: r.lastError ?? null,
+            errorCategory: r.errorCategory ?? null,
+            attemptCount: r.attemptCount != null ? Number(r.attemptCount) : null,
+            manualRetryCount: r.manualRetryCount != null ? Number(r.manualRetryCount) : null,
+            firstFailedAt: r.firstFailedAt != null ? String(r.firstFailedAt) : null,
+            lastFailedAt: r.lastFailedAt != null ? String(r.lastFailedAt) : null,
+        }));
+
+        return {
+            data,
+            meta: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+    }
+
+    // -------------------------------------------------------------------------
+    // POST /:network/ipfs-status/:cid/retry — retry a single CID
+    // -------------------------------------------------------------------------
+
+    @Post(':network/ipfs-status/:cid/retry')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Retry IPFS fetch for a single failed CID',
+        description:
+            'Verifies the CID exists in ipfs_fetch_failure, increments its manualRetryCount, ' +
+            'deletes the failure record (so the boot-time safety net will not re-park it), ' +
+            'removes any stale BullMQ job for this CID, and enqueues a fresh IPFS fetch job. ' +
+            'The job uses the deterministic jobId "ipfs-{cid}" so further duplicates are prevented.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiParam({ name: 'cid', description: 'IPFS CID to retry' })
+    @ApiResponse({ status: 200, description: 'CID successfully re-queued', schema: { example: { queued: true, cid: 'bafkrei...' } } })
+    @ApiResponse({ status: 404, description: 'CID not found in ipfs_fetch_failure table or network not configured' })
+    async retryIpfsFailure(
+        @Param('network') network: string,
+        @Param('cid') cid: string,
+    ): Promise<{ queued: boolean; cid: string }> {
+        const ds = this.dataSources.getDataSource(network);
+
+        // Verify the CID exists and fetch its current manualRetryCount.
+        const existing: Array<{ manualRetryCount: number; messageTimestamp: string | null }> =
+            await ds.query(
+                `SELECT "manualRetryCount", "messageTimestamp"
+                 FROM ipfs_fetch_failure
+                 WHERE cid = $1
+                 LIMIT 1`,
+                [cid],
+            );
+
+        if (existing.length === 0) {
+            throw new NotFoundException(
+                `CID "${cid}" not found in ipfs_fetch_failure on network "${network}".`,
+            );
+        }
+
+        const { manualRetryCount, messageTimestamp } = existing[0];
+
+        // Increment the counter before deleting so it can be embedded in job data
+        // for observability (the processor logs it).
+        const updatedRetryCount = Number(manualRetryCount) + 1;
+
+        // Delete the failure record — the boot-time safety net scans this table
+        // and would re-park the CID if the record remains.
+        await ds.query(`DELETE FROM ipfs_fetch_failure WHERE cid = $1`, [cid]);
+
+        // Remove any stale BullMQ job (completed, failed, or waiting) so the
+        // new add() is not de-duplicated against a prior entry.
+        const ipfsQueue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.IPFS_FETCH);
+        const jobId = `ipfs-${cid}`;
+        try {
+            const stale = await ipfsQueue.getJob(jobId);
+            if (stale) await stale.remove();
+        } catch {
+            // Job simply not present — that is fine.
+        }
+
+        await ipfsQueue.add(
+            'fetch',
+            { cid, messageTimestamp: messageTimestamp ?? undefined, manualRetryCount: updatedRetryCount },
+            { jobId },
+        );
+
+        this.logger.log(
+            `IPFS manual retry queued: cid=${cid} network=${network} manualRetryCount=${updatedRetryCount}`,
+        );
+
+        return { queued: true, cid };
+    }
+
+    // -------------------------------------------------------------------------
+    // POST /:network/ipfs-status/retry-by-topic — bulk retry by topicId
+    // -------------------------------------------------------------------------
+
+    @Post(':network/ipfs-status/retry-by-topic')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Retry all IPFS fetch failures linked to a given topicId',
+        description:
+            'Finds every CID in ipfs_fetch_failure whose linked message belongs to the given topicId, ' +
+            'then for each: deletes the failure record, removes the stale BullMQ job, and re-enqueues ' +
+            'a fresh IPFS fetch. Returns the count of CIDs queued.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiBody({ type: RetryByTopicBodyDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Bulk retry result',
+        schema: { example: { queued: 3, topicId: '0.0.12345' } },
+    })
+    @ApiResponse({ status: 404, description: 'Network not configured on this API instance' })
+    async retryIpfsFailuresByTopic(
+        @Param('network') network: string,
+        @Body() body: RetryByTopicBodyDto,
+    ): Promise<{ queued: number; topicId: string }> {
+        const ds = this.dataSources.getDataSource(network);
+        const { topicId } = body;
+
+        // Find all CIDs in ipfs_fetch_failure that are linked to messages from
+        // this topic. The JOIN condition mirrors the one used in listIpfsFailures.
+        const failureRows: Array<{ cid: string; messageTimestamp: string | null; manualRetryCount: number }> =
+            await ds.query(
+                `SELECT f.cid, f."messageTimestamp", f."manualRetryCount"
+                 FROM ipfs_fetch_failure f
+                 JOIN message m
+                      ON f.cid = ANY(m.files)
+                 WHERE m."topicId" = $1`,
+                [topicId],
+            );
+
+        if (failureRows.length === 0) {
+            this.logger.log(
+                `retryIpfsFailuresByTopic: no failures found for topicId=${topicId} on ${network}`,
+            );
+            return { queued: 0, topicId };
+        }
+
+        const cids = failureRows.map((r) => r.cid);
+
+        // Bulk-delete all failure records in a single query.
+        await ds.query(
+            `DELETE FROM ipfs_fetch_failure WHERE cid = ANY($1::text[])`,
+            [cids],
+        );
+
+        const ipfsQueue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.IPFS_FETCH);
+        let queued = 0;
+
+        for (const row of failureRows) {
+            const { cid, messageTimestamp, manualRetryCount } = row;
+            const updatedRetryCount = Number(manualRetryCount) + 1;
+            const jobId = `ipfs-${cid}`;
+
+            try {
+                const stale = await ipfsQueue.getJob(jobId);
+                if (stale) await stale.remove();
+            } catch {
+                // Job not present — continue.
+            }
+
+            await ipfsQueue.add(
+                'fetch',
+                { cid, messageTimestamp: messageTimestamp ?? undefined, manualRetryCount: updatedRetryCount },
+                { jobId },
+            );
+            queued++;
+        }
+
+        this.logger.log(
+            `retryIpfsFailuresByTopic: network=${network} topicId=${topicId} queued=${queued}`,
+        );
+
+        return { queued, topicId };
     }
 }
