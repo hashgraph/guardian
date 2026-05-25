@@ -582,13 +582,15 @@ a {
         font-style: normal;
         font-weight: 500;
         background-color: #ffffff;
-        min-height: 40px;
+        height: 48px;
         border: none !important;
         border-radius: 8px;
         width: 100%;
-        display: grid;
-        grid-template-columns: 40px auto;
-        text-align: left;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 0 12px;
     }
 
     ::ng-deep .accent-color-red {
@@ -626,31 +628,32 @@ a {
     .menu-options {
         .schema-menu-btn {
             display: block;
-            line-height: 48px;
-            width: 100%
+            width: 100%;
         }
 
         .schema-menu-btn button {
             border: none;
-            overflow: hidden;
             height: 48px;
             font-size: 14px;
             color: var(--color-grey-black-1);
             width: 100%;
-            display: grid;
-            grid-template-columns: 40px 1fr;
-            padding: 12px;
-            column-gap: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+            padding: 0 12px;
         }
 
         .p-button-icon {
             font-size: 20px;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
             color: var(--primary-color);
         }
 
         .p-button-label {
-            display: grid;
-            justify-self: start;
+            text-align: left;
         }
     }
 }
@@ -837,6 +840,10 @@ a {
 
     .guardian-grid-header th {
         padding: 0.5rem 1rem;
+
+        &:first-child {
+            padding-left: 24px;
+        }
     }
 
     ::ng-deep .guardian-grid-table {

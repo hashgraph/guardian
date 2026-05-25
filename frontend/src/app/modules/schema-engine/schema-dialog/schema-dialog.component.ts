@@ -203,8 +203,8 @@ export class SchemaDialog {
     }
 
 
-    public onChangeTab($event: any, order: number): void {
-        $event.stopPropagation();
+    public onTabChange(order: string | number | undefined): void {
+        if (typeof order !== 'number') { return; }
         this.error = null;
         if (this.tab === order) {
             return;

@@ -3,7 +3,7 @@
 
     <div class="actions">
         <div class="tabs-nav">
-            <p-tabs >
+            <p-tabs [value]="0">
                 <p-tablist>
                     <p-tab *ngFor="let tab of schemasTypes; let i = index" [value]="i" (click)="onChangeType(tab.value)"><div class="tabview-label">{{ tab.label }}</div></p-tab>
                 </p-tablist>

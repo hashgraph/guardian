@@ -14,7 +14,7 @@
         <div class="guardian-loading-image"></div>
     </div>
     <div class="g-dialog-header">
-        <p-tabs class="guardian-tabs action-tabs" [(value)]="tab">
+        <p-tabs class="guardian-tabs action-tabs" [value]="tab" (valueChange)="onTabChange($event)">
             <p-tablist>
                 <p-tab *ngFor="let tab of items; let i = index" [value]="i"><div class="tabview-label">{{ tab.label }}</div></p-tab>
             </p-tablist>

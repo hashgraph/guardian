@@ -231,7 +231,7 @@
             <ng-container *ngIf="step === 'step_2'" >
                 <div class="step-container {{codeTab === 'general' ? 'pages' : ''}}">
                     <div class="tabs-nav">
-                        <p-tabs (valueChange)="onCodeChangeTab($event)" class="guardian-header-tabs">
+                        <p-tabs [value]="0" (valueChange)="onCodeChangeTab($event)" class="guardian-header-tabs">
                             <p-tablist>
                                 <p-tab [value]="0"><div class="tabview-label">General</div></p-tab>
                                 <p-tab [value]="1"><div class="tabview-label">Advanced (Optional)</div></p-tab>
