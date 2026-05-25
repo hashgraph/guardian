@@ -28,7 +28,7 @@ export function useFilteredPagination<T>(
     );
 
     function parseFiltersFromQuery(query: Record<string, any>): Record<string, string> {
-        const reserved = new Set(['q', 'page', 'sort', 'dir']);
+        const reserved = new Set(['q', 'page', 'sort', 'dir', 'network']);
         const filters: Record<string, string> = {};
         for (const [key, val] of Object.entries(query)) {
             if (!reserved.has(key) && typeof val === 'string' && val) {
@@ -63,6 +63,8 @@ export function useFilteredPagination<T>(
     function syncToUrl() {
         if (!syncUrl || skipUrlSync) return;
         const query = buildQuery();
+        const currentNetwork = route.query.network;
+        if (currentNetwork) query.network = currentNetwork as string;
         router.replace({ query });
     }
 

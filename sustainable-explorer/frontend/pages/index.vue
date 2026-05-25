@@ -47,6 +47,8 @@ function syncDashboardUrl() {
     const query: Record<string, string> = {};
     if (selectedDeveloper.value && selectedDeveloper.value !== 'All Developers') query.developer = selectedDeveloper.value;
     if (selectedRegistry.value && selectedRegistry.value !== 'All Registries') query.registry = selectedRegistry.value;
+    const currentNetwork = route.query.network;
+    if (currentNetwork) query.network = currentNetwork as string;
     router.replace({ query });
 }
 
