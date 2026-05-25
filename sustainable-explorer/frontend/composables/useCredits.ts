@@ -7,7 +7,7 @@ export interface CreditWithProject extends CreditDto {
 export function useCredits(_filters?: Ref<{ type?: string; registry?: string; search?: string }>) {
     const { network } = useNetwork();
 
-    const { data } = useCreditsApi({
+    const { data, pending } = useCreditsApi({
         page: ref(1),
         limit: ref(500),
         search: ref(''),
@@ -46,5 +46,5 @@ export function useCredits(_filters?: Ref<{ type?: string; registry?: string; se
         registries: [...new Set(credits.value.map(c => c.registry).filter((r): r is string => r !== null))].sort(),
     }));
 
-    return { credits, total, filterOptions };
+    return { credits, total, filterOptions, pending };
 }
