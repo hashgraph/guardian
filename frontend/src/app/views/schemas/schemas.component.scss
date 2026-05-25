@@ -22,15 +22,19 @@
         color: var(--color-grey-5) !important;
     }
 
+    .p-tabs,
+    .p-tablist,
+    .p-tablist-content,
     .p-tablist-tab-list {
-        background: none;
+        background: transparent;
     }
 
     .p-tabpanels {
-        background: none;
+        background: transparent;
     }
 
-    .p-tabs .p-tablist-tab-list li.p-highlight .p-tab {
+    .p-tabs .p-tab.p-tab-active,
+    .p-tabs .p-tab[data-p-active='true'] {
         color: var(--color-primary) !important;
     }
 }
@@ -137,12 +141,15 @@ a {
     display: flex;
     flex-direction: column;
     margin-top: 15px;
+    row-gap: 40px;
+    margin-bottom: 20px;
 }
 
 .tabs-nav {
     ::ng-deep {
-        ul li {
-            border-bottom: 1px solid !important;
+        .p-tablist-tab-list,
+        .p-tab {
+            border-bottom: 1px solid var(--color-grey-3, #E1E7EF) !important;
         }
     }
 }
@@ -501,7 +508,8 @@ a {
     color: var(--color-grey-5);
 }
 
-::ng-deep .p-tabs .p-tablist-tab-list li.p-highlight .p-tab {
+::ng-deep .p-tabs .p-tab.p-tab-active,
+::ng-deep .p-tabs .p-tab[data-p-active='true'] {
     border-color: var(--color-primary);
 }
 
@@ -659,6 +667,7 @@ a {
 
     &::ng-deep {
         .guardian-multiselect {
+            &.p-multiselect,
             .p-multiselect {
                 border-top-right-radius: 0px;
                 border-bottom-right-radius: 0px;
@@ -688,6 +697,7 @@ a {
 }
 
 ::ng-deep .schema-text-search-options {
+    .p-multiselect-list-container,
     .p-multiselect-items-wrapper {
         max-height: 300px !important;
     }
