@@ -138,7 +138,7 @@ const linkedProjectsPending = ref(false);
 const linkedProjectsLoaded = ref(false);
 
 const linkedProjectsMapped = computed(() => linkedProjects.value.map(mapApiProject));
-const { resolvedCode: resolvedProjectCode } = useGeocodedCountries(linkedProjectsMapped);
+const { resolvedCode: resolvedProjectCode, resolvedName: resolvedProjectName } = useGeocodedCountries(linkedProjectsMapped);
 
 if (import.meta.client) {
   const config = useRuntimeConfig();
@@ -1531,7 +1531,7 @@ const lifecycleSummary = computed(() => {
                 <td class="py-3 px-4 text-sm text-muted-foreground">
                   <div v-if="p.country || (p.lat && p.lng)" class="flex items-center gap-1.5">
                     <CountryFlag :code="resolvedProjectCode(p)" size="sm" />
-                    <span>{{ p.country || '' }}</span>
+                    <span>{{ resolvedProjectName(p) || '' }}</span>
                   </div>
                   <span v-else>—</span>
                 </td>

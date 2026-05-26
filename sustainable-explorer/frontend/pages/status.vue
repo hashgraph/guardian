@@ -395,6 +395,8 @@ async function confirmRetryJob(job: FailedJobDto) {
 const ipfsFailuresPanelOpen = ref(true);
 const ipfsTopicFilterRaw = ref('');
 const ipfsTopicFilter = ref('');
+const ipfsIncludeChildTopics = ref(false);
+const ipfsMessageTypeFilter = ref('');
 const ipfsErrorCategoryFilter = ref('');
 const ipfsStatusFilter = ref('');
 const ipfsFailurePage = ref(1);
@@ -416,6 +418,8 @@ const {
 } = useIpfsCidStatusApi({
     network,
     topicId: ipfsTopicFilter,
+    includeChildTopics: ipfsIncludeChildTopics,
+    messageType: ipfsMessageTypeFilter,
     page: ipfsFailurePage,
     limit: ipfsFailurePageSize,
     errorCategory: ipfsErrorCategoryFilter,
@@ -426,7 +430,10 @@ const ipfsFailures = computed(() => ipfsFailuresData.value?.data ?? []);
 const ipfsFailuresTotal = computed(() => ipfsFailuresData.value?.meta.total ?? 0);
 const ipfsFailuresTotalPages = computed(() => ipfsFailuresData.value?.meta.totalPages ?? 0);
 
-const ipfsFiltersActive = computed(() => !!ipfsTopicFilterRaw.value || !!ipfsErrorCategoryFilter.value || !!ipfsStatusFilter.value);
+watch(ipfsIncludeChildTopics, () => { ipfsFailurePage.value = 1; });
+watch(ipfsMessageTypeFilter, () => { ipfsFailurePage.value = 1; });
+
+const ipfsFiltersActive = computed(() => !!ipfsTopicFilterRaw.value || !!ipfsMessageTypeFilter.value || !!ipfsErrorCategoryFilter.value || !!ipfsStatusFilter.value);
 
 // Show "Retry All for Topic" only when a topic filter is active and there are failed rows visible
 const ipfsHasFailedRows = computed(() => ipfsFailures.value.some((r) => r.status === 'failed'));
@@ -434,6 +441,8 @@ const ipfsHasFailedRows = computed(() => ipfsFailures.value.some((r) => r.status
 function clearIpfsFilters() {
     ipfsTopicFilterRaw.value = '';
     ipfsTopicFilter.value = '';
+    ipfsIncludeChildTopics.value = false;
+    ipfsMessageTypeFilter.value = '';
     ipfsErrorCategoryFilter.value = '';
     ipfsStatusFilter.value = '';
     ipfsFailurePage.value = 1;
@@ -486,7 +495,10 @@ async function retryAllIpfsForTopic() {
     try {
         await $fetch(`/api/v1/${network.value}/ipfs-status/retry-by-topic`, {
             method: 'POST',
-            body: { topicId: ipfsTopicFilter.value },
+            body: {
+                topicId: ipfsTopicFilter.value,
+                includeChildTopics: ipfsIncludeChildTopics.value || undefined,
+            },
             baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
         });
         showToast(`Retry queued for all failures on topic ${ipfsTopicFilter.value}`);
@@ -1002,6 +1014,32 @@ function formatTs(ts: number): string {
                             placeholder="Filter by topic ID..."
                             class="h-9 rounded-md border border-input bg-card px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-56"
                         />
+                        <label
+                            v-if="ipfsTopicFilter"
+                            class="inline-flex items-center gap-1.5 text-xs text-muted-foreground select-none cursor-pointer"
+                        >
+                            <input
+                                v-model="ipfsIncludeChildTopics"
+                                type="checkbox"
+                                class="rounded border-input"
+                            />
+                            Include child topics
+                        </label>
+                        <!-- Message type filter -->
+                        <select
+                            v-model="ipfsMessageTypeFilter"
+                            class="h-9 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                            <option value="">All types</option>
+                            <option value="VC-Document">VC-Document</option>
+                            <option value="VP-Document">VP-Document</option>
+                            <option value="Instance-Policy">Instance-Policy</option>
+                            <option value="Standard Registry">Standard Registry</option>
+                            <option value="Tag">Tag</option>
+                            <option value="Token">Token</option>
+                            <option value="Schema">Schema</option>
+                            <option value="DID-Document">DID-Document</option>
+                        </select>
                         <!-- Status filter -->
                         <select
                             v-model="ipfsStatusFilter"

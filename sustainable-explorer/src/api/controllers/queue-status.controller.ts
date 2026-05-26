@@ -119,6 +119,14 @@ class IpfsStatusQueryDto {
     topicId?: string;
 
     @IsOptional()
+    @Transform(({ value }) => value === 'true' || value === true)
+    includeChildTopics?: boolean;
+
+    @IsOptional()
+    @IsString()
+    messageType?: string;
+
+    @IsOptional()
     @IsString()
     cid?: string;
 
@@ -160,6 +168,11 @@ class RetryByTopicBodyDto {
     @ApiProperty({ description: 'Hedera topic ID whose IPFS failures should be retried' })
     @IsString()
     topicId: string;
+
+    @ApiPropertyOptional({ description: 'When true, also include descendant (child) topics' })
+    @IsOptional()
+    @IsBoolean()
+    includeChildTopics?: boolean;
 }
 
 class IpfsCidStatusDto {
@@ -710,6 +723,8 @@ export class QueueStatusController {
     })
     @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
     @ApiQuery({ name: 'topicId', required: false, type: String, description: 'Filter by message topicId' })
+    @ApiQuery({ name: 'includeChildTopics', required: false, type: Boolean, description: 'When true and topicId is set, also include all descendant topics' })
+    @ApiQuery({ name: 'messageType', required: false, type: String, description: 'Filter by message type (e.g. VC-Document, Instance-Policy)' })
     @ApiQuery({ name: 'cid', required: false, type: String, description: 'Filter by CID (partial ILIKE match)' })
     @ApiQuery({
         name: 'errorCategory',
@@ -766,9 +781,28 @@ export class QueueStatusController {
         const params: unknown[] = [];
         const conditions: string[] = ['1 = 1'];
 
+        // Optional CTE for descendant topics — only materialized when needed.
+        let topicCte = '';
         if (query.topicId) {
             params.push(query.topicId);
-            conditions.push(`m."topicId" = $${params.length}`);
+            if (query.includeChildTopics) {
+                topicCte = `WITH RECURSIVE _topic_tree("topicId") AS (
+                    SELECT $${params.length}::text
+                    UNION ALL
+                    SELECT t."topicId"
+                    FROM message t
+                    JOIN _topic_tree d ON (t.options->>'parentId') = d."topicId"
+                    WHERE t.type = 'Topic'
+                ) `;
+                conditions.push(`m."topicId" IN (SELECT "topicId" FROM _topic_tree)`);
+            } else {
+                conditions.push(`m."topicId" = $${params.length}`);
+            }
+        }
+
+        if (query.messageType) {
+            params.push(query.messageType);
+            conditions.push(`m.type = $${params.length}`);
         }
 
         if (query.cid) {
@@ -801,7 +835,7 @@ export class QueueStatusController {
         `;
 
         // Total count (same joins + filters, no pagination).
-        const countSql = `
+        const countSql = `${topicCte}
             SELECT COUNT(DISTINCT c.cid)::int AS total
             ${fromFragment}
             WHERE ${whereClause}
@@ -813,7 +847,7 @@ export class QueueStatusController {
         params.push(offset);
         const offsetPlaceholder = `$${params.length}`;
 
-        const dataSql = `
+        const dataSql = `${topicCte}
             SELECT DISTINCT
                 c.cid,
                 m."topicId"                   AS "topicId",
@@ -982,17 +1016,31 @@ export class QueueStatusController {
         @Body() body: RetryByTopicBodyDto,
     ): Promise<{ queued: number; topicId: string }> {
         const ds = this.dataSources.getDataSource(network);
-        const { topicId } = body;
+        const { topicId, includeChildTopics } = body;
 
         // Find all CIDs in ipfs_fetch_failure that are linked to messages from
-        // this topic. The JOIN condition mirrors the one used in listIpfsFailures.
+        // this topic (and optionally its descendants).
+        const cte = includeChildTopics
+            ? `WITH RECURSIVE _topic_tree("topicId") AS (
+                   SELECT $1::text
+                   UNION ALL
+                   SELECT t."topicId"
+                   FROM message t
+                   JOIN _topic_tree d ON (t.options->>'parentId') = d."topicId"
+                   WHERE t.type = 'Topic'
+               ) `
+            : '';
+        const topicCondition = includeChildTopics
+            ? `m."topicId" IN (SELECT "topicId" FROM _topic_tree)`
+            : `m."topicId" = $1`;
+
         const failureRows: Array<{ cid: string; messageTimestamp: string | null; manualRetryCount: number }> =
             await ds.query(
-                `SELECT f.cid, f."messageTimestamp", f."manualRetryCount"
+                `${cte}SELECT f.cid, f."messageTimestamp", f."manualRetryCount"
                  FROM ipfs_fetch_failure f
                  JOIN message m
                       ON f.cid = ANY(m.files)
-                 WHERE m."topicId" = $1`,
+                 WHERE ${topicCondition}`,
                 [topicId],
             );
 

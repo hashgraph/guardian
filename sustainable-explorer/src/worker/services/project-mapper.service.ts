@@ -200,32 +200,35 @@ export class ProjectMapperService {
 
         let projectKey: string;
         if (csRef) {
-            // Downstream VC pointing at a parent VC's cs.id via `cs.ref`.
-            // That parent may itself carry a `cs.ref` (multi-hop chains
-            // happen when registration / monitoring / verification VCs each
-            // reference the previous one). Walk hop-by-hop to the chain root
-            // — its cs.id is the project's canonical identity. Using the raw
-            // `cs.ref` here would split one project into N rows (one per
-            // intermediate parent).
+            // Downstream VC pointing at a parent via cs.ref. Walk the chain
+            // to find the root cs.id. Then verify the root is actually a
+            // project-schema VC — if not, this VC is referencing an
+            // intermediate artifact (e.g., Estimated Removals) and should
+            // not seed a project row.
             const refWalked = await this.resolveProjectKeyViaRef(vc.consensusTimestamp, csId);
-            projectKey = refWalked?.projectKey ?? csRef;
-        } else if (isProjectSchemaVc) {
-            // Project-schema VC with no cs.ref. If this VC has relationships,
-            // walk them to find the earliest project-schema VC in the chain —
-            // that's the canonical project identity. Multiple VCs for the same
-            // project (VVB validation → registry approval → final) share a
-            // relationship chain but have different cs.id values (signer DIDs).
-            //
-            // When there are NO relationships (batch registration case), use
-            // this VC's own cs.id so distinct projects don't merge.
-            const resolved = await this.resolveProjectKeyViaRelationships(
-                vc.consensusTimestamp, csId,
-            );
-            if (resolved.hadRelationships && resolved.walked) {
-                projectKey = resolved.projectKey;
-            } else {
-                projectKey = csId;
+            const resolvedKey = refWalked?.projectKey ?? csRef;
+
+            if (policyHasProjectSchemaClassification && !isProjectSchemaVc) {
+                const isRefAProject = await this.isCsIdOnProjectSchema(resolvedKey, policyMapping);
+                if (!isRefAProject) {
+                    this.logger.debug(
+                        `vc=${messageConsensusTimestamp} cs.ref resolves to ${resolvedKey} which is not a project-schema VC — skipping`,
+                    );
+                    return;
+                }
             }
+            projectKey = resolvedKey;
+        } else if (isProjectSchemaVc) {
+            // Project-schema VC with no cs.ref. Use this VC's own cs.id as the
+            // projectKey. Multiple project-schema VCs from the same signer share
+            // the same DID, so they merge naturally. VCs from different signers
+            // (e.g., VVB vs Registry) have different cs.id values but downstream
+            // monitoring/verification VCs carry cs.ref pointing to the correct
+            // project DID, which merges them via the csRef branch above.
+            //
+            // Relationship walks are NOT used here because they can resolve to
+            // non-project VCs (e.g., Role-Documents) whose cs.id is meaningless.
+            projectKey = csId;
         } else if (policyHasProjectSchemaClassification) {
             // Strict mode for classified policies: the decode pipeline knows
             // which schema is the project schema, and this VC isn't on it
@@ -416,12 +419,20 @@ export class ProjectMapperService {
             instanceTopicId,
             policyName: policyRow.policyName ?? resolved.name ?? null,
         };
+        // Priority system for descriptive fields:
+        //   - Project-schema VCs: ALWAYS write (highest priority, overrides existing)
+        //   - Non-project VCs: only fill gaps (never overwrite existing values)
+        // This prevents non-project VCs with bad mappings (e.g., country → longitude)
+        // from corrupting data set by the project VC.
+        //
+        // The priority is enforced via a `_priority` flag in businessData. When a
+        // project-schema VC writes a field, it's authoritative. When a non-project
+        // VC writes, the SQL uses COALESCE to keep existing values.
+        if (isProjectSchemaVc) {
+            newFields._fromProjectSchema = true;
+        }
+
         if (name) newFields.name = name;
-        // Country: write the resolved value when truthy. Also explicitly write
-        // null when this VC's schema is the configured Country source but the
-        // extracted value was rejected (length guard above) — that way a stale
-        // bad country left over from a previous mapping gets cleared on
-        // re-extract instead of silently sticking around.
         const sourcesCountry = 'country' in crossSchemaFieldMap;
         if (country) {
             newFields.country = country;
@@ -447,10 +458,8 @@ export class ProjectMapperService {
         if (sectoralScope) newFields.sectoralScope = sectoralScope;
         if (extracted['description']) newFields.description = extracted['description'];
         if (createdAt) newFields.createdAt = createdAt;
-        if (isProjectSchemaVc) {
-            if (creditingPeriodStart) newFields.creditingPeriodStart = creditingPeriodStart;
-            if (creditingPeriodEnd) newFields.creditingPeriodEnd = creditingPeriodEnd;
-        }
+        if (creditingPeriodStart) newFields.creditingPeriodStart = creditingPeriodStart;
+        if (creditingPeriodEnd) newFields.creditingPeriodEnd = creditingPeriodEnd;
         newFields.status = 'Issuing';
 
         // Track this VC's contribution. The SQL UPDATE below dedupes by
@@ -491,16 +500,22 @@ export class ProjectMapperService {
             ON CONFLICT ("projectKey")
             WHERE "viewType" = 'PROJECT' AND "projectKey" IS NOT NULL
             DO UPDATE SET
-                -- COALESCE for displayName: keep existing unless null/empty.
-                "displayName"    = COALESCE(NULLIF(business_view."displayName", ''), EXCLUDED."displayName"),
+                -- Project-schema VCs override displayName; others fill gaps.
+                "displayName"    = CASE WHEN (EXCLUDED."businessData"->>'_fromProjectSchema')::boolean IS TRUE
+                                        THEN COALESCE(NULLIF(EXCLUDED."displayName", ''), business_view."displayName")
+                                        ELSE COALESCE(NULLIF(business_view."displayName", ''), EXCLUDED."displayName")
+                                   END,
                 "registryDid"    = COALESCE(business_view."registryDid", EXCLUDED."registryDid"),
                 "relatedTopicId" = COALESCE(business_view."relatedTopicId", EXCLUDED."relatedTopicId"),
                 "businessData"   = (
-                    -- Start with existing data; overlay with EXCLUDED's new fields
-                    -- (excluding linkedVcs, which needs append+dedupe semantics
-                    -- rather than overwrite); then recompute credits/vcCount as SUM
-                    -- and rebuild linkedVcs as the deduped union of old + new.
-                    business_view."businessData" || (EXCLUDED."businessData" - 'linkedVcs')
+                    -- Priority merge: project-schema VCs override existing values
+                    -- (EXCLUDED wins via ||). Non-project VCs only fill gaps —
+                    -- existing values are kept by reversing the operand order
+                    -- so existing data takes precedence.
+                    CASE WHEN (EXCLUDED."businessData"->>'_fromProjectSchema')::boolean IS TRUE
+                         THEN business_view."businessData" || (EXCLUDED."businessData" - 'linkedVcs' - '_fromProjectSchema')
+                         ELSE (EXCLUDED."businessData" - 'linkedVcs' - '_fromProjectSchema') || business_view."businessData"
+                    END
                 ) || jsonb_build_object(
                     -- Only add credits/vcCount when this VC isn't already linked.
                     -- Makes reparse-all idempotent — clicking it twice doesn't double credits.
@@ -634,6 +649,41 @@ export class ProjectMapperService {
             currentRef = next_ref;
         }
         return { projectKey: currentRef };
+    }
+
+    /**
+     * Check if a given cs.id belongs to a VC whose schema is classified as
+     * the project schema for its policy. Used to verify that a cs.ref chain
+     * resolves to an actual project VC, not an intermediate artifact.
+     */
+    private async isCsIdOnProjectSchema(
+        csId: string,
+        policyMapping: Record<string, Array<{ isProjectSchema?: boolean; schemaIri?: string }>>,
+    ): Promise<boolean> {
+        const projectSchemaUuids = new Set<string>();
+        for (const entries of Object.values(policyMapping)) {
+            if (!Array.isArray(entries)) continue;
+            for (const entry of entries) {
+                if (entry?.isProjectSchema === true && entry.schemaIri) {
+                    projectSchemaUuids.add(entry.schemaIri.split('&')[0].trim().replace(/^#/, ''));
+                }
+            }
+        }
+        if (projectSchemaUuids.size === 0) return true;
+
+        const rows: Array<{ schema_type: string | null }> = await this.dataSource.query(
+            `SELECT documents->'credentialSubject'->0->>'type' AS schema_type
+             FROM message
+             WHERE type = 'VC-Document'
+               AND documents->'credentialSubject'->0->>'id' = $1
+             ORDER BY "consensusTimestamp" ASC
+             LIMIT 1`,
+            [csId],
+        );
+        if (rows.length === 0) return false;
+        const rawType = rows[0].schema_type ?? '';
+        const uuid = rawType.split('&')[0].trim().replace(/^#/, '');
+        return projectSchemaUuids.has(uuid);
     }
 
     /**

@@ -33,6 +33,8 @@ const emptyList = (): IpfsCidStatusListResponse => ({
 export const useIpfsCidStatusApi = (opts: {
     network: Ref<NetworkId | string>;
     topicId: Ref<string>;
+    includeChildTopics?: Ref<boolean>;
+    messageType?: Ref<string>;
     page: Ref<number>;
     limit: Ref<number>;
     errorCategory?: Ref<string>;
@@ -45,21 +47,25 @@ export const useIpfsCidStatusApi = (opts: {
 
     const errorCategory = opts.errorCategory ?? ref('');
     const status = opts.status ?? ref('');
+    const includeChildTopics = opts.includeChildTopics ?? ref(false);
+    const messageType = opts.messageType ?? ref('');
 
     const key = computed(
         () =>
-            `ipfs-status:${opts.network.value}:${opts.topicId.value}:${errorCategory.value}:${status.value}:${opts.page.value}:${opts.limit.value}`,
+            `ipfs-status:${opts.network.value}:${opts.topicId.value}:${includeChildTopics.value}:${messageType.value}:${errorCategory.value}:${status.value}:${opts.page.value}:${opts.limit.value}`,
     );
 
     const { data, pending, error, refresh } = useAsyncData<IpfsCidStatusListResponse>(
         () => key.value,
         async () => {
             try {
-                const query: Record<string, string | number> = {
+                const query: Record<string, string | number | boolean> = {
                     page: opts.page.value,
                     limit: opts.limit.value,
                 };
                 if (opts.topicId.value) query.topicId = opts.topicId.value;
+                if (includeChildTopics.value) query.includeChildTopics = true;
+                if (messageType.value) query.messageType = messageType.value;
                 if (errorCategory.value) query.errorCategory = errorCategory.value;
                 if (status.value) query.status = status.value;
 
@@ -78,7 +84,7 @@ export const useIpfsCidStatusApi = (opts: {
         },
         {
             default: () => emptyList(),
-            watch: [opts.network, opts.topicId, errorCategory, status, opts.page, opts.limit],
+            watch: [opts.network, opts.topicId, includeChildTopics, messageType, errorCategory, status, opts.page, opts.limit],
         },
     );
 

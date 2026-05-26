@@ -195,12 +195,38 @@ function buildTable(label: string, arr: Record<string, any>[]): VcTable {
     const rows = arr.map(row => {
         const mapped: Record<string, string> = {};
         for (const col of columns) {
-            const v = row[col];
-            mapped[col] = v == null || v === '' ? '—' : typeof v === 'object' ? JSON.stringify(v) : String(v);
+            mapped[col] = formatCellValue(row[col]);
         }
         return mapped;
     });
     return { label, columns, rows };
+}
+
+function formatCellValue(v: unknown): string {
+    if (v == null || v === '') return '—';
+    if (Array.isArray(v)) {
+        if (v.length === 0) return '—';
+        if (v.every(x => typeof x === 'number')) {
+            if (v.length <= 5) return v.map(n => Number(n.toFixed(4))).join(', ');
+            const first = Number(v[0].toFixed(4));
+            const last = Number(v[v.length - 1].toFixed(4));
+            return `${first} → ${last} (${v.length} values)`;
+        }
+        return v.map(x => typeof x === 'object' ? formatCellValue(x) : String(x)).join(', ');
+    }
+    if (typeof v === 'object') {
+        const obj = v as Record<string, unknown>;
+        const keys = Object.keys(obj).filter(k => !SYSTEM_KEYS.has(k));
+        if (keys.length === 0) return '—';
+        return keys.map(k => {
+            const val = obj[k];
+            const fv = Array.isArray(val)
+                ? (val.length <= 3 ? val.join(', ') : `[${val.length} items]`)
+                : String(val ?? '—');
+            return `${humanizeKey(k)}: ${fv}`;
+        }).join(' · ');
+    }
+    return String(v);
 }
 
 function isDateRange(val: Record<string, any>): boolean {
@@ -753,8 +779,11 @@ const emissions = computed(() => {
                                                         <td
                                                             v-for="col in tbl.columns"
                                                             :key="col"
-                                                            class="py-2 px-4 text-foreground tabular-nums whitespace-nowrap"
-                                                        >{{ row[col] }}</td>
+                                                            class="py-2 px-4 text-foreground tabular-nums max-w-[300px]"
+                                                            :title="row[col]"
+                                                        >
+                                                            <span class="block truncate">{{ row[col] }}</span>
+                                                        </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
