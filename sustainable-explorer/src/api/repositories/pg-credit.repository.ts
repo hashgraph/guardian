@@ -37,48 +37,21 @@ const REGISTRY_NAME_JOIN = `
 `;
 
 /**
- * Resolves the linked project for a credit by walking the MintToken VC chain:
- *
- *   tokenId  →  MintToken VC (in some topic)
- *            →  the most-recent prior data VC (cs.id IS NOT NULL) in the same topic
- *            →  that cs.id is the project's projectKey in business_view PROJECT.
- *
- * We pick the most recent MintToken VC for the token, then look back for the
- * latest data VC before it. Joins to the PROJECT row for the display name.
- *
- * For credits with no minting activity (or no data VC preceding the mint), both
- * project_id and project_name come back null and the frontend shows "Unknown
- * Project" — same fallback as before.
+ * Resolves the linked project for a credit via project_mint_link — the same
+ * table used by the project detail page, ensuring consistent attribution.
  */
 const PROJECT_LINK_JOIN = `
     LEFT JOIN LATERAL (
         SELECT
-            proj.cs_id           AS project_id,
-            bv_proj."displayName" AS project_name
-        FROM (
-            SELECT (
-                SELECT m_proj.documents->'credentialSubject'->0->>'id'
-                FROM message m_proj
-                WHERE m_proj.type = 'VC-Document'
-                  AND m_proj.documents IS NOT NULL
-                  AND m_proj."topicId" = mt."topicId"
-                  AND m_proj."consensusTimestamp" < mt."consensusTimestamp"
-                  AND m_proj.documents->'credentialSubject'->0->>'id' IS NOT NULL
-                ORDER BY m_proj."consensusTimestamp" DESC
-                LIMIT 1
-            ) AS cs_id
-            FROM message mt
-            WHERE mt.type = 'VC-Document'
-              AND mt.documents IS NOT NULL
-              AND mt.documents->'credentialSubject'->0->>'type' LIKE 'MintToken%'
-              AND mt.documents->'credentialSubject'->0->>'tokenId'
-                  = COALESCE(bv."businessData"->>'tokenId', tc."tokenId")
-            ORDER BY mt."consensusTimestamp" DESC
-            LIMIT 1
-        ) AS proj
-        LEFT JOIN business_view bv_proj
+            bv_proj."projectKey"   AS project_id,
+            bv_proj."displayName"  AS project_name
+        FROM project_mint_link pml
+        JOIN business_view bv_proj
             ON bv_proj."viewType" = 'PROJECT'
-           AND bv_proj."projectKey" = proj.cs_id
+           AND bv_proj."projectKey" = pml.project_key
+        WHERE pml.token_id = COALESCE(bv."businessData"->>'tokenId', tc."tokenId")
+        ORDER BY pml.mint_date DESC NULLS LAST
+        LIMIT 1
     ) proj ON true
 `;
 
