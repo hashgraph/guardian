@@ -16,7 +16,8 @@ const formatDate = (d: string | null) => {
 
 const route = useRoute();
 const projectKeyFilter = computed(() => route.query.projectKey as string | undefined);
-const { credits, total, pending } = useCredits(projectKeyFilter);
+const methodologyIdFilter = computed(() => route.query.methodologyId as string | undefined);
+const { credits, total, pending } = useCredits(projectKeyFilter, methodologyIdFilter);
 
 const config = useRuntimeConfig();
 const apiBaseURL = import.meta.server
@@ -60,12 +61,17 @@ const projectFilterName = computed(() => {
     return allCredits.value[0]?.projectDisplay ?? null;
 });
 
+const methodologyFilterName = computed(() => {
+    if (!methodologyIdFilter.value) return null;
+    return allCredits.value[0]?.methodologyDisplay ?? null;
+});
+
 const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters } =
     useFilteredPagination(allCredits, {
         searchFields: ['name', 'symbol', 'tokenId', 'projectDisplay', 'methodologyDisplay', 'registry'],
         pageSize: 10,
         defaultSort: { key: 'supply', dir: 'desc' },
-        excludeFromQuery: ['projectKey'],
+        excludeFromQuery: ['projectKey', 'methodologyId'],
     });
 
 const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i) => i));
@@ -102,6 +108,16 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
             </div>
         </div>
 
+        <div v-if="methodologyIdFilter" class="px-6 pb-2">
+            <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
+                <span class="text-muted-foreground">{{ $t('credits.filteredByMethodology') }}</span>
+                <span class="font-medium text-foreground">{{ methodologyFilterName ?? $t('credits.unknownMethodology') }}</span>
+                <NuxtLink to="/credits" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    {{ $t('credits.clearMethodologyFilter') }} ×
+                </NuxtLink>
+            </div>
+        </div>
+
         <div class="px-6 pb-3">
             <FilterBar v-model="searchQuery" :filters="filters" :active-filters="activeFilters" :result-count="filtered.length" :total-count="total" :search-placeholder="$t('credits.searchPlaceholder')" @filter="setFilter" @clear="clearFilters" />
             <label class="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
@@ -119,18 +135,7 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
         <div class="px-6 pb-6">
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="overflow-x-auto">
-                <table class="table-fixed text-sm" style="min-width: 1100px; width: 100%">
-                    <colgroup>
-                        <col style="width: 200px" />   <!-- token -->
-                        <col style="width: 80px" />    <!-- symbol -->
-                        <col style="width: 110px" />   <!-- type -->
-                        <col style="width: 90px" />    <!-- supply -->
-                        <col style="width: 100px" />   <!-- mint date -->
-                        <col style="width: 200px" />   <!-- project -->
-                        <col style="width: 170px" />   <!-- methodology -->
-                        <col style="width: 120px" />   <!-- registry -->
-                        <col style="width: 60px" />    <!-- raw data -->
-                    </colgroup>
+                <table class="text-sm w-full">
                     <thead>
                         <tr class="border-b bg-muted/30">
                             <SortableHeader :label="$t('credits.columns.token')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
@@ -157,17 +162,15 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
                         <!-- Data rows -->
                         <template v-else>
                             <tr v-for="c in paginated" :key="c.tokenId" class="hover:bg-muted/30 transition-colors cursor-pointer">
-                                <td class="py-3 px-4 overflow-hidden">
-                                    <TruncatedText :text="c.name" class="font-medium text-foreground" />
-                                    <TruncatedText :text="c.tokenId" class="text-[11px] text-muted-foreground/60 font-mono" />
+                                <td class="py-3 px-4 whitespace-nowrap">
+                                    <div class="font-medium text-foreground">{{ c.name ?? '-' }}</div>
+                                    <div class="text-[11px] text-muted-foreground/60 font-mono">{{ c.tokenId ?? '-' }}</div>
                                 </td>
-                                <td class="py-3 px-4 overflow-hidden font-mono text-xs">
-                                    <TruncatedText :text="c.symbol" />
-                                </td>
-                                <td class="py-3 px-4"><span :class="[c.type ? typeColor[c.type] : '', 'text-xs font-medium rounded-full px-2 py-0.5']">{{ c.type ?? '-' }}</span></td>
-                                <td class="py-3 px-4 text-right tabular-nums font-medium">{{ c.supplyFormatted }}</td>
+                                <td class="py-3 px-4 font-mono text-xs whitespace-nowrap">{{ c.symbol ?? '-' }}</td>
+                                <td class="py-3 px-4 whitespace-nowrap"><span :class="[c.type ? typeColor[c.type] : '', 'text-xs font-medium rounded-full px-2 py-0.5']">{{ c.type ?? '-' }}</span></td>
+                                <td class="py-3 px-4 text-right tabular-nums font-medium whitespace-nowrap">{{ c.supplyFormatted }}</td>
                                 <td class="py-3 px-4 text-muted-foreground text-xs tabular-nums whitespace-nowrap">{{ formatDate(c.mintDate) }}</td>
-                                <td class="py-3 px-4 overflow-hidden">
+                                <td class="py-3 px-4 max-w-[200px]">
                                     <NuxtLink
                                         v-if="c.projectId && c.projectDisplay"
                                         :to="`/projects/${encodeURIComponent(c.projectId)}`"
@@ -178,13 +181,11 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
                                     </NuxtLink>
                                     <span v-else class="text-muted-foreground/40">-</span>
                                 </td>
-                                <td class="py-3 px-4 overflow-hidden text-muted-foreground">
+                                <td class="py-3 px-4 max-w-[180px] text-muted-foreground">
                                     <TruncatedText v-if="c.methodologyDisplay" :text="c.methodologyDisplay" />
                                     <span v-else class="text-muted-foreground/40">-</span>
                                 </td>
-                                <td class="py-3 px-4 overflow-hidden text-muted-foreground">
-                                    <TruncatedText :text="c.registry" fallback="-" />
-                                </td>
+                                <td class="py-3 px-4 whitespace-nowrap text-muted-foreground">{{ c.registry ?? '-' }}</td>
                                 <td class="py-3 px-3 text-center">
                                     <button
                                         class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"

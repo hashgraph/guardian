@@ -5,12 +5,18 @@ export type CreditWithDisplay = CreditDto & {
     methodologyDisplay: string | null;
 };
 
-export function useCredits(projectKey?: Ref<string | undefined>) {
+export function useCredits(
+    projectKey?: Ref<string | undefined>,
+    methodologyId?: Ref<string | undefined>,
+) {
     const { network } = useNetwork();
 
-    const filters = computed(() =>
-        projectKey?.value ? { projectKey: projectKey.value } : {},
-    );
+    const filters = computed(() => {
+        const f: Record<string, string> = {};
+        if (projectKey?.value) f.projectKey = projectKey.value;
+        if (methodologyId?.value) f.methodologyId = methodologyId.value;
+        return f;
+    });
 
     const { data, pending } = useCreditsApi({
         page: ref(1),

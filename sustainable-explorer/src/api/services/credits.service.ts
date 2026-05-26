@@ -28,6 +28,7 @@ export class CreditsService {
             registryDid: query.registryDid,
             tokenId: query.tokenId,
             projectKey: query.projectKey,
+            methodologyId: query.methodologyId,
             sortBy: query.sortBy,
             sortDir: query.sortDir,
         });

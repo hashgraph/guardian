@@ -31,6 +31,11 @@ export class CreditQueryDto extends PaginationQueryDto {
     @IsOptional()
     @IsString()
     projectKey?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by methodology sourceTimestamp — returns only issuances linked to this methodology' })
+    @IsOptional()
+    @IsString()
+    methodologyId?: string;
 }
 
 export class CreditResponseDto {

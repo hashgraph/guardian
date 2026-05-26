@@ -131,6 +131,29 @@ export class PgCreditRepository extends CreditRepository {
             )`);
         }
 
+        // methodologyId filter: restricts to credits whose resolved methodology matches
+        // the given sourceTimestamp. Checks both the credit's own relatedTopicId and
+        // the relatedTopicId of any project linked via project_mint_link.
+        if (query.methodologyId) {
+            const param = builder.nextParam(query.methodologyId);
+            builder.addClause(`EXISTS (
+                SELECT 1 FROM business_view bv_meth_f
+                WHERE bv_meth_f."viewType" = 'METHODOLOGY'
+                  AND bv_meth_f."sourceTimestamp" = ${param}
+                  AND (
+                      bv_meth_f."relatedTopicId" IN (
+                          SELECT bv_proj."relatedTopicId"
+                          FROM project_mint_link pml
+                          JOIN business_view bv_proj
+                              ON bv_proj."projectKey" = pml.project_key
+                             AND bv_proj."viewType" = 'PROJECT'
+                          WHERE pml.token_id = bv."businessData"->>'tokenId'
+                      )
+                      OR bv_meth_f."relatedTopicId" = bv."relatedTopicId"
+                  )
+            )`);
+        }
+
         // type filter: accept display form ('Fungible'/'Non-Fungible') and map to
         // token_cache raw values before filtering.
         if (query.type) {

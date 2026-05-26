@@ -48,7 +48,7 @@ export interface UseCreditsApiOptions {
 }
 
 // Filter keys recognised by the backend credits endpoint.
-const CREDIT_FILTER_KEYS = ['type', 'registry', 'registryDid', 'tokenId', 'projectKey'] as const;
+const CREDIT_FILTER_KEYS = ['type', 'registry', 'registryDid', 'tokenId', 'projectKey', 'methodologyId'] as const;
 
 const emptyResponse = (limit: number): CreditsResponse => ({
     data: [],

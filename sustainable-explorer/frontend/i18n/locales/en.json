@@ -284,6 +284,9 @@
     "filteredByProject": "Showing issuances for",
     "unknownProject": "this project",
     "clearProjectFilter": "Clear filter",
+    "filteredByMethodology": "Showing issuances for",
+    "unknownMethodology": "this methodology",
+    "clearMethodologyFilter": "Clear filter",
     "supplyTooltip": "Total token supply minted on Hedera. For fungible tokens this is the total supply. For NFTs this is the number of unique serials.",
     "columns": {
       "token": "Token",

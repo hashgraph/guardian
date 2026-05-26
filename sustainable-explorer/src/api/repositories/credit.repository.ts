@@ -15,6 +15,7 @@ export interface CreditListQuery {
     registryDid?: string;
     tokenId?: string;
     projectKey?: string;
+    methodologyId?: string;
     sortBy?: string;
     sortDir?: 'asc' | 'desc';
 }

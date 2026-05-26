@@ -279,6 +279,9 @@
     "filteredByProject": "Mostrando emisiones de",
     "unknownProject": "este proyecto",
     "clearProjectFilter": "Quitar filtro",
+    "filteredByMethodology": "Mostrando emisiones de",
+    "unknownMethodology": "esta metodología",
+    "clearMethodologyFilter": "Quitar filtro",
     "supplyTooltip": "Suministro total de tokens acuñado en Hedera. Para tokens fungibles es el suministro total. Para NFTs es el número de serials únicos.",
     "columns": {
       "token": "Token",
