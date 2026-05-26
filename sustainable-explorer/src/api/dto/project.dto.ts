@@ -230,6 +230,9 @@ export class ProjectResponseDto {
     @ApiProperty({ description: 'HCS consensus timestamp of the earliest source VC message' })
     sourceTimestamp: string;
 
+    @ApiProperty({ nullable: true, description: 'Stable dedup key for this project (credentialSubject.id). Used as the projectId on linked credit rows.' })
+    projectKey: string | null;
+
     @ApiProperty({ description: 'Last time this row was written to the database' })
     updatedAt: Date;
 
@@ -375,6 +378,7 @@ export class ProjectResponseDto {
             instanceTopicId: typeof data['instanceTopicId'] === 'string' ? data['instanceTopicId'] : null,
             vcCount: typeof data['vcCount'] === 'number' ? data['vcCount'] : 0,
             sourceTimestamp: row.sourceTimestamp,
+            projectKey: row.projectKey ?? null,
             updatedAt: row.updatedAt,
             issuances: (row.issuances ?? []).map(i => ({
                 tokenId: i.tokenId,

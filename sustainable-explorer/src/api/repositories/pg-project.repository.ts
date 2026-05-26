@@ -487,6 +487,7 @@ export class PgProjectRepository extends ProjectRepository {
         return {
             id: row.id,
             sourceTimestamp: row.sourceTimestamp,
+            projectKey: row.projectKey ?? null,
             registryDid: row.registryDid,
             registryName: row.registry_name,
             relatedTopicId: row.relatedTopicId,

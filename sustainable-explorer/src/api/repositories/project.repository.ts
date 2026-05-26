@@ -25,6 +25,7 @@ export interface PolicySchemaRow {
 export interface ProjectRow {
     id: string;
     sourceTimestamp: string;
+    projectKey: string | null;
     registryDid: string | null;
     registryName: string | null;
     relatedTopicId: string | null;

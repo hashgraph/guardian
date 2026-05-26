@@ -18,6 +18,8 @@ interface RawRow {
     businessData: Record<string, any> | null;
     project_id: string | null;
     project_name: string | null;
+    methodology_id: string | null;
+    methodology_name: string | null;
 }
 
 /**
@@ -37,49 +39,54 @@ const REGISTRY_NAME_JOIN = `
 `;
 
 /**
- * Resolves the linked project for a credit by walking the MintToken VC chain:
+ * Resolves the linked project for a credit via the pre-computed project_mint_link
+ * table. Picks the most recent mint event for this token and joins to the PROJECT
+ * row in business_view.
  *
- *   tokenId  →  MintToken VC (in some topic)
- *            →  the most-recent prior data VC (cs.id IS NOT NULL) in the same topic
- *            →  that cs.id is the project's projectKey in business_view PROJECT.
+ * Also exposes proj_topic_id (= project's relatedTopicId / instanceTopicId) so
+ * the METHODOLOGY_JOIN below can use it as its primary lookup key.
  *
- * We pick the most recent MintToken VC for the token, then look back for the
- * latest data VC before it. Joins to the PROJECT row for the display name.
- *
- * For credits with no minting activity (or no data VC preceding the mint), both
- * project_id and project_name come back null and the frontend shows "Unknown
- * Project" — same fallback as before.
+ * Falls back to null for credits with no entry in project_mint_link yet.
  */
 const PROJECT_LINK_JOIN = `
     LEFT JOIN LATERAL (
         SELECT
-            proj.cs_id           AS project_id,
-            bv_proj."displayName" AS project_name
-        FROM (
-            SELECT (
-                SELECT m_proj.documents->'credentialSubject'->0->>'id'
-                FROM message m_proj
-                WHERE m_proj.type = 'VC-Document'
-                  AND m_proj.documents IS NOT NULL
-                  AND m_proj."topicId" = mt."topicId"
-                  AND m_proj."consensusTimestamp" < mt."consensusTimestamp"
-                  AND m_proj.documents->'credentialSubject'->0->>'id' IS NOT NULL
-                ORDER BY m_proj."consensusTimestamp" DESC
-                LIMIT 1
-            ) AS cs_id
-            FROM message mt
-            WHERE mt.type = 'VC-Document'
-              AND mt.documents IS NOT NULL
-              AND mt.documents->'credentialSubject'->0->>'type' LIKE 'MintToken%'
-              AND mt.documents->'credentialSubject'->0->>'tokenId'
-                  = COALESCE(bv."businessData"->>'tokenId', tc."tokenId")
-            ORDER BY mt."consensusTimestamp" DESC
-            LIMIT 1
-        ) AS proj
-        LEFT JOIN business_view bv_proj
-            ON bv_proj."viewType" = 'PROJECT'
-           AND bv_proj."projectKey" = proj.cs_id
+            bv_proj."projectKey"                        AS project_id,
+            bv_proj."displayName"                       AS project_name,
+            bv_proj."relatedTopicId"                    AS proj_topic_id,
+            bv_proj."businessData"->>'methodology'      AS proj_methodology_name
+        FROM project_mint_link pml
+        JOIN business_view bv_proj
+            ON bv_proj."projectKey" = pml.project_key
+           AND bv_proj."viewType" = 'PROJECT'
+        WHERE pml.token_id = bv."businessData"->>'tokenId'
+        ORDER BY pml.mint_consensus_timestamp DESC
+        LIMIT 1
     ) proj ON true
+`;
+
+/**
+ * Resolves the linked methodology independently of the project link.
+ *
+ * Primary path:   project's relatedTopicId (= instanceTopicId) when a project
+ *                 was resolved — most accurate since it comes from the known chain.
+ * Fallback path:  credit's own relatedTopicId (= the topic where the Token
+ *                 message was posted, which is the instance topic in Guardian).
+ *
+ * Uses idx_business_view_methodology_topic for an O(log n) lookup.
+ * Shows a methodology even when no project could be resolved.
+ */
+const METHODOLOGY_JOIN = `
+    LEFT JOIN LATERAL (
+        SELECT
+            bv_meth."sourceTimestamp" AS methodology_id,
+            bv_meth."displayName"     AS methodology_name
+        FROM business_view bv_meth
+        WHERE bv_meth."viewType" = 'METHODOLOGY'
+          AND bv_meth."relatedTopicId" = COALESCE(proj.proj_topic_id, bv."relatedTopicId")
+        ORDER BY bv_meth."createdAt" DESC NULLS LAST
+        LIMIT 1
+    ) meth ON true
 `;
 
 /**
@@ -101,7 +108,8 @@ export class PgCreditRepository extends CreditRepository {
         const offset = (page - 1) * limit;
 
         const builder = new QueryBuilder(CREDIT_FIELD_SCHEMA);
-        builder.addClause(`bv."viewType" = 'CREDIT'`);
+        // viewType = 'CREDIT' is enforced inside CREDIT_BASE (the deduplicating
+        // subquery), so it must not be repeated in the outer WHERE clause.
 
         // Generic filters
         builder.addFilters({
@@ -109,6 +117,19 @@ export class PgCreditRepository extends CreditRepository {
             registry: query.registry,
             tokenId: query.tokenId,
         });
+
+        // projectKey filter: restricts to credits that have ANY mint attributed to
+        // the requested project. Uses an EXISTS subquery against project_mint_link
+        // directly so it is self-contained and does not depend on which project
+        // "wins" in the LATERAL display join (which picks the most-recent mint).
+        if (query.projectKey) {
+            const param = builder.nextParam(query.projectKey);
+            builder.addClause(`EXISTS (
+                SELECT 1 FROM project_mint_link pml_f
+                WHERE pml_f.token_id = bv."businessData"->>'tokenId'
+                  AND pml_f.project_key = ${param}
+            )`);
+        }
 
         // type filter: accept display form ('Fungible'/'Non-Fungible') and map to
         // token_cache raw values before filtering.
@@ -164,36 +185,48 @@ export class PgCreditRepository extends CreditRepository {
         const limitParam = builder.nextParam(limit);
         const offsetParam = builder.nextParam(offset);
 
+        // One CREDIT row per token (latest mint). business_view can have multiple
+        // CREDIT rows for the same token (one per mint event); DISTINCT ON collapses
+        // them so the issuance count matches COUNT(DISTINCT token_id) on the project.
+        const CREDIT_BASE = `(
+            SELECT DISTINCT ON ("businessData"->>'tokenId') *
+            FROM business_view
+            WHERE "viewType" = 'CREDIT'
+            ORDER BY "businessData"->>'tokenId', "sourceTimestamp" DESC NULLS LAST
+        ) bv`;
+
         const rowsSql = `
             SELECT
-                COALESCE(tc."tokenId", bv."businessData"->>'tokenId')     AS "tokenId",
-                COALESCE(tc.name,      bv."displayName")                   AS name,
-                COALESCE(tc.symbol,    bv."businessData"->>'symbol')       AS symbol,
-                tc.type                                                     AS raw_type,
-                bv."businessData"->'options'->>'tokenType'                 AS options_token_type,
-                tc."totalSupply"                                           AS total_supply,
-                bv."registryDid"                                           AS "registryDid",
+                COALESCE(tc."tokenId", bv."businessData"->>'tokenId')               AS "tokenId",
+                COALESCE(tc.name,      bv."displayName")                             AS name,
+                COALESCE(tc.symbol,    bv."businessData"->>'symbol')                 AS symbol,
+                tc.type                                                               AS raw_type,
+                bv."businessData"->'options'->>'tokenType'                           AS options_token_type,
+                tc."totalSupply"                                                      AS total_supply,
+                bv."registryDid"                                                      AS "registryDid",
                 reg.registry_name,
-                to_timestamp(bv."sourceTimestamp"::numeric)::timestamptz  AS mint_date,
-                bv."businessData"                                          AS "businessData",
-                proj.project_id                                            AS project_id,
-                proj.project_name                                          AS project_name,
-                ${rankExpr}                                                AS search_rank
-            FROM business_view bv
+                to_timestamp(bv."sourceTimestamp"::numeric)::timestamptz             AS mint_date,
+                bv."businessData"                                                     AS "businessData",
+                proj.project_id                                                       AS project_id,
+                proj.project_name                                                     AS project_name,
+                meth.methodology_id                                                   AS methodology_id,
+                COALESCE(meth.methodology_name, proj.proj_methodology_name)          AS methodology_name,
+                ${rankExpr}                                                           AS search_rank
+            FROM ${CREDIT_BASE}
             LEFT JOIN token_cache tc
                 ON tc."tokenId" = bv."businessData"->>'tokenId'
             ${REGISTRY_NAME_JOIN}
             ${PROJECT_LINK_JOIN}
+            ${METHODOLOGY_JOIN}
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
-        // Count query reuses the same WHERE + LATERAL join so registry filters resolve.
         const countParams = params.slice(0, params.length - 2);
         const countSql = `
             SELECT COUNT(*)::int AS total
-            FROM business_view bv
+            FROM ${CREDIT_BASE}
             LEFT JOIN token_cache tc
                 ON tc."tokenId" = bv."businessData"->>'tokenId'
             ${REGISTRY_NAME_JOIN}
@@ -220,6 +253,8 @@ export class PgCreditRepository extends CreditRepository {
             supply: row.total_supply != null ? parseFloat(row.total_supply) : 0,
             projectId: row.project_id ?? null,
             project: row.project_name ?? null,
+            methodologyId: row.methodology_id ?? null,
+            methodology: row.methodology_name ?? null,
             registry: row.registry_name ?? null,
             registryDid: row.registryDid ?? null,
             mintDate: row.mint_date ? row.mint_date.toISOString() : null,
@@ -265,8 +300,13 @@ export class PgCreditRepository extends CreditRepository {
                 bv."businessData"->'options'->>'tokenType' AS options_token_type,
                 tc."totalSupply"::text AS total_supply,
                 bv."registryDid" AS "registryDid",
-                reg.registry_name AS registry,
-                to_char(to_timestamp(bv."sourceTimestamp"::numeric) AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS mint_date
+                reg.registry_name AS registry_name,
+                to_char(to_timestamp(bv."sourceTimestamp"::numeric) AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS mint_date,
+                NULL::jsonb AS "businessData",
+                proj.project_id,
+                proj.project_name,
+                meth.methodology_id,
+                COALESCE(meth.methodology_name, proj.proj_methodology_name) AS methodology_name
              FROM business_view bv
              LEFT JOIN token_cache tc ON tc."tokenId" = bv."businessData"->>'tokenId'
              LEFT JOIN LATERAL (
@@ -276,6 +316,30 @@ export class PgCreditRepository extends CreditRepository {
                  ORDER BY "createdAt" DESC NULLS LAST
                  LIMIT 1
              ) reg ON true
+             LEFT JOIN LATERAL (
+                 SELECT
+                     bv_proj."projectKey"                    AS project_id,
+                     bv_proj."displayName"                   AS project_name,
+                     bv_proj."relatedTopicId"                AS proj_topic_id,
+                     bv_proj."businessData"->>'methodology'  AS proj_methodology_name
+                 FROM project_mint_link pml
+                 JOIN business_view bv_proj
+                     ON bv_proj."projectKey" = pml.project_key
+                    AND bv_proj."viewType" = 'PROJECT'
+                 WHERE pml.token_id = bv."businessData"->>'tokenId'
+                 ORDER BY pml.mint_consensus_timestamp DESC
+                 LIMIT 1
+             ) proj ON true
+             LEFT JOIN LATERAL (
+                 SELECT
+                     bv_meth."sourceTimestamp" AS methodology_id,
+                     bv_meth."displayName"     AS methodology_name
+                 FROM business_view bv_meth
+                 WHERE bv_meth."viewType" = 'METHODOLOGY'
+                   AND bv_meth."relatedTopicId" = COALESCE(proj.proj_topic_id, bv."relatedTopicId")
+                 ORDER BY bv_meth."createdAt" DESC NULLS LAST
+                 LIMIT 1
+             ) meth ON true
              WHERE bv."viewType" = 'CREDIT' AND bv."businessData"->>'tokenId' = $1
              LIMIT 1`,
             [tokenId],
@@ -287,9 +351,11 @@ export class PgCreditRepository extends CreditRepository {
             symbol: creditRows[0].symbol,
             type: PgCreditRepository.normaliseType(creditRows[0].raw_type, creditRows[0].options_token_type),
             supply: parseFloat(creditRows[0].total_supply ?? '0') || 0,
-            projectId: null,
-            project: null,
-            registry: creditRows[0].registry_name,
+            projectId: creditRows[0].project_id ?? null,
+            project: creditRows[0].project_name ?? null,
+            methodologyId: creditRows[0].methodology_id ?? null,
+            methodology: creditRows[0].methodology_name ?? null,
+            registry: creditRows[0].registry_name ?? null,
             registryDid: creditRows[0].registryDid,
             mintDate: creditRows[0].mint_date instanceof Date
                 ? creditRows[0].mint_date.toISOString()

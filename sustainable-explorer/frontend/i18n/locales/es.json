@@ -276,6 +276,9 @@
     "subtitle": "Tokens emitidos en Hedera",
     "searchPlaceholder": "Buscar por nombre, símbolo, ID de token...",
     "noMatch": "Ninguna emisión coincide con tus filtros",
+    "filteredByProject": "Mostrando emisiones de",
+    "unknownProject": "este proyecto",
+    "clearProjectFilter": "Quitar filtro",
     "supplyTooltip": "Suministro total de tokens acuñado en Hedera. Para tokens fungibles es el suministro total. Para NFTs es el número de serials únicos.",
     "columns": {
       "token": "Token",
@@ -284,12 +287,17 @@
       "supply": "Suministro",
       "mintDate": "Fecha de emisión",
       "project": "Proyecto",
+      "methodology": "Metodología",
       "registry": "Registro",
       "rawData": "Datos brutos"
     },
     "filters": {
       "tokenType": "Tipo de token",
-      "registry": "Registro"
+      "registry": "Registro",
+      "hideUnlinked": "Ocultar emisiones sin proyecto vinculado"
+    },
+    "tooltips": {
+      "hideUnlinked": "Oculta los tokens que aún no han sido asociados a ningún proyecto. Desmarque para ver todos los tokens indexados."
     }
   },
   "methodologies": {
