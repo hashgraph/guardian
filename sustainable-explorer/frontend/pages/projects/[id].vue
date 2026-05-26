@@ -79,6 +79,7 @@ interface VcDocData { fields: VcField[]; tables: VcTable[]; groups: VcGroup[] }
 
 const vcDataBySchema = ref<Record<string, VcDocData[]>>({});
 const vcDataPending = ref<Record<string, boolean>>({});
+const vcSchemaOpen = ref<Record<string, boolean>>({});
 const vcRecordOpen = ref<Record<string, boolean>>({});
 const docSearchQuery = ref('');
 
@@ -222,6 +223,15 @@ function structureVcData(obj: Record<string, any>, schemaUuid: string): VcDocDat
         }
     }
     return { fields, tables, groups };
+}
+
+function toggleSchema(schemaUuid: string) {
+    if (vcDataBySchema.value[schemaUuid]) {
+        vcSchemaOpen.value = { ...vcSchemaOpen.value, [schemaUuid]: !vcSchemaOpen.value[schemaUuid] };
+    } else {
+        vcSchemaOpen.value = { ...vcSchemaOpen.value, [schemaUuid]: true };
+        loadSchemaVcData(schemaUuid);
+    }
 }
 
 async function loadSchemaVcData(schemaUuid: string) {
@@ -594,7 +604,7 @@ const emissions = computed(() => {
                             class="w-full px-5 py-3.5 flex items-center justify-between text-left transition-colors"
                             :class="schema.vcCount === 0 ? 'cursor-default' : 'hover:bg-muted/30'"
                             :disabled="schema.vcCount === 0"
-                            @click="schema.vcCount > 0 && loadSchemaVcData(schema.schemaUuid)"
+                            @click="schema.vcCount > 0 && toggleSchema(schema.schemaUuid)"
                         >
                             <div class="flex items-center gap-2.5 min-w-0">
                                 <div
@@ -626,12 +636,13 @@ const emissions = computed(() => {
                             <ChevronDown
                                 v-if="schema.vcCount > 0"
                                 class="h-4 w-4 text-muted-foreground transition-transform shrink-0"
-                                :class="vcDataBySchema[schema.schemaUuid] ? 'rotate-180' : ''"
+                                :class="vcSchemaOpen[schema.schemaUuid] ? 'rotate-180' : ''"
                             />
                         </button>
 
                         <!-- Schema VC data (grouped, leveled view) -->
-                        <template v-if="vcDataPending[schema.schemaUuid]">
+                        <template v-if="!vcSchemaOpen[schema.schemaUuid]" />
+                        <template v-else-if="vcDataPending[schema.schemaUuid]">
                             <div class="border-t px-5 py-6 text-center">
                                 <div class="inline-flex items-center gap-2 text-xs text-muted-foreground">
                                     <Loader2 class="h-3.5 w-3.5 animate-spin" />
