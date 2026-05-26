@@ -31,6 +31,11 @@ form {
 }
 
 :host ::ng-deep {
+    .p-tabs {
+        display: block;
+        margin-bottom: 40px;
+    }
+
     .p-tab {
         padding: 0 !important;
     }
