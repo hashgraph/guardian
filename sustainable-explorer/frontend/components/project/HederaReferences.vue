@@ -3,6 +3,8 @@ import { Shield, CheckCircle2, ExternalLink, Copy, Check } from 'lucide-vue-next
 import type { Project } from '~/types/models';
 import { formatDate } from '~/lib/format';
 
+const { t } = useI18n();
+
 const props = defineProps<{
     project: Project;
     network: string;
@@ -58,11 +60,10 @@ async function copyToClipboard(text: string) {
                 <!-- Instance Topic ID -->
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Instance Topic ID</div>
-                    <div class="group flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
                         <code class="text-sm font-mono text-foreground">{{ project.topicId ?? '—' }}</code>
                         <button
                             v-if="project.topicId"
-                            class="opacity-0 group-hover:opacity-100 transition-opacity"
                             title="Copy"
                             @click="copyToClipboard(project.topicId)"
                         >
@@ -74,10 +75,10 @@ async function copyToClipboard(text: string) {
                             :href="hashscanTopicUrl"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="View on HashScan"
+                            class="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                         >
-                            <ExternalLink class="h-3.5 w-3.5 text-primary" />
+                            <ExternalLink class="h-3 w-3" />
+                            {{ t('common.viewOnHashScan') }}
                         </a>
                     </div>
                 </div>
@@ -85,11 +86,10 @@ async function copyToClipboard(text: string) {
                 <!-- Policy Topic ID -->
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Policy Topic ID</div>
-                    <div class="group flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
                         <code class="text-sm font-mono text-foreground">{{ project.policyTopicId ?? '—' }}</code>
                         <button
                             v-if="project.policyTopicId"
-                            class="opacity-0 group-hover:opacity-100 transition-opacity"
                             title="Copy"
                             @click="copyToClipboard(project.policyTopicId)"
                         >
@@ -101,10 +101,10 @@ async function copyToClipboard(text: string) {
                             :href="hashscanPolicyUrl"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="View on HashScan"
+                            class="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                         >
-                            <ExternalLink class="h-3.5 w-3.5 text-primary" />
+                            <ExternalLink class="h-3 w-3" />
+                            {{ t('common.viewOnHashScan') }}
                         </a>
                     </div>
                 </div>
@@ -118,11 +118,11 @@ async function copyToClipboard(text: string) {
                 <!-- Registry DID -->
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Registry DID</div>
-                    <div class="group flex items-start gap-2">
+                    <div class="flex items-start gap-2">
                         <code class="text-xs font-mono text-muted-foreground break-all flex-1">{{ project.registryDid ?? '—' }}</code>
                         <button
                             v-if="project.registryDid"
-                            class="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5"
+                            class="shrink-0 mt-0.5"
                             title="Copy"
                             @click="copyToClipboard(project.registryDid)"
                         >
@@ -131,30 +131,6 @@ async function copyToClipboard(text: string) {
                         </button>
                     </div>
                 </div>
-            </div>
-
-            <!-- External links -->
-            <div class="flex flex-wrap items-center gap-4">
-                <a
-                    v-if="hashscanTopicUrl"
-                    :href="hashscanTopicUrl"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
-                >
-                    <ExternalLink class="h-4 w-4" />
-                    View Instance Topic on HashScan
-                </a>
-                <a
-                    v-if="hashscanPolicyUrl"
-                    :href="hashscanPolicyUrl"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
-                >
-                    <ExternalLink class="h-4 w-4" />
-                    View Policy Topic on HashScan
-                </a>
             </div>
         </div>
     </div>

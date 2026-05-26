@@ -59,11 +59,11 @@ const creditingPeriodEnd = computed(() => {
                 <NuxtLink
                     v-if="project.registry && project.registryDid"
                     :to="`/registries?did=${encodeURIComponent(project.registryDid)}`"
-                    class="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                    class="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors break-all"
                 >
                     {{ project.registry }}
                 </NuxtLink>
-                <div v-else class="text-sm font-medium text-foreground">{{ project.registry || '—' }}</div>
+                <div v-else class="text-sm font-medium text-foreground break-all">{{ project.registry || '—' }}</div>
             </div>
 
             <!-- Developer -->
