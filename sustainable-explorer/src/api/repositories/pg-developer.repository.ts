@@ -72,7 +72,7 @@ export class PgDeveloperRepository extends DeveloperRepository {
         const baseCte = `
             WITH dev_projects AS (
                 SELECT
-                    bv."sourceTimestamp"                  AS source_ts,
+                    bv."projectKey"                       AS source_ts,
                     bv."businessData"->>'developer'       AS developer,
                     bv."businessData"->>'country'         AS country,
                     bv."businessData"->>'category'        AS category,
@@ -92,18 +92,18 @@ export class PgDeveloperRepository extends DeveloperRepository {
             ),
             project_issued AS (
                 SELECT
-                    pml.project_source_timestamp AS source_ts,
+                    pml.project_key AS source_ts,
                     COALESCE(SUM(pml.amount), 0)::numeric AS issued
                 FROM project_mint_link pml
-                GROUP BY pml.project_source_timestamp
+                GROUP BY pml.project_key
             ),
             project_retired AS (
                 SELECT
-                    pml.project_source_timestamp AS source_ts,
+                    pml.project_key AS source_ts,
                     COUNT(*) FILTER (WHERE nc.deleted = true)::numeric AS retired
                 FROM project_mint_link pml
                 JOIN nft_cache nc ON nc."tokenId" = pml.token_id
-                GROUP BY pml.project_source_timestamp
+                GROUP BY pml.project_key
             ),
             agg AS (
                 SELECT

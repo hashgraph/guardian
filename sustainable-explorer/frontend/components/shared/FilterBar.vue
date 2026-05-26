@@ -138,7 +138,7 @@ if (import.meta.client) {
                 <!-- Multi-select dropdown -->
                 <div
                     v-if="openDropdown === filter.key && filter.multiSelect"
-                    class="absolute left-0 top-full mt-1 z-50 min-w-[12rem] max-h-64 overflow-y-auto rounded-md border bg-popover p-1 shadow-md text-left"
+                    class="absolute right-0 top-full mt-1 z-[9999] min-w-[12rem] max-h-64 overflow-y-auto rounded-md border bg-popover p-1 shadow-md text-left"
                 >
                     <button
                         class="flex w-full items-center justify-start text-left rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent text-muted-foreground"
@@ -170,7 +170,7 @@ if (import.meta.client) {
                 <!-- Single-select dropdown -->
                 <div
                     v-else-if="openDropdown === filter.key"
-                    class="absolute left-0 top-full mt-1 z-50 min-w-[10rem] rounded-md border bg-popover p-1 shadow-md text-left"
+                    class="absolute right-0 top-full mt-1 z-[9999] min-w-[10rem] max-h-64 overflow-y-auto rounded-md border bg-popover p-1 shadow-md text-left"
                 >
                     <button
                         v-for="opt in [{ value: 'all', label: `${t('common.all')} ${filter.label}` }, ...filter.options]"
