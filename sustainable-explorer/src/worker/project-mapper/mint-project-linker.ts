@@ -13,8 +13,14 @@ import { DataSource } from 'typeorm';
  * Resolution strategy:
  *   1. Walk options.relationships via recursive CTE (up to 15 hops) until an
  *      ancestor consensusTimestamp matches a business_view PROJECT row.
- *      Using sourceTimestamp as the project key correctly splits grouped
- *      projects (multiple project VCs sharing one instance topic).
+ *      Stores projectKey (the canonical cs.id) which is stable across
+ *      business_view rebuilds, unlike sourceTimestamp.
+ *   1.5 Same-topic cs.ref lookup: if the relationship walk fails, look for
+ *      any VC in the same topic whose credentialSubject[0].ref points to a
+ *      known project's projectKey. Monitoring Reports explicitly carry this
+ *      ref ("I am a report FOR this project"), making it a more semantically
+ *      precise link than topic-scope. Only used when exactly one project is
+ *      referenced to avoid misattribution in shared PoA topics.
  *   2. Topic-scope fallback: only when the instance topic contains exactly
  *      one project. Grouped topics without a resolved chain are skipped to
  *      avoid misattribution.
@@ -38,7 +44,7 @@ export async function buildMintProjectLinks(
             m.documents->'credentialSubject'->0->>'date'    AS mint_date
         FROM message m
         WHERE m.type = 'VC-Document'
-          AND m.documents->'credentialSubject'->0->>'type' = 'MintToken'
+          AND m.documents->'credentialSubject'->0->>'type' LIKE 'MintToken%'
           AND NOT EXISTS (
               SELECT 1 FROM project_mint_link pml
               WHERE pml.mint_consensus_timestamp = m."consensusTimestamp"
@@ -51,6 +57,7 @@ export async function buildMintProjectLinks(
     logger.log(`MintProjectLinker: linking ${unlinked.length} new mint(s)`);
 
     let linked = 0;
+    let csRef = 0;
     let fallback = 0;
     let skipped = 0;
 
@@ -59,7 +66,7 @@ export async function buildMintProjectLinks(
         // PROJECT row. ORDER BY depth ASC + LIMIT 1 picks the shallowest match,
         // which is the Project Registration VC closest to the mint in the chain.
         const chainRows: Array<{
-            project_source_timestamp: string;
+            project_key: string;
             project_topic_id: string;
         }> = await dataSource.query(`
             WITH RECURSIVE rel_chain(ts, depth) AS (
@@ -85,8 +92,8 @@ export async function buildMintProjectLinks(
                   AND jsonb_typeof(p.options->'relationships') = 'array'
             )
             SELECT
-                bv."sourceTimestamp" AS project_source_timestamp,
-                bv."relatedTopicId"  AS project_topic_id
+                bv."projectKey"     AS project_key,
+                bv."relatedTopicId" AS project_topic_id
             FROM rel_chain rc
             JOIN business_view bv
                 ON bv."sourceTimestamp" = rc.ts
@@ -95,40 +102,68 @@ export async function buildMintProjectLinks(
             LIMIT 1
         `, [mint.consensusTimestamp]);
 
-        let projectSourceTs: string;
+        let projectKey: string;
         let projectTopicId: string;
         let linkMethod: string;
 
         if (chainRows.length > 0) {
-            projectSourceTs = chainRows[0].project_source_timestamp;
+            projectKey = chainRows[0].project_key;
             projectTopicId = chainRows[0].project_topic_id;
             linkMethod = 'relationship';
             linked++;
         } else {
-            // Step 2 — topic-scope fallback: safe only for unambiguous single-project topics.
-            const fallbackRows: Array<{ sourceTimestamp: string; relatedTopicId: string }> =
+            // Step 1.5 — same-topic cs.ref lookup: find any VC in the same topic
+            // whose credentialSubject[0].ref explicitly points to a project's
+            // projectKey. Monitoring Reports carry this ref; it is a direct
+            // semantic assertion that the VC belongs to that specific project.
+            // Safe only when exactly one project is referenced to prevent
+            // misattribution in shared PoA topics with multiple sub-projects.
+            const csRefRows: Array<{ project_key: string; project_topic_id: string }> =
                 await dataSource.query(`
-                    SELECT "sourceTimestamp", "relatedTopicId"
-                    FROM business_view
-                    WHERE "viewType" = 'PROJECT'
-                      AND "relatedTopicId" = $1
+                    SELECT DISTINCT
+                        bv."projectKey"     AS project_key,
+                        bv."relatedTopicId" AS project_topic_id
+                    FROM message m
+                    JOIN business_view bv
+                        ON bv."projectKey" = m.documents->'credentialSubject'->0->>'ref'
+                       AND bv."viewType" = 'PROJECT'
+                    WHERE m."topicId" = $1
+                      AND m.type = 'VC-Document'
+                      AND m.documents IS NOT NULL
+                      AND m.documents->'credentialSubject'->0->>'ref' IS NOT NULL
                 `, [mint.topicId]);
 
-            if (fallbackRows.length !== 1) {
-                if (fallbackRows.length > 1) {
-                    logger.warn(
-                        `MintToken ${mint.consensusTimestamp}: grouped topic ${mint.topicId} — ` +
-                        `chain unresolved, skipping to avoid misattribution`,
-                    );
-                }
-                skipped++;
-                continue;
-            }
+            if (csRefRows.length === 1) {
+                projectKey = csRefRows[0].project_key;
+                projectTopicId = csRefRows[0].project_topic_id;
+                linkMethod = 'cs_ref';
+                csRef++;
+            } else {
+                // Step 2 — topic-scope fallback: safe only for unambiguous single-project topics.
+                const fallbackRows: Array<{ project_key: string; relatedTopicId: string }> =
+                    await dataSource.query(`
+                        SELECT "projectKey" AS project_key, "relatedTopicId"
+                        FROM business_view
+                        WHERE "viewType" = 'PROJECT'
+                          AND "relatedTopicId" = $1
+                    `, [mint.topicId]);
 
-            projectSourceTs = fallbackRows[0].sourceTimestamp;
-            projectTopicId = fallbackRows[0].relatedTopicId;
-            linkMethod = 'topic_scope';
-            fallback++;
+                if (fallbackRows.length !== 1) {
+                    if (fallbackRows.length > 1) {
+                        logger.warn(
+                            `MintToken ${mint.consensusTimestamp}: grouped topic ${mint.topicId} — ` +
+                            `chain unresolved, skipping to avoid misattribution`,
+                        );
+                    }
+                    skipped++;
+                    continue;
+                }
+
+                projectKey = fallbackRows[0].project_key;
+                projectTopicId = fallbackRows[0].relatedTopicId;
+                linkMethod = 'topic_scope';
+                fallback++;
+            }
         }
 
         // amount arrives as a JSONB string; parseFloat handles decimal values
@@ -139,7 +174,7 @@ export async function buildMintProjectLinks(
         await dataSource.query(`
             INSERT INTO project_mint_link (
                 mint_consensus_timestamp,
-                project_source_timestamp,
+                project_key,
                 project_topic_id,
                 token_id,
                 amount,
@@ -147,16 +182,16 @@ export async function buildMintProjectLinks(
                 link_method
             ) VALUES ($1, $2, $3, $4, $5, $6, $7)
             ON CONFLICT (mint_consensus_timestamp) DO UPDATE SET
-                project_source_timestamp = EXCLUDED.project_source_timestamp,
-                project_topic_id         = EXCLUDED.project_topic_id,
-                token_id                 = EXCLUDED.token_id,
-                amount                   = EXCLUDED.amount,
-                mint_date                = EXCLUDED.mint_date,
-                link_method              = EXCLUDED.link_method
-        `, [mint.consensusTimestamp, projectSourceTs, projectTopicId, mint.token_id, amount, mintDate, linkMethod]);
+                project_key      = EXCLUDED.project_key,
+                project_topic_id = EXCLUDED.project_topic_id,
+                token_id         = EXCLUDED.token_id,
+                amount           = EXCLUDED.amount,
+                mint_date        = EXCLUDED.mint_date,
+                link_method      = EXCLUDED.link_method
+        `, [mint.consensusTimestamp, projectKey, projectTopicId, mint.token_id, amount, mintDate, linkMethod]);
     }
 
     logger.log(
-        `MintProjectLinker: ${linked} via relationship, ${fallback} via topic-scope, ${skipped} skipped`,
+        `MintProjectLinker: ${linked} via relationship, ${csRef} via cs.ref, ${fallback} via topic-scope, ${skipped} skipped`,
     );
 }

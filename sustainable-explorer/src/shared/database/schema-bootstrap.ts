@@ -58,23 +58,26 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
     // credits list endpoint's LATERAL "project link" join scans all 10k+
     // VC-Documents per credit row (Postgres can't index into JSONB without
     // an expression index). With this index the lookup is O(log n).
+    // Uses LIKE 'MintToken%' to capture versioned variants (e.g. MintToken&1.0.0).
+    // Drop first so a stale index with the old = 'MintToken' condition is replaced.
+    await dataSource.query(`DROP INDEX IF EXISTS idx_message_mint_token_tokenid`);
     await dataSource.query(`
-        CREATE INDEX IF NOT EXISTS idx_message_mint_token_tokenid
+        CREATE INDEX idx_message_mint_token_tokenid
         ON message ((documents->'credentialSubject'->0->>'tokenId'))
         WHERE type = 'VC-Document'
           AND documents IS NOT NULL
-          AND (documents->'credentialSubject'->0->>'type') = 'MintToken'
+          AND (documents->'credentialSubject'->0->>'type') LIKE 'MintToken%'
     `);
 
     // Pre-computed MintToken → project attribution table.
     // Eliminates the grouped-project double-counting bug where a topic-scope
     // join would assign every MintToken in a shared instance topic to all
     // projects in that topic. The linker walks options.relationships to
-    // resolve each mint to its specific project by sourceTimestamp.
+    // resolve each mint to its specific project by projectKey.
     await dataSource.query(`
         CREATE TABLE IF NOT EXISTS project_mint_link (
             mint_consensus_timestamp VARCHAR(30)  PRIMARY KEY,
-            project_source_timestamp VARCHAR(30)  NOT NULL,
+            project_key              VARCHAR(120) NOT NULL,
             project_topic_id         VARCHAR(20)  NOT NULL,
             token_id                 VARCHAR(20),
             amount                   BIGINT,
@@ -83,9 +86,40 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         )
     `);
 
+    // Migrate existing tables that still use the old project_source_timestamp column.
+    // ADD COLUMN IF NOT EXISTS + conditional backfill + DROP COLUMN IF EXISTS are all
+    // idempotent, so this runs safely on every startup.
     await dataSource.query(`
-        CREATE INDEX IF NOT EXISTS idx_pml_project_src
-            ON project_mint_link (project_source_timestamp)
+        ALTER TABLE project_mint_link
+        ADD COLUMN IF NOT EXISTS project_key VARCHAR(120)
+    `);
+    await dataSource.query(`
+        DO $$
+        BEGIN
+            IF EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name = 'project_mint_link'
+                  AND column_name = 'project_source_timestamp'
+            ) THEN
+                UPDATE project_mint_link pml
+                SET project_key = bv."projectKey"
+                FROM business_view bv
+                WHERE bv."sourceTimestamp" = pml.project_source_timestamp
+                  AND bv."viewType" = 'PROJECT'
+                  AND pml.project_key IS NULL;
+            END IF;
+        END
+        $$
+    `);
+    await dataSource.query(`
+        ALTER TABLE project_mint_link
+        DROP COLUMN IF EXISTS project_source_timestamp
+    `);
+
+    await dataSource.query(`DROP INDEX IF EXISTS idx_pml_project_src`);
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_pml_project_key
+            ON project_mint_link (project_key)
     `);
 
     await dataSource.query(`

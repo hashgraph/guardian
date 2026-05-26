@@ -14,6 +14,7 @@ import { PROJECT_FIELD_SCHEMA } from './schemas/project.schema';
 interface RawRow {
     id: string;
     sourceTimestamp: string;
+    projectKey: string | null;
     registryDid: string | null;
     relatedTopicId: string | null;
     displayName: string | null;
@@ -52,7 +53,7 @@ const ISSUANCE_COUNT_JOIN = `
     LEFT JOIN LATERAL (
         SELECT COUNT(DISTINCT pml.token_id)::int AS issuance_count
         FROM project_mint_link pml
-        WHERE pml.project_source_timestamp = bv."sourceTimestamp"
+        WHERE pml.project_key = bv."projectKey"
           AND pml.token_id IS NOT NULL
     ) mint ON true
 `;
@@ -215,9 +216,9 @@ export class PgProjectRepository extends ProjectRepository {
                 m.documents
              FROM project_mint_link pml
              JOIN message m ON m."consensusTimestamp" = pml.mint_consensus_timestamp
-             WHERE pml.project_source_timestamp = $1
+             WHERE pml.project_key = $1
              ORDER BY pml.mint_date ASC NULLS LAST`,
-            [row.sourceTimestamp],
+            [row.projectKey],
         );
 
         if (mintTokenRows.length > 0) {
