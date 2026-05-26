@@ -31,7 +31,7 @@ export enum Dictionary {
     ENUM_FIELD_NAME = 'Field name',
     ENUM_IPFS = 'Loaded to IPFS',
     ENUM_VALUE = 'Value',
-    SHARED_ENUM_SHEET = 'Enum',
+    SHARED_ENUM_SHEET = 'Enums',
     DEFAULT = 'Default',
     SUGGEST = 'Suggest',
 }

@@ -54,6 +54,10 @@ export class XlsxEnum {
         return this._loaded;
     }
 
+    public get rangeStartRow(): number {
+        return this._range?.startRow ?? -1;
+    }
+
     public setSchema(schema: Schema) {
         this._schema = schema;
         this._schemaName = schema.name;

@@ -614,12 +614,11 @@ export class SchemaConfigurationComponent implements OnInit {
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
             const option = this.schemaTypeMap[key];
-            if (field.customType) {
+            if (field.customType && field.customType !== 'subSchema') {
                 if (option.customType === field.customType) {
                     return key;
-                } else {
-                    continue;
                 }
+                continue;
             }
             if (option.type === field.type) {
                 if (
