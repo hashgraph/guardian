@@ -390,6 +390,7 @@
         "noFields": "(no top-level fields)",
         "fieldLabels": {
           "name": "Title",
+          "description": "Description",
           "geo": "Geo / Location",
           "country": "Country",
           "developer": "Developer",
@@ -397,6 +398,8 @@
           "category": "Category",
           "scale": "Scale",
           "creditingPeriod": "Crediting Period",
+          "creditingPeriodStart": "Crediting Period Start",
+          "creditingPeriodEnd": "Crediting Period End",
           "vintageRaw": "Vintage Date",
           "sdgOrCobenefits": "SDGs / Co-benefits"
         },

@@ -11,7 +11,7 @@ import type { Project } from '~/types/models';
 const { t } = useI18n();
 const { projects, total, filterOptions } = useProjects();
 const { selectedEntries, canAdd, isSelected, toggleProject, removeProject, clearAll, goToCompare } = useProjectComparison();
-const { resolvedCode } = useGeocodedCountries(projects);
+const { resolvedCode, resolvedName } = useGeocodedCountries(projects);
 
 const INVALID_COUNTRY = new Set([
     'not applicable', 'not specified', 'n/a', 'na', 'none', 'not stated',
@@ -20,8 +20,9 @@ const INVALID_COUNTRY = new Set([
     'polygon', 'multipolygon', 'geometrycollection',
 ]);
 function displayCountry(p: Project): string | null {
-    if (!p.country) return null;
-    return INVALID_COUNTRY.has(p.country.toLowerCase().trim()) ? null : p.country;
+    const name = resolvedName(p);
+    if (!name) return null;
+    return INVALID_COUNTRY.has(name.toLowerCase().trim()) ? null : name;
 }
 
 

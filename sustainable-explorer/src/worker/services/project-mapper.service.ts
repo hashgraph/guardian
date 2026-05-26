@@ -210,20 +210,22 @@ export class ProjectMapperService {
             const refWalked = await this.resolveProjectKeyViaRef(vc.consensusTimestamp, csId);
             projectKey = refWalked?.projectKey ?? csRef;
         } else if (isProjectSchemaVc) {
-            // Project registration VC. A single logical project sometimes has
-            // MULTIPLE project-schema VCs in the same topic with different
-            // cs.id values (re-registration, DID rotation, replay during
-            // testing). To collapse them, find the cs.id of the LATEST
-            // project-schema VC of the same schema in this topic and use it
-            // as the canonical projectKey for every project-schema VC in the
-            // topic — regardless of whether this VC's own cs.id matches.
+            // Project-schema VC with no cs.ref. If this VC has relationships,
+            // walk them to find the earliest project-schema VC in the chain —
+            // that's the canonical project identity. Multiple VCs for the same
+            // project (VVB validation → registry approval → final) share a
+            // relationship chain but have different cs.id values (signer DIDs).
             //
-            // The query is bounded by topicId (indexed) and is a single round
-            // trip per VC. No JSONB cross-join, no N² scan.
-            const canonical = await this.findCanonicalProjectSchemaCsIdInTopic(
-                vc.topicId, vcSchemaUuid,
+            // When there are NO relationships (batch registration case), use
+            // this VC's own cs.id so distinct projects don't merge.
+            const resolved = await this.resolveProjectKeyViaRelationships(
+                vc.consensusTimestamp, csId,
             );
-            projectKey = canonical ?? csId;
+            if (resolved.hadRelationships && resolved.walked) {
+                projectKey = resolved.projectKey;
+            } else {
+                projectKey = csId;
+            }
         } else if (policyHasProjectSchemaClassification) {
             // Strict mode for classified policies: the decode pipeline knows
             // which schema is the project schema, and this VC isn't on it
@@ -279,6 +281,12 @@ export class ProjectMapperService {
             const raw = getByPath(cs, path);
             if (field.key === 'geo') {
                 geoLngLat = parseGeoValue(raw);
+            } else if (field.key === 'creditingPeriodStart' && raw && typeof raw === 'object' && !Array.isArray(raw) && 'from' in (raw as object)) {
+                const from = (raw as Record<string, unknown>)['from'];
+                if (typeof from === 'string') extracted[field.key] = from;
+            } else if (field.key === 'creditingPeriodEnd' && raw && typeof raw === 'object' && !Array.isArray(raw) && 'to' in (raw as object)) {
+                const to = (raw as Record<string, unknown>)['to'];
+                if (typeof to === 'string') extracted[field.key] = to;
             } else {
                 const s = unwrapValue(raw);
                 if (s) extracted[field.key] = s;
@@ -313,17 +321,38 @@ export class ProjectMapperService {
         // current fieldMap stores only top-level keys. Fall back: scan cs values.
         let createdAt: string | null = extracted['vintageRaw'] ?? null;
         let creditingPeriodStart: string | null = extracted['creditingPeriodStart'] ?? null;
-        let creditingPeriodEnd: string | null = null;
-        for (const v of Object.values(cs)) {
-            if (v && typeof v === 'object' && !Array.isArray(v)
-                && 'from' in (v as object) && 'to' in (v as object)) {
-                const obj = v as Record<string, unknown>;
-                if (typeof obj['from'] === 'string') {
-                    createdAt = obj['from'] as string;
-                    if (!creditingPeriodStart) creditingPeriodStart = obj['from'] as string;
+        let creditingPeriodEnd: string | null = extracted['creditingPeriodEnd'] ?? null;
+
+        // Fallback: scan top-level and nested {from, to} objects only when
+        // the extracted fields are still empty. Collect ALL {from, to} pairs
+        // and pick the one with the widest date span (most likely the
+        // crediting period rather than a monitoring period).
+        if (!creditingPeriodStart || !creditingPeriodEnd) {
+            const dateRanges: Array<{ from: string; to: string }> = [];
+            const collectDateRanges = (obj: Record<string, unknown>) => {
+                for (const v of Object.values(obj)) {
+                    if (v && typeof v === 'object' && !Array.isArray(v)) {
+                        const o = v as Record<string, unknown>;
+                        if ('from' in o && 'to' in o && typeof o['from'] === 'string' && typeof o['to'] === 'string') {
+                            dateRanges.push({ from: o['from'] as string, to: o['to'] as string });
+                        } else {
+                            collectDateRanges(o);
+                        }
+                    }
                 }
-                if (typeof obj['to'] === 'string') creditingPeriodEnd = obj['to'] as string;
-                break;
+            };
+            collectDateRanges(cs);
+
+            if (dateRanges.length > 0) {
+                // Pick the widest range (crediting period is typically years, monitoring is months)
+                const best = dateRanges.reduce((a, b) => {
+                    const spanA = new Date(a.to).getTime() - new Date(a.from).getTime();
+                    const spanB = new Date(b.to).getTime() - new Date(b.from).getTime();
+                    return (isNaN(spanA) ? -1 : spanA) >= (isNaN(spanB) ? -1 : spanB) ? a : b;
+                });
+                if (!creditingPeriodStart) creditingPeriodStart = best.from;
+                if (!creditingPeriodEnd) creditingPeriodEnd = best.to;
+                if (!createdAt) createdAt = best.from;
             }
         }
         const vintage = createdAt
@@ -418,8 +447,10 @@ export class ProjectMapperService {
         if (sectoralScope) newFields.sectoralScope = sectoralScope;
         if (extracted['description']) newFields.description = extracted['description'];
         if (createdAt) newFields.createdAt = createdAt;
-        if (creditingPeriodStart) newFields.creditingPeriodStart = creditingPeriodStart;
-        if (creditingPeriodEnd) newFields.creditingPeriodEnd = creditingPeriodEnd;
+        if (isProjectSchemaVc) {
+            if (creditingPeriodStart) newFields.creditingPeriodStart = creditingPeriodStart;
+            if (creditingPeriodEnd) newFields.creditingPeriodEnd = creditingPeriodEnd;
+        }
         newFields.status = 'Issuing';
 
         // Track this VC's contribution. The SQL UPDATE below dedupes by

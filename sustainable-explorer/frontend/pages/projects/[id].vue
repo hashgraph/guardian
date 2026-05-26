@@ -7,6 +7,7 @@ import {
     FolderKanban, BarChart3, RotateCcw, CloudDownload, Loader2, Search, X,
 } from 'lucide-vue-next';
 import type { Credit } from '~/types/models';
+import { formatDate } from '~/lib/format';
 import { getSDG } from '~/lib/sdgs';
 import { getMethodologyName } from '~/lib/methodologies';
 import { useDecodedMethodologyApi } from '~/composables/api/useDecodedMethodologyApi';
@@ -149,6 +150,18 @@ const schemaNames = computed<Record<string, string>>(() => {
     return map;
 });
 
+// Reverse map: schema name (lowercase) → bare UUID, for resolving nested objects without a type field
+const schemaNameToUuid = computed<Record<string, string>>(() => {
+    const schemas = decodedMethodology.data.value?.availableSchemas ?? [];
+    const map: Record<string, string> = {};
+    for (const s of schemas) {
+        if (s.schemaName) {
+            map[s.schemaName.toLowerCase()] = bareUuid(s.schemaId);
+        }
+    }
+    return map;
+});
+
 function resolveTitle(key: string, schemaUuid: string): string {
     const titles = schemaFieldTitles.value[schemaUuid]
         ?? schemaFieldTitles.value[bareUuid(schemaUuid)];
@@ -190,6 +203,15 @@ function buildTable(label: string, arr: Record<string, any>[]): VcTable {
     return { label, columns, rows };
 }
 
+function isDateRange(val: Record<string, any>): boolean {
+    const keys = Object.keys(val).filter(k => !SYSTEM_KEYS.has(k));
+    return keys.length === 2 && 'from' in val && 'to' in val;
+}
+
+function isCoordinates(val: Record<string, any>): boolean {
+    return val['type'] === 'Point' && Array.isArray(val['coordinates']) && val['coordinates'].length >= 2;
+}
+
 function structureVcData(obj: Record<string, any>, schemaUuid: string): VcDocData {
     const fields: VcField[] = [];
     const tables: VcTable[] = [];
@@ -203,9 +225,22 @@ function structureVcData(obj: Record<string, any>, schemaUuid: string): VcDocDat
 
         if (isArrayOfObjects(val)) {
             tables.push(buildTable(label, val));
+        } else if (typeof val === 'object' && !Array.isArray(val) && isDateRange(val)) {
+            const from = formatDate(val['from'] as string);
+            const to = formatDate(val['to'] as string);
+            fields.push({ label, value: `${from} → ${to}` });
+        } else if (typeof val === 'object' && !Array.isArray(val) && isCoordinates(val)) {
+            const coords = val['coordinates'] as number[];
+            fields.push({ label, value: `${coords[0]}, ${coords[1]}` });
         } else if (typeof val === 'object' && !Array.isArray(val)) {
             const nestedType = val['type'] as string | undefined;
-            const nestedId = nestedType ? bareUuid(nestedType) : schemaUuid;
+            let nestedId: string;
+            if (nestedType) {
+                nestedId = bareUuid(nestedType);
+            } else {
+                // No type field — try matching the parent field's title to a known schema name
+                nestedId = schemaNameToUuid.value[label.toLowerCase()] ?? schemaUuid;
+            }
             const groupTitle = schemaNames.value[nestedId] ?? label;
             const nested = structureVcData(val, nestedId);
             const allFields = [...nested.fields];
@@ -692,6 +727,7 @@ const emissions = computed(() => {
                                             <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">{{ f.label }}</div>
                                             <div class="text-sm text-foreground break-words">{{ f.value }}</div>
                                         </div>
+                                        <div v-if="doc.fields.length % 2 === 1" class="hidden sm:block bg-card" />
                                     </div>
 
                                     <!-- Top-level tables (arrays of objects) -->
@@ -745,6 +781,10 @@ const emissions = computed(() => {
                                                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">{{ f.label }}</div>
                                                 <div class="text-sm text-foreground break-words tabular-nums">{{ f.value }}</div>
                                             </div>
+                                            <template v-for="_ in (3 - (group.fields.length % 3)) % 3" :key="'pad-' + _">
+                                                <div class="hidden lg:block bg-card" />
+                                            </template>
+                                            <div v-if="group.fields.length % 2 === 1" class="hidden sm:block lg:hidden bg-card" />
                                         </div>
                                         <!-- Tables inside groups -->
                                         <div v-for="tbl in group.tables" :key="tbl.label" class="border-t">

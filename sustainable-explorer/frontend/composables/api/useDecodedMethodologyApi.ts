@@ -31,6 +31,8 @@ export interface ProjectSchema {
         sector: ResolvedField | null;
         vintageRaw: ResolvedField | null;
         creditingPeriod: ResolvedField | null;
+        creditingPeriodStart: ResolvedField | null;
+        creditingPeriodEnd: ResolvedField | null;
         sdgOrCobenefits: ResolvedField | null;
     };
     fieldMap: FieldMapEntry[];

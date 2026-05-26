@@ -25,7 +25,7 @@ export interface LinkedSchema {
 export interface Project {
     id: string;
     name: string;
-    description: string;
+    description?: string;
     country: string;
     countryCode: string;
     flag: string;
