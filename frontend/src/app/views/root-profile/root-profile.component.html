@@ -337,8 +337,8 @@
                             [binary]="true"
                             formControlName="useFireblocksSigning"
                             inputId="useFireblocksSigning"
-                            label="Use fireblocks signing"
                         ></p-checkbox>
+                        <label class="p-checkbox-label" for="useFireblocksSigning">Use fireblocks signing</label>
                     </div>
                     <div [ngClass]="{'hide-block': hederaForm.get('useFireblocksSigning')?.value === false}">
                         <div class="input-field-container">

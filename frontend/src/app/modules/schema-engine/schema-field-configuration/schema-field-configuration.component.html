@@ -179,11 +179,12 @@
 
             <ng-container *ngIf="helpText; else notHelpText">
                 <div class="checkbox-field-container">
-                    <p-checkbox 
-                        class="guardian-checkbox-secondary checkbox-24" 
-                        binary="true" 
+                    <p-checkbox
+                        class="guardian-checkbox-secondary checkbox-24"
+                        binary="true"
                         [formControl]="field.controlBold"
-                        label="Bold"></p-checkbox>
+                        [inputId]="field.name + '-fieldBold'"></p-checkbox>
+                    <label class="p-checkbox-label" [attr.for]="field.name + '-fieldBold'">Bold</label>
                 </div>
 
                 <div class="input-field-container guardian-input-container">
@@ -236,20 +237,22 @@
                 </div>
 
                 <div *ngIf="!field.autocalculated.value" class="checkbox-field-container">
-                    <p-checkbox 
+                    <p-checkbox
                         class="guardian-checkbox-secondary checkbox-24"
-                        [formControl]="field.controlArray" 
+                        [formControl]="field.controlArray"
                         [binary]="true"
-                        label="Allow multiple answers"></p-checkbox>
+                        [inputId]="field.name + '-fieldAllowMultiple'"></p-checkbox>
+                    <label class="p-checkbox-label" [attr.for]="field.name + '-fieldAllowMultiple'">Allow multiple answers</label>
                 </div>
 
                 <div class="checkbox-field-container">
-                    <p-checkbox 
+                    <p-checkbox
                         class="guardian-checkbox-secondary checkbox-24"
-                        [formControl]="field.isUpdatable" 
+                        [formControl]="field.isUpdatable"
                         [binary]="true"
-                        label="Updatable Field">
+                        [inputId]="field.name + '-fieldUpdatable'">
                     </p-checkbox>
+                    <label class="p-checkbox-label" [attr.for]="field.name + '-fieldUpdatable'">Updatable Field</label>
                 </div>
 
                 <div *ngIf="field.autocalculated.value" class="checkbox-field-container auto-calculate">
@@ -270,11 +273,12 @@
                 </div>
 
                 <div *ngIf="canBePrivate" class="checkbox-field-container private">
-                    <p-checkbox 
+                    <p-checkbox
                         class="guardian-checkbox-secondary checkbox-24"
-                        [formControl]="field.controlPrivate" 
+                        [formControl]="field.controlPrivate"
                         [binary]="true"
-                        label="Private"></p-checkbox>
+                        [inputId]="field.name + '-fieldPrivate'"></p-checkbox>
+                    <label class="p-checkbox-label" [attr.for]="field.name + '-fieldPrivate'">Private</label>
                 </div>
             </ng-template>
         </div>
@@ -429,9 +433,10 @@
                 [disabled]="readonly"
                 [binary]="true"
                 [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
-                label="Required Field"
+                [inputId]="'fieldRequired-' + value?.name"
             >
             </p-checkbox>
+            <label class="p-checkbox-label" [attr.for]="'fieldRequired-' + value?.name">Required Field</label>
         </div>
         <div class="checkbox-field-container">
             <p-checkbox
@@ -440,9 +445,10 @@
                 [disabled]="readonly"
                 [binary]="false"
                 [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
-                label="Allow multiple answers"
+                [inputId]="'fieldAllowMultiple-' + value?.name"
             >
             </p-checkbox>
+            <label class="p-checkbox-label" [attr.for]="'fieldAllowMultiple-' + value?.name">Allow multiple answers</label>
         </div>
     </div>
 </div>

@@ -35,8 +35,9 @@
                 <p-checkbox
                     [(ngModel)]="syncNewRecords"
                     binary="true"
-                    label="Include newly recorded steps"
+                    inputId="includeNewlyRecordedSteps"
                 ></p-checkbox>
+                <label class="p-checkbox-label" for="includeNewlyRecordedSteps">Include newly recorded steps</label>
             </div>
             <div class="record-policy-selector" *ngIf="type === 'record' && recordSource === 'otherPolicy'">
                 <label class="form-label">Policy with imported records</label>
