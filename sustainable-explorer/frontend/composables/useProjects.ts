@@ -34,6 +34,7 @@ export function mapApiProject(raw: Record<string, any>): Project {
     return {
         id: raw.sourceTimestamp || raw.id,
         name: raw.name ?? '',
+        description: raw.description ?? '',
         country: raw.country ?? '',
         countryCode,
         flag: '',
@@ -51,6 +52,7 @@ export function mapApiProject(raw: Record<string, any>): Project {
         sector: raw.sector ?? '',
         sectoralScope: raw.sectoralScope ?? '',
         createdAt: raw.createdAt ?? '',
+        creditingPeriodStart: raw.creditingPeriodStart ?? null,
         creditingPeriodEnd: raw.creditingPeriodEnd ?? null,
         topicId: raw.topicId ?? undefined,
         policyTopicId: raw.policyTopicId ?? undefined,

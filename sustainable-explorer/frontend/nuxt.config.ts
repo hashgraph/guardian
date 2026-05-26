@@ -31,6 +31,7 @@ export default defineNuxtConfig({
         { path: '~/components/ui', pathPrefix: false },
         { path: '~/components/layout', pathPrefix: false },
         { path: '~/components/shared', pathPrefix: false },
+        { path: '~/components/project', pathPrefix: false },
     ],
 
     imports: {
@@ -67,9 +68,14 @@ export default defineNuxtConfig({
 
     app: {
         head: {
-            title: 'Sustainable Explorer',
+            title: 'Sustainability Atlas',
             meta: [
                 { name: 'description', content: 'Explore sustainability data on Hedera Guardian' },
+            ],
+            link: [
+                { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+                { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+                { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
             ],
         },
     },

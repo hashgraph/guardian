@@ -25,6 +25,7 @@ export interface LinkedSchema {
 export interface Project {
     id: string;
     name: string;
+    description: string;
     country: string;
     countryCode: string;
     flag: string;
@@ -42,6 +43,7 @@ export interface Project {
     sector: string;
     sectoralScope: string;
     createdAt: string;
+    creditingPeriodStart?: string | null;
     creditingPeriodEnd?: string | null;
     topicId?: string;
     policyTopicId?: string;

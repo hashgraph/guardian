@@ -47,8 +47,8 @@
     "analytics": "Analytics",
     "syncStatus": "Sync Status",
     "dataSyncedUpTo": "Data synced up to",
-    "sustainable": "Sustainable",
-    "explorer": "Explorer"
+    "sustainable": "Sustainability",
+    "explorer": "Atlas"
   },
   "topbar": {
     "searchPlaceholder": "Search projects, credits, registries...",

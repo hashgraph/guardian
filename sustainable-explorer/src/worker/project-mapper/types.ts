@@ -9,6 +9,7 @@ export type FieldDef = {
 // null means no matching field was found for that property.
 export type ResolvedFieldPaths = {
     name: string | null;
+    description: string | null;
     country: string | null;
     developer: string | null;
     category: string | null;
@@ -16,6 +17,7 @@ export type ResolvedFieldPaths = {
     sector: string | null;
     vintageRaw: string | null;
     creditingPeriod: string | null;
+    creditingPeriodStart: string | null;
     sdgOrCobenefits: string | null;
 };
 

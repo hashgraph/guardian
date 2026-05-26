@@ -10,7 +10,7 @@
 
 export interface ProjectExtractField {
     /** Stable key used everywhere (DB, API, frontend). */
-    key: 'name' | 'country' | 'developer' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriod' | 'sdgOrCobenefits' | 'geo';
+    key: 'name' | 'description' | 'country' | 'developer' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriod' | 'creditingPeriodStart' | 'sdgOrCobenefits' | 'geo';
     /** Human-readable label shown in the UI. */
     label: string;
     /** Keywords matched against schema field title + description (lowercase). */
@@ -25,6 +25,12 @@ export const PROJECT_EXTRACT_FIELDS: ProjectExtractField[] = [
         label: 'Project Title',
         keywords: ['project name', 'project title', 'name', 'title'],
         exclude: ['methodology', 'reference', 'pdd', 'section', 'table', 'document'],
+    },
+    {
+        key: 'description',
+        label: 'Description',
+        keywords: ['description', 'project description', 'summary', 'project summary', 'abstract'],
+        exclude: ['methodology', 'reference', 'pdd', 'section'],
     },
     {
         key: 'country',
@@ -66,6 +72,12 @@ export const PROJECT_EXTRACT_FIELDS: ProjectExtractField[] = [
         key: 'creditingPeriod',
         label: 'Crediting Period',
         keywords: ['crediting period'],
+    },
+    {
+        key: 'creditingPeriodStart',
+        label: 'Crediting Period Start',
+        keywords: ['crediting period start', 'start date', 'commencement date'],
+        exclude: ['end', 'expiry'],
     },
     {
         key: 'sdgOrCobenefits',
