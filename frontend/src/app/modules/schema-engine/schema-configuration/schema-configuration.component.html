@@ -106,7 +106,7 @@
             <div class="configurator-block-title">System Fields</div>
             <div class="fields">
                 <div class="custom-fields">
-                    <div *ngFor="let field of fields" class="custom-schema-field">
+                    <div *ngFor="let field of fields; trackBy: trackBySchemaField" class="custom-schema-field">
                         <schema-field-configuration
                             [extended]="extended"
                             [readonly]="true"
@@ -127,7 +127,7 @@
                  cdkDropList
                  class="custom-fields"
             >
-                <div *ngFor="let field of fields" class="custom-schema-field">
+                <div *ngFor="let field of fields; trackBy: trackByFieldControl" class="custom-schema-field">
                     <schema-field-configuration
                         (remove)="onRemove(field)"
                         [extended]="extended"
@@ -168,7 +168,7 @@
                 *ngIf="conditions && conditions.length"
                 class="conditions-container"
             >
-                <div *ngFor="let condition of conditions">
+                <div *ngFor="let condition of conditions; trackBy: trackByCondition">
                     <div class="condition-item">
                         <div class="condition-item">
                             <div class="condition-if-container">
@@ -201,7 +201,7 @@
 
                                 <div class="if-rows">
                                     <div class="if-condition-equality-container"
-                                        *ngFor="let row of getIfRows(condition); let i = index">
+                                        *ngFor="let row of getIfRows(condition); let i = index; trackBy: trackByIndex">
                                         <div class="if-dropdown-field guardian-input-container">
                                             <label class="form-label">* Field</label>
                                             <p-select
@@ -325,7 +325,7 @@
                                 cdkDropList
                                 class="custom-fields"
                             >
-                                <div *ngFor="let conditionField of condition.thenControls" class="custom-schema-field">
+                                <div *ngFor="let conditionField of condition.thenControls; trackBy: trackByFieldControl" class="custom-schema-field">
                                     <schema-field-configuration
                                         (remove)="onConditionFieldRemove(condition,conditionField,'then')"
                                         [field]="conditionField"
@@ -370,7 +370,7 @@
                                 cdkDropList
                                 class="custom-fields"
                             >
-                                <div *ngFor="let conditionField of condition.elseControls" class="custom-schema-field">
+                                <div *ngFor="let conditionField of condition.elseControls; trackBy: trackByFieldControl" class="custom-schema-field">
                                     <schema-field-configuration
                                         (remove)="onConditionFieldRemove(condition,conditionField,'else')"
                                         [field]="conditionField"

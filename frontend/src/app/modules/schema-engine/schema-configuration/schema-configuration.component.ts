@@ -170,6 +170,22 @@ export class SchemaConfigurationComponent implements OnInit {
         return this.dataForm?.get('entity')?.value;
     }
 
+    public trackBySchemaField(index: number, field: SchemaField): string | number {
+        return field?.name || index;
+    }
+
+    public trackByFieldControl(index: number, field: FieldControl): string | number {
+        return field?.name || index;
+    }
+
+    public trackByCondition(index: number, condition: ConditionControl): string | number {
+        return condition?.name || index;
+    }
+
+    public trackByIndex(index: number): number {
+        return index;
+    }
+
     public ngOnInit(): void {
         this.started = false;
         this.initForm.emit(this);

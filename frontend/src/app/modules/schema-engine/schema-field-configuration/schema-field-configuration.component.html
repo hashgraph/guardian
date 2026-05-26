@@ -355,7 +355,7 @@
                     {{ isShowMore ? 'Show Less' : 'Show More' }}
                 </button>
             </div>
-            <div class="default-values" [attr.hide]="!isShowMore">
+            <div *ngIf="isShowMore" class="default-values">
                 <div class="default-values__content">
                     <app-schema-form-root
                         [fields]="presetFormFields"
