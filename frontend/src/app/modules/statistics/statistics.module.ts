@@ -8,6 +8,7 @@ import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { SelectModule } from 'primeng/select';
@@ -95,7 +96,7 @@ import { PolicyLabelDocumentConfigurationComponent } from './policy-labels/polic
     ],
     exports: [],
     providers: [
-        DialogService,
+        { provide: DialogService, useClass: GuardianDialogService },
         TreeDragDropService
     ],
 })

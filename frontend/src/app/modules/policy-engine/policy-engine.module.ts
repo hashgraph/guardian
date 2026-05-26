@@ -127,6 +127,7 @@ import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
 
 import { TooltipModule } from 'primeng/tooltip';
 import { SplitButtonModule } from 'primeng/splitbutton';
@@ -373,7 +374,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
     providers: [
         RegisteredService,
         WizardService,
-        DialogService,
+        { provide: DialogService, useClass: GuardianDialogService },
         PolicyProgressService,
         DynamicMsalAuthService,
         DatePipe,

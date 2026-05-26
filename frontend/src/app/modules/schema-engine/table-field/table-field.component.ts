@@ -1,5 +1,6 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../../services/guardian-dialog.service';
 import { ColDef } from 'ag-grid-community';
 import {IFieldControl, IFieldIndexControl} from '../schema-form-model/field-form';
 import { CsvService } from '../../../services/csv.service';
@@ -21,7 +22,7 @@ export interface ITableFieldRequired extends ITableField {
     selector: 'table-field',
     templateUrl: './table-field.component.html',
     styleUrls: ['./table-field.component.scss'],
-    providers: [DialogService],
+    providers: [{ provide: DialogService, useClass: GuardianDialogService }],
     standalone: false
 })
 

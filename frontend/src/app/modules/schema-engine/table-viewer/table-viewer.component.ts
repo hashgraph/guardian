@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, Input, NgZone, OnChanges, OnDestroy } from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../../services/guardian-dialog.service';
 import { ColDef } from 'ag-grid-community';
 import { ArtifactService } from 'src/app/services/artifact.service';
 import { CsvService } from 'src/app/services/csv.service';
@@ -16,7 +17,7 @@ type TableRefLike = { type?: string; fileId?: string; cid?: string } | string | 
     selector: 'table-viewer',
     templateUrl: './table-viewer.component.html',
     styleUrls: ['./table-viewer.component.scss'],
-    providers: [DialogService],
+    providers: [{ provide: DialogService, useClass: GuardianDialogService }],
     standalone: false
 })
 

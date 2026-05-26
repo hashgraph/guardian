@@ -5,6 +5,7 @@ import {ProfileService} from 'src/app/services/profile.service';
 import {WebSocketService} from 'src/app/services/web-socket.service';
 import {HttpErrorResponse} from '@angular/common/http';
 import {DialogService} from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../../../../services/guardian-dialog.service';
 
 /**
  * Component for display block of 'requestVcDocument' types.
@@ -13,7 +14,7 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'request-document-block',
     templateUrl: './upload-document-block.component.html',
     styleUrls: ['./upload-document-block.component.scss'],
-    providers: [DialogService],
+    providers: [{ provide: DialogService, useClass: GuardianDialogService }],
     standalone: false
 })
 export class UploadDocumentBlockComponent implements OnInit {

@@ -47,6 +47,7 @@ import { AccordionModule } from 'primeng/accordion';
 import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
 import { FormulasModule } from '../formulas/formulas.module';
 import { DialogService } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.component';
 import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-dialog.component';
 import {TableFieldComponent} from './table-field/table-field.component';
@@ -132,7 +133,7 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         SchemaFormViewNavigationComponent
     ],
     providers: [
-        DialogService
+        { provide: DialogService, useClass: GuardianDialogService }
     ],
 })
 export class SchemaEngineModule {

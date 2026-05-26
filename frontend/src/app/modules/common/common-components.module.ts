@@ -36,6 +36,7 @@ import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-button.component';
 import { ImportEntityDialog } from './import-entity-dialog/import-entity-dialog.component';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { TabsModule } from 'primeng/tabs';
 import { TooltipModule } from 'primeng/tooltip';
 import { MathLiveComponent } from './mathlive/mathlive.component';
@@ -114,7 +115,7 @@ import { ContentSearchComponent } from './content-search/content-search.componen
     ],
     providers: [
         provideNgxMask(),
-        DialogService
+        { provide: DialogService, useClass: GuardianDialogService }
     ],
     exports: [
         DatetimePicker,

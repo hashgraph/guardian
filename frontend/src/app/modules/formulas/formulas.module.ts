@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { SelectModule } from 'primeng/select';
@@ -62,7 +63,7 @@ import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formul
         FormulasViewDialog
     ],
     providers: [
-        DialogService,
+        { provide: DialogService, useClass: GuardianDialogService },
         TreeDragDropService
     ],
 })

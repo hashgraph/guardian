@@ -3,6 +3,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FormArray, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { DialogService } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../../../services/guardian-dialog.service';
 import {
     Schema,
     SchemaCategory,
@@ -17,7 +18,7 @@ export interface SchemaOption {
     selector: 'replace-schemas-dialog',
     templateUrl: './replace-schemas-dialog.component.html',
     styleUrls: ['./replace-schemas-dialog.component.scss'],
-    providers: [DialogService],
+    providers: [{ provide: DialogService, useClass: GuardianDialogService }],
     standalone: false
 })
 export class ReplaceSchemasDialogComponent implements OnDestroy {

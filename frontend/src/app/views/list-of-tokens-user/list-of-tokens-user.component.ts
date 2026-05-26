@@ -10,6 +10,7 @@ import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { DialogService } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { noWhitespaceValidator } from '../../validators/no-whitespace-validator';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
@@ -25,7 +26,7 @@ enum OperationMode {
     selector: 'app-list-of-tokens-user',
     templateUrl: './list-of-tokens-user.component.html',
     styleUrls: ['./list-of-tokens-user.component.scss'],
-    providers: [DialogService],
+    providers: [{ provide: DialogService, useClass: GuardianDialogService }],
     standalone: false
 })
 export class ListOfTokensUserComponent implements OnInit {

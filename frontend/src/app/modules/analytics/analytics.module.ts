@@ -18,6 +18,7 @@ import { CompareRecordComponent } from './compare-record/compare-record.componen
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { AngularSvgIconModule } from 'angular-svg-icon';
@@ -66,7 +67,7 @@ import { TooltipModule } from 'primeng/tooltip';
         CompareRecordComponent
     ],
     providers: [
-        DialogService,
+        { provide: DialogService, useClass: GuardianDialogService },
     ]
 })
 export class CompareModule { }
