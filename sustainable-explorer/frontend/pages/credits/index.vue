@@ -3,9 +3,17 @@ import { Coins, FileJson } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const { network } = useNetwork();
-const { credits, total, filterOptions } = useCredits();
+
+const localeTag = computed(() => (locale.value === 'es' ? 'es-ES' : 'en-US'));
+const formatDate = (d: string | null) => {
+    if (!d) return '—';
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return d;
+    return dt.toLocaleDateString(localeTag.value);
+};
+const { credits, total, filterOptions, pending } = useCredits();
 
 const config = useRuntimeConfig();
 const apiBaseURL = import.meta.server
@@ -46,6 +54,8 @@ const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, act
         defaultSort: { key: 'supply', dir: 'desc' },
     });
 
+const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i) => i));
+
 const filters = computed<FilterOption[]>(() => [
     { key: 'type', label: t('credits.filters.tokenType'), options: filterOptions.value.types.map((x: string) => ({ value: x, label: x })) },
     { key: 'registry', label: t('credits.filters.registry'), options: filterOptions.value.registries.map((r: string) => ({ value: r, label: r })) },
@@ -74,40 +84,54 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
                             <SortableHeader :label="$t('credits.columns.symbol')" sort-key="symbol" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('credits.columns.type')" sort-key="type" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('credits.columns.supply')" sort-key="supply" align="right" :tooltip="$t('credits.supplyTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('credits.columns.mintDate')" sort-key="mintDate" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('credits.columns.project')" sort-key="project" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('credits.columns.registry')" sort-key="registry" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider"><span class="inline-flex items-center gap-1">{{ $t('credits.columns.rawData') }} <InfoTooltip :text="$t('tooltips.viewRawData')" /></span></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
-                        <tr v-for="c in paginated" :key="c.tokenId" class="hover:bg-muted/30 transition-colors cursor-pointer">
-                            <td class="py-3 px-4"><div><span class="font-medium text-foreground">{{ c.name }}</span><p class="text-[11px] text-muted-foreground/60 font-mono">{{ c.tokenId }}</p></div></td>
-                            <td class="py-3 px-4 font-mono text-xs">{{ c.symbol }}</td>
-                            <td class="py-3 px-4"><span :class="[typeColor[c.type], 'text-xs font-medium rounded-full px-2 py-0.5']">{{ c.type }}</span></td>
-                            <td class="py-3 px-4 text-right tabular-nums font-medium">{{ c.supplyFormatted }}</td>
-                            <td class="py-3 px-4 text-muted-foreground">
-                                <NuxtLink
-                                    v-if="c.projectId"
-                                    :to="`/projects/${encodeURIComponent(c.projectId)}`"
-                                    class="hover:text-primary hover:underline transition-colors"
-                                    @click.stop
-                                >
-                                    {{ c.project }}
-                                </NuxtLink>
-                                <span v-else>{{ c.project }}</span>
-                            </td>
-                            <td class="py-3 px-4 text-muted-foreground">{{ c.registry }}</td>
-                            <td class="py-3 px-3 text-center">
-                                <button
-                                    class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                                    :title="$t('common.viewRawData')"
-                                    @click.stop="viewVc(c)"
-                                >
-                                    <FileJson class="h-3.5 w-3.5" />
-                                </button>
-                            </td>
-                        </tr>
-                        <tr v-if="paginated.length === 0"><td colspan="7" class="py-12 text-center text-sm text-muted-foreground">{{ $t('credits.noMatch') }}</td></tr>
+                        <!-- Loading skeleton -->
+                        <template v-if="pending && credits.length === 0">
+                            <tr v-for="i in skeletonRows" :key="`sk-${i}`">
+                                <td v-for="col in 8" :key="col" class="py-3 px-4">
+                                    <Skeleton class="h-4 w-full max-w-[120px]" />
+                                </td>
+                            </tr>
+                        </template>
+
+                        <!-- Data rows -->
+                        <template v-else>
+                            <tr v-for="c in paginated" :key="c.tokenId" class="hover:bg-muted/30 transition-colors cursor-pointer">
+                                <td class="py-3 px-4"><div><span class="font-medium text-foreground">{{ c.name }}</span><p class="text-[11px] text-muted-foreground/60 font-mono">{{ c.tokenId }}</p></div></td>
+                                <td class="py-3 px-4 font-mono text-xs">{{ c.symbol }}</td>
+                                <td class="py-3 px-4"><span :class="[typeColor[c.type], 'text-xs font-medium rounded-full px-2 py-0.5']">{{ c.type }}</span></td>
+                                <td class="py-3 px-4 text-right tabular-nums font-medium">{{ c.supplyFormatted }}</td>
+                                <td class="py-3 px-4 text-muted-foreground text-xs tabular-nums whitespace-nowrap">{{ formatDate(c.mintDate) }}</td>
+                                <td class="py-3 px-4 text-muted-foreground">
+                                    <NuxtLink
+                                        v-if="c.projectId"
+                                        :to="`/projects/${encodeURIComponent(c.projectId)}`"
+                                        class="hover:text-primary hover:underline transition-colors"
+                                        @click.stop
+                                    >
+                                        {{ c.project }}
+                                    </NuxtLink>
+                                    <span v-else>{{ c.project }}</span>
+                                </td>
+                                <td class="py-3 px-4 text-muted-foreground">{{ c.registry }}</td>
+                                <td class="py-3 px-3 text-center">
+                                    <button
+                                        class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                        :title="$t('common.viewRawData')"
+                                        @click.stop="viewVc(c)"
+                                    >
+                                        <FileJson class="h-3.5 w-3.5" />
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr v-if="paginated.length === 0"><td colspan="8" class="py-12 text-center text-sm text-muted-foreground">{{ $t('credits.noMatch') }}</td></tr>
+                        </template>
                     </tbody>
                 </table>
             </div>
