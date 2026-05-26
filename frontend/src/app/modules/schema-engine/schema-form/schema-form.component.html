@@ -863,11 +863,11 @@
                     class="guardian-accordion {{
                         item.control?.invalid ? 'guardian-accordion-error' : ''
                     }}"
+                    [value]="item.open ? 0 : null"
+                    (valueChange)="item.open = ($event === 0); onAccordionSelectEvent(item.open, item)"
                 >
-                    <p-accordion-panel>
-    <p-accordion-header></p-accordion-header>
-    <p-accordion-content>
-                        <ng-template pTemplate="header">
+                    <p-accordion-panel [value]="0">
+                        <p-accordion-header>
                             <div class="group-label-field" id="detail-section" [attr.accordiontabid]="item.id">
                                 <div
                                     *ngIf="
@@ -931,7 +931,8 @@
                                     </svg-icon>
                                 </div>
                             </div>
-                        </ng-template>
+                        </p-accordion-header>
+                        <p-accordion-content>
 
                         <ng-container *ngIf="item.open">
                             <div
@@ -1049,11 +1050,11 @@
                     class="guardian-accordion {{
                         item.control?.invalid ? 'guardian-accordion-error' : ''
                     }}"
+                    [value]="item.open ? 0 : null"
+                    (valueChange)="item.open = ($event === 0); onAccordionSelectEvent(item.open, item)"
                 >
-                    <p-accordion-panel>
-    <p-accordion-header></p-accordion-header>
-    <p-accordion-content>
-                        <ng-template pTemplate="header">
+                    <p-accordion-panel [value]="0">
+                        <p-accordion-header>
                             <div class="group-label-field" id="detail-section" [attr.accordiontabid]="item.id">
                                 <div
                                     *ngIf="!isChildSchema && formModel.controls && !isEditMode"
@@ -1095,7 +1096,8 @@
                                     {{ i + 1 }}
                                 </div>
                             </div>
-                        </ng-template>
+                        </p-accordion-header>
+                        <p-accordion-content>
 
                         <ng-container *ngIf="item.open">
                             <div
@@ -1143,11 +1145,11 @@
                                             ? 'guardian-accordion-error'
                                             : ''
                                     }}"
+                                    [value]="listItem.open ? 0 : null"
+                                    (valueChange)="listItem.open = ($event === 0); onAccordionSelectEvent(listItem.open, item, listItem.index2)"
                                 >
-                                    <p-accordion-panel>
-    <p-accordion-header></p-accordion-header>
-    <p-accordion-content>
-                                        <ng-template pTemplate="header">
+                                    <p-accordion-panel [value]="0">
+                                        <p-accordion-header>
                                             <div
                                                 class="group-label-field"
                                                 id="detail-section"
@@ -1186,7 +1188,8 @@
                                                     </svg-icon>
                                                 </div>
                                             </div>
-                                        </ng-template>
+                                        </p-accordion-header>
+                                        <p-accordion-content>
                                         <ng-container *ngIf="listItem.open">
                                             <div class="form-field-array-item">
                                                 <div

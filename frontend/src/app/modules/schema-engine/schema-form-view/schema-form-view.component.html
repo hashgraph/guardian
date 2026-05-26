@@ -242,13 +242,12 @@
             </div>
 
             <div *ngIf="ifSubSchema(item)" class="form-field-group">
-                <p-accordion class="guardian-accordion">
-                    <p-accordion-panel>
-    <p-accordion-header></p-accordion-header>
-    <p-accordion-content>
-                        <ng-template pTemplate="header">
+                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); emitAccordionSelect(item.open, item)">
+                    <p-accordion-panel [value]="0">
+                        <p-accordion-header>
                             <div class="label-field-accordion" [attr.accordiontabid]="item.fullPath">{{item.description}}</div>
-                        </ng-template>
+                        </p-accordion-header>
+                        <p-accordion-content>
                         <ng-container *ngIf="item.open">
                             <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
                                 <div class="form-field-group">
@@ -424,13 +423,12 @@
             </div>
 
             <div *ngIf="ifSubSchemaArray(item) && !canDrawTable(item)" class="form-field-group schema-form-field-array-group">
-                <p-accordion class="guardian-accordion">
-                    <p-accordion-panel>
-    <p-accordion-header></p-accordion-header>
-    <p-accordion-content>
-                        <ng-template pTemplate="header">
+                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); emitAccordionSelect(item.open, item)">
+                    <p-accordion-panel [value]="0">
+                        <p-accordion-header>
                             <div class="label-field-accordion" [attr.accordiontabid]="item.fullPath">{{item.description}}</div>
-                        </ng-template>
+                        </p-accordion-header>
+                        <p-accordion-content>
                         <ng-container *ngIf="item.open">
                             <div
                                 *ngFor="let listItem of getItemsPage(item)"
