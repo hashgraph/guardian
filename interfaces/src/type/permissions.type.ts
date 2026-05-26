@@ -28,6 +28,7 @@ export enum PermissionCategories {
     FORMULAS = 'FORMULAS',
     WORKER_TASKS = 'WORKER_TASKS',
     CREDENTIALS = 'CREDENTIALS',
+    ORGANIZATIONS = 'ORGANIZATIONS',
 }
 
 /**
@@ -74,6 +75,10 @@ export enum PermissionEntities {
     EXTERNAL_POLICY = 'EXTERNAL_POLICY',
     WORKER_TASK = 'WORKER_TASK',
     CREDENTIAL = 'CREDENTIAL',
+    ORGANIZATION = 'ORGANIZATION',
+    ORG_ROLE = 'ORG_ROLE',
+    ORG_MEMBER = 'ORG_MEMBER',
+    ORG_POLICY = 'ORG_POLICY',
 }
 
 /**
@@ -259,6 +264,14 @@ export enum Permissions {
     CREDENTIALS_USER_WRITE = 'CREDENTIALS_USER_WRITE',
     CREDENTIALS_SR_READ = 'CREDENTIALS_SR_READ',
     CREDENTIALS_SR_WRITE = 'CREDENTIALS_SR_WRITE',
+    //ORGANIZATIONS
+    ORGANIZATIONS_ORGANIZATION_READ = 'ORGANIZATIONS_ORGANIZATION_READ',
+    ORGANIZATIONS_ORGANIZATION_CREATE = 'ORGANIZATIONS_ORGANIZATION_CREATE',
+    ORGANIZATIONS_ORGANIZATION_UPDATE = 'ORGANIZATIONS_ORGANIZATION_UPDATE',
+    ORGANIZATIONS_ORGANIZATION_DELETE = 'ORGANIZATIONS_ORGANIZATION_DELETE',
+    ORGANIZATIONS_ORG_ROLE_MANAGE = 'ORGANIZATIONS_ORG_ROLE_MANAGE',
+    ORGANIZATIONS_ORG_MEMBER_MANAGE = 'ORGANIZATIONS_ORG_MEMBER_MANAGE',
+    ORGANIZATIONS_ORG_POLICY_ASSIGN = 'ORGANIZATIONS_ORG_POLICY_ASSIGN',
 }
 
 /**
@@ -1410,6 +1423,74 @@ export const PermissionsArray: {
             entity: PermissionEntities.ROLE,
             action: PermissionActions.MANAGE,
             disabled: false
+        },
+        //ORGANIZATIONS
+        {
+            name: Permissions.ORGANIZATIONS_ORGANIZATION_READ,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORGANIZATION,
+            action: PermissionActions.READ,
+            disabled: false
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORGANIZATION_CREATE,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORGANIZATION,
+            action: PermissionActions.CREATE,
+            disabled: false,
+            dependOn: [
+                Permissions.ORGANIZATIONS_ORGANIZATION_READ
+            ]
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORGANIZATION_UPDATE,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORGANIZATION,
+            action: PermissionActions.UPDATE,
+            disabled: false,
+            dependOn: [
+                Permissions.ORGANIZATIONS_ORGANIZATION_READ
+            ]
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORGANIZATION_DELETE,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORGANIZATION,
+            action: PermissionActions.DELETE,
+            disabled: false,
+            dependOn: [
+                Permissions.ORGANIZATIONS_ORGANIZATION_READ
+            ]
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORG_ROLE_MANAGE,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORG_ROLE,
+            action: PermissionActions.MANAGE,
+            disabled: false,
+            dependOn: [
+                Permissions.ORGANIZATIONS_ORGANIZATION_READ
+            ]
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORG_MEMBER_MANAGE,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORG_MEMBER,
+            action: PermissionActions.MANAGE,
+            disabled: false,
+            dependOn: [
+                Permissions.ORGANIZATIONS_ORGANIZATION_READ
+            ]
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORG_POLICY_ASSIGN,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORG_POLICY,
+            action: PermissionActions.MANAGE,
+            disabled: false,
+            dependOn: [
+                Permissions.ORGANIZATIONS_ORGANIZATION_READ
+            ]
         }
     ];
 
@@ -1533,6 +1614,13 @@ export const SRDefaultPermission: Permissions[] = [
     // Permissions.LOG_USERS_READ,
     Permissions.CREDENTIALS_SR_READ,
     Permissions.CREDENTIALS_SR_WRITE,
+    Permissions.ORGANIZATIONS_ORGANIZATION_READ,
+    Permissions.ORGANIZATIONS_ORGANIZATION_CREATE,
+    Permissions.ORGANIZATIONS_ORGANIZATION_UPDATE,
+    Permissions.ORGANIZATIONS_ORGANIZATION_DELETE,
+    Permissions.ORGANIZATIONS_ORG_ROLE_MANAGE,
+    Permissions.ORGANIZATIONS_ORG_MEMBER_MANAGE,
+    Permissions.ORGANIZATIONS_ORG_POLICY_ASSIGN,
 ];
 
 export const AuditDefaultPermission: Permissions[] = [

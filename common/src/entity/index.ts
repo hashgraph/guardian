@@ -69,3 +69,6 @@ export { GlobalEventsReaderStream } from './global-events-reader-stream.js';
 export { GlobalEventsWriterStream } from './global-events-writer-stream.js';
 export * from './disconnected-policy.js';
 export * from './credential-record.js';
+export * from './org-role.js';
+export * from './organization-member.js';
+export * from './policy-org-assignment.js';
