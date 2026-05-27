@@ -261,29 +261,23 @@ const statusColor: Record<string, string> = {
                                 <span v-else class="text-xs">—</span>
                             </td>
                             <td class="py-3 px-4 text-muted-foreground text-xs break-words">{{ p.registry }}</td>
-                            <td class="py-3 px-4 overflow-hidden">
-                                <div class="group relative">
-                                    <span class="block text-xs bg-muted rounded px-1.5 py-0.5 cursor-default truncate">{{ p.methodology }}</span>
-                                    <div class="pointer-events-none absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-[100] w-80">
-                                        <div class="whitespace-normal rounded-md bg-foreground px-2.5 py-1.5 text-[11px] text-background shadow-lg leading-snug">
-                                            {{ p.methodologyLong }}
-                                        </div>
-                                        <div class="ml-3 h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />
-                                    </div>
-                                </div>
+                            <td class="py-3 px-4">
+                                <span class="block text-xs bg-muted rounded px-1.5 py-0.5 cursor-default truncate">{{ p.methodology }}</span>
                             </td>
-                            <td class="py-3 px-4 overflow-hidden">
-                                <div class="group relative">
-                                    <span class="block text-xs text-muted-foreground cursor-default truncate">{{ p.sector }}</span>
-                                    <div class="pointer-events-none absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-[100] max-w-xs">
-                                        <div class="whitespace-normal rounded-md bg-foreground px-2.5 py-1.5 text-[11px] text-background shadow-lg leading-snug">
-                                            {{ $t('projects.sectoralScope', { scope: p.sectoralScope }) }}
-                                        </div>
-                                        <div class="ml-3 h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />
-                                    </div>
-                                </div>
+                            <td class="py-3 px-4">
+                                <span class="block text-xs text-muted-foreground cursor-default truncate">{{ p.sector }}</span>
                             </td>
-                            <td class="py-3 px-4 text-right tabular-nums font-medium">{{ p.issuanceCount ?? 0 }}</td>
+                            <td class="py-3 px-4 text-right tabular-nums font-medium">
+                                <NuxtLink
+                                    v-if="p.projectKey && p.issuanceCount"
+                                    :to="`/credits?projectKey=${encodeURIComponent(p.projectKey)}`"
+                                    class="hover:text-primary hover:underline transition-colors"
+                                    @click.stop
+                                >
+                                    {{ p.issuanceCount }}
+                                </NuxtLink>
+                                <span v-else>{{ p.issuanceCount ?? 0 }}</span>
+                            </td>
                             <td class="py-3 px-4 text-right tabular-nums text-muted-foreground">{{ p.transferredFormatted }}</td>
                             <td class="py-3 px-4 text-right tabular-nums text-muted-foreground">{{ p.retiredFormatted }}</td>
                             <td class="py-3 px-4">

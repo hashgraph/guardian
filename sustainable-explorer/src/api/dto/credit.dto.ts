@@ -26,6 +26,16 @@ export class CreditQueryDto extends PaginationQueryDto {
     @IsOptional()
     @IsString()
     tokenId?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by exact project key (credentialSubject.id) — returns only issuances linked to this project' })
+    @IsOptional()
+    @IsString()
+    projectKey?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by methodology sourceTimestamp — returns only issuances linked to this methodology' })
+    @IsOptional()
+    @IsString()
+    methodologyId?: string;
 }
 
 export class CreditResponseDto {
@@ -48,16 +58,17 @@ export class CreditResponseDto {
     @ApiProperty({ description: 'Total supply (token_cache.totalSupply ?? 0)' })
     supply: number;
 
-    @ApiProperty({
-        nullable: true,
-        description:
-            'credentialSubject.id of the linked project, resolved by tracing the most recent ' +
-            'MintToken VC for this token back to the prior data VC in the same topic.',
-    })
+    @ApiProperty({ nullable: true, description: 'credentialSubject.id of the linked project, resolved via project_mint_link.' })
     projectId: string | null;
 
     @ApiProperty({ nullable: true, description: 'Display name of the linked project (joined from business_view PROJECT).' })
     project: string | null;
+
+    @ApiProperty({ nullable: true, description: 'sourceTimestamp of the linked methodology, resolved via project or direct topic match.' })
+    methodologyId: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Display name of the linked methodology (joined from business_view METHODOLOGY).' })
+    methodology: string | null;
 
     @ApiProperty({ nullable: true, description: 'Display name of the publishing Standard Registry' })
     registry: string | null;
@@ -77,6 +88,8 @@ export class CreditResponseDto {
             supply: row.supply,
             projectId: row.projectId,
             project: row.project,
+            methodologyId: row.methodologyId,
+            methodology: row.methodology,
             registry: row.registry,
             registryDid: row.registryDid,
             mintDate: row.mintDate,

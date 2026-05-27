@@ -121,6 +121,41 @@ function onCheckbox(field: FilterField, e: Event) {
     commit(field.key, target.checked);
 }
 
+// --- Select popover state ---
+const openSelect = ref<string | null>(null);
+const selectRefs = ref<Record<string, HTMLElement | null>>({});
+
+function setSelectRef(key: string) {
+    return (el: any) => {
+        selectRefs.value[key] = (el as HTMLElement) ?? null;
+    };
+}
+
+function toggleSelect(key: string) {
+    openSelect.value = openSelect.value === key ? null : key;
+}
+
+function selectOption(field: FilterField, value: string) {
+    commit(field.key, value);
+    openSelect.value = null;
+}
+
+function selectLabel(field: FilterField): string {
+    const current = props.modelValue[field.key];
+    if (!current) return field.placeholder || field.label;
+    return field.options?.find(o => o.value === current)?.label ?? (field.placeholder || field.label);
+}
+
+watch(openSelect, (key) => {
+    if (!key) return;
+    const el = selectRefs.value[key];
+    if (!el) return;
+    const stop = onClickOutside(el, () => {
+        if (openSelect.value === key) openSelect.value = null;
+        stop();
+    });
+});
+
 // --- Multiselect popover state ---
 const openMultiselect = ref<string | null>(null);
 const multiselectRefs = ref<Record<string, HTMLElement | null>>({});
@@ -172,7 +207,10 @@ watch(openMultiselect, (key) => {
 // Escape to close multiselect
 if (import.meta.client) {
     const onKey = (e: KeyboardEvent) => {
-        if (e.key === 'Escape' && openMultiselect.value) openMultiselect.value = null;
+        if (e.key === 'Escape') {
+            if (openMultiselect.value) openMultiselect.value = null;
+            if (openSelect.value) openSelect.value = null;
+        }
     };
     window.addEventListener('keydown', onKey);
     onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
@@ -297,20 +335,48 @@ function clearAll() {
                     @input="onTextInput(field, $event)"
                 />
 
-                <!-- select -->
-                <select
+                <!-- select (custom popover so long values wrap instead of scrolling) -->
+                <div
                     v-else-if="field.type === 'select'"
-                    :id="`filter-${field.key}`"
-                    :value="modelValue[field.key] ?? ''"
-                    :aria-label="field.label"
-                    :class="['h-8 w-full rounded-md border px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring transition-colors', fieldActiveClass(field)]"
-                    @change="onSelect(field, $event)"
+                    :ref="setSelectRef(field.key)"
+                    class="relative"
                 >
-                    <option value="">{{ field.placeholder || $t('common.all') }}</option>
-                    <option v-for="opt in field.options || []" :key="opt.value" :value="opt.value">
-                        {{ opt.label }}
-                    </option>
-                </select>
+                    <button
+                        type="button"
+                        :aria-label="field.label"
+                        :aria-expanded="openSelect === field.key"
+                        :class="['flex h-8 w-full items-center justify-between rounded-md border px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring transition-colors', fieldActiveClass(field)]"
+                        @click="toggleSelect(field.key)"
+                    >
+                        <span class="truncate">{{ selectLabel(field) }}</span>
+                        <ChevronDown class="ml-1 h-3.5 w-3.5 shrink-0 opacity-60" />
+                    </button>
+                    <div
+                        v-if="openSelect === field.key"
+                        class="absolute z-20 mt-1 w-full min-w-[12rem] max-h-60 overflow-y-auto overflow-x-hidden rounded-md border border-input bg-popover p-1 shadow-md"
+                    >
+                        <button
+                            type="button"
+                            class="flex w-full items-center justify-start rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted/50"
+                            @click="selectOption(field, '')"
+                        >
+                            {{ field.placeholder || $t('common.all') }}
+                        </button>
+                        <button
+                            v-for="opt in field.options || []"
+                            :key="opt.value"
+                            type="button"
+                            class="flex w-full items-start justify-start text-left rounded px-2 py-1 text-xs hover:bg-muted/50"
+                            :class="(modelValue[field.key] ?? '') === opt.value ? 'font-medium text-foreground' : 'text-muted-foreground'"
+                            @click="selectOption(field, opt.value)"
+                        >
+                            <span class="min-w-0 break-words text-left">{{ opt.label }}</span>
+                        </button>
+                        <div v-if="!(field.options && field.options.length)" class="px-2 py-1 text-xs text-muted-foreground">
+                            {{ $t('common.noOptions') }}
+                        </div>
+                    </div>
+                </div>
 
                 <!-- multiselect -->
                 <div

@@ -14,6 +14,8 @@ export interface CreditListQuery {
     registry?: string;
     registryDid?: string;
     tokenId?: string;
+    projectKey?: string;
+    methodologyId?: string;
     sortBy?: string;
     sortDir?: 'asc' | 'desc';
 }
@@ -25,10 +27,14 @@ export interface CreditRow {
     /** Normalised type: 'Fungible' | 'Non-Fungible' | null */
     type: 'Fungible' | 'Non-Fungible' | null;
     supply: number;
-    /** credentialSubject.id of the linked project (resolved via MintToken VC chain). */
+    /** credentialSubject.id of the linked project (resolved via project_mint_link). */
     projectId: string | null;
     /** Display name of the linked project, joined from business_view PROJECT. */
     project: string | null;
+    /** sourceTimestamp of the linked methodology, resolved via project or direct topic match. */
+    methodologyId: string | null;
+    /** Display name of the linked methodology, joined from business_view METHODOLOGY. */
+    methodology: string | null;
     registry: string | null;
     registryDid: string | null;
     mintDate: string | null;

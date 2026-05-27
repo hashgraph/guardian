@@ -50,6 +50,7 @@ export interface Project {
     instanceTopicId?: string | null;
     registryDid?: string;
     sourceTimestamp?: string;
+    projectKey?: string | null;
     issuances?: ProjectIssuance[];
     issuanceCount?: number;
     linkedSchemas?: LinkedSchema[];

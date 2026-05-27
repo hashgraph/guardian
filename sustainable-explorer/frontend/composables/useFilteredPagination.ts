@@ -8,6 +8,8 @@ export function useFilteredPagination<T>(
         arrayFields?: (keyof T)[];
         defaultSort?: { key: keyof T; dir: 'asc' | 'desc' };
         syncUrl?: boolean;
+        /** URL query params to ignore when initialising activeFilters from the URL. */
+        excludeFromQuery?: string[];
     },
 ) {
     const route = useRoute();
@@ -28,7 +30,7 @@ export function useFilteredPagination<T>(
     );
 
     function parseFiltersFromQuery(query: Record<string, any>): Record<string, string> {
-        const reserved = new Set(['q', 'page', 'sort', 'dir', 'network']);
+        const reserved = new Set(['q', 'page', 'sort', 'dir', 'network', ...(opts.excludeFromQuery ?? [])]);
         const filters: Record<string, string> = {};
         for (const [key, val] of Object.entries(query)) {
             if (!reserved.has(key) && typeof val === 'string' && val) {
@@ -65,6 +67,12 @@ export function useFilteredPagination<T>(
         const query = buildQuery();
         const currentNetwork = route.query.network;
         if (currentNetwork) query.network = currentNetwork as string;
+        // Preserve excluded params (e.g. projectKey) — they're not managed as
+        // active filters but must survive URL syncs triggered by sort/page changes.
+        for (const key of opts.excludeFromQuery ?? []) {
+            const val = route.query[key];
+            if (typeof val === 'string' && val) query[key] = val;
+        }
         router.replace({ query });
     }
 

@@ -28,6 +28,7 @@
     "download": "Download",
     "close": "Close",
     "viewOnExplorer": "View on Explorer",
+    "viewOnHashScan": "View on HashScan",
     "viewRawData": "View Raw Data",
     "lines": "lines",
     "mdash": "—",
@@ -281,6 +282,12 @@
     "subtitle": "Tokens issued on Hedera",
     "searchPlaceholder": "Search by name, symbol, token ID...",
     "noMatch": "No issuances match your filters",
+    "filteredByProject": "Showing issuances for",
+    "unknownProject": "this project",
+    "clearProjectFilter": "Clear filter",
+    "filteredByMethodology": "Showing issuances for",
+    "unknownMethodology": "this methodology",
+    "clearMethodologyFilter": "Clear filter",
     "supplyTooltip": "Total token supply minted on Hedera. For fungible tokens this is the total supply. For NFTs this is the number of unique serials.",
     "columns": {
       "token": "Token",
@@ -289,12 +296,17 @@
       "supply": "Supply",
       "mintDate": "Mint Date",
       "project": "Project",
+      "methodology": "Methodology",
       "registry": "Registry",
       "rawData": "Raw Data"
     },
     "filters": {
       "tokenType": "Token Type",
-      "registry": "Registry"
+      "registry": "Registry",
+      "hideUnlinked": "Hide issuances with no project link"
+    },
+    "tooltips": {
+      "hideUnlinked": "Hides tokens that have not yet been matched to a project. Uncheck to see all indexed tokens including those still awaiting project attribution."
     }
   },
   "methodologies": {
