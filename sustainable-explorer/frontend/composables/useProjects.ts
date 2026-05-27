@@ -59,6 +59,7 @@ export function mapApiProject(raw: Record<string, any>): Project {
         instanceTopicId: raw.instanceTopicId ?? null,
         registryDid: raw.registryDid ?? undefined,
         sourceTimestamp: raw.sourceTimestamp ?? undefined,
+        projectKey: raw.projectKey ?? null,
         issuanceCount: typeof raw.issuanceCount === 'number' ? raw.issuanceCount : 0,
         issuances: Array.isArray(raw.issuances)
             ? (raw.issuances as Array<Record<string, any>>).map((i): ProjectIssuance => ({

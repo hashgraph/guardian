@@ -126,4 +126,12 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         CREATE INDEX IF NOT EXISTS idx_pml_token_id
             ON project_mint_link (token_id)
     `);
+
+    // Partial index for the methodology LATERAL in the credits query:
+    // resolves METHODOLOGY rows by relatedTopicId in O(log n) instead of a seq scan.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_methodology_topic
+        ON business_view ("relatedTopicId")
+        WHERE "viewType" = 'METHODOLOGY' AND "relatedTopicId" IS NOT NULL
+    `);
 }

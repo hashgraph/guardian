@@ -18,6 +18,8 @@ export interface CreditDto {
     supply: number;
     projectId: string | null;
     project: string | null;
+    methodologyId: string | null;
+    methodology: string | null;
     registry: string | null;
     registryDid: string | null;
     mintDate: string | null;
@@ -46,7 +48,7 @@ export interface UseCreditsApiOptions {
 }
 
 // Filter keys recognised by the backend credits endpoint.
-const CREDIT_FILTER_KEYS = ['type', 'registry', 'registryDid', 'tokenId'] as const;
+const CREDIT_FILTER_KEYS = ['type', 'registry', 'registryDid', 'tokenId', 'projectKey', 'methodologyId'] as const;
 
 const emptyResponse = (limit: number): CreditsResponse => ({
     data: [],

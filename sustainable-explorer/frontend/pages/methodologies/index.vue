@@ -463,9 +463,23 @@ const skeletonRows = computed(() =>
                   </span>
                 </td>
                 <td class="py-3 px-4 text-right tabular-nums font-medium">
-                  <span :title="r.stats.issuanceCount !== r.stats.instanceIssuanceCount
-                    ? `${r.stats.issuanceCount} total across all versions`
-                    : undefined">
+                  <NuxtLink
+                    v-if="r.sourceTimestamp && r.stats.instanceIssuanceCount > 0"
+                    :to="`/credits?methodologyId=${encodeURIComponent(r.sourceTimestamp)}`"
+                    :title="r.stats.issuanceCount !== r.stats.instanceIssuanceCount
+                      ? `${r.stats.issuanceCount} total across all versions`
+                      : undefined"
+                    class="text-primary hover:underline transition-colors"
+                    @click.stop
+                  >
+                    {{ formatCredits(r.stats.instanceIssuanceCount) }}
+                  </NuxtLink>
+                  <span
+                    v-else
+                    :title="r.stats.issuanceCount !== r.stats.instanceIssuanceCount
+                      ? `${r.stats.issuanceCount} total across all versions`
+                      : undefined"
+                  >
                     {{ formatCredits(r.stats.instanceIssuanceCount) }}
                   </span>
                 </td>

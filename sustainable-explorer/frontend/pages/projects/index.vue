@@ -267,7 +267,17 @@ const statusColor: Record<string, string> = {
                             <td class="py-3 px-4">
                                 <span class="block text-xs text-muted-foreground cursor-default truncate">{{ p.sector }}</span>
                             </td>
-                            <td class="py-3 px-4 text-right tabular-nums font-medium">{{ p.issuanceCount ?? 0 }}</td>
+                            <td class="py-3 px-4 text-right tabular-nums font-medium">
+                                <NuxtLink
+                                    v-if="p.projectKey && p.issuanceCount"
+                                    :to="`/credits?projectKey=${encodeURIComponent(p.projectKey)}`"
+                                    class="hover:text-primary hover:underline transition-colors"
+                                    @click.stop
+                                >
+                                    {{ p.issuanceCount }}
+                                </NuxtLink>
+                                <span v-else>{{ p.issuanceCount ?? 0 }}</span>
+                            </td>
                             <td class="py-3 px-4 text-right tabular-nums text-muted-foreground">{{ p.transferredFormatted }}</td>
                             <td class="py-3 px-4 text-right tabular-nums text-muted-foreground">{{ p.retiredFormatted }}</td>
                             <td class="py-3 px-4">
