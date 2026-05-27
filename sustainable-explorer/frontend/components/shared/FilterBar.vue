@@ -24,7 +24,12 @@ const props = defineProps<{
     // chips and clear-all button still render so visual idiom stays
     // identical to the search-enabled variants on Projects/Credits/etc.
     hideSearch?: boolean;
+    dropdownAlign?: 'left' | 'right';
 }>();
+
+const dropdownClass = computed(() =>
+    props.dropdownAlign === 'right' ? 'right-0' : 'left-0',
+);
 
 const emit = defineEmits<{
     'update:modelValue': [value: string];
@@ -138,7 +143,7 @@ if (import.meta.client) {
                 <!-- Multi-select dropdown -->
                 <div
                     v-if="openDropdown === filter.key && filter.multiSelect"
-                    class="absolute right-0 top-full mt-1 z-[9999] min-w-[12rem] max-h-64 overflow-y-auto rounded-md border bg-popover p-1 shadow-md text-left"
+                    :class="[dropdownClass, 'absolute top-full mt-1 z-[9999] min-w-[12rem] max-w-[16rem] max-h-64 overflow-y-auto rounded-md border bg-popover p-1 shadow-md text-left']"
                 >
                     <button
                         class="flex w-full items-center justify-start text-left rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent text-muted-foreground"
@@ -163,14 +168,14 @@ if (import.meta.client) {
                             </svg>
                         </span>
                         <img v-if="opt.icon" :src="opt.icon" :alt="opt.label" class="h-4 w-4 rounded-sm shrink-0" />
-                        <span class="text-left">{{ opt.label }}</span>
+                        <span class="text-left whitespace-normal break-words">{{ opt.label }}</span>
                     </button>
                 </div>
 
                 <!-- Single-select dropdown -->
                 <div
                     v-else-if="openDropdown === filter.key"
-                    class="absolute right-0 top-full mt-1 z-[9999] min-w-[10rem] max-h-64 overflow-y-auto rounded-md border bg-popover p-1 shadow-md text-left"
+                    :class="[dropdownClass, 'absolute top-full mt-1 z-[9999] min-w-[10rem] max-w-[16rem] max-h-64 overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 shadow-md text-left']"
                 >
                     <button
                         v-for="opt in [{ value: 'all', label: `${t('common.all')} ${filter.label}` }, ...filter.options]"
@@ -179,7 +184,7 @@ if (import.meta.client) {
                         :class="(activeFilters[filter.key] || 'all') === opt.value ? 'font-medium text-foreground' : 'text-muted-foreground'"
                         @click="selectFilter(filter.key, opt.value)"
                     >
-                        {{ opt.label }}
+                        <span class="min-w-0 break-words">{{ opt.label }}</span>
                     </button>
                 </div>
             </Transition>
