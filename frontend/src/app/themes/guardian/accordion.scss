@@ -1,4 +1,58 @@
 .guardian-accordion {
+    .p-accordionpanel {
+        overflow: hidden;
+        background: #F9FAFC;
+        border: 1px solid #E1E7EF;
+        border-radius: 8px;
+    }
+
+    .p-accordionheader {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 16px 40px 16px 16px;
+        background: transparent;
+        border: 0;
+        border-radius: 8px;
+        color: var(--guardian-font-color, #23252E);
+        font-family: Poppins;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 20px;
+        text-align: left;
+        outline: none;
+        box-shadow: none;
+        cursor: pointer;
+    }
+
+    .p-accordionheader[data-p-active="true"] {
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .p-accordionheader-toggle-icon {
+        flex: 0 0 14px;
+        width: 14px;
+        height: 14px;
+        margin-left: 16px;
+        color: currentColor;
+    }
+
+    .group-label-field,
+    .label-field-accordion {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 100%;
+        padding-right: 0 !important;
+    }
+
+    .p-accordioncontent-content {
+        padding: 16px;
+        background: #F9FAFC;
+        border-top: 1px solid #E1E7EF;
+    }
+
     .p-accordion-header-link {
         background: transparent;
         position: relative;
