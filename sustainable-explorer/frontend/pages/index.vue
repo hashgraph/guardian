@@ -350,6 +350,7 @@ const filteredStats = computed(() => {
                         :result-count="0"
                         :total-count="0"
                         :hide-search="true"
+                        dropdown-align="right"
                         @filter="applyDashboardFilter"
                         @clear="clearFilters"
                     />
