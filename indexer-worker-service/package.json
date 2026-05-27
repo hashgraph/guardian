@@ -3,9 +3,9 @@
     "dependencies": {
         "@indexer/interfaces": "3.6.0-rc",
         "@indexer/common": "3.6.0-rc",
-        "@nestjs/common": "^11.0.11",
-        "@nestjs/core": "^11.0.11",
-        "@nestjs/microservices": "^11.0.11",
+        "@nestjs/common": "^11.1.24",
+        "@nestjs/core": "^11.1.24",
+        "@nestjs/microservices": "^11.1.24",
         "axios": "^1.16.1",
         "axios-retry": "^3.2.4",
         "cross-blob": "^2.0.1",
