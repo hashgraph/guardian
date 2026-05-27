@@ -30,6 +30,8 @@ export class RegistriesService {
             geography: query.geography,
             law: query.law,
             hideEmpty: query.hideEmpty,
+            createdAtFrom: query.createdAtFrom,
+            createdAtTo: query.createdAtTo,
             sortBy: query.sortBy,
             sortDir: query.sortDir,
         });

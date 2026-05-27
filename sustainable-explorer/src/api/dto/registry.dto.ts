@@ -42,6 +42,16 @@ export class RegistryQueryDto extends PaginationQueryDto {
     @IsBoolean()
     @Transform(({ value }) => value === true || value === 'true' || value === '1')
     hideEmpty?: boolean;
+
+    @ApiPropertyOptional({ description: 'Filter registries created on or after this date (YYYY-MM-DD)' })
+    @IsOptional()
+    @IsString()
+    createdAtFrom?: string;
+
+    @ApiPropertyOptional({ description: 'Filter registries created on or before this date (YYYY-MM-DD)' })
+    @IsOptional()
+    @IsString()
+    createdAtTo?: string;
 }
 
 export class RegistryStats {

@@ -72,6 +72,20 @@ export class PgRegistryRepository extends RegistryRepository {
             ) > 0`);
         }
 
+        // Date range filter on sourceTimestamp (Hedera on-chain timestamp, seconds since epoch)
+        if (query.createdAtFrom) {
+            const ts = Math.floor(new Date(query.createdAtFrom).getTime() / 1000);
+            const p = builder.nextParam(ts);
+            builder.addClause(`bv."sourceTimestamp" IS NOT NULL AND bv."sourceTimestamp"::numeric >= ${p}`);
+        }
+        if (query.createdAtTo) {
+            const toDate = new Date(query.createdAtTo);
+            toDate.setHours(23, 59, 59, 999);
+            const ts = Math.floor(toDate.getTime() / 1000);
+            const p = builder.nextParam(ts);
+            builder.addClause(`bv."sourceTimestamp" IS NOT NULL AND bv."sourceTimestamp"::numeric <= ${p}`);
+        }
+
         // Special: full-text search with ranking. The tsvector index covers
         // displayName (weight A), registryDid (B), and searchText (C) which
         // includes name + description + tags + geography + law + token info.
