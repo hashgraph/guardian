@@ -138,7 +138,7 @@ const linkedProjectsPending = ref(false);
 const linkedProjectsLoaded = ref(false);
 
 const linkedProjectsMapped = computed(() => linkedProjects.value.map(mapApiProject));
-const { resolvedCode: resolvedProjectCode } = useGeocodedCountries(linkedProjectsMapped);
+const { resolvedCode: resolvedProjectCode, resolvedName: resolvedProjectName } = useGeocodedCountries(linkedProjectsMapped);
 
 if (import.meta.client) {
   const config = useRuntimeConfig();
@@ -275,26 +275,29 @@ async function triggerReparse() {
 // If geo editing is needed in a future version, the PATCH endpoint accepts it via the fieldMap key.
 const EDITABLE_FIELD_KEYS: ResolvedFieldKey[] = [
   'name',
+  'description',
   'country',
   'developer',
   'category',
   'scale',
   'sector',
   'vintageRaw',
-  'creditingPeriod',
+  'creditingPeriodStart',
+  'creditingPeriodEnd',
   'sdgOrCobenefits',
 ];
 
-// Labels matching PROJECT_EXTRACT_FIELDS on the backend.
 const FIELD_LABELS: Record<ResolvedFieldKey, string> = {
   name: 'Project Title',
+  description: 'Description',
   country: 'Country',
   developer: 'Developer',
   category: 'Category',
   scale: 'Scale',
   sector: 'Sector',
   vintageRaw: 'Vintage / Start Date',
-  creditingPeriod: 'Crediting Period',
+  creditingPeriodStart: 'Crediting Period Start',
+  creditingPeriodEnd: 'Crediting Period End',
   sdgOrCobenefits: 'SDGs / Co-benefits',
 };
 
@@ -360,11 +363,14 @@ const mappingSelectOptions = computed<SelectOption[]>(() => {
   if (!decodedData.value) return [];
   const options: SelectOption[] = [];
   const schemas = decodedData.value.availableSchemas ?? [];
+  const SKIP_KEYS = new Set(['@context', 'type', 'id', 'policyId', 'ref', 'uuid']);
   for (const schema of schemas) {
     if (!schema.fields?.length) continue;
     const groupLabel = schema.schemaName || schema.schemaId;
     for (const field of schema.fields) {
       if (field.isGeoJson) continue;
+      if (SKIP_KEYS.has(field.fieldKey)) continue;
+      if (field.type === 'object' || field.type === 'array' || field.type === '') continue;
       options.push({
         value: `${schema.schemaId}.${field.fieldKey}`,
         label: `${field.title || field.fieldKey} (${field.fieldKey})`,
@@ -453,15 +459,16 @@ const formatLastAttempt = (ts: string | null | undefined): string => {
   }
 };
 
-type ResolvedFieldKey = 'name' | 'country' | 'developer' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriod' | 'sdgOrCobenefits';
+type ResolvedFieldKey = 'name' | 'description' | 'country' | 'developer' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriodStart' | 'creditingPeriodEnd' | 'sdgOrCobenefits';
 
 interface ProjectFieldRow {
   labelKey: string;
-  fieldKey: ResolvedFieldKey | 'geo';
+  fieldKey: ResolvedFieldKey | 'geo' | 'creditingPeriod';
 }
 
 const PROJECT_FIELD_ROWS: ProjectFieldRow[] = [
   { labelKey: 'name', fieldKey: 'name' },
+  { labelKey: 'description', fieldKey: 'description' },
   { labelKey: 'geo', fieldKey: 'geo' },
   { labelKey: 'country', fieldKey: 'country' },
   { labelKey: 'developer', fieldKey: 'developer' },
@@ -1052,7 +1059,7 @@ const lifecycleSummary = computed(() => {
                     {{ $t('methodologies.detail.decoded.fieldLabels.' + row.labelKey) }}
                   </td>
                   <td class="py-3 px-4">
-                    <!-- Geo row: reads geoKey + geoFieldTitle directly; not editable in v1 (geo has special GeoJSON semantics handled by the backend). -->
+                    <!-- Geo row: special (not editable, uses geoKey directly) -->
                     <template v-if="row.fieldKey === 'geo'">
                       <template v-if="decodedData.projectSchema.geoKey">
                         <div class="text-sm text-foreground font-medium">
@@ -1062,9 +1069,58 @@ const lifecycleSummary = computed(() => {
                       </template>
                       <span v-else class="text-sm text-muted-foreground">—</span>
                     </template>
-                    <!-- ResolvedFields rows — show select in edit mode, display text otherwise -->
+                    <!-- Crediting Period: combined view, split edit -->
+                    <template v-else-if="row.fieldKey === 'creditingPeriod'">
+                      <template v-if="editingMapping">
+                        <div class="space-y-2">
+                          <div>
+                            <div class="text-[10px] text-muted-foreground mb-0.5">Start</div>
+                            <select
+                              v-model="formState['creditingPeriodStart']"
+                              class="w-full max-w-sm rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                            >
+                              <option value="">{{ $t('methodologies.detail.decoded.actions.unmapped') }}</option>
+                              <optgroup v-for="group in mappingOptionGroups" :key="group.label" :label="group.label">
+                                <option v-for="opt in group.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                              </optgroup>
+                            </select>
+                          </div>
+                          <div>
+                            <div class="text-[10px] text-muted-foreground mb-0.5">End</div>
+                            <select
+                              v-model="formState['creditingPeriodEnd']"
+                              class="w-full max-w-sm rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                            >
+                              <option value="">{{ $t('methodologies.detail.decoded.actions.unmapped') }}</option>
+                              <optgroup v-for="group in mappingOptionGroups" :key="group.label" :label="group.label">
+                                <option v-for="opt in group.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                              </optgroup>
+                            </select>
+                          </div>
+                        </div>
+                      </template>
+                      <template v-else>
+                        <div class="space-y-1">
+                          <template v-if="decodedData.projectSchema.resolvedFields['creditingPeriodStart']">
+                            <div class="text-sm text-foreground">
+                              <span class="text-muted-foreground text-xs">Start:</span>
+                              <span class="font-medium ml-1">{{ decodedData.projectSchema.resolvedFields['creditingPeriodStart']!.title }}</span>
+                              <span class="text-muted-foreground font-normal ml-0.5">({{ decodedData.projectSchema.resolvedFields['creditingPeriodStart']!.fieldKey }})</span>
+                            </div>
+                          </template>
+                          <template v-if="decodedData.projectSchema.resolvedFields['creditingPeriodEnd']">
+                            <div class="text-sm text-foreground">
+                              <span class="text-muted-foreground text-xs">End:</span>
+                              <span class="font-medium ml-1">{{ decodedData.projectSchema.resolvedFields['creditingPeriodEnd']!.title }}</span>
+                              <span class="text-muted-foreground font-normal ml-0.5">({{ decodedData.projectSchema.resolvedFields['creditingPeriodEnd']!.fieldKey }})</span>
+                            </div>
+                          </template>
+                          <span v-if="!decodedData.projectSchema.resolvedFields['creditingPeriodStart'] && !decodedData.projectSchema.resolvedFields['creditingPeriodEnd']" class="text-sm text-muted-foreground">—</span>
+                        </div>
+                      </template>
+                    </template>
+                    <!-- Regular fields — select in edit mode, text in view mode -->
                     <template v-else>
-                      <!-- Edit mode: select dropdown -->
                       <template v-if="editingMapping">
                         <select
                           v-model="formState[row.fieldKey as ResolvedFieldKey]"
@@ -1086,7 +1142,6 @@ const lifecycleSummary = computed(() => {
                           </optgroup>
                         </select>
                       </template>
-                      <!-- View mode: display resolved field text -->
                       <template v-else>
                         <template v-if="decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]">
                           <div class="text-sm text-foreground font-medium">
@@ -1476,7 +1531,7 @@ const lifecycleSummary = computed(() => {
                 <td class="py-3 px-4 text-sm text-muted-foreground">
                   <div v-if="p.country || (p.lat && p.lng)" class="flex items-center gap-1.5">
                     <CountryFlag :code="resolvedProjectCode(p)" size="sm" />
-                    <span>{{ p.country || '' }}</span>
+                    <span>{{ resolvedProjectName(p) || '' }}</span>
                   </div>
                   <span v-else>—</span>
                 </td>

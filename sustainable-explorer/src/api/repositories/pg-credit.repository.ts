@@ -39,28 +39,22 @@ const REGISTRY_NAME_JOIN = `
 `;
 
 /**
- * Resolves the linked project for a credit via the pre-computed project_mint_link
- * table. Picks the most recent mint event for this token and joins to the PROJECT
- * row in business_view.
- *
- * Also exposes proj_topic_id (= project's relatedTopicId / instanceTopicId) so
- * the METHODOLOGY_JOIN below can use it as its primary lookup key.
- *
- * Falls back to null for credits with no entry in project_mint_link yet.
+ * Resolves the linked project for a credit via project_mint_link — the same
+ * table used by the project detail page, ensuring consistent attribution.
  */
 const PROJECT_LINK_JOIN = `
     LEFT JOIN LATERAL (
         SELECT
-            bv_proj."projectKey"                        AS project_id,
-            bv_proj."displayName"                       AS project_name,
-            bv_proj."relatedTopicId"                    AS proj_topic_id,
-            bv_proj."businessData"->>'methodology'      AS proj_methodology_name
+            bv_proj."projectKey"                    AS project_id,
+            bv_proj."displayName"                   AS project_name,
+            bv_proj."relatedTopicId"                AS proj_topic_id,
+            bv_proj."businessData"->>'methodology'  AS proj_methodology_name
         FROM project_mint_link pml
         JOIN business_view bv_proj
-            ON bv_proj."projectKey" = pml.project_key
-           AND bv_proj."viewType" = 'PROJECT'
-        WHERE pml.token_id = bv."businessData"->>'tokenId'
-        ORDER BY pml.mint_consensus_timestamp DESC
+            ON bv_proj."viewType" = 'PROJECT'
+           AND bv_proj."projectKey" = pml.project_key
+        WHERE pml.token_id = COALESCE(bv."businessData"->>'tokenId', tc."tokenId")
+        ORDER BY pml.mint_date DESC NULLS LAST
         LIMIT 1
     ) proj ON true
 `;

@@ -55,9 +55,6 @@ const statusColor: Record<string, { bg: string; text: string; dot: string }> = {
                         {{ project.status }}
                     </span>
                 </div>
-                <p v-if="project.description" class="text-sm text-muted-foreground mt-1.5 leading-relaxed max-w-3xl">
-                    {{ project.description }}
-                </p>
             </div>
 
             <!-- Action buttons -->
@@ -81,5 +78,10 @@ const statusColor: Record<string, { bg: string; text: string; dot: string }> = {
                 </button>
             </div>
         </div>
+
+        <!-- Description (full width, below title and buttons) -->
+        <p v-if="project.description" class="text-sm text-muted-foreground leading-relaxed">
+            {{ project.description }}
+        </p>
     </div>
 </template>

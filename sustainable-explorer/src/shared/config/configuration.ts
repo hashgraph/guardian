@@ -1,5 +1,11 @@
 import { registerAs } from '@nestjs/config';
 
+export const ROOT_TOPICS: Record<string, string> = {
+    mainnet: '0.0.1368856',
+    testnet: '0.0.1960',
+    previewnet: '0.0.10071',
+};
+
 /**
  * Returns the default Hedera Mirror Node REST API URL for a given network.
  */
@@ -65,6 +71,9 @@ export default registerAs('app', () => {
 
         // Seed topic (overrides default per-network root topic)
         seedTopicId: process.env.SEED_TOPIC_ID || '',
+
+        // Registry allowlist (only discover these topics from the seed topic)
+        onlyRegistryTopics: process.env.ONLY_REGISTRY_TOPIC || '',
 
         // Materialized views
         mvRefreshInterval: parseInt(process.env.MV_REFRESH_INTERVAL || '60', 10),

@@ -5,9 +5,11 @@ import {
     InjectQueue,
 } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Job, Queue } from 'bullmq';
 import { DataSource } from 'typeorm';
 import { QUEUE_NAMES } from '@shared/config/bullmq.config';
+import { ROOT_TOPICS } from '@shared/config/configuration';
 import {
     ParsedMessage,
     parseMessageJson,
@@ -15,6 +17,7 @@ import {
     extractTokenIds,
 } from '@shared/utils/message-parser';
 import { isTopicBlocked } from '@shared/config/topic-blocklist';
+import { isRegistryAllowlistActive, isTopicAllowedFromSeed } from '@shared/config/registry-allowlist';
 
 export interface MessageProcessJobData {
     consensusTimestamp: string;
@@ -32,15 +35,21 @@ const EAGER_IPFS_TYPES = new Set([
 @Processor(QUEUE_NAMES.MESSAGE_PARSE)
 export class MessageProcessProcessor extends WorkerHost {
     private readonly logger = new Logger(MessageProcessProcessor.name);
+    private readonly seedTopicId: string;
 
     constructor(
         private readonly dataSource: DataSource,
+        private readonly configService: ConfigService,
         @InjectQueue(QUEUE_NAMES.IPFS_FETCH) private readonly ipfsQueue: Queue,
         @InjectQueue(QUEUE_NAMES.POLICY_DECODE) private readonly policyDecodeQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOPIC_SYNC) private readonly topicQueue: Queue,
         @InjectQueue(QUEUE_NAMES.TOKEN_SYNC) private readonly tokenQueue: Queue,
     ) {
         super();
+        const network = this.configService.get<string>('app.hedera.network') || 'testnet';
+        this.seedTopicId = this.configService.get<string>('app.seedTopicId')
+            || ROOT_TOPICS[network]
+            || '';
     }
 
     async process(job: Job<MessageProcessJobData>): Promise<void> {
@@ -202,9 +211,18 @@ export class MessageProcessProcessor extends WorkerHost {
         }
         // ─────────────────────────────────────────────────────────────────────
 
-        // Discover and enqueue child topics
+        // Discover and enqueue child topics.
+        // When ONLY_REGISTRY_TOPIC is set, only follow topics from the seed
+        // topic that appear in the allowlist. Deeper discoveries are unfiltered.
         const discoveredTopics = extractDiscoverableTopics(parsed, topicId);
+        const filterSeedDiscovery = topicId === this.seedTopicId && isRegistryAllowlistActive();
         for (const topic of discoveredTopics) {
+            if (filterSeedDiscovery && !isTopicAllowedFromSeed(topic.topicId)) {
+                this.logger.debug(
+                    `Skipping topic ${topic.topicId} — not in ONLY_REGISTRY_TOPIC allowlist`,
+                );
+                continue;
+            }
             await this.topicQueue.add(
                 'sync',
                 {

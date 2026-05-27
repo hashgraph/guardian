@@ -28,6 +28,7 @@
     "download": "Descargar",
     "close": "Cerrar",
     "viewOnExplorer": "Ver en el explorador",
+    "viewOnHashScan": "Ver en HashScan",
     "viewRawData": "Ver datos brutos",
     "lines": "líneas",
     "mdash": "—",
@@ -396,6 +397,7 @@
         "noFields": "(sin campos de nivel superior)",
         "fieldLabels": {
           "name": "Título",
+          "description": "Descripción",
           "geo": "Geo / Ubicación",
           "country": "País",
           "developer": "Desarrollador",
@@ -403,6 +405,8 @@
           "category": "Categoría",
           "scale": "Escala",
           "creditingPeriod": "Período de acreditación",
+          "creditingPeriodStart": "Inicio del período de acreditación",
+          "creditingPeriodEnd": "Fin del período de acreditación",
           "vintageRaw": "Fecha de cosecha",
           "sdgOrCobenefits": "ODS / Cobeneficios"
         },

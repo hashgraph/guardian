@@ -18,6 +18,7 @@ export type ResolvedFieldPaths = {
     vintageRaw: string | null;
     creditingPeriod: string | null;
     creditingPeriodStart: string | null;
+    creditingPeriodEnd: string | null;
     sdgOrCobenefits: string | null;
 };
 

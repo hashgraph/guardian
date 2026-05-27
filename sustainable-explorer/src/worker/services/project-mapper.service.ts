@@ -200,30 +200,35 @@ export class ProjectMapperService {
 
         let projectKey: string;
         if (csRef) {
-            // Downstream VC pointing at a parent VC's cs.id via `cs.ref`.
-            // That parent may itself carry a `cs.ref` (multi-hop chains
-            // happen when registration / monitoring / verification VCs each
-            // reference the previous one). Walk hop-by-hop to the chain root
-            // — its cs.id is the project's canonical identity. Using the raw
-            // `cs.ref` here would split one project into N rows (one per
-            // intermediate parent).
+            // Downstream VC pointing at a parent via cs.ref. Walk the chain
+            // to find the root cs.id. Then verify the root is actually a
+            // project-schema VC — if not, this VC is referencing an
+            // intermediate artifact (e.g., Estimated Removals) and should
+            // not seed a project row.
             const refWalked = await this.resolveProjectKeyViaRef(vc.consensusTimestamp, csId);
-            projectKey = refWalked?.projectKey ?? csRef;
+            const resolvedKey = refWalked?.projectKey ?? csRef;
+
+            if (policyHasProjectSchemaClassification && !isProjectSchemaVc) {
+                const isRefAProject = await this.isCsIdOnProjectSchema(resolvedKey, policyMapping);
+                if (!isRefAProject) {
+                    this.logger.debug(
+                        `vc=${messageConsensusTimestamp} cs.ref resolves to ${resolvedKey} which is not a project-schema VC — skipping`,
+                    );
+                    return;
+                }
+            }
+            projectKey = resolvedKey;
         } else if (isProjectSchemaVc) {
-            // Project registration VC. A single logical project sometimes has
-            // MULTIPLE project-schema VCs in the same topic with different
-            // cs.id values (re-registration, DID rotation, replay during
-            // testing). To collapse them, find the cs.id of the LATEST
-            // project-schema VC of the same schema in this topic and use it
-            // as the canonical projectKey for every project-schema VC in the
-            // topic — regardless of whether this VC's own cs.id matches.
+            // Project-schema VC with no cs.ref. Use this VC's own cs.id as the
+            // projectKey. Multiple project-schema VCs from the same signer share
+            // the same DID, so they merge naturally. VCs from different signers
+            // (e.g., VVB vs Registry) have different cs.id values but downstream
+            // monitoring/verification VCs carry cs.ref pointing to the correct
+            // project DID, which merges them via the csRef branch above.
             //
-            // The query is bounded by topicId (indexed) and is a single round
-            // trip per VC. No JSONB cross-join, no N² scan.
-            const canonical = await this.findCanonicalProjectSchemaCsIdInTopic(
-                vc.topicId, vcSchemaUuid,
-            );
-            projectKey = canonical ?? csId;
+            // Relationship walks are NOT used here because they can resolve to
+            // non-project VCs (e.g., Role-Documents) whose cs.id is meaningless.
+            projectKey = csId;
         } else if (policyHasProjectSchemaClassification) {
             // Strict mode for classified policies: the decode pipeline knows
             // which schema is the project schema, and this VC isn't on it
@@ -279,6 +284,12 @@ export class ProjectMapperService {
             const raw = getByPath(cs, path);
             if (field.key === 'geo') {
                 geoLngLat = parseGeoValue(raw);
+            } else if (field.key === 'creditingPeriodStart' && raw && typeof raw === 'object' && !Array.isArray(raw) && 'from' in (raw as object)) {
+                const from = (raw as Record<string, unknown>)['from'];
+                if (typeof from === 'string') extracted[field.key] = from;
+            } else if (field.key === 'creditingPeriodEnd' && raw && typeof raw === 'object' && !Array.isArray(raw) && 'to' in (raw as object)) {
+                const to = (raw as Record<string, unknown>)['to'];
+                if (typeof to === 'string') extracted[field.key] = to;
             } else {
                 const s = unwrapValue(raw);
                 if (s) extracted[field.key] = s;
@@ -313,17 +324,38 @@ export class ProjectMapperService {
         // current fieldMap stores only top-level keys. Fall back: scan cs values.
         let createdAt: string | null = extracted['vintageRaw'] ?? null;
         let creditingPeriodStart: string | null = extracted['creditingPeriodStart'] ?? null;
-        let creditingPeriodEnd: string | null = null;
-        for (const v of Object.values(cs)) {
-            if (v && typeof v === 'object' && !Array.isArray(v)
-                && 'from' in (v as object) && 'to' in (v as object)) {
-                const obj = v as Record<string, unknown>;
-                if (typeof obj['from'] === 'string') {
-                    createdAt = obj['from'] as string;
-                    if (!creditingPeriodStart) creditingPeriodStart = obj['from'] as string;
+        let creditingPeriodEnd: string | null = extracted['creditingPeriodEnd'] ?? null;
+
+        // Fallback: scan top-level and nested {from, to} objects only when
+        // the extracted fields are still empty. Collect ALL {from, to} pairs
+        // and pick the one with the widest date span (most likely the
+        // crediting period rather than a monitoring period).
+        if (!creditingPeriodStart || !creditingPeriodEnd) {
+            const dateRanges: Array<{ from: string; to: string }> = [];
+            const collectDateRanges = (obj: Record<string, unknown>) => {
+                for (const v of Object.values(obj)) {
+                    if (v && typeof v === 'object' && !Array.isArray(v)) {
+                        const o = v as Record<string, unknown>;
+                        if ('from' in o && 'to' in o && typeof o['from'] === 'string' && typeof o['to'] === 'string') {
+                            dateRanges.push({ from: o['from'] as string, to: o['to'] as string });
+                        } else {
+                            collectDateRanges(o);
+                        }
+                    }
                 }
-                if (typeof obj['to'] === 'string') creditingPeriodEnd = obj['to'] as string;
-                break;
+            };
+            collectDateRanges(cs);
+
+            if (dateRanges.length > 0) {
+                // Pick the widest range (crediting period is typically years, monitoring is months)
+                const best = dateRanges.reduce((a, b) => {
+                    const spanA = new Date(a.to).getTime() - new Date(a.from).getTime();
+                    const spanB = new Date(b.to).getTime() - new Date(b.from).getTime();
+                    return (isNaN(spanA) ? -1 : spanA) >= (isNaN(spanB) ? -1 : spanB) ? a : b;
+                });
+                if (!creditingPeriodStart) creditingPeriodStart = best.from;
+                if (!creditingPeriodEnd) creditingPeriodEnd = best.to;
+                if (!createdAt) createdAt = best.from;
             }
         }
         const vintage = createdAt
@@ -387,12 +419,20 @@ export class ProjectMapperService {
             instanceTopicId,
             policyName: policyRow.policyName ?? resolved.name ?? null,
         };
+        // Priority system for descriptive fields:
+        //   - Project-schema VCs: ALWAYS write (highest priority, overrides existing)
+        //   - Non-project VCs: only fill gaps (never overwrite existing values)
+        // This prevents non-project VCs with bad mappings (e.g., country → longitude)
+        // from corrupting data set by the project VC.
+        //
+        // The priority is enforced via a `_priority` flag in businessData. When a
+        // project-schema VC writes a field, it's authoritative. When a non-project
+        // VC writes, the SQL uses COALESCE to keep existing values.
+        if (isProjectSchemaVc) {
+            newFields._fromProjectSchema = true;
+        }
+
         if (name) newFields.name = name;
-        // Country: write the resolved value when truthy. Also explicitly write
-        // null when this VC's schema is the configured Country source but the
-        // extracted value was rejected (length guard above) — that way a stale
-        // bad country left over from a previous mapping gets cleared on
-        // re-extract instead of silently sticking around.
         const sourcesCountry = 'country' in crossSchemaFieldMap;
         if (country) {
             newFields.country = country;
@@ -460,16 +500,22 @@ export class ProjectMapperService {
             ON CONFLICT ("projectKey")
             WHERE "viewType" = 'PROJECT' AND "projectKey" IS NOT NULL
             DO UPDATE SET
-                -- COALESCE for displayName: keep existing unless null/empty.
-                "displayName"    = COALESCE(NULLIF(business_view."displayName", ''), EXCLUDED."displayName"),
+                -- Project-schema VCs override displayName; others fill gaps.
+                "displayName"    = CASE WHEN (EXCLUDED."businessData"->>'_fromProjectSchema')::boolean IS TRUE
+                                        THEN COALESCE(NULLIF(EXCLUDED."displayName", ''), business_view."displayName")
+                                        ELSE COALESCE(NULLIF(business_view."displayName", ''), EXCLUDED."displayName")
+                                   END,
                 "registryDid"    = COALESCE(business_view."registryDid", EXCLUDED."registryDid"),
                 "relatedTopicId" = COALESCE(business_view."relatedTopicId", EXCLUDED."relatedTopicId"),
                 "businessData"   = (
-                    -- Start with existing data; overlay with EXCLUDED's new fields
-                    -- (excluding linkedVcs, which needs append+dedupe semantics
-                    -- rather than overwrite); then recompute credits/vcCount as SUM
-                    -- and rebuild linkedVcs as the deduped union of old + new.
-                    business_view."businessData" || (EXCLUDED."businessData" - 'linkedVcs')
+                    -- Priority merge: project-schema VCs override existing values
+                    -- (EXCLUDED wins via ||). Non-project VCs only fill gaps —
+                    -- existing values are kept by reversing the operand order
+                    -- so existing data takes precedence.
+                    CASE WHEN (EXCLUDED."businessData"->>'_fromProjectSchema')::boolean IS TRUE
+                         THEN business_view."businessData" || (EXCLUDED."businessData" - 'linkedVcs' - '_fromProjectSchema')
+                         ELSE (EXCLUDED."businessData" - 'linkedVcs' - '_fromProjectSchema') || business_view."businessData"
+                    END
                 ) || jsonb_build_object(
                     -- Only add credits/vcCount when this VC isn't already linked.
                     -- Makes reparse-all idempotent — clicking it twice doesn't double credits.
@@ -603,6 +649,41 @@ export class ProjectMapperService {
             currentRef = next_ref;
         }
         return { projectKey: currentRef };
+    }
+
+    /**
+     * Check if a given cs.id belongs to a VC whose schema is classified as
+     * the project schema for its policy. Used to verify that a cs.ref chain
+     * resolves to an actual project VC, not an intermediate artifact.
+     */
+    private async isCsIdOnProjectSchema(
+        csId: string,
+        policyMapping: Record<string, Array<{ isProjectSchema?: boolean; schemaIri?: string }>>,
+    ): Promise<boolean> {
+        const projectSchemaUuids = new Set<string>();
+        for (const entries of Object.values(policyMapping)) {
+            if (!Array.isArray(entries)) continue;
+            for (const entry of entries) {
+                if (entry?.isProjectSchema === true && entry.schemaIri) {
+                    projectSchemaUuids.add(entry.schemaIri.split('&')[0].trim().replace(/^#/, ''));
+                }
+            }
+        }
+        if (projectSchemaUuids.size === 0) return true;
+
+        const rows: Array<{ schema_type: string | null }> = await this.dataSource.query(
+            `SELECT documents->'credentialSubject'->0->>'type' AS schema_type
+             FROM message
+             WHERE type = 'VC-Document'
+               AND documents->'credentialSubject'->0->>'id' = $1
+             ORDER BY "consensusTimestamp" ASC
+             LIMIT 1`,
+            [csId],
+        );
+        if (rows.length === 0) return false;
+        const rawType = rows[0].schema_type ?? '';
+        const uuid = rawType.split('&')[0].trim().replace(/^#/, '');
+        return projectSchemaUuids.has(uuid);
     }
 
     /**

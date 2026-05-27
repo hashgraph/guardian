@@ -3,6 +3,7 @@ import type { Project } from '~/types/models';
 
 // Module-level cache — persists across page navigations within the session.
 const cache = new Map<string, string>(); // projectId → alpha-3 code
+const nameCache = new Map<string, string>(); // projectId → country name
 const cacheRef = shallowRef(0); // bump to trigger reactive updates
 
 let queueRunning = false;
@@ -23,6 +24,7 @@ async function drainQueue() {
             const code = COUNTRY_ALPHA3[name] ?? 'UNK';
             if (code !== 'UNK') {
                 cache.set(item.id, code);
+                if (name) nameCache.set(item.id, name);
                 cacheRef.value++;
             }
         } catch { /* ignore */ }
@@ -50,5 +52,11 @@ export function useGeocodedCountries(projects: Ref<Project[]>) {
         return cache.get(p.id) ?? p.countryCode;
     }
 
-    return { resolvedCode };
+    function resolvedName(p: Project): string {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        cacheRef.value;
+        return nameCache.get(p.id) ?? p.country;
+    }
+
+    return { resolvedCode, resolvedName };
 }

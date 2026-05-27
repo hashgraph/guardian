@@ -108,10 +108,44 @@ const navItems = computed(() => [
             </NuxtLink>
         </nav>
 
+        <!-- Data Source Attribution -->
+        <div class="shrink-0 border-t px-3 py-2.5">
+            <a
+                v-if="!collapsed"
+                href="https://guardian.hedera.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="group/attr flex items-center gap-2 transition-colors duration-150"
+            >
+                <img
+                    src="/guardian-logo.jpg"
+                    alt="Hedera Guardian"
+                    class="h-5 w-5 shrink-0 rounded-sm object-contain"
+                />
+                <span class="text-[11px] font-medium text-muted-foreground transition-colors duration-150 group-hover/attr:text-foreground">
+                    Data Powered by Hedera Guardian
+                </span>
+            </a>
+            <a
+                v-else
+                href="https://guardian.hedera.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Data Powered by Hedera Guardian"
+                class="flex justify-center transition-colors duration-150"
+            >
+                <img
+                    src="/guardian-logo.jpg"
+                    alt="Hedera Guardian"
+                    class="h-5 w-5 rounded-sm object-contain"
+                />
+            </a>
+        </div>
+
         <!-- Last Synced -->
         <div class="shrink-0 border-t px-3 py-3">
             <div v-if="!collapsed" class="flex items-start gap-2">
-                <CheckCircle2 class="h-3.5 w-3.5 shrink-0 text-stat-green mt-0.5" />
+                <CheckCircle2 class="h-3.5 w-3.5 shrink-0 text-stat-green mt-0.5 ml-0.5" />
                 <div>
                     <div class="text-[11px] font-medium text-muted-foreground">{{ $t('nav.dataSyncedUpTo') }}</div>
                     <div class="text-[11px] text-foreground">{{ lastSyncFormatted }}, {{ lastSyncTime }}</div>

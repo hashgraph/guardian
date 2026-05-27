@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import Redis from 'ioredis';
 import { QUEUE_NAMES, getWorkerNetwork } from '@shared/config/bullmq.config';
+import { ROOT_TOPICS } from '@shared/config/configuration';
 import { PolicyDecodeJobData } from '../processors/policy-decode.processor';
 import { ProjectMapperService } from '../services/project-mapper.service';
 
@@ -120,22 +121,6 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     }
 
     /**
-     * Default root topic IDs per Hedera network.
-     * These are the Guardian Standard Registry announcement topics.
-     *
-     * | Network    | Topic ID    |
-     * |------------|-------------|
-     * | Mainnet    | 0.0.1368856 |
-     * | Testnet    | 0.0.1960    |
-     * | Previewnet | 0.0.10071   |
-     */
-    private static readonly ROOT_TOPICS: Record<string, string> = {
-        mainnet: '0.0.1368856',
-        testnet: '0.0.1960',
-        previewnet: '0.0.10071',
-    };
-
-    /**
      * Idempotent upsert of the root topic into topic_cache.
      * Always runs on startup — resets hasNext=true so a restart resumes crawling
      * even if the topic was previously marked exhausted.
@@ -143,7 +128,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
     private async seedRootTopic(): Promise<void> {
         const network = this.configService.get<string>('app.hedera.network') || 'testnet';
         const seedTopicId = this.configService.get<string>('app.seedTopicId')
-            || SyncSchedulerService.ROOT_TOPICS[network];
+            || ROOT_TOPICS[network];
 
         if (!seedTopicId) {
             this.logger.warn(`No seed topic ID for network "${network}" — cannot bootstrap`);
