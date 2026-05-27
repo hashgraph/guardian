@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Param, Query, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { ProjectsService } from '../services/project.service';
+import { ProjectExportService, type ExportFormat } from '../services/project-export.service';
 import {
     ProjectQueryDto,
     ProjectResponseDto,
@@ -8,10 +9,15 @@ import {
     ActivityEventDto,
 } from '../dto/project.dto';
 
+const VALID_EXPORT_FORMATS = new Set<string>(['iwa', 'cadtrust', 'cdop']);
+
 @ApiTags('projects')
 @Controller('api/v1/:network/projects')
 export class ProjectsController {
-    constructor(private readonly projectsService: ProjectsService) {}
+    constructor(
+        private readonly projectsService: ProjectsService,
+        private readonly projectExportService: ProjectExportService,
+    ) {}
 
     @Get()
     @ApiOperation({
@@ -169,6 +175,35 @@ export class ProjectsController {
         @Param('consensusTimestamp') consensusTimestamp: string,
     ): Promise<Record<string, unknown>> {
         return this.projectsService.getLinkedVcDocument(network, id, consensusTimestamp);
+    }
+
+    @Get(':id/export/:format')
+    @ApiOperation({
+        summary: 'Export a project in a standard format (IWA DMRV, CADTrust V2, or CDOP)',
+        description:
+            'Returns the project data structured according to the requested standard. ' +
+            'The field paths in the output are grouped hierarchically by standard entity. ' +
+            'Available formats: iwa, cadtrust, cdop.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiParam({ name: 'id', description: 'HCS consensus timestamp (sourceTimestamp) or projectKey' })
+    @ApiParam({ name: 'format', enum: ['iwa', 'cadtrust', 'cdop'], description: 'Export standard format' })
+    @ApiResponse({ status: 200, description: 'Exported project data in the requested standard format' })
+    @ApiResponse({ status: 400, description: 'Invalid export format' })
+    @ApiResponse({ status: 404, description: 'Project not found' })
+    async exportProject(
+        @Param('network') network: string,
+        @Param('id') id: string,
+        @Param('format') format: string,
+    ): Promise<Record<string, unknown>> {
+        if (!VALID_EXPORT_FORMATS.has(format)) {
+            throw new BadRequestException(`Invalid export format "${format}". Valid: iwa, cadtrust, cdop`);
+        }
+        const project = await this.projectsService.findById(network, id);
+        if (!project) {
+            throw new NotFoundException(`Project with ID "${id}" not found on ${network}`);
+        }
+        return this.projectExportService.exportProject(project, format as ExportFormat);
     }
 
     @Get(':id')

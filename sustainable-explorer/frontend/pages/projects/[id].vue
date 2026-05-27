@@ -4,10 +4,11 @@ import {
     Globe, MapPin, Clock, Activity,
     Network, FileText, ChevronDown,
     CheckCircle2, Circle, Zap, Database,
-    FolderKanban, BarChart3, RotateCcw, CloudDownload, Loader2, Search, X,
+    FolderKanban, BarChart3, RotateCcw, CloudDownload, Loader2, Search, X, Download,
 } from 'lucide-vue-next';
 import type { Credit } from '~/types/models';
 import { formatDate } from '~/lib/format';
+import { exportProject, type ExportFormat } from '~/lib/project-export';
 import { getSDG } from '~/lib/sdgs';
 import { getMethodologyName } from '~/lib/methodologies';
 import { useDecodedMethodologyApi } from '~/composables/api/useDecodedMethodologyApi';
@@ -863,7 +864,7 @@ const emissions = computed(() => {
             <!-- ── Tab: Advanced ───────────────────────────────────────────────── -->
             <div v-else-if="activeTab === 'advanced'" class="p-6 space-y-6">
                 <!-- Admin actions -->
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                     <button
                         :disabled="reextractPending"
                         class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -879,6 +880,28 @@ const emissions = computed(() => {
                     >
                         <CloudDownload :class="['h-4 w-4 text-primary', refreshIpfsPending ? 'animate-spin' : '']" />
                         Refresh IPFS
+                    </button>
+                    <div class="w-px h-6 bg-border" />
+                    <button
+                        class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        @click="exportProject(project!, 'iwa', network)"
+                    >
+                        <Download class="h-4 w-4 text-primary" />
+                        Export as IWA
+                    </button>
+                    <button
+                        class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        @click="exportProject(project!, 'cadtrust', network)"
+                    >
+                        <Download class="h-4 w-4 text-primary" />
+                        Export as CADTrust
+                    </button>
+                    <button
+                        class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        @click="exportProject(project!, 'cdop', network)"
+                    >
+                        <Download class="h-4 w-4 text-primary" />
+                        Export as CDOP
                     </button>
                 </div>
 

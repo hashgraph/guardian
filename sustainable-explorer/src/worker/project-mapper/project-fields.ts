@@ -17,6 +17,9 @@ export interface ProjectExtractField {
     keywords: string[];
     /** Words that, if present, disqualify a candidate. */
     exclude?: string[];
+    /** Corresponding IWA DMRV spec field path. CADTrust/CDOP paths are derived
+     *  from this via the generated mapping in standard-field-mappings.generated.ts. */
+    iwaField?: string;
 }
 
 export const PROJECT_EXTRACT_FIELDS: ProjectExtractField[] = [
@@ -25,12 +28,14 @@ export const PROJECT_EXTRACT_FIELDS: ProjectExtractField[] = [
         label: 'Project Title',
         keywords: ['project name', 'project title', 'name', 'title'],
         exclude: ['methodology', 'reference', 'pdd', 'section', 'table', 'document'],
+        iwaField: 'ActivityImpactModule.name',
     },
     {
         key: 'description',
         label: 'Description',
         keywords: ['description', 'project description', 'summary', 'project summary', 'abstract'],
         exclude: ['methodology', 'reference', 'pdd', 'section'],
+        iwaField: 'ProjectModule.description',
     },
     {
         key: 'country',
@@ -42,58 +47,69 @@ export const PROJECT_EXTRACT_FIELDS: ProjectExtractField[] = [
         // double-matching.
         keywords: ['country', 'location', 'project location'],
         exclude: ['participant', 'applicant', 'coordinate', 'geojson', 'polygon', 'boundary'],
+        iwaField: 'ActivityImpactModule.country',
     },
     {
         key: 'developer',
         label: 'Developer',
         keywords: ['developer', 'proponent', 'organization', 'project developer', 'applicant'],
+        iwaField: 'ActivityImpactModule.developers',
     },
     {
         key: 'category',
         label: 'Category',
         keywords: ['category', 'project type'],
+        iwaField: 'ActivityImpactModule.classificationCategory',
     },
     {
         key: 'scale',
         label: 'Scale',
         keywords: ['scale', 'project scale'],
+        iwaField: 'ActivityImpactModule.projectScale',
     },
     {
         key: 'sector',
         label: 'Sector',
         keywords: ['sector', 'activity'],
+        iwaField: 'ActivityImpactModule.projectScope',
     },
     {
         key: 'vintageRaw',
         label: 'Vintage / Start Date',
         keywords: ['start date', 'commencement', 'vintage'],
+        iwaField: 'ActivityImpactModule.firstYearIssuance',
     },
     {
         key: 'creditingPeriod',
         label: 'Crediting Period',
         keywords: ['crediting period'],
+        iwaField: 'ImpactClaim.startDate,ImpactClaim.endDate',
     },
     {
         key: 'creditingPeriodStart',
         label: 'Crediting Period Start',
         keywords: ['crediting period start', 'start date', 'commencement date'],
         exclude: ['end', 'expiry'],
+        iwaField: 'ImpactClaim.startDate',
     },
     {
         key: 'creditingPeriodEnd',
         label: 'Crediting Period End',
         keywords: ['crediting period end', 'end date', 'expiry date'],
         exclude: ['start', 'commencement'],
+        iwaField: 'ImpactClaim.endDate',
     },
     {
         key: 'sdgOrCobenefits',
         label: 'SDGs / Co-benefits',
         keywords: ['co-benefit', 'sustainable', 'sdg'],
+        iwaField: 'ActivityImpactModule.benefitCategory',
     },
     {
         key: 'geo',
         label: 'Project Location',
         keywords: ['geo', 'location', 'coordinates', 'boundary', 'site location', 'project location', 'geometry', 'geojson', 'shape', 'polygon'],
+        iwaField: 'ActivityImpactModule.geographicLocation',
     },
 ];
 
