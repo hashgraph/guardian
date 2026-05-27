@@ -201,12 +201,23 @@ export class OrganizationService extends NatsService {
             });
 
         /**
-         * Update organization (whitelist: name, description, status)
+         * Update organization (whitelist: name, description, status, plus the on-ledger fields
+         * hydrated by guardian-service after publishing: did, topicId, parentTopicId,
+         * hederaAccountId, location)
          */
         this.getMessages(AuthEvents.UPDATE_ORGANIZATION,
             async (msg: {
                 id: string,
-                organization: { name?: string, description?: string, status?: string },
+                organization: {
+                    name?: string,
+                    description?: string,
+                    status?: string,
+                    did?: string,
+                    topicId?: string,
+                    parentTopicId?: string,
+                    hederaAccountId?: string,
+                    location?: LocationType
+                },
                 owner: IOwner,
                 userId: string | null
             }) => {
@@ -233,6 +244,21 @@ export class OrganizationService extends NatsService {
                         }
                         if (typeof organization.status === 'string') {
                             item.status = organization.status;
+                        }
+                        if (typeof organization.did === 'string') {
+                            item.did = organization.did;
+                        }
+                        if (typeof organization.topicId === 'string') {
+                            item.topicId = organization.topicId;
+                        }
+                        if (typeof organization.parentTopicId === 'string') {
+                            item.parentTopicId = organization.parentTopicId;
+                        }
+                        if (typeof organization.hederaAccountId === 'string') {
+                            item.hederaAccountId = organization.hederaAccountId;
+                        }
+                        if (organization.location !== undefined && organization.location !== null) {
+                            item.location = organization.location;
                         }
                     }
 
@@ -516,13 +542,16 @@ export class OrganizationService extends NatsService {
         // ============================================================
 
         /**
-         * Enroll a user into an organization with a role
+         * Enroll a user into an organization with a role.
+         * Optionally carries the on-ledger enrollment messageId so guardian-service can record
+         * the RegistrationMessage(Init) reference published on the org topic.
          */
         this.getMessages(AuthEvents.ENROLL_ORG_MEMBER,
             async (msg: {
                 organizationId: string,
                 did: string,
                 orgRoleId: string,
+                messageId?: string,
                 owner: IOwner,
                 userId: string | null
             }) => {
@@ -531,7 +560,7 @@ export class OrganizationService extends NatsService {
                     if (!msg) {
                         return new MessageError('Invalid enroll member parameters');
                     }
-                    const { organizationId, did, orgRoleId, owner } = msg;
+                    const { organizationId, did, orgRoleId, messageId, owner } = msg;
                     if (!did) {
                         return new MessageError('Member DID is required');
                     }
@@ -567,6 +596,7 @@ export class OrganizationService extends NatsService {
                         orgRoleId,
                         orgRoleName: role.name,
                         active: true,
+                        messageId: typeof messageId === 'string' ? messageId : undefined,
                     });
 
                     try {
@@ -937,6 +967,35 @@ export class OrganizationService extends NatsService {
                     }
                     const items = await new DatabaseServer().find(PolicyOrgAssignment, {
                         policyId: msg.policyId,
+                        assigned: true
+                    });
+                    return new MessageResponse(items);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * List active PolicyOrgAssignment rows for an organization.
+         *
+         * Intentionally UNSCOPED (no IOwner check) — internal NATS-only lookup invoked by
+         * guardian-service.PolicyEngine.addAccessFilters on behalf of an arbitrary user to extend
+         * policy visibility through org membership. Do NOT expose at the api-gateway layer.
+         *
+         * Note: GET_ORG_POLICIES is the owner-scoped sibling intended for SR management; this
+         * event exists specifically so the access-filter dynamic lookup is not blocked by owner
+         * scoping when the requesting user is a member rather than the org's SR owner.
+         */
+        this.getMessages(AuthEvents.GET_POLICIES_FOR_ORG,
+            async (msg: { organizationId: string, userId: string | null }) => {
+                const userId = msg?.userId;
+                try {
+                    if (!msg || !msg.organizationId) {
+                        return new MessageResponse([]);
+                    }
+                    const items = await new DatabaseServer().find(PolicyOrgAssignment, {
+                        organizationId: msg.organizationId,
                         assigned: true
                     });
                     return new MessageResponse(items);
