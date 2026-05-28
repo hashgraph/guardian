@@ -33,6 +33,30 @@ export class RegistriesController {
         return this.registriesService.findAll(network, query);
     }
 
+    @Get('id/:id')
+    @ApiOperation({
+        summary: 'Get a Standard Registry by ID',
+        description: 'Returns a single Standard Registry matching the given UUID on the specified network.',
+    })
+    @ApiParam({
+        name: 'network',
+        enum: ['mainnet', 'testnet', 'previewnet'],
+        description: 'Hedera network',
+    })
+    @ApiParam({ name: 'id', description: 'UUID of the registry row' })
+    @ApiResponse({ status: 200, type: RegistryResponseDto })
+    @ApiResponse({ status: 404, description: 'Registry not found' })
+    async findById(
+        @Param('network') network: string,
+        @Param('id') id: string,
+    ): Promise<RegistryResponseDto> {
+        const registry = await this.registriesService.findById(network, id);
+        if (!registry) {
+            throw new NotFoundException(`Registry with ID "${id}" not found on ${network}`);
+        }
+        return registry;
+    }
+
     @Get(':did')
     @ApiOperation({
         summary: 'Get a Standard Registry by DID',

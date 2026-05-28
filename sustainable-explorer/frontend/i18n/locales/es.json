@@ -39,6 +39,7 @@
         "viewOnExplorer": "Ver en el explorador",
         "viewOnHashScan": "Ver en HashScan",
         "viewRawData": "Ver datos brutos",
+        "rawData": "Datos brutos",
         "lines": "líneas",
         "mdash": "—",
         "total": "total",
@@ -307,6 +308,8 @@
         "filteredByMethodology": "Mostrando emisiones de",
         "unknownMethodology": "esta metodología",
         "clearMethodologyFilter": "Quitar filtro",
+        "filteredByRegistry": "Mostrando emisiones del registro",
+        "clearRegistryFilter": "Quitar filtro",
         "supplyTooltip": "Suministro total de tokens acuñado en Hedera. Para tokens fungibles es el suministro total. Para NFTs es el número de serials únicos.",
         "columns": {
             "token": "Token",
@@ -581,6 +584,57 @@
         },
         "tooltips": {
             "viewMethodologies": "Ver metodologías de este registro"
+        },
+        "detail": {
+            "breadcrumb": "Registros",
+            "notFound": "Registro no encontrado",
+            "notFoundDesc": "El registro con ID {id} no se encontró en {network}.",
+            "backLink": "Volver a Registros",
+            "viewRawData": "Ver datos sin procesar",
+            "copyDid": "Copiar DID",
+            "stats": {
+                "methodologies": "Metodologías",
+                "projects": "Proyectos",
+                "issuances": "Emisiones"
+            },
+            "info": {
+                "title": "Detalles del Registro",
+                "geography": "Geografía",
+                "law": "Ley / Jurisdicción",
+                "website": "Sitio web",
+                "language": "Idioma",
+                "tags": "Etiquetas",
+                "created": "Creado",
+                "network": "Red"
+            },
+            "hedera": {
+                "title": "En Cadena Hedera",
+                "sourceTopic": "ID de Tema Fuente",
+                "registryTopic": "ID de Tema del Registro",
+                "did": "DID del Registro",
+                "network": "Red",
+                "viewOnHashScan": "Ver en HashScan"
+            },
+            "map": {
+                "title": "Ubicaciones de Proyectos",
+                "subtitle": "Distribución geográfica de proyectos en este registro",
+                "noProjects": "No hay datos de ubicación disponibles para este registro"
+            },
+            "topMethodologies": {
+                "title": "Principales Metodologías",
+                "subtitle": "Clasificadas por número de proyectos",
+                "projects": "Proyectos",
+                "issuances": "Emisiones",
+                "noData": "No se encontraron metodologías para este registro"
+            },
+            "charts": {
+                "methodologiesTitle": "Metodologías por Proyectos",
+                "sectorsTitle": "Proyectos por Sector",
+                "noMethodologies": "No hay datos de metodologías disponibles",
+                "noSectors": "No hay datos de sectores disponibles",
+                "projectsLabel": "proyectos",
+                "others": "Otros"
+            }
         }
     },
     "developers": {

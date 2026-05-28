@@ -39,6 +39,7 @@
         "viewOnExplorer": "View on Explorer",
         "viewOnHashScan": "View on HashScan",
         "viewRawData": "View Raw Data",
+        "rawData": "Raw Data",
         "lines": "lines",
         "mdash": "—",
         "total": "total",
@@ -312,6 +313,8 @@
         "filteredByMethodology": "Showing issuances for",
         "unknownMethodology": "this methodology",
         "clearMethodologyFilter": "Clear filter",
+        "filteredByRegistry": "Showing issuances for registry",
+        "clearRegistryFilter": "Clear filter",
         "supplyTooltip": "Total token supply minted on Hedera. For fungible tokens this is the total supply. For NFTs this is the number of unique serials.",
         "columns": {
             "token": "Token",
@@ -589,6 +592,57 @@
         "tooltips": {
             "viewMethodologies": "View methodologies for this registry",
             "hideEmpty": "On by default. Hides registries with 0 methodologies, 0 projects, 0 users, and 0 issuances — the same set counted in the dashboard 'Registries' stat card. Uncheck to see every indexed registry, including announcement-only ones with no on-chain activity yet."
+        },
+        "detail": {
+            "breadcrumb": "Registries",
+            "notFound": "Registry not found",
+            "notFoundDesc": "The registry with ID {id} could not be found on {network}.",
+            "backLink": "Back to Registries",
+            "viewRawData": "View Raw Data",
+            "copyDid": "Copy DID",
+            "stats": {
+                "methodologies": "Methodologies",
+                "projects": "Projects",
+                "issuances": "Issuances"
+            },
+            "info": {
+                "title": "Registry Details",
+                "geography": "Geography",
+                "law": "Law / Jurisdiction",
+                "website": "Website",
+                "language": "Language",
+                "tags": "Tags",
+                "created": "Created",
+                "network": "Network"
+            },
+            "hedera": {
+                "title": "Hedera On-Chain",
+                "sourceTopic": "Source Topic ID",
+                "registryTopic": "Registry Topic ID",
+                "did": "Registry DID",
+                "network": "Network",
+                "viewOnHashScan": "View on HashScan"
+            },
+            "map": {
+                "title": "Project Locations",
+                "subtitle": "Geographic distribution of projects in this registry",
+                "noProjects": "No project location data available for this registry"
+            },
+            "topMethodologies": {
+                "title": "Top Methodologies",
+                "subtitle": "Ranked by project count",
+                "projects": "Projects",
+                "issuances": "Issuances",
+                "noData": "No methodologies found for this registry"
+            },
+            "charts": {
+                "methodologiesTitle": "Methodologies by Projects",
+                "sectorsTitle": "Projects by Sector",
+                "noMethodologies": "No methodology data available",
+                "noSectors": "No sector data available",
+                "projectsLabel": "projects",
+                "others": "Others"
+            }
         }
     },
     "developers": {

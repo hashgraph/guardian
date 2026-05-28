@@ -194,6 +194,29 @@ export class PgRegistryRepository extends RegistryRepository {
         return PgRegistryRepository.mapRow(rawRows[0]);
     }
 
+    async findById(id: string): Promise<RegistryRow | null> {
+        const rawRows: RawRow[] = await this.dataSource.query(
+            `
+            SELECT
+                bv.*,
+                s.policy_count,
+                s.project_count,
+                s.issuance_count,
+                s.user_count
+            FROM business_view bv
+            LEFT JOIN ${MV_REGISTRY_STATS_NAME} s
+                ON s."registryDid" = bv."registryDid"
+            WHERE bv."viewType" = 'REGISTRY'
+              AND bv.id = $1
+            LIMIT 1
+            `,
+            [id],
+        );
+
+        if (rawRows.length === 0) return null;
+        return PgRegistryRepository.mapRow(rawRows[0]);
+    }
+
     private static mapRow(row: RawRow): RegistryRow {
         const stats: RegistryStatsRow = {
             policyCount: parseInt(row.policy_count || '0', 10),
