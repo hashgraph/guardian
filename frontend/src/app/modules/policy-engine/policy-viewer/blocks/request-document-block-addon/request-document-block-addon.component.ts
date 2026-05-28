@@ -7,7 +7,7 @@ import {
     ViewChild,
 } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { DocumentGenerator, ISchema, IUser, Schema } from '@guardian/interfaces';
+import { DocumentGenerator, ISchema, IUser, Schema, PolicyStatus } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -18,7 +18,7 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { RequestDocumentBlockDialog } from '../request-document-block/dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
-import { PolicyStatus } from '@guardian/interfaces';
+import { PolicyTestAutomationService } from '../../policy-test-automation/policy-test-automation.service';
 
 interface IRequestDocumentAddonData {
     readonly: boolean;
@@ -92,7 +92,8 @@ export class RequestDocumentBlockAddonComponent
         private fb: UntypedFormBuilder,
         private dialogService: DialogService,
         private router: Router,
-        private changeDetectorRef: ChangeDetectorRef
+        private changeDetectorRef: ChangeDetectorRef,
+        private policyTest: PolicyTestAutomationService
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -203,17 +204,28 @@ export class RequestDocumentBlockAddonComponent
         if (this.dataForm.valid) {
             const data = this.dataForm.getRawValue();
             prepareVcData(data);
+            const payload = {
+                document: data,
+                ref: this.ref?.id,
+            };
+
+            const captureOutput = this.dryRun && this.policyTest.state.captureNextFormSubmit;
+
             this.dialogRef.close();
             this.dialogRef = null;
             this.loading = true;
-            this.policyEngineService
-                .setBlockData(this.id, this.policyId, {
-                    document: data,
-                    ref: this.ref?.id,
-                })
-                .subscribe(
-                    // tslint:disable-next-line:no-empty
-                    () => { },
+            this.policyEngineService.setBlockDataWithResult(this.id, this.policyId, payload).subscribe(
+                    (result) => {
+                        if (captureOutput) {
+                            this.policyTest.captureTestCase({
+                                policyId: this.policyId,
+                                blockId: this.id,
+                                blockType: 'requestDocumentBlockAddon',
+                                ...payload,
+                                result: result?.result || result?.response
+                            });
+                        }
+                    },
                     (e) => {
                         this.loading = false;
                     }
@@ -258,7 +270,9 @@ export class RequestDocumentBlockAddonComponent
             styleClass: 'guardian-dialog',
             data: this
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+            //
+        });
     }
 
     public onDryRun() {

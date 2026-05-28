@@ -101,6 +101,7 @@
         <td class="propRowCell">
             <input class="prop-input prop-checkbox" type="checkbox" [(ngModel)]="value" [readonly]="readonly"
                    (change)="onSave()">
+            <span *ngIf="property.text" class="prop-text">{{ property.text }}</span>
         </td>
     </tr>
 </ng-container>

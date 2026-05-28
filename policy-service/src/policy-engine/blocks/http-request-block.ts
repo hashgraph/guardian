@@ -1,5 +1,5 @@
 import { BasicBlock } from '../helpers/decorators/basic-block.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ActionCallback } from '../helpers/decorators/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
@@ -33,7 +33,67 @@ import { LocationType, WorkerTaskType } from '@guardian/interfaces';
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true
+        defaultEvent: true,
+        properties: [{
+            name: 'url',
+            label: 'URL',
+            title: 'URL',
+            type: PropertyType.Input,
+            editable: true
+        },{
+                name: 'body',
+                label: 'Body',
+                title: 'Body',
+                type: PropertyType.Select,
+                items: [],
+                editable: true
+        },{
+                name: 'body',
+                label: 'Body',
+                title: 'Body',
+                type: PropertyType.Code,
+                editable: true
+        },
+        {
+                name: 'headers',
+                label: 'Headers',
+                title: 'Headers',
+                type: PropertyType.Array,
+                editable: true,
+                items: {
+                    label: 'Header',
+                    value: '',
+                    properties: [
+                        {
+                            name: 'name',
+                            label: 'Header Name',
+                            title: 'Header Name',
+                            type: PropertyType.Input,
+                            editable: true
+                        },
+                        {
+                            name: 'value',
+                            label: 'Header Value',
+                            title: 'Header Value',
+                            type: PropertyType.Input,
+                            editable: true
+                        },
+                        {
+                            name: 'included',
+                            label: 'Included value',
+                            title: 'Included value',
+                            type: PropertyType.Checkbox,
+                            text: 'Include value in exported policy',
+                            confirmation: {
+                                title: 'title',
+                                description: 'description',
+                                condition: true
+                            },
+                            editable: true
+                        },
+                    ]
+                }
+            }]
     },
     variables: []
 })
@@ -154,6 +214,8 @@ export class HttpRequestBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
         event.data.data = event.data.data || {};
 
+        const options = await ref.getOptions(event.user);
+
         const variablesObj: any = {
             did: event?.user?.did,
             username: event?.user.username
@@ -166,11 +228,11 @@ export class HttpRequestBlock {
             variablesObj.document = inputObject = (event?.data?.data as IPolicyDocument)?.document;
         }
 
-        const method = ref.options.method;
-        const url = this.replaceVariablesInString(ref.options.url, variablesObj);
+        const method = options.method;
+        const url = this.replaceVariablesInString(options.url, variablesObj);
         const headers = {};
-        if (Array.isArray(ref.options.headers)) {
-            for (const header of ref.options.headers) {
+        if (Array.isArray(options.headers)) {
+            for (const header of options.headers) {
                 headers[header.name] = this.replaceVariablesInString(header.value, variablesObj)
             }
         }

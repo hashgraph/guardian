@@ -60,19 +60,22 @@ interface IMetadata {
                 name: 'unsigned',
                 label: 'Unsigned VC',
                 title: 'Unsigned document',
-                type: PropertyType.Checkbox
+                type: PropertyType.Checkbox,
+                editable: true
             },
             {
                 name: 'passOriginal',
                 label: 'Pass original',
                 title: 'Pass original document',
-                type: PropertyType.Checkbox
+                type: PropertyType.Checkbox,
+                editable: true
             },
             {
                 name: 'selectedScriptLanguage',
                 label: 'Script Language',
                 title: 'Select script language',
                 type: PropertyType.Select,
+                editable: true,
                 items: [
                     {
                         label: 'JavaScript',
@@ -114,6 +117,7 @@ export class CustomLogicBlock {
     @CatchErrors()
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+
         try {
             const triggerEvents = async (documents: IPolicyDocument | IPolicyDocument[]) => {
                 if (!documents) {
@@ -188,6 +192,8 @@ export class CustomLogicBlock {
             };
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+                const options = await ref.getOptions(user);
+
                 let documents: IPolicyDocument[];
                 if (Array.isArray(state.data)) {
                     documents = state.data;
@@ -196,7 +202,7 @@ export class CustomLogicBlock {
                 }
 
                 let metadata: IMetadata;
-                if (ref.options.unsigned) {
+                if (options.unsigned) {
                     metadata = null;
                 } else {
                     if (!documents || !documents.length) {
@@ -219,13 +225,13 @@ export class CustomLogicBlock {
                         return;
                     }
                     const processing = async (json: any): Promise<IPolicyDocument> => {
-                        if (ref.options.passOriginal) {
+                        if (options.passOriginal) {
                             return json;
                         }
-                        if (ref.options.unsigned) {
+                        if (options.unsigned) {
                             return await this.createUnsignedDocument(json, ref, actionStatus?.id);
                         } else {
-                            return await this.createDocument(json, metadata, ref, userId, actionStatus?.id);
+                            return await this.createDocument(json, metadata, ref, userId, actionStatus?.id, user);
                         }
                     }
                     if (Array.isArray(result)) {
@@ -259,7 +265,7 @@ export class CustomLogicBlock {
                     }
                 }
 
-                const files = Array.isArray(ref.options.artifacts) ? ref.options.artifacts : [];
+                const files = Array.isArray(options.artifacts) ? options.artifacts : [];
                 const execCodeArtifacts = files.filter((file: any) => file.type === ArtifactType.EXECUTABLE_CODE);
                 let execCode = '';
                 for (const execCodeArtifact of execCodeArtifacts) { // todo for python???
@@ -287,8 +293,8 @@ export class CustomLogicBlock {
 
                 collectTablesPack(context.documents, tablesPack);
 
-                const expression = ref.options.expression || '';
-                if (ref.options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
+                const expression = options.expression || '';
+                if (options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
                     const pythonWorkerData = {
                         execFunc: `${execCode}${expression}`,
                         user,
@@ -298,7 +304,11 @@ export class CustomLogicBlock {
                         tablesPack
                     };
 
-                    const pythonTimeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS || '120000', 10);
+                    const pythonTimeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS, 10);
+                    if (!Number.isFinite(pythonTimeoutMs) || pythonTimeoutMs <= 0) {
+                        safeReject(new Error('PYTHON_SANDBOX_TIMEOUT_MS is not configured (must be a positive integer)'));
+                        return;
+                    }
 
                     if (process.env.PYTHON_SANDBOX_MODE === 'docker') {
                         const { runPythonInDocker } = await import('../helpers/workers/custom-logic-python-docker-worker.js');
@@ -427,6 +437,7 @@ export class CustomLogicBlock {
         const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, firstDocument, userId);
         const relationships = [];
+        const options = await ref.getOptions(user);
         let accounts: any = {};
         let tokens: any = {};
         let id: string;
@@ -468,7 +479,7 @@ export class CustomLogicBlock {
         }
 
         let issuer: string;
-        switch (ref.options.documentSigner) {
+        switch (options.documentSigner) {
             case 'owner':
                 issuer = owner.did;
                 break;
@@ -495,6 +506,7 @@ export class CustomLogicBlock {
         ref: IPolicyCalculateBlock,
         userId: string | null,
         actionStatusId: string,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -510,7 +522,9 @@ export class CustomLogicBlock {
         // <-- new vc
         const VCHelper = new VcHelper();
 
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
+        const options = await ref.getOptions(user);
+
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
             ...json
@@ -535,7 +549,7 @@ export class CustomLogicBlock {
 
         const newId = await PolicyActionsUtils.generateId({
             ref,
-            type: ref.options.idType,
+            type: options.idType,
             user: owner,
             relayerAccount,
             userId

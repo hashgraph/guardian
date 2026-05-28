@@ -17,7 +17,6 @@ import axios from 'axios';
 import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair, KeyPairOptions } from '@mattrglobal/jsonld-signatures-bbs';
 import { IPFS } from '../../helpers/index.js';
 import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did/index.js';
-import { BBSDidRootKey, DidRootKey } from './did-document.js';
 
 import * as pkg from 'jsonld-signatures';
 import { ContextHelper } from './context-helper.js';
@@ -509,25 +508,6 @@ export class VCJS {
     }
 
     /**
-     * Create Suite by DID
-     *
-     * @param {DidRootKey} document - DID document
-     *
-     * @returns {Ed25519Signature2018} - Ed25519Signature2018
-     *
-     * @deprecated 2024-02-12
-     */
-    public async createSuite(document: DidRootKey | BBSDidRootKey): Promise<Ed25519Signature2018 | BbsBlsSignature2020> {
-        const verificationMethod: any = document.getPrivateVerificationMethod();
-        switch (verificationMethod.type) {
-            case BBSDidRootKey.DID_ROOT_KEY_TYPE:
-                return this.createBBSSuite(verificationMethod);
-            default:
-                return this.createEd25519Suite(verificationMethod);
-        }
-    }
-
-    /**
      * Create Suite by Method
      *
      * @param {SignatureType} type - Signature type
@@ -573,92 +553,6 @@ export class VCJS {
      */
     public async generateDid(suiteOptions: ISuiteOptions): Promise<HederaDidDocument> {
         return await HederaDidDocument.generateByDid(suiteOptions.did, suiteOptions.key);
-    }
-
-    /**
-     * Create VC Document
-     *
-     * @param {string} did - DID
-     * @param {PrivateKey | string} key - Private Key
-     * @param {any} subject - Credential Object
-     * @param {any} [group] - Issuer
-     *
-     * @returns {VcDocument} - VC Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public async createVC(
-        did: string,
-        key: string | PrivateKey,
-        subject: ICredentialSubject,
-        group?: any,
-        signatureType: SignatureType = SignatureType.Ed25519Signature2018,
-    ): Promise<VcDocument> {
-        const didDocument = await this.generateDid({ did, key, signatureType });
-        return await this.createVerifiableCredential(subject, didDocument, signatureType, { group });
-    }
-
-    /**
-     * Create VC Document
-     *
-     * @param {string} did - DID
-     * @param {PrivateKey | string} key - Private Key
-     * @param {VcDocument} vc - json
-     *
-     * @returns {VcDocument} - VC Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public async issueVC(
-        did: string,
-        key: string | PrivateKey,
-        vc: VcDocument
-    ): Promise<VcDocument> {
-        const didDocument = await this.generateDid({ did, key });
-        const signatureType = vc.getSignatureType();
-        return await this.issueVerifiableCredential(vc, didDocument, signatureType);
-    }
-
-    /**
-     * Create VC Document
-     *
-     * @param {ICredentialSubject} subject - Credential Object
-     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key, Signature Type)
-     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
-     *
-     * @returns {VcDocument} - VC Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public async createVcDocument(
-        subject: ICredentialSubject,
-        suiteOptions: ISuiteOptions,
-        documentOptions?: IDocumentOptions
-    ): Promise<VcDocument> {
-        const didDocument = await this.generateDid(suiteOptions);
-        const signatureType = suiteOptions.signatureType || SignatureType.Ed25519Signature2018;
-        return await this.createVerifiableCredential(subject, didDocument, signatureType, documentOptions);
-    }
-
-    /**
-     * Create VC Document
-     *
-     * @param {VcDocument} vc - VC Document
-     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key)
-     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
-     *
-     * @returns {VcDocument} - VC Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public async issueVcDocument(
-        vc: VcDocument,
-        suiteOptions: ISuiteOptions,
-        documentOptions?: IDocumentOptions
-    ): Promise<VcDocument> {
-        const didDocument = await this.generateDid(suiteOptions);
-        const signatureType = vc.getSignatureType();
-        return await this.issueVerifiableCredential(vc, didDocument, signatureType, documentOptions);
     }
 
     /**
@@ -722,48 +616,6 @@ export class VCJS {
         verifiableCredential.setIssuanceDate(TimestampUtils.now());
         verifiableCredential.setProof(null);
         return await this.issue(verifiableCredential, suite, this.loader);
-    }
-
-    /**
-     * Create VP Document
-     *
-     * @param {string} did - DID
-     * @param {PrivateKey | string} key - Private Key
-     * @param {VcDocument[]} vcs - VC Documents
-     * @param {string} [uuid] - new uuid
-     *
-     * @returns {VpDocument} - VP Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public async createVP(
-        did: string,
-        key: string | PrivateKey,
-        vcs: VcDocument[],
-        uuid?: string
-    ): Promise<VpDocument> {
-        const didDocument = await this.generateDid({ did, key });
-        return await this.createVerifiablePresentation(vcs, didDocument, SignatureType.Ed25519Signature2018, { uuid });
-    }
-
-    /**
-     * Create VP Document
-     *
-     * @param {VcDocument[]} vcs - VC Documents
-     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key)
-     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
-     *
-     * @returns {VpDocument} - VP Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public async createVpDocument(
-        vcs: VcDocument[],
-        suiteOptions: ISuiteOptions,
-        documentOptions?: IDocumentOptions
-    ): Promise<VpDocument> {
-        const didDocument = await this.generateDid(suiteOptions);
-        return await this.createVerifiablePresentation(vcs, didDocument, SignatureType.Ed25519Signature2018, documentOptions);
     }
 
     /**

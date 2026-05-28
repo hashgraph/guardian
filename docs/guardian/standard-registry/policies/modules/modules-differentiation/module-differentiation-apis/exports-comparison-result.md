@@ -26,7 +26,7 @@ depth (level) of child block comparison (0/1/2)
 {% endswagger-parameter %}
 
 {% swagger-parameter in="body" name="idLvl" type="String" required="false" %}
-depth (level) of uuid comparision (0/1)
+depth (level) of uuid comparison (0/1)
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}

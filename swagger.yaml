@@ -438,6 +438,37 @@ paths:
       summary: Registers a new user account.
       tags:
         - accounts
+  /accounts/push/onboard:
+    post:
+      description: >-
+        Creates a user account, Hedera account, DID, and cryptographic keys on
+        behalf of the user. If hederaAccountId / hederaAccountKey are omitted
+        the platform generates them. 
+      operationId: AccountApi_registerAndOnboard
+      parameters: []
+      requestBody:
+        required: true
+        description: Registration and optional Hedera / DID credentials.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnboardingDTO'
+      responses:
+        '202':
+          description: Task created — poll for completion.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Registers and fully onboards a new user account.
+      tags:
+        - accounts
   /accounts/login:
     post:
       operationId: AccountApi_login
@@ -24488,6 +24519,110 @@ paths:
       summary: Get all versions of a VC document.
       tags:
         - policies
+  /policies/{policyId}/parameters:
+    post:
+      description: Save policy config with values to the PolicyParameters table
+      operationId: PolicyApi_savePolicyParametersValues
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Policy parameters.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PolicyEditableFieldDTO'
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Save policy config with values
+      tags:
+        - policies
+  /policies/{policyId}/parameters/config:
+    get:
+      description: Get policy parameters.
+      operationId: PolicyApi_getPolicyParametersConfig
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Policy parameters.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PolicyEditableFieldDTO'
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get policy parameters.
+      tags:
+        - policies
   /dmrv/{policyId}/{path}:
     get:
       description: >-
@@ -30394,6 +30529,40 @@ paths:
       summary: Returns task statuses by Id.
       tags:
         - tasks
+  /tasks/onboard/{taskId}:
+    get:
+      description: Returns task status of user onboarding by Id. No Bearer token required.
+      operationId: TaskApi_getTaskStatus
+      parameters:
+        - name: taskId
+          required: true
+          in: path
+          description: Task Id returned by the initiating endpoint
+          schema:
+            example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskStatusDTO'
+        '401':
+          description: Task exists but is not an onboarding task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Returns task status of user onboarding by Id without authentication.
+      tags:
+        - tasks
   /tokens:
     get:
       description: >-
@@ -31570,6 +31739,117 @@ paths:
       security:
         - bearer: []
       summary: Associate the user with the provided Hedera token.
+      tags:
+        - tokens
+  /tokens/{tokenId}/transfer:
+    post:
+      description: >-
+        Transfers fungible or non-fungible tokens from the authenticated user's
+        Hedera account to the specified target account. For FT, specify amount.
+        For NFT, specify serialNumbers or amount (picks from end).
+      operationId: TokensApi_transferToken
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferTokenDTO'
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Transfers tokens from the authenticated user to the target account.
+      tags:
+        - tokens
+  /tokens/push/{tokenId}/transfer:
+    post:
+      description: >-
+        Transfers fungible or non-fungible tokens asynchronously. Returns a task
+        ID for tracking.
+      operationId: TokensApi_transferTokenAsync
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Token ID
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferTokenDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Transfers tokens from the authenticated user to the target account.
       tags:
         - tokens
   /tokens/{tokenId}/{username}/grant-kyc:
@@ -35582,6 +35862,66 @@ paths:
       security:
         - bearer: []
       summary: Get running results.
+      tags:
+        - record
+  /record/{policyId}/recording/action-documents:
+    get:
+      description: >-
+        Returns all VC and VP documents from the dry-run store that share the
+        given recordActionId. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: RecordApi_getRecordActionDocuments
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: recordActionId
+          required: true
+          in: query
+          description: Record action UUID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get documents produced by a recorded action.
       tags:
         - record
   /record/{policyId}/running/details:
@@ -49335,7 +49675,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 3.5.0
+  version: 3.6.0-rc
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -49714,6 +50054,211 @@ components:
       required:
         - statusCode
         - message
+    SubjectDTO:
+      type: object
+      properties:
+        '@context':
+          nullable: true
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+          nullable: true
+        type:
+          type: string
+          nullable: true
+      required:
+        - '@context'
+    DidDocumentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: false
+        '@context':
+          nullable: true
+          type: array
+          items:
+            type: string
+        alsoKnownAs:
+          nullable: true
+          type: array
+          items:
+            type: string
+        controller:
+          nullable: true
+          type: array
+          items:
+            type: string
+        verificationMethod:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        authentication:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        assertionMethod:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        keyAgreement:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        capabilityInvocation:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        capabilityDelegation:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+        service:
+          additionalProperties: true
+          nullable: true
+          type: array
+          items:
+            type: object
+      required:
+        - id
+        - '@context'
+        - alsoKnownAs
+        - controller
+        - verificationMethod
+        - authentication
+        - assertionMethod
+        - keyAgreement
+        - capabilityInvocation
+        - capabilityDelegation
+        - service
+    DidKeyDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: false
+        key:
+          type: string
+          nullable: false
+      required:
+        - id
+        - key
+    FireblocksConfigDTO:
+      type: object
+      properties:
+        fireBlocksVaultId:
+          type: string
+          example: ''
+        fireBlocksAssetId:
+          type: string
+          example: ''
+        fireBlocksApiKey:
+          type: string
+          example: ''
+        fireBlocksPrivateiKey:
+          type: string
+          example: ''
+          description: >-
+            API property name is `fireBlocksPrivateiKey` (typo preserved for
+            compatibility).
+    OnboardingDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          example: NewStandardRegistry
+        password:
+          type: string
+          example: StrongPassword3#
+        password_confirmation:
+          type: string
+          example: StrongPassword3#
+        role:
+          type: string
+          example: STANDARD_REGISTRY
+        hederaAccountId:
+          type: string
+          description: >-
+            Hedera account ID (e.g. 0.0.12345). Auto-generated from the operator
+            account if omitted.
+          example: 0.0.12345
+        hederaAccountKey:
+          type: string
+          description: >-
+            Hedera account private key. Required when hederaAccountId is
+            provided; auto-generated if omitted.
+        parent:
+          type: string
+          description: >-
+            Standard Registry username or DID. Required for USER role accounts
+            to link them to their registry.
+          example: registry_username
+        vcDocument:
+          description: VC document to publish during profile setup.
+          allOf:
+            - $ref: '#/components/schemas/SubjectDTO'
+        didDocument:
+          description: Pre-created DID document. Auto-generated if omitted.
+          allOf:
+            - $ref: '#/components/schemas/DidDocumentDTO'
+        didKeys:
+          description: Private keys for the DID document methods.
+          type: array
+          items:
+            $ref: '#/components/schemas/DidKeyDTO'
+        useFireblocksSigning:
+          type: boolean
+          default: false
+          description: Use Fireblocks signing instead of local key.
+        fireblocksConfig:
+          description: >-
+            Fireblocks configuration (required when useFireblocksSigning is
+            true).
+          allOf:
+            - $ref: '#/components/schemas/FireblocksConfigDTO'
+      required:
+        - username
+        - password
+        - password_confirmation
+        - role
+    TaskDTO:
+      type: object
+      properties:
+        taskId:
+          type: string
+          description: Task Id
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+        expectation:
+          type: number
+          description: Expected count of task phases
+          example: 8
+        action:
+          type: string
+          description: Task action
+          example: Create tool
+        userId:
+          type: string
+          description: User Id
+          example: 69bcfd90c98df6ceb05e8a78
+      required:
+        - taskId
+        - expectation
+        - action
+        - userId
     LoginUserDTO:
       type: object
       properties:
@@ -50079,6 +50624,9 @@ components:
         - name
         - topicId
         - messageId
+    PolicyEditableFieldDTO:
+      type: object
+      properties: {}
     IgnoreRuleDTO:
       type: object
       properties:
@@ -50181,6 +50729,10 @@ components:
           example: 1.0.0
         originalChanged:
           type: string
+        editableParametersSettings:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyEditableFieldDTO'
         config:
           type: object
           additionalProperties: true
@@ -50328,6 +50880,7 @@ components:
         - tools
         - createDate
         - version
+        - editableParametersSettings
         - config
         - userRole
         - userRoles
@@ -53467,30 +54020,6 @@ components:
         - configFileId
         - tools
         - config
-    TaskDTO:
-      type: object
-      properties:
-        taskId:
-          type: string
-          description: Task Id
-          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
-        expectation:
-          type: number
-          description: Expected count of task phases
-          example: 8
-        action:
-          type: string
-          description: Task action
-          example: Create tool
-        userId:
-          type: string
-          description: User Id
-          example: 69bcfd90c98df6ceb05e8a78
-      required:
-        - taskId
-        - expectation
-        - action
-        - userId
     ToolListV2ItemDTO:
       type: object
       properties:
@@ -53811,81 +54340,6 @@ components:
         - tools
         - config
         - schemas
-    DidDocumentDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: false
-        '@context':
-          nullable: true
-          type: array
-          items:
-            type: string
-        alsoKnownAs:
-          nullable: true
-          type: array
-          items:
-            type: string
-        controller:
-          nullable: true
-          type: array
-          items:
-            type: string
-        verificationMethod:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-        authentication:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-        assertionMethod:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-        keyAgreement:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-        capabilityInvocation:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-        capabilityDelegation:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-        service:
-          additionalProperties: true
-          nullable: true
-          type: array
-          items:
-            type: object
-      required:
-        - id
-        - '@context'
-        - alsoKnownAs
-        - controller
-        - verificationMethod
-        - authentication
-        - assertionMethod
-        - keyAgreement
-        - capabilityInvocation
-        - capabilityDelegation
-        - service
     ProfileDidDocumentRecordDTO:
       type: object
       properties:
@@ -54067,52 +54521,6 @@ components:
         - permissions
         - didDocument
         - vcDocument
-    SubjectDTO:
-      type: object
-      properties:
-        '@context':
-          nullable: true
-          type: array
-          items:
-            type: string
-        id:
-          type: string
-          nullable: true
-        type:
-          type: string
-          nullable: true
-      required:
-        - '@context'
-    DidKeyDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: false
-        key:
-          type: string
-          nullable: false
-      required:
-        - id
-        - key
-    FireblocksConfigDTO:
-      type: object
-      properties:
-        fireBlocksVaultId:
-          type: string
-          example: ''
-        fireBlocksAssetId:
-          type: string
-          example: ''
-        fireBlocksApiKey:
-          type: string
-          example: ''
-        fireBlocksPrivateiKey:
-          type: string
-          example: ''
-          description: >-
-            API property name is `fireBlocksPrivateiKey` (typo preserved for
-            compatibility).
     CredentialsDTO:
       type: object
       properties:
@@ -54903,6 +55311,21 @@ components:
         - id
         - name
         - type
+    PolicyParametersDTO:
+      type: object
+      properties:
+        policyId:
+          type: string
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
+        config:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyEditableFieldDTO'
+        updated:
+          type: boolean
+          example: true
+      required:
+        - policyId
     SchemaParentDTO:
       type: object
       properties:
@@ -55516,6 +55939,31 @@ components:
         - enableFreeze
         - enableKYC
         - enableWipe
+    TransferTokenDTO:
+      type: object
+      properties:
+        targetAccount:
+          type: string
+          description: Target Hedera account ID
+          example: 0.0.12345
+        amount:
+          type: number
+          description: Amount (FT) or serial count to pick (NFT); must be > 0
+          example: 10
+        serialNumbers:
+          description: Specific NFT serial numbers to transfer; positive integers
+          example:
+            - 1
+            - 2
+            - 3
+          type: array
+          items:
+            type: number
+        memo:
+          type: string
+          description: Optional transaction memo
+      required:
+        - targetAccount
     ThemeRoleDTO:
       type: object
       properties:

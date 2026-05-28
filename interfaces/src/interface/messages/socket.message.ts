@@ -74,7 +74,7 @@ export interface IBlockCompleteEvent {
     /** Human-readable description of the first error (when status === 'failure') */
     error?: string;
     /** All errors collected across the downstream async chain */
-    errorDetails?: Array<{ message: string; stack?: string }>;
+    errorDetails?: { message: string; stack?: string }[];
     /** Unix ms timestamp when completion was determined */
     timestamp: number;
 }

@@ -62,7 +62,7 @@ Additionally OPERATOR\_KEY is used for the following operations:
 
 ## Enabling Fireblocks Remote Signing:
 
-When creating a user, select the “**Use fireblocks signing**” option and populate the following fields with values from your Fireblocks account configuration:
+When creating a user, select the “**Use Fireblocks signing**” option and populate the following fields with values from your Fireblocks account configuration:
 
 * Fireblocks Vault ID
 * Fireblocks Asset ID

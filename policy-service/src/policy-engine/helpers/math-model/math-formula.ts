@@ -67,23 +67,30 @@ export class MathFormula {
                 return;
             }
 
-            const items = text.match(/\b\w+\b/g) || [];
-            const fName = items[0];
-            const fParams = items.slice(1);
-            if (!fName) {
-                this._setErrorName();
-                return;
-            }
-
-            if (fParams.length === 0) {
+            if (!text.includes('(')) {
+                // Variable: no parentheses.
+                // Allow subscript notation like fNRB_y,i — commas are normalized to underscores for CE.
+                if (!(/^[A-Za-z]\w*(?:,\w+)*$/).test(text)) {
+                    this._setErrorName();
+                    return;
+                }
                 this.type = MathItemType.VARIABLE;
-                this.functionName = fName;
+                this.functionName = text.replace(/,/g, '_');
                 this.functionParams = [];
                 this.validName = true;
                 return;
             }
 
-            if (!(text.includes('(') && text.includes(')'))) {
+            // Function: has parentheses.
+            const items = text.match(/\b\w+\b/g) || [];
+            const fName = items[0];
+            const fParams = items.slice(1);
+            if (!fName || !(/^[A-Za-z]\w*$/).test(fName)) {
+                this._setErrorName();
+                return;
+            }
+
+            if (!text.includes(')')) {
                 this._setErrorName();
                 return;
             }
@@ -252,7 +259,9 @@ export class MathFormula {
     public toJson(): IMathFormula {
         return {
             type: this.type,
-            name: this.functionName || '',
+            name: this.type === MathItemType.VARIABLE
+                ? (this.functionNameText || '')
+                : (this.functionName || ''),
             body: this.functionBodyText || '',
             params: this.functionParams || [],
             relationships: this.functionUnknowns || [],

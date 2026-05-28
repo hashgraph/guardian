@@ -18,7 +18,7 @@ services:
   api-gateway:
     build:
       context: .
-      dockerfile: ./api-gateway/Dockerfile
+      dockerfile: ./api-gateway/Dockerfile.demo
     depends_on:
       - auth-service
       - cache
@@ -36,7 +36,7 @@ services:
   auth-service:
     build:
       context: .
-      dockerfile: ./auth-service/Dockerfile
+      dockerfile: ./auth-service/Dockerfile.demo
     depends_on:
       - logger-service
       - message-broker
@@ -194,7 +194,7 @@ services:
   web-proxy:
     build:
       context: .
-      dockerfile: ./web-proxy/Dockerfile.ci
+      dockerfile: ./web-proxy/Dockerfile.demo
     depends_on:
       - api-gateway
       - auth-service

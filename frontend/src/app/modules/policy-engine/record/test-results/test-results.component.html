@@ -15,6 +15,77 @@
 
 
     <div *ngIf="owner && policyId && testId && results" class="content-result">
-        <app-compare-record [value]="results"></app-compare-record>
+        <div class="test-results-header">
+            <div class="header-row header-row-back">
+                <div class="guardian-user-back-button">
+                    <button (click)="onBack()" class="guardian-button guardian-button-secondary">
+                        <div class="guardian-button-icon">
+                            <svg-icon class="icon-btn svg-icon"
+                                src="/assets/images/icons/left-arrow.svg"
+                                svgClass="icon-color-primary">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Back</div>
+                    </button>
+                </div>
+                <span class="test-breadcrumb">
+                    <span class="breadcrumb-item">Manage Policies</span>
+                    <ng-container *ngIf="policyName">
+                        <span class="breadcrumb-sep"> / </span>
+                        <span class="breadcrumb-item">{{ policyName }}</span>
+                    </ng-container>
+                    <ng-container *ngIf="testName">
+                        <span class="breadcrumb-sep"> / </span>
+                        <span class="breadcrumb-item">Test</span>
+                        <span class="breadcrumb-sep"> / </span>
+                        <span class="breadcrumb-item">{{ testName }}</span>
+                    </ng-container>
+                </span>
+            </div>
+            <div class="header-row header-row-controls">
+                <span class="test-total-info" [attr.total]="results?.total">
+                    Documents are <span>{{ results?.total }}%</span> the same.
+                </span>
+                <p-dropdown
+                    *ngIf="docOptions.length"
+                    class="guardian-dropdown doc-nav-dropdown"
+                    [options]="computedDocOptions"
+                    [(ngModel)]="selectedDoc"
+                    (onChange)="onDocSelect($event.value)"
+                    [filter]="true"
+                    filterBy="label"
+                    placeholder="Choose document"
+                    [autoOptionFocus]="false"
+                    appendTo="body"
+                    panelStyleClass="guardian-dropdown-panel">
+                    <ng-template pTemplate="item" let-option>
+                        <span [title]="option.label">{{ option.label }}</span>
+                    </ng-template>
+                </p-dropdown>
+                <p-dropdown
+                    class="guardian-dropdown field-status-filter-dropdown"
+                    [options]="[
+                        { label: 'All fields', value: 'all' },
+                        { label: 'Equal', value: 'matched' },
+                        { label: 'Different', value: 'mismatched' },
+                        { label: 'Ignored', value: 'system' }
+                    ]"
+                    [(ngModel)]="fieldStatusFilter"
+                    (onChange)="selectedDoc = null"
+                    appendTo="body"
+                    panelStyleClass="guardian-dropdown-panel">
+                    <ng-template pTemplate="item" let-option>
+                        <span [title]="option.label">{{ option.label }}</span>
+                    </ng-template>
+                </p-dropdown>
+            </div>
+        </div>
+        <app-compare-record
+            [value]="results"
+            [scrollToDoc]="selectedDoc"
+            [showTotal]="false"
+            [fieldStatusFilter]="fieldStatusFilter"
+            [fieldNameFilter]="fieldNameFilter || ''">
+        </app-compare-record>
     </div>
 </div>

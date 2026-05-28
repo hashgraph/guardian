@@ -23,6 +23,7 @@ import { PolicyStatus } from '@guardian/interfaces';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { PolicyTestAutomationService } from '../../policy-test-automation/policy-test-automation.service';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -150,6 +151,7 @@ export class RequestDocumentBlockComponent
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
         private ipfsService: IPFSService,
+        private policyTest: PolicyTestAutomationService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -419,17 +421,21 @@ export class RequestDocumentBlockComponent
 
         const evidence = this.enableAdditionalData ? this.buildEvidence() : undefined;
 
+        const payload = {
+            document: data,
+            ref: this.ref,
+            draft,
+            draftId: this.draftId,
+            relayerAccount: this.getRelayerAccount(),
+            ...(evidence?.length ? { evidence } : {})
+        };
+
+        const captureOutput = this.dryRun && !draft && this.policyTest.state.captureNextFormSubmit;
+
         let requestSucceeded = false;
 
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, {
-                document: data,
-                ref: this.ref,
-                draft,
-                draftId: this.draftId,
-                relayerAccount: this.getRelayerAccount(),
-                ...(evidence?.length ? { evidence } : {})
-            })
+            .setBlockDataWithResult(this.id, this.policyId, payload)
             .pipe(
                 finalize(async () => {
                     try {
@@ -441,8 +447,17 @@ export class RequestDocumentBlockComponent
                     }
                 })
             )
-            .subscribe(() => {
+            .subscribe((result) => {
                 requestSucceeded = true;
+                if (captureOutput) {
+                    this.policyTest.captureTestCase({
+                        policyId: this.policyId,
+                        blockId: this.id,
+                        blockType: 'requestDocumentBlock',
+                        ...payload,
+                        result: result?.result || result?.response
+                    });
+                }
 
                 setTimeout(() => {
                     this.loading = false;

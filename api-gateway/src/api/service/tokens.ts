@@ -4,7 +4,7 @@ import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
 import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, ObjectExamples, TaskDTO, TokenDTO, TokenInfoDTO, UnprocessableEntityErrorDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, ObjectExamples, TaskDTO, TokenDTO, TokenInfoDTO, TransferTokenDTO, UnprocessableEntityErrorDTO, pageHeader } from '#middlewares';
 import { TOKEN_REQUIRED_PROPS } from '#constants';
 
 /**
@@ -1109,6 +1109,111 @@ export class TokensApi {
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             await guardians.dissociateTokenAsync(tokenId, null, owner, task);
+        }, async (error) => {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+        });
+        return task;
+    }
+
+    /**
+     * Transfer token
+     */
+    @Post('/:tokenId/transfer')
+    @Auth(
+        Permissions.TOKENS_TOKEN_EXECUTE,
+    )
+    @ApiOperation({
+        summary: 'Transfers tokens from the authenticated user to the target account.',
+        description: 'Transfers fungible or non-fungible tokens from the authenticated user\'s Hedera account to the specified target account. For FT, specify amount. For NFT, specify serialNumbers or amount (picks from end).',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({ type: TransferTokenDTO })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async transferToken(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Body() body: TransferTokenDTO
+    ): Promise<any> {
+        try {
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.transferToken(tokenId, body, owner);
+        } catch (error) {
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
+            if (error?.message?.toLowerCase().includes('user not found')) {
+                throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
+            }
+            if (error?.message?.toLowerCase().includes('token not found')) {
+                throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND);
+            }
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Transfer token (async)
+     */
+    @Post('/push/:tokenId/transfer')
+    @Auth(
+        Permissions.TOKENS_TOKEN_EXECUTE,
+    )
+    @ApiOperation({
+        summary: 'Transfers tokens from the authenticated user to the target account.',
+        description: 'Transfers fungible or non-fungible tokens asynchronously. Returns a task ID for tracking.',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({ type: TransferTokenDTO })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async transferTokenAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Body() body: TransferTokenDTO
+    ): Promise<TaskDTO> {
+        if (!user.did) {
+            throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        const owner = new EntityOwner(user);
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.TRANSFER_TOKEN, user.id);
+        RunFunctionAsync<ServiceError>(async () => {
+            const guardians = new Guardians();
+            await guardians.transferTokenAsync(tokenId, body, owner, task);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });

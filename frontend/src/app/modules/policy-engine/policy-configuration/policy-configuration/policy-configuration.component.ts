@@ -42,6 +42,7 @@ import { TagCreateDialog } from 'src/app/modules/tag-engine/tags-create-dialog/t
 import { TagsHistory } from 'src/app/modules/tag-engine/models/tags-history';
 import { TagsExplorerDialog } from 'src/app/modules/tag-engine/tags-explorer-dialog/tags-explorer-dialog.component';
 import { MultipleTagsExplorerDialog } from 'src/app/modules/tag-engine/multiple-tags-explorer-dialog/multiple-tags-explorer-dialog.component';
+import { PolicyParametersConfigDialog } from '../../dialogs/policy-parameters-config-dialog/policy-parameters-config-dialog.component';
 import { PolicyApiConfigDialogComponent } from '../../dialogs/policy-api-config-dialog/policy-api-config-dialog.component';
 
 /**
@@ -107,6 +108,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public nestedBlock!: any;
     public openType: 'Root' | 'Sub' = 'Root';
     public openSettings: boolean = false;
+    public openEditableFields: boolean = false;
     public themes!: Theme[];
     public theme!: Theme;
     public categories: IPolicyCategory[] = [];
@@ -1733,6 +1735,25 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public onSettings() {
         this.openSettings = true;
+    }
+
+    public onEditableFields() {
+        const dialogRef = this.dialogService.open(PolicyParametersConfigDialog, {
+            showHeader: false,
+            width: '1024px',
+            styleClass: 'guardian-dialog',
+            contentStyle: { overflow: 'hidden' },
+            data: {
+                policy: this.policyTemplate,
+                type: 'module'
+            }
+        });
+
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (policy) => {
+            if(this.policyTemplate && policy) {
+                this.policyTemplate.editableParametersSettings = policy?.editableParametersSettings;
+            }
+        });
     }
 
     public onSchemas() {
