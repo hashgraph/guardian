@@ -86,7 +86,13 @@ export class MathBlock {
             const worker = new Worker(workerFile, { workerData });
             // Terminate the worker once it finishes so the V8 isolate is released.
             // Otherwise every formula evaluation leaks a worker thread (~30 MB).
-            const cleanup = () => { worker.terminate().catch(() => { /* noop */ }); };
+            const cleanup = () => { worker.terminate().catch(() => {}); };
+            worker.on('exit', (code) => {
+                cleanup();
+                if (code !== 0 && code !== null) {
+                    reject(new Error(`Math worker exited with code ${code}`));
+                }
+            });
             worker.on('error', (error) => {
                 cleanup();
                 reject(error);
