@@ -4189,4 +4189,43 @@ export class Guardians extends NatsService {
         });
     }
 
+    // ============================================================
+    // Organization orchestration (delegates to guardian-service)
+    // ============================================================
+
+    /**
+     * Publish a DRAFT organization on the ledger: creates the org topic under the SR/global
+     * topic, publishes DID + OrganizationMessage, stores keys in the org wallet, and persists
+     * the hydrated record.
+     */
+    public async publishOrganization(
+        payload: {
+            organizationId: string,
+            hederaAccountId: string,
+            hederaAccountKey: string,
+            description?: string
+        },
+        owner: IOwner,
+        userId: string | null
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.PUBLISH_ORGANIZATION, { payload, owner, userId });
+    }
+
+    /**
+     * Enroll a member into a published organization: publishes RegistrationMessage(Init) on the
+     * org topic carrying the member DID + role-name attributes, then persists the
+     * OrganizationMember record with the resulting messageId.
+     */
+    public async enrollOrganizationMember(
+        payload: {
+            organizationId: string,
+            did: string,
+            orgRoleId: string
+        },
+        owner: IOwner,
+        userId: string | null
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.ENROLL_ORGANIZATION_MEMBER, { payload, owner, userId });
+    }
+
 }
