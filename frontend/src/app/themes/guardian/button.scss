@@ -1,3 +1,20 @@
+.toolbar-btn {
+    vertical-align: middle;
+
+    .p-button {
+        padding-top: 0;
+        padding-bottom: 0;
+
+        .pi {
+            color: inherit;
+        }
+
+        svg {
+            fill: currentColor;
+        }
+    }
+}
+
 .guardian-button {
     display: flex;
     border-radius: 6px;

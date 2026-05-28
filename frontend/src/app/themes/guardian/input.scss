@@ -114,6 +114,23 @@
     }
 }
 
+.p-input-icon-right {
+    position: relative;
+    display: inline-block;
+
+    > i:last-of-type {
+        position: absolute;
+        top: 50%;
+        right: 0.75rem;
+        margin-top: -0.5rem;
+        color: var(--input-icon-color);
+    }
+
+    > .p-inputtext {
+        padding-right: 2.5rem;
+    }
+}
+
 .guardian-search {
     display: flex;
     flex-direction: column;
