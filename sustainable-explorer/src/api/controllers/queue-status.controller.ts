@@ -397,28 +397,66 @@ export class QueueStatusController {
         const offset = query.offset ?? 0;
         const groupByReason = query.groupByReason ?? false;
 
-        // Use getJobCounts for the total — reads ZCARD directly, stays consistent
-        // with the queue list endpoint. getFailedCount() can diverge after removeOnFail trims.
-        const counts = await queue.getJobCounts('failed');
-        const total = counts['failed'] ?? 0;
+        // Bypasses queue.getFailed() — BullMQ v5 fires one HGETALL per job via
+        // Promise.all, saturating the connection on large queues and returning empty.
+        // Job IDs are read directly from the failed sorted-set (ZREVRANGE) or list
+        // (LRANGE for older BullMQ), then hashes are fetched in batches of 50
+        // via a Redis pipeline — one round-trip per batch.
+        const client: import('ioredis').Redis = await (queue as any).client;
+        const failedKey = queue.toKey('failed');
+
+        const keyType: string = await client.type(failedKey);
+        const isZSet = keyType === 'zset';
+        const isList = keyType === 'list';
+
+        const total: number = isZSet
+            ? await client.zcard(failedKey)
+            : isList
+                ? await client.llen(failedKey)
+                : 0;
+
+        // Get a range of job IDs (newest-first)
+        const getIds = async (start: number, end: number): Promise<string[]> => {
+            if (!isZSet && !isList) return [];
+            return isZSet
+                ? client.zrevrange(failedKey, start, end)
+                : client.lrange(failedKey, start, end);
+        };
+
+        // Fetch job hashes in batches of 50 via pipeline (one round-trip per 50 jobs)
+        const fetchJobs = async (ids: string[]): Promise<Job[]> => {
+            const PIPE = 50;
+            const jobs: Job[] = [];
+            for (let i = 0; i < ids.length; i += PIPE) {
+                const batchIds = ids.slice(i, i + PIPE);
+                const pipeline = client.pipeline();
+                batchIds.forEach(id => pipeline.hgetall(queue.toKey(id)));
+                const results = ((await pipeline.exec()) ?? []) as Array<[Error | null, Record<string, string> | null]>;
+                for (let j = 0; j < results.length; j++) {
+                    const [err, data] = results[j];
+                    if (!err && data && Object.keys(data).length > 0) {
+                        try {
+                            jobs.push(Job.fromJSON(queue, data as any, batchIds[j]));
+                        } catch {
+                            // Corrupt hash — skip silently
+                        }
+                    }
+                }
+            }
+            return jobs;
+        };
 
         if (groupByReason) {
-            // Fetch in batches of 100 to avoid spawning thousands of concurrent HGETALL
-            // calls via Promise.all (BullMQ v5 getFailed materialises every job in one shot).
-            // For large queues this saturates the Redis connection and all lookups return null.
-            const BATCH = 100;
+            // Scan all IDs in chunks of 500 then pipeline-fetch their hashes
+            const ID_CHUNK = 500;
             const groupMap = new Map<string, { count: number; sampleJobIds: string[] }>();
 
-            for (let batchStart = 0; batchStart < total; batchStart += BATCH) {
-                const batchEnd = Math.min(batchStart + BATCH - 1, total - 1);
-                const rawBatch = await queue.getFailed(batchStart, batchEnd);
-                if (rawBatch.length === 0) break; // sorted set exhausted earlier than ZCARD indicates
+            for (let batchStart = 0; batchStart < total; batchStart += ID_CHUNK) {
+                const ids = await getIds(batchStart, Math.min(batchStart + ID_CHUNK - 1, total - 1));
+                if (ids.length === 0) break;
 
-                const batch = (rawBatch as (Job | undefined | null)[]).filter(
-                    (j): j is Job => j != null,
-                );
-
-                for (const job of batch) {
+                const jobs = await fetchJobs(ids);
+                for (const job of jobs) {
                     const reason = job.failedReason ?? '(unknown)';
                     const entry = groupMap.get(reason) ?? { count: 0, sampleJobIds: [] };
                     entry.count += 1;
@@ -446,26 +484,9 @@ export class QueueStatusController {
             };
         }
 
-        // Regular (non-grouped) list — fetch the requested page.
-        // If the page comes back empty (hash eviction / race) widen the search window
-        // by scanning forward in chunks until we fill the page or exhaust the set.
-        const rawFailed = await queue.getFailed(offset, offset + limit - 1);
-        let failedJobs = (rawFailed as (Job | undefined | null)[]).filter(
-            (j): j is Job => j != null,
-        );
-
-        if (failedJobs.length === 0 && total > offset) {
-            this.logger.warn(
-                `getFailedJobs: getFailed(${offset}, ${offset + limit - 1}) returned 0 real jobs ` +
-                `despite total=${total} — likely stale hashes. Scanning wider window.`,
-            );
-            // Scan up to 5× the limit forward to find actual jobs
-            const scanEnd = Math.min(offset + limit * 5 - 1, total - 1);
-            const rawWider = await queue.getFailed(offset, scanEnd);
-            failedJobs = (rawWider as (Job | undefined | null)[]).filter(
-                (j): j is Job => j != null,
-            ).slice(0, limit);
-        }
+        // Regular paginated list
+        const ids = await getIds(offset, offset + limit - 1);
+        const failedJobs = await fetchJobs(ids);
 
         const items: FailedJobDto[] = failedJobs.map((job) => ({
             id: job.id ?? '',

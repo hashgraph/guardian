@@ -1602,7 +1602,13 @@ function formatTs(ts: number): string {
                                 <code class="font-mono text-sm">{{ drawerBaseName }}</code>
                             </h2>
                             <p class="text-xs text-muted-foreground mt-0.5">
-                                {{ failedJobs?.total ?? 0 }} failed job{{ (failedJobs?.total ?? 0) === 1 ? '' : 's' }}
+                                <template v-if="drawerSearch">
+                                    {{ filteredFailedJobs.length }} match{{ filteredFailedJobs.length === 1 ? '' : 'es' }} on this page
+                                    <span class="text-muted-foreground/60">({{ failedJobs?.total ?? 0 }} total)</span>
+                                </template>
+                                <template v-else>
+                                    {{ failedJobs?.total ?? 0 }} failed job{{ (failedJobs?.total ?? 0) === 1 ? '' : 's' }}
+                                </template>
                             </p>
                         </div>
                         <button
@@ -1704,8 +1710,9 @@ function formatTs(ts: number): string {
                                     placeholder="Filter by job ID or topic ID…"
                                     class="w-full h-8 rounded border border-border bg-muted/30 px-3 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                                 />
-                                <p v-if="drawerSearch && filteredFailedJobs.length === 0 && !failedPending" class="mt-1 text-xs text-muted-foreground">
-                                    No jobs match "{{ drawerSearch }}" on this page
+                                <p v-if="drawerSearch && !failedPending" class="mt-1 text-xs text-muted-foreground">
+                                    <template v-if="filteredFailedJobs.length === 0">No jobs match "{{ drawerSearch }}" on this page</template>
+                                    <template v-else>{{ filteredFailedJobs.length }} match{{ filteredFailedJobs.length === 1 ? '' : 'es' }} on this page — use pagination to search other pages</template>
                                 </p>
                             </div>
 
@@ -1816,9 +1823,9 @@ function formatTs(ts: number): string {
                                 </details>
                             </div>
 
-                            <!-- Pagination -->
+                            <!-- Pagination — hidden while search is active (filter is client-side / current page only) -->
                             <Pagination
-                                v-if="(failedJobs?.total ?? 0) > 0"
+                                v-if="!drawerSearch && (failedJobs?.total ?? 0) > 0"
                                 :currentPage="failedPage"
                                 :totalPages="Math.ceil((failedJobs?.total ?? 0) / failedPageSize)"
                                 :totalItems="failedJobs?.total ?? 0"
