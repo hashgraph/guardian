@@ -1,4 +1,25 @@
 {
+  "feedback": {
+    "button": "Comentarios",
+    "title": "Envíanos tus comentarios",
+    "close": "Cerrar",
+    "page": "Página",
+    "descriptionLabel": "Descripción",
+    "placeholder": "Cuéntanos qué funciona, qué falla o qué te gustaría ver...",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu{'@'}ejemplo.com",
+    "emailHint": "Solo lo usaremos para avisarte cuando se resuelva.",
+    "emailInvalid": "Introduce una dirección de correo válida.",
+    "attachScreenshot": "Capturar pantalla",
+    "removeScreenshot": "Quitar captura",
+    "optional": "opcional",
+    "cancel": "Cancelar",
+    "submit": "Enviar",
+    "success": "¡Gracias por tus comentarios!",
+    "error": "No se pudieron enviar los comentarios. Inténtalo de nuevo.",
+    "screenshotError": "No se pudo capturar la pantalla.",
+    "descriptionRequired": "Por favor, introduce una descripción."
+  },
   "common": {
     "search": "Buscar",
     "searchEllipsis": "Buscar...",

@@ -63,6 +63,12 @@ export default defineNuxtConfig({
             sseApiBaseUrl: process.env.NUXT_PUBLIC_SSE_API_BASE_URL || 'http://localhost:3030',
             // Reverse-geocoding endpoint. Override via NUXT_PUBLIC_GEOCODER_URL.
             geocoderUrl: 'https://nominatim.openstreetmap.org/reverse',
+            // Google Apps Script Web App URL that receives feedback submissions.
+            // Leave empty to hide the feedback widget. Set via NUXT_PUBLIC_FEEDBACK_WEBHOOK_URL.
+            feedbackWebhookUrl: process.env.NUXT_PUBLIC_FEEDBACK_WEBHOOK_URL || '',
+            // Optional shared secret sent with feedback; must match SHARED_SECRET
+            // in the Apps Script. Set via NUXT_PUBLIC_FEEDBACK_TOKEN.
+            feedbackToken: process.env.NUXT_PUBLIC_FEEDBACK_TOKEN || '',
         },
     },
 

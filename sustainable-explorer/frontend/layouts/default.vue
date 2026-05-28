@@ -11,6 +11,7 @@ import { Toaster } from 'vue-sonner';
                 <slot />
             </main>
         </div>
+        <FeedbackWidget />
         <Toaster position="bottom-right" rich-colors />
     </div>
 </template>

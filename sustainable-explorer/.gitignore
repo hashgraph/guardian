@@ -5,6 +5,9 @@ frontend/.output/**/*
 data/policy-zips/**/*
 policy.json
 
+frontend/.env
+
+frontend/google-apps-script/**/*
 # Snapshot bundles (built by scripts/export-snapshot.sh).
 # The directory itself is kept (we ship the .gitkeep so the bind mount has a
 # target) but generated dumps and shipped tarballs stay out of git.
