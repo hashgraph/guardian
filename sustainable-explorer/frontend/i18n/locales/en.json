@@ -63,7 +63,8 @@
     },
     "token": "Token",
     "policies": "policies",
-    "projectsLabel": "projects"
+    "projectsLabel": "projects",
+    "toggleSidebar": "Toggle sidebar"
   },
   "dashboard": {
     "title": "Dashboard",
