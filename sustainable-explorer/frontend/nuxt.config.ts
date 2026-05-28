@@ -32,6 +32,7 @@ export default defineNuxtConfig({
         { path: '~/components/layout', pathPrefix: false },
         { path: '~/components/shared', pathPrefix: false },
         { path: '~/components/project', pathPrefix: false },
+        { path: '~/components/registry', pathPrefix: false },
     ],
 
     imports: {

@@ -42,6 +42,16 @@ export class RegistryQueryDto extends PaginationQueryDto {
     @IsBoolean()
     @Transform(({ value }) => value === true || value === 'true' || value === '1')
     hideEmpty?: boolean;
+
+    @ApiPropertyOptional({ description: 'Filter registries created on or after this date (YYYY-MM-DD)' })
+    @IsOptional()
+    @IsString()
+    createdAtFrom?: string;
+
+    @ApiPropertyOptional({ description: 'Filter registries created on or before this date (YYYY-MM-DD)' })
+    @IsOptional()
+    @IsString()
+    createdAtTo?: string;
 }
 
 export class RegistryStats {
@@ -119,12 +129,12 @@ export class RegistryResponseDto {
             name: row.displayName,
             topicId: data.topicId || data.options?.topicId || null,
             relatedTopicId: row.relatedTopicId ?? null,
-            // Prefer top-level geography (set from profile VC's Country by the
-            // business-view builder) over the legacy options.geography.
-            geography: data.geography ?? data.options?.geography ?? null,
-            website: data.website ?? null,
-            law: data.options?.law || null,
-            tags: data.options?.tags || null,
+            // Prefer top-level geography/law/tags (set by business-view builder
+            // with COALESCE including attributes fallbacks) over legacy paths.
+            geography: data.geography ?? data.options?.geography ?? data.options?.attributes?.Country ?? data.options?.attributes?.geography ?? null,
+            website: data.website ?? data.options?.website ?? data.options?.attributes?.Website ?? null,
+            law: data.law ?? data.options?.law ?? data.options?.attributes?.law ?? null,
+            tags: data.tags ?? data.options?.tags ?? data.options?.attributes?.tags ?? null,
             action: data.options?.action || null,
             lang: data.options?.lang || null,
             sourceTimestamp: row.sourceTimestamp,

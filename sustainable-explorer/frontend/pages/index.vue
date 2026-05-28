@@ -691,13 +691,13 @@ const filteredStats = computed(() => {
                     <div class="px-6 pb-6">
                         <div class="rounded-xl border bg-card overflow-hidden">
                             <div class="overflow-x-auto">
-                            <table class="w-full text-sm min-w-[420px]">
+                            <table class="w-full text-sm table-fixed min-w-[420px]">
                                 <thead>
                                     <tr class="border-b bg-muted/30">
                                         <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.name') }}</th>
-                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.policies') }}</th>
-                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.projectsCol') }}</th>
-                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.issuancesCol') }}</th>
+                                        <th class="w-20 text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.policies') }}</th>
+                                        <th class="w-20 text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.projectsCol') }}</th>
+                                        <th class="w-28 text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.issuancesCol') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
@@ -713,7 +713,7 @@ const filteredStats = computed(() => {
                                             @click="navigate()"
                                         >
                                             <td class="py-2.5 px-4">
-                                                <span class="font-medium text-foreground">{{ org.name }}</span>
+                                                <span class="font-medium text-foreground break-all">{{ org.name }}</span>
                                             </td>
                                             <td class="py-2.5 px-4 text-right tabular-nums">
                                                 <NuxtLink

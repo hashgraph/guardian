@@ -13,18 +13,23 @@ import {
 } from 'lucide-vue-next';
 
 const { t, locale } = useI18n();
+const { network } = useNetwork();
 
 const collapsed = useState('sidebar-collapsed', () => false);
 
-// Mock last sync timestamp (e.g. 15 minutes ago)
-const lastSyncDate = new Date(Date.now() - 15 * 60 * 1000);
+const { data: syncStatus } = useSyncSummaryApi({ network });
+
 const localeTag = computed(() => (locale.value === 'es' ? 'es-ES' : 'en-US'));
-const lastSyncFormatted = computed(() =>
-    lastSyncDate.toLocaleDateString(localeTag.value, { month: 'short', day: 'numeric', year: 'numeric' }),
-);
-const lastSyncTime = computed(() =>
-    lastSyncDate.toLocaleTimeString(localeTag.value, { hour: '2-digit', minute: '2-digit', hour12: true }),
-);
+const lastSyncFormatted = computed(() => {
+    const raw = syncStatus.value?.lastSyncedAt;
+    if (!raw) return '—';
+    return new Date(raw).toLocaleDateString(localeTag.value, { month: 'short', day: 'numeric', year: 'numeric' });
+});
+const lastSyncTime = computed(() => {
+    const raw = syncStatus.value?.lastSyncedAt;
+    if (!raw) return '';
+    return new Date(raw).toLocaleTimeString(localeTag.value, { hour: '2-digit', minute: '2-digit', hour12: true });
+});
 
 const navItems = computed(() => [
     { label: t('nav.dashboard'), icon: LayoutDashboard, to: '/' },
@@ -148,10 +153,10 @@ const navItems = computed(() => [
                 <CheckCircle2 class="h-3.5 w-3.5 shrink-0 text-stat-green mt-0.5 ml-0.5" />
                 <div>
                     <div class="text-[11px] font-medium text-muted-foreground">{{ $t('nav.dataSyncedUpTo') }}</div>
-                    <div class="text-[11px] text-foreground">{{ lastSyncFormatted }}, {{ lastSyncTime }}</div>
+                    <div class="text-[11px] text-foreground">{{ lastSyncFormatted }}{{ lastSyncTime ? `, ${lastSyncTime}` : '' }}</div>
                 </div>
             </div>
-            <div v-else class="flex justify-center" :title="`${$t('nav.dataSyncedUpTo')}: ${lastSyncFormatted}, ${lastSyncTime}`">
+            <div v-else class="flex justify-center" :title="`${$t('nav.dataSyncedUpTo')}: ${lastSyncFormatted}${lastSyncTime ? `, ${lastSyncTime}` : ''}`">
                 <CheckCircle2 class="h-4 w-4 text-stat-green" />
             </div>
         </div>

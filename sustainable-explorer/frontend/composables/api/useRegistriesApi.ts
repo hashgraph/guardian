@@ -103,6 +103,12 @@ export const useRegistriesApi = (opts: UseRegistriesApiOptions) => {
         }
         // hideEmpty is a boolean toggle on the filter bar; only forward when true.
         if (filters['hideEmpty'] === true) q.hideEmpty = true;
+        // sourceTimestamp daterange: stored as { from, to } by DataFilters
+        const ts = filters['sourceTimestamp'];
+        if (ts && typeof ts === 'object' && !Array.isArray(ts)) {
+            if (ts.from) q.createdAtFrom = ts.from;
+            if (ts.to) q.createdAtTo = ts.to;
+        }
         return q;
     };
 
@@ -144,4 +150,31 @@ export const useRegistriesApi = (opts: UseRegistriesApiOptions) => {
     );
 
     return { data, pending, error, refresh };
+};
+
+export const useRegistryApi = (opts: { id: Ref<string>; network: Ref<string> }) => {
+    const config = useRuntimeConfig();
+    const baseURL = import.meta.server
+        ? (config.apiBaseUrl as string)
+        : (config.public.apiBaseUrl as string);
+
+    const key = computed(() => `registry:${opts.network.value}:${opts.id.value}`);
+
+    const { data, pending, error } = useAsyncData<RegistryDto | null>(
+        key.value,
+        async () => {
+            if (!opts.id.value) return null;
+            try {
+                return await $fetch<RegistryDto>(
+                    `${baseURL}/api/v1/${opts.network.value}/registries/id/${opts.id.value}`,
+                );
+            } catch (err) {
+                console.error('[useRegistryApi] fetch failed:', err);
+                return null;
+            }
+        },
+        { watch: [opts.id, opts.network] },
+    );
+
+    return { data, pending, error };
 };

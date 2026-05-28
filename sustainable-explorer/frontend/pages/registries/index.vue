@@ -60,6 +60,7 @@ const filterFields = computed<FilterField[]>(() => [
     { key: 'tags', label: t('registries.filters.tags'), type: 'text', width: 'sm' },
     { key: 'geography', label: t('registries.filters.geography'), type: 'text', width: 'sm' },
     { key: 'law', label: t('registries.filters.law'), type: 'text', width: 'sm' },
+    { key: 'sourceTimestamp', label: t('registries.filters.createdDate'), type: 'daterange', width: 'md' },
 ]);
 
 const sortKey = ref<ColumnKey | null>('createdAt');
@@ -209,20 +210,21 @@ function viewRegistry(r: RegistryDto) {
 
         <div class="px-6 pb-6">
             <div class="rounded-xl border bg-card overflow-hidden">
-                <table class="w-full text-sm table-fixed">
+                <div class="overflow-x-auto">
+                <table class="table-fixed text-sm" style="min-width: 1360px; width: 100%">
                     <colgroup>
-                        <col class="w-[14%]" />
-                        <col class="w-[10%]" />
-                        <col class="w-[7%]" />
-                        <col class="w-[8%]" />
-                        <col class="w-[7%]" />
-                        <col class="w-[7%]" />
-                        <col class="w-[7%]" />
-                        <col class="w-[7%]" />
-                        <col class="w-[8%]" />
-                        <col class="w-[12%]" />
-                        <col class="w-[8%]" />
-                        <col class="w-[5%]" />
+                        <col style="width: 160px" />
+                        <col style="width: 150px" />
+                        <col style="width: 90px" />
+                        <col style="width: 200px" />
+                        <col style="width: 110px" />
+                        <col style="width: 110px" />
+                        <col style="width: 80px" />
+                        <col style="width: 70px" />
+                        <col style="width: 90px" />
+                        <col style="width: 110px" />
+                        <col style="width: 90px" />
+                        <col style="width: 60px" />
                     </colgroup>
                     <thead>
                         <tr class="border-b bg-muted/30">
@@ -237,7 +239,7 @@ function viewRegistry(r: RegistryDto) {
                             <SortableHeader :label="$t('registries.columns.issuances')" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('registries.columns.tags')" sort-key="tags" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('registries.columns.created')" sort-key="createdAt" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('common.viewRawData') }}</th>
+                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('common.rawData') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -263,6 +265,7 @@ function viewRegistry(r: RegistryDto) {
                                 v-for="r in registries"
                                 :key="r.id"
                                 class="hover:bg-muted/30 transition-colors cursor-pointer align-top"
+                                @click="navigateTo(`/registries/${r.id}`)"
                             >
                                 <td class="py-3 px-4">
                                     <div class="flex items-start gap-2.5">
@@ -350,6 +353,7 @@ function viewRegistry(r: RegistryDto) {
                         </template>
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <Pagination

@@ -30,6 +30,8 @@ export class RegistriesService {
             geography: query.geography,
             law: query.law,
             hideEmpty: query.hideEmpty,
+            createdAtFrom: query.createdAtFrom,
+            createdAtTo: query.createdAtTo,
             sortBy: query.sortBy,
             sortDir: query.sortDir,
         });
@@ -43,6 +45,13 @@ export class RegistriesService {
     async findByDid(network: string, did: string): Promise<RegistryResponseDto | null> {
         const repo = this.getRepository(network);
         const row = await repo.findByDid(did);
+        if (!row) return null;
+        return RegistryResponseDto.fromRow(row, network, row.stats);
+    }
+
+    async findById(network: string, id: string): Promise<RegistryResponseDto | null> {
+        const repo = this.getRepository(network);
+        const row = await repo.findById(id);
         if (!row) return null;
         return RegistryResponseDto.fromRow(row, network, row.stats);
     }

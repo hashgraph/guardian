@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FileJson } from 'lucide-vue-next';
+import { FileJson, Sparkles } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
 
@@ -17,7 +17,8 @@ const formatDate = (d: string | null) => {
 const route = useRoute();
 const projectKeyFilter = computed(() => route.query.projectKey as string | undefined);
 const methodologyIdFilter = computed(() => route.query.methodologyId as string | undefined);
-const { credits, total, pending } = useCredits(projectKeyFilter, methodologyIdFilter);
+const registryDidFilter = computed(() => route.query.registryDid as string | undefined);
+const { credits, total, pending } = useCredits(projectKeyFilter, methodologyIdFilter, registryDidFilter);
 
 const config = useRuntimeConfig();
 const apiBaseURL = import.meta.server
@@ -46,7 +47,7 @@ async function viewVc(c: any) {
     }
 }
 
-const hideUnlinked = ref(false);
+const hideUnlinked = ref(route.query.linkedOnly === 'true');
 
 const allCredits = computed(() => {
     const mapped = credits.value.map(c => ({
@@ -66,13 +67,22 @@ const methodologyFilterName = computed(() => {
     return allCredits.value[0]?.methodologyDisplay ?? null;
 });
 
-const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters } =
+const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters, applyPreset } =
     useFilteredPagination(allCredits, {
         searchFields: ['name', 'symbol', 'tokenId', 'projectDisplay', 'methodologyDisplay', 'registry'],
         pageSize: 10,
         defaultSort: { key: 'supply', dir: 'desc' },
-        excludeFromQuery: ['projectKey', 'methodologyId'],
+        excludeFromQuery: ['projectKey', 'methodologyId', 'linkedOnly', 'registryDid'],
     });
+
+const presets = computed(() => [
+    { label: t('credits.presets.fungible'), filters: { type: 'Fungible' } },
+    { label: t('credits.presets.nonFungible'), filters: { type: 'Non-Fungible' } },
+    { label: t('credits.presets.minted2024'), filters: { mintDate: '2024-01-01|2024-12-31' } },
+    { label: t('credits.presets.minted2025'), filters: { mintDate: '2025-01-01|2025-12-31' } },
+    { label: t('credits.presets.blueCarbon'), search: 'Blue Carbon' },
+    { label: t('credits.presets.forestry'), search: 'Forestry' },
+]);
 
 const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i) => i));
 
@@ -86,7 +96,17 @@ const visibleFilterOptions = computed(() => ({
 const filters = computed<FilterOption[]>(() => [
     { key: 'type', label: t('credits.filters.tokenType'), options: visibleFilterOptions.value.types.map(x => ({ value: x, label: x })) },
     { key: 'registry', label: t('credits.filters.registry'), options: visibleFilterOptions.value.registries.map(r => ({ value: r, label: r })) },
+    { key: 'supply', label: t('credits.filters.supply'), type: 'numrange', options: [] },
+    { key: 'mintDate', label: t('credits.filters.mintDate'), type: 'daterange', options: [] },
 ]);
+
+const summaryStats = computed(() => {
+    const f = filtered.value;
+    const totalSupply = f.reduce((sum, c) => sum + (c.supply ?? 0), 0);
+    const uniqueRegistries = new Set(f.map(c => c.registry).filter(Boolean)).size;
+    const uniqueProjects = new Set(f.map(c => c.projectId).filter(Boolean)).size;
+    return { totalSupply, uniqueRegistries, uniqueProjects };
+});
 
 const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat-blue', 'Non-Fungible': 'bg-stat-amber/10 text-stat-amber' };
 </script>
@@ -118,6 +138,16 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
             </div>
         </div>
 
+        <div v-if="registryDidFilter" class="px-6 pb-2">
+            <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
+                <span class="text-muted-foreground">{{ $t('credits.filteredByRegistry') }}</span>
+                <span class="font-medium text-foreground font-mono text-xs">{{ registryDidFilter }}</span>
+                <NuxtLink to="/credits" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    {{ $t('credits.clearRegistryFilter') }} ×
+                </NuxtLink>
+            </div>
+        </div>
+
         <div class="px-6 pb-3">
             <FilterBar v-model="searchQuery" :filters="filters" :active-filters="activeFilters" :result-count="filtered.length" :total-count="total" :search-placeholder="$t('credits.searchPlaceholder')" @filter="setFilter" @clear="clearFilters" />
             <label class="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
@@ -130,6 +160,34 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
                 {{ $t('credits.filters.hideUnlinked') }}
                 <InfoTooltip :text="$t('credits.tooltips.hideUnlinked')" />
             </label>
+
+            <!-- Preset Templates -->
+            <div class="flex items-center gap-2 mt-2.5 flex-wrap">
+                <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <Sparkles class="h-3 w-3" /> {{ $t('credits.quickFilters') }}
+                </span>
+                <button
+                    v-for="preset in presets"
+                    :key="preset.label"
+                    class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    @click="applyPreset({ search: preset.search, filters: preset.filters } as any)"
+                >
+                    {{ preset.label }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div v-if="filtered.length !== total" class="px-6 pb-3">
+            <div class="flex items-center gap-4 rounded-lg bg-muted/50 px-4 py-2.5 text-xs">
+                <span class="font-medium text-foreground">{{ $t('credits.issuancesFound', { count: filtered.length }) }}</span>
+                <span class="text-muted-foreground">&middot;</span>
+                <span class="text-muted-foreground">{{ $t('credits.totalSupply') }} <strong class="text-foreground">{{ formatCredits(summaryStats.totalSupply) }}</strong></span>
+                <span class="text-muted-foreground">&middot;</span>
+                <span class="text-muted-foreground">{{ $t('credits.registries') }} <strong class="text-foreground">{{ summaryStats.uniqueRegistries }}</strong></span>
+                <span class="text-muted-foreground">&middot;</span>
+                <span class="text-muted-foreground">{{ $t('credits.projects') }} <strong class="text-foreground">{{ summaryStats.uniqueProjects }}</strong></span>
+            </div>
         </div>
 
         <div class="px-6 pb-6">

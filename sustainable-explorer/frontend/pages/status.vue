@@ -10,6 +10,7 @@ import {
     FileWarning,
     Loader2,
     RefreshCw,
+    Settings,
     X,
 } from 'lucide-vue-next';
 import type {
@@ -29,16 +30,54 @@ const {
     refresh: refreshQueues,
 } = useQueueListApi({ network });
 
-const syncTopicPage = ref(1);
-const syncTopicPageSize = ref(10);
-const syncTokenPage = ref(1);
-const syncTokenPageSize = ref(10);
-
 const {
     data: syncStatus,
     available: syncAvailable,
-    refresh: refreshSync,
-} = useSyncStatusApi({ network, topicPage: syncTopicPage, topicPageSize: syncTopicPageSize, tokenPage: syncTokenPage, tokenPageSize: syncTokenPageSize });
+} = useSyncSummaryApi({ network });
+
+const topicSearch = ref('');
+const topicStatusFilter = ref('');
+const topicPage = ref(1);
+const topicPageSize = ref(10);
+const { data: syncTopicsData, pending: topicsPending } = useSyncTopicsApi({
+    network,
+    search: topicSearch,
+    status: topicStatusFilter,
+    page: topicPage,
+    pageSize: topicPageSize,
+});
+
+const tokenSearch = ref('');
+const tokenTypeFilter = ref('');
+const tokenPage = ref(1);
+const tokenPageSize = ref(10);
+const { data: syncTokensData, pending: tokensPending } = useSyncTokensApi({
+    network,
+    search: tokenSearch,
+    type: tokenTypeFilter,
+    page: tokenPage,
+    pageSize: tokenPageSize,
+});
+
+watch(topicSearch, () => { topicPage.value = 1; });
+watch(topicStatusFilter, () => { topicPage.value = 1; });
+watch(tokenSearch, () => { tokenPage.value = 1; });
+watch(tokenTypeFilter, () => { tokenPage.value = 1; });
+
+const topicFiltersActive = computed(() => !!topicSearch.value || !!topicStatusFilter.value);
+const tokenFiltersActive = computed(() => !!tokenSearch.value || !!tokenTypeFilter.value);
+
+function clearTopicFilters() {
+    topicSearch.value = '';
+    topicStatusFilter.value = '';
+    topicPage.value = 1;
+}
+
+function clearTokenFilters() {
+    tokenSearch.value = '';
+    tokenTypeFilter.value = '';
+    tokenPage.value = 1;
+}
 
 // ─── SSE ─────────────────────────────────────────────────────────────────────
 
@@ -214,7 +253,7 @@ async function confirmRetryAll() {
             `/api/v1/${network.value}/queues/${baseName}/retry-all-failed`,
             {
                 method: 'POST',
-                body: { force },
+                body: { force, limit: Math.min(retryAllState.value!.failedCount, 1000) },
                 baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
             },
         );
@@ -258,6 +297,20 @@ function closeDrawer() {
     drawerBaseName.value = null;
 }
 
+const drawerSearch = ref('');
+watch(drawerBaseName, () => { drawerSearch.value = ''; });
+
+const filteredFailedJobs = computed(() => {
+    const items = failedJobs.value?.items ?? [];
+    const q = drawerSearch.value.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((j) =>
+        j.id.toLowerCase().includes(q) ||
+        String((j.data as any)?.topicId ?? '').toLowerCase().includes(q) ||
+        String((j.data as any)?.messageTimestamp ?? '').toLowerCase().includes(q),
+    );
+});
+
 const { data: failedJobs, pending: failedPending, refresh: refreshFailed } =
     useQueueFailedJobsApi({
         network,
@@ -298,21 +351,21 @@ function onGroupPageSizeChange(size: number) {
 }
 
 function onSyncTopicPageChange(page: number) {
-    syncTopicPage.value = page;
+    topicPage.value = page;
 }
 
 function onSyncTopicPageSizeChange(size: number) {
-    syncTopicPageSize.value = size;
-    syncTopicPage.value = 1;
+    topicPageSize.value = size;
+    topicPage.value = 1;
 }
 
 function onSyncTokenPageChange(page: number) {
-    syncTokenPage.value = page;
+    tokenPage.value = page;
 }
 
 function onSyncTokenPageSizeChange(size: number) {
-    syncTokenPageSize.value = size;
-    syncTokenPage.value = 1;
+    tokenPageSize.value = size;
+    tokenPage.value = 1;
 }
 
 // ─── Per-job retry state ──────────────────────────────────────────────────────
@@ -517,6 +570,42 @@ function onIpfsFailurePageChange(page: number) {
 function onIpfsFailurePageSizeChange(size: number) {
     ipfsFailurePageSize.value = size;
     ipfsFailurePage.value = 1;
+}
+
+// ─── Maintenance actions ──────────────────────────────────────────────────────
+
+const maintenancePanelOpen = ref(false);
+const redecodeAllPending = ref(false);
+const reparseAllPending = ref(false);
+
+async function triggerRedecodeAll() {
+    redecodeAllPending.value = true;
+    try {
+        const result = await $fetch<{ total: number; enqueued: number; skipped: number }>(
+            `/api/v1/${network.value}/methodologies/redecode-all`,
+            { method: 'POST', baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '' },
+        );
+        showToast(`Re-decode enqueued: ${result.enqueued}/${result.total} policies (${result.skipped} skipped)`);
+    } catch (err: any) {
+        showToast(`Re-decode failed: ${err?.message ?? 'Unknown error'}`, 'error');
+    } finally {
+        redecodeAllPending.value = false;
+    }
+}
+
+async function triggerReparseAll() {
+    reparseAllPending.value = true;
+    try {
+        const result = await $fetch<{ methodologies: number; succeeded: number; skipped: number; enqueued: number }>(
+            `/api/v1/${network.value}/methodologies/reparse-projects`,
+            { method: 'POST', baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '' },
+        );
+        showToast(`Reparse enqueued: ${result.enqueued} VC jobs across ${result.succeeded} methodologies`);
+    } catch (err: any) {
+        showToast(`Reparse failed: ${err?.message ?? 'Unknown error'}`, 'error');
+    } finally {
+        reparseAllPending.value = false;
+    }
 }
 
 // ─── Activity feed — filter ───────────────────────────────────────────────────
@@ -864,9 +953,36 @@ function formatTs(ts: number): string {
 
                     <!-- Topics table -->
                     <div v-if="syncStatus?.totalTopics">
-                        <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2 mb-2">
                             <h3 class="text-sm font-semibold text-foreground">{{ $t('status.syncHealth.topics') }}</h3>
-                            <span class="text-xs text-muted-foreground">{{ syncStatus.totalTopics.toLocaleString() }} total</span>
+                            <span class="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium px-2 py-0.5 min-w-6">
+                                {{ (syncTopicsData?.total ?? syncStatus.totalTopics).toLocaleString() }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap mb-2">
+                            <input
+                                v-model="topicSearch"
+                                type="text"
+                                placeholder="Search topic ID…"
+                                class="h-8 rounded-md border border-input bg-card px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-48"
+                            />
+                            <select
+                                v-model="topicStatusFilter"
+                                class="h-8 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                                <option value="">All statuses</option>
+                                <option value="SYNCED">Synced</option>
+                                <option value="NEW">New</option>
+                                <option value="DISABLED">Disabled</option>
+                            </select>
+                            <button
+                                v-if="topicFiltersActive"
+                                class="inline-flex items-center gap-1 h-8 rounded-md px-3 text-sm border border-border hover:bg-muted transition-colors text-muted-foreground"
+                                @click="clearTopicFilters"
+                            >
+                                <X class="h-3.5 w-3.5" />
+                                Clear
+                            </button>
                         </div>
                         <div class="rounded-lg border bg-card overflow-hidden">
                             <table class="w-full text-sm">
@@ -880,7 +996,13 @@ function formatTs(ts: number): string {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
-                                    <tr v-for="topic in syncStatus.topics" :key="topic.topicId" class="hover:bg-muted/20">
+                                    <tr v-if="topicsPending">
+                                        <td colspan="5" class="py-6 text-center text-xs text-muted-foreground">Loading…</td>
+                                    </tr>
+                                    <tr v-else-if="(syncTopicsData?.topics ?? []).length === 0">
+                                        <td colspan="5" class="py-6 text-center text-xs text-muted-foreground">No topics found</td>
+                                    </tr>
+                                    <tr v-for="topic in (syncTopicsData?.topics ?? [])" :key="topic.topicId" class="hover:bg-muted/20">
                                         <td class="py-2 px-3 font-mono text-xs">{{ topic.topicId }}</td>
                                         <td class="py-2 px-3 text-right tabular-nums">{{ topic.messageCount.toLocaleString() }}</td>
                                         <td class="py-2 px-3 text-center">
@@ -900,20 +1022,46 @@ function formatTs(ts: number): string {
                             </table>
                         </div>
                         <Pagination
-                            :currentPage="syncTopicPage"
-                            :totalPages="Math.ceil(syncStatus.totalTopics / syncTopicPageSize)"
-                            :totalItems="syncStatus.totalTopics"
-                            :pageSize="syncTopicPageSize"
+                            :currentPage="topicPage"
+                            :totalPages="Math.ceil((syncTopicsData?.total ?? 0) / topicPageSize)"
+                            :totalItems="syncTopicsData?.total ?? 0"
+                            :pageSize="topicPageSize"
                             @update:currentPage="onSyncTopicPageChange"
                             @update:pageSize="onSyncTopicPageSizeChange"
                         />
                     </div>
 
                     <!-- Tokens table -->
-                    <div v-if="syncStatus?.tokenTotal">
-                        <div class="flex items-center justify-between mb-2">
+                    <div v-if="syncTokensData?.total || tokenSearch || tokenTypeFilter">
+                        <div class="flex items-center gap-2 mb-2">
                             <h3 class="text-sm font-semibold text-foreground">{{ $t('status.syncHealth.tokens') }}</h3>
-                            <span class="text-xs text-muted-foreground">{{ syncStatus.tokenTotal.toLocaleString() }} total</span>
+                            <span class="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium px-2 py-0.5 min-w-6">
+                                {{ (syncTokensData?.total ?? 0).toLocaleString() }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap mb-2">
+                            <input
+                                v-model="tokenSearch"
+                                type="text"
+                                placeholder="Search token ID…"
+                                class="h-8 rounded-md border border-input bg-card px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-48"
+                            />
+                            <select
+                                v-model="tokenTypeFilter"
+                                class="h-8 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                                <option value="">All types</option>
+                                <option value="FUNGIBLE_COMMON">Fungible</option>
+                                <option value="NON_FUNGIBLE_UNIQUE">Non-Fungible</option>
+                            </select>
+                            <button
+                                v-if="tokenFiltersActive"
+                                class="inline-flex items-center gap-1 h-8 rounded-md px-3 text-sm border border-border hover:bg-muted transition-colors text-muted-foreground"
+                                @click="clearTokenFilters"
+                            >
+                                <X class="h-3.5 w-3.5" />
+                                Clear
+                            </button>
                         </div>
                         <div class="rounded-lg border bg-card overflow-hidden">
                             <table class="w-full text-sm">
@@ -926,7 +1074,13 @@ function formatTs(ts: number): string {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
-                                    <tr v-for="token in syncStatus.tokens" :key="token.tokenId" class="hover:bg-muted/20">
+                                    <tr v-if="tokensPending">
+                                        <td colspan="4" class="py-6 text-center text-xs text-muted-foreground">Loading…</td>
+                                    </tr>
+                                    <tr v-else-if="(syncTokensData?.tokens ?? []).length === 0">
+                                        <td colspan="4" class="py-6 text-center text-xs text-muted-foreground">No tokens found</td>
+                                    </tr>
+                                    <tr v-for="token in (syncTokensData?.tokens ?? [])" :key="token.tokenId" class="hover:bg-muted/20">
                                         <td class="py-2 px-3 font-mono text-xs">{{ token.tokenId }}</td>
                                         <td class="py-2 px-3 text-right tabular-nums">{{ token.serialNumber }}</td>
                                         <td class="py-2 px-3 text-xs">{{ token.type }}</td>
@@ -943,10 +1097,10 @@ function formatTs(ts: number): string {
                             </table>
                         </div>
                         <Pagination
-                            :currentPage="syncTokenPage"
-                            :totalPages="Math.ceil(syncStatus.tokenTotal / syncTokenPageSize)"
-                            :totalItems="syncStatus.tokenTotal"
-                            :pageSize="syncTokenPageSize"
+                            :currentPage="tokenPage"
+                            :totalPages="Math.ceil((syncTokensData?.total ?? 0) / tokenPageSize)"
+                            :totalItems="syncTokensData?.total ?? 0"
+                            :pageSize="tokenPageSize"
                             @update:currentPage="onSyncTokenPageChange"
                             @update:pageSize="onSyncTokenPageSizeChange"
                         />
@@ -1232,6 +1386,58 @@ function formatTs(ts: number): string {
             </Transition>
         </div>
 
+        <!-- Section E-pre2: Maintenance (collapsible) -->
+        <div class="border-t">
+            <button
+                class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-muted/20 transition-colors"
+                @click="maintenancePanelOpen = !maintenancePanelOpen"
+            >
+                <div class="flex items-center gap-2">
+                    <Settings class="h-4 w-4 text-muted-foreground" />
+                    <h2 class="text-base font-semibold text-foreground">Maintenance</h2>
+                </div>
+                <ChevronDown
+                    class="h-4 w-4 text-muted-foreground transition-transform"
+                    :class="{ 'rotate-180': maintenancePanelOpen }"
+                />
+            </button>
+
+            <Transition
+                enter-active-class="transition-all duration-200 ease-out"
+                enter-from-class="opacity-0 -translate-y-1"
+                enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition-all duration-150 ease-in"
+                leave-from-class="opacity-100 translate-y-0"
+                leave-to-class="opacity-0 -translate-y-1"
+            >
+                <div v-if="maintenancePanelOpen" class="px-6 pb-6 space-y-3">
+                    <p class="text-xs text-muted-foreground">
+                        Admin-only operations for re-processing policies and projects. Run re-decode first, then reparse to propagate updated field mappings.
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <button
+                            class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            :disabled="redecodeAllPending"
+                            @click="triggerRedecodeAll"
+                        >
+                            <Loader2 v-if="redecodeAllPending" class="h-4 w-4 animate-spin" />
+                            <RefreshCw v-else class="h-4 w-4" />
+                            Redecode All Policies
+                        </button>
+                        <button
+                            class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            :disabled="reparseAllPending"
+                            @click="triggerReparseAll"
+                        >
+                            <Loader2 v-if="reparseAllPending" class="h-4 w-4 animate-spin" />
+                            <RefreshCw v-else class="h-4 w-4" />
+                            Reparse All Projects
+                        </button>
+                    </div>
+                </div>
+            </Transition>
+        </div>
+
         <!-- Section E: Recent activity feed -->
         <div class="border-t">
             <div class="px-6 py-4 flex items-center justify-between">
@@ -1396,7 +1602,13 @@ function formatTs(ts: number): string {
                                 <code class="font-mono text-sm">{{ drawerBaseName }}</code>
                             </h2>
                             <p class="text-xs text-muted-foreground mt-0.5">
-                                {{ failedJobs?.total ?? 0 }} failed job{{ (failedJobs?.total ?? 0) === 1 ? '' : 's' }}
+                                <template v-if="drawerSearch">
+                                    {{ filteredFailedJobs.length }} match{{ filteredFailedJobs.length === 1 ? '' : 'es' }} on this page
+                                    <span class="text-muted-foreground/60">({{ failedJobs?.total ?? 0 }} total)</span>
+                                </template>
+                                <template v-else>
+                                    {{ failedJobs?.total ?? 0 }} failed job{{ (failedJobs?.total ?? 0) === 1 ? '' : 's' }}
+                                </template>
                             </p>
                         </div>
                         <button
@@ -1490,6 +1702,20 @@ function formatTs(ts: number): string {
 
                         <!-- All failed tab -->
                         <template v-if="drawerTab === 'allFailed'">
+                            <!-- Search -->
+                            <div class="pb-1">
+                                <input
+                                    v-model="drawerSearch"
+                                    type="text"
+                                    placeholder="Filter by job ID or topic ID…"
+                                    class="w-full h-8 rounded border border-border bg-muted/30 px-3 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                                />
+                                <p v-if="drawerSearch && !failedPending" class="mt-1 text-xs text-muted-foreground">
+                                    <template v-if="filteredFailedJobs.length === 0">No jobs match "{{ drawerSearch }}" on this page</template>
+                                    <template v-else>{{ filteredFailedJobs.length }} match{{ filteredFailedJobs.length === 1 ? '' : 'es' }} on this page — use pagination to search other pages</template>
+                                </p>
+                            </div>
+
                             <div v-if="failedPending" class="space-y-2">
                                 <div v-for="i in 5" :key="i" class="rounded-lg border p-4 animate-pulse space-y-2">
                                     <div class="h-4 bg-muted rounded w-full" />
@@ -1502,7 +1728,7 @@ function formatTs(ts: number): string {
                             </div>
 
                             <div
-                                v-for="job in failedJobs?.items ?? []"
+                                v-for="job in filteredFailedJobs"
                                 :key="job.id"
                                 class="rounded-lg border bg-card p-4 space-y-2 transition-opacity"
                                 :class="{ 'opacity-0': jobRetryStates[job.id]?.done }"
@@ -1597,9 +1823,9 @@ function formatTs(ts: number): string {
                                 </details>
                             </div>
 
-                            <!-- Pagination -->
+                            <!-- Pagination — hidden while search is active (filter is client-side / current page only) -->
                             <Pagination
-                                v-if="(failedJobs?.total ?? 0) > 0"
+                                v-if="!drawerSearch && (failedJobs?.total ?? 0) > 0"
                                 :currentPage="failedPage"
                                 :totalPages="Math.ceil((failedJobs?.total ?? 0) / failedPageSize)"
                                 :totalItems="failedJobs?.total ?? 0"

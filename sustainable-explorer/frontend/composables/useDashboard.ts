@@ -206,15 +206,14 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
 
     // Registries derived from filtered projects
     const registries = computed(() => {
-        const orgMap: Record<string, { name: string; policies: Set<string>; projects: number; credits: number }> = {};
+        const orgMap: Record<string, { name: string; policies: Set<string>; projects: number }> = {};
 
         for (const p of filteredProjects.value) {
             if (!orgMap[p.registry]) {
-                orgMap[p.registry] = { name: p.registry, policies: new Set(), projects: 0, credits: 0 };
+                orgMap[p.registry] = { name: p.registry, policies: new Set(), projects: 0 };
             }
             orgMap[p.registry].policies.add(p.methodologyId);
             orgMap[p.registry].projects++;
-            orgMap[p.registry].credits += p.credits;
         }
 
         return Object.entries(orgMap)
@@ -222,7 +221,7 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
                 name: key,
                 policies: data.policies.size,
                 projects: data.projects,
-                credits: formatCredits(data.credits),
+                credits: formatCredits(mintedByRegistry.value.get(key) ?? 0),
             }))
             .sort((a, b) => b.projects - a.projects);
     });

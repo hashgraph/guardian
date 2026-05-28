@@ -72,6 +72,20 @@ export class PgRegistryRepository extends RegistryRepository {
             ) > 0`);
         }
 
+        // Date range filter on sourceTimestamp (Hedera on-chain timestamp, seconds since epoch)
+        if (query.createdAtFrom) {
+            const ts = Math.floor(new Date(query.createdAtFrom).getTime() / 1000);
+            const p = builder.nextParam(ts);
+            builder.addClause(`bv."sourceTimestamp" IS NOT NULL AND bv."sourceTimestamp"::numeric >= ${p}`);
+        }
+        if (query.createdAtTo) {
+            const toDate = new Date(query.createdAtTo);
+            toDate.setHours(23, 59, 59, 999);
+            const ts = Math.floor(toDate.getTime() / 1000);
+            const p = builder.nextParam(ts);
+            builder.addClause(`bv."sourceTimestamp" IS NOT NULL AND bv."sourceTimestamp"::numeric <= ${p}`);
+        }
+
         // Special: full-text search with ranking. The tsvector index covers
         // displayName (weight A), registryDid (B), and searchText (C) which
         // includes name + description + tags + geography + law + token info.
@@ -174,6 +188,29 @@ export class PgRegistryRepository extends RegistryRepository {
             LIMIT 1
             `,
             [did],
+        );
+
+        if (rawRows.length === 0) return null;
+        return PgRegistryRepository.mapRow(rawRows[0]);
+    }
+
+    async findById(id: string): Promise<RegistryRow | null> {
+        const rawRows: RawRow[] = await this.dataSource.query(
+            `
+            SELECT
+                bv.*,
+                s.policy_count,
+                s.project_count,
+                s.issuance_count,
+                s.user_count
+            FROM business_view bv
+            LEFT JOIN ${MV_REGISTRY_STATS_NAME} s
+                ON s."registryDid" = bv."registryDid"
+            WHERE bv."viewType" = 'REGISTRY'
+              AND bv.id = $1
+            LIMIT 1
+            `,
+            [id],
         );
 
         if (rawRows.length === 0) return null;

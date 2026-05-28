@@ -60,7 +60,7 @@ const allProjects = computed(() => projects.value.map(p => ({
 
 const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters, applyPreset } =
     useFilteredPagination(allProjects, {
-        searchFields: ['name', 'country', 'methodology', 'registry', 'sector', 'sectoralScope'],
+        searchFields: ['name', 'country', 'methodology', 'registry', 'sector', 'sectoralScope', 'developer'],
         pageSize: 10,
         defaultSort: { key: 'createdAt', dir: 'desc' },
         arrayFields: ['sdgs'],
@@ -71,7 +71,7 @@ const presets = computed(() => [
     { label: t('projects.presets.goldStandard'), filters: { registry: 'Gold Standard' } },
     { label: t('projects.presets.sdg13'), filters: { sdgs: '13' } },
     { label: t('projects.presets.underValidation'), filters: { status: 'Under Validation' } },
-    { label: t('projects.presets.vintage2024'), filters: { vintage: '2024' } },
+    { label: t('projects.presets.vintage2024'), filters: { vintage: '2024|2024' } },
     { label: t('projects.presets.blueCarbon'), search: 'Blue Carbon' },
 ]);
 
@@ -98,7 +98,8 @@ const filters = computed<FilterOption[]>(() => [
     {
         key: 'vintage',
         label: t('projects.filters.vintage'),
-        options: filterOptions.value.vintages.map(v => ({ value: v, label: v })),
+        type: 'yearrange' as const,
+        options: [],
     },
     {
         key: 'sector',
@@ -109,6 +110,11 @@ const filters = computed<FilterOption[]>(() => [
         key: 'sectoralScope',
         label: t('projects.filters.sectoralScope'),
         options: filterOptions.value.sectoralScopes.map(s => ({ value: s, label: s })),
+    },
+    {
+        key: 'developer',
+        label: t('projects.filters.developer'),
+        options: filterOptions.value.developers.map(d => ({ value: d, label: d })),
     },
     {
         key: 'sdgs',

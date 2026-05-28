@@ -195,6 +195,75 @@ export class MappingReprocessService {
     }
 
     /**
+     * Re-enqueues a POLICY_DECODE job for every policy that currently has
+     * decodeStatus='decoded'. Useful after classifier keyword updates to
+     * re-stamp docType on existing policyMapping entries without manually
+     * triggering redecode per methodology.
+     *
+     * Returns aggregate counts — failed enqueues are skipped and logged.
+     */
+    async redecodeAllPolicies(network: string): Promise<{
+        total: number;
+        enqueued: number;
+        skipped: number;
+    }> {
+        const ds = this.dataSources.getDataSource(network);
+
+        const policyRows: Array<{
+            policyTopicId: string;
+            instanceTopicId: string | null;
+            sourceCid: string;
+        }> = await ds.query(
+            `SELECT "policyTopicId", "instanceTopicId", "sourceCid"
+             FROM policy
+             WHERE "decodeStatus" = 'decoded'`,
+        );
+
+        const queue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.POLICY_DECODE);
+
+        let enqueued = 0;
+        let skipped = 0;
+
+        for (const row of policyRows) {
+            try {
+                const msgRows: Array<{ consensusTimestamp: string }> = await ds.query(
+                    `SELECT "consensusTimestamp"
+                     FROM message
+                     WHERE type = 'Instance-Policy'
+                       AND action = 'publish-policy'
+                       AND "topicId" = $1
+                     ORDER BY "consensusTimestamp" DESC
+                     LIMIT 1`,
+                    [row.policyTopicId],
+                );
+
+                const jobData: PolicyDecodeJobData = {
+                    cid: row.sourceCid,
+                    messageTimestamp: msgRows[0]?.consensusTimestamp ?? '0.0',
+                    policyTopicId: row.policyTopicId,
+                    instanceTopicId: row.instanceTopicId,
+                };
+
+                const jobId = `policy-decode-rerun-${row.policyTopicId}-${Date.now()}`;
+                await queue.add('decode', jobData, { jobId });
+                enqueued++;
+            } catch (err) {
+                skipped++;
+                this.logger.warn(
+                    `redecodeAllPolicies: skipped policyTopicId=${row.policyTopicId}: ` +
+                    `${err instanceof Error ? err.message : String(err)}`,
+                );
+            }
+        }
+
+        this.logger.log(
+            `redecodeAllPolicies on ${network}: ${enqueued} enqueued, ${skipped} skipped of ${policyRows.length} total`,
+        );
+
+        return { total: policyRows.length, enqueued, skipped };
+    }
+
+    /**
      * Walks every methodology in the network and enqueues per-VC reparse jobs
      * for each that has a successful decode.
      *

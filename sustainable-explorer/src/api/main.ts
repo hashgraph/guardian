@@ -34,12 +34,14 @@ async function bootstrap() {
     });
 
     // Swagger / OpenAPI
+    const corsOrigin = (process.env.API_CORS_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean)[0];
+    const swaggerServerUrl = corsOrigin || `http://localhost:${parseInt(process.env.API_PORT || '3030', 10)}`;
     const swaggerConfig = new DocumentBuilder()
         .setTitle('Sustainable Explorer API')
         .setDescription('REST API for querying indexed Hedera Guardian sustainability data')
         .setVersion('1.0')
         .addTag('registries', 'Standard Registries')
-        .addServer('http://localhost:3030', 'Local development')
+        .addServer(swaggerServerUrl, 'Sustainable Explorer API Server')
         .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('api/docs', app, document, {

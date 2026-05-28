@@ -302,10 +302,12 @@ export class QueueAutoscalerService implements OnApplicationBootstrap, OnModuleD
                         (this.scaleDownCounters[baseName] ?? 0) + 1;
                     if (this.scaleDownCounters[baseName] >= 2) {
                         const next = Math.max(current - 1, entry.minConcurrency);
-                        workerInstance.concurrency = next;
-                        this.logger.log(
-                            `[Autoscaler] Scale DOWN ${baseName}: ${current} → ${next}`,
-                        );
+                        if (next < current) {
+                            workerInstance.concurrency = next;
+                            this.logger.log(
+                                `[Autoscaler] Scale DOWN ${baseName}: ${current} → ${next}`,
+                            );
+                        }
                         this.scaleDownCounters[baseName] = 0;
                     }
                 } else {
