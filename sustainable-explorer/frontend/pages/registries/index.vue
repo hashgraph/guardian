@@ -60,6 +60,7 @@ const filterFields = computed<FilterField[]>(() => [
     { key: 'tags', label: t('registries.filters.tags'), type: 'text', width: 'sm' },
     { key: 'geography', label: t('registries.filters.geography'), type: 'text', width: 'sm' },
     { key: 'law', label: t('registries.filters.law'), type: 'text', width: 'sm' },
+    { key: 'sourceTimestamp', label: t('registries.filters.createdDate'), type: 'daterange', width: 'md' },
 ]);
 
 const sortKey = ref<ColumnKey | null>('createdAt');

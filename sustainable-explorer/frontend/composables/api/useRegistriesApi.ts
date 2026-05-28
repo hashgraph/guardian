@@ -103,6 +103,12 @@ export const useRegistriesApi = (opts: UseRegistriesApiOptions) => {
         }
         // hideEmpty is a boolean toggle on the filter bar; only forward when true.
         if (filters['hideEmpty'] === true) q.hideEmpty = true;
+        // sourceTimestamp daterange: stored as { from, to } by DataFilters
+        const ts = filters['sourceTimestamp'];
+        if (ts && typeof ts === 'object' && !Array.isArray(ts)) {
+            if (ts.from) q.createdAtFrom = ts.from;
+            if (ts.to) q.createdAtTo = ts.to;
+        }
         return q;
     };
 

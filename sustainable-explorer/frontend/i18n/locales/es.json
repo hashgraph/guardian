@@ -1,66 +1,64 @@
 {
-  "common": {
-    "search": "Buscar",
-    "searchEllipsis": "Buscar...",
-    "clearAll": "Limpiar todo",
-    "clear": "Limpiar",
-    "clearSelection": "Limpiar selección",
-    "loading": "Cargando...",
-    "noResults": "Sin resultados",
-    "retry": "Reintentar",
-    "viewAll": "Ver todo",
-    "viewDetails": "Ver detalles",
-    "showingRange": "Mostrando {start}–{end} de {total}",
-    "rowsPerPage": "Filas por página:",
-    "page": "Página",
-    "active": "activo",
-    "activeCount": "({count} activos)",
-    "yes": "Sí",
-    "no": "No",
-    "all": "Todos",
-    "from": "Desde",
-    "to": "Hasta",
-    "enabled": "Habilitado",
-    "noOptions": "Sin opciones",
-    "notFound": "No encontrado",
-    "copy": "Copiar",
-    "copied": "Copiado",
-    "download": "Descargar",
-    "close": "Cerrar",
-    "viewOnExplorer": "Ver en el explorador",
-    "viewOnHashScan": "Ver en HashScan",
-    "viewRawData": "Ver datos brutos",
-    "lines": "líneas",
-    "mdash": "—",
-    "total": "total",
-    "field": "campo",
-    "fields": "campos",
-    "changed": "cambiado"
-  },
-  "nav": {
-    "dashboard": "Panel",
-    "projects": "Proyectos",
-    "issuances": "Emisiones",
-    "methodologies": "Metodologías",
-    "registries": "Registros",
-    "developers": "Desarrolladores",
-    "sdgs": "ODS",
-    "analytics": "Analíticas",
-    "syncStatus": "Estado de sincronización",
-    "dataSyncedUpTo": "Datos sincronizados hasta",
-    "sustainable": "Sustainability",
-    "explorer": "Atlas"
-  },
-  "topbar": {
-    "searchPlaceholder": "Buscar proyectos, créditos, registros...",
-    "network": "Red",
-    "language": "Idioma",
-    "itemType": {
-      "project": "Proyecto",
-      "issuance": "Emisión",
-      "methodology": "Metodología",
-      "registry": "Registro"
+    "common": {
+        "search": "Buscar",
+        "searchEllipsis": "Buscar...",
+        "clearAll": "Limpiar todo",
+        "clear": "Limpiar",
+        "clearSelection": "Limpiar selección",
+        "loading": "Cargando...",
+        "noResults": "Sin resultados",
+        "retry": "Reintentar",
+        "viewAll": "Ver todo",
+        "viewDetails": "Ver detalles",
+        "showingRange": "Mostrando {start}–{end} de {total}",
+        "rowsPerPage": "Filas por página:",
+        "page": "Página",
+        "active": "activo",
+        "activeCount": "({count} activos)",
+        "yes": "Sí",
+        "no": "No",
+        "all": "Todos",
+        "from": "Desde",
+        "to": "Hasta",
+        "dateRangeApply": "Aplicar",
+        "dateRangeClear": "Limpiar fechas",
+        "dateFrom": "Fecha desde",
+        "dateTo": "Fecha hasta",
+        "yearFrom": "Año desde",
+        "yearTo": "Año hasta",
+        "numMin": "Mínimo",
+        "numMax": "Máximo",
+        "clearRange": "Limpiar rango",
+        "enabled": "Habilitado",
+        "noOptions": "Sin opciones",
+        "notFound": "No encontrado",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "download": "Descargar",
+        "close": "Cerrar",
+        "viewOnExplorer": "Ver en el explorador",
+        "viewOnHashScan": "Ver en HashScan",
+        "viewRawData": "Ver datos brutos",
+        "lines": "líneas",
+        "mdash": "—",
+        "total": "total",
+        "field": "campo",
+        "fields": "campos",
+        "changed": "cambiado"
     },
+    "nav": {
+        "dashboard": "Panel",
+        "projects": "Proyectos",
+        "issuances": "Emisiones",
+        "methodologies": "Metodologías",
+        "registries": "Registros",
+        "developers": "Desarrolladores",
+        "sdgs": "ODS",
+        "analytics": "Analíticas",
+        "syncStatus": "Estado de sincronización",
+        "dataSyncedUpTo": "Datos sincronizados hasta",
+        "sustainable": "Sustainability",
+        "explorer": "Atlas"
     "token": "Token",
     "policies": "políticas",
     "projectsLabel": "proyectos",
@@ -208,427 +206,601 @@
       "sectoralScope": "Alcance sectorial",
       "sdgs": "ODS"
     },
-    "presets": {
-      "issuingForestry": "Forestal en emisión",
-      "goldStandard": "Gold Standard",
-      "sdg13": "ODS 13: Acción por el clima",
-      "underValidation": "En validación",
-      "vintage2024": "Añada 2024",
-      "blueCarbon": "Carbono azul"
-    },
-    "notFound": "Proyecto no encontrado",
-    "details": {
-      "projectDetails": "Detalles del proyecto",
-      "projectName": "Nombre del proyecto",
-      "country": "País",
-      "status": "Estado",
-      "methodology": "Metodología",
-      "registry": "Registro",
-      "developer": "Desarrollador",
-      "sector": "Sector",
-      "vintage": "Añada",
-      "created": "Creado",
-      "creditingPeriod": "Período de acreditación"
-    },
-    "detail": {
-      "linkedVcs": {
-        "title": "Datos en bruto vinculados",
-        "subtitle": "Documentos de datos en bruto que contribuyeron a este proyecto, agrupados por esquema. Los esquemas vacíos indican campos que no pudieron extraerse.",
-        "empty": "No hay datos en bruto vinculados desde este esquema",
-        "notTracked": "No hay datos en bruto vinculados disponibles — vuelva a analizar la metodología para poblarlos.",
-        "viewJson": "Ver JSON",
-        "projectSchemaBadge": "Esquema de proyecto",
-        "columns": {
-          "timestamp": "Marca de tiempo",
-          "topicId": "ID de tópico",
-          "csId": "cs.id"
-        }
-      },
-      "actions": {
-        "reextract": "Re-extraer",
-        "reextractSuccess": "Re-extrayendo desde {count} VC(s) — actualice en unos segundos",
-        "reextractEmpty": "Nada que re-extraer — aún no hay VCs vinculados a este proyecto",
-        "reextractError": "Error al re-extraer"
-      }
-    },
-    "compare": {
-      "title": "Comparar proyectos",
-      "subtitle": "Comparación lado a lado de hasta 4 proyectos",
-      "attribute": "Atributo",
-      "notFound": "Proyecto no encontrado",
-      "needTwo": "Selecciona al menos 2 proyectos para comparar.",
-      "credits": "Créditos est.",
-      "totalIssued": "Total emitido",
-      "totalRetired": "Total retirado",
-      "totalActive": "Total activo",
-      "creditingPeriodEnd": "Fin del período de acreditación",
-      "selectToCompare": "Comparar",
-      "comparing": "{count} seleccionados",
-      "compareButton": "Comparar",
-      "clearAll": "Limpiar todo",
-      "maxSelected": "Máx. 4 proyectos",
-      "addToCompare": "Añadir a la comparación",
-      "removeFromCompare": "Quitar de la comparación",
-      "diff": "dif.",
-      "diffLegend": "Las filas resaltadas difieren entre proyectos"
-    }
-  },
-  "credits": {
-    "title": "Emisiones",
-    "subtitle": "Tokens emitidos en Hedera",
-    "searchPlaceholder": "Buscar por nombre, símbolo, ID de token...",
-    "noMatch": "Ninguna emisión coincide con tus filtros",
-    "filteredByProject": "Mostrando emisiones de",
-    "unknownProject": "este proyecto",
-    "clearProjectFilter": "Quitar filtro",
-    "filteredByMethodology": "Mostrando emisiones de",
-    "unknownMethodology": "esta metodología",
-    "clearMethodologyFilter": "Quitar filtro",
-    "supplyTooltip": "Suministro total de tokens acuñado en Hedera. Para tokens fungibles es el suministro total. Para NFTs es el número de serials únicos.",
-    "columns": {
-      "token": "Token",
-      "symbol": "Símbolo",
-      "type": "Tipo",
-      "supply": "Suministro",
-      "mintDate": "Fecha de emisión",
-      "project": "Proyecto",
-      "methodology": "Metodología",
-      "registry": "Registro",
-      "rawData": "Datos brutos"
-    },
-    "filters": {
-      "tokenType": "Tipo de token",
-      "registry": "Registro",
-      "hideUnlinked": "Ocultar emisiones sin proyecto vinculado"
-    },
-    "tooltips": {
-      "hideUnlinked": "Oculta los tokens que aún no han sido asociados a ningún proyecto. Desmarque para ver todos los tokens indexados."
-    }
-  },
-  "methodologies": {
-    "title": "Metodologías",
-    "subtitle": "Flujos de trabajo de políticas publicados para la verificación de sostenibilidad",
-    "searchPlaceholder": "Buscar metodologías...",
-    "noMatch": "Ninguna metodología coincide con tus filtros",
-    "columns": {
-      "methodology": "Metodología",
-      "name": "Nombre",
-      "registry": "Registro",
-      "category": "Categoría",
-      "projects": "Proyectos",
-      "issuance": "Emisión",
-      "issuances": "Emisiones",
-      "schemaCount": "Esquemas",
-      "schemas": "Esquemas",
-      "description": "Descripción",
-      "id": "ID",
-      "status": "Estado",
-      "type": "Tipo",
-      "version": "Versión",
-      "decoded": "Decodificado"
-    },
-    "filters": {
-      "registry": "Registro",
-      "registryId": "ID del Registro",
-      "registryAll": "Todos los registros",
-      "registryDid": "DID del Registro",
-      "registryName": "Nombre del Registro",
-      "registryNamePlaceholder": "Buscar por nombre del registro",
-      "category": "Categoría",
-      "name": "Nombre",
-      "namePlaceholder": "Buscar por nombre",
-      "id": "ID",
-      "description": "Descripción",
-      "decoded": "Decodificado",
-      "decodedAll": "Todos"
-    },
-    "stats": {
-      "total": "Total de metodologías",
-      "active": "Publicadas",
-      "draft": "Borrador / Otros"
-    },
-    "errors": {
-      "loadFailed": "Error al cargar las metodologías."
-    },
-    "tooltips": {
-      "copyId": "Copiar ID"
-    },
-    "detail": {
-      "breadcrumb": "Metodologías",
-      "backLink": "Volver a metodologías",
-      "notFound": "Metodología no encontrada",
-      "notFoundDesc": "No se encontró ninguna metodología con el ID {id} en {network}.",
-      "viewOnHashScan": "Ver en HashScan",
-      "tabs": {
-        "overview": "Resumen",
-        "decoded": "Mapeo decodificado",
-        "versionHistory": "Historial de versiones",
-        "linkedProjects": "Proyectos vinculados",
-        "hederaPolicy": "Política de Hedera",
-        "analytics": "Analíticas",
-        "actions": "Acciones"
-      },
-      "decoded": {
-        "title": "Mapeo decodificado",
-        "statusLabel": "Estado de decodificación",
-        "lastAttempt": "Último intento",
-        "attempts": "intento(s)",
-        "errorCallout": "Error de decodificación",
-        "noSchema": "Aún no se ha confirmado ningún esquema de proyecto. El decodificador no ha encontrado un esquema con campo GeoJSON y campo de nombre.",
-        "decodeNotComplete": "La decodificación aún no se ha completado.",
-        "fieldsTableTitle": "Campos del proyecto → Campos del esquema",
-        "allFieldsTitle": "Todos los campos del esquema",
-        "allFieldsCollapsed": "Mostrar todos los campos del esquema ({count})",
-        "allFieldsExpanded": "Ocultar campos del esquema",
-        "columns": {
-          "projectField": "Campo del proyecto",
-          "schemaField": "Campo del esquema",
-          "fieldKey": "Clave del campo",
-          "title": "Título",
-          "description": "Descripción",
-          "usedAs": "Usado como",
-          "type": "Tipo"
-        },
-        "noGeoTitle": "No se confirmó ningún esquema de proyecto",
-        "noGeoBody": "Ninguno de los esquemas importados tenía suficientes campos coincidentes para ser clasificado como esquema de registro de proyecto. Los esquemas fueron importados, pero no se pudo mapear ningún campo de forma confiable a los atributos del proyecto.",
-        "availableSchemasTitle": "Esquemas importados",
-        "untitledSchema": "(esquema sin nombre)",
-        "hasGeo": "Con GeoJSON",
-        "noGeo": "Sin GeoJSON",
-        "noFields": "(sin campos de nivel superior)",
-        "fieldLabels": {
-          "name": "Título",
-          "description": "Descripción",
-          "geo": "Geo / Ubicación",
-          "country": "País",
-          "developer": "Desarrollador",
-          "sector": "Sector",
-          "category": "Categoría",
-          "scale": "Escala",
-          "creditingPeriod": "Período de acreditación",
-          "creditingPeriodStart": "Inicio del período de acreditación",
-          "creditingPeriodEnd": "Fin del período de acreditación",
-          "vintageRaw": "Fecha de cosecha",
-          "sdgOrCobenefits": "ODS / Cobeneficios"
-        },
-        "fetchError": "No se pudo cargar el mapeo decodificado.",
-        "unresolved": "—",
-        "actions": {
-          "title": "Mapping actions",
-          "rerunDecoder": "Re-run decoder",
-          "reparseProjects": "Re-parse projects",
-          "editMapping": "Edit mapping",
-          "save": "Save",
-          "cancel": "Cancel",
-          "unmapped": "— None —",
-          "rerunSuccess": "Decoder re-queued — refresh in a few seconds",
-          "rerunError": "Failed to re-queue decoder",
-          "reparseSuccess": "Re-queued {count} project(s) for re-parsing",
-          "reparseEmpty": "Nothing to re-parse — decode first or no cached VCs",
-          "reparseError": "Failed to re-queue project re-parse",
-          "reparseDisabledHint": "Decode the policy successfully before re-parsing projects",
-          "saveSuccess": "Mapping updated",
-          "saveNoChanges": "No changes to save",
-          "saveError": "Failed to save mapping"
-        }
-      },
-      "summary": {
-        "registry": "Registro",
-        "version": "Versión",
-        "schemas": "Esquemas",
-        "status": "Estado"
-      },
-      "overview": {
-        "description": "Descripción",
-        "noDescription": "No hay descripción disponible.",
-        "keyFacts": "Datos clave",
-        "publishedAt": "Publicada el",
+    "topbar": {
+        "searchPlaceholder": "Buscar proyectos, créditos, registros...",
         "network": "Red",
-        "emissionReductionApproach": "Enfoque de reducción de emisiones",
-        "applicableSectoralScopes": "Alcances sectoriales aplicables"
-      },
-      "versions": {
-        "title": "Historial de versiones",
-        "columns": {
-          "version": "Versión",
-          "instancePolicyTopic": "Tópico de la instancia de política",
-          "published": "Publicada",
-          "schemas": "Esquemas",
-          "status": "Estado"
+        "language": "Idioma",
+        "itemType": {
+            "project": "Proyecto",
+            "issuance": "Emisión",
+            "methodology": "Metodología",
+            "registry": "Registro"
         },
-        "currentBadge": "Actual",
-        "noVersions": "No se encontraron versiones."
-      },
-      "linkedProjects": {
-        "title": "Proyectos vinculados",
-        "noTopicId": "No hay ID de tópico de política disponible para esta metodología.",
-        "columns": {
-          "project": "Proyecto",
-          "country": "País",
-          "registry": "Registro",
-          "credits": "Créditos",
-          "status": "Estado"
+        "token": "Token",
+        "policies": "políticas",
+        "projectsLabel": "proyectos"
+    },
+    "dashboard": {
+        "title": "Panel",
+        "subtitle": "Resumen de la red de sostenibilidad de Hedera Guardian",
+        "filterTooltip": "Filtra todos los datos del panel por desarrollador de proyecto y/o registro. Todas las tarjetas, gráficos, mapas y tablas se actualizan para mostrar solo los proyectos que coinciden.",
+        "allDevelopers": "Todos los desarrolladores",
+        "allRegistries": "Todos los registros",
+        "stats": {
+            "registries": "Registros",
+            "registriesSub": "Registros estándar",
+            "registriesTooltip": "Número de Registros Estándar únicos (p. ej., Verra, Gold Standard) que coinciden con los filtros actuales. El indicador de cambio muestra cuántos nuevos registros se unieron respecto al año anterior.",
+            "methodologies": "Metodologías",
+            "methodologiesSub": "Políticas publicadas",
+            "methodologiesTooltip": "Número total de metodologías de políticas publicadas únicas en todos los registros coincidentes. El indicador de cambio muestra cuántas nuevas metodologías se publicaron respecto al año anterior.",
+            "projects": "Proyectos",
+            "projectsSub": "Proyectos verificados activos",
+            "projectsTooltip": "Cantidad de proyectos de sostenibilidad registrados y verificados en la red de Guardian que coinciden con los filtros actuales. El indicador de cambio muestra el incremento neto de proyectos respecto al año anterior.",
+            "totalIssuances": "Emisiones totales",
+            "totalIssuancesSub": "Emitido on-chain",
+            "totalIssuancesTooltip": "Suma de todas las emisiones on-chain en los proyectos coincidentes. El indicador de cambio muestra el crecimiento porcentual de las emisiones totales respecto al año anterior.",
+            "totalRetired": "Total retirado",
+            "totalRetiredSub": "Retirado permanentemente",
+            "totalRetiredTooltip": "Suma de todas las emisiones retiradas permanentemente (quemadas) con fines de compensación en los proyectos coincidentes."
         },
-        "noProjects": "No se encontraron proyectos bajo esta política."
-      },
-      "policy": {
-        "title": "Política on-chain",
-        "verifiedOnHedera": "Verificada en Hedera",
-        "governedBy": "Esta metodología se rige por una política de Guardian on-chain.",
-        "instancePolicyTopic": "Tópico de la instancia de política",
-        "publishedAt": "Publicada el",
-        "registryDid": "DID del Registro",
-        "network": "Red"
-      },
-      "analytics": {
-        "schemaCount": "Conteo de esquemas",
-        "schemaCountSub": "Formularios de datos en esta política",
-        "projects": "Proyectos",
-        "projectsSub": "Registrados bajo esta metodología",
-        "issuances": "Emisiones",
-        "issuancesSub": "Créditos emitidos",
-        "trends": "Tendencias",
-        "trendsComingSoon": "Los gráficos de emisiones a lo largo del tiempo, tendencia de retiros y geografía estarán disponibles una vez que los datos de los documentos VC en vivo estén completamente sincronizados."
-      },
-      "actions": {
-        "aboutTitle": "Acerca de esta metodología",
-        "instancePolicyTopicLabel": "Tópico de la instancia de política:",
-        "compareVersions": "Comparar versiones",
-        "compareVersionsDesc": "Selecciona otra versión para compararla en paralelo con esta.",
-        "noOtherVersions": "No hay otras versiones disponibles para esta metodología.",
-        "selectVersionPlaceholder": "— Selecciona una versión para comparar —",
-        "comparison": "Comparación",
-        "noDifferences": "Sin diferencias",
-        "compareColumns": {
-          "field": "Campo",
-          "current": "Actual",
-          "compare": "Comparar"
+        "projectDistribution": "Distribución de proyectos",
+        "projectDistributionTooltip": "Los países están coloreados por la cantidad de proyectos. Verde más oscuro = más proyectos. Haz clic en un país para ver el desglose detallado. Los puntos pequeños muestran ubicaciones individuales de proyectos.",
+        "projectDistributionSub": "Distribución geográfica de proyectos verificados",
+        "viewAllProjects": "Ver todos los proyectos",
+        "map": "Mapa",
+        "table": "Tabla",
+        "noCountries": "Ningún país coincide con los filtros seleccionados",
+        "country": "País",
+        "projectsCol": "Proyectos",
+        "issuancesCol": "Emisiones",
+        "methodologiesCol": "Metodologías",
+        "sectorRegistryBreakdown": "Desglose por sector y registro",
+        "sectorRegistryBreakdownTooltip": "Distribución de proyectos y emisiones por sector y registro. Alterna entre conteo de proyectos y volumen de emisiones. Refleja los filtros actuales de desarrollador/registro.",
+        "sectorRegistryBreakdownSub": "Distribución de proyectos y emisiones por sector y registro",
+        "bySector": "Por sector",
+        "otherCategory": "Otros",
+        "byRegistry": "Por registro",
+        "projectsToggle": "Proyectos",
+        "issuancesToggle": "Emisiones",
+        "topRegistries": "Registros principales",
+        "topRegistriesTooltip": "Clasificados por cantidad de proyectos. Políticas = metodologías únicas publicadas. Emisiones = total emitido on-chain por este registro.",
+        "topRegistriesSub": "Los más activos por políticas y cantidad de proyectos",
+        "name": "Nombre",
+        "policies": "Políticas",
+        "noRegistries": "Ningún registro coincide con los filtros seleccionados",
+        "issuanceTrend": "Tendencia de emisiones",
+        "issuanceTrendTooltip": "Volumen de emisiones a lo largo del tiempo derivado de las fechas de creación de proyectos.",
+        "volumeMillions": "Volumen (millones)",
+        "monthly": "Mensual",
+        "quarterly": "Trimestral",
+        "yearly": "Anual",
+        "months": "meses",
+        "quarters": "trimestres",
+        "years": "años",
+        "mTotal": "M total",
+        "noIssuanceData": "No hay datos de emisiones que coincidan con los filtros seleccionados",
+        "analytics": "Analíticas",
+        "retirementTrend": "Tendencia de retiros",
+        "retirementTrendTooltip": "Volumen de retiros a lo largo del tiempo. Muestra las emisiones retiradas permanentemente (quemadas) para compensación.",
+        "noRetirementData": "No hay datos de retiros que coincidan con los filtros seleccionados",
+        "vintageDistribution": "Distribución por añada",
+        "vintageDistributionTooltip": "Distribución de emisiones por año de añada. Muestra qué años tienen más créditos emitidos en los proyectos coincidentes.",
+        "vintageDistributionSub": "Emisiones por año de añada",
+        "vintages": "añadas",
+        "projectsSuffix": "proyectos",
+        "noVintageData": "No hay datos de añada que coincidan con los filtros seleccionados",
+        "networkActivity": "Actividad de la red",
+        "networkActivityTooltip": "Eventos recientes en la red de Guardian incluyendo nuevos registros de proyectos, emisiones de créditos, publicaciones de políticas y verificaciones.",
+        "networkActivitySub": "Cambios recientes en la red de Guardian",
+        "noActivity": "No hay actividad reciente que coincida con los filtros seleccionados",
+        "activity": {
+            "newProjectRegistered": "Nuevo proyecto registrado",
+            "registryIndexed": "Registro indexado",
+            "justNow": "ahora mismo",
+            "minuteAgo": "hace {n} minuto",
+            "minutesAgo": "hace {n} minutos",
+            "hourAgo": "hace {n} hora",
+            "hoursAgo": "hace {n} horas",
+            "dayAgo": "hace {n} día",
+            "daysAgo": "hace {n} días"
         },
-        "compareRows": {
-          "version": "Versión",
-          "status": "Estado",
-          "published": "Publicada",
-          "description": "Descripción",
-          "sectoralScopes": "Alcances sectoriales",
-          "emissionReductionApproach": "Enfoque de reducción de emisiones",
-          "schemaCount": "Conteo de esquemas",
-          "issuances": "Emisiones"
+        "activeProjects": "Proyectos activos",
+        "mtco2TotalReduction": "MtCO2 reducción total",
+        "mtco2AnnualEst": "MtCO2 anual est.",
+        "sector": "Sector",
+        "registry": "Registro",
+        "totalIssuancesLabel": "Emisiones totales",
+        "sectorTypes": {
+            "renewableEnergy": "Energía Renovable",
+            "forestry": "Silvicultura",
+            "blueCarbon": "Carbono Azul",
+            "energyEfficiency": "Eficiencia Energética",
+            "agriculture": "Agricultura",
+            "water": "Agua",
+            "waste": "Residuos",
+            "energy": "Energía",
+            "industrialProcess": "Proceso Industrial",
+            "landUseForestry": "Uso del Suelo y Silvicultura",
+            "fugitiveEmissions": "Emisiones Fugitivas",
+            "transport": "Transporte",
+            "natureBasedSolutions": "Soluciones Basadas en la Naturaleza",
+            "others": "Otros",
+            "undefined": "Sin Categoría"
         }
-      }
     },
-    "decodeStatus": {
-      "success": "Decodificado",
-      "failed": "Fallido",
-      "pending": "Decodificando",
-      "unknown": "No decodificado"
-    }
-  },
-  "registries": {
-    "title": "Registros",
-    "subtitle": "Registros Estándar que operan en la red de Guardian",
-    "noMatch": "Ningún registro coincide con tus filtros",
-    "columns": {
-      "name": "Nombre",
-      "id": "ID",
-      "geography": "Geografía",
-      "law": "Ley",
-      "methodologies": "Metodologías",
-      "projects": "Proyectos",
-      "users": "Usuarios",
-      "issuances": "Emisiones",
-      "tags": "Etiquetas",
-      "created": "Creado"
+    "projects": {
+        "title": "Proyectos",
+        "subtitle": "Proyectos de sostenibilidad verificados en la red de Guardian",
+        "searchPlaceholder": "Buscar proyectos...",
+        "quickFilters": "Filtros rápidos:",
+        "projectsFound": "{count} proyectos encontrados",
+        "totalIssuances": "Emisiones totales:",
+        "countries": "Países:",
+        "registries": "Registros:",
+        "noMatch": "Ningún proyecto coincide con tus filtros",
+        "sectoralScope": "Alcance sectorial: {scope}",
+        "sdgsTooltip": "Objetivos de Desarrollo Sostenible de la ONU a los que contribuye este proyecto. Pasa el cursor sobre cada icono para ver el nombre completo del objetivo.",
+        "sectorTooltip": "Incluye el Alcance Sectorial como detalle adicional",
+        "columns": {
+            "project": "Proyecto",
+            "country": "País",
+            "registry": "Registro",
+            "methodology": "Metodología",
+            "sector": "Sector",
+            "issuances": "Emisiones",
+            "transferred": "Transferido",
+            "retired": "Retirado",
+            "status": "Estado",
+            "sdgs": "ODS",
+            "rawData": "Datos brutos"
+        },
+        "filters": {
+            "status": "Estado",
+            "registry": "Registro",
+            "vintage": "Añada",
+            "sector": "Sector",
+            "sectoralScope": "Alcance sectorial",
+            "developer": "Desarrollador",
+            "sdgs": "ODS"
+        },
+        "presets": {
+            "issuingForestry": "Forestal en emisión",
+            "goldStandard": "Gold Standard",
+            "sdg13": "ODS 13: Acción por el clima",
+            "underValidation": "En validación",
+            "vintage2024": "Añada 2024",
+            "blueCarbon": "Carbono azul"
+        },
+        "notFound": "Proyecto no encontrado",
+        "details": {
+            "projectDetails": "Detalles del proyecto",
+            "projectName": "Nombre del proyecto",
+            "country": "País",
+            "status": "Estado",
+            "methodology": "Metodología",
+            "registry": "Registro",
+            "developer": "Desarrollador",
+            "sector": "Sector",
+            "vintage": "Añada",
+            "created": "Creado",
+            "creditingPeriod": "Período de acreditación"
+        },
+        "detail": {
+            "linkedVcs": {
+                "title": "Datos en bruto vinculados",
+                "subtitle": "Documentos de datos en bruto que contribuyeron a este proyecto, agrupados por esquema. Los esquemas vacíos indican campos que no pudieron extraerse.",
+                "empty": "No hay datos en bruto vinculados desde este esquema",
+                "notTracked": "No hay datos en bruto vinculados disponibles — vuelva a analizar la metodología para poblarlos.",
+                "viewJson": "Ver JSON",
+                "projectSchemaBadge": "Esquema de proyecto",
+                "columns": {
+                    "timestamp": "Marca de tiempo",
+                    "topicId": "ID de tópico",
+                    "csId": "cs.id"
+                }
+            },
+            "actions": {
+                "reextract": "Re-extraer",
+                "reextractSuccess": "Re-extrayendo desde {count} VC(s) — actualice en unos segundos",
+                "reextractEmpty": "Nada que re-extraer — aún no hay VCs vinculados a este proyecto",
+                "reextractError": "Error al re-extraer"
+            }
+        },
+        "compare": {
+            "title": "Comparar proyectos",
+            "subtitle": "Comparación lado a lado de hasta 4 proyectos",
+            "attribute": "Atributo",
+            "notFound": "Proyecto no encontrado",
+            "needTwo": "Selecciona al menos 2 proyectos para comparar.",
+            "credits": "Créditos est.",
+            "totalIssued": "Total emitido",
+            "totalRetired": "Total retirado",
+            "totalActive": "Total activo",
+            "creditingPeriodEnd": "Fin del período de acreditación",
+            "selectToCompare": "Comparar",
+            "comparing": "{count} seleccionados",
+            "compareButton": "Comparar",
+            "clearAll": "Limpiar todo",
+            "maxSelected": "Máx. 4 proyectos",
+            "addToCompare": "Añadir a la comparación",
+            "removeFromCompare": "Quitar de la comparación",
+            "diff": "dif.",
+            "diffLegend": "Las filas resaltadas difieren entre proyectos"
+        }
     },
-    "filters": {
-      "name": "Nombre",
-      "namePlaceholder": "Buscar por nombre",
-      "id": "ID",
-      "idPlaceholder": "0.0.xxxx",
-      "tags": "Etiquetas",
-      "geography": "Geografía",
-      "law": "Ley",
-      "registryDid": "DID del Registro"
+    "credits": {
+        "title": "Emisiones",
+        "subtitle": "Tokens emitidos en Hedera",
+        "searchPlaceholder": "Buscar por nombre, símbolo, ID de token...",
+        "quickFilters": "Filtros rápidos:",
+        "presets": {
+            "fungible": "Tokens fungibles",
+            "nonFungible": "No fungibles (NFTs)",
+            "minted2024": "Acuñados en 2024",
+            "minted2025": "Acuñados en 2025",
+            "blueCarbon": "Carbono azul",
+            "forestry": "Silvicultura"
+        },
+        "issuancesFound": "{count} emisiones encontradas",
+        "totalSupply": "Suministro total:",
+        "registries": "Registros:",
+        "projects": "Proyectos:",
+        "noMatch": "Ninguna emisión coincide con tus filtros",
+        "filteredByProject": "Mostrando emisiones de",
+        "unknownProject": "este proyecto",
+        "clearProjectFilter": "Quitar filtro",
+        "filteredByMethodology": "Mostrando emisiones de",
+        "unknownMethodology": "esta metodología",
+        "clearMethodologyFilter": "Quitar filtro",
+        "supplyTooltip": "Suministro total de tokens acuñado en Hedera. Para tokens fungibles es el suministro total. Para NFTs es el número de serials únicos.",
+        "columns": {
+            "token": "Token",
+            "symbol": "Símbolo",
+            "type": "Tipo",
+            "supply": "Suministro",
+            "mintDate": "Fecha de emisión",
+            "project": "Proyecto",
+            "methodology": "Metodología",
+            "registry": "Registro",
+            "rawData": "Datos brutos"
+        },
+        "filters": {
+            "tokenType": "Tipo de token",
+            "registry": "Registro",
+            "supply": "Suministro",
+            "mintDate": "Fecha de emisión",
+            "hideUnlinked": "Ocultar emisiones sin proyecto vinculado"
+        },
+        "tooltips": {
+            "hideUnlinked": "Oculta los tokens que aún no han sido asociados a ningún proyecto. Desmarque para ver todos los tokens indexados.",
+            "mintDate": "Fecha de emisión"
+        }
     },
-    "errors": {
-      "loadFailed": "Error al cargar los registros."
+    "methodologies": {
+        "title": "Metodologías",
+        "subtitle": "Flujos de trabajo de políticas publicados para la verificación de sostenibilidad",
+        "searchPlaceholder": "Buscar metodologías...",
+        "noMatch": "Ninguna metodología coincide con tus filtros",
+        "columns": {
+            "methodology": "Metodología",
+            "name": "Nombre",
+            "registry": "Registro",
+            "category": "Categoría",
+            "projects": "Proyectos",
+            "issuance": "Emisión",
+            "issuances": "Emisiones",
+            "schemaCount": "Esquemas",
+            "schemas": "Esquemas",
+            "description": "Descripción",
+            "id": "ID",
+            "status": "Estado",
+            "type": "Tipo",
+            "version": "Versión",
+            "decoded": "Decodificado"
+        },
+        "filters": {
+            "registry": "Registro",
+            "registryId": "ID del Registro",
+            "registryAll": "Todos los registros",
+            "registryDid": "DID del Registro",
+            "registryName": "Nombre del Registro",
+            "registryNamePlaceholder": "Buscar por nombre del registro",
+            "category": "Categoría",
+            "name": "Nombre",
+            "namePlaceholder": "Buscar por nombre",
+            "id": "ID",
+            "description": "Descripción",
+            "decoded": "Decodificado",
+            "decodedAll": "Todos"
+        },
+        "stats": {
+            "total": "Total de metodologías",
+            "active": "Publicadas",
+            "draft": "Borrador / Otros"
+        },
+        "errors": {
+            "loadFailed": "Error al cargar las metodologías."
+        },
+        "tooltips": {
+            "copyId": "Copiar ID"
+        },
+        "detail": {
+            "breadcrumb": "Metodologías",
+            "backLink": "Volver a metodologías",
+            "notFound": "Metodología no encontrada",
+            "notFoundDesc": "No se encontró ninguna metodología con el ID {id} en {network}.",
+            "viewOnHashScan": "Ver en HashScan",
+            "tabs": {
+                "overview": "Resumen",
+                "decoded": "Mapeo decodificado",
+                "versionHistory": "Historial de versiones",
+                "linkedProjects": "Proyectos vinculados",
+                "hederaPolicy": "Política de Hedera",
+                "analytics": "Analíticas",
+                "actions": "Acciones"
+            },
+            "decoded": {
+                "title": "Mapeo decodificado",
+                "statusLabel": "Estado de decodificación",
+                "lastAttempt": "Último intento",
+                "attempts": "intento(s)",
+                "errorCallout": "Error de decodificación",
+                "noSchema": "Aún no se ha confirmado ningún esquema de proyecto. El decodificador no ha encontrado un esquema con campo GeoJSON y campo de nombre.",
+                "decodeNotComplete": "La decodificación aún no se ha completado.",
+                "fieldsTableTitle": "Campos del proyecto → Campos del esquema",
+                "allFieldsTitle": "Todos los campos del esquema",
+                "allFieldsCollapsed": "Mostrar todos los campos del esquema ({count})",
+                "allFieldsExpanded": "Ocultar campos del esquema",
+                "columns": {
+                    "projectField": "Campo del proyecto",
+                    "schemaField": "Campo del esquema",
+                    "fieldKey": "Clave del campo",
+                    "title": "Título",
+                    "description": "Descripción",
+                    "usedAs": "Usado como",
+                    "type": "Tipo"
+                },
+                "noGeoTitle": "No se confirmó ningún esquema de proyecto",
+                "noGeoBody": "Ninguno de los esquemas importados tenía suficientes campos coincidentes para ser clasificado como esquema de registro de proyecto. Los esquemas fueron importados, pero no se pudo mapear ningún campo de forma confiable a los atributos del proyecto.",
+                "availableSchemasTitle": "Esquemas importados",
+                "untitledSchema": "(esquema sin nombre)",
+                "hasGeo": "Con GeoJSON",
+                "noGeo": "Sin GeoJSON",
+                "noFields": "(sin campos de nivel superior)",
+                "fieldLabels": {
+                    "name": "Título",
+                    "description": "Descripción",
+                    "geo": "Geo / Ubicación",
+                    "country": "País",
+                    "developer": "Desarrollador",
+                    "sector": "Sector",
+                    "category": "Categoría",
+                    "scale": "Escala",
+                    "creditingPeriod": "Período de acreditación",
+                    "creditingPeriodStart": "Inicio del período de acreditación",
+                    "creditingPeriodEnd": "Fin del período de acreditación",
+                    "vintageRaw": "Fecha de cosecha",
+                    "sdgOrCobenefits": "ODS / Cobeneficios"
+                },
+                "fetchError": "No se pudo cargar el mapeo decodificado.",
+                "unresolved": "—",
+                "actions": {
+                    "title": "Mapping actions",
+                    "rerunDecoder": "Re-run decoder",
+                    "reparseProjects": "Re-parse projects",
+                    "editMapping": "Edit mapping",
+                    "save": "Save",
+                    "cancel": "Cancel",
+                    "unmapped": "— None —",
+                    "rerunSuccess": "Decoder re-queued — refresh in a few seconds",
+                    "rerunError": "Failed to re-queue decoder",
+                    "reparseSuccess": "Re-queued {count} project(s) for re-parsing",
+                    "reparseEmpty": "Nothing to re-parse — decode first or no cached VCs",
+                    "reparseError": "Failed to re-queue project re-parse",
+                    "reparseDisabledHint": "Decode the policy successfully before re-parsing projects",
+                    "saveSuccess": "Mapping updated",
+                    "saveNoChanges": "No changes to save",
+                    "saveError": "Failed to save mapping"
+                }
+            },
+            "summary": {
+                "registry": "Registro",
+                "version": "Versión",
+                "schemas": "Esquemas",
+                "status": "Estado"
+            },
+            "overview": {
+                "description": "Descripción",
+                "noDescription": "No hay descripción disponible.",
+                "keyFacts": "Datos clave",
+                "publishedAt": "Publicada el",
+                "network": "Red",
+                "emissionReductionApproach": "Enfoque de reducción de emisiones",
+                "applicableSectoralScopes": "Alcances sectoriales aplicables"
+            },
+            "versions": {
+                "title": "Historial de versiones",
+                "columns": {
+                    "version": "Versión",
+                    "instancePolicyTopic": "Tópico de la instancia de política",
+                    "published": "Publicada",
+                    "schemas": "Esquemas",
+                    "status": "Estado"
+                },
+                "currentBadge": "Actual",
+                "noVersions": "No se encontraron versiones."
+            },
+            "linkedProjects": {
+                "title": "Proyectos vinculados",
+                "noTopicId": "No hay ID de tópico de política disponible para esta metodología.",
+                "columns": {
+                    "project": "Proyecto",
+                    "country": "País",
+                    "registry": "Registro",
+                    "credits": "Créditos",
+                    "status": "Estado"
+                },
+                "noProjects": "No se encontraron proyectos bajo esta política."
+            },
+            "policy": {
+                "title": "Política on-chain",
+                "verifiedOnHedera": "Verificada en Hedera",
+                "governedBy": "Esta metodología se rige por una política de Guardian on-chain.",
+                "instancePolicyTopic": "Tópico de la instancia de política",
+                "publishedAt": "Publicada el",
+                "registryDid": "DID del Registro",
+                "network": "Red"
+            },
+            "analytics": {
+                "schemaCount": "Conteo de esquemas",
+                "schemaCountSub": "Formularios de datos en esta política",
+                "projects": "Proyectos",
+                "projectsSub": "Registrados bajo esta metodología",
+                "issuances": "Emisiones",
+                "issuancesSub": "Créditos emitidos",
+                "trends": "Tendencias",
+                "trendsComingSoon": "Los gráficos de emisiones a lo largo del tiempo, tendencia de retiros y geografía estarán disponibles una vez que los datos de los documentos VC en vivo estén completamente sincronizados."
+            },
+            "actions": {
+                "aboutTitle": "Acerca de esta metodología",
+                "instancePolicyTopicLabel": "Tópico de la instancia de política:",
+                "compareVersions": "Comparar versiones",
+                "compareVersionsDesc": "Selecciona otra versión para compararla en paralelo con esta.",
+                "noOtherVersions": "No hay otras versiones disponibles para esta metodología.",
+                "selectVersionPlaceholder": "— Selecciona una versión para comparar —",
+                "comparison": "Comparación",
+                "noDifferences": "Sin diferencias",
+                "compareColumns": {
+                    "field": "Campo",
+                    "current": "Actual",
+                    "compare": "Comparar"
+                },
+                "compareRows": {
+                    "version": "Versión",
+                    "status": "Estado",
+                    "published": "Publicada",
+                    "description": "Descripción",
+                    "sectoralScopes": "Alcances sectoriales",
+                    "emissionReductionApproach": "Enfoque de reducción de emisiones",
+                    "schemaCount": "Conteo de esquemas",
+                    "issuances": "Emisiones"
+                }
+            }
+        },
+        "decodeStatus": {
+            "success": "Decodificado",
+            "failed": "Fallido",
+            "pending": "Decodificando",
+            "unknown": "No decodificado"
+        }
     },
-    "tooltips": {
-      "viewMethodologies": "Ver metodologías de este registro"
-    }
-  },
-  "developers": {
-    "title": "Desarrolladores de proyectos",
-    "subtitle": "Organizaciones que desarrollan y gestionan proyectos de compensación de carbono",
-    "searchPlaceholder": "Buscar desarrolladores, categorías, registros...",
-    "noMatch": "Ningún desarrollador coincide con tus filtros",
-    "issuedTooltip": "Emisiones totales en todos los proyectos de este desarrollador.",
-    "retiredTooltip": "Emisiones retiradas permanentemente (usadas para compensación). Las emisiones retiradas no pueden comercializarse ni reutilizarse.",
-    "viewProjects": "Ver proyectos de {name}",
-    "columns": {
-      "developer": "Desarrollador",
-      "hq": "Sede",
-      "countries": "Países",
-      "projects": "Proyectos",
-      "issued": "Emitido",
-      "retired": "Retirado",
-      "categories": "Categorías",
-      "registries": "Registros",
-      "status": "Estado"
+    "registries": {
+        "title": "Registros",
+        "subtitle": "Registros Estándar que operan en la red de Guardian",
+        "noMatch": "Ningún registro coincide con tus filtros",
+        "columns": {
+            "name": "Nombre",
+            "id": "ID",
+            "geography": "Geografía",
+            "law": "Ley",
+            "methodologies": "Metodologías",
+            "projects": "Proyectos",
+            "users": "Usuarios",
+            "issuances": "Emisiones",
+            "tags": "Etiquetas",
+            "created": "Creado"
+        },
+        "filters": {
+            "name": "Nombre",
+            "namePlaceholder": "Buscar por nombre",
+            "id": "ID",
+            "idPlaceholder": "0.0.xxxx",
+            "tags": "Etiquetas",
+            "geography": "Geografía",
+            "law": "Ley",
+            "registryDid": "DID del Registro",
+            "createdDate": "Fecha de creación"
+        },
+        "errors": {
+            "loadFailed": "Error al cargar los registros."
+        },
+        "tooltips": {
+            "viewMethodologies": "Ver metodologías de este registro"
+        }
     },
-    "filters": {
-      "status": "Estado"
-    }
-  },
-  "sdgs": {
-    "title": "Objetivos de Desarrollo Sostenible",
-    "subtitle": "Contribuciones de proyectos mapeadas a los ODS de la ONU",
-    "searchPlaceholder": "Buscar ODS...",
-    "coverageTooltip": "Porcentaje del total de proyectos que contribuyen a este ODS. Un proyecto puede contribuir a varios ODS.",
-    "viewProjects": "Ver proyectos etiquetados con {name}",
-    "columns": {
-      "sdg": "ODS",
-      "goal": "Objetivo",
-      "projects": "Proyectos",
-      "issuances": "Emisiones",
-      "developers": "Desarrolladores",
-      "countries": "Países",
-      "topMethodology": "Metodología principal",
-      "coverage": "Cobertura"
-    }
-  },
-  "analytics": {
-    "title": "Analíticas",
-    "subtitle": "Métricas y tendencias de sostenibilidad en toda la red",
-    "metrics": {
-      "totalIssuance": "Emisión total",
-      "activeProjects": "Proyectos activos",
-      "retirements": "Retiros",
-      "avgProjectSize": "Tamaño medio de proyecto"
+    "developers": {
+        "title": "Desarrolladores de proyectos",
+        "subtitle": "Organizaciones que desarrollan y gestionan proyectos de compensación de carbono",
+        "searchPlaceholder": "Buscar desarrolladores, categorías, registros...",
+        "noMatch": "Ningún desarrollador coincide con tus filtros",
+        "issuedTooltip": "Emisiones totales en todos los proyectos de este desarrollador.",
+        "retiredTooltip": "Emisiones retiradas permanentemente (usadas para compensación). Las emisiones retiradas no pueden comercializarse ni reutilizarse.",
+        "viewProjects": "Ver proyectos de {name}",
+        "columns": {
+            "developer": "Desarrollador",
+            "hq": "Sede",
+            "countries": "Países",
+            "projects": "Proyectos",
+            "issued": "Emitido",
+            "retired": "Retirado",
+            "categories": "Categorías",
+            "registries": "Registros",
+            "status": "Estado"
+        },
+        "filters": {
+            "status": "Estado"
+        }
     },
-    "issuancesByMethodology": "Emisiones por metodología",
-    "issuancesByMethodologySub": "Distribución de emisiones entre tipos de metodología"
-  },
-  "status": {
-    "title": "Estado de sincronización",
-    "subtitle": "Métricas del pipeline de datos y las colas de trabajadores",
-    "dataSyncedUpTo": "Datos sincronizados hasta",
-    "topicsIndexed": "Tópicos indexados",
-    "topicsDiscovered": "descubiertos",
-    "messagesProcessed": "Mensajes procesados",
-    "pendingInQueue": "pendientes en cola",
-    "queueStatus": "Estado de las colas",
-    "queueStatusSub": "Colas de trabajadores BullMQ",
+    "sdgs": {
+        "title": "Objetivos de Desarrollo Sostenible",
+        "subtitle": "Contribuciones de proyectos mapeadas a los ODS de la ONU",
+        "searchPlaceholder": "Buscar ODS...",
+        "coverageTooltip": "Porcentaje del total de proyectos que contribuyen a este ODS. Un proyecto puede contribuir a varios ODS.",
+        "viewProjects": "Ver proyectos etiquetados con {name}",
+        "columns": {
+            "sdg": "ODS",
+            "goal": "Objetivo",
+            "projects": "Proyectos",
+            "issuances": "Emisiones",
+            "developers": "Desarrolladores",
+            "countries": "Países",
+            "topMethodology": "Metodología principal",
+            "coverage": "Cobertura"
+        }
+    },
+    "analytics": {
+        "title": "Analíticas",
+        "subtitle": "Métricas y tendencias de sostenibilidad en toda la red",
+        "metrics": {
+            "totalIssuance": "Emisión total",
+            "activeProjects": "Proyectos activos",
+            "retirements": "Retiros",
+            "avgProjectSize": "Tamaño medio de proyecto"
+        },
+        "issuancesByMethodology": "Emisiones por metodología",
+        "issuancesByMethodologySub": "Distribución de emisiones entre tipos de metodología"
+    },
+    "status": {
+        "title": "Estado de sincronización",
+        "subtitle": "Métricas del pipeline de datos y las colas de trabajadores",
+        "dataSyncedUpTo": "Datos sincronizados hasta",
+        "topicsIndexed": "Tópicos indexados",
+        "topicsDiscovered": "descubiertos",
+        "messagesProcessed": "Mensajes procesados",
+        "pendingInQueue": "pendientes en cola",
+        "queueStatus": "Estado de las colas",
+        "queueStatusSub": "Colas de trabajadores BullMQ",
         "connectionLive": "En vivo",
         "connectionPolling": "Sondeando",
         "lastUpdated": "Última actualización",
         "totalWaiting": "Total en espera",
         "totalFailed": "Total fallidos",
-    "columns": {
-      "queue": "Cola",
-      "waiting": "En espera",
-      "active": "Activas",
-      "completed": "Completadas",
-      "failed": "Fallidas",
+        "columns": {
+            "queue": "Cola",
+            "waiting": "En espera",
+            "active": "Activas",
+            "completed": "Completadas",
+            "failed": "Fallidas",
             "delayed": "Diferidas",
             "concurrency": "Concurrencia",
             "status": "Estado",
@@ -674,26 +846,26 @@
             "confirm": "¿Reintentar todos los trabajos fallidos?",
             "force": "Ignorar límite de reintentos (forzar)",
             "result": "Reintentados {retried} trabajos, omitidos {skipped}"
+        }
+    },
+    "vcViewer": {
+        "rawDataOnBlockchain": "Datos brutos en la blockchain",
+        "searchInJson": "Buscar en JSON..."
+    },
+    "relationshipDiagram": {
+        "registry": "Registro",
+        "policy": "Política",
+        "schema": "Esquema",
+        "role": "Rol",
+        "rawData": "Datos brutos",
+        "vp": "VP",
+        "token": "Token",
+        "viewRawData": "Ver datos brutos",
+        "viewOnExplorer": "Ver en el explorador"
+    },
+    "tooltips": {
+        "copyDid": "Copiar DID",
+        "copyId": "Copiar ID",
+        "viewRawData": "Datos brutos en la blockchain"
     }
-  },
-  "vcViewer": {
-    "rawDataOnBlockchain": "Datos brutos en la blockchain",
-    "searchInJson": "Buscar en JSON..."
-  },
-  "relationshipDiagram": {
-    "registry": "Registro",
-    "policy": "Política",
-    "schema": "Esquema",
-    "role": "Rol",
-    "rawData": "Datos brutos",
-    "vp": "VP",
-    "token": "Token",
-    "viewRawData": "Ver datos brutos",
-    "viewOnExplorer": "Ver en el explorador"
-  },
-  "tooltips": {
-    "copyDid": "Copiar DID",
-    "copyId": "Copiar ID",
-    "viewRawData": "Datos brutos en la blockchain"
-  }
 }

@@ -120,6 +120,32 @@ export function useFilteredPagination<T>(
                         if (!Array.isArray(arr)) return false;
                         return selectedValues.some(v => arr.map(String).includes(v));
                     });
+                } else if (value.includes('|')) {
+                    // Range filter: value format is "from|to"
+                    // Numeric range (digits only): numeric comparison — covers both year and supply ranges
+                    // Date range (YYYY-MM-DD strings): date comparison
+                    const [from, to] = value.split('|');
+                    const isNumericRange = [from, to].filter(Boolean).every(v => /^\d+(\.\d+)?$/.test(v));
+                    result = result.filter((item) => {
+                        const rawVal = item[key as keyof T];
+                        if (rawVal === null || rawVal === undefined || rawVal === '') return false;
+                        if (isNumericRange) {
+                            const itemNum = parseFloat(String(rawVal));
+                            if (isNaN(itemNum)) return false;
+                            if (from && itemNum < parseFloat(from)) return false;
+                            if (to && itemNum > parseFloat(to)) return false;
+                        } else {
+                            const d = new Date(String(rawVal));
+                            if (isNaN(d.getTime())) return false;
+                            if (from) {
+                                if (d < new Date(from + 'T00:00:00')) return false;
+                            }
+                            if (to) {
+                                if (d > new Date(to + 'T23:59:59')) return false;
+                            }
+                        }
+                        return true;
+                    });
                 } else if (value.includes(',')) {
                     const selectedValues = value.split(',');
                     result = result.filter((item) => selectedValues.includes(String(item[key as keyof T])));
