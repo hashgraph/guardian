@@ -84,9 +84,9 @@ export class MathBlock {
         return new Promise<IPolicyDocument>(async (resolve, reject) => {
             const workerFile = path.join(path.dirname(filename), '..', 'helpers', 'workers', 'math-worker.js');
             const worker = new Worker(workerFile, { workerData });
-            // Terminate the worker once it finishes so the V8 isolate is released.
-            // Otherwise every formula evaluation leaks a worker thread (~30 MB).
-            const cleanup = () => { worker.terminate().catch(() => {}); };
+
+            // Release the worker's V8 isolate; without this each invocation leaks ~30 MB.
+            const cleanup = () => { worker.terminate().catch(() => { }); };
             worker.on('exit', (code) => {
                 cleanup();
                 if (code !== 0 && code !== null) {
