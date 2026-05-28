@@ -248,25 +248,38 @@ export class SyncStatusDto {
 
     @ApiProperty({ description: 'Total HCS messages indexed across all topics' })
     totalMessages: number;
+}
 
-    @ApiProperty({ description: 'Current topic page (1-based)' })
-    topicPage: number;
+export class SyncTopicsPageDto {
+    @ApiProperty({ description: 'Total topics matching the search filter' })
+    total: number;
 
-    @ApiProperty({ description: 'Number of topics per page' })
-    topicPageSize: number;
+    @ApiProperty({ description: 'Current page (1-based)' })
+    page: number;
 
-    @ApiProperty({ type: [TopicSyncItemDto], description: 'Topics for the current page, sorted by message count desc' })
+    @ApiProperty({ description: 'Topics per page' })
+    pageSize: number;
+
+    @ApiProperty({ description: 'Active search filter (empty string = no filter)' })
+    search: string;
+
+    @ApiProperty({ type: [TopicSyncItemDto] })
     topics: TopicSyncItemDto[];
+}
 
-    @ApiProperty({ description: 'Total number of tokens tracked in token_cache' })
-    tokenTotal: number;
+export class SyncTokensPageDto {
+    @ApiProperty({ description: 'Total tokens matching the search filter' })
+    total: number;
 
-    @ApiProperty({ description: 'Current token page (1-based)' })
-    tokenPage: number;
+    @ApiProperty({ description: 'Current page (1-based)' })
+    page: number;
 
-    @ApiProperty({ description: 'Number of tokens per page' })
-    tokenPageSize: number;
+    @ApiProperty({ description: 'Tokens per page' })
+    pageSize: number;
 
-    @ApiProperty({ type: [TokenSyncItemDto], description: 'Tokens for the current page' })
+    @ApiProperty({ description: 'Active search filter (empty string = no filter)' })
+    search: string;
+
+    @ApiProperty({ type: [TokenSyncItemDto] })
     tokens: TokenSyncItemDto[];
 }

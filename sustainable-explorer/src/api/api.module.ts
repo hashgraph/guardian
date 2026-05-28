@@ -24,6 +24,7 @@ import { MappingReprocessService } from './services/mapping-reprocess.service';
 import { PolicySchemasService } from './services/policy-schemas.service';
 import { PoliciesService } from './services/policies.service';
 import { ProjectsService } from './services/project.service';
+import { ProjectExportService } from './services/project-export.service';
 import { CreditsService } from './services/credits.service';
 import { SdgsService } from './services/sdgs.service';
 import { DevelopersService } from './services/developers.service';
@@ -60,6 +61,7 @@ import { QueueEventsBus } from './queues/queue-events-bus.service';
         PolicySchemasService,
         PoliciesService,
         ProjectsService,
+        ProjectExportService,
         CreditsService,
         SdgsService,
         DevelopersService,

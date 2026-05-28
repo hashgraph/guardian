@@ -8,6 +8,7 @@ import { POLICY_ZIP_STORAGE, PolicyZipStorage } from '../services/storage/policy
 export class IpfsService {
     private readonly logger = new Logger(IpfsService.name);
     private readonly gateways: string[];
+    private readonly gatewayTokens: Map<string, { header: string; value: string }>;
     private readonly timeout: number;
 
     constructor(private readonly configService: ConfigService, @Inject(POLICY_ZIP_STORAGE) private readonly zipStorage: PolicyZipStorage,) {
@@ -17,6 +18,23 @@ export class IpfsService {
         } else {
             this.gateways = gatewaysRaw || [];
         }
+
+        // Parse IPFS_GATEWAY_TOKENS
+        // Two formats:
+        //   url::token                 → Authorization: Bearer <token>  (default)
+        //   url::header-name::token    → <header-name>: <token>         (explicit header)
+        // Example: https://x.mypinata.cloud/ipfs/::x-pinata-gateway-token::MY_TOKEN
+        this.gatewayTokens = new Map();
+        const tokensRaw = this.configService.get<string>('app.ipfs.gatewayTokens') || '';
+        for (const entry of tokensRaw.split(',').map((e) => e.trim()).filter(Boolean)) {
+            const parts = entry.split('::');
+            if (parts.length === 3) {
+                this.gatewayTokens.set(parts[0].trim(), { header: parts[1].trim(), value: parts[2].trim() });
+            } else if (parts.length === 2) {
+                this.gatewayTokens.set(parts[0].trim(), { header: 'Authorization', value: `Bearer ${parts[1].trim()}` });
+            }
+        }
+
         this.timeout = this.configService.get<number>('app.ipfs.fetchTimeout')!;
     }
 
@@ -67,11 +85,13 @@ export class IpfsService {
             const url = gateway.includes('${cid}')
                 ? gateway.replace('${cid}', v1Cid)
                 : `${gateway}${v1Cid}`;
+            const auth = this.gatewayTokens.get(gateway);
             return axios
                 .get(url, {
                     timeout: this.timeout,
                     responseType: 'arraybuffer',
                     signal: controllers[i].signal as unknown as AbortSignal,
+                    ...(auth ? { headers: { [auth.header]: auth.value } } : {}),
                 })
                 .then((response) => {
                     this.logger.debug(`IPFS win: ${url}`);

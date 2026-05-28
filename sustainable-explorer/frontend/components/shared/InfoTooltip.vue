@@ -67,7 +67,7 @@ function onLeave() {
                     :style="tooltipStyle"
                     class="pointer-events-none"
                 >
-                    <div class="max-w-[240px] whitespace-normal rounded-md bg-foreground px-3 py-2 text-[11px] leading-relaxed text-background shadow-lg text-center">
+                    <div class="max-w-[280px] whitespace-pre-line rounded-md bg-foreground px-3 py-2 text-[11px] leading-relaxed text-background shadow-lg text-left">
                         {{ text }}
                     </div>
                     <div class="mx-auto h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />

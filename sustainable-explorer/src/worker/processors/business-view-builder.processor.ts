@@ -32,7 +32,7 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
         super();
     }
 
-    async process(job: Job): Promise<void> {
+    async process(_job: Job): Promise<void> {
         this.logger.log("Building business views from raw messages...");
 
         const caseClauses = Object.entries(TYPE_MAPPINGS)
@@ -62,11 +62,16 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 m."consensusTimestamp",
                 CASE ${caseClauses} END,
                 -- For Standard Registry rows, prefer the profile-topic VC's
-                -- OrganizationName over the inline options.name (VC data wins).
-                -- Other types fall back to options.name / options.tokenName.
+                -- OrganizationName. Fall through to options.name (newly parsed),
+                -- then to the raw attributes.OrganizationName / attributes.Tags
+                -- for records parsed before the key-name fix.
                 COALESCE(
                     sr_vc.cs ->> 'OrganizationName',
                     m.options->>'name',
+                    m.options->'attributes'->>'OrganizationName',
+                    m.options->'attributes'->>'name',
+                    m.options->'attributes'->>'Tags',
+                    m.options->'attributes'->>'tags',
                     m.options->>'tokenName'
                 ),
                 COALESCE(m.owner, m.options->>'did'),
@@ -83,25 +88,27 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                     'owner', m.owner,
                     'options', m.options,
                     'documents', m.documents,
-                    -- Registry-only fields sourced from the profile VC.
-                    -- VC Country beats options.geography; options.geography is
-                    -- the fallback when no VC has been fetched yet.
-                    'geography', COALESCE(sr_vc.cs ->> 'Country', m.options->>'geography'),
-                    'website',   sr_vc.cs ->> 'Website'
+                    -- Registry-only fields. Profile VC wins; fall through to
+                    -- newly-parsed options fields, then to raw attributes using
+                    -- both Pascal (modern Guardian) and lowercase key names.
+                    'geography', COALESCE(sr_vc.cs ->> 'Country', m.options->>'geography', m.options->'attributes'->>'Country', m.options->'attributes'->>'geography'),
+                    'website',   COALESCE(sr_vc.cs ->> 'Website', m.options->>'website', m.options->'attributes'->>'Website'),
+                    'law',       COALESCE(m.options->>'law', m.options->'attributes'->>'law'),
+                    'tags',      COALESCE(m.options->>'tags', m.options->'attributes'->>'Tags', m.options->'attributes'->>'tags')
                 ),
                 -- searchText: concatenation of all searchable fields. Picked up
                 -- by the searchVector tsvector generated column for full-text search.
                 CONCAT_WS(' ',
-                    m.options->>'name',
+                    COALESCE(m.options->>'name', m.options->'attributes'->>'OrganizationName', m.options->'attributes'->>'name', m.options->'attributes'->>'Tags', m.options->'attributes'->>'tags'),
                     m.options->>'description',
-                    m.options->>'tags',
-                    COALESCE(sr_vc.cs ->> 'Country', m.options->>'geography'),
-                    m.options->>'law',
+                    COALESCE(m.options->>'tags', m.options->'attributes'->>'Tags', m.options->'attributes'->>'tags'),
+                    COALESCE(sr_vc.cs ->> 'Country', m.options->>'geography', m.options->'attributes'->>'Country', m.options->'attributes'->>'geography'),
+                    COALESCE(m.options->>'law', m.options->'attributes'->>'law'),
                     m.options->>'tokenName',
                     m.options->>'tokenSymbol',
                     m.owner,
                     sr_vc.cs ->> 'OrganizationName',
-                    sr_vc.cs ->> 'Website'
+                    COALESCE(sr_vc.cs ->> 'Website', m.options->>'website', m.options->'attributes'->>'Website')
                 ),
                 EXTRACT(EPOCH FROM NOW())::bigint,
                 NOW(),

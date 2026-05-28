@@ -135,6 +135,36 @@ export class MethodologiesController {
     }
 
     // TODO: gate behind admin auth once decided
+    @Post('redecode-all')
+    @ApiOperation({
+        summary: 'Re-decode every decoded policy to re-stamp docType from updated classifier',
+        description:
+            'Enqueues a POLICY_DECODE job for every policy with decodeStatus="decoded". ' +
+            'Use this after updating the document-type classifier to apply new keyword ' +
+            'rules to existing policyMapping entries. Follow with POST reparse-projects ' +
+            'to update project records with the corrected docType values. ' +
+            'Returns immediately — jobs are processed asynchronously by the worker.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'], description: 'Hedera network' })
+    @ApiResponse({
+        status: 201,
+        description: 'Re-decode jobs enqueued',
+        schema: {
+            type: 'object',
+            properties: {
+                total: { type: 'number', description: 'Policies found' },
+                enqueued: { type: 'number', description: 'Jobs enqueued' },
+                skipped: { type: 'number', description: 'Policies skipped due to error' },
+            },
+        },
+    })
+    async redecodeAll(
+        @Param('network') network: string,
+    ): Promise<{ total: number; enqueued: number; skipped: number }> {
+        return this.mappingReprocessService.redecodeAllPolicies(network);
+    }
+
+    // TODO: gate behind admin auth once decided
     @Post('reparse-projects')
     @ApiOperation({
         summary: 'Re-parse projects across every methodology in the network',

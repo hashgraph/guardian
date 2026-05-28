@@ -78,12 +78,21 @@ export interface SyncStatusDto {
     totalTopics: number;
     syncedTopics: number;
     totalMessages: number;
-    topicPage: number;
-    topicPageSize: number;
+}
+
+export interface SyncTopicsPageDto {
+    total: number;
+    page: number;
+    pageSize: number;
+    search: string;
     topics: SyncTopicDto[];
-    tokenTotal: number;
-    tokenPage: number;
-    tokenPageSize: number;
+}
+
+export interface SyncTokensPageDto {
+    total: number;
+    page: number;
+    pageSize: number;
+    search: string;
     tokens: SyncTokenDto[];
 }
 
@@ -96,13 +105,6 @@ const emptySyncStatus = (): SyncStatusDto => ({
     totalTopics: 0,
     syncedTopics: 0,
     totalMessages: 0,
-    topicPage: 1,
-    topicPageSize: 10,
-    topics: [],
-    tokenTotal: 0,
-    tokenPage: 1,
-    tokenPageSize: 10,
-    tokens: [],
 });
 
 // ─── useQueueListApi ──────────────────────────────────────────────────────────
@@ -241,27 +243,16 @@ export const useQueueFailedGroupsApi = (opts: {
     return { data, pending, error, refresh };
 };
 
-// ─── useSyncStatusApi ─────────────────────────────────────────────────────────
+// ─── useSyncSummaryApi ────────────────────────────────────────────────────────
 
-export const useSyncStatusApi = (opts: {
-    network: Ref<NetworkId | string>;
-    topicPage?: Ref<number>;
-    topicPageSize?: Ref<number>;
-    tokenPage?: Ref<number>;
-    tokenPageSize?: Ref<number>;
-}) => {
+export const useSyncSummaryApi = (opts: { network: Ref<NetworkId | string> }) => {
     const config = useRuntimeConfig();
     const baseURL = import.meta.server
         ? (config.apiBaseUrl as string)
         : (config.public.apiBaseUrl as string);
 
-    const topicPage = opts.topicPage ?? ref(1);
-    const topicPageSize = opts.topicPageSize ?? ref(10);
-    const tokenPage = opts.tokenPage ?? ref(1);
-    const tokenPageSize = opts.tokenPageSize ?? ref(10);
-
     const url = computed(() => `/api/v1/${opts.network.value}/sync-status`);
-    const key = computed(() => `sync-status:${opts.network.value}:${topicPage.value}:${topicPageSize.value}:${tokenPage.value}:${tokenPageSize.value}`);
+    const key = computed(() => `sync-summary:${opts.network.value}`);
 
     const available = ref(true);
 
@@ -273,10 +264,7 @@ export const useSyncStatusApi = (opts: {
         () => key.value,
         async () => {
             try {
-                const res = await $fetch<SyncStatusDto>(url.value, {
-                    baseURL,
-                    query: { topicPage: topicPage.value, topicPageSize: topicPageSize.value, tokenPage: tokenPage.value, tokenPageSize: tokenPageSize.value },
-                });
+                const res = await $fetch<SyncStatusDto>(url.value, { baseURL });
                 available.value = true;
                 return res ?? emptySyncStatus();
             } catch (err: any) {
@@ -284,18 +272,136 @@ export const useSyncStatusApi = (opts: {
                     available.value = false;
                     return emptySyncStatus();
                 }
-                const msg: string = (err as any)?.message ?? String(err);
+                const msg: string = err?.message ?? String(err);
                 if (!msg.includes('ECONNREFUSED') && !msg.includes('no response')) {
-                    console.error('[useSyncStatusApi] fetch failed:', msg);
+                    console.error('[useSyncSummaryApi] fetch failed:', msg);
                 }
                 return emptySyncStatus();
             }
         },
         {
             default: () => emptySyncStatus(),
-            watch: [opts.network, topicPage, topicPageSize, tokenPage, tokenPageSize],
+            watch: [opts.network],
         },
     );
 
     return { data, pending, error, refresh, available };
+};
+
+// ─── useSyncTopicsApi ─────────────────────────────────────────────────────────
+
+const emptyTopicsPage = (): SyncTopicsPageDto => ({ total: 0, page: 1, pageSize: 10, search: '', topics: [] });
+
+export const useSyncTopicsApi = (opts: {
+    network: Ref<NetworkId | string>;
+    search?: Ref<string>;
+    status?: Ref<string>;
+    page?: Ref<number>;
+    pageSize?: Ref<number>;
+}) => {
+    const config = useRuntimeConfig();
+    const baseURL = import.meta.server
+        ? (config.apiBaseUrl as string)
+        : (config.public.apiBaseUrl as string);
+
+    const search = opts.search ?? ref('');
+    const status = opts.status ?? ref('');
+    const page = opts.page ?? ref(1);
+    const pageSize = opts.pageSize ?? ref(10);
+
+    const key = computed(
+        () => `sync-topics:${opts.network.value}:${search.value}:${status.value}:${page.value}:${pageSize.value}`,
+    );
+
+    const { data, pending, error, refresh } = useAsyncData<SyncTopicsPageDto>(
+        () => key.value,
+        async () => {
+            try {
+                const res = await $fetch<SyncTopicsPageDto>(
+                    `/api/v1/${opts.network.value}/sync-status/topics`,
+                    {
+                        baseURL,
+                        query: {
+                            search: search.value || undefined,
+                            status: status.value || undefined,
+                            page: page.value,
+                            pageSize: pageSize.value,
+                        },
+                    },
+                );
+                return res ?? emptyTopicsPage();
+            } catch (err: any) {
+                const msg: string = err?.message ?? String(err);
+                if (!msg.includes('ECONNREFUSED') && !msg.includes('no response')) {
+                    console.error('[useSyncTopicsApi] fetch failed:', msg);
+                }
+                return emptyTopicsPage();
+            }
+        },
+        {
+            default: () => emptyTopicsPage(),
+            watch: [opts.network, search, status, page, pageSize],
+        },
+    );
+
+    return { data, pending, error, refresh };
+};
+
+// ─── useSyncTokensApi ─────────────────────────────────────────────────────────
+
+const emptyTokensPage = (): SyncTokensPageDto => ({ total: 0, page: 1, pageSize: 10, search: '', tokens: [] });
+
+export const useSyncTokensApi = (opts: {
+    network: Ref<NetworkId | string>;
+    search?: Ref<string>;
+    type?: Ref<string>;
+    page?: Ref<number>;
+    pageSize?: Ref<number>;
+}) => {
+    const config = useRuntimeConfig();
+    const baseURL = import.meta.server
+        ? (config.apiBaseUrl as string)
+        : (config.public.apiBaseUrl as string);
+
+    const search = opts.search ?? ref('');
+    const type = opts.type ?? ref('');
+    const page = opts.page ?? ref(1);
+    const pageSize = opts.pageSize ?? ref(10);
+
+    const key = computed(
+        () => `sync-tokens:${opts.network.value}:${search.value}:${type.value}:${page.value}:${pageSize.value}`,
+    );
+
+    const { data, pending, error, refresh } = useAsyncData<SyncTokensPageDto>(
+        () => key.value,
+        async () => {
+            try {
+                const res = await $fetch<SyncTokensPageDto>(
+                    `/api/v1/${opts.network.value}/sync-status/tokens`,
+                    {
+                        baseURL,
+                        query: {
+                            search: search.value || undefined,
+                            type: type.value || undefined,
+                            page: page.value,
+                            pageSize: pageSize.value,
+                        },
+                    },
+                );
+                return res ?? emptyTokensPage();
+            } catch (err: any) {
+                const msg: string = err?.message ?? String(err);
+                if (!msg.includes('ECONNREFUSED') && !msg.includes('no response')) {
+                    console.error('[useSyncTokensApi] fetch failed:', msg);
+                }
+                return emptyTokensPage();
+            }
+        },
+        {
+            default: () => emptyTokensPage(),
+            watch: [opts.network, search, type, page, pageSize],
+        },
+    );
+
+    return { data, pending, error, refresh };
 };

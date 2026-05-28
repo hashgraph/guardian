@@ -149,14 +149,35 @@ export function extractFields(json: Record<string, unknown>): ParsedMessage {
             result.options = {
                 did: json['did'] || null,
                 registrantTopicId: json['registrantTopicId'] || null,
-                name: json['name'] || attributes?.['tags'] || null,
-                description: json['description'] || null,
+                // OrganizationName (Pascal) is the canonical name key in Guardian attributes.
+                // Fall back to lowercase name, then Tags/tags (some registries like IREC
+                // use Tags as their display name when OrganizationName is absent).
+                name: (json['name'] as string)
+                    || (attributes?.['OrganizationName'] as string)
+                    || (attributes?.['name'] as string)
+                    || (attributes?.['Tags'] as string)
+                    || (attributes?.['tags'] as string)
+                    || null,
+                description: (json['description'] as string) || (attributes?.['description'] as string) || null,
                 lang: json['lang'] || null,
                 topicId: json['topicId'] || null,
                 action: json['action'] || null,
-                geography: attributes?.['geography'] || null,
-                law: attributes?.['law'] || null,
-                tags: attributes?.['tags'] || null,
+                // Country (Pascal) is used in modern Guardian; fall back to lowercase geography.
+                geography: (json['geography'] as string)
+                    || (attributes?.['Country'] as string)
+                    || (attributes?.['geography'] as string)
+                    || null,
+                // Website lives in attributes for modern Guardian messages.
+                website: (json['website'] as string)
+                    || (attributes?.['Website'] as string)
+                    || null,
+                law: (json['law'] as string) || (attributes?.['law'] as string) || null,
+                // Tags (Pascal) is the modern key; fall back to lowercase tags.
+                tags: (json['Tags'] as string)
+                    || (json['tags'] as string)
+                    || (attributes?.['Tags'] as string)
+                    || (attributes?.['tags'] as string)
+                    || null,
                 attributes: attributes || null,
             };
             break;
