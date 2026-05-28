@@ -402,28 +402,29 @@ export class QueueStatusController {
         const counts = await queue.getJobCounts('failed');
         const total = counts['failed'] ?? 0;
 
-        // When grouping, fetch all failed jobs so group counts are accurate across
-        // the full set — not just the current page.
-        const rawFailed = groupByReason
-            ? await queue.getFailed(0, Math.max(total - 1, 0))
-            : await queue.getFailed(offset, offset + limit - 1);
-
-        // Job.fromId returns undefined when the hash is missing (e.g. BullMQ version
-        // mismatch, partial cleanup). Filter those out so the mapping doesn't throw.
-        const failedJobs = (rawFailed as (Job | undefined | null)[]).filter(
-            (j): j is Job => j != null,
-        );
-
         if (groupByReason) {
+            // Fetch in batches of 100 to avoid spawning thousands of concurrent HGETALL
+            // calls via Promise.all (BullMQ v5 getFailed materialises every job in one shot).
+            // For large queues this saturates the Redis connection and all lookups return null.
+            const BATCH = 100;
             const groupMap = new Map<string, { count: number; sampleJobIds: string[] }>();
-            for (const job of failedJobs) {
-                const reason = job.failedReason ?? '(unknown)';
-                const entry = groupMap.get(reason) ?? { count: 0, sampleJobIds: [] };
-                entry.count += 1;
-                if (entry.sampleJobIds.length < 5) {
-                    entry.sampleJobIds.push(job.id ?? '');
+
+            for (let batchStart = 0; batchStart < total; batchStart += BATCH) {
+                const batchEnd = Math.min(batchStart + BATCH - 1, total - 1);
+                const rawBatch = await queue.getFailed(batchStart, batchEnd);
+                if (rawBatch.length === 0) break; // sorted set exhausted earlier than ZCARD indicates
+
+                const batch = (rawBatch as (Job | undefined | null)[]).filter(
+                    (j): j is Job => j != null,
+                );
+
+                for (const job of batch) {
+                    const reason = job.failedReason ?? '(unknown)';
+                    const entry = groupMap.get(reason) ?? { count: 0, sampleJobIds: [] };
+                    entry.count += 1;
+                    if (entry.sampleJobIds.length < 5) entry.sampleJobIds.push(job.id ?? '');
+                    groupMap.set(reason, entry);
                 }
-                groupMap.set(reason, entry);
             }
 
             const allGroups: FailedJobGroupDto[] = Array.from(groupMap.entries()).map(([reason, g]) => ({
@@ -443,6 +444,27 @@ export class QueueStatusController {
                 pageSize: groupPageSize,
                 groups,
             };
+        }
+
+        // Regular (non-grouped) list — fetch the requested page.
+        // If the page comes back empty (hash eviction / race) widen the search window
+        // by scanning forward in chunks until we fill the page or exhaust the set.
+        const rawFailed = await queue.getFailed(offset, offset + limit - 1);
+        let failedJobs = (rawFailed as (Job | undefined | null)[]).filter(
+            (j): j is Job => j != null,
+        );
+
+        if (failedJobs.length === 0 && total > offset) {
+            this.logger.warn(
+                `getFailedJobs: getFailed(${offset}, ${offset + limit - 1}) returned 0 real jobs ` +
+                `despite total=${total} — likely stale hashes. Scanning wider window.`,
+            );
+            // Scan up to 5× the limit forward to find actual jobs
+            const scanEnd = Math.min(offset + limit * 5 - 1, total - 1);
+            const rawWider = await queue.getFailed(offset, scanEnd);
+            failedJobs = (rawWider as (Job | undefined | null)[]).filter(
+                (j): j is Job => j != null,
+            ).slice(0, limit);
         }
 
         const items: FailedJobDto[] = failedJobs.map((job) => ({
@@ -554,7 +576,10 @@ export class QueueStatusController {
             `retryAllFailed: network=${network} queue=${baseName} limit=${limit} force=${force}`,
         );
 
-        const failedJobs = await queue.getFailed(0, limit - 1);
+        const rawFailed = await queue.getFailed(0, limit - 1);
+        const failedJobs = (rawFailed as (Job | undefined | null)[]).filter(
+            (j): j is Job => j != null,
+        );
 
         let retried = 0;
         let skipped = 0;
