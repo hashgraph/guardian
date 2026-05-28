@@ -45,6 +45,8 @@ import {
     RetryAllFailedBodyDto,
     RetryAllFailedResultDto,
     SyncStatusDto,
+    SyncTopicsPageDto,
+    SyncTokensPageDto,
     TopicSyncItemDto,
     TokenSyncItemDto,
 } from '../dto/queue.dto';
@@ -85,32 +87,52 @@ class FailedJobsQueryDto {
     groupPageSize?: number = 10;
 }
 
-class SyncStatusQueryDto {
+class SyncTopicsQueryDto {
+    @IsOptional()
+    @IsString()
+    search?: string = '';
+
+    @IsOptional()
+    @IsString()
+    @IsIn(['NEW', 'SYNCED', 'DISABLED'])
+    status?: string;
+
     @IsOptional()
     @Type(() => Number)
     @IsInt()
     @Min(1)
-    topicPage?: number = 1;
+    page?: number = 1;
 
     @IsOptional()
     @Type(() => Number)
     @IsInt()
     @Min(1)
     @Max(100)
-    topicPageSize?: number = 10;
+    pageSize?: number = 10;
+}
+
+class SyncTokensQueryDto {
+    @IsOptional()
+    @IsString()
+    search?: string = '';
+
+    @IsOptional()
+    @IsString()
+    @IsIn(['FUNGIBLE_COMMON', 'NON_FUNGIBLE_UNIQUE'])
+    type?: string;
 
     @IsOptional()
     @Type(() => Number)
     @IsInt()
     @Min(1)
-    tokenPage?: number = 1;
+    page?: number = 1;
 
     @IsOptional()
     @Type(() => Number)
     @IsInt()
     @Min(1)
     @Max(100)
-    tokenPageSize?: number = 10;
+    pageSize?: number = 10;
 }
 
 class IpfsStatusQueryDto {
@@ -495,6 +517,10 @@ export class QueueStatusController {
         await job.updateData({ ...job.data, manualRetryCount: updatedCount });
         await job.retry();
 
+        this.logger.log(
+            `retryJob: network=${network} queue=${baseName} jobId=${jobId} manualRetryCount=${updatedCount}`,
+        );
+
         return { ok: true, jobId, manualRetryCount: updatedCount };
     }
 
@@ -520,9 +546,13 @@ export class QueueStatusController {
         @Body() body: RetryAllFailedBodyDto,
     ): Promise<RetryAllFailedResultDto> {
         const queue = this.queueRegistry.getQueue(network, baseName);
-        const limit = body.limit ?? 100;
+        const limit = body.limit ?? 500;
         const force = body.force ?? false;
         const olderThanMs = body.olderThanMs;
+
+        this.logger.log(
+            `retryAllFailed: network=${network} queue=${baseName} limit=${limit} force=${force}`,
+        );
 
         const failedJobs = await queue.getFailed(0, limit - 1);
 
@@ -559,6 +589,10 @@ export class QueueStatusController {
             }
         }
 
+        this.logger.log(
+            `retryAllFailed: network=${network} queue=${baseName} retried=${retried} skipped=${skipped} errors=${errors.length}`,
+        );
+
         return { retried, skipped, errors };
     }
 
@@ -589,107 +623,49 @@ export class QueueStatusController {
 
     @Get(':network/sync-status')
     @ApiOperation({
-        summary: 'Get sync health status for a network',
+        summary: 'Get sync health summary for a network',
         description:
-            'Queries topic_cache and token_cache tables to report the last synced ' +
-            'consensus timestamp, approximate lag, and per-topic/token watermarks.',
+            'Returns aggregate stats (total/synced topics, total messages) and the lag ' +
+            'computed from MAX(lastUpdate) across ALL topic_cache rows — not just the page shown in the UI. ' +
+            'Use /sync-status/topics and /sync-status/tokens for the paginated detail tables.',
     })
     @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
-    @ApiQuery({ name: 'topicPage', required: false, type: Number, description: 'Page number for topics (default 1)' })
-    @ApiQuery({ name: 'topicPageSize', required: false, type: Number, description: 'Topics per page (default 10, max 100)' })
-    @ApiQuery({ name: 'tokenPage', required: false, type: Number, description: 'Page number for tokens (default 1)' })
-    @ApiQuery({ name: 'tokenPageSize', required: false, type: Number, description: 'Tokens per page (default 10, max 100)' })
     @ApiResponse({ status: 200, type: SyncStatusDto })
     @ApiResponse({ status: 404, description: 'Network not configured on this API instance' })
-    async getSyncStatus(
-        @Param('network') network: string,
-        @Query() query: SyncStatusQueryDto,
-    ): Promise<SyncStatusDto> {
+    async getSyncStatus(@Param('network') network: string): Promise<SyncStatusDto> {
         const ds = this.dataSources.getDataSource(network);
-        const topicPageSize = query.topicPageSize ?? 10;
-        const tokenPageSize = query.tokenPageSize ?? 10;
-        const topicPage = query.topicPage ?? 1;
-        const tokenPage = query.tokenPage ?? 1;
-        const topicOffset = (topicPage - 1) * topicPageSize;
-        const tokenOffset = (tokenPage - 1) * tokenPageSize;
 
-        const [topicRows, tokenRows, [aggRow], [tokenCountRow]]: [
+        const [[aggRow]]: [
             Array<{
-                topicId: string;
-                messages: number;
-                hasNext: boolean;
-                lastUpdate: string;
-                status: string;
+                totalTopics: string;
+                syncedTopics: string;
+                totalMessages: string;
+                maxLastUpdate: string | null;
             }>,
-            Array<{
-                tokenId: string;
-                serialNumber: number;
-                hasNext: boolean;
-                type: string | null;
-            }>,
-            Array<{ totalTopics: string; syncedTopics: string; totalMessages: string }>,
-            Array<{ total: string }>,
         ] = await Promise.all([
             ds.query(
-                `SELECT "topicId", messages, "hasNext", "lastUpdate", status
-                 FROM topic_cache
-                 ORDER BY messages DESC
-                 LIMIT $1 OFFSET $2`,
-                [topicPageSize, topicOffset],
-            ),
-            ds.query(
-                `SELECT "tokenId", "serialNumber", "hasNext", type
-                 FROM token_cache
-                 LIMIT $1 OFFSET $2`,
-                [tokenPageSize, tokenOffset],
-            ),
-            ds.query(
-                `SELECT COUNT(*)::int AS "totalTopics",
-                        COUNT(*) FILTER (WHERE "hasNext" = false)::int AS "syncedTopics",
-                        COALESCE(SUM(messages), 0)::bigint AS "totalMessages"
+                `SELECT COUNT(*)::int                                      AS "totalTopics",
+                        COUNT(*) FILTER (WHERE "hasNext" = false)::int     AS "syncedTopics",
+                        COALESCE(SUM(messages), 0)::bigint                 AS "totalMessages",
+                        MAX("lastUpdate")                                   AS "maxLastUpdate"
                  FROM topic_cache`,
             ),
-            ds.query(`SELECT COUNT(*)::int AS total FROM token_cache`),
         ]);
 
-        // lastUpdate is stored as either:
-        //   - milliseconds string: "1778146836950"  (13 digits, from Date.now())
-        //   - Hedera consensus format: "1746620000.123456789" (seconds.nanoseconds)
-        // Normalise to Unix seconds by dividing ms values by 1000.
+        // lastUpdate is stored as millisecond string ("1778146836950") or
+        // Hedera consensus format ("1746620000.123456789"). MAX() on text gives the
+        // lexicographic maximum which is correct for uniform 13-digit ms strings.
+        // Parse the same way as per-row normalisation.
         let maxSeconds: number | null = null;
-        for (const row of topicRows) {
-            if (row.lastUpdate) {
-                const raw = parseInt(row.lastUpdate.split('.')[0], 10);
-                const secs = raw > 1e10 ? Math.floor(raw / 1000) : raw;
-                if (!isNaN(secs) && (maxSeconds === null || secs > maxSeconds)) {
-                    maxSeconds = secs;
-                }
-            }
+        if (aggRow?.maxLastUpdate) {
+            const raw = parseInt(aggRow.maxLastUpdate.split('.')[0], 10);
+            const secs = raw > 1e10 ? Math.floor(raw / 1000) : raw;
+            if (!isNaN(secs) && secs > 0) maxSeconds = secs;
         }
 
         const lastSyncedAt = maxSeconds !== null ? new Date(maxSeconds * 1000).toISOString() : null;
         const lagSeconds =
             maxSeconds !== null ? Math.max(0, Math.floor(Date.now() / 1000) - maxSeconds) : 0;
-
-        const topics: TopicSyncItemDto[] = topicRows.map((r) => {
-            const raw = parseInt((r.lastUpdate ?? '').split('.')[0], 10);
-            const secs = raw > 1e10 ? Math.floor(raw / 1000) : raw;
-            const lastUpdateIso = !isNaN(secs) && secs > 0 ? new Date(secs * 1000).toISOString() : '';
-            return {
-                topicId: r.topicId,
-                messageCount: Number(r.messages),
-                hasNext: r.hasNext,
-                lastUpdate: lastUpdateIso,
-                status: r.status,
-            };
-        });
-
-        const tokens: TokenSyncItemDto[] = tokenRows.map((r) => ({
-            tokenId: r.tokenId,
-            serialNumber: Number(r.serialNumber),
-            hasNext: r.hasNext,
-            type: r.type,
-        }));
 
         return {
             lastSyncedAt,
@@ -697,12 +673,155 @@ export class QueueStatusController {
             totalTopics: Number(aggRow?.totalTopics ?? 0),
             syncedTopics: Number(aggRow?.syncedTopics ?? 0),
             totalMessages: Number(aggRow?.totalMessages ?? 0),
-            topicPage,
-            topicPageSize,
+        };
+    }
+
+    @Get(':network/sync-status/topics')
+    @ApiOperation({
+        summary: 'Paginated topic sync watermarks with optional search',
+        description:
+            'Returns topics from topic_cache ordered by message count desc. ' +
+            'Use the search param to filter by topicId prefix/substring (case-insensitive).',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiQuery({ name: 'search', required: false, type: String, description: 'Filter by topicId (ILIKE)' })
+    @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default 1)' })
+    @ApiQuery({ name: 'pageSize', required: false, type: Number, description: 'Topics per page (default 10, max 100)' })
+    @ApiResponse({ status: 200, type: SyncTopicsPageDto })
+    @ApiResponse({ status: 404, description: 'Network not configured' })
+    async getSyncTopics(
+        @Param('network') network: string,
+        @Query() query: SyncTopicsQueryDto,
+    ): Promise<SyncTopicsPageDto> {
+        const ds = this.dataSources.getDataSource(network);
+        const page = query.page ?? 1;
+        const pageSize = query.pageSize ?? 10;
+        const search = (query.search ?? '').trim();
+        const statusFilter = (query.status ?? '').trim();
+        const offset = (page - 1) * pageSize;
+
+        const conditions: string[] = [];
+        const filterParams: unknown[] = [];
+
+        if (search) {
+            filterParams.push(`%${search}%`);
+            conditions.push(`"topicId" ILIKE $${filterParams.length}`);
+        }
+        if (statusFilter) {
+            filterParams.push(statusFilter);
+            conditions.push(`status = $${filterParams.length}`);
+        }
+
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        const dataParams = [...filterParams, pageSize, offset];
+
+        const [rows, [countRow]]: [
+            Array<{ topicId: string; messages: number; hasNext: boolean; lastUpdate: string; status: string }>,
+            Array<{ total: string }>,
+        ] = await Promise.all([
+            ds.query(
+                `SELECT "topicId", messages, "hasNext", "lastUpdate", status
+                 FROM topic_cache
+                 ${whereClause}
+                 ORDER BY messages DESC
+                 LIMIT $${dataParams.length - 1} OFFSET $${dataParams.length}`,
+                dataParams,
+            ),
+            ds.query(
+                `SELECT COUNT(*)::int AS total FROM topic_cache ${whereClause}`,
+                filterParams,
+            ),
+        ]);
+
+        const topics: TopicSyncItemDto[] = rows.map((r) => {
+            const raw = parseInt((r.lastUpdate ?? '').split('.')[0], 10);
+            const secs = raw > 1e10 ? Math.floor(raw / 1000) : raw;
+            return {
+                topicId: r.topicId,
+                messageCount: Number(r.messages),
+                hasNext: r.hasNext,
+                lastUpdate: !isNaN(secs) && secs > 0 ? new Date(secs * 1000).toISOString() : '',
+                status: r.status,
+            };
+        });
+
+        return {
+            total: Number(countRow?.total ?? 0),
+            page,
+            pageSize,
+            search,
             topics,
-            tokenTotal: Number(tokenCountRow?.total ?? 0),
-            tokenPage,
-            tokenPageSize,
+        };
+    }
+
+    @Get(':network/sync-status/tokens')
+    @ApiOperation({
+        summary: 'Paginated token sync watermarks with optional search',
+        description:
+            'Returns tokens from token_cache. ' +
+            'Use the search param to filter by tokenId prefix/substring (case-insensitive).',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiQuery({ name: 'search', required: false, type: String, description: 'Filter by tokenId (ILIKE)' })
+    @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default 1)' })
+    @ApiQuery({ name: 'pageSize', required: false, type: Number, description: 'Tokens per page (default 10, max 100)' })
+    @ApiResponse({ status: 200, type: SyncTokensPageDto })
+    @ApiResponse({ status: 404, description: 'Network not configured' })
+    async getSyncTokens(
+        @Param('network') network: string,
+        @Query() query: SyncTokensQueryDto,
+    ): Promise<SyncTokensPageDto> {
+        const ds = this.dataSources.getDataSource(network);
+        const page = query.page ?? 1;
+        const pageSize = query.pageSize ?? 10;
+        const search = (query.search ?? '').trim();
+        const typeFilter = (query.type ?? '').trim();
+        const offset = (page - 1) * pageSize;
+
+        const conditions: string[] = [];
+        const filterParams: unknown[] = [];
+
+        if (search) {
+            filterParams.push(`%${search}%`);
+            conditions.push(`"tokenId" ILIKE $${filterParams.length}`);
+        }
+        if (typeFilter) {
+            filterParams.push(typeFilter);
+            conditions.push(`type = $${filterParams.length}`);
+        }
+
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        const dataParams = [...filterParams, pageSize, offset];
+
+        const [rows, [countRow]]: [
+            Array<{ tokenId: string; serialNumber: number; hasNext: boolean; type: string | null }>,
+            Array<{ total: string }>,
+        ] = await Promise.all([
+            ds.query(
+                `SELECT "tokenId", "serialNumber", "hasNext", type
+                 FROM token_cache
+                 ${whereClause}
+                 LIMIT $${dataParams.length - 1} OFFSET $${dataParams.length}`,
+                dataParams,
+            ),
+            ds.query(
+                `SELECT COUNT(*)::int AS total FROM token_cache ${whereClause}`,
+                filterParams,
+            ),
+        ]);
+
+        const tokens: TokenSyncItemDto[] = rows.map((r) => ({
+            tokenId: r.tokenId,
+            serialNumber: Number(r.serialNumber),
+            hasNext: r.hasNext,
+            type: r.type,
+        }));
+
+        return {
+            total: Number(countRow?.total ?? 0),
+            page,
+            pageSize,
+            search,
             tokens,
         };
     }
