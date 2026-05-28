@@ -1236,7 +1236,8 @@ export class PolicyConfigurationComponent implements OnInit {
                 header: 'Enable Mock',
                 texts: [
                     `Mock Data intercepts all external service calls (IPFS, Topics, Tokens, and API requests) and returns pre-configured test responses instead of making real network calls. This lets you run and test your policy in a fully self-contained offline environment.`,
-                    `You can change this setting and configure individual blocks at any time from the 'Mock Config' panel.`
+                    `You can change this setting and configure individual blocks at any time from the 'Mock Config' panel.`,
+                    `Note: enabling Mock pre-records responses for every schema in the policy, so moving to Dry-Run may take several minutes.`
                 ],
                 buttons: [{
                     name: 'Disable',
