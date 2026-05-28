@@ -8,6 +8,7 @@ export type CreditWithDisplay = CreditDto & {
 export function useCredits(
     projectKey?: Ref<string | undefined>,
     methodologyId?: Ref<string | undefined>,
+    registryDid?: Ref<string | undefined>,
 ) {
     const { network } = useNetwork();
 
@@ -15,6 +16,7 @@ export function useCredits(
         const f: Record<string, string> = {};
         if (projectKey?.value) f.projectKey = projectKey.value;
         if (methodologyId?.value) f.methodologyId = methodologyId.value;
+        if (registryDid?.value) f.registryDid = registryDid.value;
         return f;
     });
 

@@ -151,3 +151,30 @@ export const useRegistriesApi = (opts: UseRegistriesApiOptions) => {
 
     return { data, pending, error, refresh };
 };
+
+export const useRegistryApi = (opts: { id: Ref<string>; network: Ref<string> }) => {
+    const config = useRuntimeConfig();
+    const baseURL = import.meta.server
+        ? (config.apiBaseUrl as string)
+        : (config.public.apiBaseUrl as string);
+
+    const key = computed(() => `registry:${opts.network.value}:${opts.id.value}`);
+
+    const { data, pending, error } = useAsyncData<RegistryDto | null>(
+        key.value,
+        async () => {
+            if (!opts.id.value) return null;
+            try {
+                return await $fetch<RegistryDto>(
+                    `${baseURL}/api/v1/${opts.network.value}/registries/id/${opts.id.value}`,
+                );
+            } catch (err) {
+                console.error('[useRegistryApi] fetch failed:', err);
+                return null;
+            }
+        },
+        { watch: [opts.id, opts.network] },
+    );
+
+    return { data, pending, error };
+};

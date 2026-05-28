@@ -49,6 +49,13 @@ export class RegistriesService {
         return RegistryResponseDto.fromRow(row, network, row.stats);
     }
 
+    async findById(network: string, id: string): Promise<RegistryResponseDto | null> {
+        const repo = this.getRepository(network);
+        const row = await repo.findById(id);
+        if (!row) return null;
+        return RegistryResponseDto.fromRow(row, network, row.stats);
+    }
+
     /**
      * Resolves the appropriate RegistryRepository for the given network.
      * Currently only PostgreSQL is supported; add a factory here to swap
