@@ -1,64 +1,43 @@
-# Run policy without making any persistent changes or executing         transaction.
+# Run Tool in Dry-Run Mode
 
-<mark style="color:green;">`PUT`</mark> `/tools/{id}/dry-run`
+**`PUT /api/v1/tools/{id}/dry-run`**
 
-Run policy without making any persistent changes or executing\
-transaction. Only users with the Standard Registry role are allowed to\
-make the request.
+Runs a tool without making any persistent changes or executing transactions, allowing safe testing of the tool configuration.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** `Permissions.TOOLS_TOOL_UPDATE`
 
-**Body**
+---
 
-| Name | Type   | Description |
-| ---- | ------ | ----------- |
-| id   | string | Tool ID     |
+## Request
 
-**Response**
+### Path Parameters
 
-{% tabs %}
-{% tab title="200" %}
-```json5
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | Tool ID (MongoDB ObjectId) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-   description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ToolValidationDTO'
+  "valid": true,
+  "results": []
 }
 ```
-{% endtab %}
 
-{% tab title="401" %}
-```json5
-{
-  description: Unauthorized.
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403" %}
-```json5
-{
-description: Forbidden.
-}
-```
-{% endtab %}
-
-{% tab title="500" %}
-```json5
-{
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-}
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | `id` is missing or invalid |
+| `500 Internal Server Error` | Unexpected server failure |

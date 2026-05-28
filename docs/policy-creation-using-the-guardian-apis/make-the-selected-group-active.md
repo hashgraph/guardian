@@ -1,46 +1,57 @@
-# Make the selected Group active
+# Make the Selected Group Active
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/groups" summary="Makes the selected group active." %}
-{% swagger-description %}
-Makes the selected group active. if UUID is not set then returns the user to the default state.
-{% endswagger-description %}
+**`POST /policies/{policyId}/groups`**
 
-{% swagger-parameter in="body" required="true" name="uuid" type="String" %}
-Selected Group
-{% endswagger-parameter %}
+Makes the selected group active for the current user. If no UUID is provided, the user is returned to the default state.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.POLICIES_POLICY_EXECUTE` or `Permissions.POLICIES_POLICY_MANAGE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The policy ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
+
+### Request Body
+
+```json
 {
-    // Response
+  "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `uuid` | string | No | UUID of the group to make active. Omit to reset to default state |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    // Response
+  "id": "63e3e5e8a01b3c001234abcd",
+  "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "role": "INSTALLER",
+  "active": true
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Sever Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Policy or group not found |
+| `500 Internal Server Error` | Unexpected server failure |

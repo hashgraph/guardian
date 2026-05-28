@@ -1,51 +1,41 @@
 # User Account Balance
 
-### RETURNS USER'S ACCOUNT BALANCE
+**`GET /api/v1/profiles/{username}/balance`**
 
-{% swagger method="get" path="" baseUrl="/profiles/{username}/balance" summary="Returns user's Hedera account balance" %}
-{% swagger-description %}
-Requests Hedera account balance. Only users with the Installer role are allowed to make the request
-{% endswagger-description %}
+Returns the Hedera account balance for the specified user.
 
-{% swagger-parameter in="path" name="username" type="String" required="true" %}
-The name of the user for whom to fetch the balance
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                type: string
-}
+**Permission:** `Permissions.PROFILES_BALANCE_READ`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter  | Type   | Required | Description                                    |
+|------------|--------|----------|------------------------------------------------|
+| `username` | string | Yes      | The name of the user for whom to fetch the balance |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+"1000.5"
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+The balance is returned as a JSON string representing the account balance in HBAR.
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

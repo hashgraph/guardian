@@ -1,42 +1,42 @@
 # User Balance
 
-### RETURNS CURRENT USER'S HEDERA ACCOUNT BALANCE
+**`GET /accounts/balance`**
 
-{% swagger method="get" path="" baseUrl="/accounts/balance" summary="Returns user's Hedera account balance" %}
-{% swagger-description %}
-Requests current Hedera account balance
-{% endswagger-description %}
+Returns the authenticated user's current Hedera account balance.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.PROFILES_BALANCE_READ`
+
+---
+
+## Request
+
+No request body or parameters required.
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  balance:
-                    type: number
-                  unit:
-                    type: string
-                  user:
-                    type: object
-                    properties:
-                      username:
-                        type: string
-                      did:
-                        type: string
+  "balance": 9.26,
+  "unit": "Hbar",
+  "user": {
+    "username": "example_user",
+    "did": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001"
+  }
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

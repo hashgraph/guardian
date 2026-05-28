@@ -1,49 +1,58 @@
-# Importing a Policy from IPFS
+# Importing a Policy from IPFS (Async)
 
-{% swagger method="post" path="" baseUrl=" /policies/push/import/message" summary="Imports new policy and all associated artifacts from IPFS into the local DB." %}
-{% swagger-description %}
-Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /policies/push/import/message`**
 
-{% swagger-parameter in="body" name="messageID" type="String" required="true" %}
-Object that contains the identifier of the Hedera message which contains the IPFS CID of the Policy.
-{% endswagger-parameter %}
+Imports a new policy and all associated artifacts from IPFS asynchronously using the Hedera message ID. Returns a task ID immediately; poll `GET /tasks/{taskId}` for the result.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.POLICIES_POLICY_CREATE`
+
+---
+
+## Request
+
+### Query Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `versionOfTopicId` | string | No | — | The topic ID of the policy version to associate |
+| `demo` | boolean | No | false | Import the policy in demo mode |
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
+  "messageId": "1680000000.000000001"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messageId` | string | Yes | The Hedera message ID containing the IPFS CID of the policy |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
 {
-    // Response
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Import policy message"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+Poll `GET /tasks/{taskId}` to retrieve the result.
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Message ID is missing |
+| `500 Internal Server Error` | Unexpected server failure |

@@ -1,63 +1,49 @@
 # Deletes all schemas by topic id. Only users with the Standard Registry are allowed.
 
-<mark style="color:red;">`DELETE`</mark> `/schemas/topic/{topicId}`
+**`DELETE /schemas/topic/{topicId}`**
 
-Deletes all schema by topic ID.
+Deletes all schemas by topic ID. Only users with the Standard Registry role are allowed to make the request.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** `Permissions.SCHEMAS_SCHEMA_DELETE`
 
-**Body**
+---
 
-| Name    | Type   | Description     |
-| ------- | ------ | --------------- |
-| topicId | string | Topic ID        |
-| `age`   | number | Age of the user |
+## Request
 
-**Response**
+### Path Parameters
 
-{% tabs %}
-{% tab title="200" %}
-```json5
-description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SchemaDTO'
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `topicId` | String | Yes | Topic ID |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns an array of the remaining schema objects.
+
+```json
+[
+  {
+    "id": "f3b2a9c1e4d5678901234567",
+    "uuid": "f3b2a9c1e4d5678901234567",
+    "name": "Schema name",
+    "status": "DRAFT",
+    "topicId": "f3b2a9c1e4d5678901234567"
+  }
+]
 ```
-{% endtab %}
 
-{% tab title="401" %}
-```json5
-{
-  description: Unauthorized.
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403" %}
-```json5
-{
-description: Forbidden.
-}
-```
-{% endtab %}
-
-{% tab title="500" %}
-```json5
-{
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-}
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

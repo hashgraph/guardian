@@ -1,41 +1,51 @@
 # Start Recording
 
-{% swagger method="post" path="" baseUrl="/record/{policyId}/recording/start" summary="Start recording." %}
-{% swagger-description %}
-Start recording. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/record/{policyId}/recording/start`**
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
+Starts recording all API interactions with the specified policy session.
 
-{% swagger-parameter in="body" type="Object" required="true" %}
-Object that contains options
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Permission:** `Permissions.POLICIES_RECORD_ALL`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The ID of the policy to start recording |
+
+### Request Body
+
+```json
+{}
 ```
-content:
-            application/json:
-              schema:
-                type: boolean
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `options` | object | No | Optional recording configuration options |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
+true
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+Returns `true` when the recording session has been successfully initiated.
 
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

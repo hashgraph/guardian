@@ -1,31 +1,42 @@
 # Read All Notifications
 
-{% swagger method="post" path="" baseUrl="/notifications/read/all" summary="Read all notifications" %}
-{% swagger-description %}
-Returns new notifications.
-{% endswagger-description %}
+**`POST /api/v1/notifications/read/all`**
 
-{% swagger-response status="200: OK" description="Successful operation. Suggested next and nested block types respectively." %}
-```
-content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/NotificationDTO'
-```
-{% endswagger-response %}
+Marks all notifications as read for the authenticated user and returns the updated notification collection.
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% endswagger-response %}
+---
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+## Request
+
+No request body required.
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "title": "Policy published",
+    "message": "Policy 'GHG Policy v1.0' has been published successfully.",
+    "read": true,
+    "type": "INFO",
+    "userId": "63e3e5e8a01b3c001234abce",
+    "createDate": "2024-01-15T10:30:00.000Z"
+  }
+]
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `500 Internal Server Error` | Unexpected server failure |

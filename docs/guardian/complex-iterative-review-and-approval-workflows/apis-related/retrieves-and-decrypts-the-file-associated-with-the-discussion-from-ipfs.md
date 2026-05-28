@@ -1,60 +1,47 @@
-# Retrieves and decrypts the file associated with the discussion from IPFS
+# Retrieves and Decrypts the File Associated with the Discussion from IPFS
 
-<mark style="color:green;">`GET`</mark> `/policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments/file/{cid}`
+**`GET /api/v1/policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments/file/{cid}`**
 
-Retrieves and decrypts the file associated with the discussion from IPFS
+Retrieves and decrypts the file associated with the discussion from IPFS.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** `Permissions.POLICIES_POLICY_EXECUTE`, `Permissions.POLICIES_POLICY_MANAGE`, or `Permissions.POLICIES_POLICY_AUDIT`
 
-**Body**
+---
 
-| Name         | Type   | Description           |
-| ------------ | ------ | --------------------- |
-| policyId     | string | Policy ID             |
-| documentId   | string | Document Identifier   |
-| discussionId | string | Discussion Identifier |
-| cid          | string | File cid              |
+## Request
 
-**Response**
+### Path Parameters
 
-{% tabs %}
-{% tab title="200" %}
-```json5
-description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: string
-                format: binary
+| Parameter      | Type   | Required | Description                     |
+|----------------|--------|----------|---------------------------------|
+| `policyId`     | string | Yes      | Policy identifier               |
+| `documentId`   | string | Yes      | Document identifier             |
+| `discussionId` | string | Yes      | Discussion identifier           |
+| `cid`          | string | Yes      | IPFS CID of the encrypted file  |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns the decrypted file as a binary stream.
+
 ```
-{% endtab %}
+Content-Type: application/octet-stream
 
-{% tab title="401" %}
-```json5
-{
-   description: Unauthorized.
-}
+<binary file content>
 ```
-{% endtab %}
 
-{% tab title="403" %}
-```json5
-description: Forbidden.
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="500" %}
-```json5
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | File not found in IPFS for the given CID |
+| `500 Internal Server Error` | Unexpected server failure |

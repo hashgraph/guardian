@@ -1,51 +1,69 @@
-# Building and returning
+# Building and Returning a Trustchain
 
-### BUILDING AND RETURNING A TRUSTCHAIN
+**`GET /trust-chains/{hash}`**
 
-{% swagger method="get" path="" baseUrl="/trust-chains/{hash}" summary="Returns a trustchain for a VP document" %}
-{% swagger-description %}
-Builds and returns a trustchain, from the VP to the root VC document. Only users with the Auditor role are allowed to make the request.
-{% endswagger-description %}
+Builds and returns a full trustchain, tracing from a Verifiable Presentation (VP) document back to the root Verifiable Credential (VC).
 
-{% swagger-parameter in="path" name="hash" type="String" required="true" %}
-Hash or ID of a VP document
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="" %}
-```javascript
+**Permission:** `Permissions.AUDIT_TRUST_CHAIN_READ`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `hash` | string | Yes | Hash or identifier of the VP document |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TrustChains'
+  "chain": [
+    {
+      "id": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+      "type": "VC",
+      "tag": "create_application",
+      "label": "Create Application",
+      "schema": "StandardRegistry",
+      "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+      "document": {}
+    }
+  ],
+  "userMap": [
+    {
+      "did": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+      "username": "example_user"
+    }
+  ]
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+| Field | Type | Description |
+|-------|------|-------------|
+| `chain` | array | Ordered list of documents from VP to root VC |
+| `chain[].id` | string | Document identifier or DID |
+| `chain[].type` | string | Document type: `VC`, `VP`, or `DID` |
+| `chain[].tag` | string | Policy block tag that produced this document |
+| `chain[].label` | string | Human-readable label |
+| `chain[].schema` | string | Schema name |
+| `chain[].owner` | string | DID of the document owner |
+| `chain[].document` | object | The raw credential document |
+| `userMap` | array | Mapping of DIDs to usernames |
 
-{% swagger-response status="403: Forbidden" description="" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

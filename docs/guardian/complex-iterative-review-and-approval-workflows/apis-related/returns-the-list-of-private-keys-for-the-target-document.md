@@ -1,59 +1,51 @@
-# Returns the list of private keys for the target document
+# Returns the List of Private Keys for the Target Document
 
-<mark style="color:green;">`GET`</mark> `/policy-comments/{policyId}/{documentId}/keys`
+**`GET /api/v1/policy-comments/{policyId}/{documentId}/keys`**
 
-Returns the list of private keys for the target document
+Returns the list of private keys for the target document, used to decrypt discussion content.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** `Permissions.POLICIES_POLICY_AUDIT`
 
-**Body**
+---
 
-| Name         | Type   | Description           |
-| ------------ | ------ | --------------------- |
-| policyId     | string | Policy ID             |
-| documentId   | string | Document Identifier   |
-| discussionId | string | Discussion Identifier |
+## Request
 
-**Response**
+### Path Parameters
 
-{% tabs %}
-{% tab title="200" %}
-```json5
-description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: string
-                format: binary
+| Parameter    | Type   | Required | Description         |
+|--------------|--------|----------|---------------------|
+| `policyId`   | string | Yes      | Policy identifier   |
+| `documentId` | string | Yes      | Document identifier |
+
+### Query Parameters
+
+| Parameter      | Type   | Required | Default | Description                                        |
+|----------------|--------|----------|---------|----------------------------------------------------|
+| `discussionId` | string | No       | —       | Filter keys for a specific discussion identifier   |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns the private key material as a binary stream.
+
 ```
-{% endtab %}
+Content-Type: application/octet-stream
 
-{% tab title="401" %}
-```json5
-{
-   description: Unauthorized.
-}
+<binary key content>
 ```
-{% endtab %}
 
-{% tab title="403" %}
-```json5
-description: Forbidden.
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="500" %}
-```json5
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Key not found for the given document |
+| `500 Internal Server Error` | Unexpected server failure |
