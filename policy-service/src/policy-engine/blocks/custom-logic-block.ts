@@ -391,7 +391,13 @@ export class CustomLogicBlock {
                     // the V8 isolate is released. Without this the worker thread
                     // stays alive after the script body returns, leaking ~30 MB per
                     // custom-logic invocation.
-                    const cleanup = () => { worker.terminate().catch(() => { /* noop */ }); };
+                    const cleanup = () => { worker.terminate().catch(() => {}); };
+                    worker.on('exit', (code) => {
+                        cleanup();
+                        if (code !== 0 && code !== null) {
+                            reject(new Error(`Custom logic worker exited with code ${code}`));
+                        }
+                    });
                     worker.on('error', (error) => {
                         cleanup();
                         reject(error);
