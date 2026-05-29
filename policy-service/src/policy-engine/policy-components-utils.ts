@@ -1284,6 +1284,20 @@ export class PolicyComponentsUtils {
         return null;
     }
 
+    private static async populateOrgContext(user: PolicyUser): Promise<void> {
+        const [membership] = await DatabaseServer.getOrganizationMembers(
+            { did: user.did, active: true }
+        );
+        if (membership?.organizationId) {
+            user.organization = membership.organizationId;
+            user.organizationRole = membership.orgRoleName ?? null;
+            if (membership.orgRoleId) {
+                const orgRole = await DatabaseServer.getOrgRole(membership.orgRoleId);
+                user.organizationRolePermissions = orgRole?.permissions ?? [];
+            }
+        }
+    }
+
     /**
      * Get user by account
      * @param account
@@ -1304,6 +1318,8 @@ export class PolicyComponentsUtils {
         }
 
         const userFull = new PolicyUser(regUser, instance);
+        await PolicyComponentsUtils.populateOrgContext(userFull);
+
         const groups = await instance
             .components
             .databaseServer
@@ -1347,6 +1363,10 @@ export class PolicyComponentsUtils {
             userFull = new PolicyUser(regUser, instance);
         }
 
+        if (!virtual) {
+            await PolicyComponentsUtils.populateOrgContext(userFull);
+        }
+
         const groups = await instance
             .components
             .databaseServer
@@ -1378,6 +1398,10 @@ export class PolicyComponentsUtils {
             } else {
                 userFull = new PolicyUser(did, instance);
             }
+        }
+
+        if (!virtual) {
+            await PolicyComponentsUtils.populateOrgContext(userFull);
         }
 
         if (groupUUID) {
@@ -1414,6 +1438,11 @@ export class PolicyComponentsUtils {
                 userFull = new PolicyUser(group.did, instance);
             }
         }
+
+        if (!virtual) {
+            await PolicyComponentsUtils.populateOrgContext(userFull);
+        }
+
         return userFull.setCurrentGroup(group);
     }
 

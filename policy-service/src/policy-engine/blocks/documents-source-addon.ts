@@ -8,6 +8,7 @@ import { PolicyUtils, QueryType } from '../helpers/utils.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
 import { LocationType } from '@guardian/interfaces';
+import { resolveOrgMemberDids } from '../helpers/org-utils.js';
 
 /**
  * Documents source addon
@@ -66,6 +67,18 @@ import { LocationType } from '@guardian/interfaces';
             name: 'onlyAssignByGroupDocuments',
             label: 'Assigned to Group',
             title: 'Assigned to Group',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'onlyOwnerOrgDocuments',
+            label: 'Owned by Organization',
+            title: 'Owned by Organization',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'onlyAssigneeOrgDocuments',
+            label: 'Assigned to Organization',
+            title: 'Assigned to Organization',
             type: PropertyType.Checkbox,
             editable: true
         }, {
@@ -213,6 +226,15 @@ export class DocumentsSourceAddon {
         }
         if (options.onlyAssignByGroupDocuments) {
             filters.assignedToGroup = user.group;
+        }
+        if (options.onlyOwnerOrgDocuments || options.onlyAssigneeOrgDocuments) {
+            const orgMemberDids = await resolveOrgMemberDids(user.organization);
+            if (options.onlyOwnerOrgDocuments) {
+                filters.owner = { $in: orgMemberDids };
+            }
+            if (options.onlyAssigneeOrgDocuments) {
+                filters.assignedTo = { $in: orgMemberDids };
+            }
         }
         if (options.hidePreviousVersions) {
             filters.edited = { $ne: true };
@@ -362,6 +384,15 @@ export class DocumentsSourceAddon {
         }
         if (options.onlyAssignByGroupDocuments) {
             filters.push({ $eq: [user.group, '$assignedToGroup'] });
+        }
+        if (options.onlyOwnerOrgDocuments || options.onlyAssigneeOrgDocuments) {
+            const orgMemberDids = await resolveOrgMemberDids(user.organization);
+            if (options.onlyOwnerOrgDocuments) {
+                filters.push({ $in: ['$owner', orgMemberDids] });
+            }
+            if (options.onlyAssigneeOrgDocuments) {
+                filters.push({ $in: ['$assignedTo', orgMemberDids] });
+            }
         }
         if (options.hidePreviousVersions) {
             filters.push({ $ne: [true, '$assignedToGroup'] });

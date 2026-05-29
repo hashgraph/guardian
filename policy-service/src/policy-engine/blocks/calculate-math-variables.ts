@@ -7,6 +7,7 @@ import { BlockActionError } from '../errors/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
+import { resolveOrgMemberDids } from '../helpers/org-utils.js';
 
 /**
  * Calculate math Variables
@@ -54,6 +55,18 @@ import { LocationType } from '@guardian/interfaces';
             name: 'onlyAssignByGroupDocuments',
             label: 'Assigned to Group',
             title: 'Assigned to Group',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'onlyOwnerOrgDocuments',
+            label: 'Owned by Organization',
+            title: 'Owned by Organization',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'onlyAssigneeOrgDocuments',
+            label: 'Assigned to Organization',
+            title: 'Assigned to Organization',
             type: PropertyType.Checkbox,
             editable: true
         }, {
@@ -173,6 +186,15 @@ export class CalculateMathVariables {
         }
         if (options.onlyAssignByGroupDocuments) {
             filters.assignedToGroup = user.group;
+        }
+        if (options.onlyOwnerOrgDocuments || options.onlyAssigneeOrgDocuments) {
+            const orgMemberDids = await resolveOrgMemberDids(user.organization);
+            if (options.onlyOwnerOrgDocuments) {
+                filters.owner = { $in: orgMemberDids };
+            }
+            if (options.onlyAssigneeOrgDocuments) {
+                filters.assignedTo = { $in: orgMemberDids };
+            }
         }
         if (options.sourceSchema) {
             filters.schema = options.sourceSchema;

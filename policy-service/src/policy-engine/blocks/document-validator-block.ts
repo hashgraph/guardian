@@ -9,6 +9,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { FilterQuery } from '@mikro-orm/core';
 import { VcDocument, VpDocument } from '@guardian/common';
+import { resolveOrgMemberDids } from '../helpers/org-utils.js';
 import { LocationType } from '@guardian/interfaces';
 
 /**
@@ -123,6 +124,20 @@ import { LocationType } from '@guardian/interfaces';
             type: PropertyType.Checkbox,
             editable: true
         },
+        {
+            name: 'checkOwnerOrgDocument',
+            label: 'Check Owned by Organization',
+            title: 'Check Owned by Organization',
+            type: PropertyType.Checkbox,
+            editable: true
+        },
+        {
+            name: 'checkAssigneeOrgDocument',
+            label: 'Check Assigned to Organization',
+            title: 'Check Assigned to Organization',
+            type: PropertyType.Checkbox,
+            editable: true
+        },
         ]
     },
     variables: [
@@ -230,6 +245,20 @@ export class DocumentValidatorBlock {
         if (options.checkAssignByGroupDocument) {
             if (document.assignedToGroup !== userGroup) {
                 return `Invalid assigned group`;
+            }
+        }
+        if (options.checkOwnerOrgDocument || options.checkAssigneeOrgDocument) {
+            const orgId = event?.user?.organization;
+            const memberDids = new Set(await resolveOrgMemberDids(orgId));
+            if (options.checkOwnerOrgDocument) {
+                if (!orgId || !memberDids.has(document.owner)) {
+                    return `Invalid owner organization`;
+                }
+            }
+            if (options.checkAssigneeOrgDocument) {
+                if (!orgId || !memberDids.has(document.assignedTo)) {
+                    return `Invalid assignee organization`;
+                }
             }
         }
 

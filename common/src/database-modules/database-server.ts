@@ -64,7 +64,9 @@ import {
     DeleteCache,
     DocumentDraft,
     PolicyDiff,
-    CredentialRecord
+    CredentialRecord,
+    OrgRole,
+    OrganizationMember
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -757,6 +759,24 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getSchema(filters?: FilterObject<SchemaCollection> | string): Promise<SchemaCollection | null> {
         return await new DataBaseHelper(SchemaCollection).findOne(filters);
+    }
+
+    /**
+     * Get organization members
+     * @param filters
+     */
+    public static async getOrganizationMembers(
+        filters: FilterObject<OrganizationMember>
+    ): Promise<OrganizationMember[]> {
+        return await new DataBaseHelper(OrganizationMember).find(filters);
+    }
+
+    /**
+     * Get organization role by id
+     * @param id
+     */
+    public static async getOrgRole(id: string): Promise<OrgRole | null> {
+        return await new DataBaseHelper(OrgRole).findOne(id);
     }
 
     /**
