@@ -722,6 +722,34 @@ export class OrganizationService extends NatsService {
             });
 
         /**
+         * Look up an organization's Hedera credential locators by org id (unscoped, internal).
+         * Returns { did, hederaAccountId, walletToken } or null.
+         */
+        this.getMessages(AuthEvents.GET_ORG_HEDERA_INFO,
+            async (msg: { organizationId: string, userId: string | null }) => {
+                const userId = msg?.userId;
+                try {
+                    if (!msg || !msg.organizationId) {
+                        return new MessageResponse(null);
+                    }
+                    const org = await new DatabaseServer().findOne(Organization, {
+                        id: msg.organizationId
+                    });
+                    if (!org) {
+                        return new MessageResponse(null);
+                    }
+                    return new MessageResponse({
+                        did: org.did,
+                        hederaAccountId: org.hederaAccountId,
+                        walletToken: org.walletToken
+                    });
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
          * Update a member's role (validates the new role belongs to the same org)
          */
         this.getMessages(AuthEvents.UPDATE_ORG_MEMBER_ROLE,

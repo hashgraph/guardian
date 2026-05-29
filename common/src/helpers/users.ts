@@ -368,4 +368,16 @@ export class Users extends NatsService {
     public async otpGenerateSecret(userId: string) {
         return await this.sendMessage(AuthEvents.OTP_GENERATE_SECRET, { userId });
     }
+
+    /**
+     * Get an organization's Hedera credential locators by org id (internal lookup)
+     * @param organizationId
+     * @param userId
+     */
+    public async getOrgHederaInfo(
+        organizationId: string,
+        userId: string | null
+    ): Promise<{ did: string, hederaAccountId: string, walletToken: string } | null> {
+        return await this.sendMessage(AuthEvents.GET_ORG_HEDERA_INFO, { organizationId, userId });
+    }
 }
