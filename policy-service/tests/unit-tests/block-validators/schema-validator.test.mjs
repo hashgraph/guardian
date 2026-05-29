@@ -1,25 +1,19 @@
 import { assert } from 'chai';
-import { Module } from 'node:module';
-const originalLoad = Module._load;
-Module._load = function (req, parent, ...rest) {
-    if (req === '@guardian/common') {
-        return {
+import esmock from 'esmock';
+
+const { SchemaValidator } = await esmock.strict(
+    '../../../dist/policy-engine/block-validators/schema-validator.js',
+    {
+        '@guardian/common': {
             DatabaseServer: class { constructor() {} async getSchemaByIRI() { return null; } },
             Schema: class {},
-        };
-    }
-    if (req === '@guardian/interfaces') {
-        return {
+        },
+        '@guardian/interfaces': {
             SchemaCategory: { SYSTEM: 'SYSTEM' },
             TenantContext: { Empty: { tenantId: null } },
-        };
-    }
-    return originalLoad.call(this, req, parent, ...rest);
-};
-
-const { SchemaValidator } = await import('../../../dist/policy-engine/block-validators/schema-validator.js');
-
-after(() => { Module._load = originalLoad; });
+        },
+    },
+);
 
 const docWithDefs = (subIris = []) => ({
     document: {

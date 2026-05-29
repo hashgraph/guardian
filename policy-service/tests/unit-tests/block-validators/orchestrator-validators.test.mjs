@@ -1,35 +1,15 @@
 import assert from 'node:assert/strict';
-import { Module } from 'node:module';
-const originalLoad = Module._load;
-Module._load = function (req, parent, ...rest) {
-    if (typeof req !== 'string') return originalLoad.call(this, req, parent, ...rest);
-    if (req === '@guardian/common') {
-        return {
-            DatabaseServer: class {
-                static async getSchemas() { return []; }
-                static async getModules() { return []; }
-                static async getTools() { return []; }
-                constructor() {}
-                async getSchemaByIRI() { return null; }
-            },
-            Policy: class {},
-            Schema: class {},
-        };
-    }
-    if (req === '@guardian/interfaces') {
-        const proxyEnum = () => new Proxy({}, { get: (_, p) => String(p) });
-        return {
-            SchemaCategory: { SYSTEM: 'SYSTEM' },
-            SchemaEntity: proxyEnum(),
-            ModuleStatus: { PUBLISHED: 'PUBLISHED' },
-            TenantContext: { Empty: { tenantId: null } },
-            IgnoreRule: class {},
-            computeReachability: () => undefined,
-            buildMessagesForValidator: () => ({ warningsText: [], infosText: [] }),
-        };
-    }
-    return originalLoad.call(this, req, parent, ...rest);
-};
+import { DatabaseServer } from '@guardian/common';
+
+// policy-validator imports the whole block registry and the full
+// @guardian/common surface, so module-level mocking is impractical here.
+// The validators only ever read from the database, so neutralising those
+// reads on the real singleton keeps build()/validate() off a live DB.
+DatabaseServer.getSchemas = async () => [];
+DatabaseServer.getModules = async () => [];
+DatabaseServer.getTools = async () => [];
+DatabaseServer.getTool = async () => null;
+DatabaseServer.getArtifact = async () => null;
 
 let PolicyValidator, ModuleValidator, ToolValidator;
 try {
@@ -39,8 +19,6 @@ try {
 } catch (e) {
     console.warn('[orchestrator-validators.test] dist import failed:', e.message);
 }
-
-after(() => { Module._load = originalLoad; });
 
 const minimalPolicy = () => ({
     topicId: '0.0.1',
@@ -86,40 +64,40 @@ const policyWithBlocks = () => ({
 describe('@unit PolicyValidator', () => {
     it('constructs with minimal policy', () => {
         if (!PolicyValidator) { console.warn('  [skip] dist not available'); return; }
-        const v = new PolicyValidator('t-1', minimalPolicy());
+        const v = new PolicyValidator(minimalPolicy());
         assert.equal(v.isDryRun, false);
     });
 
     it('build() with a minimal policy returns true', async () => {
         if (!PolicyValidator) return;
-        const v = new PolicyValidator('t-1', minimalPolicy());
+        const v = new PolicyValidator(minimalPolicy());
         const ok = await v.build(minimalPolicy());
         assert.equal(ok, true);
     });
 
     it('build() with null policy returns false and records an error', async () => {
         if (!PolicyValidator) return;
-        const v = new PolicyValidator('t-1', minimalPolicy());
+        const v = new PolicyValidator(minimalPolicy());
         const ok = await v.build(null);
         assert.equal(ok, false);
     });
 
     it('build() with non-object returns false', async () => {
         if (!PolicyValidator) return;
-        const v = new PolicyValidator('t-1', minimalPolicy());
+        const v = new PolicyValidator(minimalPolicy());
         const ok = await v.build('not-an-object');
         assert.equal(ok, false);
     });
 
     it('build() with a nested block tree registers each block (does not throw)', async () => {
         if (!PolicyValidator) return;
-        const v = new PolicyValidator('t-1', policyWithBlocks());
+        const v = new PolicyValidator(policyWithBlocks());
         await assert.doesNotReject(async () => { await v.build(policyWithBlocks()); });
     });
 
     it('isDryRun flag is honoured', () => {
         if (!PolicyValidator) return;
-        const v = new PolicyValidator('t-1', minimalPolicy(), true);
+        const v = new PolicyValidator(minimalPolicy(), true);
         assert.equal(v.isDryRun, true);
     });
 });

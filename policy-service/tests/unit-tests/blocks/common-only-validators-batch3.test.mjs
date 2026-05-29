@@ -15,10 +15,10 @@ const refOK = () => ({ options: {} });
 
 describe('@unit Final batch — CommonBlock-delegating validators', () => {
     const cases = [
-        ['dataTransformationAddon', DataTransformationAddon],
-        ['ipfsTransformationUIAddon', IpfsTransformationUIAddon],
-        ['transformationUIAddon', TransformationUIAddon],
-        ['httpRequestUIAddon', HttpRequestUIAddon],
+        ['dataTransformationAddon', DataTransformationAddon, refOK],
+        ['ipfsTransformationUIAddon', IpfsTransformationUIAddon, refOK],
+        ['transformationUIAddon', TransformationUIAddon, () => ({ options: { expression: '1 + 1' } })],
+        ['httpRequestUIAddon', HttpRequestUIAddon, () => ({ options: { url: 'https://example.com/api', method: 'get' } })],
     ];
 
     for (const [expected, Block] of cases) {
@@ -27,10 +27,10 @@ describe('@unit Final batch — CommonBlock-delegating validators', () => {
         });
     }
 
-    for (const [, Block] of cases) {
-        it(`${Block.name}.validate produces no errors for an empty options object`, async () => {
+    for (const [, Block, makeRef] of cases) {
+        it(`${Block.name}.validate produces no errors for a valid options object`, async () => {
             const v = new FakeValidator();
-            await Block.validate(v, refOK());
+            await Block.validate(v, makeRef());
             assert.deepEqual(v.errors, []);
         });
     }

@@ -250,17 +250,17 @@ describe('@unit PolicyUtils — pure helpers', () => {
     describe('getDocumentType', () => {
         it('detects VP via document.verifiableCredential', () => {
             const doc = { document: { verifiableCredential: [{}] } };
-            assert.equal(PolicyUtils.getDocumentType(doc), 'vp-document');
+            assert.equal(PolicyUtils.getDocumentType(doc), 'VerifiablePresentation');
         });
 
         it('detects VC via document.credentialSubject', () => {
             const doc = { document: { credentialSubject: {} } };
-            assert.equal(PolicyUtils.getDocumentType(doc), 'vc-document');
+            assert.equal(PolicyUtils.getDocumentType(doc), 'VerifiableCredential');
         });
 
         it('detects DID via document.verificationMethod', () => {
             const doc = { document: { verificationMethod: [] } };
-            assert.equal(PolicyUtils.getDocumentType(doc), 'did-document');
+            assert.equal(PolicyUtils.getDocumentType(doc), 'DID');
         });
 
         it('returns null when no discriminator present', () => {
@@ -595,7 +595,7 @@ describe('@unit PolicyUtils — pure helpers', () => {
             const out = PolicyUtils.createVP(ref, owner, vp, 'rec-1');
             assert.equal(out.hash, 'h-1');
             assert.equal(out.status, 'NEW');
-            assert.equal(out.signature, 'NEW');
+            assert.equal(out.signature, 0);
             assert.equal(out.recordActionId, 'rec-1');
         });
 
@@ -611,7 +611,7 @@ describe('@unit PolicyUtils — pure helpers', () => {
             const vc = { toCredentialHash: () => 'h2', toJsonTree: () => ({ t: 2 }) };
             const out = PolicyUtils.createVC(ref, owner, vc);
             assert.equal(out.hederaStatus, 'NEW');
-            assert.equal(out.signature, 'NEW');
+            assert.equal(out.signature, 0);
         });
     });
 
