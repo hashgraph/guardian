@@ -31,7 +31,7 @@
     * [Contribute a New Policy](guardian/readme/contributing/contribute-a-new-policy.md)
   * [Frameworks/Libraries](guardian/readme/built-with/README.md)
     * [Guardian CLI](guardian/readme/built-with/guardian-cli.md)
-  * [VM0033 API Workthrough](guardian/readme/vm0033-api-workthrough.md)
+  * [VM0033 API Walkthrough](guardian/readme/vm0033-api-workthrough.md)
   * [API Guideline](guardian/readme/api-guideline.md)
   * [Guardian Vault](guardian/readme/guardian-vault.md)
   * [Environments](guardian/readme/environments/README.md)
@@ -112,7 +112,6 @@
 * [Map Related APIs](guardian/map-related-apis/README.md)
   * [Returning map API Key](guardian/map-related-apis/returning-map-api-key.md)
   * [Returning Sentinel API Key](guardian/map-related-apis/returning-sentinel-api-key.md)
-* [Policy API Documentation & DMRV Aliases](guardian/policy-api-documentation-and-dmrv-aliases.md)
 * [Standard Registry](guardian/standard-registry/README.md)
   * [Schemas](guardian/standard-registry/schemas/README.md)
     * [Available Schema Data Types](guardian/standard-registry/schemas/available-schema-types/README.md)
@@ -347,7 +346,10 @@
         * [Checks whether the user is disconnected from the policy or not](guardian/standard-registry/policies/policy-creation/apis-for-asynchronous-execution/checks-whether-the-user-is-disconnected-from-the-policy-or-not.md)
         * [Disconnects the user from the selected policy.](guardian/standard-registry/policies/policy-creation/apis-for-asynchronous-execution/disconnects-the-user-from-the-selected-policy..md)
         * [Restores the user’s participation in the policy after disconnection](guardian/standard-registry/policies/policy-creation/apis-for-asynchronous-execution/restores-the-users-participation-in-the-policy-after-disconnection.md)
-    * [Dry Run](guardian/standard-registry/policies/dry-run/README.md)
+      * [User Managed Credentials for External Services](guardian/standard-registry/policies/policy-creation/5246-user-managed-credentials-for-external-services.md)
+    * [Policy API Documentation & DMRV Aliases](guardian/standard-registry/policies/policy-api-documentation-and-dmrv-aliases.md)
+    * [Editing Policy Parameters at Runtime](guardian/standard-registry/policies/5539-editing-policy-parameters-at-runtime.md)
+    * [Dry Run & Policy Integrity Tests](guardian/standard-registry/policies/dry-run/README.md)
       * [Dry Run Mode using UI](guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations.md)
       * [Dry Run Mode using APIs](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/README.md)
         * [Running Policy without making any changes](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/running-policy-without-making-any-changes.md)
@@ -364,31 +366,37 @@
         * [Returns Savepoint State](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/returns-savepoint-state.md)
         * [Restoring SavePoint](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/restoring-savepoint.md)
         * [Deletes SavePoint](guardian/standard-registry/policies/dry-run/dry-run-mode-using-apis/deletes-savepoint.md)
-    * [Savepoints](guardian/standard-registry/policies/savepoints/README.md)
-      * [Demo using UI](guardian/standard-registry/policies/savepoints/demo-using-ui.md)
-      * [APIs related to Savepoints](guardian/standard-registry/policies/savepoints/apis-related-to-savepoints/README.md)
-        * [Returns the list of savepoints for the policy (Dry Run only)](guardian/standard-registry/policies/savepoints/apis-related-to-savepoints/returns-the-list-of-savepoints-for-the-policy-dry-run-only.md)
-        * [Creates a new savepoint for the policy (Dry Run only).](guardian/standard-registry/policies/savepoints/apis-related-to-savepoints/creates-a-new-savepoint-for-the-policy-dry-run-only-..md)
-        * [Deletes the specified savepoints for the policy (Dry Run only).](guardian/standard-registry/policies/savepoints/apis-related-to-savepoints/deletes-the-specified-savepoints-for-the-policy-dry-run-only-..md)
-        * [Returns the number of savepoints for the policy (Dry Run only).](guardian/standard-registry/policies/savepoints/apis-related-to-savepoints/returns-the-number-of-savepoints-for-the-policy-dry-run-only-..md)
-        * [Restores Dry Run state to the selected savepoint and returns its metadata.](guardian/standard-registry/policies/savepoints/apis-related-to-savepoints/restores-dry-run-state-to-the-selected-savepoint-and-returns-its-metadata..md)
-        * [Updates the name of a Dry Run savepoint for the policy.](guardian/standard-registry/policies/savepoints/apis-related-to-savepoints/updates-the-name-of-a-dry-run-savepoint-for-the-policy..md)
+      * [Dry Run Virtual Users](guardian/standard-registry/policies/dry-run/3642-dry-run-virtual-users.md)
+      * [Dry Run Mock Docs](guardian/standard-registry/policies/dry-run/5247-dry-run-mock-docs.md)
+      * [Savepoints](guardian/standard-registry/policies/dry-run/savepoints/README.md)
+        * [Demo using UI](guardian/standard-registry/policies/dry-run/savepoints/demo-using-ui.md)
+        * [APIs related to Savepoints](guardian/standard-registry/policies/dry-run/savepoints/apis-related-to-savepoints/README.md)
+          * [Returns the list of savepoints for the policy (Dry Run only)](guardian/standard-registry/policies/dry-run/savepoints/apis-related-to-savepoints/returns-the-list-of-savepoints-for-the-policy-dry-run-only.md)
+          * [Creates a new savepoint for the policy (Dry Run only).](guardian/standard-registry/policies/dry-run/savepoints/apis-related-to-savepoints/creates-a-new-savepoint-for-the-policy-dry-run-only-..md)
+          * [Deletes the specified savepoints for the policy (Dry Run only).](guardian/standard-registry/policies/dry-run/savepoints/apis-related-to-savepoints/deletes-the-specified-savepoints-for-the-policy-dry-run-only-..md)
+          * [Returns the number of savepoints for the policy (Dry Run only).](guardian/standard-registry/policies/dry-run/savepoints/apis-related-to-savepoints/returns-the-number-of-savepoints-for-the-policy-dry-run-only-..md)
+          * [Restores Dry Run state to the selected savepoint and returns its metadata.](guardian/standard-registry/policies/dry-run/savepoints/apis-related-to-savepoints/restores-dry-run-state-to-the-selected-savepoint-and-returns-its-metadata..md)
+          * [Updates the name of a Dry Run savepoint for the policy.](guardian/standard-registry/policies/dry-run/savepoints/apis-related-to-savepoints/updates-the-name-of-a-dry-run-savepoint-for-the-policy..md)
+      * [Record/Replay](guardian/standard-registry/policies/dry-run/record-replay/README.md)
+        * [Policy execution record and replay using UI](guardian/standard-registry/policies/dry-run/record-replay/policy-execution-record-and-replay-using-ui.md)
+        * [Record/Replay APIs](guardian/standard-registry/policies/dry-run/record-replay/record-replay-apis/README.md)
+          * [Get Recording](guardian/standard-registry/policies/dry-run/record-replay/record-replay-apis/get-recording.md)
+          * [Start Recording](guardian/standard-registry/policies/dry-run/record-replay/record-replay-apis/start-recording.md)
+          * [Stop Recording](guardian/standard-registry/policies/dry-run/record-replay/record-replay-apis/stop-recording.md)
+          * [Get Recorded Actions](guardian/standard-registry/policies/dry-run/record-replay/record-replay-apis/get-recorded-actions.md)
+          * [Run record from zip file](guardian/standard-registry/policies/dry-run/record-replay/record-replay-apis/run-record-from-zip-file.md)
+          * [Stop Running](guardian/standard-registry/policies/dry-run/record-replay/record-replay-apis/stop-running.md)
+          * [Get Running Results](guardian/standard-registry/policies/dry-run/record-replay/record-replay-apis/get-running-results.md)
+          * [Get Running Details](guardian/standard-registry/policies/dry-run/record-replay/record-replay-apis/get-running-details.md)
+          * [Fast Forward](guardian/standard-registry/policies/dry-run/record-replay/record-replay-apis/fast-forward.md)
+          * [Retry Step](guardian/standard-registry/policies/dry-run/record-replay/record-replay-apis/retry-step.md)
+          * [Skip Step](guardian/standard-registry/policies/dry-run/record-replay/record-replay-apis/skip-step.md)
+      * [Policy Integrity Tests](guardian/standard-registry/policies/dry-run/policy-integrity-tests/README.md)
+        * [Create a Policy Integrity Test](guardian/standard-registry/policies/dry-run/policy-integrity-tests/create-a-policy-integrity-test.md)
+        * [Attach a Policy Integrity Test](guardian/standard-registry/policies/dry-run/policy-integrity-tests/attach-a-policy-integrity-test.md)
+        * [Run a Policy Integrity Test](guardian/standard-registry/policies/dry-run/policy-integrity-tests/run-a-policy-integrity-test.md)
     * [Roles and Groups](guardian/standard-registry/policies/roles-and-groups/README.md)
       * [Creating Roles and Groups using Policy Configurator UI](guardian/standard-registry/policies/roles-and-groups/roles-and-groups.md)
-    * [Record/Replay](guardian/standard-registry/policies/record-replay/README.md)
-      * [Policy execution record and replay using UI](guardian/standard-registry/policies/record-replay/policy-execution-record-and-replay-using-ui.md)
-      * [Record/Replay APIs](guardian/standard-registry/policies/record-replay/record-replay-apis/README.md)
-        * [Get Recording](guardian/standard-registry/policies/record-replay/record-replay-apis/get-recording.md)
-        * [Start Recording](guardian/standard-registry/policies/record-replay/record-replay-apis/start-recording.md)
-        * [Stop Recording](guardian/standard-registry/policies/record-replay/record-replay-apis/stop-recording.md)
-        * [Get Recorded Actions](guardian/standard-registry/policies/record-replay/record-replay-apis/get-recorded-actions.md)
-        * [Run record from zip file](guardian/standard-registry/policies/record-replay/record-replay-apis/run-record-from-zip-file.md)
-        * [Stop Running](guardian/standard-registry/policies/record-replay/record-replay-apis/stop-running.md)
-        * [Get Running Results](guardian/standard-registry/policies/record-replay/record-replay-apis/get-running-results.md)
-        * [Get Running Details](guardian/standard-registry/policies/record-replay/record-replay-apis/get-running-details.md)
-        * [Fast Forward](guardian/standard-registry/policies/record-replay/record-replay-apis/fast-forward.md)
-        * [Retry Step](guardian/standard-registry/policies/record-replay/record-replay-apis/retry-step.md)
-        * [Skip Step](guardian/standard-registry/policies/record-replay/record-replay-apis/skip-step.md)
     * [Capture, Replay, and Compare Data for Published Policies](guardian/standard-registry/policies/capture-replay-and-compare-data-for-published-policies/README.md)
       * [UI Demo using VM0042 Policy](guardian/standard-registry/policies/capture-replay-and-compare-data-for-published-policies/ui-demo-using-cdm-ii.j-policy.md)
       * [APIs](guardian/standard-registry/policies/capture-replay-and-compare-data-for-published-policies/apis/README.md)
@@ -408,11 +416,13 @@
       * [Search Block using UI](guardian/standard-registry/policies/block-policy-discoverability/search-block-using-ui.md)
       * [Search Block APIs](guardian/standard-registry/policies/block-policy-discoverability/search-block-apis/README.md)
         * [Searching Same Blocks](guardian/standard-registry/policies/block-policy-discoverability/search-block-apis/searching-same-blocks.md)
-    * [Document Comparison](guardian/standard-registry/policies/document-comparison/README.md)
-      * [Document Comparison using UI](guardian/standard-registry/policies/document-comparison/document-comparison-using-ui.md)
-      * [Document Comparison APIs](guardian/standard-registry/policies/document-comparison/document-comparison-apis/README.md)
-        * [Compare Documents](guardian/standard-registry/policies/document-comparison/document-comparison-apis/compare-documents.md)
-        * [Export Comparison Results](guardian/standard-registry/policies/document-comparison/document-comparison-apis/export-comparison-results.md)
+    * [Verifiable Credential Documents](guardian/standard-registry/policies/verifiable-credential-documents/README.md)
+      * [Document Comparison](guardian/standard-registry/policies/verifiable-credential-documents/document-comparison/README.md)
+        * [Document Comparison using UI](guardian/standard-registry/policies/verifiable-credential-documents/document-comparison/document-comparison-using-ui.md)
+        * [Document Comparison APIs](guardian/standard-registry/policies/verifiable-credential-documents/document-comparison/document-comparison-apis/README.md)
+          * [Compare Documents](guardian/standard-registry/policies/verifiable-credential-documents/document-comparison/document-comparison-apis/compare-documents.md)
+          * [Export Comparison Results](guardian/standard-registry/policies/verifiable-credential-documents/document-comparison/document-comparison-apis/export-comparison-results.md)
+      * [Including Data Manually into Verifiable Credential Documents](guardian/standard-registry/policies/verifiable-credential-documents/2076-including-data-manually-into-vc-documents.md)
     * [Tools](guardian/standard-registry/policies/tools/README.md)
       * [Tools using UI](guardian/standard-registry/policies/tools/tools-using-ui.md)
       * [Tools APIs](guardian/standard-registry/policies/tools/tools-apis/README.md)
@@ -688,7 +698,7 @@
     * [Importing/Deleting Artifacts using UI](guardian/standard-registry/artifacts/how-to-import-delete-artifacts.md)
     * [Artifacts APIs](guardian/standard-registry/artifacts/artifacts-apis/README.md)
       * [Returns all Artifacts](guardian/standard-registry/artifacts/artifacts-apis/returns-all-artifacts.md)
-      * [Returns all Artifacts (Api-Version: 2)](guardian/standard-registry/artifacts/artifacts-apis/returns-all-artifacts-v2.md)
+      * [Returns all Artifacts (Api-Version: 2)](guardian/standard-registry/artifacts/artifacts-apis/returns-all-artifacts-api-version-2.md)
       * [Upload Artifacts](guardian/standard-registry/artifacts/artifacts-apis/upload-artifacts.md)
       * [Delete Artifact](guardian/standard-registry/artifacts/artifacts-apis/delete-artifact.md)
   * [Asynchronous Tasks Status](guardian/standard-registry/asynchronous-tasks-status.md)
@@ -744,12 +754,18 @@
     * [APIs related](guardian/standard-registry/data-entry-updatability/apis-related/README.md)
       * [Create new version vc document](guardian/standard-registry/data-entry-updatability/apis-related/create-new-version-vc-document.md)
       * [Get all version VC documents](guardian/standard-registry/data-entry-updatability/apis-related/get-all-version-vc-documents.md)
-  * [Password Management](guardian/standard-registry/password-management/README.md)
+  * [Password Management & Multifactor Authentication (MFA)](guardian/standard-registry/password-management/README.md)
     * [Change Password](guardian/standard-registry/password-management/change-password/README.md)
       * [Password Security Hardening and Change Password using UI](guardian/standard-registry/password-management/change-password/password-security-hardening-and-change-password-using-ui.md)
       * [API related to Change Password](guardian/standard-registry/password-management/change-password/api-related-to-change-password/README.md)
         * [Change Password](guardian/standard-registry/password-management/change-password/api-related-to-change-password/change-password.md)
     * [Password Policy](guardian/standard-registry/password-management/password-policy.md)
+    * [Multifactor Authentication (MFA)](guardian/standard-registry/password-management/4108-multifactor-authentication-2fa.md)
+    * [Multifactor Authentication API (MFA API)](guardian/standard-registry/password-management/multifactor-authentication-api-2fa-api/README.md)
+      * [Deactivate OTP](guardian/standard-registry/password-management/multifactor-authentication-api-2fa-api/deactivate-otp.md)
+      * [Get status of MFA](guardian/standard-registry/password-management/multifactor-authentication-api-2fa-api/get-status-of-2fa.md)
+      * [Confirm OTP](guardian/standard-registry/password-management/multifactor-authentication-api-2fa-api/confirm-otp.md)
+      * [Generate OTP](guardian/standard-registry/password-management/multifactor-authentication-api-2fa-api/generate-otp.md)
   * [TrustChain](guardian/standard-registry/trustchain/README.md)
     * [TrustChain APIs](guardian/standard-registry/trustchain/trustchain-apis/README.md)
       * [Requesting](guardian/standard-registry/trustchain/trustchain-apis/requesting.md)
@@ -771,20 +787,6 @@
     * [Task Statuses APIs](guardian/standard-registry/standard-registry-operations/task-statuses-apis/README.md)
       * [Returning Task Statuses](guardian/standard-registry/standard-registry-operations/task-statuses-apis/returning-task-statuses.md)
   * [Demo Experience](guardian/standard-registry/demo-experience.md)
-  * [Guardian 3.6 Features & Enhancements](guardian/standard-registry/guardian-3.6-features-and-enhancements/README.md)
-    * [1987 Top Level API](guardian/standard-registry/guardian-3.6-features-and-enhancements/1987-top-level-api.md)
-    * [5539 Editing Policy Parameters at Runtime](guardian/standard-registry/guardian-3.6-features-and-enhancements/5539-editing-policy-parameters-at-runtime.md)
-    * [4108 Multifactor Authentication (2FA)](guardian/standard-registry/guardian-3.6-features-and-enhancements/4108-multifactor-authentication-2fa/README.md)
-      * [Multifactor Authentication API (2FA API)](guardian/standard-registry/guardian-3.6-features-and-enhancements/4108-multifactor-authentication-2fa/multifactor-authentication-api-2fa-api/README.md)
-        * [deactivate otp](guardian/standard-registry/guardian-3.6-features-and-enhancements/4108-multifactor-authentication-2fa/multifactor-authentication-api-2fa-api/deactivate-otp.md)
-        * [get status of 2fa](guardian/standard-registry/guardian-3.6-features-and-enhancements/4108-multifactor-authentication-2fa/multifactor-authentication-api-2fa-api/get-status-of-2fa.md)
-        * [confirm otp](guardian/standard-registry/guardian-3.6-features-and-enhancements/4108-multifactor-authentication-2fa/multifactor-authentication-api-2fa-api/confirm-otp.md)
-        * [generate otp](guardian/standard-registry/guardian-3.6-features-and-enhancements/4108-multifactor-authentication-2fa/multifactor-authentication-api-2fa-api/generate-otp.md)
-    * [Policy Integrity Tests](guardian/standard-registry/guardian-3.6-features-and-enhancements/policy-integrity-tests.md)
-    * [2076 Including Data Manually into VC Documents](guardian/standard-registry/guardian-3.6-features-and-enhancements/2076-including-data-manually-into-vc-documents.md)
-    * [3642 Dry Run Virtual Users](guardian/standard-registry/guardian-3.6-features-and-enhancements/3642-dry-run-virtual-users.md)
-    * [5246 User Managed Credentials for External Services](guardian/standard-registry/guardian-3.6-features-and-enhancements/5246-user-managed-credentials-for-external-services.md)
-    * [5247 Dry Run Mock Docs](guardian/standard-registry/guardian-3.6-features-and-enhancements/5247-dry-run-mock-docs.md)
 * [Project Comparison](guardian/project-comparison/README.md)
   * [Project Comparison using UI](guardian/project-comparison/project-comparison-using-ui.md)
   * [Project Comparison APIs](guardian/project-comparison/project-comparison-apis/README.md)
@@ -1044,6 +1046,12 @@
   * [Guardian Policy Standards (GPS)](guardian/community-standards/guardian-policy-standards-gps.md)
   * [Guardian System Standards (GSS)](guardian/community-standards/guardian-system-standards-gss.md)
   * [Proposal for Defining Standards](guardian/community-standards/proposal-for-defining-standards.md)
+  * [Documentation Standards](guardian/community-standards/documentation-standards/README.md)
+    * [Page Templates](guardian/community-standards/documentation-standards/page-templates/README.md)
+      * [Concept Template](guardian/community-standards/documentation-standards/page-templates/concept-template.md)
+      * [Task Template](guardian/community-standards/documentation-standards/page-templates/task-template.md)
+      * [Reference Template](guardian/community-standards/documentation-standards/page-templates/reference-template.md)
+      * [Guide Template](guardian/community-standards/documentation-standards/page-templates/guide-template.md)
 
 ## Methodology Digitization
 
@@ -1098,11 +1106,7 @@
 * [Schema and Formula Generation](ai-toolkit/schema-and-formula-generation.md)
 * [Mapping and Transformation](ai-toolkit/mapping-and-transformation.md)
 
-***
-
-## API Reference
-
-### Accounts & Profiles
+## Accounts & Profiles
 
 * [Account APIs](account-apis/README.md)
   * [Registering New Account](account-apis/registering-new-account.md)
@@ -1127,7 +1131,7 @@
   * [Creates a Key](profile-apis/creates-a-key.md)
   * [Deletes a Key](profile-apis/deletes-a-key.md)
 
-### Settings & Logs
+## Settings & Logs
 
 * [Settings APIs](settings-apis/README.md)
   * [Adding Settings](settings-apis/adding-settings.md)
@@ -1139,7 +1143,7 @@
   * [Returning Log Attributes](logs-apis/returning-log-attributes.md)
   * [Returns Seq URL](logs-apis/returns-seq-url.md)
 
-### Tasks & External
+## Tasks & External
 
 * [Task APIs](task-apis/README.md)
   * [Returning Task Statuses](task-apis/returning-task-statuses.md)
@@ -1152,7 +1156,7 @@
   * [Requesting](trustchains-apis/requesting.md)
   * [Building and Returning](trustchains-apis/building-and-returning.md)
 
-### Tokens
+## Tokens
 
 * [Token APIs](token-apis/README.md)
   * [Token Listing](token-apis/token-listing.md)
@@ -1178,7 +1182,7 @@
   * [Freezing Tokens of a User](token-related-apis-for-asynchronous-execution/freezing-tokens-of-a-user.md)
   * [Unfreezing Tokens of a User](token-related-apis-for-asynchronous-execution/unfreezing-tokens-of-a-user.md)
 
-### Schemas
+## Schemas
 
 * [Schema Creation APIs](schema-creation-using-the-guardian-apis/README.md)
   * [Listing of Schema](schema-creation-using-the-guardian-apis/creation-of-a-schema-1.md)
@@ -1209,7 +1213,7 @@
   * [Importing Schema from .zip](schema-related-apis-for-asynchronous-execution/importing-schema-from-.zip.md)
   * [Previews the Schema from IPFS](schema-related-apis-for-asynchronous-execution/previews-the-schema-from-ipfs.md)
 
-### Policies
+## Policies
 
 * [Policy Creation APIs](policy-creation-using-the-guardian-apis/README.md)
   * [Prerequisite Steps](policy-creation-using-the-guardian-apis/prerequesite-steps.md)
@@ -1238,7 +1242,6 @@
   * [Importing a Policy from File](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-file.md)
   * [Importing a Policy from IPFS](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-ipfs.md)
   * [Policy Review](policy-related-apis-for-asynchronous-execution/policy-review.md)
-
 * [Policy Repository APIs](policy-repository-apis/README.md)
 
 ***

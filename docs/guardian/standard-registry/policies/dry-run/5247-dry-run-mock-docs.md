@@ -1,4 +1,9 @@
-# 5247 Dry Run Mock Docs
+---
+tags:
+  - new
+---
+
+# Dry Run Mock Docs
 
 ## Overview
 
@@ -8,9 +13,9 @@ Mock data can be recorded automatically as the policy runs, entered manually, or
 
 ***
 
-### Visual walk through
+### Visual walkthrough
 
-<div><figure><img src="../../../.gitbook/assets/s1.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s2.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s3.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s4.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s5.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s6.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s7.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s8.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s9.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s10.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s11.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s12.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s13.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s14.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s15.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../.gitbook/assets/s16.png" alt=""><figcaption></figcaption></figure></div>
+<div><figure><img src="../../../../.gitbook/assets/s1.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s2.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s3.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s4.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s5.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s6.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s7.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s8.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s9.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s10.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s11.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s12.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s13.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s14.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s15.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../../../.gitbook/assets/s16.png" alt=""><figcaption></figcaption></figure></div>
 
 ***
 
@@ -38,7 +43,7 @@ When you switch a policy to **Dry Run** mode for the first time, a dialog is sho
 >
 > You can change this setting and configure individual blocks at any time from the **Mock Config** panel.
 >
-> \[ **Enable** ]    \[ **Disable** ]
+> \[ **Enable** ] \[ **Disable** ]
 
 ### Option 2 — Enable After the Session Has Started
 
@@ -65,7 +70,7 @@ The **Mock Data** panel contains four sections:
 
 Stores mock responses for blocks that read from or write files to IPFS.
 
-Each entry maps an **IPFS CID** to a file payload stored. When a policy block requests a file by CID, the mock layer returns the stored payload instead of making a real IPFS network request.
+Each entry maps an **IPFS CID** to a stored file payload. When a policy block requests a file by CID, the mock layer returns the stored payload instead of making a real IPFS network request.
 
 **Adding an entry:**
 
@@ -138,7 +143,7 @@ Policy B now has all the mock responses produced by Policy A available for its d
 {% endstepper %}
 
 {% hint style="info" %}
-The import merges the incoming entries with any existing mock data. Conflicting entries (same key / URL) will prompt you to choose whether to overwrite or keep the existing value.
+The import merges incoming entries with existing mock data. Conflicting entries (same key or URL) prompt you to choose whether to overwrite or keep the existing value.
 {% endhint %}
 
 ***
@@ -320,3 +325,7 @@ Triggers a mocked IPFS file retrieval on behalf of a policy block whose logic ex
 ## Permissions
 
 All Mock Data operations require the **`POLICIES_POLICY_UPDATE`** permission. Users without this permission will receive a `403 Forbidden` response from all mock API endpoints and will not see the Mock Config or Mock Data panels in the UI.
+
+## Related Issues
+
+* [https://github.com/hashgraph/guardian/issues/5247](https://github.com/hashgraph/guardian/issues/1987)

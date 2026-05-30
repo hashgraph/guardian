@@ -1,6 +1,9 @@
-# 5246 User Managed Credentials for External Services
+---
+tags:
+  - new
+---
 
-https://github.com/hashgraph/guardian/issues/5246
+# User Managed Credentials for External Services
 
 ### Overview
 
@@ -33,7 +36,7 @@ Navigate to Profile → Credentials tab.
 
 <br>
 
-<img src="../../../.gitbook/assets/unknown (4).png" alt="" height="184" width="665">
+<img src="../../../../.gitbook/assets/unknown (4).png" alt="" height="184" width="665">
 
 #### Adding Global Credentials
 
@@ -47,7 +50,7 @@ The credential appears in the table showing Service, Mode, Updated date, and a D
 
 <br>
 
-<img src="../../../.gitbook/assets/unknown (5).png" alt="" height="192" width="665">
+<img src="../../../../.gitbook/assets/unknown (5).png" alt="" height="192" width="665">
 
 #### Adding Per-Policy Credentials
 
@@ -57,7 +60,7 @@ The credential appears in the table showing Service, Mode, Updated date, and a D
 4. Fill in Service, Mode, and token value
 5. Click Save
 
-Note: credentials will shown only when policy selected.
+Note: credentials will shown only when policy selected. Note: Credentials are shown only when a policy is selected.
 
 #### Deleting Credentials
 
@@ -67,13 +70,13 @@ Click the trash icon next to any credential entry. The secret is removed from bo
 
 #### Accessing Credentials Settings
 
-Navigate to Profile → Credentials tab.&#x20;
+Navigate to Profile → Credentials tab.
 
-Credentials setted up by SR will be shown with mark “Set by SR”. When attempting to record user credentials in this case, the system will ask for confirmation.
+Credentials set up by the SR are shown with the **Set by SR** label. If a user tries to save their own credentials in this case, the system asks for confirmation.
 
 <br>
 
-<img src="../../../.gitbook/assets/unknown (8).png" alt="" height="419" width="665">
+<img src="../../../../.gitbook/assets/unknown (8).png" alt="" height="419" width="665">
 
 #### Adding Credentials
 
@@ -84,9 +87,9 @@ The interface is identical to the SR configuration. Users can add credentials at
 
 <br>
 
-<img src="../../../.gitbook/assets/unknown (9).png" alt="" height="219" width="665">
+<img src="../../../../.gitbook/assets/unknown (9).png" alt="" height="219" width="665">
 
-Note: User-level credentials take priority over SR-level credentials. If a user sets their own API key for a service, it will be used instead of the SR's key.
+Note: User-level credentials take priority over SR-level credentials. If a user sets their own API key for a service, it will be used instead of the SR's key. Note: User-level credentials take priority over SR-level credentials. If a user sets their own API key for a service, Guardian uses it instead of the SR key.
 
 ### Credential Resolution
 
@@ -127,4 +130,6 @@ Note: World Bank API does not require authentication and is not listed in the cr
 
 When a policy is deleted, all credentials scoped to that policy (both SR-level and user-level) are automatically cleaned up from the database and secure storage.
 
-<br>
+## Related Issues
+
+* [https://github.com/hashgraph/guardian/issues/5246](https://github.com/hashgraph/guardian/issues/1987)<br>

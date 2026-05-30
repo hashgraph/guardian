@@ -17,7 +17,7 @@ Policy authors can define clean, human-readable API endpoint aliases for their p
 1. Open any policy in **Draft** status in the Policy Configurator.
 2. Click the **API** button in the top toolbar.
 
-<figure><img src="../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
 
 ### 1.2. Add Endpoints
 
@@ -26,13 +26,13 @@ Policy authors can define clean, human-readable API endpoint aliases for their p
 
 <table><thead><tr><th width="225.86328125">Field</th><th>Description</th></tr></thead><tbody><tr><td>Block</td><td>Select a block from the dropdown list</td></tr><tr><td>Method</td><td>Choose <code>BOTH</code>, <code>GET</code> or <code>POST</code></td></tr><tr><td>Name</td><td>Short name (auto-filled from block name)</td></tr><tr><td>Description</td><td>What the endpoint does</td></tr><tr><td>Alias</td><td>URL-friendly identifier. Either a single slug (<code>new-device</code>, <code>create-application</code>) or a path of slugs separated by <code>/</code> (<code>monitoring-reports/create</code>).</td></tr><tr><td>Preview URL</td><td>Read-only: <code>/api/v1/dmrv/{policyId}/{alias}</code></td></tr></tbody></table>
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 1.3. Add All Endpoints
 
 Use the **Add All Endpoints** button at the top of the dialog (next to **+ Add Endpoint**) to auto-populate API documentation entries for every linked policy block in one click.
 
-<figure><img src="../.gitbook/assets/api-add-all-endpoints.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/api-add-all-endpoints.png" alt=""><figcaption></figcaption></figure>
 
 **Behavior:**
 
@@ -51,7 +51,7 @@ Use the **Add All Endpoints** button at the top of the dialog (next to **+ Add E
 
 Errors appear below the corresponding row.
 
-<figure><img src="../.gitbook/assets/api-validation-rules.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/api-validation-rules.png" alt=""><figcaption></figcaption></figure>
 
 ### 1.5. Save
 
@@ -67,11 +67,11 @@ Errors appear below the corresponding row.
 1. Go to **Policies → Manage Policies**.
 2. Click the **Documentation** button (book icon) on a policy row.
 
-<div align="left"><figure><img src="../.gitbook/assets/image (3) (1).png" alt="" width="375"><figcaption></figcaption></figure></div>
+<div align="left"><figure><img src="../../../.gitbook/assets/image (3) (1).png" alt="" width="375"><figcaption></figcaption></figure></div>
 
 3. The dialog shows all configured endpoints:
 
-<figure><img src="../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 <table><thead><tr><th width="187.7109375">Column</th><th>Description</th></tr></thead><tbody><tr><td>Name</td><td>Endpoint name</td></tr><tr><td>Description</td><td>User-provided description</td></tr><tr><td>Method</td><td><code>BOTH</code> (blue), <code>GET</code> (green) or <code>POST</code> (orange)</td></tr><tr><td>URL</td><td>Technical URL to block by tag</td></tr><tr><td>Alias URL</td><td>External DMRV URL</td></tr><tr><td>Query Params</td><td>The endpoint parameters</td></tr><tr><td>Copy</td><td>Copies Alias URL to clipboard</td></tr></tbody></table>
 
@@ -187,3 +187,7 @@ When the target block references a schema (e.g. `requestVcDocumentBlock`, `docum
   }
 ]
 ```
+
+## Related Issues
+
+* [https://github.com/hashgraph/guardian/issues/1987](https://github.com/hashgraph/guardian/issues/1987)

@@ -15,9 +15,9 @@ icon: computer
 * Enter a name in the dialog box.
 * Click **Add** → the system will store a new savepoint for the current step of the Dry Run.
 
-<figure><img src="../../../../.gitbook/assets/image (435).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (435).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (436).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (436).png" alt=""><figcaption></figcaption></figure>
 
 ### 1.2 Restore Savepoint:
 
@@ -28,7 +28,7 @@ icon: computer
   * **Delete** a savepoint.
   * **Delete All Savepoints** → removes all savepoints for the policy.
 
-<figure><img src="../../../../.gitbook/assets/image (437).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (437).png" alt=""><figcaption></figcaption></figure>
 
 ### 1.3 Continue After Editing Policy
 

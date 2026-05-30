@@ -2,15 +2,19 @@
 
 **1.How can I get started with the Guardian?**
 
-We recommend spending some time and reading carefully through the docs here: [https://docs.hedera.com/guardian/getting-started/readme](https://docs.hedera.com/guardian/getting-started/readme). You will find setup instructions, a glossary of important terms, demo walk throughs, and more.
+We recommend spending some time and reading carefully through the docs. You will find setup instructions, a glossary of important terms, demo walk throughs, and more.
 
 **2. How can I create policies?**
 
-You can use the UI policy editor or APIs to create a policy workflow. Examples are found in the guardian docs here: [https://docs.hedera.com/guardian/getting-started/readme](https://docs.hedera.com/guardian/getting-started/readme)
+You can use the UI policy editor or APIs to create a policy workflow. Examples are found in the guardian docs here: [https://guardian.hedera.com/guardian/standard-registry/policiesreadme](https://guardian.hedera.com/guardian/standard-registry/policies)
 
 **3. Is there a demo to create a policy without importing it?**
 
-[**https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows**](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows)
+[https://guardian.hedera.com/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows](https://guardian.hedera.com/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows)
+
+{% content-ref url="https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/bKnJV8vV7zUxRwKIsJKg/" %}
+[Guardian-dev](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/bKnJV8vV7zUxRwKIsJKg/)
+{% endcontent-ref %}
 
 **4. Can I see the Guardian product roadmap and the current backlog?**
 
@@ -46,9 +50,9 @@ Add an additional short name to the description in the schema configurator. If s
 
 **12. What is the difference between requestVcDocumentBlock and externalDataBlock to report data?**
 
-Both are for reporting data, both are producing VCs at the ‘exit.’&#x20;
+Both are for reporting data, both are producing VCs at the ‘exit.’
 
-1\. requestVcDocumentBlock requires authorization, but the actual document is just json.&#x20;
+1\. requestVcDocumentBlock requires authorization, but the actual document is just json.
 
 2\. externalDataBlock does not require authorization, but the document must already be a VC and be correctly signed.
 
@@ -70,10 +74,10 @@ We are uploading Verifiable Presentation document to IPFS and CID will be attach
 
 **17. How does Guardian Provenance works?**
 
-(ONLY NFT) Open tokens page, click on appropriate token or open ledger works explorer manually https://explore.lworks.io/testnet/tokens/{tokenId} ([https://explore.lworks.io/testnet/tokens/0.0.4554172](https://explore.lworks.io/testnet/tokens/0.0.4554172)), open "NFT HOLDERS" tab and click on appropriate serial, click on "OVERVIEW" tab and in metadata you can get VP message identifier (1721049137.243457003).&#x20;
+(ONLY NFT) Open tokens page, click on appropriate token or open ledger works explorer manually https://explore.lworks.io/testnet/tokens/{tokenId} ([https://explore.lworks.io/testnet/tokens/0.0.4554172](https://explore.lworks.io/testnet/tokens/0.0.4554172)), open "NFT HOLDERS" tab and click on appropriate serial, click on "OVERVIEW" tab and in metadata you can get VP message identifier (1721049137.243457003).
 
 \
-(FT, NFT) Open tokens page, copy appropriate token identifier, open Dragonglass explorer https://testnet.dragonglass.me/tokens/{tokenId} ([https://testnet.dragonglass.me/tokens/0.0.4554298](https://testnet.dragonglass.me/tokens/0.0.4554298)), click on "All transactions" tab, click on appropriate mint transaction, in memo you can get VP message identifier (1721049808.933544003).&#x20;
+(FT, NFT) Open tokens page, copy appropriate token identifier, open Dragonglass explorer https://testnet.dragonglass.me/tokens/{tokenId} ([https://testnet.dragonglass.me/tokens/0.0.4554298](https://testnet.dragonglass.me/tokens/0.0.4554298)), click on "All transactions" tab, click on appropriate mint transaction, in memo you can get VP message identifier (1721049808.933544003).
 
 \
 In our case it will be [https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1721049137.243457003](https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1721049137.243457003)\
@@ -237,9 +241,9 @@ DID is the the DID of the RA, i.e. is a globally unique reference linking to a D
 
 **21. How to identify data on Hedera after submitting data using sendToGuardianBlock?**
 
-You can find it in Project/Policy topic, it depends on sendToGuardianBlock configuration.&#x20;
+You can find it in Project/Policy topic, it depends on sendToGuardianBlock configuration.
 
-Open policies tab, click on policy topic or open it in ledger works explorer manually https://explore.lworks.io/testnet/topics/{topicId} ([https://explore.lworks.io/testnet/topics/0.0.4554074](https://explore.lworks.io/testnet/topics/0.0.4554074)), find appropriate INSTANCE\_POLICY\_TOPIC message and copy childId, then replace it in the url, find appropriate message or find appropriate DYNAMIC\_TOPIC message and do same thing with childId.&#x20;
+Open policies tab, click on policy topic or open it in ledger works explorer manually https://explore.lworks.io/testnet/topics/{topicId} ([https://explore.lworks.io/testnet/topics/0.0.4554074](https://explore.lworks.io/testnet/topics/0.0.4554074)), find appropriate INSTANCE\_POLICY\_TOPIC message and copy childId, then replace it in the url, find appropriate message or find appropriate DYNAMIC\_TOPIC message and do same thing with childId.
 
 Unfortunately, Ledger Works does not have a search by messageId, but messages can be obtained using mirror node.
 
