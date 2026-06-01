@@ -345,6 +345,36 @@ The four main aggregator formulas (`BE_y`, `PE_y`, `LE_y`, `ER_y`) have **Output
 
 The FLD structure conforms with VCS Standard v4.4 dMRV transparency requirements and the Hedera Guardian Formula Linked Definitions specification (Guardian v3.1+).
 
+### 4.7 Audit Trace Objects
+
+In addition to the computed numeric outputs, both calculation engines emit three structured audit objects that are persisted alongside the credential subject. These objects make every methodology decision and every per-stream calculation step independently inspectable by VVB and Verra reviewers, without requiring access to the JavaScript source.
+
+| Object | Emitted By | Purpose |
+|---|---|---|
+| `calcTrace` | Both engines | End-to-end formula trace with all intermediate values |
+| `boundaryLogic` | `calculate_project_fields` | Snapshot of which GHG sources were INCLUDED/EXCLUDED per Section 5 Table 1 |
+| `leakageLogic` | Both engines | Conditional leakage outcome per Section 8.3 (Step-1 evidence applicability, valorization detection) |
+
+**`calcTrace`** records:
+
+- `equationsApplied` — which VM0046 equation paths were taken (e.g., baseline used "Option 3 (Eq. 5, Table 2 default EF)")
+- `streamsProcessed` — multi-stream count
+- `totals` — final aggregates (`BE_y_total`, `PE_y_total`, `LE_d_total`, `LE_v_total`, `LE_y_total`, `ER_y_total`)
+- `baseline` / `project` / `leakage` / `netReduction` — sub-objects with the intermediate variables and human-readable `trace` strings (e.g., `"ER_y = BE_y - PE_y - LE_y = 100.1 - 3.1 - 100 = -3 tCO2e"`)
+
+**`boundaryLogic`** records the boolean inclusion/exclusion choice for each Section 5 Table 1 row (CO2_baseline, CH4_baseline, N2O_baseline, baselineTransport, projectTransport, projectProcessing, projectBioCO2, projectCH4N2O, projectPackaging). VVB compares this to the project's narrative justification.
+
+**`leakageLogic`** records:
+
+- `step1_evidence_provided` boolean and `step1_evidence_type` selection
+- `step1_justification` text
+- `step1_surplus_pct` numeric (for Type i)
+- `isValorization` boolean (auto-derived from baseline destination)
+- Per-equation outcomes: `LE_discards`, `LE_valorization`, `LE_total`
+- `calculation_log` array of per-stream messages (e.g., `"Stream [2024/Landfill (without flaring)/01.0 Dairy products and analogues]: LF=1, LE_d=100"`)
+
+A typical REJECTED Monitoring Report carries the full trace, so the VVB can confirm the calculation reasoning even on rejected submissions (rejection itself is auditable, not a black box).
+
 ---
 
 ## 5. Schema Architecture
@@ -452,6 +482,14 @@ This standardization ensures that the calculation engine's destination matching 
   ↓
   [JS] Compute ex-post BE, PE, LE, ER + V1–V12 validations + Mass Balance V8
   ↓
+  Sets credentialSubject.validationStatus = APPROVED | APPROVED_WITH_WARNINGS | REJECTED
+  ↓
+  ┌─ If REJECTED ─→ MR saved to Hedera as immutable log entry;
+  │                 hidden from VVB grid (see §6.5);
+  │                 PP submits a new MR
+  │
+  └─ If APPROVED / APPROVED_WITH_WARNINGS ─→
+  ↓
   Status: "Waiting for Verification"
   ↓
 [VVB]  Verify MR; create Verification Report
@@ -484,6 +522,66 @@ The workflow is implemented as 216 interconnected blocks in Guardian Policy Conf
 | Other | ~75 | Buttons, switches, role conditions |
 
 All blocks reference schemas via stable IRIs, ensuring schema replacements do not break the workflow.
+
+### 6.4 Calculations Grid (Preview Layer)
+
+Beyond the Monitoring Reports tab — where VVB acts on submissions — the policy exposes a parallel **Calculations** tab to both Project Proponents (Owner/Verra view) and VVBs. Calculations renders the same underlying Monitoring Report documents but with calculation-focused columns extracted from `credentialSubject` and `calcTrace`. The tab is positioned **before** Monitoring Reports in both Verra and VVB navigation, so reviewers see the numeric outcome before opening the document detail.
+
+**Owner / Verra Calculations grid (`calculations_grid_verra`)** — read-only listing of every submitted Monitoring Report:
+
+| Column | Source path | Notes |
+|---|---|---|
+| Project ID | `credentialSubject.0.ref` | UUID pointer to the parent project document |
+| Monitoring Report | `credentialSubject.0.field0` | PP-entered report title |
+| Period Start | `credentialSubject.0.field5` | MR reporting period start |
+| Period End | `credentialSubject.0.field6` | MR reporting period end |
+| ER (tCO2e) | `credentialSubject.0.field48.0.field4` | Ex-post net emission reduction (Eq. 14) |
+| VCUs Requested | `credentialSubject.0.field48.0.field5` | Tonnes claimed for issuance |
+| **Methodology** | `credentialSubject.0.validationStatus` | `APPROVED` / `APPROVED_WITH_WARNINGS` / `REJECTED` |
+| Status | `option.status` | Workflow status (Waiting for Verification / Verified / Minting / Minted) |
+| Calculation | button | Opens calculation trace dialog (renders `calcTrace`) |
+
+**VVB Calculations grid (`calculations_grid_vvb`)** — same column set, plus a filter that **excludes** `validationStatus === "REJECTED"`. The VVB therefore only sees calculations they can plausibly verify. REJECTED submissions are not actionable for the VVB role.
+
+The source-addon filters on both grids are `option.status` IN `{Waiting for Verification, Verified, Approved, Minting, Minted}` so PPs can monitor a calculation through the entire lifecycle.
+
+> **Methodology vs Status — two orthogonal signals.** The `Methodology` column reads `credentialSubject.0.validationStatus` (set by the JavaScript engine on submission) and reflects whether the report passed VM0046 checks. The `Status` column reads `option.status` (set by the `sendToGuardianBlock` save) and reflects where the document is in the workflow pipeline. A REJECTED report therefore displays `Methodology = REJECTED` and `Status = "Waiting for Verification"` simultaneously — this is **expected** and not a state inconsistency. Guardian's `sendToGuardianBlock` writes `option.status` as a literal string (no value interpolation from credential fields), so the two columns are necessarily separate. The actionable filters (`report_grid_vvb_reports`, `project_grid_vvb_projects`, `project_grid_verra_waiting_to_add_projects`) use `validationStatus`, not `option.status`, to ensure a REJECTED document never reaches a Verify/Approve queue regardless of its workflow status string.
+
+### 6.5 REJECTED Document Handling
+
+Because each Monitoring Report is committed to Hedera Consensus Service before downstream processing, a REJECTED submission cannot be "fixed in place" — the Hedera message is immutable. The policy therefore treats REJECTED documents as a permanent audit log:
+
+| Property | Behavior |
+|---|---|
+| Hedera commit | Yes — REJECTED MRs are written to HCS like any other submission |
+| MongoDB persistence | Yes — full credential subject, validationErrors, calcTrace are stored |
+| Visible to PP | Yes — appears in the PP's Calculations and Monitoring Reports tabs with `validationStatus = REJECTED` |
+| Visible to VVB | No — filtered out of `report_grid_vvb_reports` and `calculations_source_vvb` via `not_equal` filter on `credentialSubject.0.validationStatus` |
+| Visible to Verra Owner | Yes in Calculations (audit visibility); No in `project_grid_verra_waiting_to_add_projects` (cannot Add a rejected project) |
+| Verify / Reject buttons | Not available — the rejected document never enters a state where VVB action is needed |
+| Edit / Delete | Not available — Hedera record is immutable |
+| New submission | Yes — PP can submit a fresh MR (or PD) for the same period; the rejected record remains as a sibling log entry |
+
+**PP user experience.** When a submission fails methodology checks:
+
+1. The MR appears in PP's Calculations tab with the Methodology column showing `REJECTED`
+2. Opening the row reveals the full `credentialSubject` including `validationErrors[]` and `validationWarnings[]` with the specific Section/Equation that failed (e.g., `"ER_y is zero or negative (-3 tCO2e). No climate benefit."`)
+3. `calcTrace.netReduction.trace` displays the formula with PP's actual numbers substituted, making the failure cause unambiguous
+4. PP submits a corrected MR via the standard "Add Report" button — the rejected MR remains in the log
+
+This architecture preserves blockchain integrity (no retroactive edits) while keeping the PP feedback loop intact (immediate, structured, methodology-grounded error messages).
+
+The same handling applies to rejected Project Description submissions: they remain in the audit trail, are filtered from `project_grid_vvb_projects` and `project_grid_verra_waiting_to_add_projects`, and PP submits a corrected PD.
+
+### 6.6 Navigation Order
+
+Both Verra Owner and VVB role headers display tabs in the following sequence:
+
+```
+Projects → Calculations → Monitoring Reports → Tokens
+```
+
+Calculations is positioned **before** Monitoring Reports so that reviewers see the numeric outcome — including methodology validation status — before opening the verbose document view. This ordering applies to both `verra_header` and `vvb_header` block trees and is mirrored in the `policyNavigation` array (the menu source consulted by the Angular UI).
 
 ---
 
@@ -642,6 +740,10 @@ The DMRV system stores VCs on Hedera with the following privacy considerations:
 
 4. **Permanence Risk Buffer (placeholder)**: Set to 0% as VM0046 is non-AFOLU. Schema retained for cross-methodology consistency.
 
+5. **REJECTED submissions are immutable** (see §6.5): a Monitoring Report or Project Description that fails methodology validation is committed to Hedera and cannot be edited or deleted in place. PP must re-submit a corrected document; the rejected record remains as a sibling audit-log entry. This is a property of the underlying ledger, not a policy choice.
+
+6. **Project ID column shows UUID, not name**: the Calculations grid Project column (`credentialSubject.0.ref`) currently shows the parent project's UUID. Mapping this to the human-readable project title would require either schema extension (carry `projectName` into the MR credential subject) or a Guardian-side join resolver. Out of scope for v1.0 submission.
+
 ### 11.2 Future Enhancements
 
 - Integration with FAO FLW Database for region-specific LF defaults
@@ -755,21 +857,42 @@ This DMRV System Description is part of a Verra digitization submission package 
 <figure><img src="images/12.png" alt=""><figcaption></figcaption></figure>
 <figure><img src="images/12_2.png" alt=""><figcaption></figcaption></figure>
 
-13. Log in as **Project Proponent** and add the **Monitoring Report**.
 
+13. **Add Validation Report** by VVB
+<figure><img src="images/12_3.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="images/12_4.png" alt=""><figcaption></figcaption></figure>
+
+
+14. Log in as **SR** and Approve/Reject **Validation reports**.
+<figure><img src="images/12_5.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="images/12_6.png" alt=""><figcaption></figcaption></figure>
+
+15. Log in as **Project Proponent** and add the **Monitoring Report**.
 <figure><img src="images/13.png" alt=""><figcaption></figcaption></figure>
 <figure><img src="images/13_2.png" alt=""><figcaption></figcaption></figure>
 
-14. Log in as **VVB** and click **Verify** to validate the monitoring report.
+16. **Auto-Rejected** report when data **fails** formula validation.
+<figure><img src="images/16.png" alt=""><figcaption></figcaption></figure>
 
+17. **Auto-Rejected** report when data fails formula validation (visible to **VVB/Admin** in the **Calculations** section).
 <figure><img src="images/14.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="images/15.png" alt=""><figcaption></figcaption></figure>
 <figure><img src="images/14_2.png" alt=""><figcaption></figcaption></figure>
 
-15. Log in as **SR** and click **Mint** to issue the tokens (VCUs).
+18. Report status after **Project Proponent** submits valid data that passes formula validation.
+<figure><img src="images/18.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="images/17.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="images/15.png" alt=""><figcaption></figcaption></figure>
+19. Log in as **VVB** and click **Verify** to validate the monitoring report.
 
-16. Formulas are now available in the **Formula Linked Definitions** tab.
+<figure><img src="images/19.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="images/19_2.png" alt=""><figcaption></figcaption></figure>
+
+20. Log in as **SR** and click **Mint** to issue the tokens (VCUs).
+
+<figure><img src="images/20.png" alt=""><figcaption></figcaption></figure>
+
+21. Formulas are now available in the **Formula Linked Definitions** tab.
 
 <figure><img src="images/16.png" alt=""><figcaption></figcaption></figure>
 <figure><img src="images/17.png" alt=""><figcaption></figcaption></figure>
