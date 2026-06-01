@@ -1,53 +1,58 @@
-# Publishing Schema
+# Publishing Schema (Async)
 
-{% swagger method="put" path="" baseUrl="/schemas/push/{schemaId}/publish" summary="Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic." %}
-{% swagger-description %}
-Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`PUT /schemas/push/{schemaId}/publish`**
 
-{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
-Schema ID
-{% endswagger-parameter %}
+Publishes the specified schema onto IPFS asynchronously, sending a message with its IPFS CID to the corresponding Hedera topic. Returns a task ID immediately; poll `GET /tasks/{taskId}` for the result.
 
-{% swagger-parameter in="body" required="true" %}
-Object that contains policy version.
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="202: Accepted" description="Accepted" %}
-```javascript
+**Permission:** `Permissions.SCHEMAS_SCHEMA_REVIEW`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | string | Yes | The schema ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
+  "version": "1.0.0"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `version` | string | Yes | The version string to assign to the published schema (e.g. `1.0.0`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
 {
-    // Response
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Publish schema"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+Poll `GET /tasks/{taskId}` to retrieve the result.
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions or schema owned by another user |
+| `404 Not Found` | Schema not found |
+| `422 Unprocessable Entity` | Schema is already published or version already exists |
+| `500 Internal Server Error` | Unexpected server failure |

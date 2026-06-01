@@ -397,18 +397,33 @@ export class CustomLogicBlock {
                                 tablesPack
                             },
                         });
+                    // Release the worker's V8 isolate; without this each invocation leaks ~30 MB.
+                    const cleanup = () => {
+                        worker.terminate().catch(() => {
+                            // Ignore errors during worker termination
+                        });
+                    };
+                    worker.on('exit', (code) => {
+                        cleanup();
+                        if (code !== 0 && code !== null) {
+                            reject(new Error(`Custom logic worker exited with code ${code}`));
+                        }
+                    });
                     worker.on('error', (error) => {
+                        cleanup();
                         reject(error);
                     });
                     worker.on('message', async (data) => {
                         try {
                             if (data?.type === 'done') {
                                 await done(data.result, data.final);
+                                if (data.final) { cleanup(); }
                             }
                             if (data?.type === 'debug') {
                                 ref.debug(data.message);
                             }
                         } catch (error) {
+                            cleanup();
                             reject(error);
                         }
                     });

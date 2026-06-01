@@ -1,53 +1,53 @@
 # Schema Preview from IPFS
 
-<mark style="color:green;">`POST`</mark> `/schemas/import/message/preview`
+**`POST /schemas/import/message/preview`**
 
 Previews the schema from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
 
-#### Request Body
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                               | Type   | Description                                                                                         |
-| ---------------------------------- | ------ | --------------------------------------------------------------------------------------------------- |
-| <mark style="color:red;">\*</mark> | Object | Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema |
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
 
-{% tabs %}
-{% tab title="200: OK Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Request Body
+
+An object containing the identifier of the Hedera message which contains the IPFS CID of the schema.
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
+  "messageId": "1700000000.000000001"
 }
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+---
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+## Response
 
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
+### Success Response
+
+**Status:** `200 OK`
+
+Returns a preview array of schema objects.
+
+```json
+[
+  {
+    "id": "f3b2a9c1e4d5678901234567",
+    "uuid": "f3b2a9c1e4d5678901234567",
+    "name": "Schema name",
+    "status": "PUBLISHED",
+    "version": "1.0.0"
+  }
+]
 ```
-{% endtab %}
-{% endtabs %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

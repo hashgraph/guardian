@@ -138,7 +138,7 @@ def extract_apx_project_extras(raw_path: Path, registry: str) -> pd.DataFrame:
     - crediting_period_end (ACR)
     - registration_date (CAR)
     """
-    df = pd.read_csv(raw_path)
+    df = pd.read_csv(raw_path, encoding="latin-1", engine="python", on_bad_lines="warn")
 
     extras = pd.DataFrame()
 

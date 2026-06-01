@@ -892,10 +892,10 @@ Please refer to <https://guardian.hedera.com/> for complete documentation about 
 
 ## Contact information
 
-For any questions, please reach out to the Envision Blockchain Solutions team at:
+For any questions, please reach out to the Hashgraph team at:
 
-- Website: <www.envisionblockchain.com>
-- Email: [info@envisionblockchain.com](mailto:info@envisionblockchain.com)
+* Website: [https://hashgraph.com](https://hashgraph.com)
+* Email: [guardian@hashgraph.com](mailto:guardian@hashgraph.com)
 
 ([back to top](#guardian))
 

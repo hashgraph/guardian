@@ -1,16 +1,16 @@
 {
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "3.6.0-rc",
-        "@guardian/interfaces": "3.6.0-rc",
+        "@guardian/common": "3.6.0",
+        "@guardian/interfaces": "3.6.0",
         "@mikro-orm/core": "6.4.16",
-        "@nestjs/common": "^11.0.11",
-        "@nestjs/core": "^11.0.11",
-        "@nestjs/microservices": "^11.0.11",
+        "@nestjs/common": "^11.1.24",
+        "@nestjs/core": "^11.1.24",
+        "@nestjs/microservices": "^11.1.24",
         "dotenv": "^16.0.0",
         "reflect-metadata": "^0.1.13",
         "rxjs": "^7.8.1"
@@ -41,5 +41,5 @@
         "watch": "nodemon src/index.ts"
     },
     "type": "module",
-    "version": "3.6.0-rc"
+    "version": "3.6.0"
 }

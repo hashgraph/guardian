@@ -1,53 +1,45 @@
-# Unsetting KYC for the User
+# Unsetting KYC for the User (Async)
 
-{% swagger method="put" path="" baseUrl="/tokens/push/{tokenId}/{username}/revoke-kyc" summary="Unsets the KYC flag for the user." %}
-{% swagger-description %}
-Unsets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`PUT /tokens/push/{tokenId}/{username}/revoke-kyc`**
 
-{% swagger-parameter in="path" name="tokenId" type="String" required="true" %}
-TokenID
-{% endswagger-parameter %}
+Unsets (revokes) the KYC flag for the specified user on the given Hedera token asynchronously. Only users with the Standard Registry role are allowed to make this request.
 
-{% swagger-parameter in="path" name="username" type="String" required="true" %}
-Username
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Permission:** `Permissions.TOKENS_TOKEN_EXECUTE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tokenId` | string | Yes | The Hedera token ID (e.g. `0.0.5000001`) |
+| `username` | string | Yes | The username of the target user |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Revoke KYC"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+Poll `GET /tasks/{taskId}` to retrieve the result.
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

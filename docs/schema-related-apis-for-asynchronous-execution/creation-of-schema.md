@@ -1,53 +1,62 @@
-# Creation of Schema
+# Creation of Schema (Async)
 
-{% swagger method="post" path="" baseUrl="/schemas/push/{topicId}" summary="Create new schema." %}
-{% swagger-description %}
-Creates new schema. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /schemas/push/{topicId}`**
 
-{% swagger-parameter in="path" name="topicId" type="String" required="true" %}
-Topic ID
-{% endswagger-parameter %}
+Creates a new schema under the specified topic asynchronously. Returns a task ID immediately; poll `GET /tasks/{taskId}` for the result.
 
-{% swagger-parameter in="body" required="true" %}
-Object that contains a valid schema.
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="202: Accepted" description="Accepted" %}
-```javascript
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `topicId` | string | Yes | The Hedera topic ID under which to create the schema (e.g. `0.0.4532001`) |
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
+  "name": "Carbon Offset Schema",
+  "description": "Schema for carbon offset reporting",
+  "entity": "VC",
+  "category": "POLICY",
+  "document": {
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {}
+  }
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+The request body is a valid schema configuration object.
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
 {
-    // Response
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Create schema"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+Poll `GET /tasks/{taskId}` to retrieve the result.
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

@@ -87,15 +87,31 @@ export class MathBlock {
         return new Promise<IPolicyDocument>(async (resolve, reject) => {
             const workerFile = path.join(path.dirname(filename), '..', 'helpers', 'workers', 'math-worker.js');
             const worker = new Worker(workerFile, { workerData });
+
+            // Release the worker's V8 isolate; without this each invocation leaks ~30 MB.
+            const cleanup = () => {
+                worker.terminate().catch(() => {
+                    // Ignore errors during worker termination
+                });
+            };
+            worker.on('exit', (code) => {
+                cleanup();
+                if (code !== 0 && code !== null) {
+                    reject(new Error(`Math worker exited with code ${code}`));
+                }
+            });
             worker.on('error', (error) => {
+                cleanup();
                 reject(error);
             });
             worker.on('message', async (data) => {
                 try {
                     if (data?.type === 'done') {
+                        cleanup();
                         resolve(data.result)
                     }
                 } catch (error) {
+                    cleanup();
                     reject(error);
                 }
             });

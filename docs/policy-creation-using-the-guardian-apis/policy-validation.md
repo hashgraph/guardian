@@ -1,51 +1,55 @@
 # Policy Validation
 
-### VALIDATES POLICY
+**`POST /policies/validate`**
 
-{% swagger method="post" path="" baseUrl="/policies/validate" summary="Validates policy" %}
-{% swagger-description %}
-Validates selected policy. Only users with the Standard Registry role are allowed to make the request
-{% endswagger-description %}
+Validates the provided policy configuration and returns validation results without saving.
 
-{% swagger-parameter in="body" type="application/jsonn" required="true" %}
-Object that contains policy configuration
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Permission:** `Permissions.POLICIES_POLICY_UPDATE` or `Permissions.POLICIES_POLICY_REVIEW`
+
+---
+
+## Request
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidatePolicy'
+  "name": "iREC Policy",
+  "version": "1.0.0",
+  "config": {}
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+The request body is the full policy configuration object to validate.
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    // Response
+  "results": {
+    "isValid": true,
+    "errors": []
+  },
+  "policy": {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "name": "iREC Policy",
+    "version": "1.0.0"
+  }
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

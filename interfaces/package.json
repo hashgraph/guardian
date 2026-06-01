@@ -1,5 +1,5 @@
 {
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "description": "",
     "dependencies": {
         "reflect-metadata": "^0.1.13"
@@ -27,5 +27,5 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "type": "module",
-    "version": "3.6.0-rc"
+    "version": "3.6.0"
 }

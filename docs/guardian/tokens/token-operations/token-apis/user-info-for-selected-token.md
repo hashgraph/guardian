@@ -1,66 +1,58 @@
-# User Info for selected token
+# User Info for Selected Token
 
-### DISPLAYS USER INFORMATION FOR SELECTED TOKEN
+**`GET /api/v1/tokens/{tokenId}/{username}/info`**
 
-{% swagger method="get" path="" baseUrl="/tokens/{tokenId}/{username}/info" summary="Returns User information" %}
-{% swagger-description %}
-Returns user information for the selected token. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Returns token status information for a specific user on the given token, including KYC, freeze, and association status. Only users with the Standard Registry role are allowed to make the request.
 
-{% swagger-parameter in="path" name="tokenID" type="String" required="true" %}
-Token ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="path" name="username" required="true" %}
-Username
-{% endswagger-parameter %}
+**Permission:** `Permissions.TOKENS_TOKEN_MANAGE`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tokenId` | string | Yes | The internal database ID of the token |
+| `username` | string | Yes | The username of the user to retrieve token info for |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TokenInfo'
+  "tokenId": "0.0.5000001",
+  "associated": true,
+  "balance": "50",
+  "hBarBalance": "10",
+  "frozen": false,
+  "kyc": true
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="400: Bad Request" description="Bad Request" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
+| Field | Type | Description |
+|-------|------|-------------|
+| `tokenId` | string | Hedera token ID |
+| `associated` | boolean | Whether the user is associated with the token |
+| `balance` | string | User's token balance |
+| `hBarBalance` | string | User's HBAR balance |
+| `frozen` | boolean | Whether the user's token transfers are frozen |
+| `kyc` | boolean | Whether the user has passed KYC for this token |
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | User or token does not exist |
+| `422 Unprocessable Entity` | User is not registered |
+| `500 Internal Server Error` | Unexpected server failure |

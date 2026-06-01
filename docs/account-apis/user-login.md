@@ -1,35 +1,48 @@
 # User Login
 
-### LOGS USER INTO THE SYSTEM
+**`POST /accounts/login`**
 
-{% swagger method="post" path="" baseUrl="/accounts/login" summary="Logs user into the system" %}
-{% swagger-description %}
+Logs a user into the system and returns a session with access and refresh tokens.
 
-{% endswagger-description %}
+---
 
-{% swagger-parameter in="body" required="true" %}
-Object that contains username and password fields
-{% endswagger-parameter %}
+## Request
 
-{% swagger-response status="200: OK" description="" %}
-```javascript
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Session'
+  "username": "example_user",
+  "password": "examplePassword123"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="500: Internal Server Error" description="" %}
-```javascript
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `username` | string | Yes | The account username |
+| `password` | string | Yes | The account password |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+  "username": "example_user",
+  "role": "STANDARD_REGISTRY",
+  "did": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Invalid username or password |
+| `500 Internal Server Error` | Unexpected server failure |

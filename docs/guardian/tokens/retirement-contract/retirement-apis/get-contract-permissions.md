@@ -1,41 +1,41 @@
 # Get Contract Permissions
 
-## &#x20;Get contract permissions.
+**`GET /api/v1/contracts/{contractId}/permissions`**
 
-<mark style="color:blue;">`GET`</mark> `/contracts/{contractId}/permissions`
+Returns the permission flags for the specified smart contract. Only Standard Registry users are allowed to make this request.
 
-Get smart-contract permissions. Only users with the Standard Registry role are allowed to make the request.
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-#### Path Parameters
+**Permission:** `Permissions.CONTRACTS_PERMISSIONS_READ`
 
-| Name                                         | Type   | Description         |
-| -------------------------------------------- | ------ | ------------------- |
-| contractID<mark style="color:red;">\*</mark> | String | Contract Identifier |
+---
 
-{% tabs %}
-{% tab title="200: OK Contract Permissions" %}
+## Request
+
+### Path Parameters
+
+| Parameter    | Type   | Required | Description         |
+|--------------|--------|----------|---------------------|
+| `contractId` | string | Yes      | Contract identifier |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+3
 ```
-content:
-            application/json:
-              schema:
-                type: number
-```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
+The response is a numeric bitmask representing the caller's permissions on the contract.
 
-{% endtab %}
+### Error Responses
 
-{% tab title="403: Forbidden Forbidden" %}
-
-{% endtab %}
-
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```
- content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

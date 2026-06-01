@@ -1,10 +1,10 @@
 {
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@nestjs/common": "^11.0.11",
-        "@nestjs/core": "^11.0.11",
-        "@nestjs/microservices": "^11.0.11",
-        "@indexer/interfaces": "3.6.0-rc",
+        "@nestjs/common": "^11.1.24",
+        "@nestjs/core": "^11.1.24",
+        "@nestjs/microservices": "^11.1.24",
+        "@indexer/interfaces": "3.6.0",
         "cross-blob": "^2.0.1",
         "dotenv": "^16.0.0",
         "jszip": "^3.7.1",
@@ -52,5 +52,5 @@
         "test:stability": "mocha tests/stability.test.js"
     },
     "type": "module",
-    "version": "3.6.0-rc"
+    "version": "3.6.0"
 }
