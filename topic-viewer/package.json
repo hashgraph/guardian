@@ -1,5 +1,5 @@
 {
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
         "express": "5.2.1",
         "prom-client": "^14.1.1"
