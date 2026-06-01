@@ -1,15 +1,29 @@
 import assert from 'node:assert/strict';
 import { DatabaseServer } from '@guardian/common';
 
-// policy-validator imports the whole block registry and the full
-// @guardian/common surface, so module-level mocking is impractical here.
-// The validators only ever read from the database, so neutralising those
-// reads on the real singleton keeps build()/validate() off a live DB.
-DatabaseServer.getSchemas = async () => [];
-DatabaseServer.getModules = async () => [];
-DatabaseServer.getTools = async () => [];
-DatabaseServer.getTool = async () => null;
-DatabaseServer.getArtifact = async () => null;
+let origGetSchemas, origGetModules, origGetTools, origGetTool, origGetArtifact;
+
+before(() => {
+    origGetSchemas = DatabaseServer.getSchemas;
+    origGetModules = DatabaseServer.getModules;
+    origGetTools = DatabaseServer.getTools;
+    origGetTool = DatabaseServer.getTool;
+    origGetArtifact = DatabaseServer.getArtifact;
+
+    DatabaseServer.getSchemas = async () => [];
+    DatabaseServer.getModules = async () => [];
+    DatabaseServer.getTools = async () => [];
+    DatabaseServer.getTool = async () => null;
+    DatabaseServer.getArtifact = async () => null;
+});
+
+after(() => {
+    DatabaseServer.getSchemas = origGetSchemas;
+    DatabaseServer.getModules = origGetModules;
+    DatabaseServer.getTools = origGetTools;
+    DatabaseServer.getTool = origGetTool;
+    DatabaseServer.getArtifact = origGetArtifact;
+});
 
 let PolicyValidator, ModuleValidator, ToolValidator;
 try {

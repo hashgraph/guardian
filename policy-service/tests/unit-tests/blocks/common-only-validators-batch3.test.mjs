@@ -12,13 +12,15 @@ class FakeValidator {
 }
 
 const refOK = () => ({ options: {} });
+const refExpression = () => ({ options: { expression: '1 + 1' } });
+const refHttpRequest = () => ({ options: { url: 'https://example.com/api', method: 'get' } });
 
 describe('@unit Final batch — CommonBlock-delegating validators', () => {
     const cases = [
         ['dataTransformationAddon', DataTransformationAddon, refOK],
         ['ipfsTransformationUIAddon', IpfsTransformationUIAddon, refOK],
-        ['transformationUIAddon', TransformationUIAddon, () => ({ options: { expression: '1 + 1' } })],
-        ['httpRequestUIAddon', HttpRequestUIAddon, () => ({ options: { url: 'https://example.com/api', method: 'get' } })],
+        ['transformationUIAddon', TransformationUIAddon, refExpression],
+        ['httpRequestUIAddon', HttpRequestUIAddon, refHttpRequest],
     ];
 
     for (const [expected, Block] of cases) {
