@@ -1,9 +1,10 @@
 import { assert } from 'chai';
-import { PrivateKey } from '@hashgraph/sdk';
+import { PrivateKey } from '@hiero-ledger/sdk';
 
 import { VCJS } from '../../../../dist/hedera-modules/vcjs/vcjs.js';
 import { DefaultDocumentLoader } from '../../../../dist/hedera-modules/document-loader/document-loader-default.js';
-import { DIDDocument } from '../../../../dist/hedera-modules/vcjs/did-document.js';
+import { HederaDidDocument } from '../../../../dist/hedera-modules/vcjs/did/hedera-did-document.js';
+import { SignatureType } from '@guardian/interfaces';
 import { LocalSchemaContextLoader } from '../../../../dist/document-loader/local-schema-context-loader.js';
 import { LocalSchemaDocumentLoader } from '../../../../dist/document-loader/local-schema-document-loader.js';
 import { LocalVcSchemaDocumentLoader } from '../../../../dist/document-loader/local-vc-schema-document-loader.js';
@@ -517,24 +518,19 @@ describe('VCJS', function () {
         vcjs.buildDocumentLoader();
         vcjs.buildSchemaLoader();
 
-        // assert.isTrue((await vcjs.verifyVC(actualVcDocument.document)));
-        // assert.isTrue((await vcjs.verifySchema(actualVcDocument.document)).ok);
-        // assert.isTrue((await vcjs.verifySubject(actualVcDocument.document.credentialSubject[0])).ok);
+        const createdDidDocument = await HederaDidDocument.generate('testnet', newPrivateKey, '0.0.0');
 
-        const createdDidDocument = await DIDDocument.create(newPrivateKey);
-
-        const testVc = await vcjs.createVC(
-            createdDidDocument.getDid(),
-            createdDidDocument.getPrivateKey(),
-            vcValueToCreate
-        )
+        const testVc = await vcjs.createVerifiableCredential(
+            vcValueToCreate,
+            createdDidDocument,
+            SignatureType.Ed25519Signature2018
+        );
         assert.exists(testVc);
-        // assert.isTrue(await vcjs.verifyVC(actualVcDocument.document));
-        //
-        const testVp = await vcjs.createVP(
-            createdDidDocument.getDid(),
-            createdDidDocument.getPrivateKey(),
-            [testVc]
+
+        const testVp = await vcjs.createVerifiablePresentation(
+            [testVc],
+            createdDidDocument,
+            SignatureType.Ed25519Signature2018
         );
         assert.exists(testVp);
     });

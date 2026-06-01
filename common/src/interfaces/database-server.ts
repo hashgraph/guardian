@@ -1,6 +1,6 @@
 //entities
 import { AssignedEntityType, IVC, MintTransactionStatus, PolicyTestStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
-import { TopicId } from '@hashgraph/sdk';
+import { TopicId } from '@hiero-ledger/sdk';
 import { FilterQuery } from '@mikro-orm/core';
 import {
     AggregateVC,
@@ -95,6 +95,16 @@ export abstract class AbstractDatabaseServer {
      */
     public static async getVirtualUsers(policyId: string): Promise<DryRun[]> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.getVirtualUsers.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+    }
+
+    /**
+     * Count Virtual Users
+     * @param policyId
+     *
+     * @virtual
+     */
+    public static async countVirtualUsers(policyId: string, savepointIds?: string[]): Promise<number> {
+        throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.countVirtualUsers.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -2235,16 +2245,20 @@ export abstract class AbstractDatabaseServer {
     public abstract getVPMintInformation(
         vpDocument: VpDocument
     ): Promise<
-        [
+        {
             serials: { serial: number; tokenId: string }[],
             amount: number,
             error: string,
             wasTransferNeeded: boolean,
             transferSerials: number[],
+            mintAmount: number,
             transferAmount: number,
+            mintExpected: number,
+            transferExpected: number,
             tokenIds: string[],
             target: string,
-        ]
+            mainDocument: string
+        }
     >
 
     /**

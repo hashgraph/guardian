@@ -1,5 +1,35 @@
 .guardian-dialog {
     border-radius: 16px;
+    max-height: 95%;
+
+    &.fullscreen {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+
+        .p-dialog-content {
+            border-top-left-radius: 0px !important;
+            border-top-right-radius: 0px !important;
+            border-bottom-left-radius: 0px !important;
+            border-bottom-right-radius: 0px !important;
+            padding: 0 24px 24px 24px !important;
+        }
+
+        .dialog-header {
+            padding: 24px 0 24px 0;
+            height: 80px;
+
+            .header-container {
+                top: 24px;
+            }
+        }
+
+        .dialog-body {
+            max-height: calc(100vh - 166px) !important;
+            height: calc(100vh - 166px) !important;
+        }
+    }
 
     .p-dialog-content {
         border-top-left-radius: 16px !important;
@@ -32,13 +62,16 @@
         position: relative;
         padding: 32px 0 24px 0;
         color: var(--guardian-header-color);
+        justify-content: flex-end;
 
         .header-container {
-            width: 100%;
-            position: relative;
-            flex: 1;
             display: flex;
             flex-direction: row;
+            position: absolute;
+            left: 0px;
+            top: 32px;
+            right: 125px;
+            padding-left: inherit;
 
             .header-text {
                 font-family: var(--guardian-font-family);
@@ -47,6 +80,9 @@
                 font-weight: 600;
                 line-height: 32px;
                 height: 32px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
 
             .header-item {
@@ -137,6 +173,22 @@
     .dialog-body {
         min-height: 100px;
         padding-bottom: 32px;
+    }
+}
+
+@media (max-height: 1000px) {
+    .guardian-dialog {
+        .dialog-body {
+            max-height: calc(100vh - 250px) !important;
+        }
+    }
+}
+
+@media (max-height: 900px) {
+    .guardian-dialog {
+        .dialog-body {
+            max-height: calc(100vh - 200px) !important;
+        }
     }
 }
 

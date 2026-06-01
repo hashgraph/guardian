@@ -107,6 +107,7 @@ interface IGroupConfig {
     blockType: 'policyRolesBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Roles',
         title: `Add 'Choice Of Roles' Block`,
@@ -193,9 +194,10 @@ export class PolicyRolesBlock {
     private async getGroupByConfig(
         ref: AnyBlockType,
         user: IAuthUser,
-        groupConfig: IGroupConfig
+        groupConfig: IGroupConfig,
+        actionStatusId: string,
     ): Promise<IUserGroup> {
-        const uuid: string = await ref.components.generateUUID();
+        const uuid: string = await ref.components.generateUUID(actionStatusId);
         if (groupConfig.groupRelationshipType === GroupRelationshipType.Multiple) {
             if (groupConfig.groupAccessType === GroupAccessType.Global) {
                 const result = await ref.databaseServer.getGlobalGroup(ref.policyId, groupConfig.name);
@@ -312,13 +314,13 @@ export class PolicyRolesBlock {
      * @param group
      * @private
      */
-    private async createVC(ref: AnyBlockType, user: PolicyUser, group: IUserGroup): Promise<string> {
+    private async createVC(ref: AnyBlockType, user: PolicyUser, group: IUserGroup, actionStatusId: string): Promise<string> {
         const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.USER_ROLE);
         if (!policySchema) {
             return null;
         }
 
-        const uuid: string = await ref.components.generateUUID();
+        const uuid: string = await ref.components.generateUUID(actionStatusId);
         const vcSubject: any = {
             ...SchemaHelper.getContext(policySchema),
             id: uuid,
@@ -349,7 +351,11 @@ export class PolicyRolesBlock {
             userId: user.userId
         });
 
-        const vcDocument = PolicyUtils.createVC(ref, user, vc);
+        const vcDocument = PolicyUtils.createVC(ref, user, vc, actionStatusId);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(vcDocument, tags);
+
         vcDocument.type = DocumentCategoryType.USER_ROLE;
         vcDocument.schema = `#${vc.getSubjectType()}`;
         vcDocument.messageId = message.getId();
@@ -366,8 +372,10 @@ export class PolicyRolesBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const roles: string[] = Array.isArray(ref.options.roles) ? ref.options.roles : [];
-        const groups: string[] = Array.isArray(ref.options.groups) ? ref.options.groups : [];
+        const options = await ref.getOptions(user);
+
+        const roles: string[] = Array.isArray(options.roles) ? options.roles : [];
+        const groups: string[] = Array.isArray(options.groups) ? options.groups : [];
         const policyGroups = PolicyUtils.getGroupTemplates<IGroupConfig>(ref);
         const groupMap = {};
         for (const item of policyGroups) {
@@ -390,7 +398,7 @@ export class PolicyRolesBlock {
             groups,
             groupMap,
             isMultipleGroups: policyGroups.length > 0,
-            uiMetaData: ref.options.uiMetaData
+            uiMetaData: options.uiMetaData
         }
     }
 
@@ -402,7 +410,7 @@ export class PolicyRolesBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.JoinGroup, PolicyOutputEventType.CreateGroup]
     })
-    async setData(user: PolicyUser, data: any): Promise<any> {
+    async setData(user: PolicyUser, data: any, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const did = user?.did;
         const curUser = await PolicyUtils.getUser(ref, did, user.userId);
@@ -417,10 +425,10 @@ export class PolicyRolesBlock {
             group = await this.getGroupByToken(ref, curUser, uuid, role);
         } else if (data.group) {
             const groupConfig = this.getGroupConfig(ref, data.group, data.label);
-            group = await this.getGroupByConfig(ref, curUser, groupConfig);
+            group = await this.getGroupByConfig(ref, curUser, groupConfig, actionStatus?.id);
         } else if (data.role) {
             const groupConfig = this.getGroupConfig(ref, data.role, null);
-            group = await this.getGroupByConfig(ref, curUser, groupConfig);
+            group = await this.getGroupByConfig(ref, curUser, groupConfig, actionStatus?.id);
         } else {
             throw new BlockActionError('Invalid role', ref.blockType, ref.uuid);
         }
@@ -429,14 +437,14 @@ export class PolicyRolesBlock {
             throw new BlockActionError('You are already a member of the group', ref.blockType, ref.uuid);
         }
 
-        group.messageId = await this.createVC(ref, user, group);
+        group.messageId = await this.createVC(ref, user, group, actionStatus?.id);
 
         const userGroup = await ref.databaseServer.setUserInGroup(group);
         const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref, user.userId);
         if (data.invitation) {
-            ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null);
+            await ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null, actionStatus);
         } else {
-            ref.triggerEvents(PolicyOutputEventType.CreateGroup, newUser, null);
+            await ref.triggerEvents(PolicyOutputEventType.CreateGroup, newUser, null, actionStatus);
         }
 
         await PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance);

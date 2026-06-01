@@ -25,9 +25,15 @@ export class ExternalDataConfigComponent implements OnInit {
     properties!: any;
     schemas!: SchemaVariables[];
 
+    public accountTypes = [
+        { label: '', value: '' },
+        { label: 'Pre-set user account', value: 'preset' },
+        { label: 'Current user account', value: 'current' },
+    ];
+
     constructor(
     ) {
-        
+
     }
 
     ngOnInit(): void {

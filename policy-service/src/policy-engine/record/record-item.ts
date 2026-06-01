@@ -1,5 +1,5 @@
+import { RecordMethod } from '@guardian/interfaces';
 import { RecordAction } from './action.type.js';
-import { RecordMethod } from './method.type.js';
 
 /**
  * Record item
@@ -37,4 +37,8 @@ export interface RecordItem {
      * Document
      */
     document?: any,
+    /**
+     * Recorded action identifier
+     */
+    recordActionId?: string,
 }

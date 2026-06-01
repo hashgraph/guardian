@@ -17,6 +17,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'messagesReportBlock',
     commonBlock: false,
     actionType: LocationType.LOCAL,
+    canMock: true,
     about: {
         label: 'Messages Report',
         title: `Add 'Messages Report' Block`,
@@ -68,11 +69,12 @@ export class MessagesReportBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const report = new MessagesReport();
-            await report.start(messageId, user.userId);
+            await report.start(ref, messageId, user.userId);
             await ref.setLongCache<IReport>(this.USER_REPORT, report.toJson(), user);
             await ref.setShortCache<string>(this.USER_REPORT_STATUS, 'FINISHED', user);
             this.updateStatus(ref, 'FINISHED', user);
         } catch (error) {
+            console.error(error);
             await ref.setShortCache<string>(this.USER_REPORT_STATUS, 'FAILED', user);
             ref.error(`Create Report: ${PolicyUtils.getErrorMessage(error)}`);
             this.updateStatus(ref, 'FAILED', user);
@@ -126,7 +128,18 @@ export class MessagesReportBlock {
             let messageId: string;
             const vp: any = await ref.databaseServer.getVpDocument({ hash: value, policyId: ref.policyId });
             if (vp) {
-                [vp.serials, vp.amount, vp.error, vp.wasTransferNeeded, vp.transferSerials, vp.transferAmount, vp.tokenIds] = await ref.databaseServer.getVPMintInformation(vp);
+                const info = await ref.databaseServer.getVPMintInformation(vp);
+                vp.serials = info.serials;
+                vp.amount = info.amount;
+                vp.error = info.error;
+                vp.wasTransferNeeded = info.wasTransferNeeded;
+                vp.transferSerials = info.transferSerials;
+                vp.mintAmount = info.mintAmount;
+                vp.transferAmount = info.transferAmount;
+                vp.mintExpected = info.mintExpected;
+                vp.transferExpected = info.transferExpected;
+                vp.tokenIds = info.tokenIds;
+                vp.mainDocument = info.mainDocument;
                 messageId = vp.messageId;
             } else {
                 const vc = await ref.databaseServer.getVcDocument({ hash: value, policyId: ref.policyId })

@@ -278,7 +278,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         const document = row[field.name];
         if (field._block) {
             const dialogRef = this.dialog.open(DialogBlock, {
-                width: '850px',
+                width: '90%',
                 data: {
                     data: data,
                     document: document,
@@ -296,7 +296,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         } else {
             const dialogRef = this.dialogService.open(VCFullscreenDialog, {
                 showHeader: false,
-                width: '1000px',
+                width: '90%',
                 styleClass: 'guardian-dialog',
                 maskStyleClass: 'guardian-fullscreen-dialog',
                 data: {
@@ -455,7 +455,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 id: row.id,
@@ -475,8 +475,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
         event.preventDefault();
         event.stopPropagation();
         const links = [];
-        const serials = this.getArray(row, field);
-        if (serials) {
+        let serials = this.getArray(row, field);
+        if (Array.isArray(serials)) {
+            serials = serials.sort((a: any, b: any) => a.serial > b.serial ? 1 : -1);
             for (const serial of serials) {
                 links.push({
                     type: "tokens",
@@ -489,12 +490,13 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
         const dialogRef = this.dialog.open(ViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 title: field.title,
                 type: 'LINK',
                 value: links,
+                dryRun: this.dryRun
             }
         });
         dialogRef.onClose.subscribe(async (result) => {

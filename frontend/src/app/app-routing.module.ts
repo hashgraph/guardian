@@ -31,7 +31,6 @@ import { CompareComponent } from './modules/analytics/compare/compare.component'
 import { ModulesListComponent } from './modules/policy-engine/modules-list/modules-list.component';
 import { ToolsListComponent } from './modules/policy-engine/tools-list/tools-list.component';
 import { SearchPoliciesComponent } from './modules/analytics/search-policies/search-policies.component';
-import { AboutViewComponent } from './views/admin/about-view/about-view.component';
 import { PolicySearchComponent } from './views/policy-search/policy-search.component';
 import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-tokens-user.component';
 import { RecordResultsComponent } from './modules/policy-engine/record/record-results/record-results.component';
@@ -63,7 +62,6 @@ import { ExternalPolicyComponent } from './modules/policy-engine/external-polici
 import { PolicyRequestsComponent } from './modules/policy-engine/requests/requests.component';
 import { PolicyRepositoryComponent } from './modules/policy-engine/policy-repository/policy-repository.component';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
-
 
 @Injectable({
     providedIn: 'root'
@@ -134,8 +132,20 @@ const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: 'task/:id', component: AsyncProgressComponent },
     { path: 'notifications', component: NotificationsComponent },
-    { path: 'worker-tasks', component: WorkerTasksComponent },
-
+    { 
+        path: 'worker-tasks',
+        component: WorkerTasksComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.WORKER_TASKS_READ
+            ]
+        }
+    },
     {
         path: 'user-profile',
         component: UserProfileComponent,
@@ -260,7 +270,6 @@ const routes: Routes = [
         children: [
             { path: 'status', component: ServiceStatusComponent },
             { path: 'settings', component: SettingsViewComponent },
-            { path: 'about', component: AboutViewComponent }
         ],
         data: {
             roles: [UserRole.STANDARD_REGISTRY],
@@ -319,6 +328,7 @@ const routes: Routes = [
                 Permissions.POLICIES_POLICY_READ,
                 Permissions.POLICIES_POLICY_EXECUTE,
                 Permissions.POLICIES_POLICY_MANAGE,
+                Permissions.POLICIES_POLICY_TAG,
             ]
         }
     },
@@ -331,6 +341,7 @@ const routes: Routes = [
             permissions: [
                 Permissions.POLICIES_POLICY_EXECUTE,
                 Permissions.POLICIES_POLICY_MANAGE,
+                Permissions.POLICIES_POLICY_TAG,
             ]
         }
     },
@@ -344,7 +355,8 @@ const routes: Routes = [
                 UserRole.USER
             ],
             permissions: [
-                Permissions.POLICIES_POLICY_UPDATE
+                Permissions.POLICIES_POLICY_UPDATE,
+                Permissions.POLICIES_POLICY_TAG,
             ]
         }
     },
@@ -765,7 +777,6 @@ const routes: Routes = [
             ]
         }
     },
-
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

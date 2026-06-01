@@ -194,6 +194,24 @@ export class Schema extends BaseEntity implements ISchema {
     _contextFileId?: ObjectId;
 
     /**
+     * topicCount
+     */
+    @Property({ persist: false, nullable: true })
+    topicCount?: number;
+
+    /**
+     * Document file id of the original schema(publish flow).
+     */
+    @Property({ nullable: true })
+    contentDocumentFileId?: string;
+
+    /**
+     * Context file id of the original schema(publish flow).
+     */
+    @Property({ nullable: true })
+    contentContextFileId?: string;
+
+    /**
      * Schema defaults
      */
     @BeforeCreate()
@@ -320,6 +338,29 @@ export class Schema extends BaseEntity implements ISchema {
                 .catch((reason) => {
                     console.error(`AfterDelete: Schema, ${this._id}, contextFileId`)
                     console.error(reason)
+                });
+        }
+    }
+
+    /**
+     * Delete original schema document and context(publish flow)
+     */
+    @AfterDelete()
+    deleteContentFiles() {
+        if (this.contentDocumentFileId) {
+            DataBaseHelper.gridFS
+                .delete(new ObjectId(this.contentDocumentFileId))
+                .catch((reason) => {
+                    console.error('AfterDelete: Schema, contentDocumentFileId');
+                    console.error(reason);
+                });
+        }
+        if (this.contentContextFileId) {
+            DataBaseHelper.gridFS
+                .delete(new ObjectId(this.contentContextFileId))
+                .catch((reason) => {
+                    console.error('AfterDelete: Schema, contentContextFileId');
+                    console.error(reason);
                 });
         }
     }

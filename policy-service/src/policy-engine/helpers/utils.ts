@@ -17,10 +17,11 @@ import {
     Wallet,
     Workers,
     EncryptVcHelper,
-    SchemaConverterUtils
+    SchemaConverterUtils,
+    Tag
 } from '@guardian/common';
-import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SchemaField, SignatureType, TopicType, WorkerTaskType } from '@guardian/interfaces';
-import { TokenId, TopicId } from '@hashgraph/sdk';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SchemaField, SignatureType, TagType, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { TokenId, TopicId } from '@hiero-ledger/sdk';
 import { FilterQuery } from '@mikro-orm/core';
 import * as mathjs from 'mathjs';
 import { DocumentType } from '../interfaces/document.type.js';
@@ -186,11 +187,23 @@ export class PolicyUtils {
      * Token amount
      * @param token
      * @param amount
+     * @param method
      */
-    public static tokenAmount(token: Token, amount: number): [number, string] {
+    public static tokenAmount(token: Token, amount: number, method: string): [number, string] {
         const decimals = parseFloat(token.decimals) || 0;
         const _decimals = Math.pow(10, decimals);
-        const tokenValue = Math.round(amount * _decimals);
+        let tokenValue: number;
+        switch (method) {
+            case 'ceil':
+                tokenValue = Math.ceil(amount * _decimals);
+                break;
+            case 'floor':
+                tokenValue = Math.floor(amount * _decimals);
+                break;
+            case 'round':
+            default:
+                tokenValue = Math.round(amount * _decimals);
+        }
         const tokenAmount = (tokenValue / _decimals).toFixed(decimals);
         return [tokenValue, tokenAmount];
     }
@@ -326,7 +339,7 @@ export class PolicyUtils {
     }
 
     /**
-     * Get subject id
+     * Get subject
      * @param data
      */
     public static getCredentialSubject(data: any): any {
@@ -345,10 +358,10 @@ export class PolicyUtils {
     }
 
     /**
-     * Get subject type
+     * Get subject
      * @param document
      */
-    public static getCredentialSubjectType(document: any): any {
+    public static getCredentialSubjectByDocument(document: any): any {
         try {
             if (document) {
                 if (Array.isArray(document.credentialSubject)) {
@@ -502,7 +515,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
             await NotificationHelper.info(
                 `Associate token`,
@@ -541,7 +556,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
             await NotificationHelper.info(
                 `Dissociate token`,
@@ -584,7 +601,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
         }
     }
@@ -621,7 +640,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
         }
     }
@@ -659,7 +680,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
         }
     }
@@ -697,7 +720,9 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
         }
     }
@@ -716,11 +741,31 @@ export class PolicyUtils {
         user: UserCredentials,
         userId: string | null
     ): Promise<Token> {
-        let tokenId;
+        let tokenId: string;
         const owner = user.did;
         const policyId = ref.policyId;
         const adminId = user.hederaAccountId;
-        if (!ref.dryRun) {
+
+        if (ref.mockId) {
+            const workers = new Workers();
+            const hederaAccountKey = await user.loadHederaKey(ref, userId);
+            const createdToken = await workers.addRetryableTask({
+                type: WorkerTaskType.CREATE_TOKEN,
+                data: {
+                    operatorId: user.hederaAccountId,
+                    operatorKey: hederaAccountKey,
+                    payload: { userId },
+                    ...tokenTemplate
+                }
+            }, {
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
+            tokenId = createdToken.tokenId;
+        } else if (ref.dryRun) {
+            tokenId = new TokenId(Date.now()).toString();
+        } else {
             const workers = new Workers();
             const hederaAccountKey = await user.loadHederaKey(ref, userId);
 
@@ -733,7 +778,9 @@ export class PolicyUtils {
                     ...tokenTemplate
                 }
             }, {
-                priority: 20
+                priority: 20,
+                dryRun: ref.dryRun,
+                mockId: null
             });
             tokenId = createdToken.tokenId;
 
@@ -782,8 +829,6 @@ export class PolicyUtils {
                     userId
                 ),
             ]);
-        } else {
-            tokenId = new TokenId(Date.now()).toString();
         }
 
         return await ref.databaseServer.createToken({
@@ -867,11 +912,23 @@ export class PolicyUtils {
                 memoObj: config.memoObj === 'doc'
                     ? memoObj
                     : config
-            }, userId, null);
+            }, {
+                admin: true,
+                submit: true
+            }, {
+                userId,
+                mockId: ref.mockId
+            });
             if (!ref.dryRun) {
                 await topic.saveKeys(userId);
             }
-            await topicHelper.twoWayLink(topic, rootTopic, null, userId);
+            await topicHelper.twoWayLink({
+                topic,
+                parent: rootTopic,
+                rationale: null,
+                userId,
+                mockId: ref.mockId
+            });
             await ref.databaseServer.saveTopic(topic.toObject());
         }
 
@@ -983,7 +1040,7 @@ export class PolicyUtils {
     ): Promise<string> {
         if (ref.dryRun) {
             const userFull = await ref.components.getVirtualUser(did);
-            return userFull.hederaAccountId;
+            return userFull?.hederaAccountId;
         } else {
             const config = await PolicyUtils.users.getUserRelayerAccount(did, relayerAccount, userId);
             return config?.account;
@@ -1272,6 +1329,7 @@ export class PolicyUtils {
         ref: AnyBlockType,
         owner: PolicyUser,
         document: VpDocument,
+        recordActionId: string | null = null
     ): IPolicyDocument {
         return {
             policyId: ref.policyId,
@@ -1282,6 +1340,7 @@ export class PolicyUtils {
             group: owner.group,
             status: DocumentStatus.NEW,
             signature: DocumentSignature.NEW,
+            recordActionId
         };
     }
 
@@ -1291,11 +1350,16 @@ export class PolicyUtils {
      * @param owner
      * @param document
      */
-    public static createUnsignedVC(ref: AnyBlockType, document: VcDocument): IPolicyDocument {
+    public static createUnsignedVC(
+        ref: AnyBlockType, document: VcDocument,
+        recordActionId: string | null = null
+
+    ): IPolicyDocument {
         return {
             policyId: ref.policyId,
             tag: ref.tag,
-            document: document.toJsonTree()
+            document: document.toJsonTree(),
+            recordActionId
         };
     }
 
@@ -1308,7 +1372,8 @@ export class PolicyUtils {
     public static createVC(
         ref: AnyBlockType,
         owner: PolicyUser,
-        document: VcDocument
+        document: VcDocument,
+        recordActionId: string | null = null
     ): IPolicyDocument {
         return {
             policyId: ref.policyId,
@@ -1318,7 +1383,8 @@ export class PolicyUtils {
             owner: owner.did,
             group: owner.group,
             hederaStatus: DocumentStatus.NEW,
-            signature: DocumentSignature.NEW
+            signature: DocumentSignature.NEW,
+            recordActionId
         };
     }
 
@@ -1830,31 +1896,50 @@ export class PolicyUtils {
         }
     }
 
-    public static async getRelayerAccount(
+    public static async getRelayerAccountAndOwner(
         ref: AnyBlockType,
-        did: string,
+        user: PolicyUser,
         relayerAccount: string | null | undefined,
         documentRef: IPolicyDocument,
-        userId: string | null
-    ) {
+        inherit: boolean,
+    ): Promise<[string, PolicyUser]> {
         try {
             let account: string;
+            let owner: PolicyUser;
             if (ref.dryRun) {
-                account = await PolicyUtils.getUserRelayerAccount(ref, did, null, userId);
+                account = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, user.userId);
+                owner = user;
+                return [account, owner];
             } else if (relayerAccount) {
                 account = relayerAccount;
+                owner = user;
+                return [account, owner];
             } else if (documentRef) {
-                account = await PolicyUtils.getDocumentRelayerAccount(ref, documentRef, userId);
+                if (inherit) {
+                    account = await PolicyUtils.getDocumentRelayerAccount(ref, documentRef, user.userId);
+                    if (documentRef.owner === user.did) {
+                        owner = user;
+                    } else {
+                        owner = await PolicyUtils.getPolicyUser(ref, documentRef.owner, documentRef.group, user.userId);
+                    }
+                    return [account, owner];
+                } else {
+                    account = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, user.userId);
+                    owner = user;
+                    return [account, owner];
+                }
             } else {
-                account = await PolicyUtils.getUserRelayerAccount(ref, did, null, userId);
+                account = await PolicyUtils.getUserRelayerAccount(ref, user.did, null, user.userId);
+                owner = user;
+                return [account, owner];
             }
-            return account;
         } catch (error) {
             throw Error(`Invalid relayer account.`);
         }
     }
 
     public static async checkAccountBalance(
+        ref: AnyBlockType,
         relayerAccount?: string | any,
         userId?: string
     ) {
@@ -1868,12 +1953,191 @@ export class PolicyUtils {
                         payload: { userId }
                     }
                 }, {
-                    priority: 20
+                    priority: 20,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId
                 });
                 return (info.balance / 100000000) > 1;
             }
             return true;
         } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Get block tags
+     * @param ref
+     */
+    public static async getBlockTags(ref: AnyBlockType): Promise<any[]> {
+        const target = ref.policyId;
+        const filter: any = {
+            localTarget: target,
+            entity: TagType.PolicyBlock,
+            linkedItems: { $in: [ref.uuid] }
+        }
+        const tags = await ref.databaseServer.getTags(filter);
+        return tags.map(({ _id, ...rest }) => rest);
+    }
+    /**
+     * Set document tags
+     * @param document
+     * @param tags
+     */
+    public static setDocumentTags(document: IPolicyDocument, tags: Tag[]) {
+        if (!document?.document || !tags || tags.length <= 0) {
+            return;
+        }
+        document.document.tags = document.document.tags || [];
+        for (const tag of tags) {
+            if (!tag.inheritTags) {
+                continue;
+            }
+            if (document.document.tags.some(item => item.messageId === tag.messageId)) {
+                continue;
+            }
+            const shortTag = {
+                name: tag.name,
+                description: tag.description,
+                owner: tag.owner,
+                target: tag.target,
+                topicId: tag.topicId,
+                messageId: tag.messageId,
+                inheritTags: tag.inheritTags || false
+            }
+            document.document.tags.push(shortTag);
+        }
+    }
+
+    public static async findRelationships(
+        ref: AnyBlockType,
+        target: IPolicyDocument
+    ): Promise<IPolicyDocument[]> {
+        const owner = target.owner;
+        const map = new Map<string, IPolicyDocument>();
+        if (target.messageId) {
+            map.set(target.messageId, null);
+        }
+        if (Array.isArray(target.relationships)) {
+            for (const messageId of target.relationships) {
+                await PolicyUtils._findRelationships(ref, ref.policyId, messageId, owner, map);
+            }
+        }
+        map.delete(target.messageId);
+
+        const result: IPolicyDocument[] = [];
+        for (const doc of map.values()) {
+            result.push(doc)
+        }
+
+        return result.sort((a, b) => a.messageId > b.messageId ? 1 : -1);
+    }
+
+    private static async _findRelationships(
+        ref: AnyBlockType,
+        policyId: string,
+        messageId: string,
+        owner: string,
+        map: Map<string, IPolicyDocument>
+    ) {
+        if (map.has(messageId)) {
+            return;
+        }
+        const vc = await ref.databaseServer.getVcDocument({
+            policyId,
+            owner,
+            messageId
+        });
+        if (!vc) {
+            return;
+        }
+
+        map.set(messageId, vc);
+        if (Array.isArray(vc.relationships)) {
+            for (const id of vc.relationships) {
+                await PolicyUtils._findRelationships(ref, policyId, id, owner, map);
+            }
+        }
+    }
+
+    public static deepAssign(target, ...sources) {
+        if (target === null) {
+            throw new TypeError('Cannot convert undefined or null to object');
+        }
+
+        const isObject = (obj) =>
+            obj && typeof obj === 'object' && !Array.isArray(obj);
+
+        for (const source of sources) {
+            if (!isObject(source) && !Array.isArray(source)) {
+                continue;
+            }
+
+            for (const key of Object.keys(source)) {
+            const value = source[key];
+
+            if (Array.isArray(value)) {
+                target[key] = value.map((item) =>
+                isObject(item) ? PolicyUtils.deepAssign({}, item) : item
+                );
+            } else if (isObject(value)) {
+                if (!isObject(target[key])) {
+                target[key] = {};
+                }
+                PolicyUtils.deepAssign(target[key], value);
+            } else {
+                target[key] = value;
+            }
+            }
+        }
+
+        return target;
+    }
+
+    /**
+     * Get integration credentials for a user and service type.
+     * Priority: policyId-specific first, then global (null policyId).
+     * Returns token string or null if not found.
+     */
+    public static async getIntegrationUserCredentials(
+        ref: AnyBlockType,
+        user: PolicyUser,
+        serviceType: string
+    ): Promise<string | null> {
+        if (!user || !user.did) {
+            return null;
+        }
+
+        const dryRun = !!ref.dryRun;
+
+        // Precedence: user+policy → user+global → SR+policy → SR+global
+        const lookups = [
+            { ownerId: user.did, policyId: ref.policyId },
+            { ownerId: user.did, policyId: null },
+            { ownerId: ref.policyOwner, policyId: ref.policyId },
+            { ownerId: ref.policyOwner, policyId: null },
+        ];
+
+        let record: any = null;
+        for (const { ownerId, policyId } of lookups) {
+            record = await ref.databaseServer.getExternalCredential({ ownerId, serviceType, policyId, dryRun });
+            if (record) {
+                break;
+            }
+        }
+
+        if (!record) {
+            return null;
+        }
+
+        // Get secret key from Wallet
+        try {
+            const keyPath = `${record.serviceType}/${record.policyId || 'global'}/${record.dryRun ? 'dryrun' : 'production'}`;
+            const token = await PolicyUtils.getAccountKey(
+                ref, record.ownerId, KeyType.INTEGRATION_KEY, keyPath, user.userId
+            );
+            return token || null;
+        } catch (e) {
             return null;
         }
     }

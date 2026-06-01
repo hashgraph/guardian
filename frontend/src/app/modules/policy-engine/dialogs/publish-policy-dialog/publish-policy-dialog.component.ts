@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ModelHelper } from "@guardian/interfaces"
 
 /**
  * Publish policy
@@ -25,6 +26,7 @@ export class PublishPolicyDialog {
         value: 'public'
     }];
     public currentType = 'private';
+    public recordingEnabled = true;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -45,12 +47,15 @@ export class PublishPolicyDialog {
         if (!this.isPublishDisabled) {
             this.ref.close({
                 policyVersion: this.versionControl.value,
-                policyAvailability: this.currentType
+                policyAvailability: this.currentType,
+                recordingEnabled: this.recordingEnabled
             });
         }
     }
 
     public get isPublishDisabled(): boolean {
-        return !this.versionControl.valid;
+        const isFormInvalid = !this.versionControl.valid;
+        const isVersionNotNewer = this.policy?.previousVersion && ModelHelper.versionCompare(this.policy.previousVersion, this.versionControl.value) >= 0;
+        return isFormInvalid || isVersionNotNewer;
     }
 }

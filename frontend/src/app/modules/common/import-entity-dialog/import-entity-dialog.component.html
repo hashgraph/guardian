@@ -23,8 +23,53 @@
         </p-tabView>
 
         <div class="form-container">
+            <div class="record-source-selector" *ngIf="type === 'record' && canUseImportedRecords">
+                <label class="form-label">Record source</label>
+                <p-dropdown
+                    [options]="recordSourceOptions"
+                    [(ngModel)]="recordSource"
+                    appendTo="body"
+                    (onChange)="onRecordSourceChange($event.value)"
+                    styleClass="guardian-dropdown"
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel"
+                ></p-dropdown>
+            </div>
+            <div class="record-sync-checkbox" *ngIf="type === 'record' && recordSource === 'imported'">
+                <p-checkbox
+                    [(ngModel)]="syncNewRecords"
+                    binary="true"
+                    label="Include newly recorded steps"
+                ></p-checkbox>
+            </div>
+            <div class="record-policy-selector" *ngIf="type === 'record' && recordSource === 'otherPolicy'">
+                <label class="form-label">Policy with imported records</label>
+                <p-dropdown
+                    #policyDropdown
+                    [(ngModel)]="selectedPolicy"
+                    [options]="policiesWithImportedRecords"
+                    [optionLabel]="'name'"
+                    [filter]="true"
+                    [filterBy]="'name'"
+                    [disabled]="policiesLoading"
+                    appendTo="body"
+                    placeholder="Select policy"
+                    [panelStyle]="{ maxWidth: '656px' }"
+                    styleClass="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel"
+                    class="guardian-dropdown"
+                >
+                    <ng-template let-item pTemplate="item">
+                        <span [title]="item.name">{{ item?.name }}</span>
+                    </ng-template>
+                    <ng-template let-item pTemplate="selectedItem" >
+                        <span [title]="item.name">{{ item?.name }}</span>
+                    </ng-template>
+                </p-dropdown>
+            </div>
+
             <app-file-drag-n-drop
-                *ngIf="importType === 0"
+                *ngIf="importType === 0 && (type !== 'record' || recordSource === 'file')"
                 (onFileLoaded)="importFromFile($event)"
                 [dropZoneLabel]="placeholder"
                 [fileExtension]="fileExtension"
@@ -61,9 +106,9 @@
         </div>
         <div class="dialog-button">
             <button 
-                (click)="importFromMessage()" 
+                (click)="onPrimaryAction()" 
                 class="guardian-button guardian-button-primary"
-                [disabled]="importType === 0 || dataForm.invalid">Import</button>
+                [disabled]="isPrimaryActionDisabled()">Import</button>
         </div>
     </div>
 </div>

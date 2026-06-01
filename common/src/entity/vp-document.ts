@@ -74,6 +74,12 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
     policyId?: string;
 
     /**
+     * Record action id
+     */
+    @Property({ nullable: true })
+    recordActionId?: string;
+
+    /**
      * Tag
      */
     @Property({ nullable: true })
@@ -150,6 +156,15 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
      */
     @Property({ persist: false, nullable: true })
     _documentFileId?: ObjectId;
+
+    /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
 
     /**
      * Document defaults

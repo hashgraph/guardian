@@ -57,6 +57,9 @@ export class RetireRequestsDialogComponent implements OnInit {
                             (tokenItem: { approved: any }) =>
                                 !tokenItem.approved
                         );
+
+                        item.displayUser = item.userAccountId || item.user;
+
                         return item;
                     });
                     const count = pools.headers.get('X-Total-Count');

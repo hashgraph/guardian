@@ -1,9 +1,21 @@
 import JSZip from 'jszip';
 import { Policy, PolicyStatistic, Schema as SchemaCollection } from '../entity/index.js';
-import { IFormulaData, IRuleData, IScoreData, IScoreOption, IStatisticConfig, IVariableData, Schema, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
+import {
+    EntityStatus,
+    IFormulaData,
+    IRuleData,
+    IScoreData,
+    IScoreOption,
+    IStatisticConfig,
+    IVariableData,
+    Schema,
+    SchemaEntity,
+    SchemaStatus
+} from '@guardian/interfaces';
 import { SchemaRuleImportExport } from './schema-rule.js';
 import { PolicyImportExport } from './policy.js';
 import { DatabaseServer } from '../database-modules/index.js';
+import { ImportExportUtils } from './utils.js';
 
 /**
  * PolicyStatistic components
@@ -57,7 +69,16 @@ export class PolicyStatisticImportExport {
         delete object.createDate;
         delete object.updateDate;
         const zip = new JSZip();
-        zip.file(PolicyStatisticImportExport.policyStatisticFileName, JSON.stringify(object));
+        const ZIP_FILE_OPTIONS = ImportExportUtils.getDeterministicZipFileOptions();
+        zip.file(PolicyStatisticImportExport.policyStatisticFileName, JSON.stringify(object), ZIP_FILE_OPTIONS);
+
+        if (object.status === EntityStatus.PUBLISHED && object.contentFileId) {
+            ImportExportUtils.addDeterministicZipDir(zip, 'ipfs');
+
+            const buffer = await DatabaseServer.loadFile(object.contentFileId);
+            zip.file(`ipfs/${object.uuid}.json`, Buffer.from(buffer), ZIP_FILE_OPTIONS);
+        }
+
         return zip;
     }
 

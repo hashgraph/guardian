@@ -32,6 +32,9 @@
             border-color: var(--guardian-primary-color, #4169E2);
             box-shadow: none;
         }
+        &.invalid {
+            border-color: var(--guardian-failure-color) !important;
+        }
     }
 
     .p-dropdown {

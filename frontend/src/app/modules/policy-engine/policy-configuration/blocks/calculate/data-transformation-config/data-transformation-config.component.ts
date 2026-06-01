@@ -46,7 +46,7 @@ export class DataTransformationConfigComponent implements OnInit {
     editExpression($event: MouseEvent) {
         const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 expression: this.properties.expression,

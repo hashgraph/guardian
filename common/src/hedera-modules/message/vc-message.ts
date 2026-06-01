@@ -72,6 +72,14 @@ export class VCMessage extends Message {
      * Option
      */
     public option: any;
+    /**
+     * InitId
+     */
+    public initId: string;
+    /**
+     * Tags
+     */
+    public tags: any[];
 
     constructor(
         action: MessageAction,
@@ -98,6 +106,7 @@ export class VCMessage extends Message {
         this.document = document.getDocument();
         this.hash = document.toCredentialHash();
         this.issuer = document.getIssuerDid();
+        this.initId = document.getInitId();
         if (proof.type === SignatureType.BbsBlsSignature2020) {
             this.encodedData = true;
         } else {
@@ -108,6 +117,7 @@ export class VCMessage extends Message {
         } else {
             this.guardianVersion = this.document.credentialSubject.guardianVersion;
         }
+        this.tags = document.getTags();
         this.changeType();
     }
 
@@ -198,6 +208,14 @@ export class VCMessage extends Message {
     }
 
     /**
+     * Set initId
+     * @param initId
+     */
+    public setInitId(initId: string): void {
+        this.initId = initId;
+    }
+
+    /**
      * Get documents
      */
     public getDocument(): any {
@@ -216,6 +234,7 @@ export class VCMessage extends Message {
             lang: this.lang,
             account: this.account,
             issuer: this.issuer,
+            initId: this.initId,
             relationships: this.relationships,
             encodedData: this.encodedData,
             documentStatus: this.documentStatus,
@@ -224,6 +243,7 @@ export class VCMessage extends Message {
             startMessage: this.startMessage,
             entityType: this.entityType,
             option: this.option,
+            tags: this.tags,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url),
         };
@@ -309,6 +329,7 @@ export class VCMessage extends Message {
         _message._id = json.id;
         _message._status = json.status;
         _message.issuer = json.issuer;
+        _message.initId = json.initId;
         _message.relationships = json.relationships;
         _message.documentStatus = json.documentStatus;
         _message.encodedData = json.encodedData || json.type === MessageType.EVCDocument;
@@ -317,6 +338,7 @@ export class VCMessage extends Message {
         _message.startMessage = json.startMessage;
         _message.entityType = json.entityType;
         _message.option = json.option;
+        _message.tags = json.tags;
         const urls = [
             {
                 cid: json.cid,
@@ -359,6 +381,7 @@ export class VCMessage extends Message {
             action: this.action,
             lang: this.lang,
             issuer: this.issuer,
+            initId: this.initId,
             relationships: this.relationships,
             hash: this.hash,
             encodedData: this.encodedData,
@@ -367,6 +390,7 @@ export class VCMessage extends Message {
             startMessage: this.startMessage,
             entityType: this.entityType,
             option: this.option,
+            tags: this.tags,
         }
         const json: string = JSON.stringify(map);
         const hash: Uint8Array = Hashing.sha256.digest(json);
@@ -386,6 +410,7 @@ export class VCMessage extends Message {
     public override toJson(): any {
         const result = super.toJson();
         result.issuer = this.issuer;
+        result.initId = this.initId;
         result.hash = this.hash;
         result.relationships = this.relationships;
         result.document = this.document;
@@ -396,6 +421,7 @@ export class VCMessage extends Message {
         result.startMessage = this.startMessage;
         result.entityType = this.entityType;
         result.option = this.option;
+        result.tags = this.tags;
         return result;
     }
 
@@ -406,6 +432,7 @@ export class VCMessage extends Message {
 
         const result = Message._fromJson(new VCMessage(json.action), json);
         result.issuer = json.issuer;
+        result.initId = json.initId;
         result.hash = json.hash;
         result.relationships = json.relationships;
         result.document = json.document;
@@ -416,13 +443,18 @@ export class VCMessage extends Message {
         result.startMessage = json.startMessage;
         result.entityType = json.entityType;
         result.option = json.option;
+        result.tags = json.tags;
         return result;
     }
 
     /**
-     * Get User DID
+     * Set initId
      */
     public override getOwner(): string {
         return this.issuer;
+    }
+
+    public setInit(initId: string) {
+        this.initId = initId;
     }
 }

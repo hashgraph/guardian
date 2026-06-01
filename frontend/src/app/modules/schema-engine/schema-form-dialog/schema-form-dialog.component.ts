@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DocumentGenerator, Schema } from '@guardian/interfaces';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { SchemaService } from '../../../services/schema.service';
@@ -22,6 +22,9 @@ export class SchemaFormDialog {
     public hideFields: any;
     public example: boolean = false;
     public category: string;
+    public readonlyFields: any;
+    public isLargeSize: boolean = true;
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     constructor(
         private dialogRef: DynamicDialogRef,
@@ -35,14 +38,14 @@ export class SchemaFormDialog {
         this.example = data.example || false;
         this.dataForm = this.fb.group({});
         this.hideFields = {};
-        this.category = data.category
+        this.category = data.category;
     }
 
     ngOnInit(): void {
         this.getSubSchemes()
     }
 
-    onClose() {
+    public onClose() {
         this.dialogRef.close(null);
     }
 
@@ -55,16 +58,38 @@ export class SchemaFormDialog {
 
         this.schemaService.getSchemaWithSubSchemas(this.category, id, topicId).subscribe((data) => {
             if (this.schema && data.schema) {
-                this.schema = new Schema(data.schema)
+                this.schema = new Schema(data.schema);
             }
 
             if (this.example) {
                 this.presetDocument = DocumentGenerator.generateDocument(this.schema);
+                this.readonlyFields = this.schema.fields;
             } else {
                 this.presetDocument = null
             }
 
             this.started = true
         });
+    }
+
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
     }
 }

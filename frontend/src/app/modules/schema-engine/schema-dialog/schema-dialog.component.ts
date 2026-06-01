@@ -1,9 +1,10 @@
-import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
-import { JsonToSchema, Schema, SchemaHelper, SchemaToJson } from '@guardian/interfaces';
+import { JsonToSchema, Schema, SchemaEntity, SchemaHelper, SchemaToJson } from '@guardian/interfaces';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuItem } from 'primeng/api';
 import { SchemaService } from '../../../services/schema.service';
+import { SchemaType } from '../../policy-engine/structures/types/schema-type.type';
 
 
 /**
@@ -31,6 +32,7 @@ export class SchemaDialog {
     public subSchemas: Schema[];
     public topicId: any;
     public policies: any[];
+    public allPolicies: any[];
     public tools: any[];
     public properties: any[];
     public category: string;
@@ -60,6 +62,8 @@ export class SchemaDialog {
         viewportMargin: Infinity
     };
 
+    public isLargeSize: boolean = true;
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
     @ViewChild('schemaControl') schemaControl!: SchemaConfigurationComponent;
 
     constructor(
@@ -73,6 +77,7 @@ export class SchemaDialog {
         this.type = this.config.data.type || null;
         this.schemaType = this.config.data.schemaType || 'policy';
         this.policies = this.config.data.policies || [];
+        this.allPolicies = this.config.data.allPolicies || [];
         this.tools = this.config.data.tools || [];
         this.properties = this.config.data.properties || [];
         this.category = this.config.data.category;
@@ -101,6 +106,27 @@ export class SchemaDialog {
 
     public onClose() {
         this.ref.close(null);
+    }
+
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
     }
 
     public onCreate() {
@@ -152,6 +178,11 @@ export class SchemaDialog {
         } else {
             this.schema = new Schema();
             this.schema.topicId = this.topicId;
+
+            if (this.schemaType === SchemaType.System) {
+                this.schema.system = true;
+                this.schema.entity = SchemaEntity.STANDARD_REGISTRY;
+            }
         }
 
         this.schemaControl.setData(this.schema, this.topicId);

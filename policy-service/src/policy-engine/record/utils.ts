@@ -132,11 +132,19 @@ export class RowDocument {
      */
     public readonly filters: any;
 
+    private readonly prop: any;
+
     constructor(document: any, parent: any, key: any) {
         this.parent = parent;
         this.key = key;
         this.type = this.getRowType(document);
         this.filters = { 'document.id': document.document.id };
+
+        this.prop = {
+            assignedToGroup: document.assignedToGroup,
+            assignedTo: document.assignedTo,
+            option: document.option
+        }
     }
 
     private getRowType(obj: any): 'vc' | 'vp' | 'did' {
@@ -158,6 +166,21 @@ export class RowDocument {
         return 'vp';
     }
 
+    private replaceProp(row: any) {
+        if (row) {
+            if (this.prop.assignedToGroup) {
+                row.assignedToGroup = this.prop.assignedToGroup;
+            }
+            if (this.prop.assignedTo) {
+                row.assignedTo = this.prop.assignedTo;
+            }
+            if (this.prop.option) {
+                row.option = this.prop.option;
+            }
+        }
+        return row;
+    }
+
     /**
      * Replace document in parent object
      * @param root - root object
@@ -167,10 +190,10 @@ export class RowDocument {
     public replace(root: any, row: any): any {
         if (row) {
             if (this.parent && this.key) {
-                this.parent[this.key] = row;
+                this.parent[this.key] = this.replaceProp(row);
                 return root;
             } else {
-                return row;
+                return this.replaceProp(row);
             }
         } else {
             return root;

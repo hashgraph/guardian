@@ -1,7 +1,7 @@
 import { EventBlock } from '../helpers/decorators/index.js';
 import { GroupAccessType, GroupRelationshipType, LocationType } from '@guardian/interfaces';
 import { IPolicyGetData, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
@@ -9,6 +9,7 @@ import { MessageServer, MessageStatus, PolicyRoles } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Document action clock with UI
@@ -17,6 +18,7 @@ import { PolicyActionsUtils } from '../policy-actions/utils.js';
     blockType: 'groupManagerBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Group Manager',
         title: `Add 'Group Manager' Block`,
@@ -29,7 +31,33 @@ import { PolicyActionsUtils } from '../policy-actions/utils.js';
             PolicyInputEventType.RefreshEvent,
         ],
         output: null,
-        defaultEvent: false
+        defaultEvent: false,
+        properties: [
+            {
+                name: 'canInvite',
+                label: 'Can Invite',
+                title: 'Can Invite',
+                type: PropertyType.Select,
+                default: 'owner',
+                items: [
+                    { label: 'Group Owner', value: 'owner'},
+                    { label: 'All', value: 'all'}
+                ],
+                editable: true
+            },
+            {
+                name: 'canDelete',
+                label: 'Can Delete',
+                title: 'Can Delete',
+                type: PropertyType.Select,
+                default: 'owner',
+                items: [
+                    { label: 'Group Owner', value: 'owner'},
+                    { label: 'All', value: 'all'}
+                ],
+                editable: true
+            }
+        ]
     },
     variables: []
 })
@@ -48,6 +76,8 @@ export class GroupManagerBlock {
         role: string
     ): Promise<string> {
         const group = await ref.databaseServer.getUserInGroup(ref.policyId, user.did, groupId);
+        const options = await ref.getOptions(user);
+
         if (!group) {
             throw new Error(`Group not found`);
         }
@@ -55,7 +85,7 @@ export class GroupManagerBlock {
             group.groupRelationshipType === GroupRelationshipType.Multiple &&
             group.groupAccessType === GroupAccessType.Private
         ) {
-            if (ref.options.canInvite === 'all' || group.owner === user.did) {
+            if (options.canInvite === 'all' || group.owner === user.did) {
                 const inviteId = await ref.databaseServer.createInviteToken(ref.policyId, group.uuid, user.did, role);
                 return Buffer.from(JSON.stringify({
                     invitation: inviteId,
@@ -85,11 +115,14 @@ export class GroupManagerBlock {
         groupId: string,
         did: string,
         text: string,
-        userId: string | null
+        userId: string | null,
+        actionStatus: RecordActionStep,
     ): Promise<void> {
         if (user.did === did) {
             throw new Error(`Permission denied`);
         }
+        const options = await ref.getOptions(user);
+
         const member = await ref.databaseServer.getUserInGroup(ref.policyId, did, groupId);
         if (!member) {
             throw new Error(`Group not found`);
@@ -98,13 +131,13 @@ export class GroupManagerBlock {
             member.groupRelationshipType === GroupRelationshipType.Multiple &&
             member.groupAccessType === GroupAccessType.Private
         ) {
-            if (ref.options.canDelete === 'all' || member.owner === user.did) {
+            if (options.canDelete === 'all' || member.owner === user.did) {
                 await ref.databaseServer.deleteGroup(member);
             } else {
                 throw new Error(`Permission denied`);
             }
         } else if (member.groupAccessType === GroupAccessType.Global) {
-            if (ref.options.canDelete === 'all' || member.owner === user.did) {
+            if (options.canDelete === 'all' || member.owner === user.did) {
                 await ref.databaseServer.deleteGroup(member);
             } else {
                 throw new Error(`Permission denied`);
@@ -121,7 +154,8 @@ export class GroupManagerBlock {
                     messageId: member.messageId,
                     loadIPFS: true,
                     userId,
-                    interception: null
+                    interception: null,
+                    mockId: ref.mockId
                 });
             const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
             message.setMessageStatus(MessageStatus.WITHDRAW, text);
@@ -138,7 +172,7 @@ export class GroupManagerBlock {
         }
 
         const target = await PolicyComponentsUtils.GetPolicyUserByGroup(member, ref, userId);
-        ref.triggerInternalEvent('remove-user', { target, user });
+        ref.triggerInternalEvent('remove-user', { target, user, actionStatus });
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, user, null));
     }
 
@@ -150,6 +184,7 @@ export class GroupManagerBlock {
      */
     private async groupMapping(ref: IPolicyInterfaceBlock, user: PolicyUser, group: PolicyRoles): Promise<any> {
         const config = PolicyUtils.getGroupTemplate<any>(ref, group.groupName);
+        const options = await ref.getOptions(user);
         const members = (await ref.databaseServer.getAllMembersByGroup(group)).map(member => {
             return {
                 did: member.did,
@@ -159,8 +194,8 @@ export class GroupManagerBlock {
                 current: member.did === user.did
             }
         });
-        const canInvite = ref.options.canInvite === 'all' ? true : group.owner === user.did;
-        const canDelete = ref.options.canDelete === 'all' ? true : group.owner === user.did;
+        const canInvite = options.canInvite === 'all' ? true : group.owner === user.did;
+        const canDelete = options.canDelete === 'all' ? true : group.owner === user.did;
         return {
             id: group.uuid,
             role: group.role,
@@ -210,7 +245,7 @@ export class GroupManagerBlock {
      * @param user
      * @param blockData
      */
-    async setData(user: PolicyUser, blockData: any): Promise<any> {
+    async setData(user: PolicyUser, blockData: any, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             action: blockData?.action
@@ -227,7 +262,8 @@ export class GroupManagerBlock {
                 blockData.group,
                 blockData.user,
                 blockData.message,
-                user.userId
+                user.userId,
+                actionStatus
             );
             result = { deleted: true };
         }

@@ -160,7 +160,7 @@ export class PolicyModule extends PolicyBlock {
     }
 
     public get isTest(): boolean {
-        if(this._module) {
+        if (this._module) {
             return this._module.isTest;
         }
         return false;
@@ -708,5 +708,9 @@ export class PolicyModule extends PolicyBlock {
             this._temporarySchemas = env.temporarySchemas;
             this.updateVariables();
         }
+    }
+
+    public find(types: string[]): PolicyBlock[] {
+        return this.allBlocks?.filter((b) => types.includes(b.blockType)) || [];
     }
 }

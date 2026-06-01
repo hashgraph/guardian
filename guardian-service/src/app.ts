@@ -1,4 +1,5 @@
 import { configAPI } from './api/config.service.js';
+import { credentialAPI } from './api/credential.service.js';
 import { documentsAPI } from './api/documents.service.js';
 import { profileAPI } from './api/profile.service.js';
 import { schemaAPI } from './api/schema.service.js';
@@ -30,12 +31,12 @@ import {
     ValidateConfiguration,
     Wallet,
     Workers,
-    entities,
     JwtServicesValidator,
     NotificationEvents
 } from '@guardian/common';
+import { entities } from '@guardian/common/dist/entities.js';
 import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
-import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, TopicId } from '@hiero-ledger/sdk';
 import { ipfsAPI } from './api/ipfs.service.js';
 import { artifactAPI } from './api/artifact.service.js';
 import { sendKeysToVault } from './helpers/send-keys-to-vault.js';
@@ -47,6 +48,7 @@ import { toolsAPI } from './api/tool.service.js';
 import { statisticsAPI } from './api/policy-statistics.service.js';
 import { schemaRulesAPI } from './api/schema-rules.service.js';
 import { GuardiansService } from './helpers/guardians.js';
+import { saveGlobalTopic, getGlobalTopic } from './api/helpers/profile-helper.js';
 import { mapAPI } from './api/map.service.js';
 import { tagsAPI } from './api/tag.service.js';
 import { demoAPI } from './api/demo.service.js';
@@ -189,6 +191,7 @@ Promise.all([
         await policyLabelsAPI(logger);
         await formulasAPI(logger);
         await externalPoliciesAPI(logger);
+        await credentialAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -196,35 +199,43 @@ Promise.all([
 
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
+
+    if (process.env.OVERRIDE_NETWORK_CONFIGURATION === 'true') {
+        if (process.env.OVERRIDE_HEDERA_CONSENSUS_NODES) {
+            try {
+                const nodes = JSON.parse(process.env.OVERRIDE_HEDERA_CONSENSUS_NODES);
+                Environment.setNodes(nodes);
+            } catch (error) {
+                await logger.warn(
+                    'OVERRIDE_HEDERA_CONSENSUS_NODES field in settings: ' + error.message,
+                    ['GUARDIAN_SERVICE'],
+                    null
+                );
+                console.warn(error);
+            }
+        }
+        if (process.env.OVERRIDE_HEDERA_MIRROR_NODES) {
+            try {
+                const mirrorNodes = JSON.parse(
+                    process.env.OVERRIDE_HEDERA_MIRROR_NODES
+                );
+                Environment.setMirrorNodes(mirrorNodes);
+            } catch (error) {
+                await logger.warn(
+                    'OVERRIDE_HEDERA_MIRROR_NODES field in settings: ' + error.message,
+                    ['GUARDIAN_SERVICE'],
+                    null
+                );
+                console.warn(error);
+            }
+        }
+
+        if (process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API) {
+            Environment.setMirrorNodesBaseApi(process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API);
+        }
+    }
+
     Environment.setNetwork(process.env.HEDERA_NET);
-    if (process.env.HEDERA_CUSTOM_NODES) {
-        try {
-            const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
-            Environment.setNodes(nodes);
-        } catch (error) {
-            await logger.warn(
-                'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
-                ['GUARDIAN_SERVICE'],
-                null
-            );
-            console.warn(error);
-        }
-    }
-    if (process.env.HEDERA_CUSTOM_MIRROR_NODES) {
-        try {
-            const mirrorNodes = JSON.parse(
-                process.env.HEDERA_CUSTOM_MIRROR_NODES
-            );
-            Environment.setMirrorNodes(mirrorNodes);
-        } catch (error) {
-            await logger.warn(
-                'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' + error.message,
-                ['GUARDIAN_SERVICE'],
-                null
-            );
-            console.warn(error);
-        }
-    }
     MessageServer.setLang(process.env.MESSAGE_LANG);
     // TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);
     IPFS.setChannel(channel);
@@ -260,15 +271,11 @@ Promise.all([
         }
         try {
             if (process.env.INITIALIZATION_TOPIC_ID) {
-                // if (!/^\d+\.\d+\.\d+/.test(settingsContainer.settings.INITIALIZATION_TOPIC_ID)) {
-                //     throw new Error(settingsContainer.settings.INITIALIZATION_TOPIC_ID + 'is wrong');
-                // }
                 TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
             }
         } catch (error) {
             await logger.error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE'], null);
             return false;
-            // process.exit(0);
         }
         try {
             if (process.env.INITIALIZATION_TOPIC_KEY) {
@@ -277,24 +284,34 @@ Promise.all([
         } catch (error) {
             await logger.error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE'], null);
             return false;
-            // process.exit(0);
         }
 
         return true;
     });
     let policyEngine: PolicyEngine;
     validator.setValidAction(async () => {
-        if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
-            process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
-                type: WorkerTaskType.NEW_TOPIC,
-                data: {
-                    hederaAccountId: OPERATOR_ID,
-                    hederaAccountKey: OPERATOR_KEY,
-                    dryRun: false,
-                    topicMemo: TopicMemo.getGlobalTopicMemo(),
-                    payload: { userId: null }
-                }
-            }, { priority: 10 });
+
+        if (!process.env.INITIALIZATION_TOPIC_ID) {
+            const initTopicId = (await getGlobalTopic()).topicId;
+            if (!initTopicId) {
+                process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
+                    type: WorkerTaskType.NEW_INIT_TOPIC,
+                    data: {
+                        hederaAccountId: OPERATOR_ID,
+                        hederaAccountKey: OPERATOR_KEY,
+                        dryRun: null,
+                        topicMemo: TopicMemo.getGlobalTopicMemo(),
+                        payload: { userId: null }
+                    }
+                }, { priority: 10 });
+
+                await saveGlobalTopic(process.env.INITIALIZATION_TOPIC_ID);
+            }
+            else {
+                process.env.INITIALIZATION_TOPIC_ID = initTopicId;
+            }
+
+            TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
         }
 
         state.updateState(ApplicationStates.INITIALIZING);

@@ -33,4 +33,9 @@ export class IRetireRequest {
      * User
      */
     user: string;
+
+    /**
+     * User Account Id
+     */
+    userAccountId?: string;
 }

@@ -1,8 +1,25 @@
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response, Query, Delete } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, Examples, InternalServerErrorDTO, PolicyKeyConfigDTO, PolicyKeyDTO, ProfileDTO, TaskDTO, pageHeader } from '#middlewares';
+import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import {
+    CredentialsDTO,
+    DidDocumentDTO,
+    DidDocumentStatusDTO,
+    DidDocumentWithKeyDTO,
+    DidKeyStatusDTO,
+    DidVerificationMethodEntryDTO,
+    Examples,
+    InternalServerErrorDTO,
+    ObjectExamples,
+    PolicyKeyConfigDTO,
+    PolicyKeyDTO,
+    ProfileDTO,
+    TaskDTO,
+    UnauthorizedErrorDTO,
+    UnprocessableEntityErrorDTO,
+    pageHeader
+} from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { CacheService, getCacheKey, Guardians, InternalException, ServiceError, TaskManager, UseCache } from '#helpers';
 import { CACHE, PREFIXES } from '#constants';
@@ -14,30 +31,36 @@ export class ProfileApi {
     }
 
     /**
-     * Get user profile.
+     * Get user profile for the authenticated user (JWT); path username is not used by the server.
      */
     @Get('/:username/')
     @Auth(Permissions.PROFILES_USER_READ)
     @ApiOperation({
-        summary: 'Returns user account info.',
-        description: 'Returns user account information. For users with the Standard Registry role it also returns address book and VC document information.',
+        summary: 'Returns the authenticated user\'s account info.',
+        description:
+            'Returns account information for the **currently authenticated user** (Bearer token). ' +
+            'The `username` path segment is **not** used to choose whose profile is returned; authorization alone determines the subject. ' +
+            'Clients often pass their own username in the path for URL compatibility. ' +
+            'For users with the Standard Registry role the response also includes address book and VC document information.',
     })
     @ApiParam({
         name: 'username',
         type: String,
-        description: 'The name of the user for whom to fetch the information',
+        description:
+            'Present for URL compatibility with existing clients. The server does not use this value when resolving the resource—the response is always the profile of the user identified by the Bearer token.',
         required: true,
         example: 'username'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: ProfileDTO
+        type: ProfileDTO,
+        example: ObjectExamples.PROFILE_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ProfileDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     @UseCache()
     async getProfile(
@@ -52,7 +75,7 @@ export class ProfileApi {
     }
 
     /**
-     * Update user profile
+     * Update profile for the authenticated user (JWT); path username is not used by the server.
      */
     @Put('/:username')
     @Auth(
@@ -62,29 +85,48 @@ export class ProfileApi {
         // UserRole.AUDITOR
     )
     @ApiOperation({
-        summary: 'Sets Hedera credentials for the user.',
-        description: 'Sets Hedera credentials for the user. For users with the Standard Registry role it also creates an address book.'
+        summary: 'Sets Hedera credentials for the authenticated user.',
+        description:
+            'Applies to the **currently authenticated user** (Bearer token). ' +
+            'The `username` path segment is **not** used to choose whose profile is updated; authorization alone determines the subject. ' +
+            'Clients often pass their own username in the path for URL compatibility. ' +
+            'Sets Hedera credentials and related DID/VC data. For users with the Standard Registry role it also creates an address book.'
     })
     @ApiParam({
         name: 'username',
         type: String,
-        description: 'The name of the user for whom to update the information.',
+        description:
+            'Present for URL compatibility with existing clients. The server does not use this value when applying the update—the request always targets the user identified by the Bearer token.',
         required: true,
         example: 'username'
     })
     @ApiBody({
-        description: 'Object that contains the Hedera account data.',
+        description: 'Hedera account, optional DID/VC payloads, and optional Fireblocks signing options.',
         required: true,
-        type: CredentialsDTO
+        type: CredentialsDTO,
+        examples: {
+            connectLocalStandardRegistry: {
+                summary: 'Local Hedera key + SR VC subject fields',
+                value: ObjectExamples.PROFILE_CREDENTIALS_PUT_BODY
+            }
+        }
     })
-    @ApiOkResponse({
-        description: 'Created.',
+    @ApiNoContentResponse({
+        description: ''
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized request.',
+        type: UnauthorizedErrorDTO,
+        example: {
+            statusCode: 401,
+            message: 'Unauthorized request'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(CredentialsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
     async setUserProfile(
         @AuthUser() user: IAuthUser,
@@ -105,7 +147,7 @@ export class ProfileApi {
     }
 
     /**
-     * Update user profile (async)
+     * Update profile asynchronously for the authenticated user (JWT); path username is not used by the server.
      */
     @Put('/push/:username')
     @Auth(
@@ -115,30 +157,47 @@ export class ProfileApi {
         // UserRole.AUDITOR
     )
     @ApiOperation({
-        summary: 'Sets Hedera credentials for the user.',
-        description: 'Sets Hedera credentials for the user. For users with the Standard Registry role it also creates an address book.'
+        summary: 'Sets Hedera credentials asynchronously for the authenticated user.',
+        description:
+            'Applies to the **currently authenticated user** (Bearer token). ' +
+            'The `username` path segment is **not** used to choose whose profile is updated; authorization alone determines the subject. ' +
+            'Clients often pass their own username in the path for URL compatibility. ' +
+            'Starts a background task to connect Hedera credentials, publish DID/VC documents as required, and ' +
+            'for Standard Registry users create an address book. ' +
+            'Returns immediately with `202 Accepted` and a **task** identifier—use the worker-tasks API or your client ' +
+            'notifications to track completion or errors.'
     })
     @ApiParam({
         name: 'username',
         type: String,
-        description: 'The name of the user for whom to update the information.',
+        description:
+            'Present for URL compatibility with existing clients. The server does not use this value when applying the update—the request always targets the user identified by the Bearer token.',
         required: true,
         example: 'username'
     })
     @ApiBody({
-        description: 'Object that contains the Hedera account data.',
+        description:
+            'Hedera account, optional DID/VC payloads, and optional Fireblocks signing options. ' +
+            'Submission is accepted immediately; processing happens in the background.',
         required: true,
-        type: CredentialsDTO
+        type: CredentialsDTO,
+        examples: {
+            connectLocalStandardRegistry: {
+                summary: 'Local Hedera key + SR VC subject fields',
+                value: ObjectExamples.PROFILE_CREDENTIALS_PUT_BODY
+            }
+        }
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        type: TaskDTO
+    @ApiAcceptedResponse({
+        description: 'Task accepted for asynchronous processing. Poll or subscribe for task status.',
+        type: TaskDTO,
+        example: ObjectExamples.PROFILE_ASYNC_PUT_ACCEPTED_TASK
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(CredentialsDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async setUserProfileAsync(
         @AuthUser() user: IAuthUser,
@@ -178,7 +237,7 @@ export class ProfileApi {
     )
     @ApiOperation({
         summary: 'Returns user\'s Hedera account balance.',
-        description: 'Requests Hedera account balance. Only users with the Installer role are allowed to make the request.'
+        description: 'Requests Hedera account balance.'
     })
     @ApiParam({
         name: 'username',
@@ -189,13 +248,21 @@ export class ProfileApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: String
+        schema: {
+            type: 'string',
+            example: '833.88244301 ℏ'
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Invalid Account' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.SHORT_TTL })
     @HttpCode(HttpStatus.OK)
     async getUserBalance(
@@ -215,7 +282,7 @@ export class ProfileApi {
     }
 
     /**
-     * Restore user profile
+     * Restore user profile for the authenticated user (JWT); path username is not used by the server.
      */
     @Put('/restore/:username')
     @Auth(
@@ -224,29 +291,46 @@ export class ProfileApi {
     )
     @ApiOperation({
         summary: 'Restore user data (policy, DID documents, VC documents).',
-        description: 'Restore user data (policy, DID documents, VC documents).'
+        description:
+            'Applies to the **currently authenticated user** (Bearer token). ' +
+            'The `username` path segment is **not** used to choose whose data is restored; authorization alone determines the subject. ' +
+            'Clients often pass their own username in the path for URL compatibility. ' +
+            'Starts a background task to restore user data (policy, DID documents, VC documents). ' +
+            'Returns immediately with `202 Accepted` and a **task** identifier.'
     })
     @ApiParam({
         name: 'username',
         type: String,
-        description: 'The name of the user for whom to restore the information.',
+        description:
+            'Present for URL compatibility with existing clients. The server does not use this value when applying the update—the request always targets the user identified by the Bearer token.',
         required: true,
         example: 'username'
     })
     @ApiBody({
         description: 'Object that contains the Hedera account data.',
         required: true,
-        type: CredentialsDTO
+        type: CredentialsDTO,
+        examples: {
+            restoreUserProfile: {
+                summary: 'Topic and Hedera credentials (`didDocument` may be null; `didKeys` may be empty)',
+                value: ObjectExamples.PROFILE_PUT_RESTORE_USERNAME_REQUEST
+            },
+            restoreUserProfileWithDid: {
+                summary: 'Topic, Hedera credentials, full DID document, and didKeys',
+                value: ObjectExamples.PROFILE_PUT_RESTORE_USERNAME_REQUEST_WITH_DID
+            }
+        }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: ObjectExamples.PROFILE_PUT_RESTORE_USERNAME_ACCEPTED_TASK
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(CredentialsDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async restoreUserProfile(
         @AuthUser() user: IAuthUser,
@@ -273,7 +357,7 @@ export class ProfileApi {
     }
 
     /**
-     * List of available recovery topics
+     * List of available recovery topics for the authenticated user (JWT); path username is not used by the server.
      */
     @Put('/restore/topics/:username')
     @Auth(
@@ -282,29 +366,46 @@ export class ProfileApi {
     )
     @ApiOperation({
         summary: 'List of available recovery topics.',
-        description: 'List of available recovery topics.'
+        description:
+            'Applies to the **currently authenticated user** (Bearer token). ' +
+            'The `username` path segment is **not** used to choose whose recovery topics are listed; authorization alone determines the subject. ' +
+            'Clients often pass their own username in the path for URL compatibility. ' +
+            'Starts a background task to list available recovery topics. ' +
+            'Returns immediately with `202 Accepted` and a **task** identifier.'
     })
     @ApiParam({
         name: 'username',
         type: String,
-        description: 'The name of the user for whom to restore the information.',
+        description:
+            'Present for URL compatibility with existing clients. The server does not use this value when applying the update—the request always targets the user identified by the Bearer token.',
         required: true,
         example: 'username'
     })
     @ApiBody({
         description: 'Object that contains the Hedera account data.',
         required: true,
-        type: CredentialsDTO
+        type: CredentialsDTO,
+        examples: {
+            restoreTopics: {
+                summary: 'Hedera credentials (didDocument may be null)',
+                value: ObjectExamples.PROFILE_RESTORE_TOPICS_REQUEST
+            },
+            restoreTopicsWithDid: {
+                summary: 'Hedera credentials with full DID document',
+                value: ObjectExamples.PROFILE_RESTORE_TOPICS_REQUEST_WITH_DID
+            }
+        }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: ObjectExamples.PROFILE_RESTORE_TOPICS_ACCEPTED_TASK
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(CredentialsDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async restoreTopic(
         @AuthUser() user: IAuthUser,
@@ -341,22 +442,50 @@ export class ProfileApi {
     )
     @ApiOperation({
         summary: 'Validate DID document format.',
-        description: 'Validate DID document format.',
+        description:
+            'Checks the DID document and returns whether required Hedera verification methods (Ed25519 + BLS) are present. ' +
+            'Response includes `keys` grouped by verification method type.'
     })
     @ApiBody({
         description: 'DID Document.',
         required: true,
-        type: DidDocumentDTO
+        type: DidDocumentDTO,
+        examples: {
+            validDidDocument: {
+                summary: 'Valid verification method types',
+                value: ObjectExamples.PROFILE_DID_DOCUMENT_VALIDATE_REQUEST_VALID
+            },
+            invalidDidDocument: {
+                summary: 'Invalid type (e.g. wrong `verificationMethod[].type`)',
+                value: ObjectExamples.PROFILE_DID_DOCUMENT_VALIDATE_REQUEST_INVALID
+            }
+        }
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'HTTP 200 for both valid and invalid documents; inspect `valid` and `error`.',
         type: DidDocumentStatusDTO,
+        examples: {
+            valid: {
+                summary: 'DID document passes validation',
+                value: ObjectExamples.PROFILE_DID_DOCUMENT_VALIDATE_RESPONSE_VALID
+            },
+            invalid: {
+                summary: 'Validation failed (e.g. required method type missing)',
+                value: ObjectExamples.PROFILE_DID_DOCUMENT_VALIDATE_RESPONSE_INVALID
+            }
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Body is empty' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(DidDocumentDTO, DidDocumentStatusDTO, InternalServerErrorDTO)
+    @ApiExtraModels(DidVerificationMethodEntryDTO)
     @HttpCode(HttpStatus.OK)
     async validateDidDocument(
         @AuthUser() user: IAuthUser,
@@ -384,27 +513,55 @@ export class ProfileApi {
     )
     @ApiOperation({
         summary: 'Validate DID document keys.',
-        description: 'Validate DID document keys.',
+        description:
+            'For each entry in `keys`, checks that `id` matches a verification method in `document` and that `key` validates against it. ' +
+            'Returns the same array with a `valid` flag per entry (HTTP 200 even when some keys fail).'
     })
     @ApiBody({
-        description: 'DID Document and keys.',
+        description: 'DID document plus `keys`: `{ id, key }` where `id` is the full verification method id.',
         required: true,
-        type: DidDocumentWithKeyDTO
+        type: DidDocumentWithKeyDTO,
+        examples: {
+            invalidKeys: {
+                summary: 'Placeholder keys (validation fails)',
+                value: ObjectExamples.PROFILE_DID_KEYS_VALIDATE_REQUEST_INVALID
+            },
+            validKeys: {
+                summary: 'Private keys matching verification methods',
+                value: ObjectExamples.PROFILE_DID_KEYS_VALIDATE_REQUEST_VALID
+            }
+        }
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Array of results in the same order as request `keys`.',
+        isArray: true,
         type: DidKeyStatusDTO,
+        examples: {
+            invalidKeys: {
+                summary: 'Placeholder keys — `valid: false`',
+                value: ObjectExamples.PROFILE_DID_KEYS_VALIDATE_RESPONSE_INVALID
+            },
+            validKeys: {
+                summary: 'Matching keys — `valid: true`',
+                value: ObjectExamples.PROFILE_DID_KEYS_VALIDATE_RESPONSE_VALID
+            }
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Document is empty' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(DidKeyStatusDTO, DidDocumentWithKeyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async validateDidKeys(
         @AuthUser() user: IAuthUser,
         @Body() body: any
-    ): Promise<DidKeyStatusDTO> {
+    ): Promise<DidKeyStatusDTO[]> {
         if (!body) {
             throw new HttpException('Body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
         }
@@ -450,13 +607,14 @@ export class ProfileApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: PolicyKeyDTO
+        type: PolicyKeyDTO,
+        example: ObjectExamples.PROFILE_GET_KEYS_RESPONSE_LIST
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(PolicyKeyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getPolicyLabels(
         @AuthUser() user: IAuthUser,
@@ -474,28 +632,53 @@ export class ProfileApi {
     }
 
     /**
-     * Create policy key.
+     * Create or import a policy signing key (same route).
      */
     @Post('/keys')
     @Auth(Permissions.PROFILES_USER_UPDATE)
     @ApiOperation({
-        summary: 'Creates a new key.',
-        description: 'Creates a new key.',
+        summary: 'Create or import a policy signing key.',
+        description:
+            'Registers a **policy message key** for the authenticated user\'s DID. ' +
+            '**Generate:** send only `messageId`—the server creates a private key for that policy. The owner can copy the `messageId` and returned `key` from the response and pass them **out of band** to another person. ' +
+            '**Import:** the recipient calls this endpoint with the same `messageId` plus the DER-encoded private `key` they received, so their account can use the policy like the original owner.'
     })
     @ApiBody({
-        description: 'Config.',
+        description:
+            '`messageId` is always the policy **message id**. `key` is optional: omit it to **generate** a new key; ' +
+            'provide it to **import** a key that was shared with you.',
         required: true,
-        type: PolicyKeyConfigDTO
+        type: PolicyKeyConfigDTO,
+        examples: {
+            generateKeyForPolicy: {
+                summary: 'Generate key for a policy message',
+                description:
+                    'Only `messageId` is sent; the server generates the private key. Use this to obtain a key for a specific policy, then share `messageId` and the private `key` from the response with another user manually.',
+                value: ObjectExamples.PROFILE_POST_KEYS_REQUEST_MESSAGE_ONLY
+            },
+            remoteUserImport: {
+                summary: 'Import key (remote user)',
+                description:
+                    'The **remote user** sends the same `messageId` and the DER private `key` they received out of band so this profile can use that policy.',
+                value: ObjectExamples.PROFILE_POST_KEYS_REQUEST_IMPORT
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyKeyDTO,
+        example: ObjectExamples.PROFILE_POST_KEYS_RESPONSE
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Message ID is empty' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(PolicyKeyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async generateKey(
         @AuthUser() user: IAuthUser,
@@ -534,13 +717,19 @@ export class ProfileApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Invalid id' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteKey(
         @AuthUser() user: IAuthUser,

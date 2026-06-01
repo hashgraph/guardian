@@ -9,7 +9,7 @@ This block provides a way to specify multiple signators for a single VC document
 | tag              | Unique name for the logic block.                                                                                                                               | **multiSignBlock**                                                             |        |
 | permissions      | Which entity has rights to interact at this part of the workflow.                                                                                              | NoRole                                                                         |        |
 | defaultActive    | Shows whether this block is active at this time and whether it needs to be shown.                                                                              | Checked or unchecked.                                                          |        |
-| On errors        | Called if the system error has occurs in the Block                                                                                                             | <ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul> |        |
+| On errors        | Called if the system error occurs in the Block                                                                                                                 | <ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul> |        |
 | Stop Propagation | End processing here, don't pass control to the next block.                                                                                                     | Checked or unchecked.                                                          |        |
 | Threshold (%)    | Proportion Of signators which are required to sign the document to achieve quorum for it to transition to ‘signed’ status. Must be a number between 0 and 100. | 0-100                                                                          |        |
 
@@ -63,7 +63,7 @@ This block provides a way to specify multiple signators for a single VC document
 | Type of Decision  | Description                                                                                                |
 | ----------------- | ---------------------------------------------------------------------------------------------------------- |
 | declinedCount     | number of users who declined signing the document                                                          |
-| declinedPercent   | percentage of users who declined need signing the document                                                 |
+| declinedPercent   | percentage of users who need to decline signing the document                                               |
 | declinedThreshold | threshold number of users who need to decline signing the document to reach the final decision             |
 | documentStatus    | status of the document for the current users, null if the user has not made a selection to sign or decline |
 | signedCount       | number of users who have signed the document                                                               |
@@ -78,7 +78,7 @@ This block provides a way to specify multiple signators for a single VC document
 
 4.1.1 multiSignBlock must be used with Groups.
 
-<figure><img src="../../../../../.gitbook/assets/image (13) (1) (1) (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (13) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 4.1.2 multiSignBlock must be child block of grid block to receive all data it requires to operate.
 
@@ -90,7 +90,7 @@ This block provides a way to specify multiple signators for a single VC document
 
 We have an option of Signing/ Declining the document by clicking on "Sign" or "Decline" button for the document as shown below:
 
-<figure><img src="../../../../../.gitbook/assets/image (20) (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (20) (2).png" alt=""><figcaption></figcaption></figure>
 
 #### 5.2 Threshold Display
 
@@ -108,7 +108,7 @@ To get detailed information on Signature status, we have an info icon near the t
 
 To get the final Signature Result with detailed information such as which users have Signed / Declined, we need to hover on the Status as shown below:
 
-<figure><img src="../../../../../.gitbook/assets/image (1) (3) (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (1) (3) (2).png" alt=""><figcaption></figcaption></figure>
 
 ### API Parameters
 

@@ -8,7 +8,7 @@ import {
     PolicyOutputEventType,
     PolicyTagMap
 } from './interfaces/index.js';
-import { BlockType, GenerateUUIDv4, IUser, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, IBlockCompleteEvent, IUser, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
 import {
     ActionType,
     AnyBlockType,
@@ -21,7 +21,7 @@ import {
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface.js';
-import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyAction, PolicyComment, PolicyDiscussion, PolicyRoles, PolicyTool, Users } from '@guardian/common';
+import { DatabaseServer, IAuthUser, MessageError, MessageResponse, Policy, PolicyAction, PolicyComment, PolicyDiscussion, PolicyRoles, PolicyTool, Users } from '@guardian/common';
 import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
@@ -35,6 +35,7 @@ import { PolicyBackupService, PolicyRestoreService } from './restore-service.js'
 import { PolicyActionsService } from './actions-service.js';
 import { PolicyActionsUtils } from './policy-actions/utils.js';
 import { PolicyUtils } from './helpers/utils.js';
+import { RecordActionStep } from './record-action-step.js';
 
 /**
  * Policy tag helper
@@ -144,6 +145,10 @@ export function infoBlockEvent(user: PolicyUser, policy: Policy): void {
 export function externalBlockEvent(event: ExternalEvent<any>): void {
     const type = 'external';
     new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [event] }, false);
+}
+
+export function blockCompleteEvent(event: IBlockCompleteEvent): void {
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_COMPLETE_BROADCAST, event, false);
 }
 
 export function requestNotificationEvent(row: PolicyAction): void {
@@ -804,8 +809,15 @@ export class PolicyComponentsUtils {
     public static async RegisterPolicyInstance(
         policyId: string,
         policy: Policy,
-        components: ComponentsService
+        components: ComponentsService,
+        allInstances: IPolicyBlock[]
     ) {
+        let relayerAccount: boolean = false;
+        for (const instance of allInstances) {
+            if (instance.options?.relayerAccount) {
+                relayerAccount = true;
+            }
+        }
         const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
         const policyInstance: IPolicyInstance = {
             policyId,
@@ -817,7 +829,9 @@ export class PolicyComponentsUtils {
             owner: policy.owner,
             policyOwner: policy.owner,
             policyStatus: policy.status,
-            locationType: policy.locationType
+            locationType: policy.locationType,
+            relayerAccount,
+            enableMock: false
         };
         PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
     }
@@ -1460,6 +1474,30 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Get Backup Controller
+     * @param policyId
+     */
+    public static GetBackupService(policyId: string) {
+        return PolicyComponentsUtils.BackupControllers.get(policyId);
+    }
+
+    /**
+     * Get Restore Controller
+     * @param policyId
+     */
+    public static GetRestoreService(policyId: string) {
+        return PolicyComponentsUtils.RestoreControllers.get(policyId);
+    }
+
+    /**
+     * Get Actions Controller
+     * @param policyId
+     */
+    public static GetActionsService(policyId: string) {
+        return PolicyComponentsUtils.ActionsControllers.get(policyId);
+    }
+
+    /**
      * Unregister Backup Controller
      * @param policyId
      */
@@ -1565,20 +1603,22 @@ export class PolicyComponentsUtils {
     private static async _blockSetDataLocal(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
-        data: any
+        data: any,
+        actionStatus?: RecordActionStep
     ): Promise<MessageResponse<any> | MessageError<any>> {
-        const result = await block.setData(user, data, ActionType.COMMON);
+        const result = await block.setData(user, data, ActionType.COMMON, actionStatus);
         return new MessageResponse(result);
     }
 
     private static async _blockSetDataRemote(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
-        data: any
+        data: any,
+        waitRemotePolicy?: boolean
     ): Promise<MessageResponse<any> | MessageError<any>> {
         const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
         if (controller) {
-            const result = await controller.sendAction(block, user, data);
+            const result = await controller.sendAction(block, user, data, waitRemotePolicy);
             return new MessageResponse(result);
         } else {
             return new MessageError('Invalid policy controller', 500);
@@ -1588,12 +1628,15 @@ export class PolicyComponentsUtils {
     private static async _blockSetDataCustom(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
-        data: any
+        data: any,
+        actionStatus?: RecordActionStep,
+        waitRemotePolicy?: boolean
     ): Promise<MessageResponse<any> | MessageError<any>> {
-        const _data = await block.setData(user, data, ActionType.LOCAL);
+        const _data = await block.setData(user, data, ActionType.LOCAL, actionStatus);
+
         const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
         if (controller) {
-            const result = await controller.sendAction(block, user, _data);
+            const result = await controller.sendAction(block, user, _data, waitRemotePolicy);
             return new MessageResponse(result);
         } else {
             return new MessageError('Invalid policy controller', 500);
@@ -1619,7 +1662,7 @@ export class PolicyComponentsUtils {
 
         const relayerAccountConfig = data.relayerAccount;
 
-        const balance = await PolicyUtils.checkAccountBalance(relayerAccountConfig, user.userId);
+        const balance = await PolicyUtils.checkAccountBalance(ref, relayerAccountConfig, user.userId);
         if (balance === false) {
             return 'The relayer account has insufficient balance.';
         }
@@ -1659,15 +1702,18 @@ export class PolicyComponentsUtils {
     public static async blockSetData(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
-        data: any
+        data: any,
+        actionStatus?: RecordActionStep,
+        waitRemotePolicy?: boolean
     ): Promise<MessageResponse<any> | MessageError<any>> {
         const error = await PolicyComponentsUtils._checkRelayerAccount(block, user, data);
         if (error) {
             return new MessageError(error, 500);
         }
+
         if (block.actionType === LocationType.LOCAL) {
             //Action - local, policy - local|remote, user - local|remote
-            return await PolicyComponentsUtils._blockSetDataLocal(block, user, data);
+            return await PolicyComponentsUtils._blockSetDataLocal(block, user, data, actionStatus);
         } else {
             //Action - custom, policy - local|remote, user - remote
             if (user.location === LocationType.REMOTE) {
@@ -1676,14 +1722,14 @@ export class PolicyComponentsUtils {
             if (block.locationType === LocationType.REMOTE) {
                 if (block.actionType === LocationType.CUSTOM) {
                     //Action - custom, policy - remote, user - local
-                    return await PolicyComponentsUtils._blockSetDataCustom(block, user, data);
+                    return await PolicyComponentsUtils._blockSetDataCustom(block, user, data, actionStatus, waitRemotePolicy);
                 } else {
                     //Action - remote, policy - remote, user - local
-                    return await PolicyComponentsUtils._blockSetDataRemote(block, user, data);
+                    return await PolicyComponentsUtils._blockSetDataRemote(block, user, data, waitRemotePolicy);
                 }
             } else {
                 //Action - custom | remote, policy - local, user - local
-                return await PolicyComponentsUtils._blockSetDataLocal(block, user, data);
+                return await PolicyComponentsUtils._blockSetDataLocal(block, user, data, actionStatus);
             }
         }
     }
@@ -1729,8 +1775,8 @@ export class PolicyComponentsUtils {
         return true;
     }
 
-    public static async blockReceiveData(block: IPolicyInterfaceBlock | IPolicyBlock, data: any): Promise<any> {
-        return await (block as any).receiveData(data);
+    public static async blockReceiveData(block: IPolicyInterfaceBlock | IPolicyBlock, data: any, actionStatus?: RecordActionStep): Promise<any> {
+        return await (block as any).receiveData(data, actionStatus);
     }
 
     public static getActionsController(policyId: string) {
@@ -1812,5 +1858,118 @@ export class PolicyComponentsUtils {
         } catch (error) {
             console.error(error);
         }
+    }
+
+    public static IsInheritRelayerAccount(policyId: string, forceRelayerAccount: string): boolean {
+        if (forceRelayerAccount === 'preset') {
+            return true;
+        } else if (forceRelayerAccount === 'current') {
+            return false;
+        } else {
+            const policy = PolicyComponentsUtils.PolicyById.get(policyId);
+            if (policy?.relayerAccount) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    public static async DisconnectPolicy(policyId: string, user: IAuthUser): Promise<boolean> {
+        const db = new DatabaseServer();
+        await DatabaseServer.disconnectPolicy(policyId, user.did);
+        await db.disconnectPolicyDocuments(policyId, user);
+        return true;
+    }
+
+    public static async DisconnectRemotePolicy(
+        policy: IPolicyInstance | AnyBlockType,
+        policyId: string,
+        user: IAuthUser
+    ): Promise<boolean> {
+        if (policy.locationType === LocationType.REMOTE) {
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
+            const userId = policyUser.userId;
+            await PolicyActionsUtils.disconnectPolicy({ policyId, user: policyUser, userId });
+            return true;
+        } else {
+            return true;
+        }
+    }
+
+    public static async ReconnectPolicy(policyId: string, user: IAuthUser): Promise<boolean> {
+        const db = new DatabaseServer();
+        await DatabaseServer.reconnectPolicy(policyId, user.did);
+        await db.reconnectPolicyDocuments(policyId, user);
+        return true;
+    }
+
+    public static GetMockConfig(policyId: string) {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        const instance = PolicyComponentsUtils.PolicyById.get(policyId)
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        const blocks: any[] = []
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component.canMock) {
+                blocks.push({
+                    uuid,
+                    tag: component.tag,
+                    type: component.blockType,
+                    enabled: component.enableMock,
+                })
+            }
+        }
+        const enabled = instance.enableMock;
+        return { enabled, blocks };
+    }
+
+    public static SetMockConfig(policyId: string, config: any) {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        const instance = PolicyComponentsUtils.PolicyById.get(policyId)
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+
+        const blockMap = new Map<string, boolean>();
+        if (Array.isArray(config.blocks)) {
+            for (const block of config.blocks) {
+                blockMap.set(block.uuid, block.enabled);
+            }
+        }
+
+        const enabled = !!config.enabled
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component.canMock) {
+                component.enableMock = !!blockMap.get(uuid);
+                if (component.policyInstance) {
+                    (component.policyInstance as any).enableMock = enabled;
+                }
+
+            }
+        }
+        instance.enableMock = enabled;
+        return true;
+    }
+
+    public static MockAll(policyId: string) {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        const instance = PolicyComponentsUtils.PolicyById.get(policyId)
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component.canMock) {
+                component.enableMock = true;
+                if (component.policyInstance) {
+                    (component.policyInstance as any).enableMock = true;
+                }
+            }
+        }
+        instance.enableMock = true;
     }
 }

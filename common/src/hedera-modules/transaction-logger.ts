@@ -181,7 +181,9 @@ export class TransactionLogger extends NatsService {
                             payload: { userId }
                         }
                     }, {
-                        priority: 20
+                        priority: 20,
+                        dryRun: null,
+                        mockId: null
                     });
                     attr.push(balance);
                 } catch (error) {

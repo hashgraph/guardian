@@ -27,7 +27,7 @@ import {
     SchemaEntity,
     SignatureType,
 } from '@guardian/interfaces';
-import { PrivateKey, TopicId } from '@hashgraph/sdk';
+import { PrivateKey, TopicId } from '@hiero-ledger/sdk';
 import {
     BbsBlsSignatureProof2020,
     Bls12381G2KeyPair,
@@ -38,7 +38,7 @@ import {
     Schema as SchemaCollection,
     DidDocument as DidDocumentCollection
 } from '../entity/index.js';
-import { IDocumentOptions, ISuiteOptions } from '../hedera-modules/vcjs/vcjs.js';
+import { IDocumentOptions } from '../hedera-modules/vcjs/vcjs.js';
 import { KeyType, Users, Wallet } from '../helpers/index.js';
 import { IAuthUser } from '../interfaces/index.js';
 import { Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
@@ -120,18 +120,24 @@ export class VcHelper extends VCJS {
             const dataBaseServer = new DatabaseServer();
             if (context && context.length) {
                 for (const c of context) {
+                    let document: SchemaCollection;
                     if (c.startsWith('schema#') || c.startsWith('schema:')) {
-                        return new Schema(
-                            await dataBaseServer.findOne(SchemaCollection, {
-                                iri,
-                            })
-                        );
+                        document = await dataBaseServer.findOne(SchemaCollection, { iri });
                     }
-                    return new Schema(
-                        await dataBaseServer.findOne(SchemaCollection, {
+                    if (!document) {
+                        document = await dataBaseServer.findOne(SchemaCollection, {
                             contextURL: { $in: context },
+                            iri: `#${type}`
                         })
-                    );
+                    }
+                    if (!document) {
+                        document = await dataBaseServer.findOne(SchemaCollection, {
+                            contextURL: { $in: context }
+                        })
+                    }
+                    if (document) {
+                        return new Schema(document);
+                    }
                 }
             }
             return null;
@@ -374,50 +380,6 @@ export class VcHelper extends VCJS {
     /**
      * Create VC Document
      *
-     * @param {string} did - DID
-     * @param {PrivateKey | string} key - Private Key
-     * @param {any} subject - Credential Object
-     * @param {any} [group] - Issuer
-     *
-     * @returns {VcDocument} - VC Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public override async createVC(
-        did: string,
-        key: string | PrivateKey,
-        subject: ICredentialSubject,
-        group?: any,
-    ): Promise<VcDocument> {
-        const signatureType = await this.getSignatureTypeBySchema(subject);
-        subject = this.prepareSubject(subject, signatureType);
-        return await super.createVC(did, key, subject, group, signatureType);
-    }
-
-    /**
-     * Create VC Document
-     *
-     * @param {ICredentialSubject} subject - Credential Object
-     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key, Signature Type)
-     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
-     *
-     * @returns {VcDocument} - VC Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public override async createVcDocument(
-        subject: ICredentialSubject,
-        suiteOptions: ISuiteOptions,
-        documentOptions?: IDocumentOptions
-    ): Promise<VcDocument> {
-        suiteOptions.signatureType = await this.getSignatureTypeBySchema(subject);
-        subject = this.prepareSubject(subject, suiteOptions.signatureType);
-        return await super.createVcDocument(subject, suiteOptions, documentOptions);
-    }
-
-    /**
-     * Create VC Document
-     *
      * @param {ICredentialSubject} subject - Credential Object
      * @param {CommonDidDocument} didDocument - DID Document
      * @param {SignatureType} signatureType - Signature type (Ed25519Signature2018, BbsBlsSignature2020)
@@ -434,48 +396,6 @@ export class VcHelper extends VCJS {
         signatureType = await this.getSignatureTypeBySchema(subject);
         subject = this.prepareSubject(subject, signatureType);
         return await super.createVerifiableCredential(subject, didDocument, signatureType, documentOptions);
-    }
-
-    /**
-     * Create VP Document
-     *
-     * @param {string} did - DID
-     * @param {PrivateKey | string} key - Private Key
-     * @param {VcDocument[]} vcs - VC Documents
-     * @param {string} [uuid] - new uuid
-     *
-     * @returns {VpDocument} - VP Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public override async createVP(
-        did: string,
-        key: string | PrivateKey,
-        vcs: VcDocument[],
-        uuid?: string
-    ): Promise<VpDocument> {
-        vcs = await this.prepareVCs(vcs);
-        return await super.createVP(did, key, vcs, uuid);
-    }
-
-    /**
-     * Create VP Document
-     *
-     * @param {VcDocument[]} vcs - VC Documents
-     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key)
-     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
-     *
-     * @returns {VpDocument} - VP Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public override async createVpDocument(
-        vcs: VcDocument[],
-        suiteOptions: ISuiteOptions,
-        documentOptions?: IDocumentOptions
-    ): Promise<VpDocument> {
-        vcs = await this.prepareVCs(vcs);
-        return await super.createVpDocument(vcs, suiteOptions, documentOptions);
     }
 
     /**

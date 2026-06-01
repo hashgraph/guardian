@@ -193,7 +193,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         const dialogRef = this.dialogService.open(PolicyLabelPreviewDialog, {
             showHeader: false,
             header: 'Preview',
-            width: '1100px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 item
@@ -205,7 +205,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     public onImport() {
         const dialogRef = this.dialogService.open(SearchLabelDialog, {
             showHeader: false,
-            width: '1100px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 ids: this.labelConfig.menu.getIds()

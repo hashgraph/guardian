@@ -350,6 +350,16 @@ Waste activity data collection
 
     C. N₂O Emissions = IW × EF × 10<sup>-3</sup>
 
+Calculation Example:
+- 3,500 ton of Solid Waste incinerated (Solid Waste type: Industrial waste, Textile)
+- CO₂ Emissions (solid waste) = (SW<sub>i</sub> × dm<sub>i</sub> × CF<sub>i</sub> × FCF<sub>i</sub> × OF<sub>i</sub>) × 3.664
+  - SW<sub>i</sub> = 3,500 ton
+  - dm<sub>i</sub> = 0.9
+  - CF<sub>i</sub> = 0.04
+  - FCF<sub>i</sub> = 0.03
+  - OF<sub>i</sub> = 1
+- Emissions (CO₂) = 3,500 ton x 0.9 x 0.04 x 0.03 x 1 x 3.664 = 13.85 ton
+
 **4)** Result Application
 
 - Sustainability reporting / ESG disclosure: Reflect in Scope 1
@@ -559,7 +569,7 @@ Source: Greenhouse Gas Inventory and Research Center of Korea
 
 ### **Emission Calculation**
 
-1\) CH<sub>4</sub> Emission
+- CH<sub>4</sub> Emission
 
 <table>
 <colgroup>
@@ -578,7 +588,7 @@ e<sup>-k</sup>)</strong></em></p>
 DDOCma<sub>T-2</sub> × e<sup>-k</sup> )</strong></em></p>
 <p><em><strong>DDOCmd<sub>T-1</sub> = WT<sub>-1</sub> × DOC ×
 DOC<sub>f</sub> × MCF</strong></em></p>
-<p>CH<sub>4</sub> Emissions<sub>T</sub> : Landing of solid waste
+<p>CH<sub>4</sub> Emissions<sub>T</sub> : Landfilling of solid waste
 emissions (tCH<sub>4</sub>)</p>
 <p>CH<sub>4</sub> generated<sub>x,T</sub> : Potential
 CH<sub>4</sub>generation this year(tCH<sub>4</sub>)</p>
@@ -657,7 +667,7 @@ Collection of waste activity data
   type
 
 - OX: Apply oxidation rate depending on whether landfill cover is in
-  place
+place
 
 **3) Emission Calculation Procedure**
 
@@ -669,7 +679,17 @@ Collection of waste activity data
     > DDOC<sub>m,decomp(T)</sub> = DDOCma<sub>T-1</sub> × (1 - e<sup>-k</sup>)
 
 - Apply methane emission calculation formula reflection recovery rate and oxidant factor:  
-    > CH4 EmissionsT = [ CH4 generatedT - RT \] × (1-OX)
+    > CH4 Emissions(T) = [ CH4 generatedT - RT \] × (1-OX)
+
+Calculation Example:
+- 1,000 ton of Construction and Demolition Debris (Industrial Waste) landfilled in previous year while 24 ton of degradable organic carbon deposited in landfill 2 years ago
+- DDOC<sub>m,decomp(T)</sub> = DDOCma<sub>T-1</sub> × (1 - e<sup>-k</sup>)
+  - DDOCmd<sub>T-1</sub> = WT<sub>-1</sub> × DOC × DOC<sub>f</sub> × MCF = 1,000 ton x 0.04 x 0.5 x 0.5 = 10
+  - DDOCma<sub>T-1</sub> = DDOCmd<sub>T-1</sub> + (DDOCma<sub>T-2</sub> × e<sup>-k</sup>) = 10 + 24 × e<sup>-0.1</sup> = 31.7161
+  - DDOC<sub>m,decomp(T)</sub> = DDOCma<sub>T-1</sub> × (1 –e<sup>-k</sup>) = 31.7161 × (1 –e<sup>-0.1</sup>) = 3.0182
+- CH4 Emissions(T) = [ CH4 generatedT - RT \] × (1-OX)
+  - CH4 generated(T) = DDOC<sub>m,decomp(T) x F X 1.336 = 3.0182 x 0.5 x 1.336 = 2.0161 tCH4
+  - CH4 Emissions(T) = [2.0161 tCH4 - 0] × (1-0.1) = 1.81449 tCH4
 
 **4) Reporting and Utilization**
 
@@ -798,20 +818,25 @@ calculate greenhouse gas emissions from its production process as Scope
 
 **3) Emission Calculation Procedure**
 
-3.  Aggregation of organic waste volumes by treatment
-    method
+- Aggregation of organic waste volumes by treatment method
 
-4.  Application of emission factors appropriate for the treatment method
-    and standards
+- Application of emission factors appropriate for the treatment method and standards
 
-5.  Application of the calculation formula for emissions from the
-    biological treatment of solid waste
+- Application of the calculation formula for emissions from the biological treatment of solid waste
 
-    A. CH~4~ Emissions =
+    A. CH4 Emissions =
     $\sum_{i}^{}{(M_{i}} \times {EF}_{i}) \times 10^{3} - R$
 
-    B. N~2~O Emissions =
+    B. N2O Emissions =
     $\sum_{i}^{}{(M_{i}} \times {EF}_{i}) \times 10^{3}$
+
+Calculation Example:
+- 1,000 ton of composting type wet basis waste treated biologically
+- CH4 Emissions = $\sum_{i}^{}{(M_{i}} \times {EF}_{i}) \times 10^{3} - R$
+  - M(i) = 1,000 ton
+  - EF(i) = 4 gCH4/kg-Waste
+  - R = 0
+- Emissions (CH4) = 1,000 ton x 4 gCH4/kg-Waste / 1000 - 0 = 4 tCH4
 
 **4) Reporting and Utilization**
 
@@ -820,9 +845,6 @@ calculate greenhouse gas emissions from its production process as Scope
 
 - **Internal Management:** Analyze emission characteristics by treatment
   method and establish reduction strategies
-
-- **Regulatory Compliance:** Utilize as statutory reporting data, such
-  as for the Emissions Trading Scheme
 
 - **Process Optimization:** Develop strategies to shift from
   high-emission treatment methods to lower-emission,

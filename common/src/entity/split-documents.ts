@@ -69,6 +69,15 @@ export class SplitDocuments extends BaseEntity {
     _documentFileId?: ObjectId
 
     /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
+    /**
      * Document defaults
      */
     @BeforeCreate()

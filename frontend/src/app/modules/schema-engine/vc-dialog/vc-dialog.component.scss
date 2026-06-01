@@ -1,3 +1,71 @@
+.header-container .tags-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-left: 16px;
+    column-gap: 8px;
+    row-gap: 8px;
+
+    .tag-item {
+        display: flex;
+        column-gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+        background-color: var(--color-secondary);
+        border: 1px solid var(--color-primary);
+        padding: 6px 12px;
+        border-radius: 6px;
+        transition: all 0.25s ease-in-out;
+        cursor: pointer;
+
+        .tag-icon {
+            fill: var(--color-primary, #0031ff);
+        }
+
+        .name {
+            color: var(--color-primary, #0031ff);
+            font-family: Inter, sans-serif;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 16px;
+        }
+
+        .count {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-accent-red-1);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            color: var(--color-grey-white);
+            font-family: Inter, sans-serif;
+            font-size: 12px;
+            font-style: normal;
+            font-weight: 400;
+        }
+    }
+
+    .selected {
+        background: var(--color-primary);
+
+        .tag-icon {
+            fill: var(--color-grey-white, #ffffff) !important;
+        }
+
+        .name {
+            color: var(--color-grey-white, #ffffff) !important;
+        }
+    }
+
+    .primary-color {
+        fill: var(--color-primary, #0031ff);
+        color: var(--color-primary, #0031ff);
+    }
+}
+
 .context {
     position: relative;
     overflow-y: auto;
@@ -75,6 +143,36 @@
 
         .json {
             max-height: calc(100vh - 265px);
+        }
+    }
+}
+
+:host ::ng-deep {
+    .version-dropdown {
+        .p-dropdown {
+            border: 1px solid var(--guardian-primary-color);
+            border-radius: 6px;
+            color: var(--guardian-primary-color);
+
+            box-shadow: none !important;
+            outline: none !important;
+            
+            &:focus {
+                box-shadow: none !important;
+                outline: none !important;
+            }
+        }
+
+        .p-dropdown-label {
+            color: var(--guardian-primary-color);
+        }
+
+        .p-dropdown-trigger {
+            color: var(--guardian-primary-color);
+        }
+
+        .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+            color: var(--guardian-primary-color);
         }
     }
 }

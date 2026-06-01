@@ -283,9 +283,17 @@ form {
     }
 }
 
+.form-field-array[array-invalid="true"] {
+    border-color: #f44336 !important;
+}
+
 .form-field-value[invalid-required-field="true"] {
     .form-field-boolean ::ng-deep .guardian-radio-button .p-radiobutton .p-radiobutton-box {
         border-color: #f44336;
+    }
+
+    .form-field-enum ::ng-deep p-dropdown .p-dropdown {
+        border-color: #f44336 !important;
     }
 
     .form-field-input input {
@@ -297,7 +305,11 @@ form {
     }
 }
 
-
+*[readonly-field="true"] {
+    pointer-events: none !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
 
 *[default=true] {
     color: rgb(173, 173, 0);
@@ -442,4 +454,42 @@ form::ng-deep {
 
 .table-field-container {
     width: 100%;
+}
+
+.progress-footer {
+    .progress-footer-btn-container {
+        display: flex;
+        button {
+            margin-left: auto;
+        }
+    }
+}
+
+.table-header {
+    min-width: 275px;
+}
+
+.table-content {
+    gap: 8px;
+}
+
+.form-field-input-bool {
+    gap: 12px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.simple-field {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+}
+
+.guardian-input-container {
+    height: auto !important;
+} 
+
+.form-field-input {
+    height: auto !important;
 }

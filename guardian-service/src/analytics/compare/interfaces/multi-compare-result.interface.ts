@@ -42,6 +42,10 @@ export interface IMultiCompareResult<T> {
      */
     tokens?: IReportTable;
     /**
+     * Tool rates (Policy)
+     */
+    tools?: IReportTable;
+    /**
      * InputEvents rates (Module)
      */
     inputEvents?: IReportTable;

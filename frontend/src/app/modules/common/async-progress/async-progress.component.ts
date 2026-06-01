@@ -140,6 +140,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.completed.emit(result);
             return;
         }
+
         switch (this.action) {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
@@ -147,6 +148,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 this.toHome();
                 return;
             case TaskAction.DELETE_TOKEN:
+            case TaskAction.DELETE_TOKENS:
             case TaskAction.UPDATE_TOKEN:
             case TaskAction.CREATE_TOKEN:
                 setTimeout(() => {
@@ -323,6 +325,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }
                 break;
             case TaskAction.DELETE_POLICY:
+            case TaskAction.DELETE_POLICIES:
             case TaskAction.MIGRATE_DATA:
                 if (result?.length > 0) {
                     this.informService.warnMessage(
@@ -341,6 +344,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 localStorage.removeItem('restoreSchemaData');
             case TaskAction.CREATE_SCHEMA:
             case TaskAction.PUBLISH_SCHEMA:
+            case TaskAction.DELETE_SCHEMAS:
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
                 if (this.last) {
@@ -387,6 +391,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 this.toHome();
                 break;
             case TaskAction.DELETE_TOKEN:
+            case TaskAction.DELETE_TOKENS:
             case TaskAction.UPDATE_TOKEN:
             case TaskAction.CREATE_TOKEN:
                 setTimeout(() => {
@@ -404,6 +409,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.WIZARD_CREATE_POLICY:
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:
+            case TaskAction.DELETE_POLICIES:
             case TaskAction.MIGRATE_DATA:
                 setTimeout(() => {
                     this.router.navigate(['policy-viewer'], {

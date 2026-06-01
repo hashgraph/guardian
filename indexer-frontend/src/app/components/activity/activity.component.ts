@@ -67,8 +67,4 @@ export class ActivityComponent {
     @Input() activity!: MeterItem[];
     @Input() total!: number;
     @Input() label!: string;
-
-    ngOnInit() {
-        console.log(this.activity)
-    }
 }

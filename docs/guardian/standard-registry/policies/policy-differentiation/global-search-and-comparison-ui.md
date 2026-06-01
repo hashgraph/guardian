@@ -9,7 +9,7 @@
 
 Global policy search and comparison relies on Indexer for some of its functionality. Such Indexer can be deployed locally, or run elsewhere so long as there is an HTTP access path which must be specified in the _ANALYTICS\_SERVICE_ parameter in the .env configuration file:\
 \
-&#xNAN;_&#x45;xample:_&#x20;
+\&#xNAN;_Example:_
 
 _"ANALYTICS\_SERVICE": "http://localhost:3021",_
 
@@ -47,7 +47,7 @@ Searching based on the content similarity to the existing policy.
 
 #### **1.2.1 Filters**
 
-<figure><img src="../../../../.gitbook/assets/7 (17).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (262).png" alt=""><figcaption></figcaption></figure>
 
 * **Type –** data source
   * Search only imported – search only ‘local’ policies which have been imported (as ‘drafts’)
@@ -58,6 +58,7 @@ Searching based on the content similarity to the existing policy.
 * **VC Documents** – include only those policies which already produced VC documents, with the minimal quantity as specified
 * **VP Documents** – include only those policies which already produced VP documents, with the minimal quantity as specified
 * **Policy Owner** – include only those owned by specific DID\[s]
+* **Tools** - search by tool name
 
 #### **1.2.2 Import**
 

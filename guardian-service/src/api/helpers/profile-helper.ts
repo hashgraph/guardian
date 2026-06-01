@@ -43,7 +43,7 @@ import {
     Wallet,
     Workers,
 } from '@guardian/common';
-import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { serDefaultRole } from '../permission.service.js';
 import { publishSystemSchema } from '../../helpers/import-helpers/index.js';
 
@@ -79,6 +79,20 @@ export interface IDidKey {
     key: string
 }
 
+export interface IOnboardingPayload {
+    username: string;
+    password: string;
+    role: UserRole;
+    hederaAccountId?: string;
+    hederaAccountKey?: string;
+    parent?: string;
+    vcDocument?: any;
+    didDocument?: any;
+    didKeys?: IDidKey[];
+    useFireblocksSigning?: boolean;
+    fireblocksConfig?: IFireblocksConfig;
+}
+
 /**
  * Get global topic
  */
@@ -96,6 +110,20 @@ export async function getGlobalTopic(): Promise<TopicConfig | null> {
         const INITIALIZATION_TOPIC_ID = topicId?.value || process.env.INITIALIZATION_TOPIC_ID;
         const INITIALIZATION_TOPIC_KEY = topicKey?.value || process.env.INITIALIZATION_TOPIC_KEY;
         return new TopicConfig({ topicId: INITIALIZATION_TOPIC_ID }, null, INITIALIZATION_TOPIC_KEY);
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+/**
+ * Save global topic
+ */
+// tslint:disable-next-line:completed-docs
+export async function saveGlobalTopic(INITIALIZATION_TOPIC_ID: string): Promise<null> {
+    try {
+        const dataBaseServer = new DatabaseServer();
+        await dataBaseServer.save(Settings, { name: 'INITIALIZATION_TOPIC_ID', value: INITIALIZATION_TOPIC_ID });
     } catch (error) {
         console.error(error);
         return null;
@@ -257,7 +285,7 @@ export async function createSystemSchemas({
         return null;
     } catch (error) {
         logger.error(error, ['GUARDIAN_SERVICE'], logId);
-        return null;
+        throw error;
     }
 }
 
@@ -383,8 +411,18 @@ export async function createUserProfile({
             owner: null,
             policyId: null,
             policyUUID: null
-        }, logId);
-        await topicHelper.oneWayLink(topicConfig, globalTopic, user.id.toString());
+        }, {
+            admin: true,
+            submit: true
+        }, {
+            userId: logId
+        });
+        await topicHelper.oneWayLink({
+            topic: topicConfig,
+            parent: globalTopic,
+            rationale: null,
+            userId: user.id.toString()
+        });
         newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
     }
     messageServer.setTopicObject(topicConfig);
@@ -441,8 +479,7 @@ export async function createUserProfile({
         await dataBaseServer.update(DidDocumentCollection, null, didRow);
     } catch (error) {
         logger.error(error, ['GUARDIAN_SERVICE'], logId);
-        // didRow.status = DidDocumentStatus.FAILED;
-        // await new DataBaseHelper(DidDocumentCollection).update(didRow);
+        throw error;
     }
     notifier.completeStep(STEP_PUBLISH_DID);
     // ------------------------
@@ -475,11 +512,13 @@ export async function createUserProfile({
         notifier.startStep(STEP_PUBLISH_VC);
         logger.info('Create VC Document', ['GUARDIAN_SERVICE'], logId);
 
+        if (!schemaObject) {
+            throw new Error(`System schema for entity "${entity}" not found.`);
+        }
+
         let credentialSubject: any = { ...vcDocument };
         credentialSubject.id = userDID;
-        if (schemaObject) {
-            credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
-        }
+        credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
 
         const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, currentDidDocument, null, null);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
@@ -829,6 +868,7 @@ export async function createDefaultRoles({
             Permissions.ANALYTIC_TOOL_READ,
             Permissions.ANALYTIC_SCHEMA_READ,
             Permissions.POLICIES_POLICY_REVIEW,
+            Permissions.POLICIES_POLICY_TAG,
             Permissions.SCHEMAS_SCHEMA_READ,
             Permissions.MODULES_MODULE_READ,
             Permissions.TOOLS_TOOL_READ,

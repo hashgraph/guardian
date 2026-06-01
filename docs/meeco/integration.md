@@ -9,7 +9,7 @@ Users have an option to login by Meeco using VC4OIDC as follows:
 
 1. User click on "Meeco Login" Button to Login by Meeco
 
-2. Guardian Client Sends **MEECO_AUTH_REQUEST** Message over Websocket connetion
+2. Guardian Client Sends **MEECO_AUTH_REQUEST** Message over Websocket connection
 
 3. Guardian API gateway receives the message and send a **MEECO_AUTH_START** command to Auth service over the NATS service
 
@@ -23,7 +23,7 @@ Users have an option to login by Meeco using VC4OIDC as follows:
     - Auth Service decodes serialized KEK
     - Auth Service get serialized Keypair from SVX
     - Auth Service decodes serialized Keypair by KEK
-    - Auth Service exteract unsigned_jwt from preserntation request and signs it
+    - Auth Service extract unsigned_jwt from presentation request and signs it
     - Auth Service updates presentation request by adding signature of unsigned_jwt
     - Auth Service construct the redirect_uri from presentation request
 
@@ -68,7 +68,7 @@ Users have an option to login by Meeco using VC4OIDC as follows:
 ```
 
 21. The websocket get the payload and call the Meeco URl once approved, and get the user data with all verifiable credentials.
-    During the process, the user is created in the Guardian application, the username is defined but also managed to avoid colisions.
+    During the process, the user is created in the Guardian application, the username is defined but also managed to avoid collisions.
     - Auth Service submits verified submission to SVX platform
     - persists data to database
     - generates JWT token

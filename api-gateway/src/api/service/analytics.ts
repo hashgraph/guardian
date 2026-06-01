@@ -1,7 +1,36 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
-import { ApiInternalServerErrorResponse, ApiBody, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse, getSchemaPath } from '@nestjs/swagger';
 import { EntityOwner, Permissions } from '@guardian/interfaces';
-import { FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, InternalServerErrorDTO, CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, SearchPoliciesDTO, FilterToolsDTO, CompareToolsDTO, FilterSearchBlocksDTO, SearchBlocksDTO, Examples } from '#middlewares';
+import {
+    FilterDocumentsDTO,
+    CompareDocumentsByIdsRequestDTO,
+    CompareDocumentsByListRequestDTO,
+    FilterModulesDTO,
+    FilterPoliciesDTO,
+    CompareOriginalPolicyFilterDTO,
+    FilterSchemasDTO,
+    CompareSchemasByIdsRequestDTO,
+    CompareSchemasByListRequestDTO,
+    FilterSearchPoliciesDTO,
+    InternalServerErrorDTO,
+    UnprocessableEntityErrorDTO,
+    CompareDocumentsDTO,
+    CompareDocumentsMultiDTO,
+    CompareModulesDTO,
+    ComparePoliciesDTO,
+    ComparePoliciesMultiDTO,
+    CompareSchemasDTO,
+    SearchPoliciesDTO,
+    FilterToolsDTO,
+    CompareToolsDTO,
+    CompareToolsByIdsRequestDTO,
+    CompareToolsByListRequestDTO,
+    CompareToolsMultiDTO,
+    FilterSearchBlocksDTO,
+    SearchBlocksDTO,
+    Examples,
+    ObjectExamples
+} from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Guardians, ONLY_SR, InternalException } from '#helpers';
@@ -93,18 +122,38 @@ export class AnalyticsApi {
                 value: {
                     policyId: Examples.DB_ID
                 }
+            },
+            GlobalWithFilters: {
+                value: ObjectExamples.SEARCH_POLICIES_REQUEST_GLOBAL_WITH_FILTERS
+            },
+            LocalWithPolicyAndTool: {
+                value: ObjectExamples.SEARCH_POLICIES_REQUEST_LOCAL_WITH_POLICY_AND_TOOL
             }
         }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SearchPoliciesDTO,
+        examples: {
+            WithPolicyId: {
+                summary: 'Response for request with policyId',
+                value: ObjectExamples.SEARCH_POLICIES_RESPONSE_WITH_POLICY_ID
+            },
+            GlobalWithFilters: {
+                summary: 'Global search response with filters',
+                value: ObjectExamples.SEARCH_POLICIES_RESPONSE_GLOBAL_WITH_FILTERS
+            },
+            LocalWithPolicyAndTool: {
+                summary: 'Local response with target and tools filter',
+                value: ObjectExamples.SEARCH_POLICIES_RESPONSE_LOCAL_WITH_POLICY_AND_TOOL
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(FilterSearchPoliciesDTO, SearchPoliciesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async searchPolicies(
         @AuthUser() user: IAuthUser,
@@ -136,26 +185,7 @@ export class AnalyticsApi {
         required: true,
         type: FilterPoliciesDTO,
         examples: {
-            Filter1: {
-                value: {
-                    policyId1: Examples.DB_ID,
-                    policyId2: Examples.DB_ID,
-                    eventsLvl: '0',
-                    propLvl: '0',
-                    childrenLvl: '0',
-                    idLvl: '0'
-                }
-            },
-            Filter2: {
-                value: {
-                    policyIds: [Examples.DB_ID, Examples.DB_ID],
-                    eventsLvl: '0',
-                    propLvl: '0',
-                    childrenLvl: '0',
-                    idLvl: '0'
-                }
-            },
-            Filter3: {
+            MixedSources: {
                 value: {
                     policies: [{
                         type: 'id',
@@ -168,9 +198,28 @@ export class AnalyticsApi {
                         value: {
                             id: Examples.UUID,
                             name: 'File Name',
-                            value: 'base64...'
+                            value: 'base65...'
                         }
                     }],
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            },
+            DatabaseOnly: {
+                value: {
+                    policyIds: [Examples.DB_ID, Examples.DB_ID_2],
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            },
+            Legacy: {
+                value: {
+                    policyId1: Examples.DB_ID,
+                    policyId2: Examples.DB_ID_2,
                     eventsLvl: '0',
                     propLvl: '0',
                     childrenLvl: '0',
@@ -181,13 +230,37 @@ export class AnalyticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: ComparePoliciesDTO
+        schema: {
+            oneOf: [
+                { $ref: getSchemaPath(ComparePoliciesDTO) },
+                { $ref: getSchemaPath(ComparePoliciesMultiDTO) }
+            ]
+        },
+        examples: {
+            SingleCompare: {
+                summary: 'Compare two policies',
+                value: ObjectExamples.COMPARE_POLICIES_RESPONSE_SINGLE
+            },
+            MultiCompare: {
+                summary: 'Compare one policy with many',
+                value: ObjectExamples.COMPARE_POLICIES_RESPONSE_MULTI
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(FilterPoliciesDTO, ComparePoliciesDTO, InternalServerErrorDTO)
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Invalid parameters'
+        }
+    })
+    @ApiExtraModels(ComparePoliciesDTO, ComparePoliciesMultiDTO)
     @HttpCode(HttpStatus.OK)
     async comparePolicies(
         @AuthUser() user: IAuthUser,
@@ -212,6 +285,75 @@ export class AnalyticsApi {
     }
 
     /**
+     * Compare policy with original state
+     */
+    @Post('/compare/policy/original/:policyId')
+    @Auth(
+        Permissions.ANALYTIC_POLICY_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOperation({
+        summary: 'Compare policies with original state.',
+        description: 'Compare policies with original state.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: CompareOriginalPolicyFilterDTO,
+        examples: {
+            OriginalPolicyFilter: {
+                value: {
+                    eventsLvl: '1',
+                    propLvl: '1',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: ComparePoliciesDTO,
+        example: ObjectExamples.COMPARE_POLICIES_RESPONSE_SINGLE
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.OK)
+    async compareOriginalPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() filters: CompareOriginalPolicyFilterDTO
+    ): Promise<ComparePoliciesDTO> {
+        const owner = new EntityOwner(user);
+
+        try {
+            const guardians = new Guardians();
+            const comparedResult = await guardians.compareOriginalPolicies(
+                owner,
+                null,
+                policyId,
+                filters.eventsLvl,
+                filters.propLvl,
+                filters.childrenLvl,
+                filters.idLvl
+            );
+            return comparedResult;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Compare modules
      */
     @Post('/compare/modules')
@@ -229,25 +371,31 @@ export class AnalyticsApi {
         type: FilterModulesDTO,
         examples: {
             Filter: {
-                value: {
-                    moduleId1: Examples.DB_ID,
-                    moduleId2: Examples.DB_ID,
-                    propLvl: '0',
-                    childrenLvl: '0',
-                    idLvl: '0'
-                }
+                value: ObjectExamples.COMPARE_MODULES_REQUEST
             }
         }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: CompareModulesDTO
+        type: CompareModulesDTO,
+        example: ObjectExamples.COMPARE_MODULES_RESPONSE
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            message: [
+                'moduleId2 must be a string'
+            ],
+            error: 'Unprocessable Entity',
+            statusCode: 422
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(FilterModulesDTO, CompareModulesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async compareModules(
         @AuthUser() user: IAuthUser,
@@ -294,12 +442,29 @@ export class AnalyticsApi {
     @ApiBody({
         description: 'Filters.',
         required: true,
-        type: FilterSchemasDTO,
+        schema: {
+            oneOf: [
+                { $ref: getSchemaPath(CompareSchemasByIdsRequestDTO) },
+                { $ref: getSchemaPath(CompareSchemasByListRequestDTO) }
+            ]
+        },
         examples: {
-            Filter: {
+            BySchemaIds: {
                 value: {
                     schemaId1: Examples.DB_ID,
-                    schemaId2: Examples.DB_ID,
+                    schemaId2: Examples.DB_ID_2,
+                    idLvl: '0'
+                }
+            },
+            BySchemaList: {
+                value: {
+                    schemas: [{
+                        type: 'id',
+                        value: Examples.DB_ID
+                    }, {
+                        type: 'id',
+                        value: Examples.DB_ID_2
+                    }],
                     idLvl: '0'
                 }
             }
@@ -307,13 +472,26 @@ export class AnalyticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: CompareSchemasDTO
+        type: CompareSchemasDTO,
+        example: ObjectExamples.COMPARE_SCHEMAS_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(FilterSchemasDTO, CompareSchemasDTO, InternalServerErrorDTO)
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            message: [
+                'schemaId2 must be a string'
+            ],
+            error: 'Unprocessable Entity',
+            statusCode: 422
+        }
+    })
+    @ApiExtraModels(CompareSchemasByIdsRequestDTO, CompareSchemasByListRequestDTO)
     @HttpCode(HttpStatus.OK)
     async compareSchemas(
         @AuthUser() user: IAuthUser,
@@ -345,35 +523,59 @@ export class AnalyticsApi {
     @ApiBody({
         description: 'Filters.',
         required: true,
-        type: FilterDocumentsDTO,
+        schema: {
+            oneOf: [
+                { $ref: getSchemaPath(CompareDocumentsByIdsRequestDTO) },
+                { $ref: getSchemaPath(CompareDocumentsByListRequestDTO) }
+            ]
+        },
         examples: {
-            Filter1: {
-                value: {
-                    documentId1: Examples.DB_ID,
-                    documentId2: Examples.DB_ID
-                }
+            ByDocumentIds: {
+                value: ObjectExamples.COMPARE_DOCUMENTS_REQUEST_BY_IDS
             },
-            Filter2: {
-                value: {
-                    documentIds: [Examples.DB_ID, Examples.DB_ID],
-                }
+            ByDocumentList: {
+                value: ObjectExamples.COMPARE_DOCUMENTS_REQUEST_BY_LIST
             }
         }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: CompareDocumentsDTO
+        schema: {
+            oneOf: [
+                { $ref: getSchemaPath(CompareDocumentsDTO) },
+                { $ref: getSchemaPath(CompareDocumentsMultiDTO) }
+            ]
+        },
+        examples: {
+            SingleCompare: {
+                summary: 'Compare two documents',
+                value: ObjectExamples.COMPARE_DOCUMENTS_RESPONSE_SINGLE
+            },
+            MultiCompare: {
+                summary: 'Compare one document with many',
+                value: ObjectExamples.COMPARE_DOCUMENTS_RESPONSE_MULTI
+            }
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Invalid parameters'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(FilterDocumentsDTO, CompareDocumentsDTO, InternalServerErrorDTO)
+    @ApiExtraModels(CompareDocumentsByIdsRequestDTO, CompareDocumentsByListRequestDTO, CompareDocumentsDTO, CompareDocumentsMultiDTO)
     @HttpCode(HttpStatus.OK)
     async compareDocuments(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterDocumentsDTO
-    ): Promise<CompareDocumentsDTO> {
+    ): Promise<CompareDocumentsDTO | CompareDocumentsMultiDTO> {
         const documentId1 = filters ? filters.documentId1 : null;
         const documentId2 = filters ? filters.documentId2 : null;
         const documentIds = filters ? filters.documentIds : null;
@@ -426,35 +628,59 @@ export class AnalyticsApi {
     @ApiBody({
         description: 'Filters.',
         required: true,
-        type: FilterToolsDTO,
+        schema: {
+            oneOf: [
+                { $ref: getSchemaPath(CompareToolsByIdsRequestDTO) },
+                { $ref: getSchemaPath(CompareToolsByListRequestDTO) }
+            ]
+        },
         examples: {
-            Filter1: {
-                value: {
-                    toolId1: Examples.DB_ID,
-                    toolId2: Examples.DB_ID
-                }
+            ByToolIds: {
+                value: ObjectExamples.COMPARE_TOOLS_REQUEST_BY_IDS
             },
-            Filter2: {
-                value: {
-                    toolIds: [Examples.DB_ID, Examples.DB_ID],
-                }
+            ByToolList: {
+                value: ObjectExamples.COMPARE_TOOLS_REQUEST_BY_LIST
             }
         }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: CompareToolsDTO
+        schema: {
+            oneOf: [
+                { $ref: getSchemaPath(CompareToolsDTO) },
+                { $ref: getSchemaPath(CompareToolsMultiDTO) }
+            ]
+        },
+        examples: {
+            SingleCompare: {
+                summary: 'Compare two tools',
+                value: ObjectExamples.COMPARE_TOOLS_RESPONSE_SINGLE
+            },
+            MultiCompare: {
+                summary: 'Compare one tool with many',
+                value: ObjectExamples.COMPARE_TOOLS_RESPONSE_MULTI
+            }
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Invalid parameters'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(FilterToolsDTO, CompareToolsDTO, InternalServerErrorDTO)
+    @ApiExtraModels(CompareToolsByIdsRequestDTO, CompareToolsByListRequestDTO, CompareToolsDTO, CompareToolsMultiDTO)
     @HttpCode(HttpStatus.OK)
     async compareTools(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterToolsDTO
-    ): Promise<CompareToolsDTO> {
+    ): Promise<CompareToolsDTO | CompareToolsMultiDTO> {
         const toolId1 = filters ? filters.toolId1 : null;
         const toolId2 = filters ? filters.toolId2 : null;
         const toolIds = filters ? filters.toolIds : null;
@@ -512,26 +738,7 @@ export class AnalyticsApi {
         required: true,
         type: FilterPoliciesDTO,
         examples: {
-            Filter1: {
-                value: {
-                    policyId1: Examples.DB_ID,
-                    policyId2: Examples.DB_ID,
-                    eventsLvl: '0',
-                    propLvl: '0',
-                    childrenLvl: '0',
-                    idLvl: '0'
-                }
-            },
-            Filter2: {
-                value: {
-                    policyIds: [Examples.DB_ID, Examples.DB_ID],
-                    eventsLvl: '0',
-                    propLvl: '0',
-                    childrenLvl: '0',
-                    idLvl: '0'
-                }
-            },
-            Filter3: {
+            MixedSources: {
                 value: {
                     policies: [{
                         type: 'id',
@@ -544,9 +751,28 @@ export class AnalyticsApi {
                         value: {
                             id: Examples.UUID,
                             name: 'File Name',
-                            value: 'base64...'
+                            value: 'base65...'
                         }
                     }],
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            },
+            DatabaseOnly: {
+                value: {
+                    policyIds: [Examples.DB_ID, Examples.DB_ID_2],
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            },
+            Legacy: {
+                value: {
+                    policyId1: Examples.DB_ID,
+                    policyId2: Examples.DB_ID_2,
                     eventsLvl: '0',
                     propLvl: '0',
                     childrenLvl: '0',
@@ -557,13 +783,28 @@ export class AnalyticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: String
+        content: {
+            'text/csv': {
+                schema: {
+                    type: 'string'
+                },
+                example: ObjectExamples.COMPARE_POLICIES_EXPORT_CSV_RESPONSE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(FilterPoliciesDTO, InternalServerErrorDTO)
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Invalid parameters'
+        }
+    })
     @HttpCode(HttpStatus.OK)
     async comparePoliciesExport(
         @AuthUser() user: IAuthUser,
@@ -613,25 +854,37 @@ export class AnalyticsApi {
         type: FilterModulesDTO,
         examples: {
             Filter: {
-                value: {
-                    moduleId1: Examples.DB_ID,
-                    moduleId2: Examples.DB_ID,
-                    propLvl: '0',
-                    childrenLvl: '0',
-                    idLvl: '0'
-                }
+                value: ObjectExamples.COMPARE_MODULES_REQUEST
             }
         }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: String
+        content: {
+            'text/csv': {
+                schema: {
+                    type: 'string'
+                },
+                example: ObjectExamples.COMPARE_MODULES_EXPORT_CSV_RESPONSE
+            }
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            message: [
+                'moduleId2 must be a string'
+            ],
+            error: 'Unprocessable Entity',
+            statusCode: 422
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(FilterModulesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async compareModulesExport(
         @AuthUser() user: IAuthUser,
@@ -686,12 +939,29 @@ export class AnalyticsApi {
     @ApiBody({
         description: 'Filters.',
         required: true,
-        type: FilterSchemasDTO,
+        schema: {
+            oneOf: [
+                { $ref: getSchemaPath(CompareSchemasByIdsRequestDTO) },
+                { $ref: getSchemaPath(CompareSchemasByListRequestDTO) }
+            ]
+        },
         examples: {
-            Filter: {
+            BySchemaIds: {
                 value: {
                     schemaId1: Examples.DB_ID,
-                    schemaId2: Examples.DB_ID,
+                    schemaId2: Examples.DB_ID_2,
+                    idLvl: '0'
+                }
+            },
+            BySchemaList: {
+                value: {
+                    schemas: [{
+                        type: 'id',
+                        value: Examples.DB_ID
+                    }, {
+                        type: 'id',
+                        value: Examples.DB_ID_2
+                    }],
                     idLvl: '0'
                 }
             }
@@ -699,13 +969,32 @@ export class AnalyticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: String
+        content: {
+            'text/csv': {
+                schema: {
+                    type: 'string'
+                },
+                example: ObjectExamples.COMPARE_SCHEMAS_EXPORT_CSV_RESPONSE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(FilterSchemasDTO, InternalServerErrorDTO)
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            message: [
+                'schemaId2 must be a string'
+            ],
+            error: 'Unprocessable Entity',
+            statusCode: 422
+        }
+    })
+    @ApiExtraModels(CompareSchemasByIdsRequestDTO, CompareSchemasByListRequestDTO)
     @HttpCode(HttpStatus.OK)
     async compareSchemasExport(
         @AuthUser() user: IAuthUser,
@@ -745,30 +1034,55 @@ export class AnalyticsApi {
     @ApiBody({
         description: 'Filters.',
         required: true,
-        type: FilterDocumentsDTO,
+        schema: {
+            oneOf: [
+                { $ref: getSchemaPath(CompareDocumentsByIdsRequestDTO) },
+                { $ref: getSchemaPath(CompareDocumentsByListRequestDTO) }
+            ]
+        },
         examples: {
-            Filter1: {
-                value: {
-                    documentId1: Examples.DB_ID,
-                    documentId2: Examples.DB_ID
-                }
+            ByDocumentIds: {
+                value: ObjectExamples.COMPARE_DOCUMENTS_REQUEST_BY_IDS
             },
-            Filter2: {
-                value: {
-                    documentIds: [Examples.DB_ID, Examples.DB_ID],
-                }
+            ByDocumentList: {
+                value: ObjectExamples.COMPARE_DOCUMENTS_REQUEST_BY_LIST
             }
         }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: String
+        content: {
+            'text/csv': {
+                schema: {
+                    type: 'string'
+                },
+                examples: {
+                    SingleCompare: {
+                        summary: 'Compare two documents (CSV export)',
+                        value: ObjectExamples.COMPARE_DOCUMENTS_EXPORT_CSV_RESPONSE_SINGLE
+                    },
+                    MultiCompare: {
+                        summary: 'Compare one document with many (CSV export)',
+                        value: ObjectExamples.COMPARE_DOCUMENTS_EXPORT_CSV_RESPONSE_MULTI
+                    }
+                }
+            }
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Invalid parameters'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(FilterDocumentsDTO, InternalServerErrorDTO)
+    @ApiExtraModels(CompareDocumentsByIdsRequestDTO, CompareDocumentsByListRequestDTO)
     @HttpCode(HttpStatus.OK)
     async compareDocumentsExport(
         @AuthUser() user: IAuthUser,
@@ -833,30 +1147,55 @@ export class AnalyticsApi {
     @ApiBody({
         description: 'Filters.',
         required: true,
-        type: FilterToolsDTO,
+        schema: {
+            oneOf: [
+                { $ref: getSchemaPath(CompareToolsByIdsRequestDTO) },
+                { $ref: getSchemaPath(CompareToolsByListRequestDTO) }
+            ]
+        },
         examples: {
-            Filter1: {
-                value: {
-                    toolId1: Examples.DB_ID,
-                    toolId2: Examples.DB_ID
-                }
+            ByToolIds: {
+                value: ObjectExamples.COMPARE_TOOLS_REQUEST_BY_IDS
             },
-            Filter2: {
-                value: {
-                    toolIds: [Examples.DB_ID, Examples.DB_ID],
-                }
+            ByToolList: {
+                value: ObjectExamples.COMPARE_TOOLS_REQUEST_BY_LIST
             }
         }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: String
+        content: {
+            'text/csv': {
+                schema: {
+                    type: 'string'
+                },
+                examples: {
+                    SingleCompare: {
+                        summary: 'Compare two tools (CSV export)',
+                        value: ObjectExamples.COMPARE_TOOLS_EXPORT_CSV_RESPONSE_SINGLE
+                    },
+                    MultiCompare: {
+                        summary: 'Compare one tool with many (CSV export)',
+                        value: ObjectExamples.COMPARE_TOOLS_EXPORT_CSV_RESPONSE_MULTI
+                    }
+                }
+            }
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Invalid parameters'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(FilterToolsDTO, InternalServerErrorDTO)
+    @ApiExtraModels(CompareToolsByIdsRequestDTO, CompareToolsByListRequestDTO)
     @HttpCode(HttpStatus.OK)
     async compareToolsExport(
         @AuthUser() user: IAuthUser,
@@ -912,24 +1251,34 @@ export class AnalyticsApi {
         required: true,
         type: FilterSearchBlocksDTO,
         examples: {
-            Filter: {
-                value: {
-                    uuid: '',
-                    config: {}
-                }
+            Compact: {
+                summary: 'Compact request example',
+                value: ObjectExamples.SEARCH_BLOCKS_REQUEST_COMPACT
             }
         }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SearchBlocksDTO,
-        isArray: true
+        isArray: true,
+        example: ObjectExamples.SEARCH_BLOCKS_RESPONSE_COMPACT
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            message: [
+                'id must be a string'
+            ],
+            error: 'Unprocessable Entity',
+            statusCode: 422
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(FilterSearchBlocksDTO, SearchBlocksDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async searchBlocks(
         @AuthUser() user: IAuthUser,
@@ -962,10 +1311,12 @@ export class AnalyticsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
+        example: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
     async checkIndexerAvailability(

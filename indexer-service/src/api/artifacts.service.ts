@@ -20,7 +20,6 @@ type MetaRes = {
 };
 
 type ChunkReq = { fileId: string; index: number; chunkSize?: number };
-type ChunkRes = { index: number; bytes: Uint8Array };
 
 @Controller()
 export class ArtifactsService {

@@ -1,6 +1,6 @@
 import { DataBaseHelper, Message } from '@indexer/common';
 import { MongoDriver, MongoEntityManager } from '@mikro-orm/mongodb';
-import { MessageType, Relationship, RELATIONSHIP_CATEGORIES } from '@indexer/interfaces';
+import { MessageType, Relationship, RELATIONSHIP_CATEGORIES, TagType } from '@indexer/interfaces';
 
 const categories = [
     MessageType.STANDARD_REGISTRY,
@@ -23,12 +23,13 @@ class RelationshipItem {
     private _id: string;
     private _category: number;
     private _name: string;
+    private _tagsCount: number;
 
     public get groupId(): string {
         return this._id;
     }
 
-    constructor(id: string, item: Message) {
+    constructor(id: string, item: Message, tagsCount?: number) {
         this.id = id;
         if (item) {
             this.item = item;
@@ -42,6 +43,7 @@ class RelationshipItem {
         this._id = this.id;
         this._setCategory();
         this._setName(item);
+        this._setTagsCount(tagsCount);
     }
 
     private _setName(item: Message) {
@@ -72,6 +74,10 @@ class RelationshipItem {
         );
     }
 
+    private _setTagsCount(tagsCount: number) {
+        this._tagsCount = tagsCount || 0;
+    }
+
     public setHistory(items: Message[]) {
         if (items.length) {
             this._id = items[0].consensusTimestamp;
@@ -92,6 +98,7 @@ class RelationshipItem {
             type: this.type,
             category: this._category,
             name: this._name,
+            tagsCount: this._tagsCount,
         };
     }
 }
@@ -170,8 +177,15 @@ export class Relationships {
             historyItem ||= message.has(messageId);
         }
 
+        let tagsCount = 0;
+
         switch (item.type) {
             case MessageType.INSTANCE_POLICY: {
+                tagsCount = await this.em.count(Message, {
+                    type: MessageType.TAG,
+                    'options.entity': TagType.Policy,
+                    topicId: item.topicId,
+                } as any);
                 await this.findRelationships(
                     item.analytics?.registryId,
                     historyItem ? parentId : item.consensusTimestamp
@@ -179,6 +193,11 @@ export class Relationships {
                 break;
             }
             case MessageType.SCHEMA: {
+                tagsCount = await this.em.count(Message, {
+                    type: MessageType.TAG,
+                    'options.entity': TagType.Schema,
+                    topicId: item.topicId,
+                } as any);
                 if (item.analytics?.policyIds) {
                     for (const policyId of item.analytics.policyIds) {
                         await this.findRelationships(
@@ -189,7 +208,28 @@ export class Relationships {
                 }
                 break;
             }
+            case MessageType.TOKEN: {
+                tagsCount = await this.em.count(Message, {
+                    type: MessageType.TAG,
+                    'options.entity': TagType.Token,
+                    topicId: item.topicId,
+                } as any);
+                break;
+            }
+            case MessageType.MODULE: {
+                tagsCount = await this.em.count(Message, {
+                    type: MessageType.TAG,
+                    'options.entity': TagType.Module,
+                    topicId: item.topicId,
+                } as any);
+                break;
+            }
             case MessageType.VC_DOCUMENT: {
+                tagsCount = await this.em.count(Message, {
+                    type: MessageType.TAG,
+                    'options.entity': TagType.PolicyDocument,
+                    topicId: item.topicId,
+                } as any);
                 if (item.options?.relationships) {
                     for (const id of item.options.relationships) {
                         await this.findRelationships(
@@ -216,6 +256,11 @@ export class Relationships {
                 break;
             }
             case MessageType.VP_DOCUMENT: {
+                tagsCount = await this.em.count(Message, {
+                    type: MessageType.TAG,
+                    'options.entity': TagType.PolicyDocument,
+                    topicId: item.topicId,
+                } as any);
                 if (item.options?.relationships) {
                     for (const id of item.options.relationships) {
                         await this.findRelationships(
@@ -232,14 +277,35 @@ export class Relationships {
                     'options.owner': item.options.did
                 } as any);
 
-                policyMessages.forEach(policy => {
-                    this.messages.set(policy.consensusTimestamp, new RelationshipItem(policy.consensusTimestamp, policy));
+                for (const policy of policyMessages) {
+                    const policyTagsCount = await this.em.count(Message, {
+                        type: MessageType.TAG,
+                        'options.entity': TagType.Policy,
+                        topicId: policy.topicId,
+                    } as any);
+                    this.messages.set(policy.consensusTimestamp, new RelationshipItem(policy.consensusTimestamp, policy, policyTagsCount));
                     this.links.push({
                         source: messageId,
                         target: policy.consensusTimestamp,
                         type: 'relationships',
                     });
-                });
+                }
+            }
+            case MessageType.CONTRACT: {
+                tagsCount = await this.em.count(Message, {
+                    type: MessageType.TAG,
+                    'options.entity': TagType.Contract,
+                    topicId: item.topicId,
+                } as any);
+                break;
+            }
+            case MessageType.TOOL: {
+                tagsCount = await this.em.count(Message, {
+                    type: MessageType.TAG,
+                    'options.entity': TagType.Tool,
+                    topicId: item.topicId,
+                } as any);
+                break;
             }
             default:
                 break;
@@ -249,7 +315,7 @@ export class Relationships {
             const target = new RelationshipItem(messageId, item);
             const history = await this.loadHistory(item);
             target.setHistory(history);
-            this.messages.set(messageId, new RelationshipItem(messageId, item));
+            this.messages.set(messageId, new RelationshipItem(messageId, item, tagsCount));
             if (parentId) {
                 this.links.push({
                     source: messageId,

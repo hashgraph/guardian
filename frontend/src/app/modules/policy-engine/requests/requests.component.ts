@@ -27,7 +27,7 @@ interface IColumn {
     styleUrls: ['./requests.component.scss'],
 })
 export class PolicyRequestsComponent implements OnInit {
-    public readonly title: string = 'Policy Requests';
+    public readonly title: string = 'Incoming Requests';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
@@ -464,7 +464,7 @@ export class PolicyRequestsComponent implements OnInit {
             .subscribe((response) => {
                 const dialogRef = this.dialogService.open(VCViewerDialog, {
                     showHeader: false,
-                    width: '1000px',
+                    width: '90%',
                     styleClass: 'guardian-dialog',
                     data: {
                         row: null,

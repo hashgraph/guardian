@@ -15,7 +15,7 @@ export interface IToken {
  * Password Utils
  */
 export class UserAccessTokenService {
-    private static readonly REFRESH_TOKEN_UPDATE_INTERVAL = '31536000000'; // 1 year
+    private static readonly REFRESH_TOKEN_UPDATE_INTERVAL = '2592000000'; // 1 month
     private static readonly ACCESS_TOKEN_UPDATE_INTERVAL = '60000';
 
     private readonly JWT_PRIVATE_KEY: string;

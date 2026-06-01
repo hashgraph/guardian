@@ -12,6 +12,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 interface IMetadata {
     owner: PolicyUser;
@@ -30,6 +31,7 @@ interface IMetadata {
     blockType: 'calculateContainerBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Calculate',
         title: `Add 'Calculate' Block`,
@@ -50,7 +52,8 @@ interface IMetadata {
             name: 'unsigned',
             label: 'Unsigned VC',
             title: 'Unsigned document',
-            type: PropertyType.Checkbox
+            type: PropertyType.Checkbox,
+            editable: true
         }]
     },
     variables: [
@@ -70,9 +73,12 @@ export class CalculateContainerBlock {
         documents: IVC | IVC[],
         ref: IPolicyCalculateBlock,
         parents: IPolicyDocument | IPolicyDocument[],
-        userId: string | null
+        userId: string | null,
+        user?: PolicyUser
     ): Promise<VcDocumentCollection> {
-        const fields = ref.options.inputFields;
+        const options = await ref.getOptions(user);
+
+        const fields = options.inputFields;
         let scope = {};
         let docOwner: PolicyUser;
         if (Array.isArray(parents)) {
@@ -100,8 +106,8 @@ export class CalculateContainerBlock {
             scope = await addon.run(scope, docOwner);
         }
         const newJson: any = {};
-        if (ref.options.outputFields) {
-            for (const field of ref.options.outputFields) {
+        if (options.outputFields) {
+            for (const field of options.outputFields) {
                 if (scope[field.value]) {
                     newJson[field.name] = scope[field.value];
                 }
@@ -120,10 +126,14 @@ export class CalculateContainerBlock {
     private async process(
         documents: IPolicyDocument | IPolicyDocument[],
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        actionStatus: RecordActionStep,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         const context = await ref.debugContext({ documents });
         const contextDocuments = context.documents as IPolicyDocument | IPolicyDocument[];
+
+        const options = await ref.getOptions(user);
 
         const isArray = Array.isArray(contextDocuments);
         if (!contextDocuments || (isArray && !contextDocuments.length)) {
@@ -145,12 +155,12 @@ export class CalculateContainerBlock {
         }
         // -->
 
-        const newJson = await this.calculate(json, ref, contextDocuments, userId);
-        if (ref.options.unsigned) {
-            return await this.createUnsignedDocument(newJson, ref);
+        const newJson = await this.calculate(json, ref, contextDocuments, userId, user);
+        if (options.unsigned) {
+            return await this.createUnsignedDocument(newJson, ref, actionStatus?.id);
         } else {
-            const metadata = await this.aggregateMetadata(contextDocuments, ref, userId);
-            return await this.createDocument(newJson, metadata, ref, userId);
+            const metadata = await this.aggregateMetadata(contextDocuments, ref, userId, user);
+            return await this.createDocument(newJson, metadata, ref, userId, actionStatus?.id, user);
         }
     }
 
@@ -163,11 +173,13 @@ export class CalculateContainerBlock {
     private async aggregateMetadata(
         documents: IPolicyDocument | IPolicyDocument[],
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        user?: PolicyUser
     ): Promise<IMetadata> {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
         const relationships = [];
+
         let accounts: any = {};
         let tokens: any = {};
         let id: string;
@@ -222,7 +234,9 @@ export class CalculateContainerBlock {
         json: any,
         metadata: IMetadata,
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        actionStatusId: string,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -235,8 +249,9 @@ export class CalculateContainerBlock {
         } = metadata;
         // <-- new vc
         const VCHelper = new VcHelper();
+        const options = await ref.getOptions(user);
 
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
             ...json
@@ -253,7 +268,7 @@ export class CalculateContainerBlock {
             VCHelper.addDryRunContext(vcSubject);
         }
 
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatusId);
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const didDocument = await policyOwnerCred.loadDidDocument(ref, userId);
         const newVC = await VCHelper.createVerifiableCredential(
@@ -263,7 +278,11 @@ export class CalculateContainerBlock {
             { uuid }
         );
 
-        const item = PolicyUtils.createVC(ref, owner, newVC);
+        const item = PolicyUtils.createVC(ref, owner, newVC, actionStatusId);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
+        PolicyUtils.setDocumentTags(item, tags);
+
         item.type = outputSchema.iri;
         item.schema = outputSchema.iri;
         item.relationships = relationships.length ? relationships : null;
@@ -282,10 +301,11 @@ export class CalculateContainerBlock {
      */
     private async createUnsignedDocument(
         json: any,
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        recordActionId: string
     ): Promise<IPolicyDocument> {
         const vc = PolicyUtils.createVcFromSubject(json);
-        return PolicyUtils.createUnsignedVC(ref, vc);
+        return PolicyUtils.createUnsignedVC(ref, vc, recordActionId);
     }
 
     /**
@@ -303,28 +323,33 @@ export class CalculateContainerBlock {
     @CatchErrors()
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+        const options = await ref.getOptions(event.user);
 
-        if (ref.options.inputDocuments === 'separate') {
+        if (options.inputDocuments === 'separate') {
             if (Array.isArray(event.data.data)) {
                 const result: IPolicyDocument[] = [];
                 for (const doc of event.data.data) {
-                    const newVC = await this.process(doc, ref, event?.user?.userId);
+                    const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus, event.user);
                     result.push(newVC)
                 }
                 event.data.data = result;
             } else {
-                event.data.data = await this.process(event.data.data, ref, event?.user?.userId);
+                event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus, event.user);
             }
         } else {
-            event.data.data = await this.process(event.data.data, ref, event?.user?.userId);
+            event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus, event.user);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+        // event.actionStatus.saveResult(event.data);
+
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             documents: ExternalDocuments(event.data?.data)
         }));
         ref.backup();
+
+        return event.data;
     }
 }

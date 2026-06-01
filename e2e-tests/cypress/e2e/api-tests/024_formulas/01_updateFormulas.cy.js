@@ -1,3 +1,4 @@
+import { randomInt } from "../../../support/random";
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -25,7 +26,7 @@ context("Update formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
                             description: "testLink desc",
                             name: `testLink`,
                             type: "variable",
-                            uuid: Math.floor(Math.random() * 99999),
+                            uuid: randomInt(99999),
                             link: {
                                 item: "field0",
                                 type: "schema",

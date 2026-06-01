@@ -58,8 +58,8 @@ export class TokenImport {
                 draftToken: false,
                 adminId: token.adminId,
                 policyId: token.policyId,
-                owner: user.owner,
-                creator: user.creator
+                owner: null,
+                creator: null
             }
         } else {
             return {

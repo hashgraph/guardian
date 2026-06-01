@@ -540,7 +540,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         const dialogRef = this.dialogService.open(SchemaRulesPreviewDialog, {
             showHeader: false,
             header: 'Preview',
-            width: '800px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 item
@@ -553,7 +553,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         const dialogRef = this.dialogService.open(SchemaRuleConfigDialog, {
             showHeader: false,
             header: 'Preview',
-            width: '800px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 variables: this.variables.getOptions(),

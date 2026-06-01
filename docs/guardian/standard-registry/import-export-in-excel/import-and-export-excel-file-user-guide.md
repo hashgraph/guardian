@@ -149,7 +149,7 @@ The fields from embedded schema definition tab (e.g. titled as ‘Production Dev
 
 2. **How they are processed by Guardian on import**
 
-On import for each VC schema imported Guardian will create basic scaffolding of Policy block, which includes  “_requestVcDocumentBlock” and a “customLogicBlock”_ if the imported schema contained’Auto-Calculate’ fields.
+On import for each VC schema imported Guardian will create basic scaffolding of Policy block, which includes  “_requestVcDocumentBlock” and a “customLogicBlock”_ if the imported schema contained ’Auto-Calculate’ fields.
 
 <figure><img src="../../../.gitbook/assets/image (462).png" alt=""><figcaption></figcaption></figure>
 
@@ -193,7 +193,7 @@ If the Excel contains unsupported function Guardian would generate the comment a
 
 4. Main calculations
 
-The main body of the script is incapsulated into the ‘main’ function and consist of the following main sections:\
+The main body of the script is encapsulated into the ‘main’ function and consist of the following main sections:\
 \
 \- Declaration of the used variables
 

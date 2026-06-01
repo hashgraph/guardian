@@ -1,19 +1,26 @@
 # Publishing a Policy
 
-{% swagger method="put" path="" baseUrl="/policies/push/{policyId}/publish" summary="Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic." %}
-{% swagger-description %}
+## Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.
+
+<mark style="color:orange;">`PUT`</mark> `/policies/push/{policyId}/publish`
+
 Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
-policy ID
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-parameter in="body" required="false" %}
-Object that contains policy version.
-{% endswagger-parameter %}
+| Name                                       | Type    | Description           |
+| ------------------------------------------ | ------- | --------------------- |
+| policyID<mark style="color:red;">\*</mark> | String  | policy ID             |
+| recordingEnabled                           | Boolean | Record policy actions |
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+#### Request Body
+
+| Name | Type   | Description                          |
+| ---- | ------ | ------------------------------------ |
+|      | String | Object that contains policy version. |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     content:
@@ -22,25 +29,25 @@ Object that contains policy version.
                 $ref: '#/components/schemas/Task'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -49,5 +56,5 @@ Object that contains policy version.
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

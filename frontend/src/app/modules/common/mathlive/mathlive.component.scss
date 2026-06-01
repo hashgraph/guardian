@@ -18,3 +18,9 @@
         user-select: all;
     }
 }
+
+.mathlive-content[menu="false"]::ng-deep {
+    math-field::part(menu-toggle) {
+        display: none;
+    }
+}

@@ -7,10 +7,11 @@ import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument,
 import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Retirement block
@@ -19,6 +20,7 @@ import { MintService } from '../mint/mint-service.js';
     blockType: 'retirementDocumentBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Wipe',
         title: `Add 'Wipe' Block`,
@@ -34,6 +36,27 @@ import { MintService } from '../mint/mint-service.js';
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
+        properties: [{
+            name: 'roundMethod',
+            label: 'Round Method',
+            title: 'Round Method',
+            type: PropertyType.Select,
+            items: [
+                {
+                    label: 'Round up',
+                    value: 'ceil'
+                },
+                {
+                    label: 'Round down',
+                    value: 'floor'
+                },
+                {
+                    label: 'Round to nearest',
+                    value: 'round'
+                }
+            ],
+            default: 'round'
+        }],
         defaultEvent: true
     },
     variables: [
@@ -57,7 +80,8 @@ export class RetirementBlock {
         token: any,
         data: any,
         ref: AnyBlockType,
-        serialNumbers?: number[]
+        serialNumbers?: number[],
+        actionStatusId?: string,
     ): Promise<VcDocument> {
         const vcHelper = new VcHelper();
         const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.WIPE_TOKEN);
@@ -69,7 +93,7 @@ export class RetirementBlock {
             amount: amount.toString(),
             ...(serialNumbers && { serialNumbers: serialNumbers.join(',') })
         }
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatusId);
         const wipeVC = await vcHelper.createVerifiableCredential(
             vcSubject,
             didDocument,
@@ -115,21 +139,25 @@ export class RetirementBlock {
         user: PolicyUser,
         targetAccount: string,
         relayerAccount: string,
-        userId: string | null
+        userId: string | null,
+        actionStatus: RecordActionStep
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const options = await ref.getOptions(user);
+
+        const tags = await PolicyUtils.getBlockTags(ref);
 
         const policyOwnerDidDocument = await policyOwner.loadDidDocument(ref, userId);
         const policyOwnerHederaCred = await policyOwner.loadHederaCredentials(ref, userId);
         const policyOwnerSignOptions = await policyOwner.loadSignOptions(ref, userId);
 
-        const uuid: string = await ref.components.generateUUID();
+        const uuid: string = await ref.components.generateUUID(actionStatus?.id);
 
         let serialNumbers: number[] = []
         let tokenValue: number = 0;
         let tokenAmount: string = '0';
         if (token.tokenType === TokenType.NON_FUNGIBLE) {
-            const exprOpt = ref.options.serialNumbersExpression;
+            const exprOpt = options.serialNumbersExpression;
             if (!exprOpt || !String(exprOpt).trim()) {
                 throw new Error('For NON_FUNGIBLE tokens, Serial numbers is required');
             }
@@ -181,20 +209,24 @@ export class RetirementBlock {
             }
         }
         else if (token.tokenType === TokenType.FUNGIBLE) {
-            const ruleOpt = ref.options.rule
+            const ruleOpt = options.rule
             const hasRule =
                 ruleOpt !== null && ruleOpt !== undefined &&
                 (typeof ruleOpt !== 'string' || ruleOpt.trim() !== '');
             if (!hasRule) {
                 throw new Error('For FUNGIBLE tokens, Rule is required');
             }
-            const amount = PolicyUtils.aggregate(ref.options.rule, documents);
-            [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
+
+            const amount = PolicyUtils.aggregate(options.rule, documents);
+            [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount, options.roundMethod);
         }
 
-        const wipeVC = await this.createWipeVC(policyOwnerDidDocument, token, tokenAmount, ref, serialNumbers);
+        const wipeVC = await this.createWipeVC(policyOwnerDidDocument, token, tokenAmount, ref, serialNumbers, actionStatus?.id);
         const vcs = [].concat(documents, wipeVC);
         const vp = await this.createVP(policyOwnerDidDocument, uuid, vcs);
+
+        wipeVC.addTags(tags);
+        vp.addTags(tags);
 
         const messageServer = new MessageServer({
             operatorId: policyOwnerHederaCred.hederaAccountId,
@@ -218,16 +250,19 @@ export class RetirementBlock {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
 
-        const vcDocument = PolicyUtils.createVC(ref, user, wipeVC);
+        const vcDocument = PolicyUtils.createVC(ref, user, wipeVC, actionStatus?.id);
         vcDocument.type = DocumentCategoryType.RETIREMENT;
         vcDocument.schema = `#${wipeVC.getSubjectType()}`;
         vcDocument.messageId = vcMessageResult.getId();
         vcDocument.topicId = vcMessageResult.getTopicId();
         vcDocument.relationships = relationships;
         vcDocument.relayerAccount = relayerAccount;
+        PolicyUtils.setDocumentTags(vcDocument, tags);
 
         await ref.databaseServer.saveVC(vcDocument);
 
@@ -246,15 +281,20 @@ export class RetirementBlock {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
 
-        const vpDocument = PolicyUtils.createVP(ref, user, vp);
+        const vpDocument = PolicyUtils.createVP(ref, user, vp, actionStatus?.id);
+        PolicyUtils.setDocumentTags(vpDocument, tags);
         vpDocument.type = DocumentCategoryType.RETIREMENT;
         vpDocument.messageId = vpMessageResult.getId();
         vpDocument.topicId = vpMessageResult.getTopicId();
         vpDocument.relationships = relationships;
         vpDocument.relayerAccount = relayerAccount;
+        PolicyUtils.setDocumentTags(vpDocument, tags);
+
         await ref.databaseServer.saveVP(vpDocument);
 
         await MintService.wipe({
@@ -278,15 +318,17 @@ export class RetirementBlock {
      * @param docs
      * @private
      */
-    private async getToken(ref: AnyBlockType, docs: IPolicyDocument[]): Promise<TokenCollection> {
+    private async getToken(ref: AnyBlockType, docs: IPolicyDocument[], user?: PolicyUser): Promise<TokenCollection> {
         let token: TokenCollection;
-        if (ref.options.useTemplate) {
+        const options = await ref.getOptions(user);
+
+        if (options.useTemplate) {
             if (docs[0].tokens) {
-                const tokenId = docs[0].tokens[ref.options.template];
+                const tokenId = docs[0].tokens[options.template];
                 token = await ref.databaseServer.getToken(tokenId, ref.dryRun);
             }
         } else {
-            token = await ref.databaseServer.getToken(ref.options.tokenId);
+            token = await ref.databaseServer.getToken(options.tokenId);
         }
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
@@ -310,12 +352,14 @@ export class RetirementBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
+        const options = await ref.getOptions(event.user);
+
         const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const token = await this.getToken(ref, docs);
+        const token = await this.getToken(ref, docs, event.user);
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
@@ -328,7 +372,7 @@ export class RetirementBlock {
         const vcs: VcDocument[] = [];
         const vsMessages: string[] = [];
         const topicIds: string[] = [];
-        const field = ref.options.accountId || 'default';
+        const field = options.accountId || 'default';
         const accounts: string[] = [];
         for (const doc of docs) {
             if (doc.signature === DocumentSignature.INVALID) {
@@ -356,7 +400,7 @@ export class RetirementBlock {
 
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, docs[0], event?.user?.userId);
         let targetAccount: string;
-        if (ref.options.accountId) {
+        if (options.accountId) {
             targetAccount = firstAccounts;
         } else {
             targetAccount = relayerAccount;
@@ -377,12 +421,14 @@ export class RetirementBlock {
             docOwner,
             targetAccount,
             relayerAccount,
-            event?.user?.userId
+            event?.user?.userId,
+            event.actionStatus
         );
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, docOwner, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data);
+        // event.actionStatus.saveResult(event.data);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, docOwner, null, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data, event.actionStatus);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, docOwner, {
             tokenId: token.tokenId,
@@ -393,5 +439,7 @@ export class RetirementBlock {
         }));
 
         ref.backup();
+
+        return event.data;
     }
 }

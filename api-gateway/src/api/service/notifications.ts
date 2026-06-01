@@ -1,7 +1,7 @@
 import { IAuthUser, NotificationService, PinoLogger } from '@guardian/common';
 import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Response, } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, NotificationDTO, ProgressDTO, pageHeader } from '#middlewares';
+import { Examples, ObjectExamples, InternalServerErrorDTO, NotificationDTO, ProgressDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { InternalException, parseInteger } from '#helpers';
 
@@ -37,11 +37,21 @@ export class NotificationsApi {
         description: 'Successful operation. Returns notifications and count.',
         isArray: true,
         headers: pageHeader,
-        type: NotificationDTO
+        type: NotificationDTO,
+        examples: {
+            withNotifications: { summary: 'Notifications list', value: [ObjectExamples.NOTIFICATION_SUCCESS, ObjectExamples.NOTIFICATION_ERROR] },
+            empty: { summary: 'No notifications', value: [] }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -76,10 +86,26 @@ export class NotificationsApi {
         description: 'Successful operation. Returns new notifications.',
         isArray: true,
         type: NotificationDTO,
+        examples: {
+            default: {
+                summary: 'New notifications',
+                value: [ObjectExamples.NOTIFICATION_SUCCESS, ObjectExamples.NOTIFICATION_ERROR]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            userNotRegistered: {
+                summary: 'User is not registered',
+                value: { statusCode: 500, message: 'User is not registered' }
+            },
+            generic: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -108,11 +134,27 @@ export class NotificationsApi {
     @ApiOkResponse({
         description: 'Successful operation. Returns progresses.',
         isArray: true,
-        type: ProgressDTO
+        type: ProgressDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: [{ action: 'string', message: 'string', progress: 0, type: 'string', taskId: Examples.DB_ID }]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            userNotRegistered: {
+                summary: 'User is not registered',
+                value: { statusCode: 500, message: 'User is not registered' }
+            },
+            generic: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(ProgressDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -136,16 +178,32 @@ export class NotificationsApi {
     @Auth()
     @ApiOperation({
         summary: 'Read all notifications',
-        description: 'Returns new notifications.'
+        description: 'Marks all notifications as read and returns them.'
     })
     @ApiOkResponse({
         description: 'Successful operation. Returns notifications.',
         isArray: true,
-        type: NotificationDTO
+        type: NotificationDTO,
+        examples: {
+            default: {
+                summary: 'Notifications marked as read',
+                value: [ObjectExamples.NOTIFICATION_SUCCESS, ObjectExamples.NOTIFICATION_ERROR]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            userNotRegistered: {
+                summary: 'User is not registered',
+                value: { statusCode: 500, message: 'User is not registered' }
+            },
+            generic: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -180,11 +238,23 @@ export class NotificationsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation. Returns deleted notifications count.',
-        type: Number
+        type: Number,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: 0
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

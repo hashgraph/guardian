@@ -588,7 +588,7 @@ export class RulesConfig {
         const dialogRef = this.dialogService.open(SchemaRuleConfigDialog, {
             showHeader: false,
             header: 'Preview',
-            width: '800px',
+            width: '640px',
             styleClass: 'guardian-dialog',
             data: {
                 variables: this.variables.getOptions(),

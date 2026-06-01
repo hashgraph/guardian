@@ -1,10 +1,10 @@
-import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
-import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from '#middlewares';
+import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { Permissions, SchemaCategory, SchemaHelper, TagType, TaskAction, UserRole } from '@guardian/interfaces';
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
+import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { Examples, ForbiddenErrorDTO, InternalServerErrorDTO, ObjectExamples, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, TaskDTO, UnprocessableEntityErrorDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { ONLY_SR, SchemaUtils, Guardians, InternalException, EntityOwner, CacheService, getCacheKey, UseCache } from '#helpers';
+import { ONLY_SR, SchemaUtils, Guardians, InternalException, EntityOwner, CacheService, getCacheKey, UseCache, TaskManager, ServiceError } from '#helpers';
 import { PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
 
 @Controller('tags')
@@ -32,13 +32,25 @@ export class TagsApi {
         required: true,
         type: TagDTO,
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Created tag.',
         type: TagDTO,
+        examples: {
+            default: {
+                summary: 'Created tag',
+                value: ObjectExamples.TAG
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(TagDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -50,6 +62,14 @@ export class TagsApi {
         try {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
+            if (body.entity === TagType.PolicyBlock && user.role === UserRole.USER) {
+                const hasPermission = Array.isArray(user?.permissions) && user.permissions.includes(Permissions.POLICIES_POLICY_TAG);
+
+                if (!hasPermission) {
+                    throw new ForbiddenException('Missing permission: POLICIES_POLICY_TAG');
+                }
+            }
 
             const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
@@ -96,12 +116,40 @@ export class TagsApi {
         },
     })
     @ApiOkResponse({
-        description: 'Created tag.',
-        type: TagMapDTO,
+        description: 'Successful operation. Returns an object keyed by localTarget ID, where each value is a TagMapDTO with tags array.',
+        schema: {
+            type: 'object',
+            additionalProperties: {
+                type: 'object',
+                properties: {
+                    entity: { type: 'string' },
+                    target: { type: 'string' },
+                    refreshDate: { type: 'string' },
+                    tags: { type: 'array', items: { type: 'object' } }
+                }
+            }
+        },
+        examples: {
+            withTags: {
+                summary: 'Tags found for target',
+                value: { '69b83f18cd6b7c4adf4139bc': ObjectExamples.TAG_MAP }
+            },
+            empty: {
+                summary: 'No tags found',
+                value: {}
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidEntity: { summary: 'Invalid entity type', value: { statusCode: 422, message: 'Invalid entity' } }, invalidTarget: { summary: 'Invalid or missing target', value: { statusCode: 422, message: 'Invalid target' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(TagFilterDTO, TagMapDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -111,7 +159,7 @@ export class TagsApi {
         @Req() req
     ): Promise<{ [localTarget: string]: TagMapDTO }> {
         try {
-            const { entity, target, targets } = body;
+            const { entity, target, targets, linkedItems } = body;
 
             let _targets: string[];
             if (!entity) {
@@ -135,8 +183,8 @@ export class TagsApi {
 
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const items = await guardians.getTags(owner, entity, _targets);
-            const dates = await guardians.getTagCache(owner, entity, _targets);
+            const items = await guardians.getTags(owner, entity, _targets, linkedItems);
+            const dates = await guardians.getTagCache(owner, entity, _targets, linkedItems);
 
             const dateMap = {};
             for (const date of dates) {
@@ -189,10 +237,23 @@ export class TagsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
+        examples: {
+            default: {
+                summary: 'Tag deleted',
+                value: true
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidUuid: { summary: 'Missing or invalid tag UUID', value: { statusCode: 422, message: 'Invalid uuid' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -246,10 +307,23 @@ export class TagsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: TagMapDTO,
+        examples: {
+            default: {
+                summary: 'Tag map',
+                value: ObjectExamples.TAG_MAP
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidEntity: { summary: 'Invalid entity type', value: { statusCode: 422, message: 'Invalid entity' } }, invalidTarget: { summary: 'Invalid or missing target', value: { statusCode: 422, message: 'Invalid target' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(TagMapDTO, TagFilterDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -259,7 +333,7 @@ export class TagsApi {
         @Req() req
     ): Promise<TagMapDTO> {
         try {
-            const { entity, target } = body;
+            const { entity, target, linkedItems } = body;
             if (!entity) {
                 throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY);
             }
@@ -269,7 +343,7 @@ export class TagsApi {
 
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const tags = await guardians.synchronizationTags(owner, entity, target);
+            const tags = await guardians.synchronizationTags(owner, entity, target, linkedItems);
 
             const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
@@ -316,10 +390,34 @@ export class TagsApi {
         isArray: true,
         headers: pageHeader,
         type: SchemaDTO,
+        example: [{
+            id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Tag Schema',
+            description: 'Schema for carbon credit verification tags',
+            entity: 'TAG',
+            iri: '#tag-schema',
+            status: 'PUBLISHED',
+            topicId: Examples.ACCOUNT_ID,
+            version: '1.0.0',
+            owner: Examples.DID,
+            messageId: Examples.MESSAGE_ID,
+            category: 'TAG',
+            documentURL: 'https://ipfs.io/ipfs/example',
+            contextURL: 'https://ipfs.io/ipfs/example',
+            document: {},
+            context: {}
+        }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @UseCache({ isFastify: true })
@@ -380,10 +478,34 @@ export class TagsApi {
         isArray: true,
         headers: pageHeader,
         type: SchemaDTO,
+        example: [{
+            id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Tag Schema',
+            description: 'Schema for carbon credit verification tags',
+            entity: 'TAG',
+            iri: '#tag-schema',
+            status: 'PUBLISHED',
+            topicId: Examples.ACCOUNT_ID,
+            version: '1.0.0',
+            owner: Examples.DID,
+            messageId: Examples.MESSAGE_ID,
+            category: 'TAG',
+            documentURL: 'https://ipfs.io/ipfs/example',
+            contextURL: 'https://ipfs.io/ipfs/example',
+            document: {},
+            context: {}
+        }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @UseCache({ isFastify: true })
@@ -433,10 +555,35 @@ export class TagsApi {
     @ApiCreatedResponse({
         description: 'Created schema.',
         type: SchemaDTO,
+        example: {
+            id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Tag Schema',
+            description: 'Schema for carbon credit verification tags',
+            entity: 'TAG',
+            iri: '#tag-schema',
+            status: 'DRAFT',
+            topicId: Examples.ACCOUNT_ID,
+            version: '',
+            owner: Examples.DID,
+            messageId: '',
+            category: 'TAG',
+            documentURL: '',
+            contextURL: '',
+            document: {},
+            context: {}
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { schemaNotExist: { summary: 'Schema does not exist', value: { statusCode: 422, message: 'Schema does not exist.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -492,13 +639,26 @@ export class TagsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean,
+        type: TaskDTO,
+        examples: {
+            default: {
+                summary: 'Task created',
+                value: { taskId: Examples.UUID, expectation: 0 }
+            }
+        }
     })
+    @ApiForbiddenResponse({ description: 'Forbidden. Insufficient permissions.', type: ForbiddenErrorDTO, examples: { default: { summary: 'Forbidden', value: { statusCode: 403, message: 'Forbidden resource', error: 'Forbidden' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSchema(
         @AuthUser() user: IAuthUser,
@@ -509,11 +669,19 @@ export class TagsApi {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(user, schemaId);
-            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
-            if (error) {
-                throw new HttpException(error, HttpStatus.FORBIDDEN);
+            const permissionError = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
+            if (permissionError) {
+                throw new HttpException(permissionError, HttpStatus.FORBIDDEN);
             }
-            await guardians.deleteSchema(schemaId, owner);
+
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                await guardians.deleteSchema(schemaId, owner, task);
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+            });
 
             const invalidedCacheTags = [
                 `${PREFIXES.TAGS}schemas`,
@@ -554,10 +722,35 @@ export class TagsApi {
         description: 'Successful operation.',
         type: SchemaDTO,
         isArray: true,
+        example: [{
+            id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Tag Schema',
+            description: 'Schema for carbon credit verification tags',
+            entity: 'TAG',
+            iri: '#tag-schema',
+            status: 'PUBLISHED',
+            topicId: Examples.ACCOUNT_ID,
+            version: '1.0.0',
+            owner: Examples.DID,
+            messageId: Examples.MESSAGE_ID,
+            category: 'TAG',
+            documentURL: 'https://ipfs.io/ipfs/example',
+            contextURL: 'https://ipfs.io/ipfs/example',
+            document: {},
+            context: {}
+        }]
     })
+    @ApiForbiddenResponse({ description: 'Forbidden. Insufficient permissions.', type: ForbiddenErrorDTO, examples: { default: { summary: 'Forbidden', value: { statusCode: 403, message: 'Forbidden resource', error: 'Forbidden' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -614,10 +807,35 @@ export class TagsApi {
         description: 'Successful operation.',
         type: SchemaDTO,
         isArray: true,
+        example: [{
+            id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Tag Schema',
+            description: 'Schema for carbon credit verification tags',
+            entity: 'TAG',
+            iri: '#tag-schema',
+            status: 'PUBLISHED',
+            topicId: Examples.ACCOUNT_ID,
+            version: '1.0.0',
+            owner: Examples.DID,
+            messageId: Examples.MESSAGE_ID,
+            category: 'TAG',
+            documentURL: 'https://ipfs.io/ipfs/example',
+            contextURL: 'https://ipfs.io/ipfs/example',
+            document: {},
+            context: {}
+        }]
     })
+    @ApiForbiddenResponse({ description: 'Forbidden. Insufficient permissions.', type: ForbiddenErrorDTO, examples: { default: { summary: 'Forbidden', value: { statusCode: 403, message: 'Forbidden resource', error: 'Forbidden' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -661,10 +879,34 @@ export class TagsApi {
         description: 'Successful operation.',
         type: SchemaDTO,
         isArray: true,
+        example: [{
+            id: Examples.DB_ID,
+            uuid: Examples.UUID,
+            name: 'Tag Schema',
+            description: 'Schema for carbon credit verification tags',
+            entity: 'TAG',
+            iri: '#tag-schema',
+            status: 'PUBLISHED',
+            topicId: Examples.ACCOUNT_ID,
+            version: '1.0.0',
+            owner: Examples.DID,
+            messageId: Examples.MESSAGE_ID,
+            category: 'TAG',
+            documentURL: 'https://ipfs.io/ipfs/example',
+            contextURL: 'https://ipfs.io/ipfs/example',
+            document: {},
+            context: {}
+        }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     async getPublished(

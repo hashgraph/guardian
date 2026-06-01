@@ -13,7 +13,7 @@ Heat and steam energy are generally supplied by Korea District Heating Corporati
 - <a name="_hlk205460590"></a>Scope 2 (Indirect emissions): Heat and steam supplied externally.
 - The emissions may be included under a supplier’s Scope 3, Category 1 or 2. However, when calculating Scope 3 emissions, a separate Scope 3 methodology should be used.
 
-<br><br>
+<br>
 
 ### **User Input**
 
@@ -23,7 +23,7 @@ Heat and steam energy are generally supplied by Korea District Heating Corporati
   - Can be obtained via the KDHC website (requires membership and customer number):
   - https://www.kdhc.co.kr/cyb/heat/post/charg/heatChargeForm.do
 
-<br><br>
+<br>
 
 ### **Applied Emission Factors**
 

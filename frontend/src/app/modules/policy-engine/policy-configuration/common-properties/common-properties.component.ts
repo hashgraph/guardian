@@ -1,5 +1,5 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { BlockErrorActions, GenerateUUIDv4 } from '@guardian/interfaces';
+import { BlockErrorActions, GenerateUUIDv4, PolicyStatus } from '@guardian/interfaces';
 import { RegisteredService } from '../../services/registered.service';
 import {
     IBlockAbout,
@@ -7,7 +7,8 @@ import {
     IModuleVariables,
     RoleVariables,
     PolicyFolder,
-    PolicyItem
+    PolicyItem,
+    PolicyTemplate
 } from '../../structures';
 
 /**
@@ -27,6 +28,7 @@ export class CommonPropertiesComponent implements OnInit {
     @Input('type') type!: string;
 
     @Output() onInit = new EventEmitter();
+    @Output('onEditTags') onEditTags = new EventEmitter();
 
     loading: boolean = true;
     propHidden: any = {
@@ -256,6 +258,22 @@ export class CommonPropertiesComponent implements OnInit {
         const inputEvents = this.getInputEvents(item);
 
         return [{ label: 'None', value: '' }, ...inputEvents.map(event => ({ label: event, value: event }))];
+    }
+
+    public getTagsAmount(): number {
+        return (this.block as any)?._tags?.length || 0;
+    }
+
+    public editTags() {
+        this.onEditTags.emit();
+    }
+
+    public canEditTags(): boolean {
+        if (this.module instanceof PolicyTemplate) {
+            return this.module.status === PolicyStatus.PUBLISH;
+        }
+
+        return false;
     }
 }
 

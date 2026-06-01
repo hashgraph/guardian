@@ -304,6 +304,10 @@ export class UserPermissions {
         return this.check(Permissions.POLICIES_POLICY_AUDIT);
     }
 
+    public get POLICIES_POLICY_TAG(): boolean {
+        return this.check(Permissions.POLICIES_POLICY_TAG);
+    }
+
     //SCHEMAS
     public get SCHEMAS_SCHEMA_READ(): boolean {
         return this.check(Permissions.SCHEMAS_SCHEMA_READ);
@@ -560,6 +564,19 @@ export class UserPermissions {
 
     public get POLICIES_EXTERNAL_POLICY_UPDATE(): boolean {
         return this.check(Permissions.POLICIES_EXTERNAL_POLICY_UPDATE);
+    }
+
+    //WORKER TASKS
+    public get WORKER_TASKS_READ(): boolean {
+        return this.check(Permissions.WORKER_TASKS_READ);
+    }
+
+    public get WORKER_TASKS_EXECUTE(): boolean {
+        return this.check(Permissions.WORKER_TASKS_EXECUTE);
+    }
+
+    public get WORKER_TASKS_DELETE(): boolean {
+        return this.check(Permissions.WORKER_TASKS_DELETE);
     }
 
     public static isPolicyAdmin(user: any): boolean {

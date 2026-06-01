@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToolsService } from 'src/app/services/tools.service';
@@ -32,15 +32,21 @@ export class PreviewPolicyDialog {
     public toolForm!: UntypedFormGroup;
     public isFile?: boolean;
     public mode: string = 'new';
+    public originalTracking: boolean = false;
     public formulas!: string;
     public title!: string;
     public validTool: {
         [messageId: string]: '' | 'load' | 'valid' | 'invalid'
     } = {};
     public validTools: boolean = true;
+    public importRecords: boolean = false;
+    public canImportRecords: boolean = false;
     private _destroy$ = new Subject<void>();
     private _destroyMap: any = {};
     private _map = new Map<string, boolean>();
+    
+    public isLargeSize: boolean = true;
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     public get inValid(): boolean {
         if (!(this.policy || this.module || this.tool || this.xlsx)) {
@@ -108,6 +114,7 @@ export class PreviewPolicyDialog {
                 .join(', ');
 
             this.toolConfigs = importFile.tools || [];
+            this.canImportRecords = !!importFile.withRecords;
             for (const toolConfigs of this.toolConfigs) {
                 this.toolForm.addControl(
                     toolConfigs.messageId,
@@ -238,7 +245,9 @@ export class PreviewPolicyDialog {
         this.ref.close({
             versionOfTopicId: this.versionOfTopicId,
             tools: this.toolForm?.value,
-            demo: this.mode === 'demo'
+            demo: this.mode === 'demo',
+            importRecords: this.canImportRecords ? this.importRecords : false,
+            originalTracking: this.originalTracking
         });
     }
 
@@ -260,7 +269,7 @@ export class PreviewPolicyDialog {
     public onToolSearch(toolConfig: any) {
         const dialogRef = this.dialogService.open(SearchToolDialog, {
             showHeader: false,
-            width: '900px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 name: toolConfig.name
@@ -303,5 +312,26 @@ export class PreviewPolicyDialog {
             this.updateToolStatus();
         }
 
+    }
+
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
     }
 }

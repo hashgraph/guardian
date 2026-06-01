@@ -36,7 +36,8 @@ form {
 }
 
 .dialog-body {
-    height: auto;
+    height: 100vh !important;
+    max-height: 75vh !important;
 }
 
 .action-buttons {

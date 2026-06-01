@@ -40,11 +40,13 @@ If it is possible to distinguish and provide evidence for electricity generated 
 Electricity generated from renewable sources (solar, wind, hydro, ocean, geothermal, and bioenergy) that are **not subject to Renewable Portfolio
 Standard obligations** can be calculated separately using the emission factors for renewable energy -- typically 0 tCO~2~eq/MWh -- provided that a valid Renewable Energy Usage Certificate is obtained through one of the following:
 
-| Indirect PPA         | Contract for power purchase via an electricity sales business operator.                                                                                             |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Direct PPA           | Contract for power purchase via a renewable electricity supply business operator.                                                                                   |
-| REC Purchase         | Purchase of Renewable Energy Certificates (REC) under Article 12-7 of the Act on the Promotion of the Development, Use, and Deployment of New and Renewable Energy. |
-| Equity Participation | Contract for power purchase and REC acquisition through equity investment.                                                                                          |
+|           |                                                                                                      |
+| :-------: | :--------------------------------------------------------------------------------------------------: |
+| Indirect PPA   |                          Contract for power purchase via an electricity sales business operator                         |
+| Direct PPA  |                         Contract for power purchase via a renewable electricity supply business operator                         |
+| REC Purchase  | Purchase of Renewable Energy Certificates (REC) under Article 12-7 of the Act on the Promotion of the Development, Use, and Deployment of New and Renewable Energy.   |
+| Equity Participation  |             Contract for power purchase and REC acquisition through equity investment.                |                                                                                   |
+
 <br><br>
 
 ### **Applied Emission Factors**
@@ -131,6 +133,8 @@ consumption (MWh) – Renewable energy certificate purchases (MWh)</p>
 </tbody>
 </table>
 
+<br><br>
+
 ### **Use case: Calculation of Electricity Emissions for General Companies**
 
 **Scenario**
@@ -178,7 +182,7 @@ Priority 2 --- Supplier Data
 
     - EF<sub>j</sub> : Location based emission factor (tGHG/MWh)
 
-3.  Apply the formula for market-based approach: Total Market based emissions = ∑(Q<sub>R</sub> × EF<sub>R</sub>) + (Q<sub>N</sub> × EF<sub>j</sub>)
+-  Apply the formula for market-based approach: Total Market based emissions = ∑(Q<sub>R</sub> × EF<sub>R</sub>) + (Q<sub>N</sub> × EF<sub>j</sub>)
 
     - Q<sub>R</sub> : Renewable energy certificate purchases (MWh)
 

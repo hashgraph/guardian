@@ -8,87 +8,62 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
     let contractIdR;
 
+    const syncPools = (token, id) => {
+        return cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.RetireContract + id + "/" + API.SyncPools,
+            headers: token ? { authorization: token } : {},
+            failOnStatusCode: false
+        });
+    };
+
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.ListOfContracts,
-                headers: {
-                    authorization,
-                },
-                qs: {
-                    "type": "RETIRE",
-                },
+                headers: { authorization },
+                qs: { "type": "RETIRE" },
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 contractIdR = response.body.at(0).id;
             });
-        })
-    })
+        });
+    });
 
     it("Sync retire contract pools", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.SyncPools,
-                headers: {
-                    authorization,
-                }
-            }).then((response) => {
+        Authorization.getAccessToken(SRUsername).then((token) => {
+            syncPools(token, contractIdR).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-            })
-        })
+            });
+        });
     });
 
     it("Sync retire contract pools without auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.SyncPools,
-            failOnStatusCode: false,
-        }).then((response) => {
+        syncPools(null, contractIdR).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Sync retire contract pools with invalid auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.SyncPools,
-            headers: {
-                authorization: "Bearer wqe",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        syncPools("Bearer wqe", contractIdR).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Sync retire contract pools with empty auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.SyncPools,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
+        syncPools("", contractIdR).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Sync retire contract pools as User - Negative", () => {
-        Authorization.getAccessToken(UserUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.SyncPools,
-                headers: {
-                    authorization
-                },
-                failOnStatusCode: false,
-            }).then((response) => {
+        Authorization.getAccessToken(UserUsername).then((token) => {
+            syncPools(token, contractIdR).then((response) => {
                 expect(response.status).eql(STATUS_CODE.FORBIDDEN);
             });
         });
     });
+
 });

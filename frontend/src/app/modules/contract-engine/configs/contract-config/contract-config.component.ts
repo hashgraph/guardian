@@ -315,9 +315,9 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
 
     importContract() {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
+            showHeader: false,
             width: '700px',
-            modal: true,
-            closable: false,
+            styleClass: 'guardian-dialog',
             data: {
                 fieldsConfig: [
                     {
@@ -360,9 +360,9 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
 
     createContract() {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
+            showHeader: false,
             width: '700px',
-            modal: true,
-            closable: false,
+            styleClass: 'guardian-dialog',
             data: {
                 fieldsConfig: [
                     {
@@ -393,9 +393,9 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
 
     inputHederaIdentifier(callback: (result: string) => void) {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
+            showHeader: false,
             width: '700px',
-            modal: true,
-            closable: false,
+            styleClass: 'guardian-dialog',
             data: {
                 fieldsConfig: [
                     {
@@ -421,9 +421,9 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
 
     inputHederaAndTokenIdentifier(callback: (hederaId: string, tokenId: string) => void) {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
+            showHeader: false,
             width: '700px',
-            modal: true,
-            closable: false,
+            styleClass: 'guardian-dialog',
             data: {
                 fieldsConfig: [
                     {

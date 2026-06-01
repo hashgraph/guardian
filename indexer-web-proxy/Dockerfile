@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Stage 0: # Define the versions of the base images used
-ARG NODE_VERSION=20.19.5-alpine
-ARG NGINX_VERSION=1.27.4-alpine
+ARG NODE_VERSION=20.20.2-alpine
+ARG NGINX_VERSION=1.27.5-alpine
 
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
 WORKDIR /usr/local/app
@@ -17,13 +17,24 @@ RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
 COPY --link indexer-interfaces/src src/
 RUN yarn pack
 
-# Stage 2: Build frontend
+# Stage 2: Build common module
+FROM base AS common
+COPY --link --from=interfaces /usr/local/app/indexer-interfaces-*.tgz ./indexer-interfaces.tgz
+COPY --link indexer-common/package.json indexer-common/tsconfig*.json yarn.lock ./
+RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@indexer/interfaces']='file:./indexer-interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
+    yarn install
+COPY --link indexer-common/src src/
+RUN yarn pack
+
+# Stage 3: Build frontend
 FROM base AS build
 COPY --link --from=interfaces /usr/local/app/indexer-interfaces-*.tgz ./indexer-interfaces.tgz
+COPY --link --from=common /usr/local/app/indexer-common-*.tgz ./indexer-common.tgz
 COPY --link ./indexer-frontend/. ./
-RUN npm install indexer-interfaces.tgz && npm run build
+RUN npm install indexer-interfaces.tgz && npm install indexer-common.tgz && npm run build
 
-# Stage 3: Create the final image
+# Stage 4: Create the final image
 FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS image
 
 # Copy config and built application from the build stage into the image

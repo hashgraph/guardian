@@ -2,6 +2,14 @@
     <div class="content">
         <div class="header">
             <h1>{{ 'details.policy.header' | transloco }} {{id}}</h1>
+            <div *ngIf="tags && tags.length > 0" class="tags-container">
+                <div class="tag-item" *ngFor="let tag of tags" (click)="onOpenTag(tag)">
+                    <span class="pi pi-tag primary-color"></span>
+                    <div class="name">
+                        {{ tag?.name || tag?.options?.name }}
+                    </div>
+                </div>
+            </div>
         </div>
         @if (loading) {
         <div class="loading">
@@ -30,7 +38,12 @@
                     </textarea>
                 </div>
             </p-tabPanel>
-
+            <p-tabPanel *ngIf="showOriginTab" [header]="'details.origin' | transloco">
+                <app-compare [messageId]="id"></app-compare>
+            </p-tabPanel>
+            <p-tabPanel *ngIf="showDerivationsTab" [header]="'details.derivations' | transloco">
+                <app-derivations [messageId]="id"></app-derivations>
+            </p-tabPanel>
         </p-tabView>
         } @else {
         <div>{{ 'details.not_found' | transloco }}</div>

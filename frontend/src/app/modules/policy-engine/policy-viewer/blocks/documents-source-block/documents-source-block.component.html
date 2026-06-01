@@ -39,6 +39,7 @@
                     <tr
                         [ngClass]="getRowClass(element)"
                         (click)="onRowClick(element)"
+                        [attr.disconnected]="element.disconnected"
                     >
                         <ng-container *ngFor="let field of fields">
                             <td 

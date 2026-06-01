@@ -25,6 +25,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CodeEditorDialogComponent } from '../../policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
+import { EditorHelpContext } from '../../policy-engine/dialogs/code-editor-dialog/editor-help-context';
 
 /**
  * Schemas constructor
@@ -79,6 +80,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public defaultValuesSubscription?: Subscription;
     public presetValues: any;
     public isShowMore = false;
+
     private fieldTypeSub: Subscription;
     private fieldPropertySub: Subscription;
     private _sd?: any;
@@ -389,12 +391,18 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         this.helpText = (item && item.name === 'Help Text') || false;
         this.enum = ((item && item.name) || typeName) === 'Enum';
         this.geoJson = ((item && item.name) || typeName) === 'GeoJSON';
+        if (!item) {
+            this.field.isUpdatable.setValue(false);
+            this.field.isUpdatable.disable()
+        } else {
+            this.field.isUpdatable.enable()
+        }
     }
 
     onEditEnum() {
         const dialogRef = this.dialogService.open(EnumEditorDialog, {
             header: 'Enum data',
-            width: '700px',
+            width: '90%',
             showHeader: false,
             styleClass: 'guardian-dialog',
             data: {
@@ -459,14 +467,94 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     onEditExpression() {
+        const siblingFields = this.getSiblingFieldNames();
+        const helpContext: EditorHelpContext = {
+            availableFields: siblingFields,
+            operators: [
+                { label: 'Add', symbol: '+' },
+                { label: 'Subtract', symbol: '-' },
+                { label: 'Multiply', symbol: '*' },
+                { label: 'Divide', symbol: '/' },
+                { label: 'Modulo', symbol: '%' },
+                { label: 'Equals', symbol: '==' },
+                { label: 'Strict equals', symbol: '===' },
+                { label: 'Not equals', symbol: '!=' },
+                { label: 'Less than', symbol: '<' },
+                { label: 'Greater than', symbol: '>' },
+                { label: 'Less or equal', symbol: '<=' },
+                { label: 'Greater or equal', symbol: '>=' },
+                { label: 'And', symbol: '&&' },
+                { label: 'Or', symbol: '||' },
+                { label: 'Not', symbol: '!' },
+                { label: 'Ternary', symbol: '? :' },
+            ],
+            functions: [
+                {
+                    category: 'Math',
+                    items: [
+                        { name: 'Math.abs', description: 'Absolute value' },
+                        { name: 'Math.round', description: 'Round to nearest integer' },
+                        { name: 'Math.floor', description: 'Round down' },
+                        { name: 'Math.ceil', description: 'Round up' },
+                        { name: 'Math.sqrt', description: 'Square root' },
+                        { name: 'Math.pow', description: 'Raise to power' },
+                        { name: 'Math.log', description: 'Natural logarithm' },
+                        { name: 'Math.log10', description: 'Base-10 logarithm' },
+                        { name: 'Math.exp', description: 'e raised to power' },
+                        { name: 'Math.min', description: 'Minimum of values' },
+                        { name: 'Math.max', description: 'Maximum of values' },
+                        { name: 'Math.trunc', description: 'Remove fractional digits' },
+                        { name: 'Math.sign', description: 'Sign of a number (-1, 0, 1)' },
+                    ],
+                },
+                {
+                    category: 'Array',
+                    items: [
+                        { name: 'reduce', description: 'arr.reduce((sum, v) => sum + v, 0)' },
+                        { name: 'filter', description: 'arr.filter(v => v > 0)' },
+                        { name: 'map', description: 'arr.map(v => v * 2)' },
+                        { name: 'length', description: 'arr.length — count of items' },
+                    ],
+                },
+                {
+                    category: 'Type conversion',
+                    items: [
+                        { name: 'Number', description: 'Convert to number' },
+                        { name: 'String', description: 'Convert to string' },
+                        { name: 'parseFloat', description: 'Parse decimal number' },
+                        { name: 'parseInt', description: 'Parse integer' },
+                    ],
+                },
+            ],
+            parameters: [
+                {
+                    name: 'table',
+                    description: 'Helper for table-type fields',
+                    methods: [
+                        { name: 'col', description: 'table.col(field, "colName") — column values as array' },
+                        { name: 'cell', description: 'table.cell(field, rowIndex, "colName") — single cell' },
+                        { name: 'rows', description: 'table.rows(field) — all rows as array' },
+                        { name: 'keys', description: 'table.keys(field) — column key names' },
+                        { name: 'num', description: 'table.num(value) — convert to number' },
+                    ],
+                },
+            ],
+            examples: this.buildExamples(siblingFields),
+            scopeNote: 'Reference sibling fields by their key name. Expressions are evaluated as JavaScript when the form is submitted.',
+        };
+
         const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
             showHeader: false,
-            width: '80%',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
-                mode: 'json',
+                mode: 'formula-lang',
+                variables: siblingFields,
                 expression: this.field.expression.value,
-                readonly: this.readonly
+                readonly: this.readonly,
+                placeholder: 'e.g., fieldA + fieldB\nfieldA > 100 ? "high" : "low"\nMath.round(fieldA / fieldB * 100) / 100',
+                helpContext,
+                validate: true,
             }
         })
         dialogRef.onClose.subscribe(result => {
@@ -476,6 +564,40 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 this.field.expression.updateValueAndValidity();
             }
         })
+    }
+
+    private buildExamples(fields: string[]): { label: string; code: string }[] {
+        const a = fields[0] || 'field1';
+        const b = fields[1] || 'field2';
+        return [
+            { label: 'Sum two fields', code: `${a} + ${b}` },
+            { label: 'Percentage', code: `${a} / ${b} * 100` },
+            { label: 'Conditional value', code: `${a} > 100 ? "high" : "low"` },
+            { label: 'Nested condition', code: `${a} > 100 ? "high" : ${a} > 50 ? "medium" : "low"` },
+            { label: 'Round to 2 decimals', code: `Math.round(${a} / ${b} * 100) / 100` },
+            { label: 'Clamp value', code: `Math.min(Math.max(${a}, 0), 100)` },
+            { label: 'String concatenation', code: `"ID-" + String(${a}) + "-" + String(${b})` },
+            { label: 'With local variable (IIFE)', code: `(() => { const tax = ${a} * 0.2; return ${a} + tax; })()` },
+            { label: 'Table column sum', code: `table.col(${a}, "amount").reduce((s, v) => s + table.num(v), 0)` },
+        ];
+    }
+
+    private getSiblingFieldNames(): string[] {
+        if (!this.fieldsForm) {
+            return [];
+        }
+        const formValue = this.fieldsForm.value;
+        if (!formValue || typeof formValue !== 'object') {
+            return [];
+        }
+        const names: string[] = [];
+        for (const key of Object.keys(formValue)) {
+            const entry = formValue[key];
+            if (entry && entry.controlKey && entry.controlKey !== this.field.controlKey.value) {
+                names.push(entry.controlKey);
+            }
+        }
+        return names;
     }
 
     private updateGeoKeywords(values: string[]) {

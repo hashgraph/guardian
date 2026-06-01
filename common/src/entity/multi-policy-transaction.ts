@@ -65,4 +65,14 @@ export class MultiPolicyTransaction extends BaseEntity {
      */
     @Property({ nullable: true })
     relayerAccount?: string;
+
+    /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
 }

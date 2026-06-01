@@ -54,6 +54,12 @@ export class PolicyActionsService {
         await this.topicListener.subscribe(this.loadTask.bind(this));
     }
 
+    public async destroy(): Promise<void> {
+        if (this.topicListener) {
+            await this.topicListener.close();
+        }
+    }
+
     public async selectGroup(
         user: PolicyUser,
         uuid: string
@@ -102,7 +108,9 @@ export class PolicyActionsService {
                 sendToIPFS: true,
                 memo: null,
                 userId: null,
-                interception: null
+                interception: null,
+                dryRun: this.policyInstance.dryRun,
+                mockId: null
             });
         row.messageId = messageResult.getId();
         row.startMessageId = messageResult.getId();
@@ -121,7 +129,8 @@ export class PolicyActionsService {
     public async sendAction(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
-        data: any
+        data: any,
+        waitRemotePolicy?: boolean
     ): Promise<any> {
         const userCred = await PolicyUtils.getUserCredentials(block, user.did, user.userId);
         const userHederaCred = await userCred.loadHederaCredentials(block, user.userId);
@@ -166,7 +175,9 @@ export class PolicyActionsService {
                 sendToIPFS: true,
                 memo: null,
                 userId: null,
-                interception: null
+                interception: null,
+                dryRun: block.dryRun,
+                mockId: null
             });
         row.messageId = messageResult.getId();
         row.startMessageId = messageResult.getId();
@@ -177,9 +188,13 @@ export class PolicyActionsService {
         await this.updateLastStatus(row);
         await this.sentNotification(row);
 
-        return new Promise<any>((resolve, reject) => {
-            this.actions.set(row.startMessageId, { resolve, reject });
-        });
+        if (waitRemotePolicy === false) {
+            return true;
+        } else {
+            return new Promise<any>((resolve, reject) => {
+                this.actions.set(row.startMessageId, { resolve, reject });
+            });
+        }
     }
 
     public async sendRemoteAction(
@@ -230,7 +245,9 @@ export class PolicyActionsService {
                 sendToIPFS: true,
                 memo: null,
                 userId: null,
-                interception: null
+                interception: null,
+                dryRun: this.policyInstance.dryRun,
+                mockId: null
             });
         row.messageId = messageResult.getId();
         row.startMessageId = messageResult.getId();
@@ -293,7 +310,9 @@ export class PolicyActionsService {
                 sendToIPFS: true,
                 memo: null,
                 userId: null,
-                interception: null
+                interception: null,
+                dryRun: null,
+                mockId: null
             });
 
         newRow.messageId = messageResult.getId();
@@ -371,7 +390,9 @@ export class PolicyActionsService {
                 sendToIPFS: true,
                 memo: null,
                 userId: null,
-                interception: null
+                interception: null,
+                dryRun: null,
+                mockId: null
             });
         newRow.messageId = messageResult.getId();
         newRow.sender = messageResult.payer;
@@ -518,7 +539,10 @@ export class PolicyActionsService {
         let loaded: boolean = false;
         try {
             const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, message.owner, null);
-            await MessageServer.loadDocument(message, userMessageKey);
+            await MessageServer.loadDocument(message, userMessageKey, {
+                dryRun: null,
+                mockId: null
+            });
             document = message.getDocument();
             loaded = true;
         } catch (error) {
@@ -653,7 +677,8 @@ export class PolicyActionsService {
             throw error;
         }
 
-        const result = await block.setData(policyUser, row.document, ActionType.REMOTE);
+        // TODO: do we need to record actions from remote policy ?
+        const result = await block.setData(policyUser, row.document, ActionType.REMOTE, null);
         await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
     }
 
@@ -664,7 +689,7 @@ export class PolicyActionsService {
     }
 
     private async executeRemoteAction(row: PolicyAction, policyUser: PolicyUser) {
-        const result = await PolicyActionsUtils.complete(row, policyUser, this.policyOwner, this.policyOwnerId);
+        const result = await PolicyActionsUtils.complete(row, policyUser, this.policyOwner, this.policyOwnerId, this.policyId);
         this.policyInstance.backup();
         await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
     }
@@ -716,7 +741,9 @@ export class PolicyActionsService {
                     sendToIPFS: true,
                     memo: null,
                     userId: null,
-                    interception: null
+                    interception: null,
+                    dryRun: null,
+                    mockId: null
                 });
             row.messageId = messageResult.getId();
             row.sender = messageResult.payer;
@@ -782,7 +809,9 @@ export class PolicyActionsService {
                     sendToIPFS: true,
                     memo: null,
                     userId: null,
-                    interception: null
+                    interception: null,
+                    dryRun: null,
+                    mockId: null
                 });
             row.messageId = messageResult.getId();
             row.sender = messageResult.payer;
@@ -890,7 +919,9 @@ export class PolicyActionsService {
                 sendToIPFS: true,
                 memo: null,
                 userId: null,
-                interception: null
+                interception: null,
+                dryRun: null,
+                mockId: null
             });
         newRow.messageId = messageResult.getId();
         newRow.sender = messageResult.payer;
@@ -915,11 +946,16 @@ export class PolicyActionsService {
             messageId,
             loadIPFS: false,
             type: MessageType.PolicyAction,
-            interception: null
+            interception: null,
+            dryRun: null,
+            mockId: null
         })
         if (message) {
             const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, message.owner, null);
-            await MessageServer.loadDocument(message, userMessageKey);
+            await MessageServer.loadDocument(message, userMessageKey, {
+                dryRun: null,
+                mockId: null
+            });
             row.document = message.getDocument();
             row.loaded = true;
             await collection.insertOrUpdate([row], 'messageId');

@@ -159,6 +159,42 @@
                 </div>
             </p-accordionTab>
 
+            <p-accordionTab header="Policy Tools">
+                <div *ngIf="tools && tools.length" class="merge-tree">
+                    <div *ngFor="let item of tools"
+                        class="report-item report-item-small"
+                        [attr.type]="item.type"
+                        [attr.rate]="item.total_rate"
+                        [style.grid-template-columns]="_gridStyle">
+
+                        <ng-container *ngFor="let context of item.contexts">
+                            <div *ngIf="context.left"
+                                 class="left-compare-result compare-result"
+                                 [attr.open]="true">
+                                <ng-container
+                                    *ngTemplateOutlet="propInfo; context: context">
+                                </ng-container>
+                            </div>
+
+                            <div class="middle-compare-result compare-result"
+                                 *ngIf="context.right"
+                                 [style.grid-column-start]="2 * context.index"
+                                 [attr.open]="true">
+                            </div>
+
+                            <div class="right-compare-result compare-result"
+                                 *ngIf="context.right"
+                                 [style.grid-column-start]="2 * context.index + 1"
+                                 [attr.open]="true">
+                                <ng-container
+                                    *ngTemplateOutlet="propInfo; context: context">
+                                </ng-container>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+            </p-accordionTab>
+
             <p-accordionTab header="Policy Blocks" [selected]="true">
 
                 <div class="merge-container">

@@ -49,16 +49,30 @@ export async function getOrCreateTopic(item: PolicyLabel, userId: string | null)
     const rootTopic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policy.instanceTopicId), true, userId);
     const root = await (new Users()).getHederaAccount(item.owner, userId);
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-    topic = await topicHelper.create({
-        type: TopicType.LabelTopic,
-        owner: policy.owner,
-        name: 'POLICY_LABELS',
-        description: 'POLICY_LABELS',
-        policyId: policy.id,
-        policyUUID: policy.uuid
-    }, userId, { admin: true, submit: false });
+    topic = await topicHelper.create(
+        {
+            type: TopicType.LabelTopic,
+            owner: policy.owner,
+            name: 'POLICY_LABELS',
+            description: 'POLICY_LABELS',
+            policyId: policy.id,
+            policyUUID: policy.uuid
+        },
+        {
+            admin: true,
+            submit: false
+        },
+        {
+            userId
+        }
+    );
     await topic.saveKeys(userId);
-    await topicHelper.twoWayLink(topic, rootTopic, null, userId);
+    await topicHelper.twoWayLink({
+        topic,
+        parent: rootTopic,
+        rationale: null,
+        userId
+    });
     await DatabaseServer.saveTopic(topic.toObject());
     return topic;
 }

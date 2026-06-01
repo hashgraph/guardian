@@ -5,7 +5,8 @@ import { ClientsModule, MicroserviceOptions, Transport } from '@nestjs/microserv
 import { ChannelService, Worker } from './api/channel.service.js';
 import { IPFSService } from './loaders/ipfs-service.js';
 import { HederaService } from './loaders/hedera-service.js';
-import { COMMON_CONNECTION_CONFIG, DataBaseHelper, entities, Environment, GenerateTLSOptionsNats, Migration, Utils } from '@indexer/common';
+import { COMMON_CONNECTION_CONFIG, DataBaseHelper, Environment, GenerateTLSOptionsNats, Migration, Utils } from '@indexer/common';
+import { entities } from '@indexer/common/dist/entities.js';
 
 const channelName = (process.env.SERVICE_CHANNEL || `indexer-worker.${Utils.GenerateUUIDv4(26)}`).toUpperCase();
 

@@ -9,7 +9,7 @@ This block provides a way to specify multiple signators for a single VC document
 | tag              | Unique name for the logic block.                                                                                                                               | multiSignBlock                                                                 |        |
 | permissions      | Which entity has rights to interact at this part of the workflow.                                                                                              | NoRole                                                                         |        |
 | defaultActive    | Shows whether this block is active at this time and whether it needs to be shown.                                                                              | Checked or unchecked.                                                          |        |
-| On errors        | Called if the system error has occurs in the Block                                                                                                             | <ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul> |        |
+| On errors        | Called if the system error occurs in the Block                                                                                                             | <ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul> |        |
 | Stop Propagation | End processing here, don't pass control to the next block.                                                                                                     | Checked or unchecked.                                                          |        |
 | Threshold (%)    | Proportion Of signators which are required to sign the document to achieve quorum for it to transition to ‘signed’ status. Must be a number between 0 and 100. | 0-100                                                                          |        |
 
@@ -63,7 +63,7 @@ This block provides a way to specify multiple signators for a single VC document
 | Type of Decision  | Description                                                                                                |
 | ----------------- | ---------------------------------------------------------------------------------------------------------- |
 | declinedCount     | number of users who declined signing the document                                                          |
-| declinedPercent   | percentage of users who declined need signing the document                                                 |
+| declinedPercent   | percentage of users who need to decline signing the document                                                 |
 | declinedThreshold | threshold number of users who need to decline signing the document to reach the final decision             |
 | documentStatus    | status of the document for the current users, null if the user has not made a selection to sign or decline |
 | signedCount       | number of users who have signed the document                                                               |

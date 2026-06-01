@@ -126,7 +126,9 @@ export class SynchronizationService {
                     payload: { userId: policyOwnerId },
                 }
             }, {
-                priority: 10
+                priority: 10,
+                dryRun: null,
+                mockId: null
             });
 
             const policyMap: { [x: string]: SynchronizationMessage[] } = {};
@@ -351,7 +353,9 @@ export class SynchronizationService {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: null,
+                mockId: null
             });
         }
         return true;

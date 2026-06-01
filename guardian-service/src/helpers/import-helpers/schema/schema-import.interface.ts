@@ -33,7 +33,7 @@ export interface ImportSchemaMap {
      */
     oldMessageID: string
     /**
-     * Old schema message id
+     * New schema message id
      */
     newMessageID: string
 }

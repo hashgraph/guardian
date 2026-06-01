@@ -27,5 +27,6 @@ export enum MessageType {
     PolicyDiff = 'Policy-Diff',
     PolicyAction = 'Policy-Action',
     PolicyDiscussion = 'Policy-Discussion',
-    PolicyComment = 'Policy-Comment'
+    PolicyComment = 'Policy-Comment',
+    PolicyRecordStep = 'PolicyRecordStep'
 }

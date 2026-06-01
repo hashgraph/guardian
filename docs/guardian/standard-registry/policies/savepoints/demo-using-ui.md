@@ -5,7 +5,7 @@ icon: computer
 # Demo using UI
 
 1. Step By Step
-2. Demo&#x20;
+2. Demo
 
 ## 1. Step By Step
 
@@ -37,3 +37,7 @@ You can stop the Dry Run, modify the policy in the editor, and then restart the 
 {% hint style="danger" %}
 **Note:** If you make changes to blocks that are already linked to existing savepoints, restoring those savepoints may cause unexpected behavior.
 {% endhint %}
+
+## 2. Demo Video
+
+[Youtube](https://youtu.be/cO6Ls-j1ROE?si=ecjATzGYQECjiqTr\&t=120)

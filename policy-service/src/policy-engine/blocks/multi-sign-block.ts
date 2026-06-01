@@ -11,6 +11,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { Inject } from '../../helpers/decorators/inject.js';
 import { DocumentCategoryType, LocationType } from '@guardian/interfaces';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Sign Status
@@ -28,6 +29,7 @@ enum DocumentStatus {
     blockType: 'multiSignBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Multiple Signature',
         title: `Add 'Multiple Signature' Block`,
@@ -49,7 +51,8 @@ enum DocumentStatus {
             label: 'Threshold (%)',
             title: 'Number of signatures required to move to the next step, as a percentage of the total number of users in the group.',
             type: PropertyType.Input,
-            default: '50'
+            default: '50',
+            editable: false
         }]
     },
     variables: []
@@ -107,6 +110,7 @@ export class MultiSignBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -127,8 +131,9 @@ export class MultiSignBlock {
      * @param user
      * @param blockData
      */
-    async setData(user: PolicyUser, blockData: any): Promise<any> {
+    async setData(user: PolicyUser, blockData: any, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+
         const { status, document } = blockData;
         const documentId = document.id;
         const sourceDoc = await ref.databaseServer.getVcDocument(documentId);
@@ -159,7 +164,7 @@ export class MultiSignBlock {
         const groupContext = await PolicyUtils.getGroupContext(ref, user);
         const vcDocument = sourceDoc.document;
         const credentialSubject = vcDocument.credentialSubject[0];
-        const uuid = await ref.components.generateUUID();
+        const uuid = await ref.components.generateUUID(actionStatus?.id);
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, sourceDoc, user.userId);
 
         const newVC = await PolicyActionsUtils
@@ -182,9 +187,9 @@ export class MultiSignBlock {
         );
 
         const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
-        await this.updateThreshold(users, sourceDoc, documentId, user, user.userId);
+        await this.updateThreshold(users, sourceDoc, documentId, user, user.userId, actionStatus);
 
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null, actionStatus);
 
         PolicyComponentsUtils.BlockUpdateFn(ref.parent, user);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
@@ -205,9 +210,11 @@ export class MultiSignBlock {
         sourceDoc: VcDocumentCollection,
         documentId: string,
         currentUser: PolicyUser,
-        userId: string | null
+        userId: string | null,
+        actionStatus: RecordActionStep,
     ) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+
         const data = await ref.databaseServer.getMultiSignDocuments(ref.uuid, documentId, currentUser.group);
 
         let signed = 0;
@@ -230,7 +237,7 @@ export class MultiSignBlock {
             const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, sourceDoc, userId);
 
             const vcs = data.map(e => VcDocument.fromJsonTree(e.document));
-            const uuid: string = await ref.components.generateUUID();
+            const uuid: string = await ref.components.generateUUID(actionStatus?.id);
             const vp = await this.vcHelper.createVerifiablePresentation(
                 vcs,
                 policyOwnerDocument,
@@ -258,7 +265,11 @@ export class MultiSignBlock {
                 });
 
             const vpMessageId = vpMessageResult.getId();
-            const vpDocument = PolicyUtils.createVP(ref, docOwner, vp);
+            const vpDocument = PolicyUtils.createVP(ref, docOwner, vp, actionStatus?.id);
+
+            const tags = await PolicyUtils.getBlockTags(ref);
+            PolicyUtils.setDocumentTags(vpDocument, tags);
+
             vpDocument.type = DocumentCategoryType.MULTI_SIGN;
             vpDocument.messageId = vpMessageId;
             vpDocument.topicId = vpMessageResult.getTopicId();
@@ -275,7 +286,7 @@ export class MultiSignBlock {
             );
 
             const state: IPolicyEventState = { data: sourceDoc };
-            ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, state);
+            await ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(
                 new ExternalEvent(ExternalEventType.SignatureQuorumReachedEvent, ref, null, {
                     documents: ExternalDocuments(data),
@@ -292,7 +303,7 @@ export class MultiSignBlock {
             );
 
             const state: IPolicyEventState = { data: sourceDoc };
-            ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, state);
+            await ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(
                 new ExternalEvent(ExternalEventType.SignatureSetInsufficientEvent, ref, null, {
                     documents: ExternalDocuments(data)
@@ -308,6 +319,7 @@ export class MultiSignBlock {
      */
     private async getDocumentStatus(document: IPolicyDocument, user: PolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+
         const confirmationDocument = await ref.databaseServer.getMultiSignStatus(ref.uuid, document.id);
         const data: any[] = await ref.databaseServer.getMultiSignDocuments(ref.uuid, document.id, user.group);
         const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
@@ -357,7 +369,7 @@ export class MultiSignBlock {
      * Remove User Event
      * @param {PolicyUser} user
      */
-    private async onRemoveUser(event: { target: PolicyUser, user: PolicyUser }) {
+    private async onRemoveUser(event: { target: PolicyUser, user: PolicyUser, actionStatus: RecordActionStep }) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (event && event.target) {
             const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, event.target.group, event.target.role);
@@ -365,9 +377,9 @@ export class MultiSignBlock {
             for (const document of documents) {
                 const documentId = document.documentId;
                 const vc = await ref.databaseServer.getVcDocument(documentId);
-                await this.updateThreshold(users, vc, documentId, event.target, event?.user?.userId);
+                await this.updateThreshold(users, vc, documentId, event.target, event?.user?.userId, event.actionStatus);
             }
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, null);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, null, event.actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, event.target, null));
         }
         ref.backup();

@@ -204,6 +204,13 @@
                     white-space: nowrap;
                     text-overflow: ellipsis;
                     display: block;
+                    position: absolute;
+                    left: 0;
+                    right: 0px;
+                    top: 0;
+                    bottom: 0;
+                    align-items: center;
+                    padding: 11px 8px;
                 }
             }
 
@@ -234,7 +241,20 @@
                 &.multi-line {
                     word-break: break-word;
                     white-space: normal;
-                    height: 50px !important;
+                    height: auto !important;
+                    padding-top: 6px;
+                    padding-bottom: 6px;
+                    padding-right: 6px;
+
+                    &::ng-deep {
+                        .p-dropdown {
+                            height: 48px;
+
+                            .p-dropdown-label {
+                                padding-top: 11px;
+                            }
+                        }
+                    }
                 }
             }
 

@@ -60,7 +60,7 @@ export class TableDialogComponent implements OnInit {
         this.readOnly = !!data.readOnly;
 
         if (data.columnDefs?.length) {
-            this.dataColumnDefs = data.columnDefs.map(c => ({ ...c }));
+            this.dataColumnDefs = data.columnDefs.map(c => ({ ...c, editable: !this.readOnly }));
         }
         if (data.rowData?.length) {
             this.rowData = data.rowData.map(r => ({ ...r }));
@@ -188,7 +188,7 @@ export class TableDialogComponent implements OnInit {
 
     private makeColDef(i: number): ColDef {
         const key = this.colKey(i);
-        return { field: key, colId: key, headerName: this.colName(i), editable: true };
+        return { field: key, colId: key, headerName: this.colName(i), editable: !this.readOnly };
     }
 
     private makeEmptyRow(): any {

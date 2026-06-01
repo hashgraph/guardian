@@ -14,6 +14,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'buttonBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Button',
         title: `Add 'Button' Block`,
@@ -36,6 +37,7 @@ export class ButtonBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = await ref.getOptions(user);
         const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -44,9 +46,13 @@ export class ButtonBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            type: ref.options.type,
-            uiMetaData: ref.options.uiMetaData,
-            user: ref.options.user
+            type: options.type,
+            uiMetaData: options.uiMetaData,
+            user: options.user,
+
+            userId: user ? user.userId : null,
+            userDid: user ? user.did : null,
+
         }
         return data;
     }
@@ -65,11 +71,11 @@ export class ButtonBlock {
          * Tag
          */
         tag: any
-    }): Promise<any> {
+    }, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const data: IPolicyDocument = blockData.document;
         const state: IPolicyEventState = { data };
-        ref.triggerEvents(blockData.tag, user, state);
+        await ref.triggerEvents(blockData.tag, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             button: blockData.tag,
             documents: ExternalDocuments(blockData.document)

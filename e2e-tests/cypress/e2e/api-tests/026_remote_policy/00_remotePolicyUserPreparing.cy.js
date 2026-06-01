@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
-
+// Exclude "all" tag, if needs to stop using MGS in CI tests run
 context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
     const MainSRUsername = Cypress.env('MainSRUser');
@@ -213,7 +213,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                             role: "STANDARD_REGISTRY",
                             inviteId: response.body.inviteId,
                             terms: {
-                                name: "MGS.v1",
+                                name: "MGS.v2",
                                 accepted: true
                             }
                         }
@@ -236,7 +236,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                                             authorization,
                                         },
                                         body: {
-                                            terms: "MGS.v1",
+                                            terms: "MGS.v2",
                                         }
                                     }).then((response) => {
                                         cy.request({
@@ -308,7 +308,7 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                         role: "USER",
                         inviteId: response.body.inviteId,
                         terms: {
-                            name: "MGS.v1",
+                            name: "MGS.v2",
                             accepted: true
                         }
                     }
@@ -322,9 +322,9 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                                 authorization,
                             },
                             body: {
-                                terms: "MGS.v1",
+                                terms: "MGS.v2",
                             }
-                        }).then((response) => {
+                        }).then(() => {
                             cy.request({
                                 method: METHOD.GET,
                                 url: API.ApiMGS + 'accounts/standard-registries',

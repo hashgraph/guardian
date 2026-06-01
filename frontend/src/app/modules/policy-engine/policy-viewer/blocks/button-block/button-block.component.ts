@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -6,6 +6,8 @@ import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.c
 import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
 import { PolicyStatus } from '@guardian/interfaces';
+import { IndexedDbRegistryService } from "src/app/services/indexed-db-registry.service";
+import { DB_NAME, STORES_NAME } from 'src/app/constants';
 
 /**
  * Component for display block of 'Buttons' type.
@@ -32,12 +34,17 @@ export class ButtonBlockComponent implements OnInit {
     readonly: boolean = false;
     private readonly _commentField: string = 'option.comment';
 
+    private hideEventsUserId: string | '' = '';
+
+    public incomingHideEventsLoading: boolean = false;
+
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private dialogService: DialogService,
-        private cdref: ChangeDetectorRef
+        private cdref: ChangeDetectorRef,
+        private indexedDbRegistry: IndexedDbRegistryService
     ) {
     }
 
@@ -103,8 +110,13 @@ export class ButtonBlockComponent implements OnInit {
             this.uiMetaData = data.uiMetaData || {};
             this.enableIndividualFilters = this.uiMetaData.enableIndividualFilters;
             this.buttons = this.uiMetaData.buttons || [];
+
+            this.hideEventsUserId = data.userDid
+            ;
         } else {
             this.data = null;
+
+            this.hideEventsUserId = '';
         }
 
         if (!this.buttons) {
@@ -124,6 +136,20 @@ export class ButtonBlockComponent implements OnInit {
                 button.visible = this.checkVisible(button);
             }
         }
+
+        this.incomingHideEventsLoading = (this.buttons || []).some((b: any) => b?.incomingHideEventsEnabled);
+
+        if (this.incomingHideEventsLoading) {
+            void this.applyIncomingHideEventsVisibility()
+                .catch((e) => {
+                    console.error(e);
+                })
+                .finally(() => {
+                    this.incomingHideEventsLoading = false;
+                    this.cdref.detectChanges();
+                });
+        }
+
         this.cdref.detectChanges();
     }
 
@@ -205,6 +231,14 @@ export class ButtonBlockComponent implements OnInit {
     }
 
     onSelect(button: any) {
+        void this.clearOutgoingHideEventsState()
+            .then(() => {
+                return this.writeOutgoingHideEventsState(button);
+            })
+            .catch((e) => {
+                console.error(e);
+            });
+
         this.setObjectValue(this.data, button.field, button.value);
         this.commonVisible = false;
         this.policyEngineService
@@ -253,5 +287,112 @@ export class ButtonBlockComponent implements OnInit {
                 this.onSelect(button);
             }
         });
+    }
+
+    private async ensureHideEventsStore(): Promise<void> {
+        await this.indexedDbRegistry.registerStore(DB_NAME.HIDE_EVENTS_UI_STATE, {
+            name: STORES_NAME.POLICY_HIDE_EVENTS_STORE,
+            options: { keyPath: 'key' }
+        });
+    }
+
+    private buildHideEventsKey(): string {
+        return `${this.hideEventsUserId}::${this.policyId}`;
+    }
+
+    private async clearOutgoingHideEventsState(): Promise<void> {
+        if (!this.policyId) {
+            return;
+        }
+        if (!this.hideEventsUserId) {
+            return;
+        }
+
+        await this.ensureHideEventsStore();
+
+        await this.indexedDbRegistry.delete(
+            DB_NAME.HIDE_EVENTS_UI_STATE,
+            STORES_NAME.POLICY_HIDE_EVENTS_STORE,
+            this.buildHideEventsKey()
+        );
+    }
+
+    private async writeOutgoingHideEventsState(button: any): Promise<void> {
+        if (!this.policyId) {
+            return;
+        }
+        if (!this.hideEventsUserId) {
+            return;
+        }
+
+        const value = button.visibleButtons
+
+        if (!button?.outgoingHideEventsEnabled) {
+            return;
+        }
+
+        if (!value) {
+            return;
+        }
+
+        await this.ensureHideEventsStore();
+
+        await this.indexedDbRegistry.put(
+            DB_NAME.HIDE_EVENTS_UI_STATE,
+            STORES_NAME.POLICY_HIDE_EVENTS_STORE,
+            {
+                key: this.buildHideEventsKey(),
+                value
+            }
+        );
+    }
+
+    private async readHideEventsValue(): Promise<string> {
+        await this.ensureHideEventsStore();
+
+        const record = await this.indexedDbRegistry.get<any>(
+            DB_NAME.HIDE_EVENTS_UI_STATE,
+            STORES_NAME.POLICY_HIDE_EVENTS_STORE,
+            this.buildHideEventsKey()
+        );
+
+        return record?.value ?? '';
+    }
+
+    private async applyIncomingHideEventsVisibility(): Promise<void> {
+        if (!this.policyId) {
+            return;
+        }
+
+        if (!this.hideEventsUserId) {
+            return;
+        }
+
+        const isAnyIncomingHideEventsEnabled = (this.buttons || []).some((b: any) => b?.incomingHideEventsEnabled);
+
+        if (!isAnyIncomingHideEventsEnabled) {
+            return;
+        }
+
+        const stored = await this.readHideEventsValue();
+
+        const allowedButtons = stored.split(',').map((x) => x.trim()).filter((x) => x);
+        for (const button of this.buttons || []) {
+            if (!button?.incomingHideEventsEnabled) {
+                continue;
+            }
+
+            if (!allowedButtons.length) {
+                button.visible = false;
+                continue;
+            }
+
+            const name = button.name;
+            const tag = button.tag;
+
+            const match = name && allowedButtons.includes(name) || tag && allowedButtons.includes(tag);
+
+            button.visible = button.visible && match;
+        }
     }
 }
