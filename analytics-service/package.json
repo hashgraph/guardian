@@ -11,7 +11,7 @@
         "@azure/core-rest-pipeline": "1.12.1",
         "image-size": "1.0.2"
     },
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
         "@guardian/common": "3.6.0-rc",
         "@guardian/interfaces": "3.6.0-rc",

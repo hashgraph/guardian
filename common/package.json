@@ -1,5 +1,5 @@
 {
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
         "@aws-sdk/client-secrets-manager": "^3.812.0",
         "@azure/identity": "^4.10.0",

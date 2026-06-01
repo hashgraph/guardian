@@ -4,7 +4,7 @@
         "@entity": "dist/entity",
         "@helpers": "dist/helpers"
     },
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",
         "image-size": "1.0.2"

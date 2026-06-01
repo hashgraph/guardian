@@ -1,5 +1,5 @@
 {
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
