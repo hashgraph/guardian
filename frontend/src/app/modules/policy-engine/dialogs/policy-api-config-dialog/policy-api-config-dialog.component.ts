@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { IPolicyDocumentationEntry, POLICY_ALIAS_REGEX } from '@guardian/interfaces';
+import { InformService } from 'src/app/services/inform.service';
 import { RegisteredService } from '../../services/registered.service';
 import { IBlockAbout, PolicyFolder, PolicyItem } from '../../structures';
 
@@ -47,7 +48,8 @@ export class PolicyApiConfigDialogComponent {
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private registeredService: RegisteredService
+        private registeredService: RegisteredService,
+        private informService: InformService
     ) {
         this.policyId = this.config.data?.policyId ?? '';
         this.blocks = this.config.data?.blocks ?? [];
@@ -278,24 +280,40 @@ export class PolicyApiConfigDialogComponent {
         const file = input.files[0];
         const reader = new FileReader();
         reader.onload = () => {
+            let imported: unknown;
             try {
-                const imported = JSON.parse(reader.result as string);
-                if (Array.isArray(imported)) {
-                    this.entries = imported.map((e: any) => ({
-                        name: e.name || '',
-                        description: e.description || '',
-                        target: e.target || '',
-                        method: e.method || 'GET',
-                        alias: e.alias || '',
-                        url: e.url || '',
-                        dmrvUrl: e.dmrvUrl || '',
-                        blockType: e.blockType || '',
-                    }));
-                    this.revalidate();
-                }
+                imported = JSON.parse(reader.result as string);
             } catch {
-                // invalid JSON — ignore
+                this.informService.errorShortMessage(
+                    'Could not parse the selected file. Expected a JSON array exported from this dialog.',
+                    'Import failed'
+                );
+                return;
             }
+            if (!Array.isArray(imported)) {
+                this.informService.errorShortMessage(
+                    'Unexpected file contents. Expected a JSON array of API entries.',
+                    'Import failed'
+                );
+                return;
+            }
+            this.entries = imported.map((e: any) => ({
+                name: e.name || '',
+                description: e.description || '',
+                target: e.target || '',
+                method: e.method || 'GET',
+                alias: e.alias || '',
+                url: e.url || '',
+                dmrvUrl: e.dmrvUrl || '',
+                blockType: e.blockType || '',
+            }));
+            this.revalidate();
+        };
+        reader.onerror = () => {
+            this.informService.errorShortMessage(
+                'Could not read the selected file.',
+                'Import failed'
+            );
         };
         reader.readAsText(file);
         input.value = '';
