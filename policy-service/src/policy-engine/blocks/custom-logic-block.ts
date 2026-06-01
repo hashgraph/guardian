@@ -398,7 +398,11 @@ export class CustomLogicBlock {
                             },
                         });
                     // Release the worker's V8 isolate; without this each invocation leaks ~30 MB.
-                    const cleanup = () => { worker.terminate().catch(() => { }); };
+                    const cleanup = () => {
+                        worker.terminate().catch(() => {
+                            // Ignore errors during worker termination
+                        });
+                    };
                     worker.on('exit', (code) => {
                         cleanup();
                         if (code !== 0 && code !== null) {
@@ -413,7 +417,7 @@ export class CustomLogicBlock {
                         try {
                             if (data?.type === 'done') {
                                 await done(data.result, data.final);
-                                if (data.final) cleanup();
+                                if (data.final) { cleanup(); }
                             }
                             if (data?.type === 'debug') {
                                 ref.debug(data.message);
