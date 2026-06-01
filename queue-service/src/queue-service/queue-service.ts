@@ -45,6 +45,7 @@ export class QueueService extends NatsService {
             const task = await dataBaseServer.findOne(TaskEntity, { taskId: data.id });
             if (!data.error || !task.isRetryableTask) {
                 await this.completeTaskInQueue(data.id, data.data, data.error);
+                await this.refreshAndReassignTasks();
                 return;
             }
             if (task.isRetryableTask && (task.attempts > 0)) {
@@ -66,6 +67,7 @@ export class QueueService extends NatsService {
             }
 
             await dataBaseServer.save(TaskEntity, task);
+            await this.refreshAndReassignTasks();
         });
 
         this.getMessages(QueueEvents.GET_TASKS_BY_USER, async (data: {
