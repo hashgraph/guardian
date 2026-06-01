@@ -343,8 +343,7 @@ export class JsonToXlsx {
         if (field.enum || field.remoteLink) {
             const _enum = enumsCache.get(field.path);
             if (_enum) {
-                const startRow = _enum.rangeStartRow;
-                const startCell = startRow > 0 ? `D${startRow}` : 'A1';
+                const startCell = _enum.worksheet.getCell(SharedEnumTable.COL_VALUE, _enum.rangeStartRow).address;
                 worksheet
                     .getCell(table.getCol(Dictionary.PARAMETER), row)
                     .setLink(Dictionary.SHARED_ENUM_SHEET, new Hyperlink(Dictionary.SHARED_ENUM_SHEET, startCell))
