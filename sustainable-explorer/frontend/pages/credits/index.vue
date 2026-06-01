@@ -80,8 +80,6 @@ const presets = computed(() => [
     { label: t('credits.presets.nonFungible'), filters: { type: 'Non-Fungible' } },
     { label: t('credits.presets.minted2024'), filters: { mintDate: '2024-01-01|2024-12-31' } },
     { label: t('credits.presets.minted2025'), filters: { mintDate: '2025-01-01|2025-12-31' } },
-    { label: t('credits.presets.blueCarbon'), search: 'Blue Carbon' },
-    { label: t('credits.presets.forestry'), search: 'Forestry' },
 ]);
 
 const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i) => i));

@@ -241,12 +241,9 @@
             "sdgs": "ODS"
         },
         "presets": {
-            "issuingForestry": "Forestal en emisión",
             "goldStandard": "Gold Standard",
             "sdg13": "ODS 13: Acción por el clima",
-            "underValidation": "En validación",
-            "vintage2024": "Añada 2024",
-            "blueCarbon": "Carbono azul"
+            "vintage2024": "Añada 2024"
         },
         "notFound": "Proyecto no encontrado",
         "details": {
@@ -314,9 +311,7 @@
             "fungible": "Tokens fungibles",
             "nonFungible": "No fungibles (NFTs)",
             "minted2024": "Acuñados en 2024",
-            "minted2025": "Acuñados en 2025",
-            "blueCarbon": "Carbono azul",
-            "forestry": "Silvicultura"
+            "minted2025": "Acuñados en 2025"
         },
         "issuancesFound": "{count} emisiones encontradas",
         "totalSupply": "Suministro total:",
@@ -336,7 +331,7 @@
             "token": "Token",
             "symbol": "Símbolo",
             "type": "Tipo",
-            "supply": "Suministro",
+            "supply": "Monto acuñado",
             "mintDate": "Fecha de emisión",
             "project": "Proyecto",
             "methodology": "Metodología",
@@ -346,7 +341,7 @@
         "filters": {
             "tokenType": "Tipo de token",
             "registry": "Registro",
-            "supply": "Suministro",
+            "supply": "Monto acuñado",
             "mintDate": "Fecha de emisión",
             "hideUnlinked": "Ocultar emisiones sin proyecto vinculado"
         },

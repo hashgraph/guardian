@@ -9,66 +9,57 @@ interface RawRow {
     symbol: string | null;
     /** Raw type from token_cache: 'FUNGIBLE_COMMON' | 'NON_FUNGIBLE_UNIQUE' | null */
     raw_type: string | null;
-    /** Fallback token type from businessData->options->tokenType */
+    /** Fallback token type from businessData->options->tokenType (findRaw only) */
     options_token_type: string | null;
     total_supply: string | null;
     registryDid: string | null;
     registry_name: string | null;
     mint_date: Date | null;
-    businessData: Record<string, any> | null;
     project_id: string | null;
     project_name: string | null;
     methodology_id: string | null;
     methodology_name: string | null;
 }
 
+// credentialSubject[0] tokenId path — used in SELECT, WHERE, GROUP BY, and ORDER BY
+const TOKEN_ID_EXPR = `(m.documents->'credentialSubject'->0->>'tokenId')`;
+
 /**
- * LATERAL subquery joined into findAll to look up the publishing registry's
- * display name. Uses LATERAL so we can ORDER BY + LIMIT 1 to handle the (rare)
- * case of multiple REGISTRY rows for one DID.
+ * Base FROM clause: every MintToken VC in the message table, LEFT JOINed with
+ * project_mint_link (pre-computed per-project attribution) and token_cache.
+ * Rows where pml.* is NULL are unattributed mints — still included so the
+ * table is complete regardless of worker attribution state.
  */
-const REGISTRY_NAME_JOIN = `
-    LEFT JOIN LATERAL (
-        SELECT "displayName" AS registry_name
-        FROM business_view
-        WHERE "viewType" = 'REGISTRY'
-          AND "registryDid" = bv."registryDid"
-        ORDER BY "createdAt" DESC NULLS LAST
-        LIMIT 1
-    ) reg ON true
+const MINT_FROM = `
+    message m
+    LEFT JOIN project_mint_link pml
+           ON pml.mint_consensus_timestamp = m."consensusTimestamp"
+    LEFT JOIN token_cache tc
+           ON tc."tokenId" = ${TOKEN_ID_EXPR}
 `;
 
 /**
- * Resolves the linked project for a credit via project_mint_link — the same
- * table used by the project detail page, ensuring consistent attribution.
+ * LATERAL: resolve project metadata from the pre-attributed project_mint_link
+ * row. Returns NULL for all fields when pml.project_key is NULL.
  */
-const PROJECT_LINK_JOIN = `
+const PROJECT_JOIN = `
     LEFT JOIN LATERAL (
         SELECT
-            bv_proj."projectKey"                    AS project_id,
-            bv_proj."displayName"                   AS project_name,
-            bv_proj."relatedTopicId"                AS proj_topic_id,
-            bv_proj."businessData"->>'methodology'  AS proj_methodology_name
-        FROM project_mint_link pml
-        JOIN business_view bv_proj
-            ON bv_proj."viewType" = 'PROJECT'
-           AND bv_proj."projectKey" = pml.project_key
-        WHERE pml.token_id = COALESCE(bv."businessData"->>'tokenId', tc."tokenId")
-        ORDER BY pml.mint_date DESC NULLS LAST
+            bv_proj."projectKey"                   AS project_id,
+            bv_proj."displayName"                  AS project_name,
+            bv_proj."relatedTopicId"               AS proj_topic_id,
+            bv_proj."businessData"->>'methodology' AS proj_methodology_name,
+            bv_proj."registryDid"                  AS registry_did
+        FROM business_view bv_proj
+        WHERE bv_proj."viewType"   = 'PROJECT'
+          AND bv_proj."projectKey" = pml.project_key
         LIMIT 1
     ) proj ON true
 `;
 
 /**
- * Resolves the linked methodology independently of the project link.
- *
- * Primary path:   project's relatedTopicId (= instanceTopicId) when a project
- *                 was resolved — most accurate since it comes from the known chain.
- * Fallback path:  credit's own relatedTopicId (= the topic where the Token
- *                 message was posted, which is the instance topic in Guardian).
- *
- * Uses idx_business_view_methodology_topic for an O(log n) lookup.
- * Shows a methodology even when no project could be resolved.
+ * LATERAL: resolve methodology from the project's instance topic.
+ * Returns NULL when no project was resolved (unattributed mints).
  */
 const METHODOLOGY_JOIN = `
     LEFT JOIN LATERAL (
@@ -76,21 +67,57 @@ const METHODOLOGY_JOIN = `
             bv_meth."sourceTimestamp" AS methodology_id,
             bv_meth."displayName"     AS methodology_name
         FROM business_view bv_meth
-        WHERE bv_meth."viewType" = 'METHODOLOGY'
-          AND bv_meth."relatedTopicId" = COALESCE(proj.proj_topic_id, bv."relatedTopicId")
+        WHERE bv_meth."viewType"       = 'METHODOLOGY'
+          AND bv_meth."relatedTopicId" = proj.proj_topic_id
         ORDER BY bv_meth."createdAt" DESC NULLS LAST
         LIMIT 1
     ) meth ON true
 `;
 
 /**
+ * LATERAL: resolve registry display name from the project's registryDid.
+ * Returns NULL when no project was resolved (unattributed mints).
+ */
+const REGISTRY_JOIN = `
+    LEFT JOIN LATERAL (
+        SELECT bv_reg."displayName" AS registry_name
+        FROM business_view bv_reg
+        WHERE bv_reg."viewType"    = 'REGISTRY'
+          AND bv_reg."registryDid" = proj.registry_did
+        ORDER BY bv_reg."createdAt" DESC NULLS LAST
+        LIMIT 1
+    ) reg ON true
+`;
+
+/**
+ * GROUP BY: one output row per (tokenId, project_key) pair.
+ * Metadata columns (tc.*, proj.*, meth.*, reg.*) are functionally determined
+ * by these two keys but must be listed explicitly for PostgreSQL.
+ */
+const GROUP_BY = `
+    GROUP BY
+        ${TOKEN_ID_EXPR},
+        pml.project_key,
+        tc.name, tc.symbol, tc.type,
+        proj.project_id, proj.project_name, proj.proj_topic_id,
+        proj.proj_methodology_name, proj.registry_did,
+        meth.methodology_id, meth.methodology_name,
+        reg.registry_name
+`;
+
+/**
  * PostgreSQL implementation of the CreditRepository.
  *
- * Generic filter and sort logic is delegated to QueryBuilder + the field
- * schema (CREDIT_FIELD_SCHEMA). Adding a new filterable/sortable column only
- * requires updating the schema — no SQL changes needed here.
+ * findAll() is sourced from MintToken VC documents (message table) joined with
+ * project_mint_link for per-project attribution. Supply figures are
+ * SUM(credentialSubject[0].amount) — the actual minted amounts — consistent
+ * with what the project and methodology detail pages show.
  *
- * Special operations (full-text + fuzzy search) remain explicit.
+ * Unattributed mints (not yet resolved by the worker) are included as rows
+ * with null project / methodology / registry fields.
+ *
+ * findRaw() is unchanged — it reads business_view CREDIT rows for the header
+ * and the message table for the raw mint events.
  */
 export class PgCreditRepository extends CreditRepository {
     constructor(private readonly dataSource: DataSource) {
@@ -102,152 +129,123 @@ export class PgCreditRepository extends CreditRepository {
         const offset = (page - 1) * limit;
 
         const builder = new QueryBuilder(CREDIT_FIELD_SCHEMA);
-        // viewType = 'CREDIT' is enforced inside CREDIT_BASE (the deduplicating
-        // subquery), so it must not be repeated in the outer WHERE clause.
 
-        // Generic filters
+        // Base: only MintToken VC documents with a resolvable tokenId
+        builder.addClause(`m.type = 'VC-Document'`);
+        builder.addClause(`m.documents IS NOT NULL`);
+        builder.addClause(`(m.documents->'credentialSubject'->0->>'type') LIKE 'MintToken%'`);
+        builder.addClause(`${TOKEN_ID_EXPR} IS NOT NULL`);
+
+        // Generic schema-driven filters
         builder.addFilters({
             registryDid: query.registryDid,
-            registry: query.registry,
-            tokenId: query.tokenId,
+            registry:    query.registry,
+            tokenId:     query.tokenId,
         });
 
-        // projectKey filter: restricts to credits that have ANY mint attributed to
-        // the requested project. Uses an EXISTS subquery against project_mint_link
-        // directly so it is self-contained and does not depend on which project
-        // "wins" in the LATERAL display join (which picks the most-recent mint).
+        // projectKey: restrict to mints attributed to this specific project
         if (query.projectKey) {
             const param = builder.nextParam(query.projectKey);
-            builder.addClause(`EXISTS (
-                SELECT 1 FROM project_mint_link pml_f
-                WHERE pml_f.token_id = bv."businessData"->>'tokenId'
-                  AND pml_f.project_key = ${param}
-            )`);
+            builder.addClause(`pml.project_key = ${param}`);
         }
 
-        // methodologyId filter: restricts to credits whose resolved methodology matches
-        // the given sourceTimestamp. Checks both the credit's own relatedTopicId and
-        // the relatedTopicId of any project linked via project_mint_link.
+        // methodologyId: restrict to mints whose resolved methodology matches
         if (query.methodologyId) {
             const param = builder.nextParam(query.methodologyId);
-            builder.addClause(`EXISTS (
-                SELECT 1 FROM business_view bv_meth_f
-                WHERE bv_meth_f."viewType" = 'METHODOLOGY'
-                  AND bv_meth_f."sourceTimestamp" = ${param}
-                  AND (
-                      bv_meth_f."relatedTopicId" IN (
-                          SELECT bv_proj."relatedTopicId"
-                          FROM project_mint_link pml
-                          JOIN business_view bv_proj
-                              ON bv_proj."projectKey" = pml.project_key
-                             AND bv_proj."viewType" = 'PROJECT'
-                          WHERE pml.token_id = bv."businessData"->>'tokenId'
-                      )
-                      OR bv_meth_f."relatedTopicId" = bv."relatedTopicId"
-                  )
-            )`);
+            builder.addClause(`meth.methodology_id = ${param}`);
         }
 
-        // type filter: accept display form ('Fungible'/'Non-Fungible') and map to
-        // token_cache raw values before filtering.
+        // type: map display form to token_cache raw values
         if (query.type) {
             const normalised = query.type.toLowerCase();
             if (normalised === 'fungible') {
-                builder.addClause(`(
-                    tc.type = 'FUNGIBLE_COMMON'
-                    OR (tc.type IS NULL AND LOWER(bv."businessData"->'options'->>'tokenType') = 'fungible')
-                )`);
+                builder.addClause(`tc.type = 'FUNGIBLE_COMMON'`);
             } else if (normalised === 'non-fungible') {
-                builder.addClause(`(
-                    tc.type = 'NON_FUNGIBLE_UNIQUE'
-                    OR (tc.type IS NULL AND LOWER(bv."businessData"->'options'->>'tokenType') = 'non-fungible')
-                )`);
+                builder.addClause(`tc.type = 'NON_FUNGIBLE_UNIQUE'`);
             }
         }
 
-        // Full-text + fuzzy search across name, symbol, tokenId, registry name
+        // Full-text + fuzzy search across token name, symbol, id, and registry
         let rankExpr = '0';
         if (search) {
             const term = search.trim();
-            const tsParam = builder.nextParam(term);
             const likeParam = builder.nextParam(`%${term}%`);
-            const simParam = builder.nextParam(term);
+            const simParam  = builder.nextParam(term);
 
             builder.addClause(`(
-                bv."searchVector" @@ plainto_tsquery('english', ${tsParam})
-                OR COALESCE(tc.name, bv."displayName") ILIKE ${likeParam}
+                tc.name ILIKE ${likeParam}
                 OR tc.symbol ILIKE ${likeParam}
-                OR COALESCE(tc."tokenId", bv."businessData"->>'tokenId') ILIKE ${likeParam}
+                OR ${TOKEN_ID_EXPR} ILIKE ${likeParam}
                 OR reg.registry_name ILIKE ${likeParam}
-                OR similarity(COALESCE(COALESCE(tc.name, bv."displayName"), ''), ${simParam}) > 0.3
+                OR similarity(COALESCE(tc.name, ''), ${simParam}) > 0.3
             )`);
 
-            rankExpr = `
-                ts_rank(bv."searchVector", plainto_tsquery('english', ${tsParam}))
-                + COALESCE(similarity(COALESCE(tc.name, bv."displayName"), ${simParam}), 0)
-            `;
+            rankExpr = `COALESCE(similarity(COALESCE(tc.name, ''), ${simParam}), 0)`;
         }
 
         const orderBy = search
-            ? `search_rank DESC, bv."createdAt" DESC`
+            ? `search_rank DESC, mint_date DESC NULLS LAST`
             : builder.buildOrderBy({
                 sortBy,
                 sortDir,
-                defaultExpr: 'bv."createdAt" DESC NULLS LAST',
+                defaultExpr: 'mint_date DESC NULLS LAST',
             });
 
         const whereSql = builder.getWhereClause();
-        const params = builder.getParams();
+        const params   = builder.getParams();
 
-        const limitParam = builder.nextParam(limit);
+        const limitParam  = builder.nextParam(limit);
         const offsetParam = builder.nextParam(offset);
 
-        // One CREDIT row per token (latest mint). business_view can have multiple
-        // CREDIT rows for the same token (one per mint event); DISTINCT ON collapses
-        // them so the issuance count matches COUNT(DISTINCT token_id) on the project.
-        const CREDIT_BASE = `(
-            SELECT DISTINCT ON ("businessData"->>'tokenId') *
-            FROM business_view
-            WHERE "viewType" = 'CREDIT'
-            ORDER BY "businessData"->>'tokenId', "sourceTimestamp" DESC NULLS LAST
-        ) bv`;
-
+        // Supply = SUM of credentialSubject[0].amount from MintToken VCs.
+        // For attributed mints pml.amount is the pre-parsed BIGINT; for
+        // unattributed mints it falls back to the raw JSONB string cast.
         const rowsSql = `
             SELECT
-                COALESCE(tc."tokenId", bv."businessData"->>'tokenId')               AS "tokenId",
-                COALESCE(tc.name,      bv."displayName")                             AS name,
-                COALESCE(tc.symbol,    bv."businessData"->>'symbol')                 AS symbol,
-                tc.type                                                               AS raw_type,
-                bv."businessData"->'options'->>'tokenType'                           AS options_token_type,
-                tc."totalSupply"                                                      AS total_supply,
-                bv."registryDid"                                                      AS "registryDid",
+                ${TOKEN_ID_EXPR}                                                                AS "tokenId",
+                tc.name,
+                tc.symbol,
+                tc.type                                                                         AS raw_type,
+                NULL::text                                                                      AS options_token_type,
+                COALESCE(SUM(COALESCE(pml.amount::numeric,
+                    (m.documents->'credentialSubject'->0->>'amount')::numeric
+                )), 0)                                                                          AS total_supply,
+                proj.registry_did                                                               AS "registryDid",
                 reg.registry_name,
-                to_timestamp(bv."sourceTimestamp"::numeric)::timestamptz             AS mint_date,
-                bv."businessData"                                                     AS "businessData",
-                proj.project_id                                                       AS project_id,
-                proj.project_name                                                     AS project_name,
-                meth.methodology_id                                                   AS methodology_id,
-                COALESCE(meth.methodology_name, proj.proj_methodology_name)          AS methodology_name,
-                ${rankExpr}                                                           AS search_rank
-            FROM ${CREDIT_BASE}
-            LEFT JOIN token_cache tc
-                ON tc."tokenId" = bv."businessData"->>'tokenId'
-            ${REGISTRY_NAME_JOIN}
-            ${PROJECT_LINK_JOIN}
+                MIN(COALESCE(pml.mint_date,
+                    to_timestamp(m."consensusTimestamp"::numeric)
+                ))                                                                              AS mint_date,
+                proj.project_id,
+                proj.project_name,
+                meth.methodology_id,
+                COALESCE(meth.methodology_name, proj.proj_methodology_name)                    AS methodology_name,
+                ${rankExpr}                                                                     AS search_rank
+            FROM ${MINT_FROM}
+            ${PROJECT_JOIN}
             ${METHODOLOGY_JOIN}
+            ${REGISTRY_JOIN}
             WHERE ${whereSql}
+            ${GROUP_BY}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
+        // Count: number of distinct (tokenId, project_key) groups after filtering.
+        // Uses a simplified GROUP BY — metadata columns are omitted because they
+        // are functionally determined by (tokenId, project_key) and don't affect
+        // the group count.
         const countParams = params.slice(0, params.length - 2);
         const countSql = `
             SELECT COUNT(*)::int AS total
-            FROM ${CREDIT_BASE}
-            LEFT JOIN token_cache tc
-                ON tc."tokenId" = bv."businessData"->>'tokenId'
-            ${REGISTRY_NAME_JOIN}
-            WHERE ${whereSql}
+            FROM (
+                SELECT 1
+                FROM ${MINT_FROM}
+                ${PROJECT_JOIN}
+                ${METHODOLOGY_JOIN}
+                ${REGISTRY_JOIN}
+                WHERE ${whereSql}
+                GROUP BY ${TOKEN_ID_EXPR}, pml.project_key
+            ) cnt
         `;
 
         const [rawRows, countResult]: [RawRow[], Array<{ total: number }>] = await Promise.all([
