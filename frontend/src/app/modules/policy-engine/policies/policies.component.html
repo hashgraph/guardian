@@ -204,7 +204,7 @@
                                 </th>
                                 <th
                                     *ngIf="canDisplayColumn('modified')"
-                                    class="header-cell-text cell-description">Modified
+                                    class="header-cell-text cell-170 cell-section-gap">Modified
                                 </th>
                                 <th
                                     *ngIf="canDisplayColumn('description')"
@@ -212,7 +212,7 @@
                                 </th>
                                 <th
                                     *ngIf="canDisplayColumn('status')"
-                                    class="header-cell-text cell-150">Status
+                                    class="header-cell-text cell-status">Status
                                 </th>
                                 <th
                                     *ngIf="canDisplayColumn('roles')"
@@ -389,7 +389,7 @@
                                 </td>
                                 <td
                                     *ngIf="canDisplayColumn('modified')"
-                                    class="text-truncate cell-description"
+                                    class="text-truncate cell-170 cell-section-gap"
                                 >
                                     <div *ngIf="policy?.originalChanged === true">
                                         <button
@@ -420,17 +420,10 @@
 
                                     <div *ngIf="policy?.originalChanged === undefined">
                                         <span
+                                            class="original-status-pill"
                                             pTooltip="Policy modification tracking was likely disabled"
                                             tooltipPosition="bottom"
-                                        >
-                                            <button
-                                                class="button secondary original-status-btn"
-                                                [disabled]="true"
-                                                label="Status unavailable"
-                                                pTooltip="Policy modification tracking was likely disabled"
-                                                pButton>
-                                            </button>
-                                        </span>
+                                        >Status unavailable</span>
                                     </div>
                                 </td>
                                 <td
@@ -442,7 +435,7 @@
                                 </td>
                                 <td
                                     *ngIf="canDisplayColumn('status')"
-                                    class="cell-150"
+                                    class="cell-status"
                                 >
                                     <div *ngIf="!user.POLICIES_POLICY_REVIEW"
                                          [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)"
@@ -456,6 +449,7 @@
                                         <ng-container *ngIf="showStatus(policy)">
                                             <p-select
                                                 class="status-actions-dropdown {{policy.status}}-dropdown"
+                                                styleClass="policy-status-select"
                                                 appendTo="body"
                                                 tooltipPosition="bottom"
                                                 [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)"

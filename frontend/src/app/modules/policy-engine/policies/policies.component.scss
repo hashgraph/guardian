@@ -19,8 +19,12 @@
     flex-wrap: nowrap;
     z-index: 2;
     margin-top: 24px;
+    margin-bottom: 40px;
 
     .actions-container-btns {
+        display: flex;
+        align-items: center;
+        gap: 10px;
         margin-left: auto;
 
         .guardian-button {
@@ -459,7 +463,6 @@
         font-size: 1px;
         font-style: normal;
         font-weight: 500;
-        margin-left: 10px;
         height: 40px;
         padding: 8px;
         border-radius: 8px;
@@ -474,7 +477,6 @@
         font-size: 1px;
         font-style: normal;
         font-weight: 500;
-        margin-left: 10px;
         height: 40px;
         padding: 8px;
         border-radius: 8px;
@@ -761,6 +763,8 @@
 .status-actions-dropdown {
     ::ng-deep {
         .p-select {
+            width: 160px !important;
+            min-width: 160px;
             height: 30px;
             border: 1px solid var(--color-secondary);
             outline: none !important;
@@ -802,6 +806,30 @@
             }
         }
     }
+}
+
+:host ::ng-deep .policy-status-select.p-select {
+    width: 150px !important;
+    min-width: 150px;
+}
+
+:host ::ng-deep .policy-status-select.p-select,
+:host ::ng-deep .DRY-RUN-dropdown .policy-status-select.p-select,
+:host ::ng-deep .DRAFT-dropdown .policy-status-select.p-select {
+    border-color: var(--color-primary) !important;
+    color: var(--color-primary) !important;
+}
+
+:host ::ng-deep .policy-status-select .p-select-label,
+:host ::ng-deep .policy-status-select .p-select-dropdown-icon {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 600;
+    color: inherit !important;
+}
+
+:host ::ng-deep .policy-status-select .p-select-dropdown {
+    color: inherit !important;
 }
 
 .dropdown-item-title {
@@ -946,9 +974,48 @@
 }
 
 .grid-table-container {
+    background: #fff;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    overflow: hidden;
+
     ::ng-deep .grid-table {
+        .p-datatable,
+        .p-datatable-table-container,
+        .p-datatable-scrollable-header,
+        .p-datatable-scrollable-body,
         .p-datatable-wrapper {
             max-height: calc(-380px + 100vh);
+            background: #fff;
+        }
+
+        .p-datatable-table,
+        .p-datatable-thead,
+        .p-datatable-tbody,
+        .p-datatable-thead > tr > th,
+        .p-datatable-tbody > tr,
+        .p-datatable-tbody > tr > td {
+            background: #fff;
+        }
+
+        .p-frozen-column {
+            background: #fff;
+            z-index: 3 !important;
+        }
+
+        .p-datatable-thead .p-frozen-column {
+            z-index: 4 !important;
+        }
+
+        .cell-section-gap {
+            padding-left: 25px !important;
+        }
+
+        .cell-status {
+            min-width: 190px;
+            width: 190px;
+            max-width: 190px;
+            padding-right: 24px !important;
         }
     }
 }
@@ -962,6 +1029,7 @@
     .actions-container-btns {
         margin-left: 0px !important;
         margin-top: 16px !important;
+        gap: 10px;
 
         &>*:first-of-type {
             margin-left: 0px !important;
@@ -1007,7 +1075,8 @@
     color: var(--color-primary);
     border: 1px solid var(--color-primary);
     // width: auto;
-    width: 130px;
+    width: 160px;
+    min-width: 160px;
 
     .p-select-dropdown-icon {
         color: var(--color-primary);
@@ -1020,7 +1089,8 @@
     color: var(--color-primary);
     border: 1px solid var(--color-primary);
     // width: auto;
-    width: 130px;
+    width: 160px;
+    min-width: 160px;
 
     .p-select-dropdown-icon {
         color: var(--color-primary);
@@ -1034,7 +1104,8 @@
     color: var(--color-accent-green-1);
     border: 1px solid var(--color-accent-green-1);
     // width: auto;
-    width: 130px;
+    width: 160px;
+    min-width: 160px;
 
     .p-select-dropdown-icon {
         color: var(--color-accent-green-1);
@@ -1047,7 +1118,8 @@
     color: var(--color-accent-red-1);
     border: 1px solid var(--color-accent-red-1);
     // width: auto;
-    width: 130px;
+    width: 160px;
+    min-width: 160px;
 
     .p-select-dropdown-icon {
         color: var(--color-accent-red-1);
@@ -1060,7 +1132,8 @@
     color: var(--color-accent-red-1);
     border: 1px solid var(--color-accent-red-1);
     // width: auto;
-    width: 130px;
+    width: 160px;
+    min-width: 160px;
 
     .p-select-dropdown-icon {
         color: var(--color-accent-red-1);
@@ -1073,7 +1146,8 @@
     color: var(--pc-wizard-color);
     border: 1px solid var(--pc-wizard-color);
     // width: auto;
-    width: 130px;
+    width: 160px;
+    min-width: 160px;
 
     .p-select-dropdown-icon {
         color: var(--pc-wizard-color);
@@ -1199,4 +1273,31 @@
 .original-status-btn {
     height: 30px;
     padding: 6px 16px;
+}
+
+.original-status-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    padding: 0 12px;
+    border-radius: 6px;
+    border: 1px solid var(--color-grey-3, #E1E7EF);
+    background: var(--color-grey-white, #fff);
+    color: var(--color-grey-5, #848FA9);
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 16px;
+    white-space: nowrap;
+}
+
+:host ::ng-deep .original-status-btn:disabled,
+:host ::ng-deep .original-status-btn.p-disabled,
+:host ::ng-deep .original-status-btn .p-disabled,
+:host ::ng-deep .original-status-btn.p-button:disabled {
+    opacity: 1 !important;
+    background: var(--color-grey-white, #fff) !important;
+    color: var(--color-grey-5, #848FA9) !important;
 }
