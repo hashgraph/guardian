@@ -134,6 +134,7 @@ jobs:
           popd
         env:
           CI: true
+          NODE_OPTIONS: '--openssl-legacy-provider'
           OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
           OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
           JWT_PRIVATE_KEY: ${{ secrets.CI_JWT_PRIVATE_KEY }}
@@ -145,10 +146,10 @@ jobs:
           IPFS_PUBLIC_GATEWAY: https://ipfs.io/ipfs/{cid}
           IPFS_STORAGE_KEY: ${{ secrets.E2E_IPFS_STORAGE_KEY }}
           IPFS_STORAGE_PROOF: ${{ secrets.E2E_IPFS_STORAGE_PROOF }}
+          IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
           MIN_PASSWORD_LENGTH: 4
           PASSWORD_COMPLEXITY: easy
-          NODE_OPTIONS: "--openssl-legacy-provider"
 
       - name: Build Cypress Docker image
         run: docker build -t cypress-runner ./e2e-tests
