@@ -60,7 +60,7 @@ Configure the worker-service
 IPFS_TIMEOUT="720"
 IPFS_PROVIDER="web3storage" # 'filebase', 'web3storage' or 'local'
 #Single quote IPFS_PUBLIC_GATEWAY
-IPFS_PUBLIC_GATEWAY='https://ipfs.io/ipfs/${cid}'
+IPFS_PUBLIC_GATEWAY='https://ipfs.io/ipfs/{cid}'
 IPFS_STORAGE_API_KEY="..."
 IPFS_NODE_ADDRESS="http://ipfs-node:5001"
 ```
