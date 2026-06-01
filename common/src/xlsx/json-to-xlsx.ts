@@ -7,7 +7,7 @@ import { PolicyTool } from '../entity/index.js';
 import { IRowField } from './interfaces/row-field.interface.js';
 import { SheetName } from './models/sheet-name.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
-import { EnumTable, SharedEnumTable } from './models/enum-table.js';
+import { SharedEnumTable } from './models/enum-table.js';
 import { IPFS } from '../helpers/index.js';
 
 export class JsonToXlsx {
@@ -424,54 +424,6 @@ export class JsonToXlsx {
                     .setFormulae(elseFormula);
             }
         }
-    }
-
-    public static writeEnum(
-        worksheet: Worksheet,
-        schema: Schema,
-        field: SchemaField,
-        xlsxEnum: XlsxEnum
-    ) {
-        const range = worksheet.getRange();
-
-        const table = new EnumTable(range.s);
-        table.setDefault();
-
-        for (const header of table.headers) {
-            worksheet
-                .setValue(header.title, header.column, header.row)
-                .setStyle(header.style);
-            worksheet
-                .getCol(header.column)
-                .setWidth(header.width)
-        }
-        worksheet
-            .getCell(table.start.c + 1, table.getRow(Dictionary.ENUM_SCHEMA_NAME))
-            .setStyle(table.descriptionStyle)
-            .setValue(schema.name);
-        worksheet
-            .getCell(table.start.c + 1, table.getRow(Dictionary.ENUM_FIELD_NAME))
-            .setStyle(table.descriptionStyle)
-            .setValue(field.description);
-        worksheet
-            .getCell(table.start.c + 1, table.getRow(Dictionary.ENUM_IPFS))
-            .setStyle(table.descriptionStyle)
-            .setValue(booleanToXlsx(!!field.remoteLink));
-        worksheet
-            .getCol(table.start.c + 1)
-            .setWidth(50)
-
-        let row = table.end.r;
-        for (const item of xlsxEnum.data) {
-            worksheet
-                .mergeCells(Range.fromColumns(table.start.c, table.end.c - 1, row));
-            worksheet
-                .getCell(table.getCol(), row)
-                .setValue(stringToXlsx(item))
-                .setStyle(table.itemStyle);
-            row++
-        }
-        xlsxEnum.setRange(Range.fromRows(table.end.r, row - 1, table.getCol()));
     }
 
     public static writeSubFields(
