@@ -145,7 +145,7 @@ jobs:
           SERVICE_JWT_PUBLIC_KEY_ALL: ${{ secrets.CI_JWT_PUBLIC_KEY }}
           SERVICE_JWT_SECRET_KEY_ALL: ${{ secrets.CI_JWT_PRIVATE_KEY }}
           IPFS_NODE_ADDRESS: http://localhost:5001
-          IPFS_PROVIDER: web3storage
+          IPFS_PROVIDER: filebase
           IPFS_PUBLIC_GATEWAY: https://ipfs.io/ipfs/{cid}
           IPFS_STORAGE_KEY: ${{ secrets.E2E_IPFS_STORAGE_KEY }}
           IPFS_STORAGE_PROOF: ${{ secrets.E2E_IPFS_STORAGE_PROOF }}
