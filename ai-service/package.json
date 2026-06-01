@@ -1,11 +1,11 @@
 {
     "name": "ai-service",
-    "version": "3.6.0-rc",
+    "version": "3.6.0",
     "main": "dist/app.js",
     "license": "Apache-2.0",
     "dependencies": {
-        "@guardian/common": "3.6.0-rc",
-        "@guardian/interfaces": "3.6.0-rc",
+        "@guardian/common": "3.6.0",
+        "@guardian/interfaces": "3.6.0",
         "@langchain/classic": "1.0.34",
         "@langchain/community": "1.1.28",
         "@langchain/core": "1.1.48",

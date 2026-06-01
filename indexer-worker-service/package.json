@@ -1,8 +1,8 @@
 {
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@indexer/interfaces": "3.6.0-rc",
-        "@indexer/common": "3.6.0-rc",
+        "@indexer/interfaces": "3.6.0",
+        "@indexer/common": "3.6.0",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
@@ -50,5 +50,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.6.0-rc"
+    "version": "3.6.0"
 }

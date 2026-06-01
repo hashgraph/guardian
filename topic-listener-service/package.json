@@ -1,8 +1,8 @@
 {
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@guardian/common": "3.6.0-rc",
-        "@guardian/interfaces": "3.6.0-rc",
+        "@guardian/common": "3.6.0",
+        "@guardian/interfaces": "3.6.0",
         "@hiero-ledger/sdk": "2.84.0",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
@@ -50,5 +50,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.6.0-rc"
+    "version": "3.6.0"
 }
