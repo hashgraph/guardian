@@ -68,19 +68,26 @@
     justify-content: space-between;
 }
 
-:host ::ng-deep .p-select {
+:host ::ng-deep .dropdown-block .p-select {
     width: 100%;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #FFF;
 }
 
-:host ::ng-deep .p-select-overlay, .p-select-list-container {
+:host ::ng-deep .dropdown-block .p-select-overlay,
+:host ::ng-deep .dropdown-block .p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #FFF;
     margin-top: 4px;
     box-shadow: 0 0 1px 0 #000;
+}
+
+:host ::ng-deep .table-paginator .p-select {
+    width: 125px;
+    height: 40px;
+    border-radius: 8px;
 }
 
 .dropdown-label {
