@@ -160,6 +160,9 @@ export class ArtifactConfigComponent implements OnInit {
             },
             modal: true,
             closable: false,
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
         })!;
 
         dialogRef.onClose.subscribe((result) => {
