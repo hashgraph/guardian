@@ -5,10 +5,19 @@
 
 This note orients reviewers in ~2 minutes. Full detail is in [`README.md`](./README.md).
 
+## What's in the folder (everything in one place)
+- **`VMR0015.policy`** — the Guardian policy import package (version 2.0.0). Implements the core ER equation `ER = BE − PE − LE` with a fixed ×0.89 conservativeness discount applied before minting.
+- **`VMR0015_policy.json`** — readable policy config (review without importing).
+- **`schemas/`** — all **17 schemas** as standalone JSON (extracted from the binary, identical to it) + an index.
+- **`formulas/`** — the **formula linked definitions** artifact (`VMR0015_formula.zip`) + readable `formula.json` + docs.
+- **`tests/VMR0015_VCS3599_monitoring_report.json`** — canonical test data, grounded in registered Verra project **VCS 3599** (Safe Drinking Water for Schools in Viet Nam), monitoring period 01/01/2025–30/06/2025. Registry: https://registry.verra.org/app/projectDetail/VCS/3599
+- **`README.md` / `CHANGELOG.md`** — Verra alignment, scope of what is/isn't implemented on-chain, and the change history.
+
 ## What to review (in order)
-1. **`VMR0015.policy`** — the Guardian policy import package (version 2.0.0). Implements the core ER equation `ER = BE − PE − LE` with a fixed ×0.89 conservativeness discount applied before minting.
-2. **`tests/VMR0015_VCS3599_monitoring_report.json`** — canonical test data, grounded in registered Verra project **VCS 3599** (Safe Drinking Water for Schools in Viet Nam), monitoring period 01/01/2025–30/06/2025. Registry: https://registry.verra.org/app/projectDetail/VCS/3599
-3. **`README.md` / `CHANGELOG.md`** — Verra alignment, scope of what is/ isn't implemented on-chain, and the change history.
+1. **`VMR0015.policy`** — import and run (Dry Run is enough).
+2. **`tests/VMR0015_VCS3599_monitoring_report.json`** — submit as a Monitoring Report; confirm it computes `field6 = 137,171.25`.
+3. **`formulas/`** — confirm the formula linked definitions (ER = BE − PE − LE → field6).
+4. **`README.md`** — Verra methodology alignment and scope.
 
 ## Expected calculation
 Submitting the test Monitoring Report (`field3 = 154125`, `field4 = 0`, `field5 = 0`) computes:
@@ -25,6 +34,7 @@ matching VMR0015 §3.9.1 (`ER = BE − PE − LE`).
 ## What changed in this update
 - **Fixed** the calculation block to read the Monitoring Report's flat numeric fields (`field3/4/5`) instead of nested objects — previously a normal report computed `field6 = 0` (minted zero). See `CHANGELOG.md`.
 - **Re-grounded** the test data on a real, registered **Verra** project (VCS 3599).
+- **Added** formula linked definitions (`formulas/`), a readable policy JSON, and all 17 schemas as standalone files so the policy can be reviewed without importing the binary.
 - **Removed** the fabricated `.record` and stale audit/evidence files with broken internal references, leaving a clean policy + docs + test package.
 
 ## Note on no registered VMR0015 project

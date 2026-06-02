@@ -36,11 +36,11 @@ where `BE_y` = baseline emissions, `PE_y` = project emissions, `LE_y` = leakage,
 **The six updates VMR0015 introduces over AMS-III.AV.** (verbatim from Verra's published page):
 
 1. Introduction of an updated approach to determine the fraction of non-renewable biomass.
-2. Requirement to set, at validation, the leakage adjustment factor for leakage related to the use of non-renewable woody biomass saved by the project activity.
-3. Updated emission factor for non-renewable woody biomass (both CO₂ and non-CO₂ components) and fossil fuels.
-4. Added requirement on assessment of double counting of emission reductions with REDD+ project(s) and jurisdictional REDD+ program(s).
-5. Added requirements on adjusting the baseline level of the residence/institution to account for the effects of interacting technologies.
-6. Added requirements on the compilation and presentation of relevant data for each distributed device.
+2. The requirement to set at validation the leakage adjustment factor to account for leakage related to the use of non-renewable woody biomass saved by the project activity.
+3. Updated emission factor for non-renewable woody biomass (for both CO₂ and non-CO₂ components) and fossil fuels.
+4. Added requirement related to the assessment of double counting of emission reductions with REDD+ project(s) and jurisdictional REDD+ program(s).
+5. Added requirements related to adjusting the baseline level of the residence/institution included in the project to account for effects of interacting technologies.
+6. Added requirements related to the compilation and presentation of relevant data for each distributed device.
 
 VMR0015 must be used with the most recent version of AMS-III.AV.; AMS-III.AV.'s procedures and requirements apply unless VMR0015 indicates otherwise.
 
