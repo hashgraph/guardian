@@ -998,12 +998,12 @@
             background: #fff;
         }
 
-        .p-frozen-column {
+        .p-datatable-frozen-column {
             background: #fff;
             z-index: 3 !important;
         }
 
-        .p-datatable-thead .p-frozen-column {
+        .p-datatable-thead .p-datatable-frozen-column {
             z-index: 4 !important;
         }
 
