@@ -832,6 +832,21 @@
     color: inherit !important;
 }
 
+:host ::ng-deep .policy-status-select .p-select-label {
+    display: flex;
+    align-items: center;
+}
+
+:host ::ng-deep .DRY-RUN-dropdown.policy-status-select.p-select {
+    background: var(--guardian-dry-run-background) !important;
+}
+
+:host ::ng-deep .PUBLISH-dropdown.policy-status-select.p-select {
+    background: var(--color-accent-green-2) !important;
+    color: var(--color-accent-green-1) !important;
+    border-color: var(--color-accent-green-1) !important;
+}
+
 .dropdown-item-title {
     color: #0031ff;
     font-family: Inter, sans-serif;
