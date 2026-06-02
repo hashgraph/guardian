@@ -5,6 +5,46 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 
 ---
 
+## [2.1.1] — Schema clean-up + methodology-sourced test parameters
+
+### Fixed
+- **Removed dormant `uncertaintyDiscount` field from `ER_Summary` schema end-to-end.**
+  The field (`"Fixed 0.89 per VMR0015"`) was present in `document.properties`, `document.required`,
+  and the JSON-LD `context` block of `schemas/ER_Summary__0f67a367.json` but was never read by the
+  calculation block. Its description was factually incorrect (AMS-III.AV. mandates no blanket
+  multiplier). Removing it makes the schema consistent with the CHANGELOG [2.1.0] claim
+  ("Removed the fixed ×0.89 discount") with zero ambiguity for reviewers.
+  - Removed from: `document.properties`, `document.required`, `context.@context.[uuid].@context`.
+  - Field count in `ER_Summary`: 12 → 11 fields.
+
+### Changed
+- **Test fixture parameters replaced with AMS-III.AV. v9.0 official defaults** (source:
+  [UNFCCC CDM AMS-III.AV. v9.0 PDF](https://cdm.unfccc.int/sunsetcms/storage/contents/stored-file-20250506190351296/MP97_EA06_AMS-III.AV_v09.0.pdf)).
+  Previous values were opaque illustrative numbers with no cited source; new values are
+  each traceable to a specific methodology table or UNFCCC tool:
+
+  | Parameter | Old value | New value | Source |
+  |---|---|---|---|
+  | `nwb` | 0.15 | **0.10** | AMS-III.AV. v9.0 Table 3 option (b): three-stone fire default |
+  | `fNRB` (`f_i`) | 0.30 | **0.82** | TOOL33 v02.1 Vietnam national default (CDM EB 2024) |
+  | `QPW_y` | 200,000,000 L | **234,600,000 L** | Eq.3 cap (5.5 L/person/day × 1,300 schools × 20 students × 365 days) |
+  | `EF_fuel` | 81.6 | **81.6** | Unchanged — AMS-I.E. Table 2 / IPCC Tier 1 NRB |
+  | `BL_fuel` | 1.0 | **1.0** | Unchanged — 100% woody biomass |
+  | `X_boil` | 1.0 | **1.0** | Unchanged — all schools boil in baseline |
+  | `m` | 0.95 | **0.95** | Unchanged — above 0.90 WQ gate |
+
+  New computed result: **BE = ER = 53,185.71 tCO2e** (was 11,084.74).
+
+  Full derivation:
+  ```
+  SEC  = 357.48 / 0.10 = 3,574.8 kJ/L
+  BE_y = 234,600,000 × 0.95 × 1.0 × 3574.8 × (1.0 × 0.82 × 81.6 × 1e-9) = 53,185.71 tCO2e
+  ER_y = 53,185.71 − 0 − 0 = 53,185.71 tCO2e
+  WQ gate: 95/100 = 0.95 ≥ 0.90 → passes
+  ```
+
+---
+
 ## [2.1.0] — Real AMS-III.AV. equations + dry-run validation
 
 ### Fixed
