@@ -1,7 +1,7 @@
 {
   "tenantId": "6a11a2e75c64afbda9f4c4aa",
   "createDate": "2026-06-02T21:00:47.881Z",
-  "updateDate": "2026-06-02T21:14:52.975Z",
+  "updateDate": "2026-06-03T00:00:00.000Z",
   "uuid": "0f67a367-cf53-445c-9435-33bc9c69e208",
   "hash": "",
   "name": "ER Summary",
@@ -107,66 +107,59 @@
       },
       "BEtotal": {
         "title": "BEtotal (tCO2e)",
-        "description": "Sum of all household BE",
+        "description": "Sum of baseline emissions — AMS-III.AV. Eq.1",
         "readOnly": false,
         "type": "number",
         "$comment": "{\"term\":\"BEtotal\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
       },
       "PEtotal": {
         "title": "PEtotal (tCO2e)",
-        "description": "Sum of all household PE",
+        "description": "Project emissions total — AMS-III.AV. Eq.6 (TOOL03+TOOL05)",
         "readOnly": false,
         "type": "number",
         "$comment": "{\"term\":\"PEtotal\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
       },
       "LEtotal": {
         "title": "LEtotal (tCO2e)",
-        "description": "Leakage emissions total",
+        "description": "Leakage emissions total — AMS-I.E.",
         "readOnly": false,
         "type": "number",
         "$comment": "{\"term\":\"LEtotal\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
       },
       "netER": {
-        "title": "Net ER before discount (tCO2e)",
-        "description": "BE - PE - LE",
+        "title": "Net ER (tCO2e)",
+        "description": "BE - PE - LE per AMS-III.AV. Eq.7; negative values clamp to 0",
         "readOnly": false,
         "type": "number",
         "$comment": "{\"term\":\"netER\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":6}"
       },
-      "uncertaintyDiscount": {
-        "title": "Uncertainty Discount Factor",
-        "description": "Fixed 0.89 per VMR0015",
-        "readOnly": false,
-        "type": "number",
-        "$comment": "{\"term\":\"uncertaintyDiscount\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":7}"
-      },
       "wqGatePassed": {
         "title": "WQ Gate Passed?",
-        "description": "If false, ERtotal = 0",
+        "description": "False when >10% of appliances fail water-quality requirement (pass-rate < 0.90); if false, ERtotal = 0",
         "readOnly": false,
         "type": "boolean",
-        "$comment": "{\"term\":\"wqGatePassed\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":8}"
+        "$comment": "{\"term\":\"wqGatePassed\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":7}"
       },
       "ERtotal": {
-        "title": "ERtotal (tCO2e) - MINT TARGET field6",
-        "description": "This is field6 - mintToken reads this value",
+        "title": "ERtotal (tCO2e) — MINT TARGET field6",
+        "description": "Final emission reductions minted as CER tokens. Equals netER when WQ gate passes; 0 otherwise.",
         "readOnly": false,
         "type": "number",
-        "$comment": "{\"term\":\"ERtotal\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":9}"
+        "$comment": "{\"term\":\"ERtotal\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":8}"
       },
       "vintageYear": {
         "title": "Vintage Year",
         "description": "Year credits are assigned to",
         "readOnly": false,
         "type": "number",
-        "$comment": "{\"term\":\"vintageYear\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":10}"
+        "$comment": "{\"term\":\"vintageYear\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":9}"
       },
       "serializationRef": {
         "title": "Serialization Reference",
         "description": "Serial number block for issued credits",
         "readOnly": false,
         "type": "string",
-        "$comment": "{\"term\":\"serializationRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":11}"
+        "$comment": "{\"term\":\"serializationRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":10}"
       }
     },
     "required": [
@@ -179,7 +172,6 @@
       "BEtotal",
       "PEtotal",
       "LEtotal",
-      "uncertaintyDiscount",
       "wqGatePassed",
       "ERtotal",
       "vintageYear"
@@ -224,9 +216,6 @@
             "@type": "https://www.schema.org/text"
           },
           "netER": {
-            "@type": "https://www.schema.org/text"
-          },
-          "uncertaintyDiscount": {
             "@type": "https://www.schema.org/text"
           },
           "wqGatePassed": {
