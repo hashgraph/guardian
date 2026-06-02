@@ -1,0 +1,12 @@
+{
+  "field0": "MR-VCS3599-2025H1",
+  "field1": "VCS3599",
+  "field2": "01/01/2025 - 30/06/2025",
+  "field3": 154125.0,
+  "field4": 0,
+  "field5": 0,
+  "field6": 0,
+  "field7": "2026-02-13",
+  "field8": "Bikram Biswas",
+  "field9": "Monitoring period 01/01/2025-30/06/2025 for Verra VCS 3599 (Grouped Projects for Safe Drinking Water for Schools in Viet Nam). field3=Baseline Emissions, field4=Project Emissions, field5=Leakage. field6 (Emission Reductions) is computed by the policy's calculate_report_fields block = (field3-field4-field5)*0.89 = 137171.25 tCO2e."
+}
