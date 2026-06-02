@@ -143,6 +143,9 @@ export class XlsxToJson {
         if (worksheet.name === Dictionary.SHARED_ENUM_SHEET) {
             return false;
         }
+        if (worksheet.name === Dictionary.README_SHEET) {
+            return false;
+        }
         return !XlsxToJson.isSchema(worksheet);
     }
 
