@@ -3,10 +3,7 @@ import {
     MessageError,
     MessageResponse,
     NatsService,
-    OrgRole,
-    OrganizationMember,
     PinoLogger,
-    PolicyOrgAssignment,
     Singleton,
 } from '@guardian/common';
 import {
@@ -17,6 +14,9 @@ import {
     OrgRolePermission,
 } from '@guardian/interfaces';
 import { Organization } from '../entity/organization.js';
+import { OrgRole } from '../entity/org-role.js';
+import { OrganizationMember } from '../entity/organization-member.js';
+import { PolicyOrgAssignment } from '../entity/policy-org-assignment.js';
 import { UserProp, UserUtils } from '#utils';
 
 /**
