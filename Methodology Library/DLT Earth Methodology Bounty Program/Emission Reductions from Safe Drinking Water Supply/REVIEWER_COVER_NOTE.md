@@ -19,7 +19,7 @@ This note orients reviewers in ~2 minutes. Full detail is in [`README.md`](./REA
 
 ## What to review (in order)
 1. **`VMR0015.policy`** — import and run (Dry Run is enough).
-2. **`tests/VMR0015_VCS3599_monitoring_report.json`** — submit as a Monitoring Report; confirm it computes `field3` (BE) and `field6` (ER) = **53,185.71**.
+2. **`tests/VMR0015_VCS3599_monitoring_report.json`** — submit as a Monitoring Report; confirm it computes `field3` (BE) and `field6` (ER) = **53,309.84**.
 3. **`tests/VMR0015_dryrun_record.record`** + **`VMR0015_dryrun_publish_proof.csv`** — the policy-integrity / dry-run evidence (see below).
 4. **`formulas/`** — confirm the formula linked definitions match the calculation block.
 5. **`README.md`** — Verra methodology alignment and scope.
@@ -35,8 +35,8 @@ With the fixture values (QPW=234,600,000 L, m=0.95, X_boil=1.0, **nwb=0.10**, EF
 ```
 SEC  = 357.48 / 0.10 = 3,574.8 kJ/L
 BE_y = 234,600,000 × 0.95 × 1.0 × 3574.8 × (1.0 × 0.82 × 81.6 × 1e-9)
-     = 53,185.71 tCO₂e
-ER_y = 53,185.71 − 0 − 0 = 53,185.71 tCO₂e  → mints 53,185.71 CER
+     = 53,309.84 tCO₂e
+ER_y = 53,309.84 − 0 − 0 = 53,309.84 tCO₂e  → mints 53,309.84 CER
 ```
 Appliance pass-rate 95/100 = 0.95 ≥ 0.90 → water-quality gate passes.
 
@@ -63,7 +63,7 @@ This policy was imported, dry-run, and **published** on a Guardian testnet insta
 
 ## What changed in this update (v2.1.1)
 - **Removed dormant `uncertaintyDiscount` field** from `ER_Summary` schema end-to-end (properties, required array, JSON-LD context). The field’s description “Fixed 0.89 per VMR0015” was factually incorrect; AMS-III.AV. mandates no blanket multiplier.
-- **Test fixture parameters updated to AMS-III.AV. v9.0 official defaults** with explicit source citations — `nwb = 0.10` (Table 3b), `fNRB = 0.82` (TOOL33 Vietnam), `QPW_y = 234,600,000 L` (Eq.3 cap). Expected result: **53,185.71 tCO₂e**.
+- **Test fixture parameters updated to AMS-III.AV. v9.0 official defaults** with explicit source citations — `nwb = 0.10` (Table 3b), `fNRB = 0.82` (TOOL33 Vietnam), `QPW_y = 234,600,000 L` (Eq.3 cap). Expected result: **53,309.84 tCO₂e**.
 - **Rebuilt the calculation on the real AMS-III.AV. equations** (SEC = 357.48/nwb; BE = QPW·m·X_boil·SEC·(BL_fuel·f_i·EF_fuel·1e-9); ER = BE−PE−LE).
 - **Set the water-quality gate to the methodology’s real >10%-fail threshold** (pass-rate < 0.90 → ER = 0), fail-closed.
 - **Bundled dry-run validation evidence** (recording + signed publish credential).
