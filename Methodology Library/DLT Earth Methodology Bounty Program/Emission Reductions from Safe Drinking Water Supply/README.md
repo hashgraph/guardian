@@ -50,11 +50,15 @@ VMR0015 must be used with the most recent version of AMS-III.AV.; AMS-III.AV.'s 
 
 This section is deliberately explicit so reviewers can scope the submission accurately.
 
+Both Guardian artifacts Wes asked about are present:
+- **Formula calculation block** — the `calculate_report_fields` custom-logic block inside `VMR0015.policy` (executes the math at submission).
+- **Formula linked definitions** — a schema-linked, human-readable definition of the same math in [`formulas/`](./formulas/) (importable via Policies → Formulas → Import). Each variable links to the exact Monitoring Report field it reads.
+
 **Implemented in the on-chain calculation block (`calculate_report_fields`):**
 
 - The core net emission-reduction equation `ER_y = BE_y − PE_y − LE_y`, computed from the Monitoring Report's flat numeric fields.
 - A clamp so that a negative net result is recorded as `0`.
-- An **optional** WHO water-quality gate: if (and only if) an explicit sample pass-rate is supplied, a pass-rate below 95% zeroes the period's ER. A normal report with no pass-rate supplied is unaffected.
+- An **optional, currently dormant** WHO water-quality gate: the block checks for an explicit pass-rate (`field10`, or a `wqSamples` array) and, if one is present and below 95%, zeroes the period's ER. The current Monitoring Report schema (`#31d7ef1c`) does **not** expose `field10`, so on a standard report the gate never triggers — it is wiring kept ready for a future schema that captures water-quality sampling. A normal report is unaffected.
 - A fixed **uncertainty discount of ×0.89** applied to the net ER before minting (see note below).
 
 > **Note on the ×0.89 factor.** The ×0.89 discount is a **conservativeness choice made in this policy implementation** to keep issued volumes below the unadjusted estimate. It is **not** a single blanket parameter mandated by VMR0015. VMR0015's uncertainty and adjustment treatment is parameter- and context-specific (see §5 of the methodology). The factor is surfaced here so reviewers can adjust or remove it to match Verra's prescribed treatment if required.
@@ -84,7 +88,7 @@ There is **no registered VMR0015 project yet** — the methodology was only publ
 
 **On the emission figure:** the value used for baseline emissions in the fixture, **154,125 tCO₂e**, reflects the project's reported scale for the period. It is an **illustrative input drawn from the project's public registry record; it has not been independently re-derived here from the underlying issuance/monitoring PDF.** Reviewers with registry access can substitute the exact verified figure from the project's Monitoring/Verification Report if a precise reconciliation is required.
 
-**Mapped to the Monitoring Report schema** (`#8d8b1014`, flat):
+**Mapped to the Monitoring Report schema** (`#31d7ef1c`, flat):
 
 | Field | Meaning | Value |
 |---|---|---|
@@ -120,6 +124,8 @@ A logic-level reproduction of every calculation branch is described in `tests/RE
 | File | Purpose |
 |---|---|
 | `VMR0015.policy` | Guardian policy import package (calc fix applied; no fabricated record bundled) |
+| `formulas/VMR0015_formula.zip` | Guardian **formula linked definitions** — importable artifact mapping ER = BE − PE − LE (and ER_y → field6) to the Monitoring Report schema |
+| `formulas/README.md` | Documentation of the formula linked definitions and how they map to the calculation block |
 | `README.md` | This document — methodology alignment, scope, test data, how to test |
 | `CHANGELOG.md` | Change history for this revision |
 | `REVIEWER_COVER_NOTE.md` | Short orientation note for reviewers |

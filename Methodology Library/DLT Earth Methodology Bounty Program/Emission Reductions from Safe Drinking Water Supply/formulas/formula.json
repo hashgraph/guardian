@@ -1,0 +1,91 @@
+{
+  "uuid": "698adbfa-7688-45ae-bb25-26f073b4b2eb",
+  "name": "VMR0015 v1.0 \u2014 Emission Reductions",
+  "description": "Formula linked definitions for the VMR0015 v1.0 Safe Drinking Water dMRV policy. Maps the methodology emission-reduction equation to the Monitoring Report schema fields. Core equation ER_y = BE_y - PE_y - LE_y (VMR0015 / AMS-III.AV. \u00a73.9.1); this implementation additionally applies a u_def = 0.89 conservativeness discount and clamps negatives to 0.",
+  "policyTopicId": "0.0.9115579",
+  "policyInstanceTopicId": "0.0.9115598",
+  "status": "DRAFT",
+  "config": {
+    "files": [],
+    "formulas": [
+      {
+        "uuid": "fc2fae55-1076-4fed-90e9-ac0f77fa2739",
+        "name": "BE_y",
+        "description": "Baseline Emissions total for the monitoring period (tCO2e)",
+        "type": "variable",
+        "value": "",
+        "link": {
+          "type": "schema",
+          "entityId": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
+          "item": "field3"
+        }
+      },
+      {
+        "uuid": "3c29e0ba-3e46-4f44-a903-219e62d0aad9",
+        "name": "PE_y",
+        "description": "Project Emissions total for the monitoring period (tCO2e)",
+        "type": "variable",
+        "value": "",
+        "link": {
+          "type": "schema",
+          "entityId": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
+          "item": "field4"
+        }
+      },
+      {
+        "uuid": "ca70f1ab-9658-4674-b528-31c619cada2a",
+        "name": "LE_y",
+        "description": "Leakage Emissions total for the monitoring period (tCO2e)",
+        "type": "variable",
+        "value": "",
+        "link": {
+          "type": "schema",
+          "entityId": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
+          "item": "field5"
+        }
+      },
+      {
+        "uuid": "b094c64b-6a20-4fa8-97b2-8e9500308923",
+        "name": "u_def",
+        "description": "Conservativeness discount applied by this policy implementation (design choice, not a Verra-mandated blanket parameter)",
+        "type": "constant",
+        "value": "0.89"
+      },
+      {
+        "uuid": "889fc2de-817c-4487-b3b0-3f929afdb3f1",
+        "name": "ER_net",
+        "description": "Net emission reductions before conservativeness discount: ER_net = BE_y - PE_y - LE_y (VMR0015 / AMS-III.AV. \u00a73.9.1)",
+        "type": "formula",
+        "value": "BE_y - PE_y - LE_y",
+        "relationships": [
+          "fc2fae55-1076-4fed-90e9-ac0f77fa2739",
+          "3c29e0ba-3e46-4f44-a903-219e62d0aad9",
+          "ca70f1ab-9658-4674-b528-31c619cada2a"
+        ]
+      },
+      {
+        "uuid": "51e7f372-64e6-465f-9522-3232d2ad9eb8",
+        "name": "ER_y",
+        "description": "Emission reductions recorded and minted by the policy: ER_y = max(0, ER_net) * u_def, written to Monitoring Report field6 (ER Total) which is the MintToken rule.",
+        "type": "formula",
+        "value": "max(0, ER_net) * u_def",
+        "link": {
+          "type": "schema",
+          "entityId": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
+          "item": "field6"
+        },
+        "relationships": [
+          "889fc2de-817c-4487-b3b0-3f929afdb3f1",
+          "b094c64b-6a20-4fa8-97b2-8e9500308923"
+        ]
+      },
+      {
+        "uuid": "7c5ec26e-2449-4246-97df-a44f701357c5",
+        "name": "WQ_gate",
+        "description": "Optional WHO water-quality gate (currently dormant): if a pass-rate field (field10 / wqSamples) is supplied and is below 95%, ER_y is set to 0 for the period. The current Monitoring Report schema does not expose field10, so the gate does not trigger on a standard report; it is kept ready for a future schema that captures water-quality sampling.",
+        "type": "text",
+        "value": "if (pass_rate supplied and pass_rate < 0.95) then ER_y = 0"
+      }
+    ]
+  }
+}

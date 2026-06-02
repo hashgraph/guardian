@@ -12,7 +12,7 @@ A single Monitoring Report credential subject, grounded in a **real, registered 
 
 > The baseline-emissions value (154,125 tCO₂e) is an **illustrative input** drawn from the project's public registry record. It has not been independently re-derived here from the issuance/monitoring PDF; the exact verified figure can be substituted from the project's Verification Report if precise reconciliation is needed.
 
-### Field mapping (Monitoring Report schema `#8d8b1014`, flat)
+### Field mapping (Monitoring Report schema `#31d7ef1c`, flat)
 | Field | Meaning | Value |
 |---|---|---|
 | `field3` | Baseline Emissions (BE) | 154125 |
@@ -37,11 +37,17 @@ The block has been exercised across these cases (logic-level), all behaving as e
 | Values supplied as numeric strings ("154125") | 137,171.25 (coerced) |
 | `field3=30399, field4=0, field5=1520` | 25,702.31 |
 | Net negative (PE+LE > BE) | 0 (clamped) |
-| Optional WQ pass-rate supplied at 90% (< 95%) | 0 (gate zeroes ER) |
-| Optional WQ pass-rate supplied at 98% (≥ 95%) | normal ER |
+| Optional WQ pass-rate supplied at 90% (< 95%) | 0 (gate zeroes ER) — only if a pass-rate field is added to the schema |
+| Optional WQ pass-rate supplied at 98% (≥ 95%) | normal ER — only if a pass-rate field is added to the schema |
 | `field3` missing/blank | 0 |
 
 ## Note on the policy-integrity-test (`.record`)
 No `.record` file is included. A valid integrity-test record must be produced from a
 **live Guardian dry-run** of this policy so it can be replayed deterministically. An earlier
 AI-generated record did not match this policy's block tags/schema IDs and was removed.
+
+## Note on the WHO water-quality gate
+The calculation block contains an optional WHO water-quality gate keyed on a `field10`
+pass-rate (or a `wqSamples` array). The current Monitoring Report schema does **not**
+expose `field10`, so the gate is dormant on a standard report — it is wiring kept ready
+for a future schema revision that captures water-quality sampling.

@@ -10,9 +10,12 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 ### Fixed
 - **`calculate_report_fields` now reads the Monitoring Report as flat scalars.**
   - **Symptom:** a correctly filled Monitoring Report computed `field6 = 0`, so the token minted zero.
-  - **Root cause:** the Monitoring Report schema (`#8d8b1014`) defines `field3`/`field4`/`field5` (BE/PE/LE) as **flat numbers** and `field2` as a "Period Reference" string. The calculation block was reading them as **nested objects** (`raw.field4.field1`, etc.) and treating `field2` as a water-quality array — yielding `0` on every flat report.
-  - **Fix:** the block now reads flat scalars via `toNum(raw.field3 / field4 / field5)`; computes `ER = (BE − PE − LE) × 0.89`; clamps negatives to `0`. The WHO water-quality gate is now **optional** — it applies only when an explicit pass-rate is supplied (`field10` or a `wqSamples` array) — so a normal flat report computes correctly.
+  - **Root cause:** the Monitoring Report schema (`#31d7ef1c`) defines `field3`/`field4`/`field5` (BE/PE/LE) as **flat numbers** and `field2` as a "Period Reference" string. The calculation block was reading them as **nested objects** (`raw.field4.field1`, etc.) and treating `field2` as a water-quality array — yielding `0` on every flat report.
+  - **Fix:** the block now reads flat scalars via `toNum(raw.field3 / field4 / field5)`; computes `ER = (BE − PE − LE) × 0.89`; clamps negatives to `0`. The WHO water-quality gate is now **optional and dormant** — it applies only when an explicit pass-rate is supplied (`field10` or a `wqSamples` array), and the current Monitoring Report schema does not expose `field10`, so a normal flat report computes correctly without it.
   - **Verification:** a flat Monitoring Report with `field3 = 154125`, `field4 = 0`, `field5 = 0` now computes `field6 = 137,171.25`.
+
+### Added
+- **Formula Linked Definitions** (`formulas/`). A Guardian formula artifact (`formula.json` + `schemas.json`, packaged as `VMR0015_formula.zip`) that expresses the emission-reduction math as schema-linked definitions: `BE_y/PE_y/LE_y` link to Monitoring Report `field3/4/5`, `ER_net = BE_y − PE_y − LE_y` (VMR0015 §3.9.1), and `ER_y = max(0, ER_net) × u_def` links to `field6` (the MintToken rule). This complements the existing `calculate_report_fields` calculation block — the two describe the same math. Structure follows Guardian's `IFormula`/`IFormulaItem` interface and import/export format.
 
 ### Changed
 - **Test data re-grounded on a registered Verra project.** Replaced the earlier non-Verra example with **VCS 3599 — Grouped Projects for Safe Drinking Water for Schools in Viet Nam** (registered, AMS-III.AV.), using its public registry record. See [`tests/README.md`](./tests/README.md).
