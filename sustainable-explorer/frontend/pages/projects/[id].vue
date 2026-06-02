@@ -13,6 +13,7 @@ import { getSDG } from '~/lib/sdgs';
 import { getMethodologyName } from '~/lib/methodologies';
 import { useDecodedMethodologyApi } from '~/composables/api/useDecodedMethodologyApi';
 import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
+import { nominatimReverse, nominatimCountryCenter } from '~/composables/useNominatim';
 
 const route = useRoute();
 const { network } = useNetwork();
@@ -26,15 +27,7 @@ const geocodedCountry = ref<{ code: string; name: string } | null>(null);
 watch(project, async (p) => {
     geocodedCountry.value = null;
     if (!p || p.countryCode !== 'UNK' || !p.lat || !p.lng) return;
-    try {
-        const res = await $fetch<any>('https://nominatim.openstreetmap.org/reverse', {
-            params: { lat: p.lat, lon: p.lng, format: 'json', zoom: 3 },
-            headers: { 'Accept-Language': 'en' },
-        });
-        const name: string = res?.address?.country ?? '';
-        const code = COUNTRY_ALPHA3[name] ?? 'UNK';
-        if (code !== 'UNK') geocodedCountry.value = { code, name };
-    } catch { /* ignore — fallback stays UNK */ }
+    geocodedCountry.value = await nominatimReverse(p.lat, p.lng, n => COUNTRY_ALPHA3[n] ?? 'UNK');
 }, { immediate: true });
 
 const INVALID_COUNTRY = new Set([
@@ -513,6 +506,26 @@ watch(methodologyMappingOpen, (open) => {
     }
 });
 
+// ─── Effective map location (falls back to Nominatim country center when no coordinates) ──
+
+const countryCenterCoords = ref<{ lat: number; lng: number } | null>(null);
+
+watch(project, async (p) => {
+    if (!p) return;
+    const hasCoords = p.lat !== 0 || p.lng !== 0;
+    if (hasCoords) { countryCenterCoords.value = null; return; }
+    if (!p.country) return;
+    countryCenterCoords.value = await nominatimCountryCenter(p.country);
+}, { immediate: true });
+
+const effectiveLocation = computed(() => {
+    if (!project.value) return null;
+    const hasCoords = project.value.lat !== 0 || project.value.lng !== 0;
+    if (hasCoords) return { lat: project.value.lat, lng: project.value.lng, approximate: false };
+    if (countryCenterCoords.value) return { ...countryCenterCoords.value, approximate: true };
+    return null;
+});
+
 // ─── Emission data (currently all dashes) ─────────────────────────────────────
 
 const emissions = computed(() => {
@@ -614,12 +627,23 @@ const emissions = computed(() => {
                             Project Location
                         </h2>
                         <p class="text-[11px] text-muted-foreground mt-0.5">
-                            {{ project.lat.toFixed(4) }}, {{ project.lng.toFixed(4) }}<span v-if="displayCountry"> · {{ displayCountry }}</span>
+                            <template v-if="effectiveLocation && !effectiveLocation.approximate">{{ effectiveLocation.lat.toFixed(4) }}, {{ effectiveLocation.lng.toFixed(4) }}</template>
+                            <template v-else-if="effectiveLocation?.approximate">Country-level location</template>
+                            <span v-if="displayCountry"> · {{ displayCountry }}</span>
                         </p>
                     </div>
                     <div class="h-[320px]">
                         <ClientOnly>
-                            <ProjectLocationMap :lat="project.lat" :lng="project.lng" :name="project.name" />
+                            <ProjectLocationMap
+                                v-if="effectiveLocation"
+                                :lat="effectiveLocation.lat"
+                                :lng="effectiveLocation.lng"
+                                :name="project.name"
+                                :approximate="effectiveLocation.approximate"
+                            />
+                            <div v-else class="h-full flex items-center justify-center text-sm text-muted-foreground">
+                                Location data unavailable
+                            </div>
                         </ClientOnly>
                     </div>
                 </div>
