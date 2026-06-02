@@ -49,7 +49,6 @@ module.exports = defineConfig({
             "cypress/e2e/ui-tests/specs/08_tag_schemas/*.cy.js",
             "cypress/e2e/ui-tests/specs/09_tokens/*.cy.js",
             "cypress/e2e/ui-tests/specs/10_schema_validation/*.cy.js",
-            "**/*.cy.js",
         ],
         reporter: 'cypress-multi-reporters',
         reporterOptions: {
@@ -66,6 +65,15 @@ module.exports = defineConfig({
             if (typeof config.env.grepFilterSpecs === 'string') {
                 config.env.grepFilterSpecs = config.env.grepFilterSpecs.toLowerCase() === 'true';
             }
+
+            // @cypress/grep v6 reads its options from `config.expose`, not `config.env`.
+            // CI/Docker still pass them via CYPRESS_grepTags/--env, so forward them here.
+            config.expose = {
+                ...config.expose,
+                grepTags: config.env.grepTags,
+                grepFilterSpecs: config.env.grepFilterSpecs,
+                grepOmitFiltered: config.env.grepOmitFiltered,
+            };
 
             require('@cypress/grep/plugin').plugin(config);
             require('cypress-mochawesome-reporter/plugin')(on);
