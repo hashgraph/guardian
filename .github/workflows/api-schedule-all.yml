@@ -35,10 +35,21 @@ jobs:
       - name: Setup Yarn
         uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
         with:
-          cmd: install
+          cmd: --version
+
+      - name: Locate yarn cache
+        id: yarncache
+        run: echo "dir=$(yarn cache dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache yarn
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ steps.yarncache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Build packages
         run: |
@@ -88,47 +99,22 @@ jobs:
 
       - name: Run Guardian
         run: |
-          pushd notification-service
-          npm start &
-          sleep 20
-          popd
-          pushd logger-service
-          npm start &
-          sleep 20
-          popd
-          pushd auth-service
-          npm start &
-          sleep 20
-          popd
-          pushd guardian-service
-          npm start &
-          sleep 20
-          popd
-          pushd policy-service
-          npm start &
-          sleep 20
-          popd
-          pushd queue-service
-          npm start &
-          sleep 20
-          popd
-          pushd topic-listener-service
-          npm start &
-          sleep 20
-          popd
-          pushd worker-service
-          npm start &
-          npm start &
-          npm start &
-          npm start &
-          npm start &
-          sleep 20
-          popd
-          pushd api-gateway
-          npm start &
-          sleep 20
-          popd
-          sleep 60
+          start() { for s in "$@"; do (cd "$s" && npm start) & done; }
+
+          start logger-service notification-service
+          sleep 5
+          start auth-service queue-service
+          sleep 5
+          start policy-service topic-listener-service
+          for _ in {1..5}; do (cd worker-service && npm start) & done
+          sleep 5
+          start guardian-service
+          sleep 5
+          start api-gateway
+
+          echo "Waiting for API gateway on :3002..."
+          timeout 180 bash -c 'until (exec 3<>/dev/tcp/127.0.0.1/3002) 2>/dev/null; do sleep 2; done'
+          sleep 15   # grace for backend NATS subscriptions
         env:
           CI: true
           NODE_OPTIONS: '--openssl-legacy-provider'
@@ -150,8 +136,17 @@ jobs:
           INITIAL_BALANCE: 10
           INITIAL_STANDARD_REGISTRY_BALANCE: 200
 
+      - name: Set up Docker Buildx
+        uses: step-security/setup-buildx-action@f931205d68723ad9589fd2a7e2ece238bf9de341 # v4.0.0
+
       - name: Build Cypress Docker image
-        run: docker build -t cypress-runner ./e2e-tests
+        uses: step-security/docker-build-push-action@846549baaf047e867d038826129a64d81df0f704 # v7.1.0
+        with:
+          context: ./e2e-tests
+          tags: cypress-runner
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Run Cypress Tests in Docker
         run: |
