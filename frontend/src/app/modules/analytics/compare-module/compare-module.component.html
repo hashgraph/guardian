@@ -4,8 +4,14 @@
             Modules are <span>{{ total }}%</span> the same.
         </div>
 
-        <p-accordion [multiple]="true">
-            <p-accordion-panel>
+        <p-accordion
+            class="compare-module-accordion"
+            [multiple]="true"
+            [value]="['description', 'blocks']"
+            expandIcon="pi pi-chevron-down icon-start"
+            collapseIcon="pi pi-chevron-up icon-start"
+        >
+            <p-accordion-panel value="description">
     <p-accordion-header>Description</p-accordion-header>
     <p-accordion-content>
                 <div class="info-container">
@@ -15,7 +21,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel>
+            <p-accordion-panel value="input-events">
     <p-accordion-header>Input Events</p-accordion-header>
     <p-accordion-content>
                 <div *ngIf="inputEvents?.length" class="merge-tree">
@@ -39,7 +45,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel>
+            <p-accordion-panel value="output-events">
     <p-accordion-header>Output Events</p-accordion-header>
     <p-accordion-content>
                 <div *ngIf="outputEvents?.length" class="merge-tree">
@@ -63,7 +69,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel>
+            <p-accordion-panel value="variables">
     <p-accordion-header>Variables</p-accordion-header>
     <p-accordion-content>
                 <div *ngIf="variables?.length" class="merge-tree">
@@ -87,7 +93,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel>
+            <p-accordion-panel value="blocks">
     <p-accordion-header>Policy Blocks</p-accordion-header>
     <p-accordion-content>
                 <div class="merge-container">

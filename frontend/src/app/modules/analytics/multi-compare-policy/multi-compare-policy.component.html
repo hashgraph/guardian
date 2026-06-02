@@ -11,8 +11,14 @@
     </div>
 
     <div *ngIf="policies && policies.length>2" class="list">
-        <p-accordion [multiple]="true">
-            <p-accordion-panel>
+        <p-accordion
+            class="multi-compare-policy-accordion"
+            [multiple]="true"
+            [value]="['description', 'blocks']"
+            expandIcon="pi pi-chevron-down icon-start"
+            collapseIcon="pi pi-chevron-up icon-start"
+        >
+            <p-accordion-panel value="description">
     <p-accordion-header>Description</p-accordion-header>
     <p-accordion-content>
                 <div class="info-container" [style.grid-template-columns]="_gridStyle">
@@ -36,7 +42,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel *ngIf="roles?.length">
+            <p-accordion-panel value="roles" *ngIf="roles?.length">
     <p-accordion-header>Policy Roles</p-accordion-header>
     <p-accordion-content>
                 <div class="merge-tree">
@@ -70,7 +76,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel *ngIf="groups?.length">
+            <p-accordion-panel value="groups" *ngIf="groups?.length">
     <p-accordion-header>Policy Groups</p-accordion-header>
     <p-accordion-content>
                 <div class="merge-tree">
@@ -100,7 +106,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel *ngIf="topics?.length">
+            <p-accordion-panel value="topics" *ngIf="topics?.length">
     <p-accordion-header>Policy Topics</p-accordion-header>
     <p-accordion-content>
                 <div class="merge-tree">
@@ -134,7 +140,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel *ngIf="tokens?.length">
+            <p-accordion-panel value="tokens" *ngIf="tokens?.length">
     <p-accordion-header>Policy Tokens</p-accordion-header>
     <p-accordion-content>
                 <div class="merge-tree">
@@ -174,7 +180,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel>
+            <p-accordion-panel value="tools">
     <p-accordion-header>Policy Tools</p-accordion-header>
     <p-accordion-content>
                 <div *ngIf="tools && tools.length" class="merge-tree">
@@ -213,7 +219,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel>
+            <p-accordion-panel value="blocks">
     <p-accordion-header>Policy Blocks</p-accordion-header>
     <p-accordion-content>
 

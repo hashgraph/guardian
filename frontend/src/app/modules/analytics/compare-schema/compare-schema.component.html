@@ -5,8 +5,14 @@
             Schemas are <span>{{ total }}%</span> the same.
         </div>
 
-        <p-accordion [multiple]="true">
-            <p-accordion-panel>
+        <p-accordion
+            class="compare-schema-accordion"
+            [multiple]="true"
+            [value]="['description', 'fields']"
+            expandIcon="pi pi-chevron-down icon-start"
+            collapseIcon="pi pi-chevron-up icon-start"
+        >
+            <p-accordion-panel value="description">
     <p-accordion-header>Description</p-accordion-header>
     <p-accordion-content>
                 <div class="info-container">
@@ -16,7 +22,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel>
+            <p-accordion-panel value="fields">
     <p-accordion-header>Schema Fields</p-accordion-header>
     <p-accordion-content>
                 <div class="merge-container">

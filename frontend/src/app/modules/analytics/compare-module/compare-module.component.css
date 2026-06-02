@@ -658,3 +658,33 @@
     position: relative;
     background-color: white;
 }
+
+:host ::ng-deep .compare-module-accordion .p-accordionpanel {
+    border-bottom: 1px solid #d6dbe3;
+}
+
+:host ::ng-deep .compare-module-accordion .p-accordionheader {
+    gap: 8px;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 10px;
+    background: #fff;
+    border: 0;
+    color: #172033;
+    font-weight: 600;
+    text-align: left;
+    box-shadow: none;
+}
+
+:host ::ng-deep .compare-module-accordion .p-accordionheader-toggle-icon {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    margin: 0;
+}
+
+:host ::ng-deep .compare-module-accordion .p-accordioncontent-content {
+    padding: 0;
+    background: #fff;
+    border: 0;
+}

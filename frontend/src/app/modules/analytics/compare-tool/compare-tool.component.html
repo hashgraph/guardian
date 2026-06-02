@@ -13,8 +13,14 @@
     <div *ngIf="resultContext" class="list">
     </div>
 
-    <p-accordion [multiple]="true">
-        <p-accordion-panel>
+    <p-accordion
+        class="compare-tool-accordion"
+        [multiple]="true"
+        [value]="['description', 'blocks']"
+        expandIcon="pi pi-chevron-down icon-start"
+        collapseIcon="pi pi-chevron-up icon-start"
+    >
+        <p-accordion-panel value="description">
     <p-accordion-header>Description</p-accordion-header>
     <p-accordion-content>
             <div class="info-container" [style.grid-template-columns]="_gridStyle">
@@ -38,7 +44,7 @@
             </p-accordion-content>
 </p-accordion-panel>
 
-        <p-accordion-panel *ngIf="inputEvents?.length">
+        <p-accordion-panel value="input-events" *ngIf="inputEvents?.length">
     <p-accordion-header>Input Events</p-accordion-header>
     <p-accordion-content>
             <div class="merge-tree" [attr.tree-size]="size">
@@ -69,7 +75,7 @@
             </p-accordion-content>
 </p-accordion-panel>
 
-        <p-accordion-panel *ngIf="outputEvents?.length">
+        <p-accordion-panel value="output-events" *ngIf="outputEvents?.length">
     <p-accordion-header>Output Events</p-accordion-header>
     <p-accordion-content>
             <div class="merge-tree" [attr.tree-size]="size">
@@ -100,7 +106,7 @@
             </p-accordion-content>
 </p-accordion-panel>
 
-        <p-accordion-panel *ngIf="variables?.length">
+        <p-accordion-panel value="variables" *ngIf="variables?.length">
     <p-accordion-header>Variables</p-accordion-header>
     <p-accordion-content>
             <div class="merge-tree" [attr.tree-size]="size">
@@ -132,7 +138,7 @@
             </p-accordion-content>
 </p-accordion-panel>
 
-        <p-accordion-panel *ngIf="blocks">
+        <p-accordion-panel value="blocks" *ngIf="blocks">
     <p-accordion-header>Tool Blocks</p-accordion-header>
     <p-accordion-content>
             <div class="merge-container">

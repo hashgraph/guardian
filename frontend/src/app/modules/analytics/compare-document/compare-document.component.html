@@ -11,8 +11,14 @@
     </div>
 
     <div *ngIf="resultContext" class="list">
-        <p-accordion [multiple]="true">
-            <p-accordion-panel *ngIf="!disableHeader">
+        <p-accordion
+            class="compare-document-accordion"
+            [multiple]="true"
+            [value]="['description', 'documents']"
+            expandIcon="pi pi-chevron-down icon-start"
+            collapseIcon="pi pi-chevron-up icon-start"
+        >
+            <p-accordion-panel value="description" *ngIf="!disableHeader">
     <p-accordion-header>Description</p-accordion-header>
     <p-accordion-content>
                 <div class="info-container" [style.grid-template-columns]="_gridStyle">
@@ -36,7 +42,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel *ngIf="treeContext">
+            <p-accordion-panel value="documents" *ngIf="treeContext">
     <p-accordion-header>{{ comparationLabels.documentsLabel }}</p-accordion-header>
     <p-accordion-content>
                 <div class="merge-container">
