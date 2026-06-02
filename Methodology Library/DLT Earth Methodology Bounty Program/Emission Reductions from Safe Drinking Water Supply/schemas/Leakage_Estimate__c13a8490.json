@@ -1,0 +1,163 @@
+{
+  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
+  "createDate": "2026-06-01T19:53:51.406Z",
+  "updateDate": "2026-06-01T19:58:58.722Z",
+  "uuid": "c13a8490-2851-499f-be68-04e933a636e8",
+  "hash": "",
+  "name": "Leakage Estimate",
+  "description": "VMR0015 leakage emissions: displaced fuel use outside the project boundary.",
+  "entity": "VC",
+  "version": "1.0.0",
+  "sourceVersion": "",
+  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "topicId": "0.0.9115579",
+  "messageId": "1780343936.428407174",
+  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
+  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
+  "iri": "#c13a8490-2851-499f-be68-04e933a636e8&1.0.0",
+  "system": false,
+  "active": false,
+  "category": "POLICY",
+  "codeVersion": "1.2.0",
+  "defs": [],
+  "errors": [],
+  "contentDocumentFileId": "6a177c9e9f1ad5292ace77e3",
+  "contentContextFileId": "6a177c9e9f1ad5292ace77e5",
+  "document": {
+    "$id": "#c13a8490-2851-499f-be68-04e933a636e8&1.0.0",
+    "$comment": "{ \"@id\": \"#c13a8490-2851-499f-be68-04e933a636e8&1.0.0\", \"term\": \"c13a8490-2851-499f-be68-04e933a636e8&1.0.0\" }",
+    "title": "Leakage Estimate",
+    "description": "VMR0015 leakage emissions: displaced fuel use outside the project boundary.",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "calcId": {
+        "title": "Calc ID",
+        "description": "UUID v4",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"calcId\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":0}"
+      },
+      "policyId": {
+        "title": "Policy Id",
+        "description": "Policy Id",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "ref": {
+        "title": "Relationships",
+        "description": "Relationships",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "guardianVersion": {
+        "title": "Guardian Version",
+        "description": "Guardian Version",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"guardianVersion\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "periodRef": {
+        "title": "Monitoring Period Ref",
+        "description": "UUID",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"periodRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":1}"
+      },
+      "leakageFactor": {
+        "title": "Leakage Factor",
+        "description": "0..1 fraction",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"leakageFactor\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
+      },
+      "leakageTco2e": {
+        "title": "Leakage (tCO2e)",
+        "description": "Computed leakage",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"leakageTco2e\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "calcId",
+      "policyId",
+      "periodRef",
+      "leakageFactor",
+      "leakageTco2e"
+    ],
+    "additionalProperties": false,
+    "$defs": {}
+  },
+  "context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "c13a8490-2851-499f-be68-04e933a636e8&1.0.0": {
+        "@id": "#c13a8490-2851-499f-be68-04e933a636e8&1.0.0",
+        "@context": {
+          "calcId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ref": {
+            "@type": "https://www.schema.org/text"
+          },
+          "guardianVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "periodRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "leakageFactor": {
+            "@type": "https://www.schema.org/text"
+          },
+          "leakageTco2e": {
+            "@type": "https://www.schema.org/text"
+          }
+        }
+      }
+    }
+  },
+  "id": "6a1de34f9f1ad5292ad22685"
+}

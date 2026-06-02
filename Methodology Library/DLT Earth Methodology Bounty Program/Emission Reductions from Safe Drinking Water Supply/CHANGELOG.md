@@ -15,6 +15,7 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
   - **Verification:** a flat Monitoring Report with `field3 = 154125`, `field4 = 0`, `field5 = 0` now computes `field6 = 137,171.25`.
 
 ### Added
+- **Standalone, reviewable artifacts.** Exported the policy config as a readable `VMR0015_policy.json` and all **17 schemas** into a `schemas/` folder (with an index), both extracted directly from `VMR0015.policy` so they are identical to the binary. Reviewers can now inspect the policy and schemas without importing the binary into Guardian.
 - **Formula Linked Definitions** (`formulas/`). A Guardian formula artifact (`formula.json` + `schemas.json`, packaged as `VMR0015_formula.zip`) that expresses the emission-reduction math as schema-linked definitions: `BE_y/PE_y/LE_y` link to Monitoring Report `field3/4/5`, `ER_net = BE_y − PE_y − LE_y` (VMR0015 §3.9.1), and `ER_y = max(0, ER_net) × u_def` links to `field6` (the MintToken rule). This complements the existing `calculate_report_fields` calculation block — the two describe the same math. Structure follows Guardian's `IFormula`/`IFormulaItem` interface and import/export format.
 
 ### Changed

@@ -1,0 +1,239 @@
+{
+  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
+  "createDate": "2026-06-01T19:53:51.385Z",
+  "updateDate": "2026-06-01T19:58:58.706Z",
+  "uuid": "3aa3e3d4-744e-462d-a96b-cfbbc313bedb",
+  "hash": "",
+  "name": "Project Description",
+  "description": "VMR0015 project registration and description schema.",
+  "entity": "VC",
+  "version": "1.0.0",
+  "sourceVersion": "",
+  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "topicId": "0.0.9115579",
+  "messageId": "1780343936.428407174",
+  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
+  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
+  "iri": "#3aa3e3d4-744e-462d-a96b-cfbbc313bedb&1.0.0",
+  "system": false,
+  "active": false,
+  "category": "POLICY",
+  "codeVersion": "1.2.0",
+  "defs": [],
+  "errors": [],
+  "contentDocumentFileId": "6a177d4b9f1ad5292ace7889",
+  "contentContextFileId": "6a177d4b9f1ad5292ace788b",
+  "document": {
+    "$id": "#3aa3e3d4-744e-462d-a96b-cfbbc313bedb&1.0.0",
+    "$comment": "{ \"@id\": \"#3aa3e3d4-744e-462d-a96b-cfbbc313bedb&1.0.0\", \"term\": \"3aa3e3d4-744e-462d-a96b-cfbbc313bedb&1.0.0\" }",
+    "title": "Project Description",
+    "description": "VMR0015 project registration and description schema.",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "projectId": {
+        "title": "Project ID",
+        "description": "Unique project identifier",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"projectId\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":0}"
+      },
+      "policyId": {
+        "title": "Policy Id",
+        "description": "Policy Id",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "ref": {
+        "title": "Relationships",
+        "description": "Relationships",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "guardianVersion": {
+        "title": "Guardian Version",
+        "description": "Guardian Version",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"guardianVersion\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "projectName": {
+        "title": "Project Name",
+        "description": "Official project title",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"projectName\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":1}"
+      },
+      "ppRef": {
+        "title": "PP Reference",
+        "description": "Project Proponent profile ref",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"ppRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
+      },
+      "methodology": {
+        "title": "Methodology",
+        "description": "VMR0015 v1.0",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"methodology\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+      },
+      "locationRef": {
+        "title": "Location Reference",
+        "description": "Geographic Location ref",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"locationRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
+      },
+      "startDate": {
+        "title": "Start Date",
+        "description": "Project crediting start date",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"startDate\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
+      },
+      "creditingPeriod": {
+        "title": "Crediting Period (years)",
+        "description": "Length of crediting period",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"creditingPeriod\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":6}"
+      },
+      "estAnnualER": {
+        "title": "Estimated Annual ER (tCO2e)",
+        "description": "Estimated annual emission reductions",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"estAnnualER\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":7}"
+      },
+      "totalHouseholds": {
+        "title": "Total Households",
+        "description": "Number of HH in scope",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"totalHouseholds\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":8}"
+      },
+      "technologyType": {
+        "title": "Technology Type",
+        "description": "Purifier technology used",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"technologyType\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":9}"
+      },
+      "projectNotes": {
+        "title": "Project Notes",
+        "description": "Free-text notes",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"projectNotes\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":10}"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "projectId",
+      "policyId",
+      "projectName",
+      "ppRef",
+      "methodology",
+      "locationRef",
+      "startDate",
+      "creditingPeriod",
+      "estAnnualER",
+      "totalHouseholds",
+      "technologyType"
+    ],
+    "additionalProperties": false,
+    "$defs": {}
+  },
+  "context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "3aa3e3d4-744e-462d-a96b-cfbbc313bedb&1.0.0": {
+        "@id": "#3aa3e3d4-744e-462d-a96b-cfbbc313bedb&1.0.0",
+        "@context": {
+          "projectId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ref": {
+            "@type": "https://www.schema.org/text"
+          },
+          "guardianVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "projectName": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ppRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "methodology": {
+            "@type": "https://www.schema.org/text"
+          },
+          "locationRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "startDate": {
+            "@type": "https://www.schema.org/text"
+          },
+          "creditingPeriod": {
+            "@type": "https://www.schema.org/text"
+          },
+          "estAnnualER": {
+            "@type": "https://www.schema.org/text"
+          },
+          "totalHouseholds": {
+            "@type": "https://www.schema.org/text"
+          },
+          "technologyType": {
+            "@type": "https://www.schema.org/text"
+          },
+          "projectNotes": {
+            "@type": "https://www.schema.org/text"
+          }
+        }
+      }
+    }
+  },
+  "id": "6a1de34f9f1ad5292ad22680"
+}

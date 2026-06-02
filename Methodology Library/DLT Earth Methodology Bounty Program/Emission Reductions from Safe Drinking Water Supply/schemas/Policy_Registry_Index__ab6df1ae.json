@@ -1,0 +1,184 @@
+{
+  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
+  "createDate": "2026-06-01T19:53:51.428Z",
+  "updateDate": "2026-06-01T19:58:58.738Z",
+  "uuid": "ab6df1ae-4462-42e2-931f-5f62806d488c",
+  "hash": "",
+  "name": "Policy Registry Index",
+  "description": "Master registry index of VMR0015 policy artifacts (HashScan-anchored).",
+  "entity": "VC",
+  "version": "1.0.0",
+  "sourceVersion": "",
+  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "topicId": "0.0.9115579",
+  "messageId": "1780343936.428407174",
+  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
+  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
+  "iri": "#ab6df1ae-4462-42e2-931f-5f62806d488c&1.0.0",
+  "system": false,
+  "active": false,
+  "category": "POLICY",
+  "codeVersion": "1.2.0",
+  "defs": [],
+  "errors": [],
+  "contentDocumentFileId": "6a177cb29f1ad5292ace77f1",
+  "contentContextFileId": "6a177cb29f1ad5292ace77f3",
+  "document": {
+    "$id": "#ab6df1ae-4462-42e2-931f-5f62806d488c&1.0.0",
+    "$comment": "{ \"@id\": \"#ab6df1ae-4462-42e2-931f-5f62806d488c&1.0.0\", \"term\": \"ab6df1ae-4462-42e2-931f-5f62806d488c&1.0.0\" }",
+    "title": "Policy Registry Index",
+    "description": "Master registry index of VMR0015 policy artifacts (HashScan-anchored).",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "registryId": {
+        "title": "Registry ID",
+        "description": "Unique registry record ID",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"registryId\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":0}"
+      },
+      "policyId": {
+        "title": "Policy Id",
+        "description": "Policy Id",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "ref": {
+        "title": "Relationships",
+        "description": "Relationships",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "guardianVersion": {
+        "title": "Guardian Version",
+        "description": "Guardian Version",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"guardianVersion\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "policyVersion": {
+        "title": "Policy Version",
+        "description": "Version (e.g. v2.0.4-BOUNTY-READY)",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"policyVersion\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":1}"
+      },
+      "hederaTopicId": {
+        "title": "Hedera Topic ID",
+        "description": "e.g. 0.0.9077683",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"hederaTopicId\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
+      },
+      "tokenId": {
+        "title": "Token ID",
+        "description": "Hedera token for credit issuance",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"tokenId\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+      },
+      "registryDate": {
+        "title": "Registry Date",
+        "description": "Date of registry entry",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"registryDate\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
+      },
+      "registryNotes": {
+        "title": "Registry Notes",
+        "description": "Free-text notes",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"registryNotes\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "registryId",
+      "policyId",
+      "policyVersion",
+      "hederaTopicId",
+      "tokenId",
+      "registryDate"
+    ],
+    "additionalProperties": false,
+    "$defs": {}
+  },
+  "context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "ab6df1ae-4462-42e2-931f-5f62806d488c&1.0.0": {
+        "@id": "#ab6df1ae-4462-42e2-931f-5f62806d488c&1.0.0",
+        "@context": {
+          "registryId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ref": {
+            "@type": "https://www.schema.org/text"
+          },
+          "guardianVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "hederaTopicId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "tokenId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "registryDate": {
+            "@type": "https://www.schema.org/text"
+          },
+          "registryNotes": {
+            "@type": "https://www.schema.org/text"
+          }
+        }
+      }
+    }
+  },
+  "id": "6a1de34f9f1ad5292ad2268a"
+}

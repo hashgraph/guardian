@@ -1,0 +1,183 @@
+{
+  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
+  "createDate": "2026-06-01T19:53:51.307Z",
+  "updateDate": "2026-06-01T19:58:58.637Z",
+  "uuid": "8d367c3c-bc54-43d3-a5ba-e4727054677c",
+  "hash": "",
+  "name": "PP Profile",
+  "description": "VMR0015 Project Proponent registration and profile schema.",
+  "entity": "VC",
+  "version": "1.0.0",
+  "sourceVersion": "",
+  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "topicId": "0.0.9115579",
+  "messageId": "1780343936.428407174",
+  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
+  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
+  "iri": "#8d367c3c-bc54-43d3-a5ba-e4727054677c&1.0.0",
+  "system": false,
+  "active": false,
+  "category": "POLICY",
+  "codeVersion": "1.2.0",
+  "defs": [],
+  "errors": [],
+  "contentDocumentFileId": "6a177d6e9f1ad5292ace78ad",
+  "contentContextFileId": "6a177d6e9f1ad5292ace78af",
+  "document": {
+    "$id": "#8d367c3c-bc54-43d3-a5ba-e4727054677c&1.0.0",
+    "$comment": "{ \"@id\": \"#8d367c3c-bc54-43d3-a5ba-e4727054677c&1.0.0\", \"term\": \"8d367c3c-bc54-43d3-a5ba-e4727054677c&1.0.0\" }",
+    "title": "PP Profile",
+    "description": "VMR0015 Project Proponent registration and profile schema.",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "field0": {
+        "title": "Full Name",
+        "description": "Full legal name of the Project Proponent",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"field0\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":0}"
+      },
+      "policyId": {
+        "title": "Policy Id",
+        "description": "Policy Id",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "ref": {
+        "title": "Relationships",
+        "description": "Relationships",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "guardianVersion": {
+        "title": "Guardian Version",
+        "description": "Guardian Version",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"guardianVersion\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "field1": {
+        "title": "Organization",
+        "description": "Organization or company name",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"field1\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":1}"
+      },
+      "field2": {
+        "title": "Country",
+        "description": "Country of the project proponent",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"field2\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
+      },
+      "field3": {
+        "title": "Email",
+        "description": "Contact email address",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"field3\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+      },
+      "field4": {
+        "title": "Phone",
+        "description": "Contact phone number",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"field4\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
+      },
+      "field5": {
+        "title": "Role",
+        "description": "Role of the proponent in the project",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"field5\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "field0",
+      "policyId",
+      "field1",
+      "field2",
+      "field3"
+    ],
+    "additionalProperties": false,
+    "$defs": {}
+  },
+  "context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "8d367c3c-bc54-43d3-a5ba-e4727054677c&1.0.0": {
+        "@id": "#8d367c3c-bc54-43d3-a5ba-e4727054677c&1.0.0",
+        "@context": {
+          "field0": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ref": {
+            "@type": "https://www.schema.org/text"
+          },
+          "guardianVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field1": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field2": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field3": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field4": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field5": {
+            "@type": "https://www.schema.org/text"
+          }
+        }
+      }
+    }
+  },
+  "id": "6a1de34f9f1ad5292ad2266c"
+}

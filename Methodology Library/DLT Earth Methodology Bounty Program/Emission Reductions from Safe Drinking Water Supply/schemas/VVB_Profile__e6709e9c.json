@@ -1,0 +1,217 @@
+{
+  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
+  "createDate": "2026-06-01T19:53:51.181Z",
+  "updateDate": "2026-06-01T19:58:58.527Z",
+  "uuid": "e6709e9c-ad15-4b25-99ad-b3d87e3299b9",
+  "hash": "",
+  "name": "VVB Profile",
+  "description": "VMR0015 Validation and Verification Body profile schema.",
+  "entity": "VC",
+  "version": "1.0.0",
+  "sourceVersion": "",
+  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "topicId": "0.0.9115579",
+  "messageId": "1780343936.428407174",
+  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
+  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
+  "iri": "#e6709e9c-ad15-4b25-99ad-b3d87e3299b9&1.0.0",
+  "system": false,
+  "active": false,
+  "category": "POLICY",
+  "codeVersion": "1.2.0",
+  "defs": [],
+  "errors": [],
+  "contentDocumentFileId": "6a177d599f1ad5292ace7897",
+  "contentContextFileId": "6a177d599f1ad5292ace7899",
+  "document": {
+    "$id": "#e6709e9c-ad15-4b25-99ad-b3d87e3299b9&1.0.0",
+    "$comment": "{ \"@id\": \"#e6709e9c-ad15-4b25-99ad-b3d87e3299b9&1.0.0\", \"term\": \"e6709e9c-ad15-4b25-99ad-b3d87e3299b9&1.0.0\" }",
+    "title": "VVB Profile",
+    "description": "VMR0015 Validation and Verification Body profile schema.",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "vvbId": {
+        "title": "VVB ID",
+        "description": "Unique VVB identifier",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"vvbId\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":0}"
+      },
+      "policyId": {
+        "title": "Policy Id",
+        "description": "Policy Id",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "ref": {
+        "title": "Relationships",
+        "description": "Relationships",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "guardianVersion": {
+        "title": "Guardian Version",
+        "description": "Guardian Version",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"guardianVersion\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "vvbName": {
+        "title": "VVB Name",
+        "description": "Organization name",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"vvbName\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":1}"
+      },
+      "vvbAccreditation": {
+        "title": "Accreditation Body",
+        "description": "Accrediting body (e.g. UNFCCC/Verra)",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"vvbAccreditation\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
+      },
+      "accreditationNumber": {
+        "title": "Accreditation Number",
+        "description": "Accreditation registration number",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"accreditationNumber\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+      },
+      "vvbContact": {
+        "title": "Contact Person",
+        "description": "Primary VVB contact",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"vvbContact\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
+      },
+      "vvbEmail": {
+        "title": "Email",
+        "description": "VVB contact email",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"vvbEmail\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
+      },
+      "vvbCountry": {
+        "title": "Country",
+        "description": "VVB country of registration",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"vvbCountry\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":6}"
+      },
+      "vvbScope": {
+        "title": "Scope of Accreditation",
+        "description": "Scope (sector/methodology)",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"vvbScope\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":7}"
+      },
+      "vvbNotes": {
+        "title": "VVB Notes",
+        "description": "Free-text notes",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"vvbNotes\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":8}"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "vvbId",
+      "policyId",
+      "vvbName",
+      "vvbAccreditation",
+      "accreditationNumber",
+      "vvbContact",
+      "vvbEmail",
+      "vvbCountry",
+      "vvbScope"
+    ],
+    "additionalProperties": false,
+    "$defs": {}
+  },
+  "context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "e6709e9c-ad15-4b25-99ad-b3d87e3299b9&1.0.0": {
+        "@id": "#e6709e9c-ad15-4b25-99ad-b3d87e3299b9&1.0.0",
+        "@context": {
+          "vvbId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ref": {
+            "@type": "https://www.schema.org/text"
+          },
+          "guardianVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "vvbName": {
+            "@type": "https://www.schema.org/text"
+          },
+          "vvbAccreditation": {
+            "@type": "https://www.schema.org/text"
+          },
+          "accreditationNumber": {
+            "@type": "https://www.schema.org/text"
+          },
+          "vvbContact": {
+            "@type": "https://www.schema.org/text"
+          },
+          "vvbEmail": {
+            "@type": "https://www.schema.org/text"
+          },
+          "vvbCountry": {
+            "@type": "https://www.schema.org/text"
+          },
+          "vvbScope": {
+            "@type": "https://www.schema.org/text"
+          },
+          "vvbNotes": {
+            "@type": "https://www.schema.org/text"
+          }
+        }
+      }
+    }
+  },
+  "id": "6a1de34f9f1ad5292ad2264e"
+}

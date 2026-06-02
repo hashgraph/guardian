@@ -1,0 +1,185 @@
+{
+  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
+  "createDate": "2026-06-01T19:53:51.345Z",
+  "updateDate": "2026-06-01T19:58:58.673Z",
+  "uuid": "99a66994-2907-4d91-8d57-3ffea7dd8497",
+  "hash": "",
+  "name": "Issuance Request",
+  "description": "Request to mint/issue carbon credit tokens for verified ERs under VMR0015.",
+  "entity": "VC",
+  "version": "1.0.0",
+  "sourceVersion": "",
+  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "topicId": "0.0.9115579",
+  "messageId": "1780343936.428407174",
+  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
+  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
+  "iri": "#99a66994-2907-4d91-8d57-3ffea7dd8497&1.0.0",
+  "system": false,
+  "active": false,
+  "category": "POLICY",
+  "codeVersion": "1.2.0",
+  "defs": [],
+  "errors": [],
+  "contentDocumentFileId": "6a177c589f1ad5292ace77c3",
+  "contentContextFileId": "6a177c589f1ad5292ace77c5",
+  "document": {
+    "$id": "#99a66994-2907-4d91-8d57-3ffea7dd8497&1.0.0",
+    "$comment": "{ \"@id\": \"#99a66994-2907-4d91-8d57-3ffea7dd8497&1.0.0\", \"term\": \"99a66994-2907-4d91-8d57-3ffea7dd8497&1.0.0\" }",
+    "title": "Issuance Request",
+    "description": "Request to mint/issue carbon credit tokens for verified ERs under VMR0015.",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "requestId": {
+        "title": "Request ID",
+        "description": "UUID v4",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"requestId\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":0}"
+      },
+      "policyId": {
+        "title": "Policy Id",
+        "description": "Policy Id",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "ref": {
+        "title": "Relationships",
+        "description": "Relationships",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "guardianVersion": {
+        "title": "Guardian Version",
+        "description": "Guardian Version",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"guardianVersion\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "vvbReportRef": {
+        "title": "VVB Report Ref",
+        "description": "UUID",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"vvbReportRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":1}"
+      },
+      "projectRef": {
+        "title": "Project Ref",
+        "description": "Project UUID",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"projectRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
+      },
+      "requestedAmount": {
+        "title": "Requested Tokens",
+        "description": "Number of credits to mint",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"requestedAmount\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+      },
+      "recipient": {
+        "title": "Recipient Account",
+        "description": "Hedera account ID",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"recipient\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
+      },
+      "requestDate": {
+        "title": "Request Date",
+        "description": "ISO 8601 date",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"requestDate\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "requestId",
+      "policyId",
+      "vvbReportRef",
+      "projectRef",
+      "requestedAmount",
+      "recipient",
+      "requestDate"
+    ],
+    "additionalProperties": false,
+    "$defs": {}
+  },
+  "context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "99a66994-2907-4d91-8d57-3ffea7dd8497&1.0.0": {
+        "@id": "#99a66994-2907-4d91-8d57-3ffea7dd8497&1.0.0",
+        "@context": {
+          "requestId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ref": {
+            "@type": "https://www.schema.org/text"
+          },
+          "guardianVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "vvbReportRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "projectRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "requestedAmount": {
+            "@type": "https://www.schema.org/text"
+          },
+          "recipient": {
+            "@type": "https://www.schema.org/text"
+          },
+          "requestDate": {
+            "@type": "https://www.schema.org/text"
+          }
+        }
+      }
+    }
+  },
+  "id": "6a1de34f9f1ad5292ad22676"
+}

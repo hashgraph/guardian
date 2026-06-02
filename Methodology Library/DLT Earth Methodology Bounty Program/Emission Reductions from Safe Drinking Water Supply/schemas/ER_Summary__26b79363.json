@@ -1,0 +1,249 @@
+{
+  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
+  "createDate": "2026-06-01T19:53:51.264Z",
+  "updateDate": "2026-06-01T19:58:58.603Z",
+  "uuid": "26b79363-91b1-4c89-85ed-89feaff14cdb",
+  "hash": "",
+  "name": "ER Summary",
+  "description": "Aggregated ER calculation sheet. Final ERtotal is linked to mintToken rule=field6 on the Monitoring Report.",
+  "entity": "VC",
+  "version": "1.0.0",
+  "sourceVersion": "",
+  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "topicId": "0.0.9115579",
+  "messageId": "1780343936.428407174",
+  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
+  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
+  "iri": "#26b79363-91b1-4c89-85ed-89feaff14cdb&1.0.0",
+  "system": false,
+  "active": false,
+  "category": "POLICY",
+  "codeVersion": "1.2.0",
+  "defs": [],
+  "errors": [],
+  "contentDocumentFileId": "6a177d2f9f1ad5292ace7869",
+  "contentContextFileId": "6a177d2f9f1ad5292ace786b",
+  "document": {
+    "$id": "#26b79363-91b1-4c89-85ed-89feaff14cdb&1.0.0",
+    "$comment": "{ \"@id\": \"#26b79363-91b1-4c89-85ed-89feaff14cdb&1.0.0\", \"term\": \"26b79363-91b1-4c89-85ed-89feaff14cdb&1.0.0\" }",
+    "title": "ER Summary",
+    "description": "Aggregated ER calculation sheet. Final ERtotal is linked to mintToken rule=field6 on the Monitoring Report.",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "summaryId": {
+        "title": "Summary ID",
+        "description": "Unique summary record",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"summaryId\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":0}"
+      },
+      "policyId": {
+        "title": "Policy Id",
+        "description": "Policy Id",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "ref": {
+        "title": "Relationships",
+        "description": "Relationships",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "guardianVersion": {
+        "title": "Guardian Version",
+        "description": "Guardian Version",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"guardianVersion\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "periodRef": {
+        "title": "Period Reference",
+        "description": "Ref to monitoring period",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"periodRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":1}"
+      },
+      "projectRef": {
+        "title": "Project Reference",
+        "description": "Ref to project description",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"projectRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
+      },
+      "BEtotal": {
+        "title": "BEtotal (tCO2e)",
+        "description": "Sum of all household BE",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"BEtotal\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+      },
+      "PEtotal": {
+        "title": "PEtotal (tCO2e)",
+        "description": "Sum of all household PE",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"PEtotal\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
+      },
+      "LEtotal": {
+        "title": "LEtotal (tCO2e)",
+        "description": "Leakage emissions total",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"LEtotal\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
+      },
+      "netER": {
+        "title": "Net ER before discount (tCO2e)",
+        "description": "BE - PE - LE",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"netER\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":6}"
+      },
+      "uncertaintyDiscount": {
+        "title": "Uncertainty Discount Factor",
+        "description": "Fixed 0.89 per VMR0015",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"uncertaintyDiscount\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":7}"
+      },
+      "wqGatePassed": {
+        "title": "WQ Gate Passed?",
+        "description": "If false, ERtotal = 0",
+        "readOnly": false,
+        "type": "boolean",
+        "$comment": "{\"term\":\"wqGatePassed\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":8}"
+      },
+      "ERtotal": {
+        "title": "ERtotal (tCO2e) - MINT TARGET field6",
+        "description": "This is field6 - mintToken reads this value",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"ERtotal\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":9}"
+      },
+      "vintageYear": {
+        "title": "Vintage Year",
+        "description": "Year credits are assigned to",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"vintageYear\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":10}"
+      },
+      "serializationRef": {
+        "title": "Serialization Reference",
+        "description": "Serial number block for issued credits",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"serializationRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":11}"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "summaryId",
+      "policyId",
+      "periodRef",
+      "projectRef",
+      "BEtotal",
+      "PEtotal",
+      "LEtotal",
+      "uncertaintyDiscount",
+      "wqGatePassed",
+      "ERtotal",
+      "vintageYear"
+    ],
+    "additionalProperties": false,
+    "$defs": {}
+  },
+  "context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "26b79363-91b1-4c89-85ed-89feaff14cdb&1.0.0": {
+        "@id": "#26b79363-91b1-4c89-85ed-89feaff14cdb&1.0.0",
+        "@context": {
+          "summaryId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ref": {
+            "@type": "https://www.schema.org/text"
+          },
+          "guardianVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "periodRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "projectRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "BEtotal": {
+            "@type": "https://www.schema.org/text"
+          },
+          "PEtotal": {
+            "@type": "https://www.schema.org/text"
+          },
+          "LEtotal": {
+            "@type": "https://www.schema.org/text"
+          },
+          "netER": {
+            "@type": "https://www.schema.org/text"
+          },
+          "uncertaintyDiscount": {
+            "@type": "https://www.schema.org/text"
+          },
+          "wqGatePassed": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ERtotal": {
+            "@type": "https://www.schema.org/text"
+          },
+          "vintageYear": {
+            "@type": "https://www.schema.org/text"
+          },
+          "serializationRef": {
+            "@type": "https://www.schema.org/text"
+          }
+        }
+      }
+    }
+  },
+  "id": "6a1de34f9f1ad5292ad22662"
+}

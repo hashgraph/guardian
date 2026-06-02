@@ -1,0 +1,196 @@
+{
+  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
+  "createDate": "2026-06-01T19:53:51.202Z",
+  "updateDate": "2026-06-01T19:58:58.546Z",
+  "uuid": "610437cc-d3bb-48cb-8b53-3f036097b101",
+  "hash": "",
+  "name": "Project Emissions",
+  "description": "VMR0015 project emissions per household post-purifier deployment (residual fuel use, electricity for purifier, etc.).",
+  "entity": "VC",
+  "version": "1.0.0",
+  "sourceVersion": "",
+  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "topicId": "0.0.9115579",
+  "messageId": "1780343936.428407174",
+  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
+  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
+  "iri": "#610437cc-d3bb-48cb-8b53-3f036097b101&1.0.0",
+  "system": false,
+  "active": false,
+  "category": "POLICY",
+  "codeVersion": "1.2.0",
+  "defs": [],
+  "errors": [],
+  "contentDocumentFileId": "6a177c959f1ad5292ace77d5",
+  "contentContextFileId": "6a177c959f1ad5292ace77d7",
+  "document": {
+    "$id": "#610437cc-d3bb-48cb-8b53-3f036097b101&1.0.0",
+    "$comment": "{ \"@id\": \"#610437cc-d3bb-48cb-8b53-3f036097b101&1.0.0\", \"term\": \"610437cc-d3bb-48cb-8b53-3f036097b101&1.0.0\" }",
+    "title": "Project Emissions",
+    "description": "VMR0015 project emissions per household post-purifier deployment (residual fuel use, electricity for purifier, etc.).",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "calcId": {
+        "title": "Calc ID",
+        "description": "UUID v4",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"calcId\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":0}"
+      },
+      "policyId": {
+        "title": "Policy Id",
+        "description": "Policy Id",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "ref": {
+        "title": "Relationships",
+        "description": "Relationships",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "guardianVersion": {
+        "title": "Guardian Version",
+        "description": "Guardian Version",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"guardianVersion\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "householdRef": {
+        "title": "Household Ref",
+        "description": "UUID",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"householdRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":1}"
+      },
+      "periodRef": {
+        "title": "Monitoring Period Ref",
+        "description": "UUID",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"periodRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
+      },
+      "residualFuelKgPerDay": {
+        "title": "Residual Fuel kg/day",
+        "description": "Post-project fuel mass",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"residualFuelKgPerDay\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+      },
+      "electricityKwhPerDay": {
+        "title": "Electricity (kWh/day)",
+        "description": "Purifier power",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"electricityKwhPerDay\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
+      },
+      "gridEf": {
+        "title": "Grid EF (tCO2e/MWh)",
+        "description": "Grid emission factor",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"gridEf\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
+      },
+      "projectEmissionsTco2e": {
+        "title": "Project Emissions (tCO2e)",
+        "description": "Computed project",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"projectEmissionsTco2e\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":6}"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "calcId",
+      "policyId",
+      "householdRef",
+      "periodRef",
+      "residualFuelKgPerDay",
+      "electricityKwhPerDay",
+      "gridEf",
+      "projectEmissionsTco2e"
+    ],
+    "additionalProperties": false,
+    "$defs": {}
+  },
+  "context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "610437cc-d3bb-48cb-8b53-3f036097b101&1.0.0": {
+        "@id": "#610437cc-d3bb-48cb-8b53-3f036097b101&1.0.0",
+        "@context": {
+          "calcId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ref": {
+            "@type": "https://www.schema.org/text"
+          },
+          "guardianVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "householdRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "periodRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "residualFuelKgPerDay": {
+            "@type": "https://www.schema.org/text"
+          },
+          "electricityKwhPerDay": {
+            "@type": "https://www.schema.org/text"
+          },
+          "gridEf": {
+            "@type": "https://www.schema.org/text"
+          },
+          "projectEmissionsTco2e": {
+            "@type": "https://www.schema.org/text"
+          }
+        }
+      }
+    }
+  },
+  "id": "6a1de34f9f1ad5292ad22653"
+}

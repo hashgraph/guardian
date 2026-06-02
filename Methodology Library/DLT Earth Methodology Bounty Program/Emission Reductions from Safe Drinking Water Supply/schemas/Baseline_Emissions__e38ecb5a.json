@@ -1,0 +1,207 @@
+{
+  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
+  "createDate": "2026-06-01T19:53:51.223Z",
+  "updateDate": "2026-06-01T19:58:58.569Z",
+  "uuid": "e38ecb5a-6b0c-44e3-b3e7-142e278c20f2",
+  "hash": "",
+  "name": "Baseline Emissions",
+  "description": "VMR0015 baseline emissions per household from non-renewable biomass and fossil fuel use for water boiling.",
+  "entity": "VC",
+  "version": "1.0.0",
+  "sourceVersion": "",
+  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "topicId": "0.0.9115579",
+  "messageId": "1780343936.428407174",
+  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
+  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
+  "iri": "#e38ecb5a-6b0c-44e3-b3e7-142e278c20f2&1.0.0",
+  "system": false,
+  "active": false,
+  "category": "POLICY",
+  "codeVersion": "1.2.0",
+  "defs": [],
+  "errors": [],
+  "contentDocumentFileId": "6a177c029f1ad5292ace77ad",
+  "contentContextFileId": "6a177c029f1ad5292ace77af",
+  "document": {
+    "$id": "#e38ecb5a-6b0c-44e3-b3e7-142e278c20f2&1.0.0",
+    "$comment": "{ \"@id\": \"#e38ecb5a-6b0c-44e3-b3e7-142e278c20f2&1.0.0\", \"term\": \"e38ecb5a-6b0c-44e3-b3e7-142e278c20f2&1.0.0\" }",
+    "title": "Baseline Emissions",
+    "description": "VMR0015 baseline emissions per household from non-renewable biomass and fossil fuel use for water boiling.",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "calcId": {
+        "title": "Calc ID",
+        "description": "UUID v4",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"calcId\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":0}"
+      },
+      "policyId": {
+        "title": "Policy Id",
+        "description": "Policy Id",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "ref": {
+        "title": "Relationships",
+        "description": "Relationships",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "guardianVersion": {
+        "title": "Guardian Version",
+        "description": "Guardian Version",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"guardianVersion\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "householdRef": {
+        "title": "Household Ref",
+        "description": "UUID",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"householdRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":1}"
+      },
+      "periodRef": {
+        "title": "Monitoring Period Ref",
+        "description": "UUID",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"periodRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
+      },
+      "fNRB": {
+        "title": "fNRB Fraction",
+        "description": "0..1 non-renewable biomass fraction",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"fNRB\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+      },
+      "baselineFuelKgPerDay": {
+        "title": "Baseline Fuel kg/day",
+        "description": "Daily fuel mass",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"baselineFuelKgPerDay\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
+      },
+      "ncvFuel": {
+        "title": "NCV (TJ/kg)",
+        "description": "Net calorific value",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"ncvFuel\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
+      },
+      "efFuel": {
+        "title": "EF (tCO2e/TJ)",
+        "description": "Emission factor",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"efFuel\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":6}"
+      },
+      "baselineEmissionsTco2e": {
+        "title": "Baseline Emissions (tCO2e)",
+        "description": "Computed baseline",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"baselineEmissionsTco2e\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":7}"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "calcId",
+      "policyId",
+      "householdRef",
+      "periodRef",
+      "fNRB",
+      "baselineFuelKgPerDay",
+      "ncvFuel",
+      "efFuel",
+      "baselineEmissionsTco2e"
+    ],
+    "additionalProperties": false,
+    "$defs": {}
+  },
+  "context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "e38ecb5a-6b0c-44e3-b3e7-142e278c20f2&1.0.0": {
+        "@id": "#e38ecb5a-6b0c-44e3-b3e7-142e278c20f2&1.0.0",
+        "@context": {
+          "calcId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ref": {
+            "@type": "https://www.schema.org/text"
+          },
+          "guardianVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "householdRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "periodRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "fNRB": {
+            "@type": "https://www.schema.org/text"
+          },
+          "baselineFuelKgPerDay": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ncvFuel": {
+            "@type": "https://www.schema.org/text"
+          },
+          "efFuel": {
+            "@type": "https://www.schema.org/text"
+          },
+          "baselineEmissionsTco2e": {
+            "@type": "https://www.schema.org/text"
+          }
+        }
+      }
+    }
+  },
+  "id": "6a1de34f9f1ad5292ad22658"
+}

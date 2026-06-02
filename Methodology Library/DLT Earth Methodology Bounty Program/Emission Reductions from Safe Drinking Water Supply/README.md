@@ -50,7 +50,7 @@ VMR0015 must be used with the most recent version of AMS-III.AV.; AMS-III.AV.'s 
 
 This section is deliberately explicit so reviewers can scope the submission accurately.
 
-Both Guardian artifacts Wes asked about are present:
+Both Guardian formula artifacts are present:
 - **Formula calculation block** — the `calculate_report_fields` custom-logic block inside `VMR0015.policy` (executes the math at submission).
 - **Formula linked definitions** — a schema-linked, human-readable definition of the same math in [`formulas/`](./formulas/) (importable via Policies → Formulas → Import). Each variable links to the exact Monitoring Report field it reads.
 
@@ -121,11 +121,28 @@ A logic-level reproduction of every calculation branch is described in `tests/RE
 
 ## 5. Files in this submission
 
+All artifacts — **policy binary, readable JSON, test data, and schemas** — are in this single folder, organized by type:
+
+```
+Emission Reductions from Safe Drinking Water Supply/
+├─ VMR0015.policy            ← policy binary (import this into Guardian)
+├─ VMR0015_policy.json       ← readable policy JSON (review without importing)
+├─ schemas/                  ← all 17 schemas as standalone JSON + index
+├─ formulas/                 ← formula linked definitions (zip + readable JSON + docs)
+├─ tests/                    ← test data (VCS 3599 monitoring report) + docs
+├─ tools/                    ← originality checker
+├─ README.md / CHANGELOG.md / REVIEWER_COVER_NOTE.md
+└─ workflow.png / LICENSE
+```
+
+
 | File | Purpose |
 |---|---|
-| `VMR0015.policy` | Guardian policy import package (calc fix applied; no fabricated record bundled) |
+| `VMR0015.policy` | **Policy binary** — Guardian import package (calc fix applied; contains policy + all schemas + formulas; no fabricated record bundled) |
+| `VMR0015_policy.json` | **Readable policy JSON** — the policy config extracted from the binary, for review without importing (policy name normalized to `VMR0015 v1.0 Safe Drinking Water dMRV`; see note below) |
+| `schemas/` | **All 17 schemas** as standalone JSON (extracted from the binary; identical to it) + an index README |
 | `formulas/VMR0015_formula.zip` | Guardian **formula linked definitions** — importable artifact mapping ER = BE − PE − LE (and ER_y → field6) to the Monitoring Report schema |
-| `formulas/README.md` | Documentation of the formula linked definitions and how they map to the calculation block |
+| `formulas/README.md` + `formulas/formula.json` + `formulas/schemas.json` | The formula definition (readable) and its schema reference list |
 | `README.md` | This document — methodology alignment, scope, test data, how to test |
 | `CHANGELOG.md` | Change history for this revision |
 | `REVIEWER_COVER_NOTE.md` | Short orientation note for reviewers |
@@ -144,6 +161,12 @@ See [`CHANGELOG.md`](./CHANGELOG.md). Summary of this revision:
 - **Fixed** the `calculate_report_fields` block to read the Monitoring Report's flat numeric fields (`field3/4/5`) instead of nested objects — previously a correctly filled report computed `field6 = 0` and minted zero.
 - **Re-grounded** the test data on registered Verra project VCS 3599 (replacing an earlier non-Verra example).
 - **Removed** an earlier AI-generated `.record` integrity-test file that did not match this policy's block tags/schema IDs (would fail deterministic replay), plus stale audit/evidence files with broken internal references.
+
+---
+
+## 6a. Known cleanup item
+
+The importable binary `VMR0015.policy` currently carries an internal policy name with a dev suffix (`… Bikram1111 v3.3.2-CALC-FIX`). The readable `VMR0015_policy.json` shows the normalized name (`VMR0015 v1.0 Safe Drinking Water dMRV`). The binary's internal name is best corrected inside Guardian and re-exported (hand-editing the binary would change its hash and break import); this is a cosmetic label only and does not affect the calculation or schemas. Flagged here for transparency.
 
 ---
 

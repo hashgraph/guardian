@@ -1,0 +1,216 @@
+{
+  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
+  "createDate": "2026-06-01T19:53:51.326Z",
+  "updateDate": "2026-06-01T19:58:58.656Z",
+  "uuid": "4e99adde-3a1f-40f5-8093-c7f75e81ef4b",
+  "hash": "",
+  "name": "Water Quality Test",
+  "description": "Water quality test result per VMR0015 8.4.",
+  "entity": "VC",
+  "version": "1.0.0",
+  "sourceVersion": "",
+  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "topicId": "0.0.9115579",
+  "messageId": "1780343936.428407174",
+  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
+  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
+  "iri": "#4e99adde-3a1f-40f5-8093-c7f75e81ef4b&1.0.0",
+  "system": false,
+  "active": false,
+  "category": "POLICY",
+  "codeVersion": "1.2.0",
+  "defs": [],
+  "errors": [],
+  "contentDocumentFileId": "6a177d149f1ad5292ace784d",
+  "contentContextFileId": "6a177d149f1ad5292ace784f",
+  "document": {
+    "$id": "#4e99adde-3a1f-40f5-8093-c7f75e81ef4b&1.0.0",
+    "$comment": "{ \"@id\": \"#4e99adde-3a1f-40f5-8093-c7f75e81ef4b&1.0.0\", \"term\": \"4e99adde-3a1f-40f5-8093-c7f75e81ef4b&1.0.0\" }",
+    "title": "Water Quality Test",
+    "description": "Water quality test result per VMR0015 8.4.",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "testId": {
+        "title": "Test ID",
+        "description": "Unique water test ID",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"testId\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":0}"
+      },
+      "policyId": {
+        "title": "Policy Id",
+        "description": "Policy Id",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "ref": {
+        "title": "Relationships",
+        "description": "Relationships",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "guardianVersion": {
+        "title": "Guardian Version",
+        "description": "Guardian Version",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"guardianVersion\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "deviceRef": {
+        "title": "Device Reference",
+        "description": "Device tested",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"deviceRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":1}"
+      },
+      "sampleDate": {
+        "title": "Sample Date",
+        "description": "Date sample collected",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"sampleDate\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
+      },
+      "labName": {
+        "title": "Lab Name",
+        "description": "Testing lab",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"labName\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+      },
+      "ecoli": {
+        "title": "E. coli (CFU/100mL)",
+        "description": "WHO < 1 CFU/100mL",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"ecoli\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
+      },
+      "turbidity": {
+        "title": "Turbidity (NTU)",
+        "description": "WHO < 5 NTU",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"turbidity\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
+      },
+      "arsenic": {
+        "title": "Arsenic (mg/L)",
+        "description": "WHO < 0.01 mg/L",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"arsenic\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":6}"
+      },
+      "passWHO": {
+        "title": "Pass WHO",
+        "description": "Result meets WHO standard",
+        "readOnly": false,
+        "type": "boolean",
+        "$comment": "{\"term\":\"passWHO\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":7}"
+      },
+      "testNotes": {
+        "title": "Test Notes",
+        "description": "Free-text notes",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"testNotes\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":8}"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "testId",
+      "policyId",
+      "deviceRef",
+      "sampleDate",
+      "labName",
+      "ecoli",
+      "turbidity",
+      "passWHO"
+    ],
+    "additionalProperties": false,
+    "$defs": {}
+  },
+  "context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "4e99adde-3a1f-40f5-8093-c7f75e81ef4b&1.0.0": {
+        "@id": "#4e99adde-3a1f-40f5-8093-c7f75e81ef4b&1.0.0",
+        "@context": {
+          "testId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ref": {
+            "@type": "https://www.schema.org/text"
+          },
+          "guardianVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "deviceRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "sampleDate": {
+            "@type": "https://www.schema.org/text"
+          },
+          "labName": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ecoli": {
+            "@type": "https://www.schema.org/text"
+          },
+          "turbidity": {
+            "@type": "https://www.schema.org/text"
+          },
+          "arsenic": {
+            "@type": "https://www.schema.org/text"
+          },
+          "passWHO": {
+            "@type": "https://www.schema.org/text"
+          },
+          "testNotes": {
+            "@type": "https://www.schema.org/text"
+          }
+        }
+      }
+    }
+  },
+  "id": "6a1de34f9f1ad5292ad22671"
+}

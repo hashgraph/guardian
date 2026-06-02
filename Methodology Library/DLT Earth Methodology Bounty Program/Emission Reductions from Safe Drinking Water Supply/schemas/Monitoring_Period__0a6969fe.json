@@ -1,0 +1,249 @@
+{
+  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
+  "createDate": "2026-06-01T19:53:51.287Z",
+  "updateDate": "2026-06-01T19:58:58.620Z",
+  "uuid": "0a6969fe-b3f6-43b7-9801-7c837601186b",
+  "hash": "",
+  "name": "Monitoring Period",
+  "description": "Defines time windows for monitoring. All sub-records (BE PE LE WQ) reference this schema.",
+  "entity": "VC",
+  "version": "1.0.0",
+  "sourceVersion": "",
+  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "topicId": "0.0.9115579",
+  "messageId": "1780343936.428407174",
+  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
+  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
+  "iri": "#0a6969fe-b3f6-43b7-9801-7c837601186b&1.0.0",
+  "system": false,
+  "active": false,
+  "category": "POLICY",
+  "codeVersion": "1.2.0",
+  "defs": [],
+  "errors": [],
+  "contentDocumentFileId": "6a177cea9f1ad5292ace781f",
+  "contentContextFileId": "6a177cea9f1ad5292ace7821",
+  "document": {
+    "$id": "#0a6969fe-b3f6-43b7-9801-7c837601186b&1.0.0",
+    "$comment": "{ \"@id\": \"#0a6969fe-b3f6-43b7-9801-7c837601186b&1.0.0\", \"term\": \"0a6969fe-b3f6-43b7-9801-7c837601186b&1.0.0\" }",
+    "title": "Monitoring Period",
+    "description": "Defines time windows for monitoring. All sub-records (BE PE LE WQ) reference this schema.",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "periodId": {
+        "title": "Period ID",
+        "description": "Unique period identifier",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"periodId\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":0}"
+      },
+      "policyId": {
+        "title": "Policy Id",
+        "description": "Policy Id",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "ref": {
+        "title": "Relationships",
+        "description": "Relationships",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "guardianVersion": {
+        "title": "Guardian Version",
+        "description": "Guardian Version",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"guardianVersion\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "projectRef": {
+        "title": "Project Reference",
+        "description": "Parent project",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"projectRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":1}"
+      },
+      "periodNumber": {
+        "title": "Period Number",
+        "description": "Sequential monitoring period number",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"periodNumber\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
+      },
+      "periodStart": {
+        "title": "Period Start Date",
+        "description": "Start of monitoring window",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"periodStart\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+      },
+      "periodEnd": {
+        "title": "Period End Date",
+        "description": "End of monitoring window",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"periodEnd\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
+      },
+      "durationDays": {
+        "title": "Duration (days)",
+        "description": "Total days in period",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"durationDays\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
+      },
+      "creditingPeriodRef": {
+        "title": "Crediting Period",
+        "description": "Which 7-year crediting period",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"creditingPeriodRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":6}"
+      },
+      "householdsEnrolled": {
+        "title": "HH Enrolled at Start",
+        "description": "Count of enrolled HH",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"householdsEnrolled\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":7}"
+      },
+      "householdsMonitored": {
+        "title": "HH Monitored",
+        "description": "Count of HH with complete data",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"householdsMonitored\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":8}"
+      },
+      "monitoringFrequency": {
+        "title": "Monitoring Frequency",
+        "description": "How often data is collected",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"monitoringFrequency\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":9}"
+      },
+      "dataCompleteness": {
+        "title": "Data Completeness (percent)",
+        "description": "Percent of expected records collected",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"dataCompleteness\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":10}"
+      },
+      "periodStatus": {
+        "title": "Period Status",
+        "description": "Lifecycle status",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"periodStatus\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":11}"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "periodId",
+      "policyId",
+      "projectRef",
+      "periodNumber",
+      "periodStart",
+      "periodEnd",
+      "creditingPeriodRef",
+      "householdsEnrolled",
+      "householdsMonitored",
+      "monitoringFrequency",
+      "periodStatus"
+    ],
+    "additionalProperties": false,
+    "$defs": {}
+  },
+  "context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "0a6969fe-b3f6-43b7-9801-7c837601186b&1.0.0": {
+        "@id": "#0a6969fe-b3f6-43b7-9801-7c837601186b&1.0.0",
+        "@context": {
+          "periodId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ref": {
+            "@type": "https://www.schema.org/text"
+          },
+          "guardianVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "projectRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "periodNumber": {
+            "@type": "https://www.schema.org/text"
+          },
+          "periodStart": {
+            "@type": "https://www.schema.org/text"
+          },
+          "periodEnd": {
+            "@type": "https://www.schema.org/text"
+          },
+          "durationDays": {
+            "@type": "https://www.schema.org/text"
+          },
+          "creditingPeriodRef": {
+            "@type": "https://www.schema.org/text"
+          },
+          "householdsEnrolled": {
+            "@type": "https://www.schema.org/text"
+          },
+          "householdsMonitored": {
+            "@type": "https://www.schema.org/text"
+          },
+          "monitoringFrequency": {
+            "@type": "https://www.schema.org/text"
+          },
+          "dataCompleteness": {
+            "@type": "https://www.schema.org/text"
+          },
+          "periodStatus": {
+            "@type": "https://www.schema.org/text"
+          }
+        }
+      }
+    }
+  },
+  "id": "6a1de34f9f1ad5292ad22667"
+}

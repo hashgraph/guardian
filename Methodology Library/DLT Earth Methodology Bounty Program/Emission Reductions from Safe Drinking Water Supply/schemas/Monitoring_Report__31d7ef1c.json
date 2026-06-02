@@ -1,0 +1,228 @@
+{
+  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
+  "createDate": "2026-06-01T19:53:51.244Z",
+  "updateDate": "2026-06-01T19:58:58.586Z",
+  "uuid": "31d7ef1c-d257-44b7-8cf9-402259e39a9a",
+  "hash": "",
+  "name": "Monitoring Report",
+  "description": "VMR0015 monitoring period report schema for emission reductions.",
+  "entity": "VC",
+  "version": "1.0.0",
+  "sourceVersion": "",
+  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
+  "topicId": "0.0.9115579",
+  "messageId": "1780343936.428407174",
+  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
+  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
+  "iri": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
+  "system": false,
+  "active": false,
+  "category": "POLICY",
+  "codeVersion": "1.2.0",
+  "defs": [],
+  "errors": [],
+  "contentDocumentFileId": "6a177d3e9f1ad5292ace787b",
+  "contentContextFileId": "6a177d3e9f1ad5292ace787d",
+  "document": {
+    "$id": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
+    "$comment": "{ \"@id\": \"#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0\", \"term\": \"31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0\" }",
+    "title": "Monitoring Report",
+    "description": "VMR0015 monitoring period report schema for emission reductions.",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "field0": {
+        "title": "MR ID",
+        "description": "Unique monitoring report identifier",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"field0\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":0}"
+      },
+      "policyId": {
+        "title": "Policy Id",
+        "description": "Policy Id",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "ref": {
+        "title": "Relationships",
+        "description": "Relationships",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "guardianVersion": {
+        "title": "Guardian Version",
+        "description": "Guardian Version",
+        "readOnly": true,
+        "type": "string",
+        "$comment": "{\"term\":\"guardianVersion\",\"@id\":\"https://www.schema.org/text\"}"
+      },
+      "field1": {
+        "title": "Project Reference",
+        "description": "Reference to Project Description",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"field1\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":1}"
+      },
+      "field2": {
+        "title": "Period Reference",
+        "description": "Reference to Monitoring Period",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"field2\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
+      },
+      "field3": {
+        "title": "BE Total (tCO2e)",
+        "description": "Baseline Emissions total",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field3\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+      },
+      "field4": {
+        "title": "PE Total (tCO2e)",
+        "description": "Project Emissions total",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field4\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
+      },
+      "field5": {
+        "title": "LE Total (tCO2e)",
+        "description": "Leakage Emissions total",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field5\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
+      },
+      "field6": {
+        "title": "ER Total (tCO2e)",
+        "description": "Emission Reductions total (BE-PE-LE). MintToken rule field.",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field6\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":6}"
+      },
+      "field7": {
+        "title": "Submission Date",
+        "description": "Date MR submitted",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"field7\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":7}"
+      },
+      "field8": {
+        "title": "PP Signatory",
+        "description": "Project Proponent signatory",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"field8\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":8}"
+      },
+      "field9": {
+        "title": "MR Notes",
+        "description": "Free-text notes",
+        "readOnly": false,
+        "type": "string",
+        "$comment": "{\"term\":\"field9\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":9}"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "field0",
+      "policyId",
+      "field1",
+      "field2",
+      "field3",
+      "field4",
+      "field5",
+      "field6",
+      "field7",
+      "field8"
+    ],
+    "additionalProperties": false,
+    "$defs": {}
+  },
+  "context": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0": {
+        "@id": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
+        "@context": {
+          "field0": {
+            "@type": "https://www.schema.org/text"
+          },
+          "policyId": {
+            "@type": "https://www.schema.org/text"
+          },
+          "ref": {
+            "@type": "https://www.schema.org/text"
+          },
+          "guardianVersion": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field1": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field2": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field3": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field4": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field5": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field6": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field7": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field8": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field9": {
+            "@type": "https://www.schema.org/text"
+          }
+        }
+      }
+    }
+  },
+  "id": "6a1de34f9f1ad5292ad2265d"
+}
