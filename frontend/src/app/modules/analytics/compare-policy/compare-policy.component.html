@@ -13,8 +13,14 @@
                 </label>
             </div>
         </div>
-        <p-accordion [multiple]="true">
-            <p-accordion-panel>
+        <p-accordion
+            class="compare-policy-accordion"
+            [multiple]="true"
+            [value]="['description', 'blocks']"
+            expandIcon="pi pi-chevron-down icon-start"
+            collapseIcon="pi pi-chevron-up icon-start"
+        >
+            <p-accordion-panel value="description">
     <p-accordion-header>Description</p-accordion-header>
     <p-accordion-content>
                 <div class="info-container">
@@ -29,7 +35,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel>
+            <p-accordion-panel value="roles">
     <p-accordion-header>Policy Roles</p-accordion-header>
     <p-accordion-content>
                 <div *ngIf="roles && roles.length" class="merge-tree">
@@ -53,7 +59,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel>
+            <p-accordion-panel value="groups">
     <p-accordion-header>Policy Groups</p-accordion-header>
     <p-accordion-content>
                 <div *ngIf="groups && groups.length" class="merge-tree">
@@ -77,7 +83,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel>
+            <p-accordion-panel value="tokens">
     <p-accordion-header>Policy Tokens</p-accordion-header>
     <p-accordion-content>
                 <div *ngIf="topics && topics.length" class="merge-tree">
@@ -101,7 +107,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel>
+            <p-accordion-panel value="tools">
     <p-accordion-header>Policy Tools</p-accordion-header>
     <p-accordion-content>
                 <div *ngIf="tools && tools.length" class="merge-tree">
@@ -125,7 +131,7 @@
                 </p-accordion-content>
 </p-accordion-panel>
 
-            <p-accordion-panel>
+            <p-accordion-panel value="blocks">
     <p-accordion-header>Policy Blocks</p-accordion-header>
     <p-accordion-content>
                 <div class="merge-container">
