@@ -33,13 +33,13 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
   | `X_boil` | 1.0 | **1.0** | Unchanged — all schools boil in baseline |
   | `m` | 0.95 | **0.95** | Unchanged — above 0.90 WQ gate |
 
-  New computed result: **BE = ER = 53,185.71 tCO2e** (was 11,084.74).
+  New computed result: **BE = ER = 53,309.84 tCO2e** (was 11,084.74).
 
   Full derivation:
   ```
   SEC  = 357.48 / 0.10 = 3,574.8 kJ/L
-  BE_y = 234,600,000 × 0.95 × 1.0 × 3574.8 × (1.0 × 0.82 × 81.6 × 1e-9) = 53,185.71 tCO2e
-  ER_y = 53,185.71 − 0 − 0 = 53,185.71 tCO2e
+  BE_y = 234,600,000 × 0.95 × 1.0 × 3574.8 × (1.0 × 0.82 × 81.6 × 1e-9) = 53,309.84 tCO2e
+  ER_y = 53,309.84 − 0 − 0 = 53,309.84 tCO2e
   WQ gate: 95/100 = 0.95 ≥ 0.90 → passes
   ```
 
