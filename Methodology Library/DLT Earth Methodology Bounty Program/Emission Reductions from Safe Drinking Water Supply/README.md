@@ -8,7 +8,7 @@
 
 ## 1. Methodology alignment (Verra)
 
-This policy implements **VMR0015 v1.0**, published by Verra and **active since 31 October 2025**, which revises and replaces the CDM methodology **AMS-III.AV.** as a standalone methodology under the VCS Program.
+This policy implements **VMR0015 Revision to AMS-III.AV.: Low greenhouse gas emitting safe drinking water production systems, v1.0**, published by Verra and **active since 31 October 2025**, Sectoral Scope **3. Energy demand**. It revises and replaces the CDM methodology **AMS-III.AV.**, which has been inactivated as a standalone methodology under the VCS Program (projects seeking registration under AMS-III.AV. v9.0 must complete validation by 1 May 2026).
 Source: https://verra.org/methodologies/vmr0015-revisiontoams-iii-av-low-greenhouse-gas-emitting-safe-drinking-water-production-systems-v1-0/
 
 Core emission-reduction equation (VMR0015 §3.9.1 / AMS-III.AV.):
@@ -23,7 +23,15 @@ The policy maps this directly onto the Monitoring Report schema and applies a co
 field6 (ER) = (field3 [BE] − field4 [PE] − field5 [LE]) × 0.89   ; negative clamps to 0
 ```
 
-VMR0015 key updates over AMS-III.AV. reflected in scope: updated fraction-of-non-renewable-biomass approach; leakage adjustment factor set at validation; updated emission factors for non-renewable woody biomass and fossil fuels; REDD+ double-counting assessment; baseline adjustment for interacting technologies; per-device data compilation requirements. VMR0015 must be used with the most recent version of AMS-III.AV.
+VMR0015's updates/additions over AMS-III.AV. (per Verra's published page):
+1. Introduction of an updated approach to determine the fraction of non-renewable biomass
+2. Requirement to set at validation the leakage adjustment factor for leakage related to the use of non-renewable woody biomass saved by the project activity
+3. Updated emission factor for non-renewable woody biomass (both CO2 and non-CO2 components) and fossil fuels
+4. Added requirement on assessment of double counting of emission reductions with REDD+ project(s) and jurisdictional REDD+ program(s)
+5. Added requirements on adjusting the baseline level of the residence/institution to account for effects of interacting technologies
+6. Added requirements on compilation and presentation of relevant data for each distributed device
+
+VMR0015 must be used with the most recent version of AMS-III.AV.; the procedures and requirements of AMS-III.AV. apply unless indicated otherwise.
 
 ---
 
