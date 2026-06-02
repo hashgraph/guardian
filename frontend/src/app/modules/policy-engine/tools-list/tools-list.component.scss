@@ -892,7 +892,10 @@
 }
 
 .p-tag {
+    display: inline-flex;
+    align-items: center;
     width: min-content;
+    padding: 6px 10px;
     border-radius: 6px;
     font-family: Inter, sans-serif;
     font-size: 14px;
