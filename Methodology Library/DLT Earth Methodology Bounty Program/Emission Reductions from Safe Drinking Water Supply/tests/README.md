@@ -3,27 +3,45 @@
 This folder contains the canonical test fixture for the policy.
 
 ## `VMR0015_VCS3599_monitoring_report.json`
+
 A single Monitoring Report credential subject, grounded in a **real, registered Verra project**:
 
 - **Project:** VCS 3599 — Grouped Projects for Safe Drinking Water for Schools in Viet Nam (Registered, methodology AMS-III.AV.)
 - **Monitoring period:** 01/01/2025 – 30/06/2025
-- **Verified net ER for the period:** ~154,125 tCO2e
 - **Registry:** https://registry.verra.org/app/projectDetail/VCS/3599
 
-### Field mapping (Monitoring Report schema #8d8b1014, flat)
+> The baseline-emissions value (154,125 tCO₂e) is an **illustrative input** drawn from the project's public registry record. It has not been independently re-derived here from the issuance/monitoring PDF; the exact verified figure can be substituted from the project's Verification Report if precise reconciliation is needed.
+
+### Field mapping (Monitoring Report schema `#8d8b1014`, flat)
 | Field | Meaning | Value |
 |---|---|---|
-| field3 | Baseline Emissions (BE) | 154125 |
-| field4 | Project Emissions (PE) | 0 (passive purifier) |
-| field5 | Leakage (LE) | 0 |
-| field6 | Emission Reductions (ER) | **0 on import** — computed by the policy |
+| `field3` | Baseline Emissions (BE) | 154125 |
+| `field4` | Project Emissions (PE) | 0 (passive purifier — no project combustion) |
+| `field5` | Leakage (LE) | 0 |
+| `field6` | Emission Reductions (ER) | **0 on import** — computed by the policy |
 
 ### Expected result after submission
 The `calculate_report_fields` block computes:
 ```
-field6 = (field3 - field4 - field5) * 0.89 = (154125 - 0 - 0) * 0.89 = 137171.25 tCO2e
+field6 = (field3 − field4 − field5) × 0.89 = (154125 − 0 − 0) × 0.89 = 137,171.25 tCO₂e
 ```
-This matches VMR0015 §3.9.1 (ER = BE − PE − LE) with the policy's u_def = 0.89 conservativeness factor applied.
+This matches VMR0015 §3.9.1 (`ER = BE − PE − LE`). The ×0.89 factor is a conservativeness
+choice of this policy implementation (see README §2), not a Verra-mandated parameter.
 
-## Note on policy-integrity-test (.record)
-No `.record` file is included. A valid integrity-test record must be produced from a **live Guardian dry-run** of this policy so it can be replayed deterministically. The earlier AI-generated record did not match this policy's block tags/schema IDs and has been removed.
+### Calculation branches (for reviewers)
+The block has been exercised across these cases (logic-level), all behaving as expected:
+
+| Input | Expected `field6` |
+|---|---|
+| `field3=154125, field4=0, field5=0` | 137,171.25 |
+| Values supplied as numeric strings ("154125") | 137,171.25 (coerced) |
+| `field3=30399, field4=0, field5=1520` | 25,702.31 |
+| Net negative (PE+LE > BE) | 0 (clamped) |
+| Optional WQ pass-rate supplied at 90% (< 95%) | 0 (gate zeroes ER) |
+| Optional WQ pass-rate supplied at 98% (≥ 95%) | normal ER |
+| `field3` missing/blank | 0 |
+
+## Note on the policy-integrity-test (`.record`)
+No `.record` file is included. A valid integrity-test record must be produced from a
+**live Guardian dry-run** of this policy so it can be replayed deterministically. An earlier
+AI-generated record did not match this policy's block tags/schema IDs and was removed.
