@@ -105,12 +105,12 @@ There is **no registered VMR0015 project yet** — the methodology was only publ
 
 | Field | Meaning | Example value |
 |---|---|---|
-| `field12` | `QPW_y` — safe water supplied (L/yr) | 200,000,000 |
+| `field12` | `QPW_y` — safe water supplied (L/yr) | 234,600,000 |
 | `field13` | `m` — fraction of functional appliances meeting SDW (0–1) | 0.95 |
 | `field14` | `X_boil` — fraction whose baseline is boiling (0–1) | 1.0 |
-| `field15` | `nwb` — baseline appliance efficiency (0–1) | 0.15 |
+| `field15` | `nwb` — baseline appliance efficiency (0–1) | 0.10 |
 | `field16` | `EF_fuel` — fuel emission factor (tCO₂/TJ) | 81.6 |
-| `field17` | `f_i` — fraction of non-renewable biomass / fNRB (0–1) | 0.30 |
+| `field17` | `f_i` — fraction of non-renewable biomass / fNRB (0–1) | 0.82 |
 | `field18` | `BL_fuel` — baseline fuel fraction (0–1) | 1.0 |
 | `field10` / `field11` | Appliances passing WQ / total appliances | e.g. 95 / 100 |
 | `field4` | Project Emissions (PE) | 0 — passive purification |
@@ -121,12 +121,12 @@ There is **no registered VMR0015 project yet** — the methodology was only publ
 **Computed on submission (real AMS-III.AV. equations):**
 
 ```
-SEC  = 357.48 / 0.15                                  = 2,383.2 kJ/L
-BE_y = 2e8 x 0.95 x 1.0 x 2383.2 x (1.0 x 0.30 x 81.6 x 1e-9) = 11,084.74 tCO2e
-ER_y = 11,084.74 - 0 - 0                              = 11,084.74 tCO2e
+SEC  = 357.48 / 0.10                                  = 3,574.8 kJ/L
+BE_y = 234,600,000 x 0.95 x 1.0 x 3574.8 x (1.0 x 0.82 x 81.6 x 1e-9) = 53,309.84 tCO2e
+ER_y = 53,309.84 - 0 - 0                              = 53,309.84 tCO2e
 ```
 
-With appliance pass-rate 95/100 = 0.95 ≥ 0.90, the water-quality gate passes and the policy mints **11,084.74 CER**. If passing/total were 85/100 (0.85 < 0.90), the gate fires and **ER = 0** (nothing minted). Verified calculation branches: pass → ER = 11,084.74; fail (<90%) → 0; no appliance data → 0 (fail-closed); `nwb = 0` → BE = 0.
+With appliance pass-rate 95/100 = 0.95 ≥ 0.90, the water-quality gate passes and the policy mints **53,309.84 CER**. If passing/total were 85/100 (0.85 < 0.90), the gate fires and **ER = 0** (nothing minted). Verified calculation branches: pass → ER = 53,309.84; fail (<90%) → 0; no appliance data → 0 (fail-closed); `nwb = 0` → BE = 0.
 
 ---
 
@@ -135,8 +135,8 @@ With appliance pass-rate 95/100 = 0.95 ≥ 0.90, the water-quality gate passes a
 1. **Import** `VMR0015.policy` into Guardian (Policies → Import → from file).
 2. **Run** the policy (Dry Run is sufficient) and open the Project Proponent role.
 3. **Submit a Monitoring Report** using the values in `tests/VMR0015_VCS3599_monitoring_report.json` (QPW_y, m, X_boil, nwb, EF_fuel, f_i, BL_fuel, appliances passing/total; PE = 0, LE = 0).
-4. **Expected result:** the `calculate_report_fields` block computes `field3` (BE) and sets `field6` (ER) = **11,084.74** for the example inputs.
-5. **Approve** as VVB → the mint step issues **11,084.74 CER**.
+4. **Expected result:** the `calculate_report_fields` block computes `field3` (BE) and sets `field6` (ER) = **53,309.84** for the example inputs.
+5. **Approve** as VVB → the mint step issues **53,309.84 CER**.
 
 **Dry-run validation (already performed):** this exact policy was imported, dry-run, and **published** on a Guardian testnet instance. Evidence is bundled in `tests/`:
 - `tests/VMR0015_dryrun_record.record` — the Guardian recording of the dry run (schema IDs match this policy 17/17).
