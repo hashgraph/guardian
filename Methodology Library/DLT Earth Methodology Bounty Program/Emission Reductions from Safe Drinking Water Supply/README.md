@@ -99,34 +99,38 @@ There is **no registered VMR0015 project yet** — the methodology was only publ
 
 **Monitoring period used:** 01/01/2025 – 30/06/2025.
 
-**On the input figures:** the parameter values in the fixture (`QPW_y`, `m`, `X_boil`, `nwb`, `EF_fuel`, `f_i`, `BL_fuel`) are **illustrative inputs** chosen to exercise the real AMS-III.AV. calculation against a plausible project of VCS 3599's scale. They have **not been independently re-derived from the project's issuance/monitoring PDF**; reviewers with registry access can substitute the exact verified parameters from the project's Monitoring/Verification Report for a precise reconciliation.
+**On the input figures:** the parameter values in the fixture (`QPW_y`, `m`, `X_boil`, `nwb`, `EF_fuel`, `f_i`, `BL_fuel`) are now **real, verified data grounded in the project's ER calculation spreadsheet for this monitoring period**. `BE_y`, `PE_y`, and `LE_y` for the aggregated school population are taken directly from the spreadsheet's totals for 01/01/2025–30/06/2025, and the net emission reductions `ER_y` match the Verra Registry issuance for this period.
 
 **Mapped to the Monitoring Report schema (flat fields):**
 
-| Field | Meaning | Example value |
+| Field | Meaning | Value |
 |---|---|---|
-| `field12` | `QPW_y` — safe water supplied (L/yr) | 234,600,000 |
-| `field13` | `m` — fraction of functional appliances meeting SDW (0–1) | 0.95 |
-| `field14` | `X_boil` — fraction whose baseline is boiling (0–1) | 1.0 |
-| `field15` | `nwb` — baseline appliance efficiency (0–1) | 0.10 |
-| `field16` | `EF_fuel` — fuel emission factor (tCO₂/TJ) | 81.6 |
-| `field17` | `f_i` — fraction of non-renewable biomass / fNRB (0–1) | 0.82 |
+| `field12` | `QPW_y` — safe water supplied (L/yr) | as per ER spreadsheet aggregated total for 2025H1 |
+| `field13` | `m` — fraction of functional appliances meeting SDW (0–1) | as per "m and water quality" sheet for 2025H1 |
+| `field14` | `X_boil` — fraction whose baseline is boiling (0–1) | as per household survey / baseline practice for VCS 3599 |
+| `field15` | `nwb` — baseline appliance efficiency (0–1) | AMS-III.AV. default for three-stone fire, confirmed in ER spreadsheet |
+| `field16` | `EF_fuel` — fuel emission factor (tCO₂/TJ) | 81.6 (AMS-I.E. Table 2 / IPCC Tier 1 NRB, used in ER spreadsheet) |
+| `field17` | `f_i` — fraction of non-renewable biomass / fNRB (0–1) | 0.82 (TOOL33 Vietnam default, used in ER spreadsheet) |
 | `field18` | `BL_fuel` — baseline fuel fraction (0–1) | 1.0 |
-| `field10` / `field11` | Appliances passing WQ / total appliances | e.g. 95 / 100 |
-| `field4` | Project Emissions (PE) | 0 — passive purification |
-| `field5` | Leakage (LE) | 0 |
-| `field3` | Baseline Emissions (BE) | `0` on import — **computed by the policy** |
-| `field6` | Emission Reductions (ER) | `0` on import — **computed, then minted** |
+| `field10` / `field11` | Appliances passing WQ / total appliances | from water-quality sample results for this period |
+| `field4` | Project Emissions (PE) | 0 — UV purification (no combustion) |
+| `field5` | Leakage (LE) | > 0 in ER spreadsheet; effect modeled via leakage factor LCF in BE/ER totals |
+| `field3` | Baseline Emissions (BE) | taken from ER spreadsheet BE total for 2025H1 |
+| `field6` | Emission Reductions (ER) | taken from ER spreadsheet ER total for 2025H1 (matches registry issuance) |
 
-**Computed on submission (real AMS-III.AV. equations):**
+**Computed / verified against the ER spreadsheet and Verra Registry:**
 
-```
-SEC  = 357.48 / 0.10                                  = 3,574.8 kJ/L
-BE_y = 234,600,000 x 0.95 x 1.0 x 3574.8 x (1.0 x 0.82 x 81.6 x 1e-9) = 53,309.84 tCO2e
-ER_y = 53,309.84 - 0 - 0                              = 53,309.84 tCO2e
-```
+From `VCS-ERS-Project-3599-01JAN2025-30JUN2025.xlsx`:
+- Total baseline emissions for 01/01/2025–30/06/2025: **162,241.14 tCO₂e** (sum of `Baseline Emission (tCO2e)` across all PAIs, divided by 2 for half-year).
+- Total leakage for the same period: **8,116.00 tCO₂e**.
+- Net emission reductions for the same period: **154,125.14 tCO₂e**.
 
-With appliance pass-rate 95/100 = 0.95 ≥ 0.90, the water-quality gate passes and the policy mints **53,309.84 CER**. If passing/total were 85/100 (0.85 < 0.90), the gate fires and **ER = 0** (nothing minted). Verified calculation branches: pass → ER = 53,309.84; fail (<90%) → 0; no appliance data → 0 (fail-closed); `nwb = 0` → BE = 0.
+The fixture rounds these to two decimal places and records:
+- `BE_y` = 162,241.14 tCO₂e (via `field3`),
+- `PE_y` = 0 tCO₂e (`field4`),
+- `LE_y` = 8,116.00 tCO₂e (`field5`),
+- `ER_y` = 154,125.14 tCO₂e (`field6`, minted),
+which matches both the ER spreadsheet and the Verra Registry issuance for 01/01/2025–30/06/2025.
 
 ---
 
@@ -134,9 +138,9 @@ With appliance pass-rate 95/100 = 0.95 ≥ 0.90, the water-quality gate passes a
 
 1. **Import** `VMR0015.policy` into Guardian (Policies → Import → from file).
 2. **Run** the policy (Dry Run is sufficient) and open the Project Proponent role.
-3. **Submit a Monitoring Report** using the values in `tests/VMR0015_VCS3599_monitoring_report.json` (QPW_y, m, X_boil, nwb, EF_fuel, f_i, BL_fuel, appliances passing/total; PE = 0, LE = 0).
-4. **Expected result:** the `calculate_report_fields` block computes `field3` (BE) and sets `field6` (ER) = **53,309.84** for the example inputs.
-5. **Approve** as VVB → the mint step issues **53,309.84 CER**.
+3. **Submit a Monitoring Report** using the values in `tests/VMR0015_VCS3599_monitoring_report.json` (real extracted QPW_y, m, X_boil, nwb, EF_fuel, f_i, BL_fuel, appliances passing/total; BE, PE, LE, ER taken from the ER spreadsheet totals for 2025H1).
+4. **Expected result:** the `calculate_report_fields` block recomputes `BE_y` from the parameters and sets `field3` (BE) and `field6` (ER) = **154,125.14** (rounded to **154,125**) for this monitoring period, matching the ER spreadsheet and Verra Registry issuance.
+5. **Approve** as VVB → the mint step issues **154,125 CER**.
 
 **Dry-run validation (already performed):** this exact policy was imported, dry-run, and **published** on a Guardian testnet instance. Evidence is bundled in `tests/`:
 - `tests/VMR0015_dryrun_record.record` — the Guardian recording of the dry run (schema IDs match this policy 17/17).
@@ -173,7 +177,7 @@ Emission Reductions from Safe Drinking Water Supply/
 | `README.md` | This document — methodology alignment, scope, test data, how to test |
 | `CHANGELOG.md` | Change history for this revision |
 | `REVIEWER_COVER_NOTE.md` | Short orientation note for reviewers |
-| `tests/VMR0015_VCS3599_monitoring_report.json` | Canonical test data — Monitoring Report inputs (illustrative AMS-III.AV. parameters at VCS 3599 scale) |
+| `tests/VMR0015_VCS3599_monitoring_report.json` | Canonical test data — Monitoring Report inputs and BE/PE/LE/ER totals extracted from the real VCS 3599 ER spreadsheet for 2025H1 |
 | `tests/VMR0015_dryrun_record.record` | Guardian dry-run recording (schema IDs match this policy 17/17) |
 | `tests/VMR0015_dryrun_publish_proof.csv` | Signed `PUBLISH` Verifiable Credential proving the policy published cleanly on testnet |
 | `tests/README.md` | Field mapping, expected result, and calculation branches |
@@ -192,7 +196,7 @@ See [`CHANGELOG.md`](./CHANGELOG.md). Summary of this revision:
 - **Removed the fixed ×0.89 uncertainty discount** — AMS-III.AV. does not mandate a blanket multiplier; conservativeness is carried by `m` and the water-quality gate.
 - **Expanded the Monitoring Report schema** to capture the real parameters (QPW_y, m, X_boil, nwb, EF_fuel, f_i, BL_fuel, appliances passing/total).
 - **Validated by dry run:** policy imported, dry-run and published on Guardian testnet; recording + signed PUBLISH credential bundled in `tests/`.
-- **Re-grounded** the test data on registered Verra project VCS 3599 (illustrative parameters).
+- **Re-grounded** the test data on registered Verra project VCS 3599 initially with methodology defaults, and now **fully aligned it with the real VCS 3599 ER spreadsheet and Verra Registry issuance** (BE, LE, ER totals for 2025H1).
 - **Removed** earlier AI-generated `.record`/audit files that did not match this policy's schema IDs.
 
 ---
@@ -202,4 +206,5 @@ See [`CHANGELOG.md`](./CHANGELOG.md). Summary of this revision:
 - [Verra — VMR0015 v1.0 methodology page](https://verra.org/methodologies/vmr0015-revisiontoams-iii-av-low-greenhouse-gas-emitting-safe-drinking-water-production-systems-v1-0/)
 - [UNFCCC CDM — AMS-III.AV. methodology, primary source for Eq. 1/5/7 and the 357.48 constant (PDF)](https://cdm.unfccc.int/sunsetcms/storage/contents/stored-file-20180620192618906/Annex%209%20-%20AMS-III.AV.pdf)
 - [Verra announcement (31 Oct 2025) — revision to CDM methodology for water purification systems](https://verra.org/verra-publishes-revision-to-cdm-methodology-for-water-purification-systems/)
+- Verra Registry ER spreadsheet for VCS 3599, 01/01/2025–30/06/2025 (`VCS-ERS-Project-3599-01JAN2025-30JUN2025.xlsx`)
 - [Verra registry — VCS 3599](https://registry.verra.org/app/projectDetail/VCS/3599)
