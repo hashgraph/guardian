@@ -1,90 +1,103 @@
 {
-  "uuid": "698adbfa-7688-45ae-bb25-26f073b4b2eb",
-  "name": "VMR0015 v1.0 \u2014 Emission Reductions",
-  "description": "Formula linked definitions for the VMR0015 v1.0 Safe Drinking Water dMRV policy. Maps the methodology emission-reduction equation to the Monitoring Report schema fields. Core equation ER_y = BE_y - PE_y - LE_y (VMR0015 / AMS-III.AV. \u00a73.9.1); this implementation additionally applies a u_def = 0.89 conservativeness discount and clamps negatives to 0.",
-  "policyTopicId": "0.0.9115579",
-  "policyInstanceTopicId": "0.0.9115598",
-  "status": "DRAFT",
+  "id": "vmr0015-formula-amsiiiav",
+  "uuid": "b3f1a7c0-1d2e-4c6a-9f01-amsiiiav0001",
+  "name": "VMR0015 v1.0 — Emission Reductions (AMS-III.AV.)",
+  "description": "Formula linked definitions for the VMR0015 v1.0 Safe Drinking Water dMRV policy. Implements the real AMS-III.AV. equations: SEC = 357.48 / nwb (Eq.5); BE_y = QPW_y * m * X_boil * SEC * (BL_fuel * f_i * EF_fuel * 1e-9) (Eq.1); ER_y = BE_y - PE_y - LE_y (Eq.7). A water-quality gate zeroes ER_y when more than 10% of appliances fail (pass-rate < 0.90), fail-closed on missing data. No blanket uncertainty multiplier is applied. Primary source: UNFCCC CDM AMS-III.AV.",
+  "policyId": "",
   "config": {
-    "files": [],
     "formulas": [
       {
-        "uuid": "fc2fae55-1076-4fed-90e9-ac0f77fa2739",
-        "name": "BE_y",
-        "description": "Baseline Emissions total for the monitoring period (tCO2e)",
+        "uuid": "f-qpw",
+        "name": "QPW_y",
+        "description": "Quantity of safe drinking water supplied in the monitoring period (L/yr)",
         "type": "variable",
-        "value": "",
-        "link": {
-          "type": "schema",
-          "entityId": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
-          "item": "field3"
-        }
+        "link": { "type": "schema", "entityId": "#db884e2d-a681-40d4-b24c-0e0d848fb868", "item": "field12" }
       },
       {
-        "uuid": "3c29e0ba-3e46-4f44-a903-219e62d0aad9",
+        "uuid": "f-m",
+        "name": "m",
+        "description": "Fraction of functional appliances meeting the safe-drinking-water requirement (0-1)",
+        "type": "variable",
+        "link": { "type": "schema", "entityId": "#db884e2d-a681-40d4-b24c-0e0d848fb868", "item": "field13" }
+      },
+      {
+        "uuid": "f-xboil",
+        "name": "X_boil",
+        "description": "Fraction of the population whose baseline water treatment is boiling (0-1)",
+        "type": "variable",
+        "link": { "type": "schema", "entityId": "#db884e2d-a681-40d4-b24c-0e0d848fb868", "item": "field14" }
+      },
+      {
+        "uuid": "f-nwb",
+        "name": "nwb",
+        "description": "Baseline water-boiling appliance efficiency (0-1)",
+        "type": "variable",
+        "link": { "type": "schema", "entityId": "#db884e2d-a681-40d4-b24c-0e0d848fb868", "item": "field15" }
+      },
+      {
+        "uuid": "f-ef",
+        "name": "EF_fuel",
+        "description": "Emission factor of the baseline fuel (tCO2/TJ)",
+        "type": "variable",
+        "link": { "type": "schema", "entityId": "#db884e2d-a681-40d4-b24c-0e0d848fb868", "item": "field16" }
+      },
+      {
+        "uuid": "f-fi",
+        "name": "f_i",
+        "description": "Fraction of non-renewable biomass / fNRB (0-1)",
+        "type": "variable",
+        "link": { "type": "schema", "entityId": "#db884e2d-a681-40d4-b24c-0e0d848fb868", "item": "field17" }
+      },
+      {
+        "uuid": "f-blf",
+        "name": "BL_fuel",
+        "description": "Baseline fuel fraction (0-1)",
+        "type": "variable",
+        "link": { "type": "schema", "entityId": "#db884e2d-a681-40d4-b24c-0e0d848fb868", "item": "field18" }
+      },
+      {
+        "uuid": "f-pe",
         "name": "PE_y",
-        "description": "Project Emissions total for the monitoring period (tCO2e)",
+        "description": "Project Emissions total for the monitoring period (tCO2e) — TOOL03 + TOOL05",
         "type": "variable",
-        "value": "",
-        "link": {
-          "type": "schema",
-          "entityId": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
-          "item": "field4"
-        }
+        "link": { "type": "schema", "entityId": "#db884e2d-a681-40d4-b24c-0e0d848fb868", "item": "field4" }
       },
       {
-        "uuid": "ca70f1ab-9658-4674-b528-31c619cada2a",
+        "uuid": "f-le",
         "name": "LE_y",
-        "description": "Leakage Emissions total for the monitoring period (tCO2e)",
+        "description": "Leakage Emissions total for the monitoring period (tCO2e) — AMS-I.E.",
         "type": "variable",
-        "value": "",
-        "link": {
-          "type": "schema",
-          "entityId": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
-          "item": "field5"
-        }
+        "link": { "type": "schema", "entityId": "#db884e2d-a681-40d4-b24c-0e0d848fb868", "item": "field5" }
       },
       {
-        "uuid": "b094c64b-6a20-4fa8-97b2-8e9500308923",
-        "name": "u_def",
-        "description": "Conservativeness discount applied by this policy implementation (design choice, not a Verra-mandated blanket parameter)",
-        "type": "constant",
-        "value": "0.89"
-      },
-      {
-        "uuid": "889fc2de-817c-4487-b3b0-3f929afdb3f1",
-        "name": "ER_net",
-        "description": "Net emission reductions before conservativeness discount: ER_net = BE_y - PE_y - LE_y (VMR0015 / AMS-III.AV. \u00a73.9.1)",
+        "uuid": "f-sec",
+        "name": "SEC",
+        "description": "Specific energy consumption to heat and boil water (kJ/L). AMS-III.AV. Eq.5; 357.48 = 4.186*(100-20) + 0.01*2260.",
         "type": "formula",
-        "value": "BE_y - PE_y - LE_y",
-        "relationships": [
-          "fc2fae55-1076-4fed-90e9-ac0f77fa2739",
-          "3c29e0ba-3e46-4f44-a903-219e62d0aad9",
-          "ca70f1ab-9658-4674-b528-31c619cada2a"
-        ]
+        "value": "357.48 / nwb"
       },
       {
-        "uuid": "51e7f372-64e6-465f-9522-3232d2ad9eb8",
+        "uuid": "f-be",
+        "name": "BE_y",
+        "description": "Baseline Emissions (tCO2e), AMS-III.AV. Eq.1. The 1e-9 factor converts kJ -> TJ for the EF in tCO2/TJ.",
+        "type": "formula",
+        "value": "QPW_y * m * X_boil * SEC * (BL_fuel * f_i * EF_fuel * 1e-9)",
+        "link": { "type": "schema", "entityId": "#db884e2d-a681-40d4-b24c-0e0d848fb868", "item": "field3" }
+      },
+      {
+        "uuid": "f-passrate",
+        "name": "pass_rate",
+        "description": "Appliance water-quality pass-rate = appliances passing / total. Fail-closed: 0 when no appliance evidence.",
+        "type": "formula",
+        "value": "appliances_passing / appliances_total"
+      },
+      {
+        "uuid": "f-er",
         "name": "ER_y",
-        "description": "Emission reductions recorded and minted by the policy: ER_y = max(0, ER_net) * u_def, written to Monitoring Report field6 (ER Total) which is the MintToken rule.",
+        "description": "Emission reductions recorded and minted (tCO2e). AMS-III.AV. Eq.7 with the water-quality gate: ER = 0 when more than 10% of appliances fail (pass_rate < 0.90); negatives clamp to 0. Written to Monitoring Report field6 (the MintToken rule).",
         "type": "formula",
-        "value": "max(0, ER_net) * u_def",
-        "link": {
-          "type": "schema",
-          "entityId": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
-          "item": "field6"
-        },
-        "relationships": [
-          "889fc2de-817c-4487-b3b0-3f929afdb3f1",
-          "b094c64b-6a20-4fa8-97b2-8e9500308923"
-        ]
-      },
-      {
-        "uuid": "7c5ec26e-2449-4246-97df-a44f701357c5",
-        "name": "WQ_gate",
-        "description": "Optional WHO water-quality gate (currently dormant): if a pass-rate field (field10 / wqSamples) is supplied and is below 95%, ER_y is set to 0 for the period. The current Monitoring Report schema does not expose field10, so the gate does not trigger on a standard report; it is kept ready for a future schema that captures water-quality sampling.",
-        "type": "text",
-        "value": "if (pass_rate supplied and pass_rate < 0.95) then ER_y = 0"
+        "value": "(pass_rate < 0.90) ? 0 : max(0, BE_y - PE_y - LE_y)",
+        "link": { "type": "schema", "entityId": "#db884e2d-a681-40d4-b24c-0e0d848fb868", "item": "field6" }
       }
     ]
   }

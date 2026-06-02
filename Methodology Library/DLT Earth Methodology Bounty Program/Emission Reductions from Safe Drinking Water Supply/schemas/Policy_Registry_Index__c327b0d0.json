@@ -1,21 +1,21 @@
 {
-  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
-  "createDate": "2026-06-01T19:53:51.428Z",
-  "updateDate": "2026-06-01T19:58:58.738Z",
-  "uuid": "ab6df1ae-4462-42e2-931f-5f62806d488c",
+  "tenantId": "6a11a2e75c64afbda9f4c4aa",
+  "createDate": "2026-06-02T21:00:47.637Z",
+  "updateDate": "2026-06-02T21:14:52.782Z",
+  "uuid": "c327b0d0-a51e-4000-b043-c4815130a487",
   "hash": "",
   "name": "Policy Registry Index",
   "description": "Master registry index of VMR0015 policy artifacts (HashScan-anchored).",
   "entity": "VC",
   "version": "1.0.0",
   "sourceVersion": "",
-  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
-  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
-  "topicId": "0.0.9115579",
-  "messageId": "1780343936.428407174",
-  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
-  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
-  "iri": "#ab6df1ae-4462-42e2-931f-5f62806d488c&1.0.0",
+  "creator": "did:hedera:testnet:6VhJ5QVjq4D48CzyxBfA2S4yXqW2ELMYhuEKJxfRcbLW_0.0.9124164",
+  "owner": "did:hedera:testnet:6VhJ5QVjq4D48CzyxBfA2S4yXqW2ELMYhuEKJxfRcbLW_0.0.9124164",
+  "topicId": "0.0.9124171",
+  "messageId": "1780434890.843410000",
+  "documentURL": "ipfs://QmZUvqY7VbXDitBWd2KHfrPXvtTbY3KCULDjRrVgh1iBfJ",
+  "contextURL": "ipfs://Qma9cNqYjeVdwoCsgSjynwjdZHrF8CutLHX8mo9iD6iov3",
+  "iri": "#c327b0d0-a51e-4000-b043-c4815130a487&1.0.0",
   "system": false,
   "active": false,
   "category": "POLICY",
@@ -25,8 +25,8 @@
   "contentDocumentFileId": "6a177cb29f1ad5292ace77f1",
   "contentContextFileId": "6a177cb29f1ad5292ace77f3",
   "document": {
-    "$id": "#ab6df1ae-4462-42e2-931f-5f62806d488c&1.0.0",
-    "$comment": "{ \"@id\": \"#ab6df1ae-4462-42e2-931f-5f62806d488c&1.0.0\", \"term\": \"ab6df1ae-4462-42e2-931f-5f62806d488c&1.0.0\" }",
+    "$id": "#c327b0d0-a51e-4000-b043-c4815130a487&1.0.0",
+    "$comment": "{ \"@id\": \"#c327b0d0-a51e-4000-b043-c4815130a487&1.0.0\", \"term\": \"c327b0d0-a51e-4000-b043-c4815130a487&1.0.0\" }",
     "title": "Policy Registry Index",
     "description": "Master registry index of VMR0015 policy artifacts (HashScan-anchored).",
     "type": "object",
@@ -146,8 +146,8 @@
       "@vocab": "https://w3id.org/traceability/#undefinedTerm",
       "id": "@id",
       "type": "@type",
-      "ab6df1ae-4462-42e2-931f-5f62806d488c&1.0.0": {
-        "@id": "#ab6df1ae-4462-42e2-931f-5f62806d488c&1.0.0",
+      "c327b0d0-a51e-4000-b043-c4815130a487&1.0.0": {
+        "@id": "#c327b0d0-a51e-4000-b043-c4815130a487&1.0.0",
         "@context": {
           "registryId": {
             "@type": "https://www.schema.org/text"
@@ -180,5 +180,5 @@
       }
     }
   },
-  "id": "6a1de34f9f1ad5292ad2268a"
+  "id": "6a1f447f9f1ad5292ad2e6a3"
 }

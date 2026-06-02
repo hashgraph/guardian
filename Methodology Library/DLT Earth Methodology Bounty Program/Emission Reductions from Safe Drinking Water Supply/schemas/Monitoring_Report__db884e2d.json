@@ -1,21 +1,21 @@
 {
-  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
-  "createDate": "2026-06-01T19:53:51.244Z",
-  "updateDate": "2026-06-01T19:58:58.586Z",
-  "uuid": "31d7ef1c-d257-44b7-8cf9-402259e39a9a",
+  "tenantId": "6a11a2e75c64afbda9f4c4aa",
+  "createDate": "2026-06-02T21:00:47.857Z",
+  "updateDate": "2026-06-02T21:14:52.959Z",
+  "uuid": "db884e2d-a681-40d4-b24c-0e0d848fb868",
   "hash": "",
   "name": "Monitoring Report",
   "description": "VMR0015 monitoring period report schema for emission reductions.",
   "entity": "VC",
   "version": "1.0.0",
   "sourceVersion": "",
-  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
-  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
-  "topicId": "0.0.9115579",
-  "messageId": "1780343936.428407174",
-  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
-  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
-  "iri": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
+  "creator": "did:hedera:testnet:6VhJ5QVjq4D48CzyxBfA2S4yXqW2ELMYhuEKJxfRcbLW_0.0.9124164",
+  "owner": "did:hedera:testnet:6VhJ5QVjq4D48CzyxBfA2S4yXqW2ELMYhuEKJxfRcbLW_0.0.9124164",
+  "topicId": "0.0.9124171",
+  "messageId": "1780434890.843410000",
+  "documentURL": "ipfs://QmZUvqY7VbXDitBWd2KHfrPXvtTbY3KCULDjRrVgh1iBfJ",
+  "contextURL": "ipfs://Qma9cNqYjeVdwoCsgSjynwjdZHrF8CutLHX8mo9iD6iov3",
+  "iri": "#db884e2d-a681-40d4-b24c-0e0d848fb868&1.0.0",
   "system": false,
   "active": false,
   "category": "POLICY",
@@ -25,8 +25,8 @@
   "contentDocumentFileId": "6a177d3e9f1ad5292ace787b",
   "contentContextFileId": "6a177d3e9f1ad5292ace787d",
   "document": {
-    "$id": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
-    "$comment": "{ \"@id\": \"#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0\", \"term\": \"31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0\" }",
+    "$id": "#db884e2d-a681-40d4-b24c-0e0d848fb868&1.0.0",
+    "$comment": "{ \"@id\": \"#db884e2d-a681-40d4-b24c-0e0d848fb868&1.0.0\", \"term\": \"db884e2d-a681-40d4-b24c-0e0d848fb868&1.0.0\" }",
     "title": "Monitoring Report",
     "description": "VMR0015 monitoring period report schema for emission reductions.",
     "type": "object",
@@ -153,6 +153,69 @@
         "readOnly": false,
         "type": "string",
         "$comment": "{\"term\":\"field9\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":9}"
+      },
+      "field10": {
+        "title": "Appliances Passing Water-Quality Requirement (count)",
+        "description": "Number of project appliances delivering microbiologically safe drinking water (<1 cfu E. coli/100 ml) per AMS-III.AV",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field10\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":10}"
+      },
+      "field11": {
+        "title": "Appliances Total (count)",
+        "description": "Total number of project appliances monitored in the period",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field11\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":11}"
+      },
+      "field12": {
+        "title": "QPW_y Purified Water (L/yr)",
+        "description": "Total quantity of purified water produced by the project in year y (AMS-III.AV QPW_y, Eq.2/3)",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field12\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":12}"
+      },
+      "field13": {
+        "title": "m Fraction Functional Appliances Meeting SDW (0-1)",
+        "description": "Fraction of functional appliances meeting the safe-drinking-water standards (AMS-III.AV parameter m)",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field13\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":13}"
+      },
+      "field14": {
+        "title": "X_boil Baseline Boiling Fraction (0-1)",
+        "description": "Fraction of served population whose baseline practice is/would be water boiling (AMS-III.AV X_boil; =1 for Case 1/2)",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field14\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":14}"
+      },
+      "field15": {
+        "title": "nwb Efficiency of Replaced Boiling System (0-1)",
+        "description": "Efficiency of the water-boiling system being replaced, estimated ex ante (AMS-III.AV nwb; SEC=357.48/nwb)",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field15\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":15}"
+      },
+      "field16": {
+        "title": "EF_fuel Emission Factor (tCO2/TJ)",
+        "description": "Emission factor of the substituted baseline fuel type i (AMS-III.AV EF_projected_fossil_fuel,i)",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field16\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":16}"
+      },
+      "field17": {
+        "title": "f_i Non-Renewable Fraction (0-1)",
+        "description": "Fraction of non-renewable fuel type i (fNRB for biomass; =1 for fossil fuel) (AMS-III.AV f_i)",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field17\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":17}"
+      },
+      "field18": {
+        "title": "BL_fuel Baseline Fuel Proportion (0-1)",
+        "description": "Proportion of baseline fuel type i used in absence of project (AMS-III.AV BL_fuel,i)",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"field18\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":18}"
       }
     },
     "required": [
@@ -162,12 +225,20 @@
       "policyId",
       "field1",
       "field2",
-      "field3",
       "field4",
       "field5",
       "field6",
       "field7",
-      "field8"
+      "field8",
+      "field10",
+      "field11",
+      "field12",
+      "field13",
+      "field14",
+      "field15",
+      "field16",
+      "field17",
+      "field18"
     ],
     "additionalProperties": false,
     "$defs": {}
@@ -178,8 +249,8 @@
       "@vocab": "https://w3id.org/traceability/#undefinedTerm",
       "id": "@id",
       "type": "@type",
-      "31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0": {
-        "@id": "#31d7ef1c-d257-44b7-8cf9-402259e39a9a&1.0.0",
+      "db884e2d-a681-40d4-b24c-0e0d848fb868&1.0.0": {
+        "@id": "#db884e2d-a681-40d4-b24c-0e0d848fb868&1.0.0",
         "@context": {
           "field0": {
             "@type": "https://www.schema.org/text"
@@ -219,10 +290,37 @@
           },
           "field9": {
             "@type": "https://www.schema.org/text"
+          },
+          "field10": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field11": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field12": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field13": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field14": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field15": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field16": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field17": {
+            "@type": "https://www.schema.org/text"
+          },
+          "field18": {
+            "@type": "https://www.schema.org/text"
           }
         }
       }
     }
   },
-  "id": "6a1de34f9f1ad5292ad2265d"
+  "id": "6a1f447f9f1ad5292ad2e6d0"
 }

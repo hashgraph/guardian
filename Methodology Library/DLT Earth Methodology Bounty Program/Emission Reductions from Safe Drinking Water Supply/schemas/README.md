@@ -12,31 +12,47 @@ Each filename is `<SchemaName>__<short-iri>.json`.
 
 | Schema | IRI (prefix) | Role in the policy |
 |---|---|---|
-| Project Description | `#3aa3e3d4` | Project registration document |
-| Monitoring Period | `#0a6969fe` | Defines a monitoring period |
-| **Monitoring Report** | `#31d7ef1c` | **Carries BE/PE/LE/ER totals — the calculation input** |
-| ER Summary | `#26b79363` | Output schema of the calculation block |
-| Baseline Emissions | `#e38ecb5a` | Baseline emissions detail |
-| Project Emissions | `#610437cc` | Project emissions detail |
-| Leakage Estimate | `#c13a8490` | Leakage detail |
-| Water Quality Test | `#4e99adde` | Water-quality sampling (supports the optional WQ gate) |
-| Device Installation Record | `#0ca0a899` | Per-device installation data |
-| Maintenance Log | `#4123eee8` | Device maintenance records |
-| Household Survey | `#c3e7e997` | Usage/adoption survey |
-| Geographic Location | `#63621fda` | Location data |
-| Issuance Request | `#99a66994` | Credit issuance request |
-| Policy Registry Index | `#ab6df1ae` | Registry index document |
-| PP Profile | `#8d367c3c` | Project Proponent profile |
-| VVB Profile | `#e6709e9c` | Validation/Verification Body profile |
-| VVB Verification Report | `#9ef9ee07` | VVB verification document |
+| Baseline Emissions | `#f1a41485` | Baseline emissions detail |
+| Device Installation Record | `#e9d241e4` | Per-device installation data |
+| ER Summary | `#0f67a367` | Aggregated ER summary |
+| Geographic Location | `#c11d5c65` | Location data |
+| Household Survey | `#861b4f98` | Usage/adoption survey |
+| Issuance Request | `#5e4e2acc` | Credit issuance request |
+| Leakage Estimate | `#33b17c2e` | Leakage detail |
+| Maintenance Log | `#b637e78d` | Device maintenance records |
+| Monitoring Period | `#8c4039cb` | Defines a monitoring period |
+| **Monitoring Report** | `#db884e2d` | **Carries the AMS-III.AV. parameters — the calculation input** |
+| PP Profile | `#985ba731` | Project Proponent profile |
+| Policy Registry Index | `#c327b0d0` | Registry index document |
+| Project Description | `#eecf80c9` | Project registration document |
+| Project Emissions | `#aee84784` | Project emissions detail |
+| VVB Profile | `#7bcb1519` | Validation/Verification Body profile |
+| VVB Verification Report | `#5f5a4078` | VVB verification document |
+| Water Quality Test | `#10402938` | Water-quality sampling |
 
-## Key fields — Monitoring Report (`#31d7ef1c`)
+## Key fields — Monitoring Report
 
-The calculation block and the formula linked definitions both operate on these:
+The calculation block (`calculate_report_fields`) and the formula linked
+definitions both operate on these. **BE (`field3`) and ER (`field6`) are computed
+on submission** from the AMS-III.AV. parameters below; they are not entered.
 
-| Field | Title | Meaning |
-|---|---|---|
-| `field3` | BE Total (tCO₂e) | Baseline Emissions total |
-| `field4` | PE Total (tCO₂e) | Project Emissions total |
-| `field5` | LE Total (tCO₂e) | Leakage Emissions total |
-| `field6` | ER Total (tCO₂e) | Emission Reductions — computed by the policy; MintToken rule |
+| Field | Meaning |
+|---|---|
+| `field12` | `QPW_y` — safe water supplied (L/yr) |
+| `field13` | `m` — fraction of functional appliances meeting SDW (0–1) |
+| `field14` | `X_boil` — fraction whose baseline is boiling (0–1) |
+| `field15` | `nwb` — baseline appliance efficiency (0–1) |
+| `field16` | `EF_fuel` — fuel emission factor (tCO₂/TJ) |
+| `field17` | `f_i` — fraction of non-renewable biomass / fNRB (0–1) |
+| `field18` | `BL_fuel` — baseline fuel fraction (0–1) |
+| `field10` / `field11` | Appliances passing WQ / total (water-quality gate) |
+| `field4` | PE Total (tCO₂e) — entered |
+| `field5` | LE Total (tCO₂e) — entered |
+| `field3` | BE Total (tCO₂e) — **computed** (Eq. 1/5) |
+| `field6` | ER Total (tCO₂e) — **computed** (Eq. 7); MintToken rule |
+
+> Note: the ER Summary schema retains an unused `uncertaintyDiscount` field
+> labelled "Fixed 0.89". It is **dormant** — the calculation block does not read
+> it (the ×0.89 discount was removed; see CHANGELOG 2.1.0). The standalone schema
+> files are kept byte-identical to the binary, so the legacy label remains visible
+> here for transparency.

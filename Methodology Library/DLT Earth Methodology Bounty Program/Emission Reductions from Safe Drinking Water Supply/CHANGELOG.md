@@ -5,6 +5,29 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 
 ---
 
+## [2.1.0] — Real AMS-III.AV. equations + dry-run validation
+
+### Fixed
+- **Rebuilt `calculate_report_fields` on the actual AMS-III.AV. equations** (primary source: UNFCCC CDM AMS-III.AV. PDF). Baseline emissions are now derived from methodology parameters instead of being entered as a single figure:
+  - `SEC = 357.48 / nwb` (Eq. 5; `357.48 = 4.186 x (100 - 20) + 0.01 x 2260`).
+  - `BE_y = QPW_y x m x X_boil x SEC x (BL_fuel x f_i x EF_fuel x 1e-9)` (Eq. 1, tCO2e).
+  - `ER_y = BE_y - PE_y - LE_y` (Eq. 7); negatives clamp to 0; `nwb <= 0` yields BE = 0.
+- **Water-quality gate set to the methodology's real threshold.** ER is zeroed when **more than 10% of appliances fail** (appliance pass-rate < 0.90), computed from passing/total counts, **fail-closed** when appliance evidence is missing. (Previously a dormant 95% placeholder that never triggered.)
+
+### Removed
+- **The fixed x0.89 uncertainty discount.** AMS-III.AV. does not mandate a single blanket multiplier; conservativeness is carried by the `m` term and the water-quality gate. The earlier Formula Linked Definition's `u_def` factor is likewise dropped.
+
+### Added
+- **Expanded Monitoring Report schema** to capture the real parameters: `QPW_y`, `m`, `X_boil`, `nwb`, `EF_fuel`, `f_i` (fNRB), `BL_fuel`, and appliances passing / total.
+- **Dry-run validation evidence** in `tests/`: `VMR0015_dryrun_record.record` (Guardian recording; schema IDs match this policy 17/17) and `VMR0015_dryrun_publish_proof.csv` (signed `PUBLISH` Verifiable Credential, Ed25519 / Hedera testnet) confirming the policy imports, dry-runs, and publishes cleanly.
+
+### Changed
+- **Test fixture updated** to the real parameters at VCS 3599 scale; computed `BE = ER = 11,084.74 tCO2e` (pass-rate 0.95). Branches verified: pass -> 11,084.74; fail (<0.90) -> 0; no appliance data -> 0; `nwb = 0` -> 0.
+- **Documentation now cites the primary UNFCCC AMS-III.AV. source** alongside Verra.
+- Resolved the prior "internal policy name carries a dev suffix" cleanup item — the published export's internal name is `VMR0015 v1.0 Safe Drinking Water dMRV`.
+
+---
+
 ## [2.0.0] — Calculation fix + Verra-grounded test data
 
 ### Fixed

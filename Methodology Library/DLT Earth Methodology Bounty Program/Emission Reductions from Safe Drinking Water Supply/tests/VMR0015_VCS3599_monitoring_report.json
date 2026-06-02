@@ -2,11 +2,20 @@
   "field0": "MR-VCS3599-2025H1",
   "field1": "VCS3599",
   "field2": "01/01/2025 - 30/06/2025",
-  "field3": 154125.0,
+  "field3": 0,
   "field4": 0,
   "field5": 0,
   "field6": 0,
   "field7": "2026-02-13",
   "field8": "Bikram Biswas",
-  "field9": "Monitoring period 01/01/2025-30/06/2025 for Verra VCS 3599 (Grouped Projects for Safe Drinking Water for Schools in Viet Nam). field3=Baseline Emissions, field4=Project Emissions, field5=Leakage. field6 (Emission Reductions) is computed by the policy's calculate_report_fields block = (field3-field4-field5)*0.89 = 137171.25 tCO2e."
+  "field9": "Monitoring period 01/01/2025-30/06/2025 for Verra VCS 3599 (Grouped Projects for Safe Drinking Water for Schools in Viet Nam), illustrative AMS-III.AV. parameters. BE (field3) and ER (field6) are computed on-chain by calculate_report_fields: SEC=357.48/nwb; BE_y=QPW_y*m*X_boil*SEC*(BL_fuel*f_i*EF_fuel*1e-9); ER_y=BE_y-PE_y-LE_y. With the values below, BE=ER=11084.74 tCO2e. Water-quality gate zeroes ER if appliance pass-rate (field10/field11) < 0.90.",
+  "field10": 95,
+  "field11": 100,
+  "field12": 200000000,
+  "field13": 0.95,
+  "field14": 1.0,
+  "field15": 0.15,
+  "field16": 81.6,
+  "field17": 0.30,
+  "field18": 1.0
 }

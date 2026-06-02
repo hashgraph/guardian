@@ -1,34 +1,34 @@
 {
-  "tenantId": "6a1de26ff8da8c46e1d1a8f4",
-  "createDate": "2026-06-01T19:53:51.202Z",
-  "updateDate": "2026-06-01T19:58:58.546Z",
-  "uuid": "610437cc-d3bb-48cb-8b53-3f036097b101",
+  "tenantId": "6a11a2e75c64afbda9f4c4aa",
+  "createDate": "2026-06-02T21:00:47.565Z",
+  "updateDate": "2026-06-02T21:14:52.726Z",
+  "uuid": "f1a41485-a323-458d-9273-82479747b2e7",
   "hash": "",
-  "name": "Project Emissions",
-  "description": "VMR0015 project emissions per household post-purifier deployment (residual fuel use, electricity for purifier, etc.).",
+  "name": "Baseline Emissions",
+  "description": "VMR0015 baseline emissions per household from non-renewable biomass and fossil fuel use for water boiling.",
   "entity": "VC",
   "version": "1.0.0",
   "sourceVersion": "",
-  "creator": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
-  "owner": "did:hedera:testnet:ifATPGEC8FDeGmVugVUZaAWYwTjY8de3HrXQGRzCz46_0.0.9115568",
-  "topicId": "0.0.9115579",
-  "messageId": "1780343936.428407174",
-  "documentURL": "ipfs://QmXpMEtr6SSwUj4a2hdUgL4sFrCaMAiMMMZbiYESabVaEg",
-  "contextURL": "ipfs://Qmewc29CLzZ88Bo7x4ktfKJR8uKGneki8sYrUdHPMjUxqQ",
-  "iri": "#610437cc-d3bb-48cb-8b53-3f036097b101&1.0.0",
+  "creator": "did:hedera:testnet:6VhJ5QVjq4D48CzyxBfA2S4yXqW2ELMYhuEKJxfRcbLW_0.0.9124164",
+  "owner": "did:hedera:testnet:6VhJ5QVjq4D48CzyxBfA2S4yXqW2ELMYhuEKJxfRcbLW_0.0.9124164",
+  "topicId": "0.0.9124171",
+  "messageId": "1780434890.843410000",
+  "documentURL": "ipfs://QmZUvqY7VbXDitBWd2KHfrPXvtTbY3KCULDjRrVgh1iBfJ",
+  "contextURL": "ipfs://Qma9cNqYjeVdwoCsgSjynwjdZHrF8CutLHX8mo9iD6iov3",
+  "iri": "#f1a41485-a323-458d-9273-82479747b2e7&1.0.0",
   "system": false,
   "active": false,
   "category": "POLICY",
   "codeVersion": "1.2.0",
   "defs": [],
   "errors": [],
-  "contentDocumentFileId": "6a177c959f1ad5292ace77d5",
-  "contentContextFileId": "6a177c959f1ad5292ace77d7",
+  "contentDocumentFileId": "6a177c029f1ad5292ace77ad",
+  "contentContextFileId": "6a177c029f1ad5292ace77af",
   "document": {
-    "$id": "#610437cc-d3bb-48cb-8b53-3f036097b101&1.0.0",
-    "$comment": "{ \"@id\": \"#610437cc-d3bb-48cb-8b53-3f036097b101&1.0.0\", \"term\": \"610437cc-d3bb-48cb-8b53-3f036097b101&1.0.0\" }",
-    "title": "Project Emissions",
-    "description": "VMR0015 project emissions per household post-purifier deployment (residual fuel use, electricity for purifier, etc.).",
+    "$id": "#f1a41485-a323-458d-9273-82479747b2e7&1.0.0",
+    "$comment": "{ \"@id\": \"#f1a41485-a323-458d-9273-82479747b2e7&1.0.0\", \"term\": \"f1a41485-a323-458d-9273-82479747b2e7&1.0.0\" }",
+    "title": "Baseline Emissions",
+    "description": "VMR0015 baseline emissions per household from non-renewable biomass and fossil fuel use for water boiling.",
     "type": "object",
     "properties": {
       "@context": {
@@ -105,33 +105,40 @@
         "type": "string",
         "$comment": "{\"term\":\"periodRef\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":2}"
       },
-      "residualFuelKgPerDay": {
-        "title": "Residual Fuel kg/day",
-        "description": "Post-project fuel mass",
+      "fNRB": {
+        "title": "fNRB Fraction",
+        "description": "0..1 non-renewable biomass fraction",
         "readOnly": false,
         "type": "number",
-        "$comment": "{\"term\":\"residualFuelKgPerDay\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
+        "$comment": "{\"term\":\"fNRB\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":3}"
       },
-      "electricityKwhPerDay": {
-        "title": "Electricity (kWh/day)",
-        "description": "Purifier power",
+      "baselineFuelKgPerDay": {
+        "title": "Baseline Fuel kg/day",
+        "description": "Daily fuel mass",
         "readOnly": false,
         "type": "number",
-        "$comment": "{\"term\":\"electricityKwhPerDay\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
+        "$comment": "{\"term\":\"baselineFuelKgPerDay\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":4}"
       },
-      "gridEf": {
-        "title": "Grid EF (tCO2e/MWh)",
-        "description": "Grid emission factor",
+      "ncvFuel": {
+        "title": "NCV (TJ/kg)",
+        "description": "Net calorific value",
         "readOnly": false,
         "type": "number",
-        "$comment": "{\"term\":\"gridEf\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
+        "$comment": "{\"term\":\"ncvFuel\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":5}"
       },
-      "projectEmissionsTco2e": {
-        "title": "Project Emissions (tCO2e)",
-        "description": "Computed project",
+      "efFuel": {
+        "title": "EF (tCO2e/TJ)",
+        "description": "Emission factor",
         "readOnly": false,
         "type": "number",
-        "$comment": "{\"term\":\"projectEmissionsTco2e\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":6}"
+        "$comment": "{\"term\":\"efFuel\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":6}"
+      },
+      "baselineEmissionsTco2e": {
+        "title": "Baseline Emissions (tCO2e)",
+        "description": "Computed baseline",
+        "readOnly": false,
+        "type": "number",
+        "$comment": "{\"term\":\"baselineEmissionsTco2e\",\"@id\":\"https://www.schema.org/text\",\"availableOptions\":[],\"orderPosition\":7}"
       }
     },
     "required": [
@@ -141,10 +148,11 @@
       "policyId",
       "householdRef",
       "periodRef",
-      "residualFuelKgPerDay",
-      "electricityKwhPerDay",
-      "gridEf",
-      "projectEmissionsTco2e"
+      "fNRB",
+      "baselineFuelKgPerDay",
+      "ncvFuel",
+      "efFuel",
+      "baselineEmissionsTco2e"
     ],
     "additionalProperties": false,
     "$defs": {}
@@ -155,8 +163,8 @@
       "@vocab": "https://w3id.org/traceability/#undefinedTerm",
       "id": "@id",
       "type": "@type",
-      "610437cc-d3bb-48cb-8b53-3f036097b101&1.0.0": {
-        "@id": "#610437cc-d3bb-48cb-8b53-3f036097b101&1.0.0",
+      "f1a41485-a323-458d-9273-82479747b2e7&1.0.0": {
+        "@id": "#f1a41485-a323-458d-9273-82479747b2e7&1.0.0",
         "@context": {
           "calcId": {
             "@type": "https://www.schema.org/text"
@@ -176,21 +184,24 @@
           "periodRef": {
             "@type": "https://www.schema.org/text"
           },
-          "residualFuelKgPerDay": {
+          "fNRB": {
             "@type": "https://www.schema.org/text"
           },
-          "electricityKwhPerDay": {
+          "baselineFuelKgPerDay": {
             "@type": "https://www.schema.org/text"
           },
-          "gridEf": {
+          "ncvFuel": {
             "@type": "https://www.schema.org/text"
           },
-          "projectEmissionsTco2e": {
+          "efFuel": {
+            "@type": "https://www.schema.org/text"
+          },
+          "baselineEmissionsTco2e": {
             "@type": "https://www.schema.org/text"
           }
         }
       }
     }
   },
-  "id": "6a1de34f9f1ad5292ad22653"
+  "id": "6a1f447f9f1ad5292ad2e694"
 }
