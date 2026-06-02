@@ -97,8 +97,7 @@ export class TopicHelper {
              */
             targetUUID?: string,
         },
-        userId: string | null,
-        keys?: {
+        keys: {
             /**
              * Need admin key
              */
@@ -107,6 +106,10 @@ export class TopicHelper {
              * Need submit key
              */
             submit: boolean
+        },
+        options: {
+            userId: string | null,
+            mockId?: string | null,
         }
     ): Promise<TopicConfig> {
         const workers = new Workers();
@@ -118,10 +121,14 @@ export class TopicHelper {
                 dryRun: this.dryRun,
                 topicMemo: TopicMemo.parseMemo(true, config.memo, config.memoObj) || TopicMemo.getTopicMemo(config),
                 keys,
-                payload: { userId }
+                payload: {
+                    userId: options.userId
+                }
             }
         }, {
-            priority: 10
+            priority: 10,
+            dryRun: this.dryRun,
+            mockId: options.mockId,
         });
         let adminKey: any = null;
         let submitKey: any = null;
@@ -157,12 +164,13 @@ export class TopicHelper {
      * @param userId
      */
     // tslint:disable-next-line:completed-docs
-    public async oneWayLink(
+    public async oneWayLink(options: {
         topic: TopicConfig,
         parent: TopicConfig,
         rationale: string,
-        userId: string = null
-    ) {
+        userId: string | null,
+        mockId?: string
+    }) {
         const messageServer = new MessageServer({
             operatorId: this.hederaAccountId,
             operatorKey: this.hederaAccountKey,
@@ -172,22 +180,24 @@ export class TopicHelper {
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
         message1.setDocument({
-            name: topic.name,
-            description: topic.description,
-            owner: topic.owner,
-            messageType: topic.type,
+            name: options.topic.name,
+            description: options.topic.description,
+            owner: options.topic.owner,
+            messageType: options.topic.type,
             childId: null,
-            parentId: parent?.topicId,
-            rationale
+            parentId: options.parent?.topicId,
+            rationale: options.rationale
         });
 
         await messageServer
-            .setTopicObject(topic)
+            .setTopicObject(options.topic)
             .sendMessage(message1, {
                 sendToIPFS: true,
                 memo: null,
-                userId,
-                interception: userId
+                userId: options.userId,
+                interception: options.userId,
+                mockId: options.mockId,
+                dryRun: this.dryRun
             });
     }
 
@@ -198,12 +208,16 @@ export class TopicHelper {
      * @param rationale
      * @param userId
      */
-    public async twoWayLink(
+    public async twoWayLink(options: {
         topic: TopicConfig,
         parent: TopicConfig,
         rationale: string,
-        userId?: string
-    ) {
+        userId: string | null
+        mockId?: string
+    }) {
+        if (!options.topic) {
+            throw new Error('Invalid topic');
+        }
         const messageServer = new MessageServer({
             operatorId: this.hederaAccountId,
             operatorKey: this.hederaAccountKey,
@@ -213,41 +227,45 @@ export class TopicHelper {
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
         message1.setDocument({
-            name: topic.name,
-            description: topic.description,
-            owner: topic.owner,
-            messageType: topic.type,
+            name: options.topic.name,
+            description: options.topic.description,
+            owner: options.topic.owner,
+            messageType: options.topic.type,
             childId: null,
-            parentId: parent?.topicId,
-            rationale
+            parentId: options.parent?.topicId,
+            rationale: options.rationale
         });
         await messageServer
-            .setTopicObject(topic)
+            .setTopicObject(options.topic)
             .sendMessage(message1, {
                 sendToIPFS: true,
                 memo: null,
-                userId,
-                interception: userId
+                userId: options.userId,
+                interception: options.userId,
+                mockId: options.mockId,
+                dryRun: this.dryRun
             });
 
-        if (parent) {
+        if (options.parent) {
             const message2 = new TopicMessage(MessageAction.CreateTopic);
             message2.setDocument({
-                name: topic.name,
-                description: topic.description,
-                owner: topic.owner,
-                messageType: topic.type,
-                childId: topic.topicId,
+                name: options.topic.name,
+                description: options.topic.description,
+                owner: options.topic.owner,
+                messageType: options.topic.type,
+                childId: options.topic.topicId,
                 parentId: null,
-                rationale
+                rationale: options.rationale
             });
             await messageServer
-                .setTopicObject(parent)
+                .setTopicObject(options.parent)
                 .sendMessage(message2, {
                     sendToIPFS: true,
                     memo: null,
-                    userId,
-                    interception: userId
+                    userId: options.userId,
+                    interception: options.userId,
+                    mockId: options.mockId,
+                    dryRun: this.dryRun
                 });
         }
     }

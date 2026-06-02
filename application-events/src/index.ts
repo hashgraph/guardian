@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import express, { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'fs';
 import * as yaml from 'js-yaml';

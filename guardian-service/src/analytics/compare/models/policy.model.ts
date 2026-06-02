@@ -8,6 +8,7 @@ import { TopicModel } from './topic.model.js';
 import { TemplateTokenModel } from './template-token.model.js';
 import { RoleModel } from './role.model.js';
 import { FileModel } from './file.model.js';
+import { TemplateToolModel } from './template-tool.model.js';
 import { CompareUtils } from '../utils/utils.js';
 import { CompareOptions, IKeyMap, IPolicyRawData } from '../interfaces/index.js';
 
@@ -62,6 +63,12 @@ export class PolicyModel {
      * @public
      */
     public readonly tokens: TemplateTokenModel[];
+
+    /**
+     * Tools
+     * @public
+     */
+    public readonly tools: TemplateToolModel[];
 
     /**
      * Roles
@@ -131,6 +138,7 @@ export class PolicyModel {
         this.groups = this.createGroups(policy.policyGroups, this.options);
         this.topics = this.createTopics(policy.policyTopics, this.options);
         this.tokens = this.createTokens(policy.policyTokens, this.options);
+        this.tools = this.createTools(policy.tools, this.options);
 
         this._type = 'id';
     }
@@ -173,6 +181,24 @@ export class PolicyModel {
         if (Array.isArray(roles)) {
             for (const json of roles) {
                 const model = new RoleModel(json);
+                model.update(options);
+                result.push(model);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Create Tools by JSON
+     * @param roles
+     * @param options - comparison options
+     * @private
+     */
+    private createTools(tools: any[], options: CompareOptions): any[] {
+        const result: TemplateToolModel[] = [];
+        if (Array.isArray(tools)) {
+            for (const json of tools) {
+                const model = new TemplateToolModel(json);
                 model.update(options);
                 result.push(model);
             }

@@ -1,16 +1,18 @@
 import { PolicyBlockDefaultOptions } from '../../helpers/policy-block-default-options.js';
 import { BlockCacheType, EventConfig } from '../../interfaces/index.js';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '../../interfaces/block-options.js';
-import { LocationType, PolicyAvailability, PolicyHelper, PolicyRole, PolicyStatus } from '@guardian/interfaces';
+import { LocationType, PolicyAvailability, PolicyEditableFieldDTO, PolicyHelper, PolicyRole, PolicyStatus } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface.js';
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../../interfaces/policy-event-type.js';
-import { DatabaseServer, Policy } from '@guardian/common';
+import { DatabaseServer, Policy, PolicyParameters } from '@guardian/common';
 import deepEqual from 'deep-equal';
 import { PolicyUser } from '../../policy-user.js';
 import { ComponentsService } from '../components-service.js';
 import { IDebugContext } from '../../block-engine/block-result.js';
+import { RecordActionStep } from '../../record-action-step.js';
+import { PolicyUtils } from '../utils.js';
 
 /**
  * Basic block decorator
@@ -134,6 +136,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             private _dryRun: string;
             /**
+             * Enable Mock Up
+             */
+            private readonly enableMock: boolean;
+            /**
              * Block class name
              */
             public readonly blockClassName = 'BasicBlock';
@@ -153,6 +159,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block about
              */
             public readonly actionType: LocationType;
+            /**
+             * Can Mock Up
+             */
+            public readonly canMock: boolean;
 
             constructor(
                 _uuid: string,
@@ -212,6 +222,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
                 this.variables = defaultOptions.variables || [];
                 this.actionType = defaultOptions.actionType || LocationType.REMOTE;
+                this.canMock = !!defaultOptions.canMock;
             }
 
             /**
@@ -219,6 +230,16 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public get dryRun(): string {
                 return this._dryRun;
+            }
+
+            /**
+             * Dry Run id
+             */
+            public get mockId(): string {
+                if (this.canMock && this.enableMock && this.enableMockGlobal) {
+                    return this._dryRun;
+                }
+                return null;
             }
 
             /**
@@ -240,6 +261,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public get locationType(): LocationType | null {
                 return this.policyInstance?.locationType || null;
+            }
+
+            /**
+             * Policy location
+             */
+            public get enableMockGlobal(): boolean {
+                return !!((this.policyInstance as any)?.enableMock);
             }
 
             /**
@@ -350,16 +378,37 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvents<U>(
+            public async triggerEvents<U>(
                 output: PolicyOutputEventType,
                 user: PolicyUser,
-                data: U
-            ): void {
+                data: U,
+                actionStatus: RecordActionStep
+            ): Promise<void | any[]> {
+                const results = [];
+
+                if (output === PolicyOutputEventType.RunEvent && actionStatus) {
+                    actionStatus.saveResult(data);
+                }
+
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
-                        link.run(user, data);
+                        if (output === PolicyOutputEventType.RunEvent && actionStatus) {
+                            actionStatus.checkCycle(link);
+                        }
+
+                        if (actionStatus?.syncActions) {
+                            const syncRes = await link.run(user, data, actionStatus);
+
+                            if (output === PolicyOutputEventType.RunEvent) {
+                                results.push(syncRes);
+                            }
+                        } else {
+                            link.run(user, data, actionStatus);
+                        }
                     }
                 }
+
+                return results;
             }
 
             /**
@@ -371,11 +420,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public async triggerEventSync<U>(
                 output: PolicyOutputEventType,
                 user: PolicyUser,
-                data: U
+                data: U,
+                actionStatus: RecordActionStep
             ): Promise<any> {
+                const status = actionStatus;
+
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
-                        return await link.runSync(user, data);
+                        return await link.runSync(user, data, status);
                     }
                 }
 
@@ -391,7 +443,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public triggerEvent<U>(
                 event: IPolicyEvent<U>,
                 user: PolicyUser,
-                data: U
+                data: U,
+                actionStatus: RecordActionStep
             ): void {
                 console.error('triggerEvent');
             }
@@ -407,7 +460,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
                 const parent = this.parent as any;
                 if (parent && (typeof parent.changeStep === 'function')) {
-                    await parent.changeStep(event.user, event.data, this);
+                    await parent.changeStep(event.user, event.data, this, event.actionStatus);
                 }
                 let result: any;
                 if (typeof super.runAction === 'function') {
@@ -903,6 +956,103 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 await this.databaseServer.saveBlockCache(
                     this.policyId, this.uuid, did, name, value, true
                 );
+            }
+
+            setPropValue(properties: any, path: string, value: any) {
+                if (!path) {
+                    return;
+                }
+
+                const keys = path.split('.');
+                const last = keys.pop();
+                if (!last) {
+                    return;
+                }
+
+                const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+                for (const key of keys) {
+                    if (DANGEROUS_KEYS.has(key)) {
+                        return;
+                    }
+                }
+                if (DANGEROUS_KEYS.has(last)) {
+                    return;
+                }
+
+                let current = properties;
+
+                for (const key of keys) {
+                    if (!(current[key] && typeof current[key] === 'object')) {
+                        current[key] = {};
+                    }
+
+                    current = current[key];
+                }
+
+                current[last] = value;
+            }
+
+            private _editableParametersSettings: PolicyEditableFieldDTO[] | null | undefined = undefined;
+
+            public async getOptions(user?: PolicyUser | null) {
+                if (!user) {
+                    return this.options;
+                }
+
+                if (this._editableParametersSettings === undefined) {
+                    const policy = await DatabaseServer.getPolicyById(this.policyId);
+                    this._editableParametersSettings = policy?.editableParametersSettings ?? null;
+                }
+                if (!this._editableParametersSettings || this._editableParametersSettings.length === 0) {
+                    return this.options;
+                }
+
+                const row = await DatabaseServer.getPolicyParameters(user.did, this.policyId);
+                let properties: Record<string, Record<string, unknown>>;
+                if (!row || row.updated || !row.properties || Object.keys(row.properties).length === 0) {
+                    properties = {};
+                    const policyRows = await this.databaseServer.find(PolicyParameters, { policyId: this.policyId });
+                    for (const item of policyRows) {
+                        for (const config of item.config ?? []) {
+                            const applyTo = Array.isArray(config.applyTo) ? config.applyTo : [];
+                            if (
+                                applyTo.includes('All') ||
+                                applyTo.includes(user.role) ||
+                                (applyTo.includes('Self') && item.userDID === user.did)
+                            ) {
+                                if (!properties[config.blockTag]) {
+                                    properties[config.blockTag] = {};
+                                }
+                                this.setPropValue(properties[config.blockTag], config.propertyPath, config.value);
+                            }
+                        }
+                    }
+                    // Upsert keyed on (policyId, userDID); concurrent inserts
+                    // are caught by the unique index.
+                    try {
+                        await this.databaseServer.save(
+                            PolicyParameters,
+                            {
+                                policyId: this.policyId,
+                                userDID: user.did,
+                                config: row?.config ?? [],
+                                updated: false,
+                                properties,
+                            },
+                            { policyId: this.policyId, userDID: user.did }
+                        );
+                    } catch (err) {
+                        // A concurrent call already upserted the same row.
+                    }
+                } else {
+                    properties = row.properties as Record<string, Record<string, unknown>>;
+                }
+
+                if (properties && properties[this.tag]) {
+                    return PolicyUtils.deepAssign({}, this.options, properties[this.tag]);
+                } else {
+                    return this.options;
+                }
             }
         };
     };

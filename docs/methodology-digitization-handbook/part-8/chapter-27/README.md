@@ -329,8 +329,8 @@ async receiveData(data: IPolicyDocument) {
   }
 
   // Trigger workflow events
-  ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-  ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+  await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+  await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
 }
 ```
 

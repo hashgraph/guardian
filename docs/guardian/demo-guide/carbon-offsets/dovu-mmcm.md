@@ -56,7 +56,7 @@ It is crucial that we record all RVSFs along with their associated ELV submissio
 
 ## Usage
 
-While this policy can be used throught the standard UI the usage of the policy is primarily API based with the aim to automate ingestion, utilising the generic dMRV project structure and tools from DOVU:
+While this policy can be used through the standard UI the usage of the policy is primarily API based with the aim to automate ingestion, utilising the generic dMRV project structure and tools from DOVU:
 
 * [DOVU Middleware API](https://github.com/dovuofficial/guardian-middleware-api/)
 * [DOVU PHP SDK](https://github.com/dovuofficial/guardian-php-sdk)

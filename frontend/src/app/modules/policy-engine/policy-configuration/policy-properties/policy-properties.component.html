@@ -123,11 +123,11 @@
                         <td class="propRowCell cellName">Project Scale</td>
                         <td class="propRowCell">
                             <p-dropdown
-                                [(ngModel)]="sectoralScopeSelected"
+                                [(ngModel)]="projectScaleSelected"
                                 [options]="allCategories?.projectScaleOptions"
                                 optionLabel="name"
                                 [disabled]="!allCategories"
-                                placeholder="Select a sectoral scope"
+                                placeholder="Select a project scale"
                                 (onChange)="onCategoriesChanged()"
                                 [appendTo]="'body'"
                             >
@@ -136,7 +136,7 @@
                                     <span *ngIf="selectedItem">
                                         {{ selectedItem.name }}
                                     </span>
-                                    <span *ngIf="!selectedItem">Select a sectoral scope</span>
+                                    <span *ngIf="!selectedItem">Select a project scale</span>
                                 </ng-template>
                             </p-dropdown>
                         </td>

@@ -7,6 +7,7 @@ import { ChildrenType, ControlType, PropertyType, SelectItemType } from '../inte
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Step block
@@ -15,6 +16,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'interfaceStepBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Step',
         title: `Add 'Step' Block`,
@@ -34,23 +36,27 @@ import { LocationType } from '@guardian/interfaces';
             name: 'cyclic',
             label: 'Cyclic',
             title: 'Restart the block when the final step is reached?',
-            type: PropertyType.Checkbox
+            type: PropertyType.Checkbox,
+            editable: true
         }, {
             name: 'finalBlocks',
             label: 'Final steps',
             title: 'Final steps',
             type: PropertyType.MultipleSelect,
-            items: SelectItemType.Children
+            items: SelectItemType.Children,
+            editable: true
         }, {
             name: 'uiMetaData',
             label: 'UI',
             title: 'UI Properties',
             type: PropertyType.Group,
+            editable: true,
             properties: [{
                 name: 'title',
                 label: 'Title',
                 title: 'Title',
-                type: PropertyType.Input
+                type: PropertyType.Input,
+                editable: true
             }]
         }]
     },
@@ -74,6 +80,7 @@ export class InterfaceStepBlock {
         this.state = {}
 
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+
         this.endIndexes[ref.children.length - 1] = true;
         if (ref.options?.finalBlocks && Array.isArray(ref.options.finalBlocks)) {
             for (const finalBlock of ref.options.finalBlocks) {
@@ -92,8 +99,9 @@ export class InterfaceStepBlock {
     @ActionCallback({
         output: PolicyOutputEventType.RefreshEvent
     })
-    async changeStep(user: PolicyUser, data: any, target: IPolicyBlock) {
+    async changeStep(user: PolicyUser, data: any, target: IPolicyBlock, actionStatus: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+
         let blockState: any;
         if (!this.state.hasOwnProperty(user.id)) {
             blockState = {};
@@ -113,7 +121,7 @@ export class InterfaceStepBlock {
         }
         ref.log(`changeStep: ${blockState?.index}, ${user?.id}`);
         ref.updateBlock(blockState, user, ref.tag, user.userId);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null, actionStatus);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Step, ref, user, {
             index: blockState?.index
@@ -132,8 +140,9 @@ export class InterfaceStepBlock {
     })
     async releaseChild(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const options = await ref.getOptions(event.user);
         const index = ref.children.findIndex(c => c.uuid === event.sourceId);
-        if ((ref.options.cyclic && index !== -1) && (this.endIndexes[index])) {
+        if ((options.cyclic && index !== -1) && (this.endIndexes[index])) {
             const user = event.user;
             if (user) {
                 let blockState: any;
@@ -145,7 +154,7 @@ export class InterfaceStepBlock {
                 }
                 blockState.index = 0;
                 ref.updateBlock(blockState, user, ref.tag, user.userId);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+                await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null, event.actionStatus);
             }
         }
 
@@ -158,6 +167,7 @@ export class InterfaceStepBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const options = await ref.getOptions(user);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.id)) {
             blockState = {};
@@ -176,7 +186,7 @@ export class InterfaceStepBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            uiMetaData: ref.options?.uiMetaData,
+            uiMetaData: options?.uiMetaData,
             index: blockState.index
         };
     }

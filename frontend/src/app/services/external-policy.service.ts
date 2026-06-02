@@ -113,4 +113,13 @@ export class ExternalPoliciesService {
         const params = ExternalPoliciesService.getOptions(filters);
         return this.http.get<any>(`${this.url}/requests/document`, { observe: 'response', params });
     }
+
+    public disconnect(messageId: string, full: boolean): Observable<any> {
+        const params = ExternalPoliciesService.getOptions({ full });
+        return this.http.put<any>(`${this.url}/${messageId}/disconnect`, null, { params });
+    }
+
+    public delete(messageId: string): Observable<any> {
+        return this.http.delete<any>(`${this.url}/${messageId}`);
+    }
 }

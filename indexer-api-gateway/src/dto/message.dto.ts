@@ -61,6 +61,10 @@ export class MessageDTO<O = any, A = any> implements Message<O, A> {
         description: 'Status message',
     })
     statusMessage: string;
+    @ApiProperty({
+        description: 'Status owner',
+    })
+    statusOwner: string;
     options: O;
     analytics?: A;
     @ApiProperty({

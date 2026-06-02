@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { TopicId } from '@hashgraph/sdk';
+import { TopicId } from '@hiero-ledger/sdk';
 import { Hashing } from '../hashing.js';
 import { MessageAction } from './message-action.js';
 import { MessageBody } from './message-body.interface.js';
@@ -96,6 +96,11 @@ export abstract class Message {
      * @protected
      */
     protected _statusReason: string;
+    /**
+     * Revoke owner
+     * @protected
+     */
+    protected _statusOwner: string;
     /**
      * Message action
      */
@@ -257,12 +262,17 @@ export abstract class Message {
      * @param message
      * @param parentIds
      */
-    public revoke(message: string, parentIds?: string[]): void {
+    public revoke(
+        message: string,
+        owner: string,
+        parentIds?: string[]
+    ): void {
         this._status = MessageStatus.REVOKE;
         this._statusMessage = message;
         this._statusReason = parentIds
             ? RevokeReason.ParentRevoked
             : RevokeReason.DocumentRevoked;
+        this._statusOwner = owner
         this._parentIds = parentIds;
         this._action = MessageAction.RevokeDocument;
     }
@@ -312,6 +322,7 @@ export abstract class Message {
                 lang: this.lang,
                 account: this.account,
                 revokeMessage: this._statusMessage,
+                revokeOwner: this._statusOwner,
                 reason: this._statusReason,
                 parentIds: this._parentIds
             }

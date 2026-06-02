@@ -18,6 +18,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'interfaceDocumentsSourceBlock',
     commonBlock: false,
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Documents',
         title: `Add 'Documents Source' Block`,
@@ -62,9 +63,10 @@ export class InterfaceDocumentsSource {
         }
     }
 
-    async onAddonEvent(user: PolicyUser, tag: string, documentId: string, handler: (document: any) => Promise<IPolicyEventState>) {
+    async onAddonEvent(user: PolicyUser, tag: string, documentId: string, handler: (document: any) => Promise<IPolicyEventState>, actionStatus) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
-        const fields = ref.options?.uiMetaData?.fields?.filter((field) =>
+        const options = await ref.getOptions(user);
+        const fields = options?.uiMetaData?.fields?.filter((field) =>
             field?.bindBlocks?.includes(tag)
         );
 
@@ -72,7 +74,7 @@ export class InterfaceDocumentsSource {
         const savepointIds = saved.__savepointIds as string[] | undefined;
 
         const enableCommonSorting =
-            !!ref.options?.uiMetaData?.enableSorting
+            !!options?.uiMetaData?.enableSorting
 
         const sourceAddons = fields
             ?.filter((field) => field.bindGroup)
@@ -93,7 +95,7 @@ export class InterfaceDocumentsSource {
             );
         }
         const state = await handler(document);
-        ref.triggerEvents(tag, user, state);
+        await ref.triggerEvents(tag, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Set, ref, user, {
                 button: ref.tag,
@@ -147,6 +149,7 @@ export class InterfaceDocumentsSource {
      */
     async getData(user: PolicyUser, uuid: string, queryParams: any): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
+        const options = await ref.getOptions(user);
 
         let ret: IPolicyGetData = {
             id: ref.uuid,
@@ -228,7 +231,7 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField)
+        const enableCommonSorting = options.uiMetaData.enableSorting || (sortDirection && sortField)
 
         let sortState = this.state[user.id] || {};
         if (sortDirection && sortField) {
@@ -328,7 +331,7 @@ export class InterfaceDocumentsSource {
                 blocks: filters,
                 commonAddons,
             },
-            Object.assign(ref.options.uiMetaData, {
+            Object.assign(options.uiMetaData, {
                 viewHistory: !!history,
             }),
             sortState
@@ -441,7 +444,18 @@ export class InterfaceDocumentsSource {
 
                 const data = await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
                 for (const item of data as any[]) {
-                    [item.serials, item.amount, item.error, item.wasTransferNeeded, item.transferSerials, item.transferAmount, item.tokenIds] = await ref.databaseServer.getVPMintInformation(item);
+                    const info = await ref.databaseServer.getVPMintInformation(item);
+                    item.serials = info.serials;
+                    item.amount = info.amount;
+                    item.error = info.error;
+                    item.wasTransferNeeded = info.wasTransferNeeded;
+                    item.transferSerials = info.transferSerials;
+                    item.mintAmount = info.mintAmount;
+                    item.transferAmount = info.transferAmount;
+                    item.mintExpected = info.mintExpected;
+                    item.transferExpected = info.transferExpected;
+                    item.tokenIds = info.tokenIds;
+                    item.mainDocument = info.mainDocument;
                 }
                 return data;
             case 'approve':

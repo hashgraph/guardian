@@ -316,6 +316,7 @@ export class XlsxToJson {
                     readOnly: true,
                     isPrivate: undefined,
                     property: undefined,
+                    isUpdatable: false,
                 });
                 fields.push({
                     name: 'ref',
@@ -333,6 +334,7 @@ export class XlsxToJson {
                     readOnly: true,
                     isPrivate: undefined,
                     property: undefined,
+                    isUpdatable: false,
                 });
                 fields.push({
                     name: 'guardianVersion',
@@ -350,6 +352,7 @@ export class XlsxToJson {
                     readOnly: true,
                     isPrivate: undefined,
                     property: undefined,
+                    isUpdatable: false,
                 });
             }
             const conditions = conditionCache.map(c => c.toJson());
@@ -390,7 +393,8 @@ export class XlsxToJson {
             customType: null,
             property: null,
             isRef: null,
-            order: row
+            order: row,
+            isUpdatable: false,
         };
         try {
             const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);

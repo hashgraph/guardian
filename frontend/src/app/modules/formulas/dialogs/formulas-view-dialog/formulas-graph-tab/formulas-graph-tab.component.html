@@ -1,0 +1,196 @@
+<div class="graph-tab" *ngIf="source">
+    <div class="graph-layout">
+
+        <div class="tree-container">
+            <app-tree-graph
+                [width]="220"
+                (init)="initGraph($event)"
+                (render)="onRender()"
+                (select)="onSelect($event)"
+            >
+                <ng-template #nodeTemplate let-node="node">
+                    <div
+                        class="tree-node root-node"
+                        [ngClass]="[
+                            'selected-type-' + node.selected,
+                            getNodeStatusClass(node)
+                        ]"
+                    >
+                        <div class="node-header">
+                            {{ node.data.title }}
+                        </div>
+                    </div>
+                </ng-template>
+            </app-tree-graph>
+        </div>
+
+        <div *ngIf="selectedNode" class="node-details">
+            <div *ngIf="selectedNode as item" class="node-details-container">
+
+                <!--TITLE -->
+                <div *ngIf="title" class="node-details-header">
+                    <div class="node-details-title">
+                        {{ title }}
+                    </div>
+                    <div class="node-details-close" (click)="clearSelection()">
+                        ✕
+                    </div>
+                </div>
+
+                <!-- VALUE (value + status) -->
+                <div
+                    *ngIf="fieldValue !== null && fieldValue !== undefined || valueStatus === 'Missing'"
+                    class="node-details-section"
+                >
+                    <div class="section-label">Value</div>
+
+                    <div
+                        class="section-value"
+                        *ngIf="fieldType !== 'object' && fieldType !== 'array'; else objectValue"
+                    >
+                        {{ fieldValue }}
+                        <span
+                            *ngIf="valueStatus && valueStatus !== 'Not null'"
+                            class="value-status-chip"
+                            [ngClass]="selectedNode ? getNodeStatusClass(selectedNode) : null"
+                        >
+                            {{ valueStatus }}
+                        </span>
+                    </div>
+
+                    <ng-template #objectValue>
+                        <div class="section-value">
+                            <pre
+                                class="value-json"
+                                [attr.data-expanded]="isJsonExpanded"
+                            >{{ formatValueForJson(fieldValue) | json }}</pre>
+                            <div class="json-toggle" (click)="toggleJsonExpanded()">
+                                <span class="json-toggle-label">
+                                    {{ isJsonExpanded ? 'Show less' : 'Show more' }}
+                                </span>
+                                <i
+                                    class="pi"
+                                    [ngClass]="isJsonExpanded ? 'pi-chevron-up' : 'pi-chevron-down'"
+                                ></i>
+                            </div>
+
+                            <span
+                                *ngIf="valueStatus && valueStatus !== 'Not null'"
+                                class="value-status-chip"
+                                [ngClass]="selectedNode ? getNodeStatusClass(selectedNode) : null"
+                            >
+                                {{ valueStatus }}
+                            </span>
+                        </div>
+                    </ng-template>
+                </div>
+
+                <!-- FIELD DESCRIPTION IN DOCUMENT -->
+                <div *ngIf="fieldDescription" class="node-details-section">
+                    <div class="section-label">Field description</div>
+                    <div class="section-value">
+                        {{ fieldDescription }}
+                    </div>
+                </div>
+
+                <!-- FORMULA -->
+                <div *ngIf="itemType === 'formula' && itemValue" class="node-details-section">
+                    <div class="section-label">
+                        Formula
+                    </div>
+                    <div class="section-value formula-value">
+                        <math-live
+                            [value]="itemValue"
+                            [readonly]="true">
+                        </math-live>
+                    </div>
+                </div>
+
+                <!-- CONSTANT VALUE -->
+                <div
+                    *ngIf="itemType === 'constant' && itemValue !== null && itemValue !== undefined"
+                    class="node-details-section"
+                >
+                    <div class="section-label">Value</div>
+                    <div class="section-value">
+                        {{ itemValue }}
+                    </div>
+                </div>
+
+                <!-- TEXT NODE CONTENT -->
+                <div
+                    *ngIf="itemType === 'text' && itemValue"
+                    class="node-details-section"
+                >
+                    <div class="section-label">Text</div>
+                    <div class="section-value">
+                        {{ itemValue }}
+                    </div>
+                </div>
+
+                <!-- NODE DESCRIPTION -->
+                <div *ngIf="nodeDescription" class="node-details-section">
+                    <div class="section-label">
+                        {{ (itemType || 'node') | titlecase }} description
+                    </div>
+                    <div class="section-value">
+                        {{ nodeDescription }}
+                    </div>
+                </div>
+
+                <!-- SCHEMA NAME -->
+                <div *ngIf="nodeDocument" class="node-details-section">
+                    <div class="section-label">Schema</div>
+                    <div class="section-value">
+                        {{ nodeDocument }}
+                    </div>
+                </div>
+
+                <!-- PARENT SCHEMAS -->
+                <div *ngIf="parentDocuments?.length" class="node-details-section">
+                    <div class="section-label">Parent schemas</div>
+                    <ul class="section-list">
+                        <li *ngFor="let doc of parentDocuments">
+                            {{ doc }}
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- TECHNICAL DETAILS SECTION -->
+                <div *ngIf="fieldType || fieldPath" class="technical-section">
+                    <div class="technical-header" (click)="toggleTechnicalDetails()">
+                        <div class="technical-title">
+                            Technical details
+                        </div>
+                        <div class="technical-icon">
+                            <i
+                                class="pi"
+                                [ngClass]="showTechnicalDetails ? 'pi-chevron-up' : 'pi-chevron-down'"
+                            ></i>
+                        </div>
+                    </div>
+
+                    <div *ngIf="showTechnicalDetails" class="technical-content">
+                        <!-- FIELD VALUE TYPE -->
+                        <div *ngIf="fieldType" class="node-details-section">
+                            <div class="section-label">Field value type</div>
+                            <div class="section-value">
+                                {{ fieldType }}
+                            </div>
+                        </div>
+
+                        <!-- FIELD PATH -->
+                        <div *ngIf="fieldPath" class="node-details-section">
+                            <div class="section-label">Field path</div>
+                            <div class="section-value">
+                                {{ fieldPath }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>

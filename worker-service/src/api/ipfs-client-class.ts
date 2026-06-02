@@ -1,12 +1,11 @@
 import axios from 'axios';
 import { create } from 'kubo-rpc-client'
 import { FilebaseClient } from '@filebase/client';
-import { CarReader } from '@ipld/car';
-import * as Delegation from '@ucanto/core/delegation';
-import * as Signer from '@ucanto/principal/ed25519';
-import * as Client from '@web3-storage/w3up-client';
+import { StoreMemory } from '@storacha/client/stores/memory';
+import * as Proof from '@storacha/client/proof';
+import { Signer } from '@storacha/client/principal/ed25519';
+import * as Client from '@storacha/client';
 import * as url from 'url';
-import { StoreMemory } from '@web3-storage/access'
 import CID from 'cids';
 
 /**
@@ -33,7 +32,7 @@ export class IpfsClientClass {
      * IPFS public gateway
      * @private
      */
-    private readonly IPFS_PUBLIC_GATEWAY = process.env.IPFS_PUBLIC_GATEWAY || 'https://ipfs.io/ipfs/${cid}';
+    private readonly IPFS_PUBLIC_GATEWAY = process.env.IPFS_PUBLIC_GATEWAY || 'https://ipfs.io/ipfs/{cid}';
 
     /**
      * Web3storage instance
@@ -65,20 +64,33 @@ export class IpfsClientClass {
     }
 
     /**
+     * Guard against an uninitialized client.
+     * @private
+     */
+    private assertClientReady(): void {
+        if (!this.client) {
+            throw new Error(`IPFS client not initialized (provider="${this.IPFS_PROVIDER}"); check IPFS_PROVIDER and credentials.`);
+        }
+    }
+
+    /**
      * Create ipfs client
      * @private
      */
     public async createClient(): Promise<any> {
-        let client;
+        let client: any;
 
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.WEB3STORAGE: {
+                if (!this.options.w3s) {
+                    throw new Error('Web3Storage key and proof are not set');
+                }
                 const principal = Signer.parse(this.options.w3s.key);
                 client = await Client.create({
                     principal,
                     store: new StoreMemory()
                 });
-                const proof = await this.parseProof(this.options.w3s.proof);
+                const proof = await Proof.parse(this.options.w3s.proof.replace(/[\r\n]+/g, ''));
                 const space = await client.addSpace(proof);
                 await client.setCurrentSpace(space.did());
                 break;
@@ -90,7 +102,6 @@ export class IpfsClientClass {
                 }
 
                 client = new FilebaseClient({ token: this.options.filebase } as any)
-
                 break;
             }
 
@@ -104,7 +115,6 @@ export class IpfsClientClass {
                     host: hostname,
                     port: parseInt(port, 10),
                 });
-
                 break;
             }
 
@@ -121,17 +131,18 @@ export class IpfsClientClass {
      * @param beforeCallback
      */
     public async addFile(file: Buffer): Promise<string> {
+        this.assertClientReady();
         let cid: string;
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.WEB3STORAGE: {
-                const result = await this.client.uploadFile(new Blob([file]));
+                const result = await this.client.uploadFile(new Blob([new Uint8Array(file)]));
 
                 cid = result.toString()
                 break;
             }
 
             case IpfsProvider.FILEBASE: {
-                cid = await this.client.storeBlob(new Blob([file]))
+                cid = await this.client.storeBlob(new Blob([new Uint8Array(file)]))
                 break;
             }
 
@@ -152,7 +163,7 @@ export class IpfsClientClass {
      * @param cid
      */
     public async deleteCid(cid: string): Promise<boolean> {
-
+        this.assertClientReady();
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.LOCAL: {
                 await this.client.pin.rm(cid);
@@ -169,7 +180,7 @@ export class IpfsClientClass {
             }
 
             case IpfsProvider.WEB3STORAGE: {
-                await this.client.capability.store.remove(cid);
+                await this.client.remove(cid, { shards: true });
                 return true;
             }
 
@@ -184,22 +195,16 @@ export class IpfsClientClass {
         }
     }
 
-    private async parseProof(data) {
-        const blocks = [];
-        const reader = await CarReader.fromBytes(Buffer.from(data, 'base64'));
-        for await (const block of reader.blocks()) {
-            blocks.push(block);
-        }
-        return Delegation.importDAG(blocks);
-    }
-
     /**
      * Get file
      * @param cid
      */
     public async getFile(cid: string): Promise<any> {
+        const _cid = this.parseCID(cid);
         const fileRes = await axios.get(
-            this.IPFS_PUBLIC_GATEWAY?.replace('${cid}', this.parseCID(cid)),
+            this.IPFS_PUBLIC_GATEWAY
+                ?.replace('${cid}', _cid)
+                ?.replace('{cid}', _cid),
             {
                 responseType: 'arraybuffer',
                 timeout:

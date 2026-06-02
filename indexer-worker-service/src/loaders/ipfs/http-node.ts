@@ -26,7 +26,9 @@ export class HttpNode implements BaseNode {
     public async get(cid: string, timeout?: number): Promise<Buffer> {
         try {
             const items = await axios.get(
-                process.env.IPFS_GATEWAY?.replace('${cid}', this.parseCID(cid)),
+                process.env.IPFS_GATEWAY
+                    ?.replace('${cid}', this.parseCID(cid))
+                    ?.replace('{cid}', this.parseCID(cid)),
                 {
                     responseType: 'arraybuffer',
                     timeout: timeout || this.LOAD_TIMEOUT,
@@ -47,7 +49,9 @@ export class HttpNode implements BaseNode {
                 };
             }
             const result = await axios.get(
-                process.env.IPFS_CHECK_GATEWAY.replace('${cid}', this.parseCID(cid)),
+                process.env.IPFS_CHECK_GATEWAY
+                    .replace('${cid}', this.parseCID(cid))
+                    .replace('{cid}', this.parseCID(cid)),
                 {
                     responseType: 'arraybuffer',
                     timeout: timeout || this.CHECK_TIMEOUT,

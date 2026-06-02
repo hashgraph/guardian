@@ -21,13 +21,15 @@ import {
     VCMessage,
     VcHelper,
     IPFS,
+    SchemaPackageMessage,
 } from '@guardian/common';
 import {
     ExternalDocuments,
     ExternalEvent,
     ExternalEventType
 } from '../interfaces/external-event.js';
-import { TopicId } from '@hashgraph/sdk';
+import { TopicId } from '@hiero-ledger/sdk';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Search Topic Result
@@ -40,7 +42,7 @@ interface TopicResult {
     /**
      * Policy Schemas
      */
-    schemas?: SchemaMessage[];
+    schemas?: SchemaMessage[] | SchemaPackageMessage[];
     /**
      * Policy Version
      */
@@ -81,6 +83,14 @@ enum SchemaStatus {
     Compatible = 'COMPATIBLE',
 }
 
+interface SchemaItem {
+    id: string,
+    name: string,
+    cid: string,
+    sub: string,
+    status: SchemaStatus
+}
+
 /**
  * External topic block
  */
@@ -88,12 +98,13 @@ enum SchemaStatus {
     blockType: 'externalTopicBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'External Topic',
         title: `Add 'External Topic' Block`,
         post: true,
         get: true,
-        children: ChildrenType.Special,
+        children: ChildrenType.None,
         control: ControlType.UI,
         input: [
             PolicyInputEventType.TimerEvent
@@ -108,7 +119,8 @@ enum SchemaStatus {
             name: 'schema',
             label: 'Schema',
             title: 'Schema',
-            type: PropertyType.Schemas
+            type: PropertyType.Schemas,
+            editable: false
         }]
     },
     variables: [
@@ -306,7 +318,7 @@ export class ExternalTopicBlock {
      * @param item
      * @private
      */
-    private async verification(item: any): Promise<void> {
+    private async verification(item: SchemaItem): Promise<void> {
         try {
             const schema = await this.getSchema();
             if (!schema) {
@@ -317,7 +329,7 @@ export class ExternalTopicBlock {
                 item.status = SchemaStatus.Incompatible;
                 return;
             }
-            const document = await IPFS.getFile(item.cid, 'str');
+            const document = await this.loadSchemaDocument(item);
             const base = this.getSchemaFields(schema.document);
             const extension = this.getSchemaFields(document);
             const verified = this.ifExtendFields(extension, base);
@@ -325,6 +337,34 @@ export class ExternalTopicBlock {
         } catch (error) {
             item.status = SchemaStatus.Incompatible;
             return;
+        }
+    }
+
+    /**
+     * Load Schema
+     * @param item
+     * @private
+     */
+    private async loadSchemaDocument(item: SchemaItem): Promise<void> {
+        try {
+            const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+            const row = await IPFS.getFile(item.cid, 'str', {
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
+            let document: any;
+            if (typeof row === 'string') {
+                document = JSON.parse(row);
+            } else {
+                document = row;
+            }
+            if (item.sub) {
+                return document[item.sub];
+            } else {
+                return document;
+            }
+        } catch (error) {
+            return null;
         }
     }
 
@@ -383,7 +423,10 @@ export class ExternalTopicBlock {
         if (topicTree.count > 20) {
             throw new BlockActionError('Max attempts of 20 was reached for request: Get topic info', ref.blockType, ref.uuid);
         }
-        const topicMessage = await MessageServer.getTopic(topicId, userId);
+        const topicMessage = await MessageServer.getTopic(topicId, userId, {
+            dryRun: ref.dryRun,
+            mockId: ref.mockId
+        });
         if (!topicTree.root) {
             if (topicMessage && (
                 topicMessage.messageType === TopicType.InstancePolicyTopic ||
@@ -400,9 +443,16 @@ export class ExternalTopicBlock {
                     throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
                 }
                 topicTree.policyTopic = topicMessage;
-                const messages: any[] = await MessageServer.getTopicMessages({ topicId, userId });
-                topicTree.schemas = messages.filter((m: SchemaMessage) =>
-                    m.action === MessageAction.PublishSchema);
+                const messages: any[] = await MessageServer.getTopicMessages({
+                    topicId,
+                    userId,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId
+                });
+                topicTree.schemas = messages.filter((m: SchemaMessage | SchemaPackageMessage) => (
+                    m.action === MessageAction.PublishSchema ||
+                    m.action === MessageAction.PublishSchemas
+                ));
                 topicTree.instance = messages.find((m: PolicyMessage) =>
                     m.action === MessageAction.PublishPolicy &&
                     m.instanceTopicId === topicTree.instanceTopic.topicId);
@@ -436,15 +486,7 @@ export class ExternalTopicBlock {
             const topic = topicTree.root;
             const policy = topicTree.policyTopic;
             const instance = topicTree.instance;
-            const list = [];
-            for (const schema of topicTree.schemas) {
-                list.push({
-                    id: schema.getContextUrl(UrlType.url),
-                    name: schema.name,
-                    cid: schema.getDocumentUrl(UrlType.cid),
-                    status: SchemaStatus.NotVerified
-                });
-            }
+            const schemas = await this.parseSchemaMessages(topicTree.schemas);
             item.status = TaskStatus.NeedSchema;
             item.documentTopicId = topic.topicId?.toString();
             item.policyTopicId = policy.topicId?.toString();
@@ -452,7 +494,7 @@ export class ExternalTopicBlock {
             item.documentMessage = topic.toMessageObject();
             item.policyMessage = policy.toMessageObject();
             item.policyInstanceMessage = instance.toMessageObject();
-            item.schemas = list;
+            item.schemas = schemas;
             item.active = false;
             item.lastMessage = '';
             item.lastUpdate = '';
@@ -463,6 +505,60 @@ export class ExternalTopicBlock {
             ref.databaseServer.updateExternalTopic(item);
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             this.updateStatus(ref, item, user);
+        }
+    }
+
+    private async parseSchemaMessages(messages: SchemaMessage[] | SchemaPackageMessage[]): Promise<SchemaItem[]> {
+        const list: SchemaItem[] = [];
+        for (const message of messages) {
+            if (message.action === MessageAction.PublishSchema) {
+                list.push({
+                    id: message.getContextUrl(UrlType.url),
+                    name: message.name,
+                    cid: message.getDocumentUrl(UrlType.cid),
+                    sub: null,
+                    status: SchemaStatus.NotVerified
+                });
+            }
+            if (message.action === MessageAction.PublishSchemas) {
+                const schemas = await this.parsePackage(message as SchemaPackageMessage);
+                for (const schema of schemas) {
+                    list.push(schema);
+                }
+            }
+        }
+        return list;
+    }
+
+    private async parsePackage(message: SchemaPackageMessage): Promise<SchemaItem[]> {
+        try {
+            const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+            const list: SchemaItem[] = [];
+            const contextUrl = message.getContextUrl(UrlType.url);
+            const metaCID = message.getMetadataUrl(UrlType.cid);
+            const documentCID = message.getDocumentUrl(UrlType.cid);
+            const metaData = await IPFS.getFile(metaCID, 'str', {
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
+            const meta = JSON.parse(metaData);
+            const schemas = meta.schemas;
+            if (Array.isArray(schemas)) {
+                for (const schema of schemas) {
+                    list.push({
+                        id: contextUrl + schema.id,
+                        name: schema.name,
+                        cid: documentCID,
+                        sub: schema.id,
+                        status: SchemaStatus.NotVerified
+                    });
+                }
+            }
+            return list;
+        } catch (error) {
+            const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+            ref.error(`parsePackage: ${PolicyUtils.getErrorMessage(error)}`);
+            return [];
         }
     }
 
@@ -501,7 +597,7 @@ export class ExternalTopicBlock {
      */
     private async verificationSchemas(
         item: ExternalDocument,
-        schemas: any[],
+        schemas: SchemaItem[],
         user: PolicyUser
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
@@ -531,7 +627,7 @@ export class ExternalTopicBlock {
      */
     private async setSchema(
         item: ExternalDocument,
-        schema: any,
+        schema: SchemaItem,
         user: PolicyUser
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
@@ -555,6 +651,28 @@ export class ExternalTopicBlock {
         }
     }
 
+    private checkDocumentType(
+        document: IVC,
+        fullId: string,
+        schemaId: string,
+        schemaType: string
+    ): boolean {
+        try {
+            if (document['@context'].includes(fullId)) {
+                return true;
+            }
+            if (document['@context'].includes(schemaId)) {
+                const cs = PolicyUtils.getCredentialSubjectByDocument(document);
+                if (cs && cs.type === schemaType) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (error) {
+            return false;
+        }
+    }
+
     /**
      * Verify VC document
      * @param item
@@ -566,10 +684,14 @@ export class ExternalTopicBlock {
             return 'Invalid document';
         }
 
-        if (
-            !Array.isArray(document['@context']) ||
-            document['@context'].indexOf(item.schemaId) === -1
-        ) {
+        if (!Array.isArray(document['@context'])) {
+            return 'Invalid schema';
+        }
+
+        const fullId = item.schemaId || '';
+        const [schemaId, schemaType] = fullId.split('#');
+
+        if (!this.checkDocumentType(document, fullId, schemaId, schemaType)) {
             return 'Invalid schema';
         }
 
@@ -581,6 +703,7 @@ export class ExternalTopicBlock {
             if (verify) {
                 verify = await VCHelper.verifyVC(document);
             }
+            verify = await VCHelper.verifyVC(document);
         } catch (error) {
             verify = false;
         }
@@ -606,9 +729,11 @@ export class ExternalTopicBlock {
         item: ExternalDocument,
         hederaAccount: IHederaCredentials,
         user: PolicyUser,
-        message: VCMessage
+        message: VCMessage,
+        actionStatus: RecordActionStep
     ): Promise<void> {
         const documentRef = await this.getRelationships(ref, user);
+        const options = await ref.getOptions(user);
 
         if (message.type !== MessageType.VCDocument) {
             return;
@@ -618,7 +743,10 @@ export class ExternalTopicBlock {
             return;
         }
 
-        await MessageServer.loadDocument(message, hederaAccount.hederaAccountKey);
+        await MessageServer.loadDocument(message, hederaAccount.hederaAccountKey, {
+            dryRun: ref.dryRun,
+            mockId: ref.mockId
+        });
 
         const document: IVC = message.getDocument();
         const error = await this.checkDocument(item, document);
@@ -628,7 +756,7 @@ export class ExternalTopicBlock {
 
         const relayerAccount = await PolicyUtils.getRefRelayerAccount(ref, user.did, null, documentRef, user.userId);
         const result: IPolicyDocument = PolicyUtils.createPolicyDocument(ref, user, document);
-        result.schema = ref.options.schema;
+        result.schema = options.schema;
         result.relayerAccount = relayerAccount;
         if (documentRef) {
             PolicyUtils.setDocumentRef(result, documentRef);
@@ -640,9 +768,11 @@ export class ExternalTopicBlock {
         }
 
         const state: IPolicyEventState = { data: result };
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+        // actionStatus.saveResult(state);
+
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null, actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(result)
         }));
@@ -659,7 +789,8 @@ export class ExternalTopicBlock {
     private async receiveData(
         item: ExternalDocument,
         user: PolicyUser,
-        userId: string | null
+        userId: string | null,
+        actionStatus: RecordActionStep,
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, item.owner, userId);
@@ -667,10 +798,12 @@ export class ExternalTopicBlock {
         const messages: VCMessage[] = await MessageServer.getTopicMessages({
             topicId: item.documentTopicId,
             userId: user.id,
-            timeStamp: item.lastMessage
+            timeStamp: item.lastMessage,
+            dryRun: ref.dryRun,
+            mockId: ref.mockId
         });
         for (const message of messages) {
-            await this.checkMessage(ref, item, hederaCred, user, message);
+            await this.checkMessage(ref, item, hederaCred, user, message, actionStatus);
             item.lastMessage = message.id;
             await ref.databaseServer.updateExternalTopic(item);
         }
@@ -681,7 +814,7 @@ export class ExternalTopicBlock {
      * @param item
      * @private
      */
-    private async runByUser(item: ExternalDocument, userId: string | null): Promise<void> {
+    private async runByUser(item: ExternalDocument, userId: string | null, actionStatus: RecordActionStep): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
         item.status = TaskStatus.Processing;
@@ -690,7 +823,7 @@ export class ExternalTopicBlock {
         const user = await PolicyComponentsUtils.GetPolicyUserByDID(item.owner, null, ref, userId);
         this.updateStatus(ref, item, user);
         try {
-            await this.receiveData(item, user, userId);
+            await this.receiveData(item, user, userId, actionStatus);
             item.status = TaskStatus.Free;
             item.lastUpdate = (new Date()).toISOString();
             await ref.databaseServer.updateExternalTopic(item);
@@ -732,7 +865,7 @@ export class ExternalTopicBlock {
         const items = await ref.databaseServer.getActiveExternalTopics(ref.policyId, ref.uuid);
         for (const item of items) {
             if (item.status === TaskStatus.Free) {
-                await this.runByUser(item, userId);
+                await this.runByUser(item, userId, null);
             }
         }
     }
@@ -748,7 +881,7 @@ export class ExternalTopicBlock {
             PolicyOutputEventType.RefreshEvent
         ]
     })
-    public async setData(user: PolicyUser, data: any): Promise<any> {
+    public async setData(user: PolicyUser, data: any, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         ref.log(`setData`);
 
@@ -865,7 +998,7 @@ export class ExternalTopicBlock {
                     item.status = TaskStatus.Processing;
                     await ref.databaseServer.updateExternalTopic(item);
 
-                    this.runByUser(item, user.userId).then(null, (error) => {
+                    this.runByUser(item, user.userId, actionStatus).then(null, (error) => {
                         item.status = TaskStatus.Error;
                         ref.databaseServer.updateExternalTopic(item);
                         ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);

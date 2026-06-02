@@ -1,14 +1,17 @@
 import { AboutInterface, CommonSettings, Permissions } from '@guardian/interfaces';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { SettingsDTO, InternalServerErrorDTO } from '#middlewares';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ObjectExamples, AboutResponseDTO, SettingsDTO, InternalServerErrorDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { Guardians, InternalException } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
+import fs from 'node:fs';
 
 @Controller('settings')
 @ApiTags('settings')
 export class SettingsApi {
+    private cachedVersion?: string;
+
     constructor(private readonly logger: PinoLogger) {
     }
 
@@ -28,15 +31,28 @@ export class SettingsApi {
         description: 'Settings.',
         required: true,
         type: SettingsDTO,
+        examples: {
+            default: {
+                summary: 'Update settings',
+                value: { operatorId: '0.0.1858', operatorKey: '', ipfsStorageApiKey: '' }
+            }
+        }
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
+    @ApiNoContentResponse({
+        description: 'Settings updated successfully. No response body.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SettingsDTO, InternalServerErrorDTO)
+    //@HttpCode(HttpStatus.NO_CONTENT)
     @HttpCode(HttpStatus.CREATED)
     async updateSettings(
         @AuthUser() user: IAuthUser,
@@ -66,11 +82,23 @@ export class SettingsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: SettingsDTO
+        type: SettingsDTO,
+        examples: {
+            default: {
+                summary: 'Current settings',
+                value: ObjectExamples.SETTINGS
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(SettingsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -97,11 +125,23 @@ export class SettingsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: String
+        type: String,
+        examples: {
+            default: {
+                summary: 'Environment name',
+                value: 'testnet'
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -130,14 +170,49 @@ export class SettingsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        type: AboutResponseDTO,
+        examples: {
+            default: {
+                summary: 'Package version',
+                value: { version: '2.8.1' }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(AboutResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getAbout(): Promise<AboutInterface> {
-        return { version: '3.4.0' };
+        let version = this.cachedVersion;
+
+        if (!version) {
+            const envVersion = process.env.npm_package_version;
+            if (envVersion) {
+                version = envVersion;
+            } else {
+                const unknown = 'Unknown';
+                try {
+                    const packageJsonUrl = new URL('../../../package.json', import.meta.url);
+                    const raw = fs.readFileSync(packageJsonUrl, 'utf-8');
+                    const parsed = JSON.parse(raw);
+
+                    version = parsed.version || unknown;
+                } catch (error) {
+                    version = unknown;
+                }
+            }
+
+            this.cachedVersion = version;
+        }
+
+        return { version };
     }
 }

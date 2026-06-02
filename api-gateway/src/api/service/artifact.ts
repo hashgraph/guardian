@@ -15,11 +15,11 @@ import {
     Req,
     Res
 } from '@nestjs/common';
-import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBody, ApiConsumes, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey } from '#helpers';
-import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
+import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey, FilenameSanitizer } from '#helpers';
+import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem, UpsertFileResponseDTO, ObjectExamples, UploadArtifactsDTO, UnprocessableEntityErrorDTO, BadRequestErrorDTO } from '#middlewares';
 import { ARTIFACT_REQUIRED_PROPS, PREFIXES } from '#constants'
 import { FastifyReply } from 'fastify';
 
@@ -87,13 +87,14 @@ export class ArtifactApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: ArtifactDTOItem
+        type: ArtifactDTOItem,
+        example: ObjectExamples.ARTIFACTS_RESPONSE_LIST
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     @UseCache({ isFastify: true })
     async getArtifacts(
@@ -196,13 +197,14 @@ export class ArtifactApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: ArtifactDTOItem
+        type: ArtifactDTOItem,
+        example: ObjectExamples.ARTIFACTS_RESPONSE_LIST
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     @Version('2')
     async getArtifactsV2(
@@ -268,31 +270,58 @@ export class ArtifactApi {
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'Form data with artifacts.',
+        description: 'Form data with artifacts.\n\nDefault:\n- artifacts: [&lt;binary file&gt;]\n\nModified:\n- artifacts: [&lt;binary file 1&gt;, &lt;binary file 2&gt;]',
         required: true,
-        schema: {
-            type: 'array',
-            items: {
-                type: 'object',
-                properties: {
-                    'artifacts': {
-                        type: 'string',
-                        format: 'binary',
-                    }
+        type: UploadArtifactsDTO,
+        examples: {
+            uploadArtifactsBody: {
+                value: {
+                    artifacts: ['<binary file>']
+                }
+            },
+            Modified: {
+                value: {
+                    artifacts: ['<binary file 1>', '<binary file 2>']
                 }
             }
         }
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
+    @ApiCreatedResponse({
+        description: 'Artifacts uploaded successfully.',
         isArray: true,
-        type: ArtifactDTOItem
+        type: ArtifactDTOItem,
+        examples: {
+            SingleUpload: {
+                summary: 'One uploaded artifact',
+                value: ObjectExamples.ARTIFACTS_UPLOAD_RESPONSE_LIST
+            },
+            MultiUpload: {
+                summary: 'Multiple uploaded artifacts',
+                value: ObjectExamples.ARTIFACTS_UPLOAD_RESPONSE_LIST_MULTI
+            }
+        }
+    })
+    @ApiBadRequestResponse({
+        description: 'Bad request.',
+        type: BadRequestErrorDTO,
+        example: {
+            statusCode: 400,
+            message: 'The request should be a form-data'
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'There is no appropriate policy'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @UseInterceptors(AnyFilesInterceptor({
         allowedFields: ['artifacts'],
         requiredFields: ['artifacts']
@@ -347,13 +376,14 @@ export class ArtifactApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        example: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteArtifact(
         @AuthUser() user: IAuthUser,
@@ -376,8 +406,25 @@ export class ArtifactApi {
         Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_MANAGE,
     )
-    @ApiOperation({ summary: 'Download file by id', description: 'Returns file from GridFS' })
-    @ApiParam({ name: 'fileId', type: String, required: true, description: 'File _id' })
+    @ApiOperation({ summary: 'Download file by id.', description: 'Returns file from GridFS by its identifier.' })
+    @ApiParam({ name: 'fileId', type: String, required: true, description: 'File identifier', example: Examples.DB_ID })
+    @ApiProduces('application/octet-stream')
+    @ApiCreatedResponse({
+        description: 'Successful operation. Returns file content.',
+        content: {
+            'application/octet-stream': {
+                schema: {
+                    type: 'string',
+                    format: 'binary'
+                }
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
     @HttpCode(HttpStatus.OK)
     async downloadFile(
         @AuthUser() user: IAuthUser,
@@ -397,7 +444,7 @@ export class ArtifactApi {
             res.header('X-Content-Type-Options', 'nosniff');
             res.header(
                 'Content-Disposition',
-                `attachment; filename="${(filename || fileId).replace(/"/g, '')}"`
+                `attachment; filename="${FilenameSanitizer.sanitize(filename || fileId)}"`
             );
 
             return res.send(Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer));
@@ -419,7 +466,11 @@ export class ArtifactApi {
             type: 'object',
             properties: {
                 file: { type: 'string', format: 'binary' },
-                fileId: { type: 'string', description: 'Existing file _id to overwrite (optional)' }
+                fileId: {
+                    type: 'string',
+                    description: 'Existing file _id to overwrite (optional)',
+                    example: Examples.DB_ID
+                }
             }
         }
     })
@@ -427,6 +478,36 @@ export class ArtifactApi {
         allowedFields: ['file', 'fileId'],
         requiredFields: ['file']
     }))
+    @ApiCreatedResponse({
+        description: 'File uploaded successfully.',
+        type: UpsertFileResponseDTO,
+        example: {
+            fileId: '69bc1d9df6b2fa8ae50f2edc',
+            filename: 'file',
+            contentType: 'application/json'
+        }
+    })
+    @ApiBadRequestResponse({
+        description: 'Bad request.',
+        type: BadRequestErrorDTO,
+        example: {
+            statusCode: 400,
+            message: 'The request should be a form-data'
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'There are no files to upload.'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
     @HttpCode(HttpStatus.CREATED)
     async upsertFile(
         @AuthUser() user: IAuthUser,
@@ -465,8 +546,27 @@ export class ArtifactApi {
     })
     @ApiParam({
         name: 'fileId',
-        type: String, required: true,
-        description: 'File _id'
+        type: String,
+        required: true,
+        description: 'File identifier',
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean,
+        example: true
+    })
+    @ApiBadRequestResponse({
+        description: 'Bad request.',
+        type: BadRequestErrorDTO,
+        example: {
+            message: 'fileId is required'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
     async deleteFile(

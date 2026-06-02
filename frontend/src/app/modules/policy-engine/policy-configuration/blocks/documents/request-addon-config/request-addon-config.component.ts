@@ -42,10 +42,16 @@ export class RequestAddonConfigComponent implements OnInit {
     presetMap: any;
 
     public idTypeOptions = [
-        {label: '', value: ''},
-        {label: 'DID (New DID)', value: 'DID'},
-        {label: 'UUID (New UUID)', value: 'UUID'},
-        {label: 'Owner (Owner DID)', value: 'OWNER'}
+        { label: '', value: '' },
+        { label: 'DID (New DID)', value: 'DID' },
+        { label: 'UUID (New UUID)', value: 'UUID' },
+        { label: 'Owner (Owner DID)', value: 'OWNER' }
+    ];
+
+    public accountTypes = [
+        { label: '', value: '' },
+        { label: 'Pre-set user account', value: 'preset' },
+        { label: 'Current user account', value: 'current' },
     ];
 
     constructor() {

@@ -52,6 +52,10 @@ export class TokenService {
     public pushDelete(tokenId: any): Observable<{ taskId: string, expectation: number }> {
         return this.http.delete<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}`);
     }
+    
+    public pushDeleteMultiple(tokenIds: string[]): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/delete-multiple`, { tokenIds });
+    }
 
     public getTokens(policyId?: string): Observable<ITokenInfo[]> {
         if (policyId) {

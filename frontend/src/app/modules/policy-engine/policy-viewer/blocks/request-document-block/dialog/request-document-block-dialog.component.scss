@@ -57,6 +57,7 @@ form {
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        max-height: calc(85vh - 175px) !important;
     }
 
     .body-dialog-template {
@@ -287,6 +288,24 @@ form {
 .guardian-button {
     height: 40px;
     padding: 1px 16px;
+}
+
+.evidence-container {
+    @import '../../../../../common/policy-comments/toolbar-files';
+
+    .toolbar-files {
+        margin-top: 12px;
+        flex-direction: column;
+
+        .toolbar-file {
+            display: flex;
+            width: 100%;
+        }
+    }
+
+    .toolbar-actions {
+        margin-top: 8px;
+    }
 }
 
 .account-warning {

@@ -9,6 +9,7 @@ import ObjGet from 'lodash.get';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
+import { RecordActionStep } from '../record-action-step.js';
 
 /**
  * Aggregate block
@@ -17,6 +18,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'aggregateDocumentBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Aggregate Data',
         title: `Add 'Aggregate' Block`,
@@ -39,12 +41,14 @@ import { LocationType } from '@guardian/interfaces';
             label: 'Disable user grouping',
             title: 'Disable user grouping',
             type: PropertyType.Checkbox,
-            default: false
+            default: false,
+            editable: true
         }, {
             name: 'groupByFields',
             label: 'Group By Fields',
             title: 'Group By Fields',
             type: PropertyType.Array,
+            editable: false,
             items: {
                 label: 'Field Path',
                 value: '@fieldPath',
@@ -52,7 +56,8 @@ import { LocationType } from '@guardian/interfaces';
                     name: 'fieldPath',
                     label: 'Field Path',
                     title: 'Field Path',
-                    type: PropertyType.Path
+                    type: PropertyType.Path,
+                    editable: true
                 }]
             }
         }]
@@ -117,7 +122,10 @@ export class AggregateBlock {
     })
     public async tickCron(event: IPolicyEvent<string[]>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const { aggregateType, groupByFields, disableUserGrouping } = ref.options;
+
+        const options = await ref.getOptions(event.user);
+
+        const { aggregateType, groupByFields, disableUserGrouping } = options;
         if (aggregateType !== 'period') {
             return;
         }
@@ -164,7 +172,8 @@ export class AggregateBlock {
             await this.sendCronDocuments(
                 ref,
                 groupByUser ? key.split('|')[0] : ref.policyOwner,
-                documents
+                documents,
+                event.actionStatus
             );
         }
         ref.backup();
@@ -175,13 +184,28 @@ export class AggregateBlock {
      * @param userId User Id
      * @param documents Documents
      */
-    private async sendCronDocuments(ref: AnyBlockType, userId: string, documents: AggregateVC[]) {
+    private async sendCronDocuments(ref: AnyBlockType, userId: string, documents: AggregateVC[], actionStatus: RecordActionStep) {
         documents = await this.removeDocuments(ref, documents);
-        if (documents.length || ref.options.emptyData) {
+        const user = await PolicyUtils.getPolicyUserById(ref, userId);
+        const options = await ref.getOptions(user);
+        if (documents.length || options.emptyData) {
             const state: IPolicyEventState = { data: documents };
-            const user = await PolicyUtils.getPolicyUserById(ref, userId);
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+            // const user = await PolicyUtils.getPolicyUserById(ref, userId);
+            let effectiveActionStatus = actionStatus;
+            if (!effectiveActionStatus && ref.dryRun && documents.length > 0) {
+                const inheritedId = typeof documents[0].recordActionId === 'string' ? documents[0].recordActionId : null;
+                if (inheritedId) {
+                    const policyId = ref.policyId;
+                    effectiveActionStatus = new RecordActionStep(() => {
+                        PolicyComponentsUtils.GetPolicyComponents(policyId)?.recordingController?.notifyUpdate();
+                    }, 0, false, false, inheritedId);
+                }
+            }
+            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, effectiveActionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, effectiveActionStatus);
+            if (effectiveActionStatus !== actionStatus) {
+                effectiveActionStatus.finish();
+            }
             PolicyComponentsUtils.ExternalEventFn(
                 new ExternalEvent(ExternalEventType.TickCron, ref, user, {
                     documents: ExternalDocuments(documents),
@@ -245,8 +269,11 @@ export class AggregateBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    private async tickAggregate(ref: AnyBlockType, document: any, userId: string | null) {
-        const { expressions, condition, disableUserGrouping, groupByFields } = ref.options;
+    private async tickAggregate(ref: AnyBlockType, document: any, userId: string | null, actionStatus: RecordActionStep) {
+        const user = await PolicyUtils.getDocumentOwner(ref, document, userId);
+        const options = await ref.getOptions(user);
+
+        const { expressions, condition, disableUserGrouping, groupByFields } = options;
         const groupByUser = !disableUserGrouping;
 
         const filters: any = {};
@@ -280,11 +307,11 @@ export class AggregateBlock {
         }
 
         if (result === true) {
-            const user = await PolicyUtils.getDocumentOwner(ref, document, userId);
             rawEntities = await this.removeDocuments(ref, rawEntities);
             const state: IPolicyEventState = { data: rawEntities };
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+            // actionStatus.saveResult(state);
+            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+            await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state, actionStatus);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickAggregate, ref, user, {
                 documents: ExternalDocuments(rawEntities)
             }));
@@ -337,25 +364,28 @@ export class AggregateBlock {
      */
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const { aggregateType } = ref.options;
+        const options = await ref.getOptions(event.user);
+        const { aggregateType } = options;
 
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
         if (Array.isArray(docs)) {
             for (const doc of docs) {
                 await this.saveDocuments(ref, doc);
                 if (aggregateType === 'cumulative') {
-                    await this.tickAggregate(ref, doc, event?.user?.userId);
+                    await this.tickAggregate(ref, doc, event?.user?.userId, event.actionStatus);
                 }
             }
         } else {
             await this.saveDocuments(ref, docs);
             if (aggregateType === 'cumulative') {
-                await this.tickAggregate(ref, docs, event?.user?.userId);
+                await this.tickAggregate(ref, docs, event?.user?.userId, event.actionStatus);
             }
         }
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             documents: ExternalDocuments(docs)
         }));
+
+        return event.data;
     }
 }

@@ -106,6 +106,32 @@ export async function incrementSchemaVersion(
 }
 
 /**
+ * Get highest schema version
+ * @param topicId Topic ID
+ */
+export async function incrementHighestSchemaVersion(topicId: string): Promise<string> {
+    const schemas = await DatabaseServer.getSchemas({ topicId });
+    const versions = [];
+    let highestVersion = '1.0.0';
+    for (const element of schemas) {
+        const elementVersions = SchemaHelper.getVersion(element);
+        if (elementVersions.version) {
+            versions.push(elementVersions.version);
+            if (ModelHelper.versionCompare(elementVersions.version, highestVersion) === 1) {
+                highestVersion = elementVersions.version;
+            }
+        }
+        if (elementVersions.previousVersion) {
+            versions.push(elementVersions.previousVersion);
+            if (ModelHelper.versionCompare(elementVersions.previousVersion, highestVersion) === 1) {
+                highestVersion = elementVersions.previousVersion;
+            }
+        }
+    }
+    return SchemaHelper.incrementVersion(highestVersion, versions);
+}
+
+/**
  * Update schema document
  * @param schema Schema
  */
@@ -268,7 +294,8 @@ export async function copySchemaAsync(
     item.status = SchemaStatus.DRAFT;
     item.topicId = topicId;
 
-    SchemaHelper.setVersion(item, null, null);
+    const newVersion = await incrementHighestSchemaVersion(item.topicId)
+    SchemaHelper.setVersion(item, newVersion, item.version);
     SchemaHelper.updateIRI(item);
     item.iri = item.iri || item.uuid;
 
@@ -342,7 +369,8 @@ export async function createSchemaAndArtifacts(
         newSchema.contextURL = `schema:${newSchema.uuid}`;
     }
 
-    SchemaHelper.setVersion(newSchema, null, previousVersion);
+    const newVersion = await incrementHighestSchemaVersion(newSchema.topicId)
+    SchemaHelper.setVersion(newSchema, newVersion, previousVersion);
     const row = await createSchema(newSchema, user, notifier);
 
     if (old) {
@@ -415,10 +443,20 @@ export async function createSchema(
             owner: user.creator,
             policyId: null,
             policyUUID: null
-        }, user.id);
+        }, {
+            admin: true,
+            submit: true
+        }, {
+            userId: user.id
+        });
         await topic.saveKeys(user.id);
         await DatabaseServer.saveTopic(topic.toObject());
-        await topicHelper.twoWayLink(topic, null, null, user.id);
+        await topicHelper.twoWayLink({
+            topic,
+            parent: null,
+            rationale: null,
+            userId: user.id
+        });
     }
     notifier.completeStep(STEP_RESOLVE_TOPIC);
 
@@ -474,8 +512,12 @@ export async function deleteSchema(
     owner: IOwner,
     notifier: INotificationStep,
 ) {
-    notifier.start();
+    // <-- Steps
+    const STEP_DELETE_SCHEMA = 'Delete schema';
+    // Steps -->
 
+    notifier.addStep(STEP_DELETE_SCHEMA);
+    notifier.start();
     if (!schemaId) {
         return;
     }
@@ -496,9 +538,13 @@ export async function deleteSchema(
     //         await sendSchemaMessage(owner, root, topic, MessageAction.DeleteSchema, item);
     //     }
     // }
+    notifier.startStep(STEP_DELETE_SCHEMA);
     await DatabaseServer.deleteSchemas(item.id);
+    notifier.completeStep(STEP_DELETE_SCHEMA);
 
     notifier.complete();
+
+    return true;
 }
 
 /**

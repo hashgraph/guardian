@@ -25,14 +25,7 @@ import { ConditionControl, IfOperator } from '../condition-control';
 import { FieldControl } from '../field-control';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { SchemaService } from 'src/app/services/schema.service';
-
-enum SchemaType {
-    System = 'system',
-    Policy = 'policy',
-    Tag = 'tag',
-    Module = 'module',
-    Tool = 'tool'
-}
+import { SchemaType } from '../../policy-engine/structures/types/schema-type.type';
 
 function NoBindingValidator(control: UntypedFormControl): ValidationErrors | null {
     return (control.value && control.value.length) ? null : { wrongTopicId: true };
@@ -49,6 +42,7 @@ function NoBindingValidator(control: UntypedFormControl): ValidationErrors | nul
 export class SchemaConfigurationComponent implements OnInit {
     @Input('type') type!: 'new' | 'edit' | 'version';
     @Input('policies') policies!: any[];
+    @Input('allPolicies') allPolicies!: any[];
     @Input('tools') tools!: any[];
     @Input('schemaType') schemaType!: SchemaType;
     @Input('extended') extended!: boolean;
@@ -275,7 +269,7 @@ export class SchemaConfigurationComponent implements OnInit {
             props.topicId = [this._topicId, NoBindingValidator];
         } else if (this.isPolicy) {
             props.entity = new UntypedFormControl(SchemaEntity.VC, Validators.required);
-            props.topicId = [this._topicId];
+            props.topicId = [this._topicId, Validators.required];
         } else {
             props.entity = new UntypedFormControl(SchemaEntity.VC, Validators.required);
             props.topicId = [this._topicId];
@@ -770,7 +764,8 @@ export class SchemaConfigurationComponent implements OnInit {
             suggest,
             example,
             autocalculate,
-            expression
+            expression,
+            isUpdatable
         } = metadata;
         const type = this.schemaTypeMap[typeIndex];
         let suggestValue;
@@ -862,6 +857,7 @@ export class SchemaConfigurationComponent implements OnInit {
             default: defaultValue,
             suggest: suggestValue,
             examples: this.isNotEmpty(exampleValue) ? [exampleValue] : undefined,
+            isUpdatable: isUpdatable || false,
         };
     }
 
@@ -904,7 +900,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 customType: fieldConfig.customType,
                 readOnly: true,
                 isPrivate: fieldConfig.isPrivate,
-                property: fieldConfig.property
+                property: fieldConfig.property,
+                isUpdatable: fieldConfig.isUpdatable,
             };
             fields.push(schemaField);
             allFieldsByName.set(fieldConfig.name, schemaField);
@@ -1032,7 +1029,7 @@ export class SchemaConfigurationComponent implements OnInit {
         if (!field) {
             return;
         }
-        
+
         if (condition.changeEvents) {
             condition.fieldValue.patchValue('', {
                 emitEvent: false

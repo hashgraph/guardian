@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Stage 0: Use node image for base image for all stages
-ARG NODE_VERSION=20.19.5-alpine
+ARG NODE_VERSION=20.20.2-alpine
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
 WORKDIR /usr/local/app
 # Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory
@@ -54,7 +54,15 @@ COPY --link --from=deps /usr/local/app/node_modules node_modules/
 COPY --link --from=deps /usr/local/app/package.json ./
 COPY --link --from=build /usr/local/app/dist dist/
 
-# Change the user to node
-USER node
+# Docker CLI for PYTHON_SANDBOX_MODE=docker (spawns sandbox containers via docker.sock)
+RUN apk add --no-cache docker-cli su-exec
 
+# Allow node user to write Pyodide package cache (warmup downloads wheels at startup)
+RUN chown -R node:node node_modules/pyodide/ 2>/dev/null || true
+
+# Entrypoint: if docker.sock exists, match its GID so node user can access it, then drop to node
+COPY --link policy-service/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD [ "node", "dist/index.js" ]

@@ -8,20 +8,20 @@ This chapter demonstrates how to leverage Guardian's built-in testing capabiliti
 
 After completing this chapter, you will be able to:
 
-- Utilize Guardian's dry-run mode for comprehensive policy testing
-- Use Guardian's customLogicBlock testing interface for debugging calculations
-- Validate calculations against methodology test artifacts at each stage
-- Test baseline emissions, project emissions, leakage, and net emission reductions
-- Debug calculation discrepancies using Guardian's built-in tools
-- Implement automated testing using Guardian's API framework
-- Create test suites using real methodology test data
+* Utilize Guardian's dry-run mode for comprehensive policy testing
+* Use Guardian's customLogicBlock testing interface for debugging calculations
+* Validate calculations against methodology test artifacts at each stage
+* Test baseline emissions, project emissions, leakage, and net emission reductions
+* Debug calculation discrepancies using Guardian's built-in tools
+* Implement automated testing using Guardian's API framework
+* Create test suites using real methodology test data
 
 ## Prerequisites
 
-- Completed Chapters 18-20: Custom Logic Block Development, Formula Linked Definitions, and Guardian Tools Architecture
-- Access to test artifacts: [Final PDD VC with net ERR data](../../_shared/artifacts/final-PDD-vc.json), [AR Tool 14 implementation](../../_shared/artifacts/AR-Tool-14.json), [VM0033 test spreadsheet](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx)
-- Understanding of Guardian [dry-run mode](../../../guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations.md)
-- Familiarity with Guardian [testing interface](../../../guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
+* Completed Chapters 18-20: Custom Logic Block Development, Formula Linked Definitions, and Guardian Tools Architecture
+* Access to test artifacts: [Final PDD VC with net ERR data](../../_shared/artifacts/final-PDD-vc.json), [AR Tool 14 implementation](../../_shared/artifacts/AR-Tool-14.json), [VM0033 test spreadsheet](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx)
+* Understanding of Guardian [dry-run mode](../../../guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations.md)
+* Familiarity with Guardian [testing interface](../../../guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
 
 ## Guardian's Built-in Testing Framework
 
@@ -29,11 +29,11 @@ After completing this chapter, you will be able to:
 
 Environmental methodology calculations directly impact carbon credit credibility and market trust. Guardian provides comprehensive testing capabilities specifically designed for environmental methodologies:
 
-- **Dry-run mode** - Complete policy execution without blockchain transactions
-- **CustomLogicBlock testing interface** - Interactive testing and debugging
-- **Virtual users** - Multi-role workflow testing
-- **Artifact tracking** - Complete audit trail of calculations
-- **API testing framework** - Automated testing integration
+* **Dry-run mode** - Complete policy execution without blockchain transactions
+* **CustomLogicBlock testing interface** - Interactive testing and debugging
+* **Virtual users** - Multi-role workflow testing
+* **Artifact tracking** - Complete audit trail of calculations
+* **API testing framework** - Automated testing integration
 
 ### Policy Testing Hierarchy
 
@@ -51,9 +51,9 @@ Our recommended testing framework supports multiple validation levels:
 
 Our methodology implementation includes comprehensive test artifacts extracted from the official VM0033 test spreadsheet:
 
-- **[VM0033 Test Spreadsheet](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx)** - Complete Allcot test case with all calculation stages
-- **[Final PDD VC](../../_shared/artifacts/final-PDD-vc.json)** - Complete Guardian Verifiable Credential with net ERR data and test calculations
-- **[ER Calculations](../../_shared/artifacts/er-calculations.js)** - JavaScript implementation of emission reduction calculations
+* [**VM0033 Test Spreadsheet**](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) - Complete Allcot test case with all calculation stages
+* [**Final PDD VC**](../../_shared/artifacts/final-PDD-vc.json) - Complete Guardian Verifiable Credential with net ERR data and test calculations
+* [**ER Calculations**](../../_shared/artifacts/er-calculations.js) - JavaScript implementation of emission reduction calculations
 
 ### Understanding VM0033 Test Data Structure
 
@@ -77,12 +77,12 @@ const vm0033TestData = {
 
 #### Key Test Values from VM0033 Allcot Test Case:
 
-- **Baseline Emissions**: Multiple ecosystem types and emission sources
-- **Project Emissions**: Restoration activities and maintenance
-- **Leakage**: Market and activity displacement calculations
-- **Net Emission Reductions**: Final creditable emission reductions
-- **Uncertainty Assessment**: Monte Carlo simulation results
-- **SOC (Soil Organic Carbon)**: Soil carbon stock changes
+* **Baseline Emissions**: Multiple ecosystem types and emission sources
+* **Project Emissions**: Restoration activities and maintenance
+* **Leakage**: Market and activity displacement calculations
+* **Net Emission Reductions**: Final creditable emission reductions
+* **Uncertainty Assessment**: Monte Carlo simulation results
+* **SOC (Soil Organic Carbon)**: Soil carbon stock changes
 
 ## Using Guardian's CustomLogicBlock Testing Interface
 
@@ -100,26 +100,29 @@ Following Guardian's [testing documentation](../../../guardian/standard-registry
 4. **Configure Test Data** - Use schema-based input, JSON editor, or file upload
 5. **Execute Test** - Run the calculation and examine results
 
-![Custom Logic Block Testing UI](images/README/image.png)
+![Custom Logic Block Testing UI](<../../../.gitbook/assets/image (148).png>)
 
 #### Testing Input Methods
 
 Guardian supports three primary input methods for testing:
 
 **a. Schema-Based Input**
-- Select a data schema from dropdown list
-- Dynamic form generated based on schema
-- Ideal for structured and guided input interface
+
+* Select a data schema from dropdown list
+* Dynamic form generated based on schema
+* Ideal for structured and guided input interface
 
 **b. JSON Editor**
-- Direct JSON-formatted data input
-- Best for advanced users needing precise control
-- Supports complex data structures
+
+* Direct JSON-formatted data input
+* Best for advanced users needing precise control
+* Supports complex data structures
 
 **c. File Upload**
-- Upload JSON file containing test data
-- Must be well-formed JSON
-- Perfect for using our VM0033 test artifacts
+
+* Upload JSON file containing test data
+* Must be well-formed JSON
+* Perfect for using our VM0033 test artifacts
 
 ### Testing VM0033 Calculations
 
@@ -127,7 +130,7 @@ Guardian supports three primary input methods for testing:
 
 Using our [Final PDD VC](../../_shared/artifacts/final-PDD-vc.json) artifact, fill in the JSON input data
 
-![VC JSON INPUT](images/README/image-2.png)
+![VC JSON INPUT](<../../../.gitbook/assets/image-2 (7).png>)
 
 #### Step 2: Execute Test
 
@@ -164,7 +167,7 @@ function calculateBaseline(document) {
 
 Debug output appears in the **Logs** tab of the testing interface.
 
-![Logs Tab UI](images/README/image-3.png)
+![Logs Tab UI](<../../../.gitbook/assets/image-3 (4).png>)
 
 ## Testing with Guardian's Dry-Run Mode
 
@@ -184,23 +187,29 @@ Guardian's [dry-run mode](../../../guardian/standard-registry/policies/dry-run/d
 Guardian's dry-run mode provides comprehensive tracking:
 
 #### Transactions Tab
+
 View mock transactions that would be executed on Hedera:
-- Token minting transactions
-- Document publishing transactions
-- Schema registration transactions
+
+* Token minting transactions
+* Document publishing transactions
+* Schema registration transactions
 
 #### Artifacts Tab
+
 Review all generated documents:
-- PDD Verifiable Credentials
-- Monitoring Report VCs
-- Validation Report VCs
-- Verification Report VCs
+
+* PDD Verifiable Credentials
+* Monitoring Report VCs
+* Validation Report VCs
+* Verification Report VCs
 
 #### IPFS Tab
+
 Track files that would be stored in IPFS:
-- Policy configuration files
-- Schema definitions
-- Document attachments
+
+* Policy configuration files
+* Schema definitions
+* Document attachments
 
 ## API-Based Testing Framework
 
@@ -277,15 +286,15 @@ When calculations don't match expected results:
 
 Our testing framework provides comprehensive capabilities for validating environmental methodology calculations:
 
-- **CustomLogicBlock Testing Interface** - Interactive testing and debugging with multiple input methods
-- **Dry-Run Mode** - Complete policy workflow testing without blockchain transactions
-- **Test Artifact Integration** - Validation against official methodology test cases
-- **API Testing Framework** - Automated testing using Guardian's REST APIs
-- **Comprehensive Tracking** - Artifacts, transactions, and IPFS file monitoring
+* **CustomLogicBlock Testing Interface** - Interactive testing and debugging with multiple input methods
+* **Dry-Run Mode** - Complete policy workflow testing without blockchain transactions
+* **Test Artifact Integration** - Validation against official methodology test cases
+* **API Testing Framework** - Automated testing using Guardian's REST APIs
+* **Comprehensive Tracking** - Artifacts, transactions, and IPFS file monitoring
 
 ### Key Testing Workflow
 
-1. **Extract test data** from methodology spreadsheets like VM0033_Allcot_Test_Case_Artifact.xlsx
+1. **Extract test data** from methodology spreadsheets like VM0033\_Allcot\_Test\_Case\_Artifact.xlsx
 2. **Test individual calculations** using CustomLogicBlock testing interface
 3. **Validate complete workflows** using dry-run mode with virtual users
 4. **Compare results** against expected values from official test cases
@@ -298,10 +307,10 @@ This completes Part V: Calculation Logic Implementation. With comprehensive test
 
 ## References and Further Reading
 
-- [Guardian Dry-Run Mode Documentation](../../../guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations.md)
-- [CustomLogicBlock Testing Interface](../../../guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
-- [Guardian API Automation Testing](../../../api-automation-testing/how-to-perform-api-automation-testing.md)
-- [VM0033 Test Artifacts](../../_shared/artifacts/) - Complete test dataset for validation
-- [AR Tool 14 Implementation](../../_shared/artifacts/AR-Tool-14.json) - Production tool configuration
+* [Guardian Dry-Run Mode Documentation](../../../guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations.md)
+* [CustomLogicBlock Testing Interface](../../../guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
+* [Guardian API Automation Testing](../../../api-automation-testing/how-to-perform-api-automation-testing.md)
+* [VM0033 Test Artifacts](../../_shared/artifacts/) - Complete test dataset for validation
+* [AR Tool 14 Implementation](../../_shared/artifacts/AR-Tool-14.json) - Production tool configuration
 
----
+***

@@ -1,3 +1,4 @@
+import { randomInt } from "../../../../support/random";
 import { HomePage } from "../../pages/homePage";
 const homepage = new HomePage();
 
@@ -6,7 +7,7 @@ const configpage = new ConfigPage();
 
 context("Create User Accounts", { tags: ['ui'] }, () => {
 
-    const SRName = "TestSRUI" + Math.floor(Math.random() * 9999);
+    const SRName = "TestSRUI" + randomInt(9999);
     const SRUsername = Cypress.env('SRUser');
     const userName = "User2";
 

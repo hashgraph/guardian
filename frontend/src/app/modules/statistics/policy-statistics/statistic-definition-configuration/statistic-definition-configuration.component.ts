@@ -641,7 +641,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         const dialogRef = this.dialogService.open(StatisticPreviewDialog, {
             showHeader: false,
             header: 'Preview',
-            width: '800px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 item

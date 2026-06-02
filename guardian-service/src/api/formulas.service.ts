@@ -234,6 +234,13 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
+                if (item.status === EntityStatus.PUBLISHED && item.contentFileId) {
+                    const buffer = await DatabaseServer.loadFile(item.contentFileId);
+                    const arrayBuffer = Uint8Array.from(buffer).buffer;
+
+                    return new BinaryMessageResponse(arrayBuffer);
+                }
+
                 const zip = await FormulaImportExport.generate(item);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
@@ -241,6 +248,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     compressionOptions: {
                         level: 3,
                     },
+                    platform: 'UNIX',
                 });
 
                 return new BinaryMessageResponse(file);
@@ -388,25 +396,129 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 const { policyId } = options;
 
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
+                if (!policy) {
                     return new MessageResponse(null);
                 }
 
-                const formulas = await DatabaseServer.getFormulas({ policyTopicId: policy.topicId });
+                const formulaFilters: any = {
+                    policyId: policy.id
+                }
+                if ([
+                    PolicyStatus.PUBLISH,
+                    PolicyStatus.DEMO,
+                    PolicyStatus.VIEW
+                ].includes(policy.status)) {
+                    formulaFilters.status = { $in: [EntityStatus.DRY_RUN, EntityStatus.PUBLISHED] };
+                } else {
+                    formulaFilters.status = EntityStatus.DRY_RUN;
+                }
+
+                const formulas = await DatabaseServer.getFormulas(formulaFilters);
+                if (policy.status === PolicyStatus.DRY_RUN) {
+                    const policyFormula = FormulaImportExport.generateByPolicy(policy);
+                    if (policyFormula) {
+                        formulas.push(policyFormula);
+                    }
+                }
 
                 if (!formulas.length) {
                     return new MessageResponse(null);
                 }
 
-                const { document, relationships } = await getFormulasData(options, owner);
-                const { schemas, toolSchemas } = await PolicyImportExport.fastLoadSchemas(policy);
-                const all = [].concat(schemas, toolSchemas).filter((s) => s.status === SchemaStatus.PUBLISHED);
-                return new MessageResponse({
-                    formulas,
-                    document,
-                    relationships,
-                    schemas: all
-                });
+                if ([
+                    PolicyStatus.PUBLISH,
+                    PolicyStatus.DEMO,
+                    PolicyStatus.VIEW,
+                    PolicyStatus.DRY_RUN
+                ].includes(policy.status)) {
+                    const { document, relationships } = await getFormulasData(policy, options, owner);
+                    const { schemas, toolSchemas } = await PolicyImportExport.fastLoadSchemas(policy);
+                    let all = [].concat(schemas, toolSchemas);
+                    if (policy.status !== PolicyStatus.DRY_RUN) {
+                        all = all.filter((s) => s.status === SchemaStatus.PUBLISHED);
+                    }
+                    return new MessageResponse({
+                        formulas,
+                        document,
+                        relationships,
+                        schemas: all
+                    });
+                }
+                return new MessageResponse(null);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Draft Formula
+     *
+     * @param {any} msg - Formula id
+     *
+     * @returns {any} - Formula
+     */
+    ApiResponse(MessageAPI.DRAFT_FORMULA,
+        async (msg: { formulaId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { formulaId, owner } = msg;
+
+                const item = await DatabaseServer.getFormulaById(formulaId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status === EntityStatus.DRAFT) {
+                    return new MessageError(`Item is draft.`);
+                }
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError(`Item is published.`);
+                }
+
+                item.status = EntityStatus.DRAFT;
+
+                const result = await DatabaseServer.updateFormula(item);
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Dry-Run Formula
+     *
+     * @param {any} msg - Formula id
+     *
+     * @returns {any} - Formula
+     */
+    ApiResponse(MessageAPI.DRY_RUN_FORMULA,
+        async (msg: { formulaId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { formulaId, owner } = msg;
+
+                const item = await DatabaseServer.getFormulaById(formulaId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status === EntityStatus.DRY_RUN) {
+                    return new MessageError(`Item is draft.`);
+                }
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError(`Item is published.`);
+                }
+
+                item.status = EntityStatus.DRY_RUN;
+
+                const result = await DatabaseServer.updateFormula(item);
+                return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
@@ -444,7 +556,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const root = await (new Users()).getHederaAccount(owner.creator, userId);
-                const result = await publishFormula(item, owner, root, NewNotifier.empty());
+                const result = await publishFormula(policy, item, owner, root, NewNotifier.empty());
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);

@@ -16,6 +16,7 @@ export interface FieldData {
     propertyName: string;
     isArray: boolean;
     isRef: boolean;
+    path: string;
 }
 
 export class SchemaNode extends TreeNode<SchemaData> {

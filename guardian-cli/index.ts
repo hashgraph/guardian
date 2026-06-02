@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 
-import { spawnSync } from 'child_process';
-import { Command } from 'commander';
+import {spawnSync} from 'child_process';
+import {Command} from 'commander';
 
-import { PolicyPublisher } from './helpers/policy-publisher.helper.js';
-import {
-  ContractPublisher,
-  Network,
-} from './helpers/contract-publisher.helper.js';
+import {PolicyPublisher} from './helpers/policy-publisher.helper.js';
+import {ContractPublisher, Network,} from './helpers/contract-publisher.helper.js';
+import {ContractHelper} from './helpers/contract.helper.js';
 
+import {TopicHelper} from './helpers/topic.helper.js';
 
 const GUARDIAN_REPOSITORY = 'https://github.com/hashgraph/guardian';
 
@@ -815,7 +814,233 @@ function main() {
                 process.exit(1);
             }
         });
-    program.parse();
+
+    program
+        .command('propose-owner')
+        .description('Propose new owner for contract')
+        .argument('<contract-id>', 'Contract identifier')
+        .argument('<new-owner-address>', 'New owner hedera account id or evm address')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-g --gas <gas>', 'Gas')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (contractId, newOwnerAddress, account, key, options) => {
+            try {
+                const receipt = await ContractHelper.proposeOwner(
+                    contractId,
+                    newOwnerAddress,
+                    options.gas && parseInt(options.gas, 10),
+                    { operatorId: account, operatorKey: key },
+                    options.network
+                );
+                console.log(`Owner ${newOwnerAddress} proposed for ${contractId}. Status: ${receipt.status.toString()}`);
+            } catch (error) {
+                console.error(`Failed to propose owner ${newOwnerAddress} for ${contractId}:`, error.message || error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('claim-owner')
+        .description('Claim ownership for contract')
+        .argument('<contract-id>', 'Contract identifier')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-g --gas <gas>', 'Gas')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (contractId, account, key, options) => {
+            try {
+                const receipt = await ContractHelper.claimOwner(
+                    contractId,
+                    options.gas && parseInt(options.gas, 10),
+                    { operatorId: account, operatorKey: key },
+                    options.network
+                );
+                console.log(`Ownership claimed by ${account} for ${contractId}. Status: ${receipt.status.toString()}`);
+            } catch (error) {
+                console.error(`Failed to claim ownership for ${contractId} by ${account}:`, error.message || error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('remove-owner')
+        .description('Remove owner from contract')
+        .argument('<contract-id>', 'Contract identifier')
+        .argument('<owner-address>', 'Owner hedera account id or evm address')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-g --gas <gas>', 'Gas')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (contractId, ownerAddress, account, key, options) => {
+            try {
+                const receipt = await ContractHelper.removeOwner(
+                    contractId,
+                    ownerAddress,
+                    options.gas && parseInt(options.gas, 10),
+                    { operatorId: account, operatorKey: key },
+                    options.network
+                );
+                console.log(`Owner ${ownerAddress} removed from ${contractId}. Status: ${receipt.status.toString()}`);
+            } catch (error) {
+                console.error(`Failed to remove owner ${ownerAddress} from ${contractId}:`, error.message || error);
+                process.exit(1);
+            }
+        });
+
+    // -------------------- TOPIC COMMANDS --------------------
+
+    program
+        .command('create-topic')
+        .description('Create new Hedera topic')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-m --memo <memo>', 'Topic memo')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (account, key, options) => {
+            try {
+                const topicId = await TopicHelper.createTopic(
+                    account,
+                    key,
+                    options.memo,
+                    options.network
+                );
+
+                console.log(`Topic created: ${topicId}`);
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('topic-info')
+        .description('Get Hedera topic info')
+        .argument('<topic-id>', 'Topic identifier')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (topicId, account, key, options) => {
+            try {
+                const info = await TopicHelper.getTopicInfo(
+                    account,
+                    key,
+                    topicId,
+                    options.network
+                );
+
+                console.log(JSON.stringify(info, null, 2));
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('topic-messages')
+        .description('Read messages from Hedera topic')
+        .argument('<topic-id>', 'Topic identifier')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .option('--start-time <iso>', 'Start time (ISO, default: from epoch)')
+        .option('--limit <number>', 'Max messages to fetch (default: 50)', '50')
+        .action(async (topicId, account, key, options) => {
+            try {
+                const limit = options.limit
+                    ? parseInt(options.limit, 10)
+                    : 50;
+
+                const messages = await TopicHelper.getMessages(
+                    account,
+                    key,
+                    topicId,
+                    {
+                        startTime: options.startTime,
+                        limit,
+                    },
+                    options.network
+                );
+
+                console.log(JSON.stringify(messages, null, 2));
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('topic-last-message')
+        .description('Read last message from Hedera topic (naive, via full scan)')
+        .argument('<topic-id>', 'Topic identifier')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (topicId, account, key, options) => {
+            try {
+                const messages = await TopicHelper.getMessages(
+                    account,
+                    key,
+                    topicId,
+                    {
+                        limit: 50,
+                    },
+                    options.network
+                );
+
+                if (!messages.length) {
+                    console.log('No messages in topic');
+                    return;
+                }
+
+                const last = messages[messages.length - 1];
+
+                console.log(JSON.stringify(last, null, 2));
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('publish-topic-message')
+        .description('Publish message to Hedera topic')
+        .argument('<topic-id>', 'Topic identifier')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .argument('<message>', 'Message to publish (string or JSON)')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .option('-j --json', 'Treat <message> as JSON and stringify it')
+        .action(async (topicId, account, key, message, options) => {
+            try {
+                let payload = message;
+
+                if (options.json) {
+                    try {
+                        const parsed = JSON.parse(message);
+                        payload = JSON.stringify(parsed);
+                    } catch (e) {
+                        console.error('Invalid JSON in <message> argument');
+                        process.exit(1);
+                    }
+                }
+
+                const result = await TopicHelper.publishMessage(
+                    account,
+                    key,
+                    topicId,
+                    payload,
+                    options.network
+                );
+
+                console.log(JSON.stringify(result, null, 2));
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program.parse(process.argv);
 }
 
 main();

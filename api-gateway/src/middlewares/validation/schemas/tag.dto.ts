@@ -1,5 +1,6 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { Examples } from '../examples.js';
+import { IsBoolean, IsOptional } from 'class-validator';
 
 export class TagDTO {
     @ApiProperty({
@@ -111,6 +112,24 @@ export class TagDTO {
         additionalProperties: true
     })
     document?: any;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        description: 'Tag schema database ID (for tags created with a tag schema)',
+        example: Examples.DB_ID
+    })
+    tagSchemaId?: string;
+
+    @ApiProperty({
+        type: 'boolean',
+        required: false,
+        example: false,
+        description: 'Inherit tags',
+    })
+    @IsBoolean()
+    @IsOptional()
+    inheritTags?: boolean;
 }
 
 @ApiExtraModels(TagDTO)
@@ -162,7 +181,8 @@ export class TagFilterDTO {
             'Token',
             'Module',
             'Contract',
-            'PolicyDocument'
+            'PolicyDocument',
+            'PolicyBlock'
         ],
         example: 'PolicyDocument'
     })
@@ -180,4 +200,11 @@ export class TagFilterDTO {
         example: Examples.MESSAGE_ID
     })
     targets?: string[];
+
+    @ApiProperty({
+        type: 'string',
+        isArray: true,
+        example: [Examples.MESSAGE_ID]
+    })
+    linkedItems?: string[];
 }

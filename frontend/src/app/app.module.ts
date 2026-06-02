@@ -9,6 +9,7 @@ import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SchemaHelper } from '@guardian/interfaces';
 import { CheckboxModule } from 'primeng/checkbox';
+import { ClipboardModule } from '@angular/cdk/clipboard';
 //Services
 import { AuthInterceptor, AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
@@ -16,6 +17,7 @@ import { TokenService } from './services/token.service';
 import { SchemaService } from './services/schema.service';
 import { HandleErrorsService } from './services/handle-errors.service';
 import { AuditService } from './services/audit.service';
+import { CredentialsService } from './services/credentials.service';
 import { PolicyEngineService } from './services/policy-engine.service';
 import { PolicyStatisticsService } from './services/policy-statistics.service';
 import { DemoService } from './services/demo.service';
@@ -61,6 +63,10 @@ import { NotificationsComponent } from './views/notifications/notifications.comp
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
 import { UsersManagementDetailComponent } from './views/user-management-detail/user-management-detail.component';
+import { OtpDialogComponent } from './views/login/otp-dialog/otp-dialog.component';
+import { OtpConfigDialogComponent } from './views/login/otp-config-dialog/otp-config-dialog.component';
+import { OtpDisableDialogComponent } from './views/login/otp-disable-dialog/otp-disable-dialog.component';
+import { OtpCodesDialogComponent } from './views/login/otp-codes-dialog/otp-codes-dialog.component';
 //Components
 import { InfoComponent } from './components/info/info/info.component';
 import { BrandingComponent } from './views/branding/branding.component';
@@ -88,7 +94,6 @@ import { SuggestionsService } from './services/suggestions.service';
 import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
 import { QRCodeModule } from 'angularx-qrcode';
 import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
-import { AboutViewComponent } from './views/admin/about-view/about-view.component';
 import { CompareStorage } from './services/compare-storage.service';
 import { ToolsService } from './services/tools.service';
 import { NewHeaderComponent } from './views/new-header/new-header.component';
@@ -138,6 +143,8 @@ import { GeoJsonService } from './services/geo-json.service';
 import { PolicyRepositoryService } from './services/policy-repository.service';
 import { RelayerAccountsService } from './services/relayer-accounts.service';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
+import { TreeTableModule } from 'primeng/treetable';
+import { CredentialsPanelComponent } from './components/credentials/credentials-panel/credentials-panel.component';
 
 @NgModule({
     declarations: [
@@ -154,7 +161,6 @@ import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accou
         TrustChainComponent,
         LogsViewComponent,
         SettingsViewComponent,
-        AboutViewComponent,
         AdminHeaderComponent,
         DetailsLogDialog,
         ServiceStatusComponent,
@@ -186,7 +192,12 @@ import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accou
         RelayerAccountsComponent,
         UsersManagementDetailComponent,
         WorkerTasksComponent,
-        UserKeysDialog
+        UserKeysDialog,
+        CredentialsPanelComponent,
+        OtpDialogComponent,
+        OtpConfigDialogComponent,
+        OtpDisableDialogComponent,
+        OtpCodesDialogComponent
     ],
     exports: [],
     bootstrap: [AppComponent],
@@ -206,7 +217,8 @@ import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accou
         ToastrModule.forRoot(),
         QRCodeModule,
         ButtonModule,
-        InputTextModule,
+        InputTextModule,        
+        ClipboardModule,
         SelectButtonModule,
         DropdownModule,
         ButtonModule,
@@ -229,7 +241,9 @@ import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accou
         ProjectComparisonModule,
         DndModule,
         CheckboxModule,
-        AngularSvgIconModule.forRoot()],
+        AngularSvgIconModule.forRoot(),
+        TreeTableModule
+    ],
     providers: [
         WebSocketService,
         AuthService,
@@ -238,6 +252,7 @@ import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accou
         SchemaService,
         AnalyticsService,
         AuditService,
+        CredentialsService,
         PolicyEngineService,
         PolicyStatisticsService,
         SchemaRulesService,

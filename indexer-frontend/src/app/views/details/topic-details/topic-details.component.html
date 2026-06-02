@@ -6,7 +6,17 @@
                 <p-tag [value]="topicNames[target.options.messageType]" />
             </div>
             }
-            <h1>{{ 'details.topic.header' | transloco }} {{id}}</h1>
+            <div class="header-content">
+                <h1>{{ 'details.topic.header' | transloco }} {{id}}</h1>
+                <div *ngIf="tags && tags.length > 0" class="tags-container">
+                    <div class="tag-item" *ngFor="let tag of tags" (click)="onOpenTag(tag)">
+                        <span class="pi pi-tag primary-color"></span>
+                        <div class="name">
+                            {{ tag?.name || tag?.options?.name }}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         @if (loading) {
         <div class="loading">

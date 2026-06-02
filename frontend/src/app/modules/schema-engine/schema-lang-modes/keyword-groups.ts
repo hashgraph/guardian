@@ -23,4 +23,5 @@ export const keyKeywords = [
     'example',
     'default',
     'suggest',
+    'isUpdatable'
 ];

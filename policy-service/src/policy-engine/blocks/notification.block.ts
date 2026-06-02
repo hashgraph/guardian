@@ -28,6 +28,7 @@ import {
     NotificationType,
     UserOption,
 } from '@guardian/interfaces';
+import { PolicyUser } from '@policy-engine/policy-user.js';
 
 /**
  * Notification block
@@ -35,6 +36,7 @@ import {
 @BasicBlock({
     blockType: 'notificationBlock',
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Notification',
         title: `Add 'Notification' Block`,
@@ -52,6 +54,7 @@ import {
                 title: 'Title',
                 type: PropertyType.Input,
                 required: true,
+                editable: true
             },
             {
                 name: 'message',
@@ -59,12 +62,14 @@ import {
                 title: 'Message',
                 type: PropertyType.Input,
                 required: true,
+                editable: true
             },
             {
                 name: 'type',
                 label: 'Type',
                 title: 'Type',
                 type: PropertyType.Select,
+                editable: true,
                 items: [
                     {
                         label: 'Info',
@@ -90,12 +95,14 @@ import {
                 label: 'Link notification to policy',
                 title: 'Link notification to policy',
                 type: PropertyType.Checkbox,
+                editable: true
             },
             {
                 name: 'user',
                 label: 'User',
                 title: 'User',
                 type: PropertyType.Select,
+                editable: true,
                 items: [
                     {
                         label: 'All',
@@ -134,15 +141,17 @@ import {
                 title: 'Role',
                 type: PropertyType.Select,
                 items: SelectItemType.Roles,
-                visible: 'user === "role"',
+                visible: 'user === "ROLE"',
                 required: true,
+                editable: true
             },
             {
                 name: 'grouped',
                 label: 'Only for current user group',
                 title: 'Only for current user group',
                 type: PropertyType.Checkbox,
-                visible: 'user === "role"',
+                visible: 'user === "ROLE"',
+                editable: true
             },
         ],
     },
@@ -153,11 +162,14 @@ export class NotificationBlock {
      * @param ref Block ref
      * @returns Function
      */
-    private getNotificationFunction(
-        ref: any
-    ): (title: string, message: string, userId: string) => void {
+    private async getNotificationFunction(
+        ref: any,
+        user: PolicyUser
+    ): Promise<(title: string, message: string, userId: string) => void> {
         let fn;
-        switch (ref.options.type) {
+        const options = await ref.getOptions(user);
+
+        switch (options.type) {
             case NotificationType.INFO:
                 fn = NotificationHelper.info;
                 break;
@@ -175,7 +187,7 @@ export class NotificationBlock {
         }
 
         let notify = fn;
-        if (ref.options.link) {
+        if (options.link) {
             notify = async (title: string, message: string, userId: string) =>
                 await fn(
                     title,
@@ -199,9 +211,11 @@ export class NotificationBlock {
         const ref =
             PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
-        const notify = this.getNotificationFunction(ref);
+        const options = await ref.getOptions(event.user);
 
-        switch (ref.options.user) {
+        const notify = await this.getNotificationFunction(ref, event.user);
+
+        switch (options.user) {
             case UserOption.ALL: {
                 if (!ref.dryRun) {
                     const policyUsers =
@@ -213,8 +227,8 @@ export class NotificationBlock {
                     );
                     for (const user of users) {
                         await notify(
-                            ref.options.title,
-                            ref.options.message,
+                            options.title,
+                            options.message,
                             user.id
                         );
                     }
@@ -224,8 +238,8 @@ export class NotificationBlock {
                 if (event.user.did !== ref.policyOwner && !ref.dryRun) {
                     const user = await PolicyUtils.getUser(ref, event.user.did, event?.user?.userId);
                     await notify(
-                        ref.options.title,
-                        ref.options.message,
+                        options.title,
+                        options.message,
                         user.id
                     );
                     break;
@@ -237,7 +251,7 @@ export class NotificationBlock {
             case UserOption.ALL:
             case UserOption.POLICY_OWNER: {
                 const owner = await new Users().getUserById(ref.policyOwner, event?.user?.userId);
-                await notify(ref.options.title, ref.options.message, owner.id);
+                await notify(options.title, options.message, owner.id);
                 break;
             }
             case UserOption.DOCUMENT_OWNER: {
@@ -250,8 +264,8 @@ export class NotificationBlock {
                 );
                 if (user.did === ref.policyOwner || !ref.dryRun) {
                     await notify(
-                        ref.options.title,
-                        ref.options.message,
+                        options.title,
+                        options.message,
                         user.id
                     );
                 }
@@ -267,8 +281,8 @@ export class NotificationBlock {
                 );
                 if (user.did === ref.policyOwner || !ref.dryRun) {
                     await notify(
-                        ref.options.title,
-                        ref.options.message,
+                        options.title,
+                        options.message,
                         user.id
                     );
                 }
@@ -283,8 +297,8 @@ export class NotificationBlock {
                     const owner = await PolicyUtils.getUser(ref, role.owner, event?.user?.userId);
                     if (owner.did === ref.policyOwner || !ref.dryRun) {
                         await notify(
-                            ref.options.title,
-                            ref.options.message,
+                            options.title,
+                            options.message,
                             owner.id
                         );
                     }
@@ -292,15 +306,15 @@ export class NotificationBlock {
                 break;
             }
             case UserOption.ROLE: {
-                let policyUsers = ref.options.grouped
+                let policyUsers = options.grouped
                     ? await ref.databaseServer.getAllUsersByRole(
                           ref.policyId,
                           event.user.group,
-                          ref.options.role
+                          options.role
                       )
                     : await ref.databaseServer.getUsersByRole(
                           ref.policyId,
-                          ref.options.role
+                          options.role
                       );
                 policyUsers = ref.dryRun
                     ? policyUsers.filter((pu) => pu.did === ref.policyOwner)
@@ -310,8 +324,8 @@ export class NotificationBlock {
                 );
                 for (const user of users) {
                     await notify(
-                        ref.options.title,
-                        ref.options.message,
+                        options.title,
+                        options.message,
                         user.id
                     );
                 }
@@ -320,17 +334,20 @@ export class NotificationBlock {
             default:
         }
 
-        ref.triggerEvents(
+        await ref.triggerEvents(
             PolicyOutputEventType.RunEvent,
             event.user,
-            event.data
+            event.data,
+            event.actionStatus
         );
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
                 documents: ExternalDocuments(event.data?.data),
             })
         );
         ref.backup();
+
+        return event.data;
     }
 }

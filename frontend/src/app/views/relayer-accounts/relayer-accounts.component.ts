@@ -167,7 +167,7 @@ export class RelayerAccountsComponent implements OnInit {
     public onOpen(item: any) {
         const dialogRef = this.dialogService.open(RelayerAccountDetailsDialog, {
             showHeader: false,
-            width: '1100px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 relayerAccount: item

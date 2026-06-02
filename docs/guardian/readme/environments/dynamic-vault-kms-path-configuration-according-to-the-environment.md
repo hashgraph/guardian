@@ -2,7 +2,7 @@
 
 Guardian platform manage to segregate secret data basing on the variables defined in the ecosystem environment. As in the database case the two variables leveraged to discriminate secret storage are the GUARDIAN\_ENV and HEDERA\_NET variables.
 
-Each KMS use slight different approach to naming convention of holded secret. The KMS has to be configured with this two dimension(GUARDIAN\_ENV and HEDERA\_NET) and insert them in the secret name, in the Roles name and in the Policies that define the access rules to that secret.
+Each KMS use slight different approach to naming convention of held secret. The KMS has to be configured with this two dimension(GUARDIAN\_ENV and HEDERA\_NET) and insert them in the secret name, in the Roles name and in the Policies that define the access rules to that secret.
 
 Guardian has adopted a specialized adapter to interact with secret managers. To implement the data separation each specialized adapter instance adds a two dimensional prefix GUARDIAN\_ENV and HEDERA\_NET to the PATH or NAME that identifies the secret, so that the adapter is aware of the MultiEnvironment.
 
@@ -82,7 +82,7 @@ if not present the variables are inserted only in the 4 services: auth-service, 
 
 * **Step 8** start Guardian as usual
 
-For Hashicorpp Vault the secret multi-environment naming convention defined in the Vault by the execution of the script is going to be:
+For Hashicorp Vault the secret multi-environment naming convention defined in the Vault by the execution of the script is going to be:
 
 ```
 <GUARDIAN_ENV> / <HEDERA_NET> / <PATH_TO_SECRET>

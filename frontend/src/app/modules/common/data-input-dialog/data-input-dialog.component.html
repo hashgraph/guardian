@@ -1,42 +1,38 @@
-<p-dialog [(visible)]="isVisible" [header]="title" [modal]="true" [closable]="false" (onHide)="onNoClick()"
-          [draggable]="false" class="p-dialog dialog">
-    <ng-template pTemplate="header">
-        <span class="modal-header p-dialog-header">{{ title }}</span>
-    </ng-template>
-    <div class="dialog-content">
-        <form [formGroup]="dataForm">
-            <div *ngFor="let field of fieldsConfig" class="form-field">
-                <div class="custom-form-field"
-                     [ngClass]="{'invalid': dataForm.get(field.name)?.invalid && dataForm.get(field.name)?.touched}">
-                    <input pInputText type="text"
-                           [placeholder]="field.label"
-                           [formControlName]="field.name"
-                           class="custom-input"/>
-                </div>
-            </div>
-            <div class="dialog-actions">
-                <button
-                    pButton
-                    class="button secondary"
-                    icon="pi pi-check"
-                    label="Ok"
-                    type="button"
-                    [disabled]="!dataForm.valid"
-                    (click)="dialogRef.close(dataForm.value)">
-                </button>
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{ title }}</div>
+    </div>
+    <div class="header-icon" (click)="onNoClick()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
 
-                <button
-                    pButton
-                    class="button"
-                    icon="pi pi-times"
-                    label="Cancel"
-                    type="button"
-                    (click)="onNoClick()">
-                </button>
-            </div>
-        </form>
+<div class="dialog-body">
+     <form [formGroup]="dataForm">
+        <div *ngFor="let field of fieldsConfig" class="guardian-input-container">
+            <label class="form-label">{{field.label}}</label>
+            <input 
+                pInputText 
+                [formControlName]="field.name"
+                type="text"
+                [placeholder]="field.placeholder"
+                [ngClass]="{'invalid': dataForm.get(field.name)?.invalid && dataForm.get(field.name)?.touched}"/>
+        </div>
+    </form>
+</div>
+
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button
+                (click)="onNoClick()"
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button">
+            <button
+                [disabled]="!dataForm.valid"
+                (click)="dialogRef.close(dataForm.value)"
+                class="guardian-button guardian-button-primary">{{button}}</button>
+        </div>
     </div>
-    <div *ngIf="loading" class="loading">
-        <p-progressSpinner></p-progressSpinner>
-    </div>
-</p-dialog>
+</div>

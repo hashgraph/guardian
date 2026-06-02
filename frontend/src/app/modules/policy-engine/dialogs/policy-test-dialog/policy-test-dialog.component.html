@@ -1,13 +1,69 @@
-<div class="dialog-header">
+<div #dialogHeader class="dialog-header">
     <div class="header-container">
         <div class="header-text">Policy Tests</div>
-        <div *ngIf="policy" class="header-item">{{policy.name}}</div>
+        <div class="header-breadcrumb">
+            <span class="header-item">Manage Policies</span>
+            <span *ngIf="policy" class="breadcrumb-separator"> / </span>
+            <span *ngIf="policy" class="header-item">{{policy.name}}</span>
+            <span *ngIf="policy" class="breadcrumb-separator"> / </span>
+            <span *ngIf="policy" class="header-item">Tests</span>
+        </div>
+    </div>
+    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'" svgClass="icon-color-close"></i>
     </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
     </div>
 </div>
 <div class="dialog-body">
+    <div class="dialog-actions">
+        <div class="dialog-button">
+            <button
+                class="guardian-button guardian-button-secondary"
+                (click)="addTest()"
+                [disabled]="!canAddTest()">
+                Add Test
+            </button>
+        </div>
+        <ng-container *ngIf="isBulkRunning(); else rerunTemplate">
+            <div class="dialog-button">
+                <button
+                    class="guardian-button guardian-button-delete"
+                    (click)="stopAll()">
+                    Stop All
+                </button>
+            </div>
+        </ng-container>
+        <ng-template #rerunTemplate>
+            <div class="dialog-button">
+                <div class="rerun-menu" [attr.open]="rerunMenuOpen">
+                    <button
+                        class="guardian-button guardian-button-secondary"
+                        (click)="toggleRerunMenu($event)"
+                        [disabled]="!canRerunAll()">
+                        Re-Run
+                    </button>
+                    <div class="rerun-menu-options">
+                        <button
+                            type="button"
+                            class="rerun-menu-option"
+                            (click)="rerunAll()"
+                            [disabled]="!canRerunAll()">
+                            Re-Run All
+                        </button>
+                        <button
+                            type="button"
+                            class="rerun-menu-option"
+                            (click)="rerunFailed()"
+                            [disabled]="!canRerunFailed()">
+                            Re-Run Failed
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </ng-template>
+    </div>
     <div class="context">
         <div *ngIf="loading" class="guardian-loading">
             <div class="guardian-loading-image"></div>
@@ -17,6 +73,7 @@
             <div class="dialog-grid-header">
                 <div class="col-44"></div>
                 <div class="col-200 col-text">Name</div>
+                <div class="col-220 col-text">Description</div>
                 <div class="col-180 col-text">Start Date</div>
                 <div class="col-auto col-text">Duration</div>
                 <div class="col-120 col-text">Status</div>
@@ -36,11 +93,19 @@
                             </svg-icon>
                         </div>
                         <div class="col-200 col-text">
-                            <span 
+                            <span
                                 class="col-text"
                                 [pTooltip]="getText(item.name)"
                                 [tooltipOptions]="{showDelay: 300}"
                                 tooltipPosition="top">{{getText(item.name)}}</span>
+                        </div>
+                        <div class="col-220 col-text">
+                            <span
+                                #descriptionText
+                                class="col-text"
+                                [pTooltip]="getOverflowTooltip(descriptionText, item.description)"
+                                [tooltipOptions]="{showDelay: 300, tooltipStyleClass: 'description-tooltip'}"
+                                tooltipPosition="top">{{getText(item.description)}}</span>
                         </div>
                         <div class="col-180 col-text">
                             <span class="col-text">{{getDate(item.date)}}</span>
@@ -116,17 +181,25 @@
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
-        <div class="cancel-button">
+        <div class="cancel-button dialog-button">
             <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
         </div>
     </div>
 </div>
 
-<ng-template #detailsTemplate 
-    let-runStep="runStep" 
+<ng-template #detailsTemplate
+    let-description="description"
+    let-runStep="runStep"
     let-compareStep="compareStep"
 >
     <div class="results-details">
+        <div *ngIf="description" class="results-description">
+            <div class="results-description-title">Description</div>
+            <div class="results-description-text">
+                {{description}}
+            </div>
+        </div>
+
         <div class="results-step">
             <div class="results-step-header">
                 <div class="results-step-status" [ngSwitch]="runStep.status">
@@ -215,12 +288,20 @@
             </div>
         </div>
         <div class="compare-col">
-            <div class="compare-header">
-                Documents
+            <div class="compare-header-docs">
+                <input type="checkbox"
+                       [checked]="areAllDocsSelected(id, results)"
+                       [attr.disabled]="!results?.length ? true : null"
+                       (change)="toggleAllDocs(id, results)">
+                <div class="compare-header-type">Type</div>
+                <div class="compare-header-schema">Documents</div>
             </div>
 
             <div class="compare-body">
                 <div *ngFor="let item of results; let i=index" class="compare-item">
+                    <input type="checkbox"
+                           [checked]="isDocSelected(id, i)"
+                           (change)="toggleDoc(id, i, results)">
                     <div class="document-type">{{item.type}}</div>
                     <div class="document-schema">
                         <a (click)="openDocument(item)">{{item.schema}}</a>
@@ -230,9 +311,11 @@
             </div>
         </div>
         <div class="more-details">
-            <div 
-                class="guardian-button guardian-button-secondary more-btn" 
-                (click)="onDetails(id)">Show more details</div>
+            <div
+                class="guardian-button guardian-button-secondary more-btn"
+                [attr.disabled]="!hasAnyDocSelected(id, results) ? 'true' : null"
+                [pTooltip]="getDetailsTooltip(id, results)"
+                (click)="onDetails(id, results)">Show more details</div>
         </div>
     </div>
 </ng-template>

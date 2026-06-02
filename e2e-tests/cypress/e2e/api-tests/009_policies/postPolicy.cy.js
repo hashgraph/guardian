@@ -1,3 +1,4 @@
+
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -8,89 +9,69 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const nameTag = "EmptyPolicyTag";
     const policyName = "EmptyPolicyName";
 
-    it('Creates a new policy', () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization
-                },
-                body: {
-                    name: policyName,
-                    policyTag: nameTag,
-                },
-                timeout: 180000
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-            })
-        })
-    })
+    const policiesUrl = `${API.ApiServer}${API.Policies}`;
 
-    it("Creates a new policy without auth token - Negative", () => {
+    const createPolicyWithAuth = (authorization, body, opts = {}) =>
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.Policies,
+            url: policiesUrl,
+            headers: { authorization },
+            body,
+            timeout: opts.timeout ?? 180000,
+            failOnStatusCode: opts.failOnStatusCode ?? true,
+        });
+
+    const createPolicyWithoutAuth = (body, headers = {}) =>
+        cy.request({
+            method: METHOD.POST,
+            url: policiesUrl,
+            headers,
+            body,
             failOnStatusCode: false,
-            body: {
-                name: policyName,
-                policyTag: nameTag,
-            },
-        }).then((response) => {
+        });
+
+    it('Creates a new policy', () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            createPolicyWithAuth(authorization, { name: policyName, policyTag: nameTag }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+            });
+        });
+    });
+
+    it("Creates a new policy without auth token - Negative", () => {
+        createPolicyWithoutAuth({ name: policyName, policyTag: nameTag }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Creates a new policy with invalid auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.Policies,
-            headers: {
-                authorization: "Bearer wqe",
-            },
-            failOnStatusCode: false,
-            body: {
-                name: policyName,
-                policyTag: nameTag,
-            },
-        }).then((response) => {
+        createPolicyWithoutAuth(
+            { name: policyName, policyTag: nameTag },
+            { authorization: "Bearer wqe" }
+        ).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Creates a new policy with empty auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.Policies,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-            body: {
-                name: policyName,
-                policyTag: nameTag,
-            },
-        }).then((response) => {
+        createPolicyWithoutAuth(
+            { name: policyName, policyTag: nameTag },
+            { authorization: "" }
+        ).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Creates a new policy by user - Negative", () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
-                failOnStatusCode: false,
-                body: {
-                    name: policyName,
-                    policyTag: nameTag,
-                },
-            }).then((response) => {
+            createPolicyWithAuth(
+                authorization,
+                { name: policyName, policyTag: nameTag },
+                { failOnStatusCode: false }
+            ).then((response) => {
                 expect(response.status).eql(STATUS_CODE.FORBIDDEN);
             });
         });
     });
-})
+
+});

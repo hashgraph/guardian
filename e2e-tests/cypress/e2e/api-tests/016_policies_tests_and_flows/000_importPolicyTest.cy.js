@@ -6,155 +6,94 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all'] }, () =>
     const SRUsername = Cypress.env('SRUser');
     let policyId;
 
+    const importPolicyTest = (policyId, fileName, headers = {}) =>
+        cy.fixture(fileName, 'binary')
+            .then((file) => Cypress.Blob.binaryStringToBlob(file))
+            .then((blob) => {
+                const formdata = new FormData();
+                formdata.append("tests", blob, fileName);
+
+                const reqHeaders = headers.authorization
+                    ? { authorization: headers.authorization }
+                    : {};
+
+                return cy.request({
+                    method: METHOD.POST,
+                    url: `${API.ApiServer}${API.Policies}${policyId}/${API.Test}`,
+                    body: formdata,
+                    headers: reqHeaders,
+                    failOnStatusCode: false,
+                    timeout: 180000,
+                });
+            });
+
     before('Get policy id', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("iRecDRF.policy", "binary")
-                .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-                .then((file) => {
+            // 1. Import File
+            cy.importPolicyFile(authorization, "iRecDRF.policy").then(() => {
+                // 2. Get List and find ID
+                cy.request({
+                    method: METHOD.GET,
+                    url: API.ApiServer + API.Policies,
+                    headers: { authorization },
+                    timeout: 180000
+                }).then((response) => {
+                    policyId = response.body.find(p => p.name === "iRecDRF")?.id;
+
+                    // 3. Set to Dry Run
                     cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.PolicisImportFile,
-                        body: file,
-                        headers: {
-                            "content-type": "binary/octet-stream",
-                            authorization,
-                        },
+                        method: METHOD.PUT,
+                        url: `${API.ApiServer}${API.Policies}${policyId}/${API.DryRun}`,
+                        headers: { authorization },
                         timeout: 180000,
                     }).then((response) => {
-                        expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                        cy.request({
-                            method: METHOD.GET,
-                            url: API.ApiServer + API.Policies,
-                            headers: {
-                                authorization,
-                            },
-                            timeout: 180000
-                        }).then((response) => {
-                            expect(response.status).to.eq(STATUS_CODE.OK);
-                            response.body.forEach(element => {
-                                if (element.name == "iRecDRF") {
-                                    policyId = element.id
-                                }
-                            })
-                            cy.request({
-                                method: METHOD.PUT,
-                                url:
-                                    API.ApiServer + API.Policies + policyId + "/" + API.DryRun,
-                                headers: {
-                                    authorization,
-                                },
-                                timeout: 180000,
-                            }).then((response) => {
-                                expect(response.status).to.eq(STATUS_CODE.OK);
-                            });
-                        })
-                    })
-                })
+                        expect(response.status).to.eq(STATUS_CODE.OK);
+                    });
+                });
+            });
         });
-    })
+    });
 
     it('Import a new policy test', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("iRecFullFlow.record", 'binary')
-                .then((file) => Cypress.Blob.binaryStringToBlob(file))
-                .then((blob) => {
-                    var formdata = new FormData();
-                    formdata.append("tests", blob, "iRecFullFlow.record");
-                    cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.Test,
-                        body: formdata,
-                        headers: {
-                            "content-type": "binary/octet-stream",
-                            authorization,
-                        },
-                        timeout: 180000,
-                    }).then((response) => {
-                        expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                        expect(JSON.parse(new TextDecoder().decode(response.body)).at(0).policyId).to.eq(policyId);
-                    });
-                });
-        })
-    })
+            importPolicyTest(policyId, "iRecFullFlow.record", { authorization }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                const decodedBody = JSON.parse(new TextDecoder().decode(response.body));
+                expect(decodedBody.at(0).policyId).to.eq(policyId);
+            });
+        });
+    });
 
     it("Import a new policy test without auth token - Negative", () => {
-        cy.fixture("iRecFullFlow.record", 'binary')
-            .then((file) => Cypress.Blob.binaryStringToBlob(file))
-            .then((blob) => {
-                var formdata = new FormData();
-                formdata.append("tests", blob, "iRecFullFlow.record");
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.Test,
-                    body: formdata,
-                    headers: {
-                        "content-type": "binary/octet-stream",
-                    },
-                    failOnStatusCode: false,
-                    timeout: 180000,
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
-                });
-            });
+        importPolicyTest(policyId, "iRecFullFlow.record", {}).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
+        });
     });
 
     it("Import a new policy test with invalid auth token - Negative", () => {
-        cy.fixture("iRecFullFlow.record", 'binary')
-            .then((file) => Cypress.Blob.binaryStringToBlob(file))
-            .then((blob) => {
-                var formdata = new FormData();
-                formdata.append("tests", blob, "iRecFullFlow.record");
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.Test,
-                    body: formdata,
-                    headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization: "Bearer wqe",
-                    },
-                    failOnStatusCode: false,
-                    timeout: 180000,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-                });
-            });
+        importPolicyTest(policyId, "iRecFullFlow.record", { authorization: "Bearer wqe" }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
     });
 
     it("Import a new policy test with empty auth token - Negative", () => {
-        cy.fixture("iRecFullFlow.record", 'binary')
-            .then((file) => Cypress.Blob.binaryStringToBlob(file))
-            .then((blob) => {
-                var formdata = new FormData();
-                formdata.append("tests", blob, "iRecFullFlow.record");
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.Test,
-                    body: formdata,
-                    headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization: "",
-                    },
-                    failOnStatusCode: false,
-                    timeout: 180000,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-                });
-            });
+        importPolicyTest(policyId, "iRecFullFlow.record", { authorization: "" }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
     });
 
     it("Import a new policy test without policy test file", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + "/" + API.Test,
-                headers: {
-                    authorization,
-                },
+                url: `${API.ApiServer}${API.Policies}${policyId}/${API.Test}`,
+                headers: { authorization },
                 failOnStatusCode: false,
                 timeout: 180000,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.BAD_REQUEST);
             });
         });
-    })
-})
+    });
+});
+``

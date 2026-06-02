@@ -2,7 +2,7 @@ import { BlockActionError } from '../errors/index.js';
 import { ActionCallback, ValidatorBlock } from '../helpers/decorators/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -18,6 +18,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'documentValidatorBlock',
     commonBlock: false,
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Validator',
         title: `Add 'Validator' Block`,
@@ -33,7 +34,96 @@ import { LocationType } from '@guardian/interfaces';
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true
+        defaultEvent: true,
+        properties: [{
+            name: 'conditions',
+            label: 'Conditions',
+            title: 'Conditions',
+            type: PropertyType.Array,
+            editable: true,
+            items: {
+                label: 'Condition',
+                value: '',
+                properties: [
+                    {
+                        name: 'type',
+                        label: 'Type',
+                        title: 'Type',
+                        type: PropertyType.Select,
+                        items: [
+                            { label: 'Equal', value: 'equal' },
+                            { label: 'Not Equal', value: 'not_equal' },
+                            { label: 'In', value: 'in' },
+                            { label: 'Not In', value: 'not_in' }
+                        ],
+                        editable: true
+                    },
+                    {
+                        name: 'field',
+                        label: 'Field',
+                        title: 'Field',
+                        type: PropertyType.Input,
+                        editable: true
+                    },
+                    {
+                        name: 'value',
+                        label: 'Value',
+                        title: 'Value',
+                        type: PropertyType.Input,
+                        editable: true
+                    },
+                ]
+            }
+        },
+        {
+            name: 'documentType',
+            label: 'Document Type',
+            title: 'Document Type',
+            type: PropertyType.Select,
+            items: [
+                { label: 'VC Document', value: 'vc-document'},
+                { label: 'VP Document', value: 'vp-document'},
+                { label: 'Related VC Document', value: 'related-vc-document'},
+                { label: 'Related VP Document', value: 'related-vp-document'}
+            ],
+            editable: false
+        },
+        {
+            name: 'schema',
+            label: 'Check Schema',
+            title: 'Check Schema',
+            type: PropertyType.Schemas,
+            editable: true
+        },
+        {
+            name: 'checkOwnerDocument',
+            label: 'Check Owned by User',
+            title: 'Check Owned by User',
+            type: PropertyType.Checkbox,
+            editable: true
+        },
+        {
+            name: 'checkOwnerByGroupDocument',
+            label: 'Check Owned by Group',
+            title: 'Check Owned by Group',
+            type: PropertyType.Checkbox,
+            editable: true
+        },
+        {
+            name: 'checkAssignDocument',
+            label: 'Check Assigned to User',
+            title: 'Check Assigned to User',
+            type: PropertyType.Checkbox,
+            editable: true
+        },
+        {
+            name: 'checkAssignByGroupDocument',
+            label: 'Check Assigned to Group',
+            title: 'Check Assigned to Group',
+            type: PropertyType.Checkbox,
+            editable: true
+        },
+        ]
     },
     variables: [
         { path: 'options.schema', alias: 'schema', type: 'Schema' }
@@ -71,7 +161,9 @@ export class DocumentValidatorBlock {
 
         const documentRef = PolicyUtils.getDocumentRef(document);
 
-        if (ref.options.documentType === 'related-vc-document') {
+        const options = await ref.getOptions(event.user);
+
+        if (options.documentType === 'related-vc-document') {
             if (documentRef) {
                 document = await ref.databaseServer.getVcDocument({
                     'policyId': { $eq: ref.policyId },
@@ -82,7 +174,7 @@ export class DocumentValidatorBlock {
             }
         }
 
-        if (ref.options.documentType === 'related-vp-document') {
+        if (options.documentType === 'related-vp-document') {
             if (documentRef) {
                 document = await ref.databaseServer.getVpDocument({
                     'policyId': ref.policyId,
@@ -99,19 +191,19 @@ export class DocumentValidatorBlock {
 
         const documentType = PolicyUtils.getDocumentType(document);
 
-        if (ref.options.documentType === 'vc-document') {
+        if (options.documentType === 'vc-document') {
             if (documentType !== 'VerifiableCredential') {
                 return `Invalid document type`;
             }
-        } else if (ref.options.documentType === 'vp-document') {
+        } else if (options.documentType === 'vp-document') {
             if (documentType !== 'VerifiablePresentation') {
                 return `Invalid document type`;
             }
-        } else if (ref.options.documentType === 'related-vc-document') {
+        } else if (options.documentType === 'related-vc-document') {
             if (documentType !== 'VerifiableCredential') {
                 return `Invalid document type`;
             }
-        } else if (ref.options.documentType === 'related-vp-document') {
+        } else if (options.documentType === 'related-vp-document') {
             if (documentType !== 'VerifiablePresentation') {
                 return `Invalid document type`;
             }
@@ -120,36 +212,36 @@ export class DocumentValidatorBlock {
         const userDID = event?.user?.did;
         const userGroup = event?.user?.group;
 
-        if (ref.options.checkOwnerDocument) {
+        if (options.checkOwnerDocument) {
             if (document.owner !== userDID) {
                 return `Invalid owner`;
             }
         }
-        if (ref.options.checkOwnerByGroupDocument) {
+        if (options.checkOwnerByGroupDocument) {
             if (document.group !== userGroup) {
                 return `Invalid group`;
             }
         }
-        if (ref.options.checkAssignDocument) {
+        if (options.checkAssignDocument) {
             if (document.assignedTo !== userDID) {
                 return `Invalid assigned user`;
             }
         }
-        if (ref.options.checkAssignByGroupDocument) {
+        if (options.checkAssignByGroupDocument) {
             if (document.assignedToGroup !== userGroup) {
                 return `Invalid assigned group`;
             }
         }
 
-        if (ref.options.schema) {
-            const schema = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
+        if (options.schema) {
+            const schema = await PolicyUtils.loadSchemaByID(ref, options.schema);
             if (!PolicyUtils.checkDocumentSchema(ref, document, schema)) {
                 return `Invalid document schema`;
             }
         }
 
-        if (ref.options.conditions) {
-            for (const filter of ref.options.conditions) {
+        if (options.conditions) {
+            for (const filter of options.conditions) {
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
                     return `Invalid document`;
                 }
@@ -198,7 +290,7 @@ export class DocumentValidatorBlock {
         ]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<void> {
+    async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
         ref.log(`runAction`);
 
@@ -206,13 +298,16 @@ export class DocumentValidatorBlock {
         if (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
+        // event.actionStatus.saveResult(event.data);
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
-        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+        await ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null, event.actionStatus);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
             documents: ExternalDocuments(event?.data?.data)
         }));
         ref.backup();
+
+        return event.data;
     }
 }

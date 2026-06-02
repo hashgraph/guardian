@@ -113,6 +113,7 @@
                                 [style.min-width]="column.minWidth"
                                 [style.max-width]="column.maxWidth"
                                 class="table-cell"
+                                [class]="column.className"
                             >
                                 @if (!column.visibility || column.visibility(item)) {
                                     @switch (column.type) {

@@ -1,5 +1,5 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { IsArray, IsString, Validate, IsOptional, IsObject, IsNumber } from 'class-validator';
+import { ArrayMinSize, IsArray, IsString, Validate, IsOptional, IsObject, IsNumber } from 'class-validator';
 import { Examples } from '../examples.js';
 import { IsNumberOrString } from '../string-or-number.js';
 import { PolicyStatus } from '@guardian/interfaces';
@@ -8,10 +8,9 @@ import { IsStringOrObject } from '../string-or-object.js';
 class Options {
     @ApiProperty({
         oneOf: [
-            { type: 'string' },
-            { type: 'number' },
+            { type: 'string', enum: ['0', '1'] },
+            { type: 'number', enum: [0, 1] },
         ],
-        enum: [0, 1],
         required: false,
         example: 0
     })
@@ -21,10 +20,9 @@ class Options {
 
     @ApiProperty({
         oneOf: [
-            { type: 'string' },
-            { type: 'number' },
+            { type: 'string', enum: ['0', '1', '2'] },
+            { type: 'number', enum: [0, 1, 2] },
         ],
-        enum: [0, 1],
         required: false,
         example: 0
     })
@@ -34,10 +32,9 @@ class Options {
 
     @ApiProperty({
         oneOf: [
-            { type: 'string' },
-            { type: 'number' },
+            { type: 'string', enum: ['0', '1', '2'] },
+            { type: 'number', enum: [0, 1, 2] },
         ],
-        enum: [0, 1, 2],
         required: false,
         example: 0
     })
@@ -47,10 +44,9 @@ class Options {
 
     @ApiProperty({
         oneOf: [
-            { type: 'string' },
-            { type: 'number' },
+            { type: 'string', enum: ['0', '1', '2'] },
+            { type: 'number', enum: [0, 1, 2] },
         ],
-        enum: [0, 1, 2],
         required: false,
         example: 0
     })
@@ -136,7 +132,7 @@ export class FilterPoliciesDTO extends Options {
     @ApiProperty({
         type: 'string',
         required: false,
-        example: Examples.DB_ID
+        example: Examples.DB_ID_2
     })
     @IsOptional()
     @IsString()
@@ -146,7 +142,7 @@ export class FilterPoliciesDTO extends Options {
         type: 'string',
         isArray: true,
         required: false,
-        example: [Examples.DB_ID, Examples.DB_ID]
+        example: [Examples.DB_ID, Examples.DB_ID_2]
     })
     @IsOptional()
     @IsArray()
@@ -174,6 +170,9 @@ export class FilterPoliciesDTO extends Options {
     @IsOptional()
     @IsArray()
     policies?: FilterPolicyDTO[];
+}
+
+export class CompareOriginalPolicyFilterDTO extends Options {
 }
 
 @ApiExtraModels(CompareFileDTO)
@@ -230,7 +229,7 @@ export class FilterSchemasDTO {
     @ApiProperty({
         type: 'string',
         required: false,
-        example: Examples.DB_ID
+        example: Examples.DB_ID_2
     })
     @IsOptional()
     @IsString()
@@ -263,12 +262,70 @@ export class FilterSchemasDTO {
 
     @ApiProperty({
         oneOf: [
-            { type: 'string' },
-            { type: 'number' },
+            { type: 'string', enum: ['0', '1'] },
+            { type: 'number', enum: [0, 1] },
         ],
-        enum: [0, 1],
         required: false,
         example: 0
+    })
+    @IsOptional()
+    @Validate(IsNumberOrString)
+    idLvl?: number | string;
+}
+
+export class CompareSchemasByIdsRequestDTO {
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @IsString()
+    schemaId1: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        example: Examples.DB_ID_2
+    })
+    @IsString()
+    schemaId2: string;
+
+    @ApiProperty({
+        oneOf: [
+            { type: 'string', enum: ['0', '1'] },
+            { type: 'number', enum: [0, 1] },
+        ],
+        required: false,
+        example: '0'
+    })
+    @IsOptional()
+    @Validate(IsNumberOrString)
+    idLvl?: number | string;
+}
+
+export class CompareSchemasByListRequestDTO {
+    @ApiProperty({
+        type: () => FilterSchemaDTO,
+        isArray: true,
+        required: true,
+        example: [{
+            type: 'id',
+            value: Examples.DB_ID
+        }, {
+            type: 'id',
+            value: Examples.DB_ID_2
+        }]
+    })
+    @IsArray()
+    schemas: FilterSchemaDTO[];
+
+    @ApiProperty({
+        oneOf: [
+            { type: 'string', enum: ['0', '1'] },
+            { type: 'number', enum: [0, 1] },
+        ],
+        required: false,
+        example: '0'
     })
     @IsOptional()
     @Validate(IsNumberOrString)
@@ -287,7 +344,7 @@ export class FilterModulesDTO extends Options {
     @ApiProperty({
         type: 'string',
         required: true,
-        example: Examples.DB_ID
+        example: Examples.DB_ID_2
     })
     @IsString()
     moduleId2: string;
@@ -306,7 +363,7 @@ export class FilterDocumentsDTO extends Options {
     @ApiProperty({
         type: 'string',
         required: false,
-        example: Examples.DB_ID
+        example: Examples.DB_ID_2
     })
     @IsOptional()
     @IsString()
@@ -318,12 +375,46 @@ export class FilterDocumentsDTO extends Options {
         required: false,
         example: [
             Examples.DB_ID,
-            Examples.DB_ID
+            Examples.DB_ID_2
         ]
     })
     @IsOptional()
     @IsArray()
     documentIds?: string[];
+}
+
+export class CompareDocumentsByIdsRequestDTO extends Options {
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @IsString()
+    documentId1: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        example: Examples.DB_ID_2
+    })
+    @IsString()
+    documentId2: string;
+}
+
+export class CompareDocumentsByListRequestDTO extends Options {
+    @ApiProperty({
+        type: 'string',
+        isArray: true,
+        required: true,
+        example: [
+            Examples.DB_ID,
+            Examples.DB_ID_2,
+            Examples.DB_ID_3
+        ]
+    })
+    @IsArray()
+    @ArrayMinSize(2)
+    documentIds: string[];
 }
 
 export class FilterToolsDTO extends Options {
@@ -339,7 +430,7 @@ export class FilterToolsDTO extends Options {
     @ApiProperty({
         type: 'string',
         required: false,
-        example: Examples.DB_ID
+        example: Examples.DB_ID_2
     })
     @IsOptional()
     @IsString()
@@ -351,12 +442,46 @@ export class FilterToolsDTO extends Options {
         required: false,
         example: [
             Examples.DB_ID,
-            Examples.DB_ID
+            Examples.DB_ID_2
         ]
     })
     @IsOptional()
     @IsArray()
     toolIds?: string[];
+}
+
+export class CompareToolsByIdsRequestDTO extends Options {
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @IsString()
+    toolId1: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        example: Examples.DB_ID_2
+    })
+    @IsString()
+    toolId2: string;
+}
+
+export class CompareToolsByListRequestDTO extends Options {
+    @ApiProperty({
+        type: 'string',
+        isArray: true,
+        required: true,
+        example: [
+            Examples.DB_ID,
+            Examples.DB_ID_2,
+            Examples.DB_ID_3
+        ]
+    })
+    @IsArray()
+    @ArrayMinSize(2)
+    toolIds: string[];
 }
 
 export class FilterSearchPoliciesDTO {
@@ -441,6 +566,19 @@ export class FilterSearchPoliciesDTO {
 
     @ApiProperty({
         type: 'string',
+        isArray: true,
+        required: false,
+        example: [
+            Examples.DB_ID,
+            Examples.DB_ID
+        ]
+    })
+    @IsOptional()
+    @IsArray()
+    toolMessageIds?: string[];
+
+    @ApiProperty({
+        type: 'string',
         required: false,
         example: Examples.DID
     })
@@ -469,10 +607,119 @@ export class FilterSearchBlocksDTO {
 
     @ApiProperty({
         type: 'object',
-        additionalProperties: {}
+        description: 'Root block config to search for similar blocks in published policies.',
+        additionalProperties: true,
+        properties: {
+            id: {
+                type: 'string',
+                example: Examples.UUID
+            },
+            blockType: {
+                type: 'string',
+                example: 'interfaceContainerBlock'
+            },
+            uiMetaData: {
+                type: 'object',
+                additionalProperties: true,
+                example: {
+                    type: 'blank'
+                }
+            },
+            permissions: {
+                type: 'array',
+                items: {
+                    type: 'string'
+                },
+                example: ['ANY_ROLE']
+            },
+            defaultActive: {
+                type: 'boolean',
+                example: true
+            },
+            onErrorAction: {
+                type: 'string',
+                example: 'no-action'
+            },
+            tag: {
+                type: 'string',
+                example: ''
+            },
+            children: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    additionalProperties: true
+                },
+                example: [
+                    {
+                        id: Examples.UUID,
+                        blockType: 'policyRolesBlock',
+                        defaultActive: true,
+                        uiMetaData: {
+                            title: 'Roles',
+                            description: 'Choose Roles'
+                        },
+                        roles: ['Project Participant', 'VVB'],
+                        permissions: ['NO_ROLE'],
+                        onErrorAction: 'no-action',
+                        tag: 'Choose_Roles1',
+                        children: [],
+                        events: [],
+                        artifacts: []
+                    }
+                ]
+            },
+            events: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    additionalProperties: true
+                },
+                example: []
+            },
+            artifacts: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    additionalProperties: true
+                },
+                example: []
+            }
+        },
+        example: {
+            id: Examples.UUID,
+            blockType: 'interfaceContainerBlock',
+            uiMetaData: {
+                type: 'blank'
+            },
+            permissions: ['ANY_ROLE'],
+            defaultActive: true,
+            onErrorAction: 'no-action',
+            tag: '',
+            children: [
+                {
+                    id: Examples.UUID,
+                    blockType: 'policyRolesBlock',
+                    defaultActive: true,
+                    uiMetaData: {
+                        title: 'Roles',
+                        description: 'Choose Roles'
+                    },
+                    roles: ['Project Participant', 'VVB'],
+                    permissions: ['NO_ROLE'],
+                    onErrorAction: 'no-action',
+                    tag: 'Choose_Roles1',
+                    children: [],
+                    events: [],
+                    artifacts: []
+                }
+            ],
+            events: [],
+            artifacts: []
+        }
     })
     @IsObject()
-    config: any;
+    config: Record<string, any>;
 }
 
 export class SearchPolicyDTO {
@@ -620,11 +867,13 @@ export class SearchPolicyDTO {
 @ApiExtraModels(SearchPolicyDTO)
 export class SearchPoliciesDTO {
     @ApiProperty({
-        type: () => SearchPolicyDTO
+        type: () => SearchPolicyDTO,
+        required: false,
+        nullable: true
     })
     @IsOptional()
     @IsObject()
-    target?: SearchPolicyDTO;
+    target?: SearchPolicyDTO | null;
 
     @ApiProperty({
         type: () => SearchPolicyDTO,

@@ -1,7 +1,35 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { Controller } from '@nestjs/common';
-import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, IAuthUser, JsonToXlsx, MessageError, MessageResponse, NewNotifier, PinoLogger, RunFunctionAsync, Schema as SchemaCollection, Users, XlsxToJson } from '@guardian/common';
-import { IOwner, ISchema, IChildSchemaDeletionBlock, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
+import {
+    BinaryMessageResponse,
+    DataBaseHelper,
+    DatabaseServer,
+    GenerateBlocks,
+    IAuthUser,
+    JsonToXlsx,
+    MessageError,
+    MessageResponse,
+    NewNotifier,
+    NotificationStep,
+    PinoLogger,
+    RunFunctionAsync,
+    Schema as SchemaCollection,
+    Users,
+    XlsxToJson
+} from '@guardian/common';
+import {
+    IOwner,
+    ISchema,
+    IChildSchemaDeletionBlock,
+    MessageAPI,
+    ModuleStatus,
+    Schema,
+    SchemaCategory,
+    SchemaHelper,
+    SchemaNode,
+    SchemaStatus,
+    TopicType
+} from '@guardian/interfaces';
 import {
     checkForCircularDependency,
     copySchemaAsync,
@@ -122,7 +150,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 row.document = item.document;
                 row.status = SchemaStatus.DRAFT;
                 row.errors = [];
-                SchemaHelper.setVersion(row, null, row.version);
+                SchemaHelper.setVersion(row, row.version, row.version);
                 SchemaHelper.updateIRI(row);
                 await DatabaseServer.updateSchema(row.id, row);
                 await updateSchemaDefs(row.iri);
@@ -233,8 +261,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      */
     ApiResponse(MessageAPI.GET_SCHEMA_DELETION_PREVIEW,
         async (msg: {
-            id: string,
-            topicId: string,
+            schemaIds: string[],
             owner: IOwner
         }) => {
             try {
@@ -242,83 +269,152 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid load schema parameter');
                 }
 
-                const { id, topicId, owner } = msg;
-                if (!id) {
-                    return new MessageError('Invalid schema id');
+                const { schemaIds, owner } = msg;
+                if (!schemaIds || schemaIds?.length <= 0) {
+                    return new MessageError('Invalid schema ids');
                 }
                 if (!owner) {
                     return new MessageError('Invalid schema owner');
                 }
 
-                const schema = await DatabaseServer.getSchema({
-                    id,
+                const schemas = await DatabaseServer.getSchemas({
+                    id: { $in: schemaIds },
                     owner: owner.owner
                 });
-                if (!schema) {
-                    return new MessageError('Schema is not found');
+                if (!schemas || schemas?.length <= 0) {
+                    return new MessageError('Schemas is not found');
                 }
 
-                const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
-                const defsIds = defs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
+                const childSchemas = new Map<string, SchemaCollection>();
+                const blockedChildren: IChildSchemaDeletionBlock[] = [];
+                const blockedSchemaIds = new Set<string>();
+                const policySchemas = new Map<string, SchemaCollection[]>();
+                const schemaDefIds = new Set<string>();
 
+                for (const schema of schemas) {
+                    const defs = schema.defs ? (Array.isArray(schema.defs) ? schema.defs : [schema.defs]) : [];
+                    defs.forEach(def => schemaDefIds.add(def));
+                }
                 const childSchemasFilter: any = {
-                    uuid: { $in: defsIds },
+                    iri: { $in: [...schemaDefIds] },
                     status: ModuleStatus.DRAFT,
                 }
-                const childSchemas = await DatabaseServer.getSchemas(childSchemasFilter, {
+                const childSchemasDefs = await DatabaseServer.getSchemas(childSchemasFilter, {
                     fields: [
-                        'uuid',
+                        'iri',
                         'name',
                         'version',
                         'sourceVersion',
                         'status'
                     ]
                 })
+                for (const childSchema of childSchemasDefs) {
+                    childSchemas.set(childSchema.iri, childSchema);
+                }
 
-                const blockedChildren: IChildSchemaDeletionBlock[] = [];
-                const blockedChildrenIds = new Set<string>();
+                for (const schema of schemas) {
+                    const topicId = schema.topicId;
 
-                if (topicId) {
-                    const policySchemasFilter: any = {
-                        topicId,
-                        readonly: false,
-                        system: false,
-                        status: ModuleStatus.DRAFT,
-                        category: SchemaCategory.POLICY
-                    }
-                    const allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
+                    if (topicId) {
+                        let allPolicySchemas: SchemaCollection[] = [];
+                        if (policySchemas.has(topicId)) {
+                            allPolicySchemas = policySchemas.get(topicId);
+                        } else {
+                            const policySchemasFilter: any = {
+                                topicId,
+                                readonly: false,
+                                system: false,
+                                status: ModuleStatus.DRAFT,
+                                category: SchemaCategory.POLICY
+                            }
+                            allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
+                            policySchemas.set(topicId, allPolicySchemas);
+                        }
 
-                    if (allPolicySchemas?.length > 0) {
-                        allPolicySchemas.forEach(item => {
-                            if (schema.uuid !== item.uuid && !childSchemas.some(child => child.uuid === item.uuid)) {
-                                const schemaDefs = Array.isArray(item.defs) ? item.defs : [item.defs];
-                                const schemaDefsIds = schemaDefs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
+                        if (allPolicySchemas?.length > 0) {
+                            allPolicySchemas.forEach(policySchema => {
+                                if (schema.iri !== policySchema.iri
+                                    && !childSchemas.has(policySchema.iri)
+                                    && !schemas.some(item => item.iri === policySchema.iri)) {
 
-                                const childSchemaUsedInAnotherSchema = childSchemas.find(child => schemaDefsIds.includes(child.uuid));
-                                if (childSchemaUsedInAnotherSchema) {
-                                    const alreadyExist = blockedChildren.find(x => x.schema.uuid === childSchemaUsedInAnotherSchema.uuid);
+                                    const schemaDefs = policySchema.defs ? (Array.isArray(policySchema.defs) ? policySchema.defs : [policySchema.defs]) : [];
 
-                                    if (alreadyExist) {
-                                        alreadyExist.blockingSchemas.push(item);
+                                    if (schemaDefs.includes(schema.iri)) {
+                                        const alreadyExist = blockedChildren.find(x => x.schema.iri === schema.iri);
+                                        if (alreadyExist) {
+                                            alreadyExist.blockingSchemas.push(policySchema);
+                                        } else {
+                                            blockedChildren.push({
+                                                schema,
+                                                blockingSchemas: [policySchema]
+                                            });
+
+                                            blockedSchemaIds.add(schema.iri);
+                                        }
                                     } else {
-                                        blockedChildren.push({
-                                            schema: childSchemaUsedInAnotherSchema,
-                                            blockingSchemas: [item]
-                                        });
+                                        for (const childSchema of Array.from(childSchemas.values())) {
+                                            if (!schemaDefs.includes(childSchema.iri)) {
+                                                continue;
+                                            }
 
-                                        blockedChildrenIds.add(childSchemaUsedInAnotherSchema.uuid);
+                                            const alreadyExist = blockedChildren.find(x => x.schema.iri === childSchema.iri);
+                                            if (alreadyExist) {
+                                                if (!alreadyExist.blockingSchemas.some(s => s.iri === policySchema.iri)) {
+                                                    alreadyExist.blockingSchemas.push(policySchema);
+                                                }
+                                            } else {
+                                                blockedChildren.push({
+                                                    schema: childSchema,
+                                                    blockingSchemas: [policySchema]
+                                                });
+
+                                                blockedSchemaIds.add(childSchema.iri);
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                        })
+                            })
+                        }
                     }
                 }
 
-                const deletableChildren = childSchemas.filter(item => !blockedChildrenIds.has(item.uuid))
+                for (const childSchema of Array.from(childSchemas.values())) {
+
+                    for (const blockedChild of blockedChildren) {
+                        const blockedSchema = blockedChild.schema as SchemaCollection;
+                        const schemaDefs = blockedSchema.defs ? (Array.isArray(blockedSchema.defs) ? blockedSchema.defs : [blockedSchema.defs]) : [];
+
+                        if (schemaDefs.includes(childSchema.iri)) {
+                            const alreadyExist = blockedChildren.find(x => x.schema.iri === childSchema.iri);
+                            if (alreadyExist) {
+                                if (!alreadyExist.blockingSchemas.some(s => s.iri === blockedSchema.iri)) {
+                                    alreadyExist.blockingSchemas.push(blockedSchema);
+                                }
+                            } else {
+                                blockedChildren.push({
+                                    schema: childSchema,
+                                    blockingSchemas: [blockedSchema]
+                                });
+
+                                blockedSchemaIds.add(childSchema.iri);
+                            }
+                        }
+                    }
+                }
+
+                const deletableChildren = Array.from(childSchemas.values())
+                    .filter(child =>
+                        !blockedSchemaIds.has(child.iri)
+                        && !schemas.some(schema => schema.iri === child.iri))
+
+                const blockedChildrenResult = blockedChildren.map(item => ({
+                    schema: item.schema.name,
+                    blockingSchemas: item.blockingSchemas.map(schema => schema.name)
+                }));
 
                 return new MessageResponse({
                     deletableChildren,
-                    blockedChildren
+                    blockedChildren: blockedChildrenResult
                 });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -352,7 +448,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const schema = await DatabaseServer.getSchemaById(id);
-                if (!schema || schema.owner !== owner.owner) {
+                if (!schema || (schema.owner && schema.owner !== owner.owner)) {
                     return new MessageError('Schema is not found');
                 }
 
@@ -383,13 +479,362 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         const schema = await DatabaseServer.getSchema({
                             iri: type
                         });
-                        if (result.findIndex(item => item.type === schema.iri) === -1) {
+                        if (schema && result.findIndex(item => item.type === schema.iri) === -1) {
                             result.push(await createNode(schema));
                         }
                     }
                     return result;
                 }
                 return new MessageResponse(await createNode(schema));
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Return schema tree in PlantUML format
+     *
+     * @param {Object} [msg] - payload
+     *
+     * @returns {string} - PlantUML code
+     */
+    ApiResponse(MessageAPI.GET_SCHEMA_TREE_PLANTUML,
+        async (msg: {
+            id: string,
+            owner: IOwner,
+            includeFields?: boolean,
+            includeFormulas?: boolean,
+            includeDependencies?: boolean
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load schema parameter');
+                }
+
+                const { id, owner, includeFields = true, includeFormulas = false, includeDependencies = false } = msg;
+                if (!id) {
+                    return new MessageError('Invalid schema id');
+                }
+                if (!owner) {
+                    return new MessageError('Invalid schema owner');
+                }
+
+                const schema = await DatabaseServer.getSchemaById(id);
+                if (!schema || (schema.owner && schema.owner !== owner.owner)) {
+                    return new MessageError('Schema is not found');
+                }
+
+                const classes: string[] = [];
+                const refLinks: string[] = [];
+                const formulaPackages: string[] = [];
+                const formulaLinks: string[] = [];
+                const visitedIRIs = new Set<string>();
+                const iriToAlias = new Map<string, string>();
+
+                const sanitizeAlias = (name: string): string => {
+                    return name.replace(/[^a-zA-Z0-9_]/g, '_');
+                };
+
+                const sanitizeFieldName = (name: string): string => {
+                    return name.replace(/\./g, '_');
+                };
+
+                const buildSchemaClass = (schemaDoc: any, alias: string): string => {
+                    let classBlock = `class "${schemaDoc.name}" as ${alias} <<schema>> {\n`;
+                    if (includeFields) {
+                        const schemaObj = new Schema(schemaDoc);
+                        const fields = schemaObj.fields.filter(
+                            (f: any) => f.type !== '#GeoJSON' && f.type !== '#SentinelHUB' && f.type !== null
+                        );
+                        for (const field of fields) {
+                            const desc = (field.description || '').replace(/[\r\n]+/g, ' ').trim();
+                            const fieldName = sanitizeFieldName(field.name);
+                            classBlock += `  {field} ${fieldName} (${desc})\n`;
+                        }
+                    }
+                    classBlock += '}';
+                    return classBlock;
+                };
+
+                const resolveSchemaAlias = async (iri: string, addMissing: boolean): Promise<string | null> => {
+                    let alias = iriToAlias.get(iri);
+                    if (!alias && addMissing) {
+                        const linkedSchema = await DatabaseServer.getSchema({ iri });
+                        if (linkedSchema) {
+                            alias = sanitizeAlias(linkedSchema.name);
+                            iriToAlias.set(iri, alias);
+                            classes.push(buildSchemaClass(linkedSchema, alias));
+                        }
+                    }
+                    return alias || null;
+                };
+
+                const resolveFieldPath = async (
+                    schemaIri: string, fieldPath: string, addMissing: boolean
+                ): Promise<{ alias: string, field: string } | null> => {
+                    const parts = fieldPath.split('.');
+                    if (parts.length === 1) {
+                        const alias1 = await resolveSchemaAlias(schemaIri, addMissing);
+                        return alias1 ? { alias: alias1, field: sanitizeFieldName(parts[0]) } : null;
+                    }
+                    let currentIri = schemaIri;
+                    for (let i = 0; i < parts.length - 1; i++) {
+                        const schemaDoc = await DatabaseServer.getSchema({ iri: currentIri });
+                        if (!schemaDoc) {
+                            return null;
+                        }
+                        const schemaObj = new Schema(schemaDoc);
+                        const refField = schemaObj.fields.find(
+                            (f: any) => f.name === parts[i] && f.isRef
+                        );
+                        if (!refField) {
+                            return null;
+                        }
+                        currentIri = refField.type;
+                    }
+                    const alias = await resolveSchemaAlias(currentIri, addMissing);
+                    return alias ? { alias, field: sanitizeFieldName(parts[parts.length - 1]) } : null;
+                };
+
+                const buildPlantUML = async (schemaDoc: any): Promise<void> => {
+                    const iri = schemaDoc.iri || '';
+                    if (visitedIRIs.has(iri)) {
+                        return;
+                    }
+                    visitedIRIs.add(iri);
+
+                    const alias = sanitizeAlias(schemaDoc.name);
+                    iriToAlias.set(iri, alias);
+                    classes.push(buildSchemaClass(schemaDoc, alias));
+
+                    const schemaObj = new Schema(schemaDoc);
+                    const refFields = schemaObj.fields.filter(
+                        (f: any) => f.isRef && f.type !== '#GeoJSON' && f.type !== '#SentinelHUB'
+                    );
+                    for (const field of refFields) {
+                        const childSchema = await DatabaseServer.getSchema({ iri: field.type });
+                        if (childSchema) {
+                            const childAlias = sanitizeAlias(childSchema.name);
+                            refLinks.push(
+                                `${alias}::${sanitizeFieldName(field.name)} --> ${childAlias}`
+                            );
+                            await buildPlantUML(childSchema);
+                        }
+                    }
+                };
+
+                await buildPlantUML(schema);
+
+                if (includeFormulas) {
+                    const topicId = schema.topicId;
+                    if (topicId) {
+                        const policies = await DatabaseServer.getPolicies({ topicId } as any);
+                        const allFormulas: any[] = [];
+                        const formulaByUuid = new Map<string, any>();
+
+                        for (const policy of policies) {
+                            const formulas = await DatabaseServer.getFormulas({ policyId: policy.id } as any);
+                            for (const f of formulas) {
+                                allFormulas.push(f);
+                                if (f.uuid) {
+                                    formulaByUuid.set(f.uuid, f);
+                                }
+                            }
+                        }
+
+                        const formulaReferencesSchema = (f: any): boolean => {
+                            const items = f.config?.formulas || [];
+                            return items.some((item: any) =>
+                                item.link && item.link.type === 'schema' && iriToAlias.has(item.link.entityId)
+                            );
+                        };
+
+                        const directFormulaUuids = new Set<string>();
+                        const relevantFormulaUuids = new Set<string>();
+                        for (const f of allFormulas) {
+                            if (formulaReferencesSchema(f)) {
+                                directFormulaUuids.add(f.uuid);
+                                relevantFormulaUuids.add(f.uuid);
+                            }
+                        }
+
+                        if (includeDependencies) {
+                            let changed = true;
+                            while (changed) {
+                                changed = false;
+                                for (const f of allFormulas) {
+                                    if (relevantFormulaUuids.has(f.uuid)) {
+                                        const items1 = f.config?.formulas || [];
+                                        for (const item of items1) {
+                                            if (item.link && item.link.type === 'formula' && !relevantFormulaUuids.has(item.link.entityId)) {
+                                                const dep = formulaByUuid.get(item.link.entityId);
+                                                if (dep) {
+                                                    relevantFormulaUuids.add(dep.uuid);
+                                                    changed = true;
+                                                }
+                                            }
+                                        }
+                                        continue;
+                                    }
+                                    const items = f.config?.formulas || [];
+                                    const linksToRelevant = items.some((item: any) =>
+                                        item.link && item.link.type === 'formula' && relevantFormulaUuids.has(item.link.entityId)
+                                    );
+                                    if (linksToRelevant) {
+                                        relevantFormulaUuids.add(f.uuid);
+                                        changed = true;
+                                    }
+                                }
+                            }
+                        }
+
+                        const filteredFormulas = allFormulas.filter((f: any) => relevantFormulaUuids.has(f.uuid));
+
+                        const resolveFormulaLink = (link: any): string | null => {
+                            if (!link || link.type !== 'formula') {
+                                return null;
+                            }
+                            const targetFormula = formulaByUuid.get(link.entityId);
+                            if (!targetFormula) {
+                                return null;
+                            }
+                            const targetItems = targetFormula.config?.formulas || [];
+                            const targetItem = targetItems.find((i: any) => i.uuid === link.item);
+                            if (targetItem) {
+                                return sanitizeAlias(`${targetFormula.name}_${targetItem.name}`);
+                            }
+                            return null;
+                        };
+
+                        for (const formula of filteredFormulas) {
+                            const isDirect = directFormulaUuids.has(formula.uuid);
+                            const items = formula.config?.formulas || [];
+                            const itemMap = new Map<string, any>();
+                            for (const item of items) {
+                                itemMap.set(item.uuid, item);
+                            }
+
+                            const packageLines: string[] = [];
+
+                            for (const item of items) {
+                                const compAlias = sanitizeAlias(`${formula.name}_${item.name}`);
+                                const stereotype = item.type || 'unknown';
+                                const desc = (item.description || '').replace(/[\r\n]+/g, ' ').trim();
+                                const val = item.value !== null && item.value !== undefined && item.value !== '' ? String(item.value).replace(/[\r\n]+/g, ' ').trim() : '';
+
+                                packageLines.push(`  class "${item.name}" as ${compAlias} <<${stereotype}>> {`);
+                                packageLines.push(`    description : ${desc || 'Empty'}`);
+                                if (item.type === 'constant') {
+                                    packageLines.push(`    value : ${val || 'Empty'}`);
+                                } else if (item.type === 'formula') {
+                                    packageLines.push(`    formula : ${val || 'Empty'}`);
+                                } else if (item.type === 'text') {
+                                    packageLines.push(`    text : ${val || 'Empty'}`);
+                                }
+                                packageLines.push('  }');
+
+                                if (item.type === 'formula' && val) {
+                                    packageLines.push(`  note right of ${compAlias} : <latex>${val}</latex>`);
+                                }
+
+                                const isInput = item.type === 'variable';
+                                if (item.link && item.link.type === 'schema') {
+                                    const resolved = await resolveFieldPath(item.link.entityId, item.link.item, isDirect);
+                                    if (resolved) {
+                                        if (isInput) {
+                                            formulaLinks.push(
+                                                `${resolved.alias}::${resolved.field} --> ${compAlias}`
+                                            );
+                                        } else {
+                                            formulaLinks.push(
+                                                `${compAlias} --> ${resolved.alias}::${resolved.field}`
+                                            );
+                                        }
+                                    }
+                                } else if (item.link && item.link.type === 'formula') {
+                                    const targetAlias = resolveFormulaLink(item.link);
+                                    if (targetAlias) {
+                                        if (isInput) {
+                                            formulaLinks.push(
+                                                `${targetAlias} --> ${compAlias}`
+                                            );
+                                        } else {
+                                            formulaLinks.push(
+                                                `${compAlias} --> ${targetAlias}`
+                                            );
+                                        }
+                                    }
+                                }
+
+                                if (item.relationships && item.relationships.length) {
+                                    for (const relUuid of item.relationships) {
+                                        const relItem = itemMap.get(relUuid);
+                                        if (relItem) {
+                                            const relAlias = sanitizeAlias(`${formula.name}_${relItem.name}`);
+                                            formulaLinks.push(
+                                                `${relAlias} --> ${compAlias}`
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (packageLines.length > 0) {
+                                formulaPackages.push(`package "Formula: ${formula.name}" {`);
+                                formulaPackages.push(...packageLines);
+                                formulaPackages.push('}');
+                            }
+                        }
+                    }
+                }
+
+                const skinparam = [
+                    'hide empty members',
+                    'hide circle',
+                    '',
+                    'skinparam class {',
+                    '  BackgroundColor<<schema>> #F9FAFC',
+                    '  BorderColor<<schema>> #4A90D9',
+                    '  BackgroundColor<<constant>> #e1e7fa',
+                    '  BorderColor<<constant>> #8893b8',
+                    '  BackgroundColor<<variable>> #fff6e3',
+                    '  BorderColor<<variable>> #c4a84e',
+                    '  BackgroundColor<<formula>> #fbd9ef',
+                    '  BorderColor<<formula>> #c47aa3',
+                    '  BackgroundColor<<text>> #d7f5e2',
+                    '  BorderColor<<text>> #6db87e',
+                    '}',
+                ];
+
+                const lines: string[] = [
+                    '@startuml Schema Tree: ' + schema.name,
+                    `' Uncomment the next line to hide classes not linked to formulas`,
+                    `' remove @unlinked`,
+                    `' Guardian Schema Tree Export`,
+                    `' Schema: ${schema.name}`,
+                    `' IRI: ${schema.iri || ''}`,
+                    `' Generated: ${new Date().toISOString()}`,
+                    `' Options: fields=${includeFields}, formulas=${includeFormulas}, dependencies=${includeDependencies}`,
+                    '',
+                    ...skinparam,
+                    '',
+                    ...classes,
+                    '',
+                    ...refLinks,
+                ];
+
+                if (formulaPackages.length > 0) {
+                    lines.push('');
+                    lines.push(...formulaPackages);
+                    lines.push('');
+                    lines.push(...formulaLinks);
+                }
+
+                lines.push('');
+                lines.push('@enduml');
+
+                return new MessageResponse(lines.join('\n'));
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
@@ -458,8 +903,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                 }
                 if (options.topicId) {
-                    filter.topicId = options.topicId;
-                    if (filter.category === SchemaCategory.TOOL) {
+                    if (options.topicId === 'not-binded') {
+                        filter.category = SchemaCategory.POLICY;
+                        const policies = await DatabaseServer.getPolicies({}, { fields: ['topicId'] });
+                        const policyTopicIds = policies.map(p => p.topicId).filter(id => !!id);
+                        filter.topicId = { $nin: policyTopicIds };
+                    } else {
+                        filter.topicId = options.topicId;
+                    }
+                    if (filter.category === SchemaCategory.TOOL && options.topicId !== 'not-binded') {
                         const tool = await DatabaseServer.getTool({ topicId: options.topicId });
                         if (tool && tool.status === ModuleStatus.PUBLISHED) {
                             delete filter.owner;
@@ -482,6 +934,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                 }
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+                const pipeline = [
+                    { $match: filter },
+                    { $group: { _id: '$topicId', count: { $sum: 1 } } }
+                ] as unknown[];
+                const countByTopic = await new DataBaseHelper(SchemaCollection).aggregate(pipeline) as unknown[] as { _id: string, count: number }[];
+                items.forEach((item) => {
+                    const topicId = item.topicId;
+                    item.topicCount = countByTopic.find(t => t._id === topicId)?.count;
+                });
                 return new MessageResponse({ items, count });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -507,6 +968,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 toolId?: string,
                 topicId?: string,
                 search?: string
+                searchOptions?: string[]
             },
             owner: IOwner,
         }) => {
@@ -561,16 +1023,23 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 //topicId
                 if (options.topicId) {
-                    filter.topicId = options.topicId;
+                    if (options.topicId === 'not-binded') {
+                        filter.category = SchemaCategory.POLICY;
+                        const policies = await DatabaseServer.getPolicies({}, { fields: ['topicId'] });
+                        const policyTopicIds = policies.map(p => p.topicId).filter(id => !!id);
+                        filter.topicId = { $nin: policyTopicIds };
+                    } else {
+                        filter.topicId = options.topicId;
+                    }
                 }
                 if (filter.category === SchemaCategory.TOOL) {
-                    if (options.topicId) {
+                    if (options.topicId && options.topicId !== 'not-binded') {
                         const tool = await DatabaseServer.getTool({ topicId: options.topicId });
                         if (tool && tool.status === ModuleStatus.PUBLISHED) {
                             delete filter.owner;
                         }
                         filter.topicId = options.topicId;
-                    } else {
+                    } else if (!options.topicId) {
                         const tools = await DatabaseServer.getTools({
                             $or: [{
                                 owner: owner.owner
@@ -589,33 +1058,78 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 //search
                 if (options.search) {
                     let search = options.search.toLowerCase();
-                    let global = false;
-                    if (search.startsWith('@')) {
-                        global = true;
+                    if (search.startsWith('@') || search.startsWith('#')) {
                         search = search.substring(1);
+                    }
+                    const searchOptions = options.searchOptions || ['uuid', 'name', 'description', 'references', 'fields'];
+                    const fields = ['_id'];
+                    if (searchOptions.includes('uuid')) {
+                        fields.push('iri');
+                    }
+                    if (searchOptions.includes('name')) {
+                        fields.push('name');
+                    }
+                    if (searchOptions.includes('description')) {
+                        fields.push('description');
+                    }
+                    if (searchOptions.includes('references') || searchOptions.includes('fields')) {
+                        fields.push('documentFileId');
                     }
                     let schemas = await DatabaseServer.getSchemas(filter, {
                         orderBy: { createDate: 'DESC' },
                         limit: 10000,
                         offset: 0,
-                        fields: ['_id', 'documentFileId']
+                        fields
                     });
                     schemas = schemas.filter((s) => {
-                        if (s.document) {
-                            if (!global) {
-                                delete s.document.$defs;
+                        if (searchOptions.includes('uuid')) {
+                            if (s.iri && s.iri.toLowerCase().includes(search)) {
+                                return true;
                             }
-                            const text = JSON.stringify(s.document).toLowerCase();
-                            return text.indexOf(search) > -1;
-                        } else {
-                            return false;
                         }
+                        if (searchOptions.includes('name')) {
+                            if (s.name && s.name.toLowerCase().includes(search)) {
+                                return true;
+                            }
+                        }
+                        if (searchOptions.includes('description')) {
+                            if (s.description && s.description.toLowerCase().includes(search)) {
+                                return true;
+                            }
+                        }
+                        if (searchOptions.includes('references')) {
+                            if (s.document?.$defs) {
+                                const text = JSON.stringify(s.document.$defs).toLowerCase();
+                                if (text.includes(search)) {
+                                    return true;
+                                }
+                            }
+                        }
+                        if (searchOptions.includes('fields')) {
+                            if (s.document) {
+                                delete s.document.$defs;
+                                const text = JSON.stringify(s.document).toLowerCase();
+                                if (text.includes(search)) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
                     })
                     const ids = schemas.map((s) => s._id);
                     filter._id = { $in: ids };
                 }
 
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+                const pipeline = [
+                    { $match: filter },
+                    { $group: { _id: '$topicId', count: { $sum: 1 } } }
+                ] as unknown[];
+                const countByTopic = await new DataBaseHelper(SchemaCollection).aggregate(pipeline) as unknown[] as { _id: string, count: number }[];
+                items.forEach((item) => {
+                    const topicId = item.topicId;
+                    item.topicCount = countByTopic.find(t => t._id === topicId)?.count;
+                });
                 return new MessageResponse({ items, count });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -814,118 +1328,198 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse<any>(MessageAPI.DELETE_SCHEMA,
+    ApiResponse<any>(MessageAPI.DELETE_SCHEMAS,
         async (msg: {
-            id: string,
+            schemaIds: string[],
             owner: IOwner,
-            needResult: boolean,
+            task: any,
             includeChildren: boolean
         }) => {
-            try {
-                if (!msg) {
-                    return new MessageError('Invalid delete schema parameter');
-                }
+            if (!msg) {
+                return new MessageError('Invalid delete schema parameter');
+            }
 
-                const { id, owner, needResult, includeChildren } = msg;
-                if (!id) {
-                    return new MessageError('Invalid schema id');
+            const { schemaIds, owner, task, includeChildren } = msg;
+            const notifier = await NewNotifier.create(task);
+
+            RunFunctionAsync(async () => {
+                if (!schemaIds || schemaIds?.length <= 0) {
+                    return new MessageError('Invalid schema ids');
                 }
                 if (!owner) {
                     return new MessageError('Invalid schema owner');
                 }
 
-                const schema = await DatabaseServer.getSchema({
-                    id,
+                const schemas = await DatabaseServer.getSchemas({
+                    id: { $in: schemaIds },
                     owner: owner.owner
                 });
-                if (!schema) {
-                    return new MessageError('Schema is not found');
+                if (!schemas || schemas?.length <= 0) {
+                    return new MessageError('Schemas is not found');
                 }
 
-                const parents = await DatabaseServer.getSchemas({
-                    defs: schema.iri,
-                    owner: owner.owner
-                }, {
+                const childSchemas = new Map<string, SchemaCollection>();
+                const blockedChildren: IChildSchemaDeletionBlock[] = [];
+                const blockedSchemaIds = new Set<string>();
+                const policySchemas = new Map<string, SchemaCollection[]>();
+                const schemaDefIds = new Set<string>();
+
+                for (const schema of schemas) {
+                    const defs = schema.defs ? (Array.isArray(schema.defs) ? schema.defs : [schema.defs]) : [];
+                    defs.forEach(def => schemaDefIds.add(def));
+                }
+                const childSchemasFilter: any = {
+                    iri: { $in: [...schemaDefIds] },
+                    status: ModuleStatus.DRAFT,
+                }
+                const childSchemasDefs = await DatabaseServer.getSchemas(childSchemasFilter, {
                     fields: [
+                        'iri',
                         'name',
                         'version',
                         'sourceVersion',
                         'status'
                     ]
-                });
-                if (parents.length > 0) {
-                    return new MessageError(
-                        `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
-                            SchemaHelper.getSchemaName(
-                                parent.name,
-                                parent.version || parent.sourceVersion,
-                                parent.status
-                            )
-                        ).join('\r\n')}`
-                    );
+                })
+                for (const childSchema of childSchemasDefs) {
+                    childSchemas.set(childSchema.iri, childSchema);
                 }
+
+                for (const schema of schemas) {
+                    const topicId = schema.topicId;
+
+                    if (topicId) {
+                        let allPolicySchemas: SchemaCollection[] = [];
+                        if (policySchemas.has(topicId)) {
+                            allPolicySchemas = policySchemas.get(topicId);
+                        } else {
+                            const policySchemasFilter: any = {
+                                topicId,
+                                readonly: false,
+                                system: false,
+                                status: ModuleStatus.DRAFT,
+                                category: SchemaCategory.POLICY
+                            }
+                            allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
+                            policySchemas.set(topicId, allPolicySchemas);
+                        }
+
+                        if (allPolicySchemas?.length > 0) {
+                            allPolicySchemas.forEach(policySchema => {
+                                if (schema.iri !== policySchema.iri
+                                    && !childSchemas.has(policySchema.iri)
+                                    && !schemas.some(item => item.iri === policySchema.iri)) {
+
+                                    const schemaDefs = policySchema.defs ? (Array.isArray(policySchema.defs) ? policySchema.defs : [policySchema.defs]) : [];
+
+                                    if (schemaDefs.includes(schema.iri)) {
+                                        const alreadyExist = blockedChildren.find(x => x.schema.iri === schema.iri);
+                                        if (alreadyExist) {
+                                            if (!alreadyExist.blockingSchemas.some(s => s.iri === policySchema.iri)) {
+                                                alreadyExist.blockingSchemas.push(policySchema);
+                                            }
+                                        } else {
+                                            blockedChildren.push({
+                                                schema,
+                                                blockingSchemas: [policySchema]
+                                            });
+
+                                            blockedSchemaIds.add(schema.iri);
+                                        }
+                                    } else {
+                                        for (const childSchema of Array.from(childSchemas.values())) {
+                                            if (!schemaDefs.includes(childSchema.iri)) {
+                                                continue;
+                                            }
+
+                                            const alreadyExist = blockedChildren.find(x => x.schema.iri === childSchema.iri);
+                                            if (alreadyExist) {
+                                                if (!alreadyExist.blockingSchemas.some(s => s.iri === policySchema.iri)) {
+                                                    alreadyExist.blockingSchemas.push(policySchema);
+                                                }
+                                            } else {
+                                                blockedChildren.push({
+                                                    schema: childSchema,
+                                                    blockingSchemas: [policySchema]
+                                                });
+
+                                                blockedSchemaIds.add(childSchema.iri);
+                                            }
+                                        }
+                                    }
+                                }
+                            })
+                        }
+                    }
+                }
+
+                for (const childSchema of Array.from(childSchemas.values())) {
+                    for (const blockedChild of blockedChildren) {
+                        const blockedSchema = blockedChild.schema as SchemaCollection;
+                        const schemaDefs = blockedSchema.defs ? (Array.isArray(blockedSchema.defs) ? blockedSchema.defs : [blockedSchema.defs]) : [];
+
+                        if (schemaDefs.includes(childSchema.iri)) {
+                            const alreadyExist = blockedChildren.find(x => x.schema.iri === childSchema.iri);
+                            if (alreadyExist) {
+                                if (!alreadyExist.blockingSchemas.some(s => s.iri === blockedSchema.iri)) {
+                                    alreadyExist.blockingSchemas.push(blockedSchema);
+                                }
+                            } else {
+                                blockedChildren.push({
+                                    schema: childSchema,
+                                    blockingSchemas: [blockedSchema]
+                                });
+
+                                blockedSchemaIds.add(childSchema.iri);
+                            }
+                        }
+                    }
+                }
+
+                const stepMap = new Map<string, NotificationStep>();
+                const results = new Map<string, boolean>();
+                const schemasToDelete: SchemaCollection[] = [];
 
                 if (includeChildren) {
-                    const defs = Array.isArray(schema.defs) ? schema.defs : [schema.defs];
-                    const defsIds = defs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
+                    const deletableChildren = Array.from(childSchemas.values())
+                        .filter(child =>
+                            !blockedSchemaIds.has(child.iri)
+                            && !schemas.some(schema => schema.iri === child.iri))
 
-                    const childSchemasFilter: any = {
-                        uuid: { $in: defsIds },
-                        status: ModuleStatus.DRAFT,
-                    }
-                    const childSchemas = await DatabaseServer.getSchemas(childSchemasFilter, {
-                        fields: [
-                            'uuid',
-                            'name',
-                            'version',
-                            'sourceVersion',
-                            'status'
-                        ]
-                    })
+                    for (const schema of deletableChildren) {
+                        const STEP_DELETE_SCHEMA = 'DELETE SCHEMA (' + schema.name + ')';
+                        const deleteSchemaStep = notifier.addStep(STEP_DELETE_SCHEMA);
+                        stepMap.set(schema.id, deleteSchemaStep);
 
-                    const blockedChildrenIds = new Set<string>();
-
-                    const policySchemasFilter: any = {
-                        topicId: schema.topicId,
-                        readonly: false,
-                        system: false,
-                        status: ModuleStatus.DRAFT,
-                        category: SchemaCategory.POLICY
-                    }
-                    const allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
-
-                    if (allPolicySchemas?.length > 0) {
-                        allPolicySchemas.forEach(item => {
-                            if (schema.uuid !== item.uuid && !childSchemas.some(child => child.uuid === item.uuid)) {
-                                const schemaDefs = Array.isArray(item.defs) ? item.defs : [item.defs];
-                                const schemaDefsIds = schemaDefs.map(defId => defId.startsWith('#') ? defId.slice(1) : defId);
-
-                                const childSchemaUsedInAnotherSchema = childSchemas.find(child => schemaDefsIds.includes(child.uuid));
-                                if (childSchemaUsedInAnotherSchema) {
-                                    blockedChildrenIds.add(childSchemaUsedInAnotherSchema.uuid);
-                                }
-                            }
-                        })
-                    }
-
-                    const deletableChildren = childSchemas.filter(item => !blockedChildrenIds.has(item.uuid))
-
-                    for (const element of deletableChildren) {
-                        await deleteSchema(element.id, owner, NewNotifier.empty());
+                        schemasToDelete.push(schema);
                     }
                 }
 
-                await deleteSchema(id, owner, NewNotifier.empty());
+                for (const schema of schemas) {
+                    if (blockedSchemaIds.has(schema.iri)) {
+                        continue;
+                    }
 
-                if (needResult) {
-                    const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
-                    return new MessageResponse(schemas);
-                } else {
-                    return new MessageResponse(true);
+                    const STEP_DELETE_SCHEMA = 'DELETE SCHEMA (' + schema.name + ')';
+                    const deleteSchemaStep = notifier.addStep(STEP_DELETE_SCHEMA);
+                    stepMap.set(schema.id, deleteSchemaStep);
+
+                    schemasToDelete.push(schema);
                 }
-            } catch (error) {
-                return new MessageError(error);
-            }
+
+                for (const schema of schemasToDelete) {
+
+                    const deleteSchemaStep = stepMap.get(schema.id);
+                    const result = await deleteSchema(schema.id, owner, deleteSchemaStep);
+                    results.set(schema.id, result);
+                }
+
+                notifier.result(results);
+            }, async (error) => {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                notifier.fail(error);
+            });
+            return new MessageResponse(task);
         });
 
     /**
@@ -936,7 +1530,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      *
      * @returns {any} - result
      */
-    ApiResponse<any>(MessageAPI.DELETE_SCHEMAS,
+    ApiResponse<any>(MessageAPI.DELETE_SCHEMAS_BY_TOPIC,
         async (msg: {
             topicId: string,
             owner: IOwner
@@ -1767,7 +2361,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 xlsxResult.updateSchemas(false);
                 xlsxResult.updatePolicy(target);
                 xlsxResult.addErrors(errors);
-                GenerateBlocks.generate(xlsxResult);
+                const isReplacement = Array.isArray(schemasIds) && schemasIds.some((schemaId) => !!schemaId);
+                if (!isReplacement) {
+                    GenerateBlocks.generate(xlsxResult);
+                }
                 notifier.completeStep(STEP_IMPORT_TOOLS);
 
                 notifier.startStep(STEP_IMPORT_SCHEMAS);

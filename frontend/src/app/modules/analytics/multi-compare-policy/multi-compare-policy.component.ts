@@ -25,6 +25,7 @@ export class MultiComparePolicyComponent implements OnInit {
     public tokens!: any[];
     public groups!: any[];
     public roles!: any[];
+    public tools!: any[];
     public minWidth!: any;
     public headers: any[];
 
@@ -93,6 +94,7 @@ export class MultiComparePolicyComponent implements OnInit {
         const groups = this.value.groups;
         const tokens = this.value.tokens;
         const topics = this.value.topics;
+        const tools = this.value.tools;
 
         this.columns = blocks?.columns || [];
         this.displayedColumns = this.columns
@@ -105,6 +107,7 @@ export class MultiComparePolicyComponent implements OnInit {
         this.topics = this.createContext(topics?.report);
         this.policies = this.createPolicyContext(this.value.left, this.value.rights);
         this.blocks = this.createTreeContext(blocks?.report);
+        this.tools = this.createContext(tools?.report);
 
         const k = Math.round(100 / this.size);
         this._gridStyle = `max(calc(${k}vw - 40px), 720px)`;

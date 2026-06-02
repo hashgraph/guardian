@@ -3,6 +3,7 @@ import { DatabaseServer, INotificationStep, IToolComponents, MessageAction, Mess
 import { importTag } from '../tag/tag-import-helper.js';
 import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
 import { ImportToolMap, ImportToolResult, ImportToolResults } from './tool-import.interface.js';
+import { resolveToolOverrides } from './tool-override-resolver.js';
 
 /**
  * Import tools by messages
@@ -82,12 +83,14 @@ export async function importToolByMessage(
 ): Promise<ImportToolResult> {
     // <-- Steps
     const STEP_LOAD_FILE = 'Load tool file';
+    const STEP_SAVE_FILE_IN_DB = 'Save file in database';
     const STEP_PARSE_FILE = 'Parse tool file';
     const STEP_IMPORT_SCHEMAS = 'Import tool schemas';
     const STEP_IMPORT_TAGS = 'Import tool tags';
     // Steps -->
 
     notifier.addStep(STEP_LOAD_FILE);
+    notifier.addStep(STEP_SAVE_FILE_IN_DB);
     notifier.addStep(STEP_PARSE_FILE);
     notifier.addStep(STEP_IMPORT_SCHEMAS);
     notifier.addStep(STEP_IMPORT_TAGS);
@@ -123,12 +126,29 @@ export async function importToolByMessage(
     if (!message.document) {
         throw new Error('File in body is empty');
     }
+
     const oldTool = await DatabaseServer.getTool({ messageId });
     if (oldTool) {
         if (
             oldTool.hash === message.hash &&
             oldTool.owner === message.owner
         ) {
+            if (message.tagsTopicId) {
+                const topic = await DatabaseServer.getTopicById(message.tagsTopicId);
+                if (!topic) {
+                    const tagsTopic = {
+                        type: TopicType.TagsTopic,
+                        topicId: message.tagsTopicId,
+                        name: message.name || TopicType.TagsTopic,
+                        description: message.description || TopicType.TagsTopic,
+                        owner: user.owner,
+                        policyId: message.id.toString(),
+                        policyUUID: message.uuid
+                    };
+                    await DatabaseServer.saveTopic(tagsTopic);
+                }
+            }
+
             notifier.completeStep(STEP_LOAD_FILE);
             notifier.complete();
             return {
@@ -140,6 +160,11 @@ export async function importToolByMessage(
         }
     }
     notifier.completeStep(STEP_LOAD_FILE);
+
+    notifier.startStep(STEP_SAVE_FILE_IN_DB);
+    const buffer = Buffer.from(message.document);
+    const contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), buffer);
+    notifier.completeStep(STEP_SAVE_FILE_IN_DB);
 
     notifier.startStep(STEP_PARSE_FILE);
     const components = await ToolImportExport.parseZipFile(message.document);
@@ -159,6 +184,7 @@ export async function importToolByMessage(
     components.tool.status = ModuleStatus.PUBLISHED;
 
     await updateToolConfig(components.tool);
+    components.tool.contentFileId = contentFileId;
     const result = await DatabaseServer.createTool(components.tool);
     notifier.completeStep(STEP_PARSE_FILE);
 
@@ -182,12 +208,23 @@ export async function importToolByMessage(
 
     const toolTags = components.tags?.filter((t: any) => t.entity === TagType.Tool) || [];
     if (message.tagsTopicId) {
-        const tagMessages = await messageServer.getMessages<TagMessage>(
-            message.tagsTopicId,
-            userId,
-            MessageType.Tag,
-            MessageAction.PublishTag
-        );
+        const tagsTopic = {
+            type: TopicType.TagsTopic,
+            topicId: message.tagsTopicId,
+            name: message.name || TopicType.TagsTopic,
+            description: message.description || TopicType.TagsTopic,
+            owner: user.owner,
+            policyId: message.id.toString(),
+            policyUUID: message.uuid
+        };
+        await DatabaseServer.saveTopic(tagsTopic);
+
+        const tagMessages = await messageServer.getMessages<TagMessage>({
+            topicId: message.tagsTopicId,
+            type: MessageType.Tag,
+            action: MessageAction.PublishTag,
+            userId
+        });
         for (const tag of tagMessages) {
             if (tag.entity === TagType.Tool && tag.target === messageId) {
                 toolTags.push({
@@ -330,33 +367,15 @@ export async function importToolByFile(
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, userId);
 
-    const toolsMapping: {
-        oldMessageId: string;
-        messageId: string;
-        oldHash: string;
-        newHash?: string;
-    }[] = [];
-    if (metadata?.tools) {
-        // tslint:disable-next-line:no-shadowed-variable
-        for (const tool of tools) {
-            if (
-                metadata.tools[tool.messageId] &&
-                tool.messageId !== metadata.tools[tool.messageId]
-            ) {
-                toolsMapping.push({
-                    oldMessageId: tool.messageId,
-                    messageId: metadata.tools[tool.messageId],
-                    oldHash: tool.hash,
-                });
-                tool.messageId = metadata.tools[tool.messageId];
-            }
-        }
-    }
+    const { toolsMapping, preResolvedTools, toolsToImport } = await resolveToolOverrides(tools, metadata);
 
     delete tool._id;
     delete tool.id;
     delete tool.messageId;
+    delete tool.version;
     delete tool.createDate;
+    delete tool.tagsTopicId;
+
     tool.uuid = GenerateUUIDv4();
     tool.creator = user.creator;
     tool.owner = user.owner;
@@ -377,7 +396,12 @@ export async function importToolByFile(
         owner: user.owner,
         targetId: null,
         targetUUID: null
-    }, userId, { admin: true, submit: true });
+    }, {
+        admin: true,
+        submit: true
+    }, {
+        userId
+    });
     await topic.saveKeys(userId);
     notifier.completeStep(STEP_CREATE_TOPIC);
 
@@ -401,7 +425,12 @@ export async function importToolByFile(
     notifier.completeStep(STEP_CREATE_TOOL);
 
     notifier.startStep(STEP_LINK_TOPIC);
-    await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), userId);
+    await topicHelper.twoWayLink({
+        topic,
+        parent,
+        rationale: messageStatus.getId(),
+        userId
+    });
 
     await DatabaseServer.saveTopic(topic.toObject());
     tool.topicId = topic.topicId;
@@ -412,16 +441,16 @@ export async function importToolByFile(
     notifier.startStep(STEP_IMPORT_SUB_SCHEMAS);
     const toolsResult = await importSubTools(
         root,
-        tools,
+        toolsToImport,
         user,
         notifier.getStep(STEP_IMPORT_SUB_SCHEMAS),
         userId
     );
+    toolsResult.tools = [...preResolvedTools, ...toolsResult.tools];
 
     for (const toolMapping of toolsMapping) {
         const toolByMessageId = toolsResult.tools.find(
-            // tslint:disable-next-line:no-shadowed-variable
-            (tool) => tool.messageId === toolMapping.messageId
+            (t) => t.messageId === toolMapping.messageId
         );
         toolMapping.newHash = toolByMessageId?.hash;
     }
@@ -459,6 +488,7 @@ export async function importToolByFile(
 
     // Replace id
     await replaceConfig(tool, schemasMap, toolsMapping);
+    await updateToolConfig(tool);
 
     const item = await DatabaseServer.createTool(tool);
     const _topicRow = await DatabaseServer.getTopicById(topic.topicId);

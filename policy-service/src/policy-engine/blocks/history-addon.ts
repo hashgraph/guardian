@@ -8,11 +8,12 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 @SourceAddon({
     blockType: 'historyAddon',
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'History',
         title: `Add 'History' Addon`,
-        post: true,
-        get: true,
+        post: false,
+        get: false,
         children: ChildrenType.None,
         control: ControlType.Special,
         input: null,
@@ -23,13 +24,15 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
             label: 'Timeline Label Path',
             title: 'Timeline unit label path',
             type: PropertyType.Path,
-            default: ''
+            default: '',
+            editable: true
         }, {
             name: 'timelineDescriptionPath',
             label: 'Timeline Description Path',
             title: 'Timeline unit description',
             type: PropertyType.Path,
-            default: ''
+            default: '',
+            editable: true
         }]
     },
     variables: []

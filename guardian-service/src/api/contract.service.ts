@@ -24,7 +24,8 @@ import {
     VCMessage,
     Wallet,
     WiperRequest,
-    Workers
+    Workers,
+    Environment,
 } from '@guardian/common';
 import {
     ContractAPI,
@@ -42,8 +43,8 @@ import {
     UserRole,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { AccountId, TokenId } from '@hashgraph/sdk';
-import { proto } from '@hashgraph/proto';
+import { AccountId, TokenId } from '@hiero-ledger/sdk';
+import { proto } from '@hiero-ledger/proto';
 import * as ethers from 'ethers';
 import { contractCall, contractQuery, createContract, createContractV2, customContractCall } from './helpers/index.js';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
@@ -56,11 +57,13 @@ const retireAbi = new ethers.Interface([
 ]);
 
 const versionEventsAbi = new ethers.Interface([
-    'event Version(uint256[3])',
+    'event VersionInfo(uint256[3])',
 ]);
 
 const accessEventsAbi = new ethers.Interface([
-    'event OwnerAdded(address)',
+    'event OwnerAdded(address indexed account)',
+    'event OwnerRemoved(address indexed account)',
+    'event OwnerProposed(address indexed pendingOwner)',
 ]);
 
 // tslint:disable-next-line:variable-name
@@ -109,6 +112,32 @@ const retireEventsAbi = new ethers.Interface([
     ...versionEventsAbi.fragments,
     ...accessEventsAbi.fragments
 ]);
+
+async function resolveAccountFromEvmAddress(evmAddress: string): Promise<string> {
+    const url = `${Environment.HEDERA_ACCOUNT_API}/${evmAddress}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(`Failed to resolve account for EVM address ${evmAddress}: mirror node returned ${res.status}`);
+    }
+    const data = await res.json() as { account?: string };
+    if (!data.account) {
+        throw new Error(`Failed to resolve account for EVM address ${evmAddress}: no account in response`);
+    }
+    return data.account;
+}
+
+async function resolveEVMAddressFromAccount(accountId: string): Promise<string> {
+    const url = `${Environment.HEDERA_ACCOUNT_API}/${accountId}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(`Failed to resolve EVM address for account ${accountId}: mirror node returned ${res.status}`);
+    }
+    const data = await res.json() as { evm_address?: string };
+    if (!data.evm_address) {
+        throw new Error(`Failed to resolve EVM address for account ${accountId}: no EVM address in response`);
+    }
+    return data.evm_address;
+}
 
 async function getContractMessage(
     workers: Workers,
@@ -391,7 +420,8 @@ async function setRetireRequest(
     contractId: string,
     user: string,
     tokens: RetireTokenRequest[],
-    userId: string | null
+    userId: string | null,
+    userAccountId: string | null = null
 ) {
     const newTokens = await Promise.all(
         tokens.map(async (token) => {
@@ -441,6 +471,7 @@ async function setRetireRequest(
         RetireRequest,
         {
             user,
+            userAccountId,
             tokens: newTokens,
             contractId,
         }
@@ -538,7 +569,7 @@ export async function syncWipeContract(
 
         for (const log of result) {
             const eventName = eventAbi.getEventName(log.topics[0]);
-            const data = eventAbi.decodeEventLog(eventName, log.data);
+            const data = eventAbi.decodeEventLog(eventName, log.data, log.topics);
             // tslint:disable-next-line:no-shadowed-variable
             const contracts = await dataBaseServer.find(
                 Contract,
@@ -709,6 +740,84 @@ export async function syncWipeContract(
                     }
                     break;
                 }
+                case 'OwnerAdded': {
+                    const newOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
+                    const newOwnerUser = await users.getUserByAccount(newOwnerAccount, userId);
+                    if (newOwnerUser?.did) {
+                        const ownerDid = newOwnerUser.role === UserRole.STANDARD_REGISTRY
+                            ? newOwnerUser.did
+                            : newOwnerUser.parent;
+                        const existingRecord = contracts.find(
+                            (c) => c.owner === ownerDid
+                        );
+                        if (!existingRecord) {
+                            const sourceContract = contracts[0];
+                            if (sourceContract) {
+                                const fullSource = await dataBaseServer.findOne(Contract, {
+                                    contractId,
+                                });
+                                if (fullSource) {
+                                    await dataBaseServer.save(Contract, {
+                                        contractId,
+                                        owner: ownerDid,
+                                        description: fullSource.description || '',
+                                        permissions: 1,
+                                        topicId: fullSource.topicId,
+                                        type: fullSource.type,
+                                        wipeContractIds: [],
+                                        wipeTokenIds: [],
+                                        lastSyncEventTimeStamp: fullSource.lastSyncEventTimeStamp,
+                                        syncPoolsDate: fullSource.syncPoolsDate,
+                                        syncRequestsDate: fullSource.syncRequestsDate,
+                                        syncDisabled: false,
+                                        version: (fullSource as any).version,
+                                    });
+                                }
+                            }
+                        }
+                        if (sendNotifications && newOwnerUser.id) {
+                            NotificationHelper.info(
+                                `Owner added in contract: ${contractId}`,
+                                `Account ${newOwnerAccount} has been added as owner`,
+                                newOwnerUser.id
+                            );
+                        }
+                    }
+                    break;
+                }
+                case 'OwnerRemoved': {
+                    const removedOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
+                    const removedOwnerUser = await users.getUserByAccount(removedOwnerAccount, userId);
+                    if (removedOwnerUser?.did) {
+                        const removedOwnerDid = removedOwnerUser.role === UserRole.STANDARD_REGISTRY
+                            ? removedOwnerUser.did
+                            : removedOwnerUser.parent;
+                        await dataBaseServer.deleteEntity(Contract, {
+                            contractId,
+                            owner: removedOwnerDid,
+                        });
+                    }
+                    if (removedOwnerUser?.id && sendNotifications) {
+                        NotificationHelper.info(
+                            `Owner removed from contract: ${contractId}`,
+                            `Account ${removedOwnerAccount} has been removed as owner`,
+                            removedOwnerUser.id
+                        );
+                    }
+                    break;
+                }
+                case 'OwnerProposed': {
+                    const proposedOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
+                    const proposedOwnerUser = await users.getUserByAccount(proposedOwnerAccount, userId);
+                    if (proposedOwnerUser?.id && sendNotifications) {
+                        NotificationHelper.info(
+                            `Owner proposed for contract: ${contractId}`,
+                            `Account ${proposedOwnerAccount} has been proposed as new owner`,
+                            proposedOwnerUser.id
+                        );
+                    }
+                    break;
+                }
                 default:
                     break;
             }
@@ -781,6 +890,26 @@ export async function syncRetireContracts(
     }
 }
 
+async function resolveNumericAccountId(
+    workers: Workers,
+    rawAccountId: string,
+    userId: string | null
+): Promise<string> {
+    if (!/^0\.0\.[0-9a-fA-F]{40}$/.test(rawAccountId)) {
+        return rawAccountId;
+    }
+
+    const resolved = await workers.addRetryableTask(
+        {
+            type: WorkerTaskType.RESOLVE_ACCOUNT_ALIAS,
+            data: { accountId: rawAccountId, payload: { userId } },
+        },
+        { priority: 10 }
+    );
+
+    return resolved?.accountId || rawAccountId;
+}
+
 export async function syncRetireContract(
     dataBaseServer: DatabaseServer,
     workers: Workers,
@@ -815,7 +944,7 @@ export async function syncRetireContract(
 
         for (const log of result) {
             const eventName = retireEventsAbi.getEventName(log.topics[0]);
-            const data = retireEventsAbi.decodeEventLog(eventName, log.data);
+            const data = retireEventsAbi.decodeEventLog(eventName, log.data, log.topics);
 
             // tslint:disable-next-line:no-shadowed-variable
             const contracts = await dataBaseServer.find(
@@ -954,6 +1083,8 @@ export async function syncRetireContract(
                     const retireUser = AccountId.fromSolidityAddress(
                         data[0]
                     ).toString();
+
+                    const userAccountId = await resolveNumericAccountId(workers, retireUser, userId);
                     await setRetireRequest(
                         workers,
                         dataBaseServer,
@@ -966,7 +1097,8 @@ export async function syncRetireContract(
                             count: Number(item[1]),
                             serials: item[2].map((serial) => Number(serial)),
                         })),
-                        userId
+                        userId,
+                        userAccountId
                     );
                     if (!sendNotifications) {
                         break;
@@ -1049,6 +1181,84 @@ export async function syncRetireContract(
                     );
                     break;
                 }
+                case 'OwnerAdded': {
+                    const newOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
+                    const newOwnerUser = await users.getUserByAccount(newOwnerAccount, userId);
+                    if (newOwnerUser?.did) {
+                        const ownerDid = newOwnerUser.role === UserRole.STANDARD_REGISTRY
+                            ? newOwnerUser.did
+                            : newOwnerUser.parent;
+                        const existingRecord = contracts.find(
+                            (c) => c.owner === ownerDid
+                        );
+                        if (!existingRecord) {
+                            const sourceContract = contracts[0];
+                            if (sourceContract) {
+                                const fullSource = await dataBaseServer.findOne(Contract, {
+                                    contractId,
+                                });
+                                if (fullSource) {
+                                    await dataBaseServer.save(Contract, {
+                                        contractId,
+                                        owner: ownerDid,
+                                        description: fullSource.description || '',
+                                        permissions: 1,
+                                        topicId: fullSource.topicId,
+                                        type: fullSource.type,
+                                        wipeContractIds: [],
+                                        wipeTokenIds: [],
+                                        lastSyncEventTimeStamp: fullSource.lastSyncEventTimeStamp,
+                                        syncPoolsDate: fullSource.syncPoolsDate,
+                                        syncRequestsDate: fullSource.syncRequestsDate,
+                                        syncDisabled: false,
+                                        version: (fullSource as any).version,
+                                    });
+                                }
+                            }
+                        }
+                        if (sendNotifications && newOwnerUser.id) {
+                            NotificationHelper.info(
+                                `Owner added in contract: ${contractId}`,
+                                `Account ${newOwnerAccount} has been added as owner`,
+                                newOwnerUser.id
+                            );
+                        }
+                    }
+                    break;
+                }
+                case 'OwnerRemoved': {
+                    const removedOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
+                    const removedOwnerUser = await users.getUserByAccount(removedOwnerAccount, userId);
+                    if (removedOwnerUser?.did) {
+                        const removedOwnerDid = removedOwnerUser.role === UserRole.STANDARD_REGISTRY
+                            ? removedOwnerUser.did
+                            : removedOwnerUser.parent;
+                        await dataBaseServer.deleteEntity(Contract, {
+                            contractId,
+                            owner: removedOwnerDid,
+                        });
+                    }
+                    if (removedOwnerUser?.id && sendNotifications) {
+                        NotificationHelper.info(
+                            `Owner removed from contract: ${contractId}`,
+                            `Account ${removedOwnerAccount} has been removed as owner`,
+                            removedOwnerUser.id
+                        );
+                    }
+                    break;
+                }
+                case 'OwnerProposed': {
+                    const proposedOwnerAccount = await resolveAccountFromEvmAddress(data[0]);
+                    const proposedOwnerUser = await users.getUserByAccount(proposedOwnerAccount, userId);
+                    if (proposedOwnerUser?.id && sendNotifications) {
+                        NotificationHelper.info(
+                            `Owner proposed for contract: ${contractId}`,
+                            `Account ${proposedOwnerAccount} has been proposed as new owner`,
+                            proposedOwnerUser.id
+                        );
+                    }
+                    break;
+                }
                 default:
                     break;
             }
@@ -1111,7 +1321,7 @@ async function isContractWiper(
 
         for (const log of result) {
             const eventName = eventAbi.getEventName(log.topics[0]);
-            const data = eventAbi.decodeEventLog(eventName, log.data);
+            const data = eventAbi.decodeEventLog(eventName, log.data, log.topics);
 
             switch (eventName) {
                 case 'WiperAdded': {
@@ -1389,10 +1599,12 @@ export async function contractAPI(
                     policyId: null,
                     policyUUID: null,
                 },
-                userId,
                 {
                     admin: true,
                     submit: false,
+                },
+                {
+                    userId
                 }
             );
 
@@ -1450,7 +1662,12 @@ export async function contractAPI(
                 true, userId
             );
 
-            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
+            await topicHelper.twoWayLink({
+                topic,
+                parent: userTopic,
+                rationale: contractMessageResult.getId(),
+                userId
+            });
 
             return new MessageResponse(contract);
         } catch (error) {
@@ -1497,10 +1714,12 @@ export async function contractAPI(
                     policyId: null,
                     policyUUID: null,
                 },
-                userId,
                 {
                     admin: true,
                     submit: false,
+                },
+                {
+                    userId
                 }
             );
 
@@ -1558,7 +1777,12 @@ export async function contractAPI(
                 true, userId
             );
 
-            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
+            await topicHelper.twoWayLink({
+                topic,
+                parent: userTopic,
+                rationale: contractMessageResult.getId(),
+                userId
+            });
 
             return new MessageResponse(contract);
         } catch (error) {
@@ -2145,27 +2369,65 @@ export async function contractAPI(
                     owner.creator
                 );
 
-                await contractCall(
-                    ContractAPI.CLEAR_WIPE_REQUESTS,
-                    workers,
-                    contractId,
-                    root.hederaAccountId,
-                    rootKey,
-                    'clear',
-                    contract.version !== '1.0.0' ? [{
-                        type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
-                    }] : null
-                );
-
-                await dataBaseServer.deleteEntity(WiperRequest, contract.version !== '1.0.0' ? {
-                    contractId,
-                    user: hederaId
-                } : {
-                    contractId,
-                });
+                if (contract.version !== '1.0.0') {
+                    if (hederaId) {
+                        await contractCall(
+                            ContractAPI.CLEAR_WIPE_REQUESTS,
+                            workers,
+                            contractId,
+                            root.hederaAccountId,
+                            rootKey,
+                            'clear',
+                            [{
+                                type: ContractParamType.ADDRESS,
+                                value: AccountId.fromString(
+                                    hederaId
+                                ).toSolidityAddress(),
+                            }]
+                        );
+                        await dataBaseServer.deleteEntity(WiperRequest, {
+                            contractId,
+                            user: hederaId
+                        });
+                    } else {
+                        const requests = await dataBaseServer.find(WiperRequest, {
+                            contractId,
+                        }, { fields: ['user'] });
+                        const uniqueUsers = [...new Set(requests.map((r) => r.user))];
+                        for (const userHederaId of uniqueUsers) {
+                            await contractCall(
+                                ContractAPI.CLEAR_WIPE_REQUESTS,
+                                workers,
+                                contractId,
+                                root.hederaAccountId,
+                                rootKey,
+                                'clear',
+                                [{
+                                    type: ContractParamType.ADDRESS,
+                                    value: AccountId.fromString(
+                                        userHederaId
+                                    ).toSolidityAddress(),
+                                }]
+                            );
+                        }
+                        await dataBaseServer.deleteEntity(WiperRequest, {
+                            contractId,
+                        });
+                    }
+                } else {
+                    await contractCall(
+                        ContractAPI.CLEAR_WIPE_REQUESTS,
+                        workers,
+                        contractId,
+                        root.hederaAccountId,
+                        rootKey,
+                        'clear',
+                        null
+                    );
+                    await dataBaseServer.deleteEntity(WiperRequest, {
+                        contractId,
+                    });
+                }
 
                 return new MessageResponse(true);
             } catch (error) {
@@ -2225,9 +2487,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -2290,9 +2550,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -2355,9 +2613,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -2420,9 +2676,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -2751,7 +3005,10 @@ export async function contractAPI(
                 }
                 result = await dataBaseServer.findAndCount(RetireRequest, filters, otherOptions);
             } else if (user.role === UserRole.USER) {
-                filters.user = user.hederaAccountId;
+                filters.$or = [
+                    { user: user.hederaAccountId },
+                    { userAccountId: user.hederaAccountId },
+                ];
                 result = await dataBaseServer.findAndCount(RetireRequest, filters, otherOptions);
             }
             return new MessageResponse(result);
@@ -2817,11 +3074,9 @@ export async function contractAPI(
                 });
             }
             if (Array.isArray(tokens) && tokens.length > 0) {
-                filters.$and.push(
-                    ...tokens.map((token) => ({
-                        tokenIds: token,
-                    }))
-                );
+                filters.$and.push({
+                    tokenIds: { $in: tokens },
+                });
             }
 
             return new MessageResponse(
@@ -3404,7 +3659,7 @@ export async function contractAPI(
                     owner,
                     root.hederaAccountId,
                     rootKey,
-                    request.user,
+                    request.userAccountId || request.user,
                     request.tokens,
                     userId
                 );
@@ -3533,9 +3788,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );
@@ -3598,9 +3851,7 @@ export async function contractAPI(
                 [
                     {
                         type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
+                        value: await resolveEVMAddressFromAccount(hederaId),
                     },
                 ]
             );

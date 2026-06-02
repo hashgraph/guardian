@@ -80,12 +80,22 @@
                     </div>
 
                     <div *ngIf="isBlockStyle(item)" class="block-body" [style]="blockStyle(item)">
+                        <div *ngIf="canEditTags() && hasTags(item)" class="block-tag-count">
+                            <span>{{ getTagsAmount(item) }}</span>
+                        </div>
                         <div class="block-item" (click)="onSelect($event, item)" theme-all>
                             <div class="block-item-icon">
                                 <i [ngClass]="'pi pi-' + item.icon" class="theme-text"></i>
                             </div>
                             <div class="block-item-name" theme-text>
                                 {{ item.node.localTag }}
+                            </div>
+                            <div *ngIf="isBlockSelected(item)" class="block-selected-mark">
+                                <svg-icon 
+                                    class="icon-btn"
+                                    src="/assets/images/icons/check-fill.svg"
+                                    svgClass="icon-color-primary">
+                                </svg-icon>
                             </div>
                         </div>
                         <div class="block-menu">
@@ -171,12 +181,22 @@
                     </div>
 
                     <div *ngIf="isToolStyle(item)" class="block-body tool-body">
+                        <div *ngIf="canEditTags() && hasTags(item)" class="block-tag-count">
+                            <span>{{ getTagsAmount(item) }}</span>
+                        </div>
                         <div class="block-item" (click)="onSelect($event, item)">
                             <div class="module-item-icon">
                                 <svg-icon src="/assets/images/icons/handyman.svg" svgClass="icon-style-handyman"></svg-icon>
                             </div>
                             <div class="module-item-name">
                                 {{ item.node.localTag }}
+                            </div>
+                            <div *ngIf="isBlockSelected(item)" class="block-selected-mark">
+                                <svg-icon 
+                                    class="icon-btn"
+                                    src="/assets/images/icons/check-fill.svg"
+                                    svgClass="icon-color-primary">
+                                </svg-icon>
                             </div>
                         </div>
                         <div class="block-menu module-menu">

@@ -1528,5 +1528,117 @@
                 }
             }
         }
+    },
+    {
+        "uuid": "PolicyExportProof",
+        "name": "PolicyExportProof",
+        "entity": "POLICY_EXPORT_PROOF",
+        "document": {
+            "$id": "#PolicyExportProof",
+            "$comment": "{ \"term\": \"PolicyExportProof\", \"@id\": \"#PolicyExportProof\" }",
+            "title": "PolicyExportProof",
+            "description": "Custom policy credential subject",
+            "type": "object",
+            "properties": {
+            "@context": {
+                "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                    "type": "string"
+                    }
+                }
+                ],
+                "readOnly": true
+            },
+            "type": {
+                "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                    "type": "string"
+                    }
+                }
+                ],
+                "readOnly": true
+            },
+            "id": {
+                "type": "string",
+                "readOnly": true
+            },
+            "name": {
+                "$comment": "{\"term\": \"name\", \"@id\": \"https://www.schema.org/text\"}",
+                "title": "name",
+                "description": "Policy name",
+                "type": "string",
+                "readOnly": false
+            },
+            "description": {
+                "$comment": "{\"term\": \"description\", \"@id\": \"https://www.schema.org/text\"}",
+                "title": "description",
+                "description": "Policy description",
+                "type": "string",
+                "readOnly": false
+            },
+            "version": {
+                "$comment": "{\"term\": \"version\", \"@id\": \"https://www.schema.org/text\"}",
+                "title": "version",
+                "description": "Policy version",
+                "type": "string",
+                "readOnly": false
+            },
+            "hash": {
+                "$comment": "{\"term\": \"hash\", \"@id\": \"https://www.schema.org/text\"}",
+                "title": "hash",
+                "description": "Policy content hash",
+                "type": "string",
+                "readOnly": false
+            }
+            },
+            "required": [
+            "name",
+            "description",
+            "version",
+            "hash"
+            ],
+            "additionalProperties": false
+        }
+    },
+    {
+        "uuid": "EvidenceAttachments",
+        "name": "EvidenceAttachments",
+        "entity": "EVIDENCE_ATTACHMENTS",
+        "document": {
+            "$id": "#EvidenceAttachments",
+            "$comment": "{ \"@id\": \"#EvidenceAttachments\", \"term\": \"EvidenceAttachments\" }",
+            "title": "EvidenceAttachments",
+            "description": "EvidenceAttachments",
+            "type": "object",
+            "properties": {
+                "dataType": {
+                    "title": "dataType",
+                    "description": "dataType",
+                    "type": "string",
+                    "$comment": "{\"term\": \"dataType\", \"@id\": \"https://www.schema.org/text\"}",
+                    "readOnly": false
+                },
+                "data": {
+                    "title": "data",
+                    "description": "data",
+                    "type": "string",
+                    "$comment": "{\"term\": \"data\", \"@id\": \"https://www.schema.org/text\"}",
+                    "readOnly": false
+                }
+            },
+            "required": ["dataType", "data"],
+            "additionalProperties": false
+        }
     }
+
 ]

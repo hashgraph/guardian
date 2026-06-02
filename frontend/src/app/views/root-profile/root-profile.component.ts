@@ -18,6 +18,9 @@ import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { NewRelayerAccountDialog } from 'src/app/components/new-relayer-account-dialog/new-relayer-account-dialog.component';
 import { RelayerAccountDetailsDialog } from 'src/app/components/relayer-account-details-dialog/relayer-account-details-dialog.component';
+import { OtpCodesDialogComponent } from '../login/otp-codes-dialog/otp-codes-dialog.component';
+import { OtpConfigDialogComponent } from '../login/otp-config-dialog/otp-config-dialog.component';
+import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disable-dialog.component';
 import moment from 'moment';
 
 enum OperationMode {
@@ -59,6 +62,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public progress: number = 0;
     public userTopics: any[] = [];
     public schema!: Schema;
+    public is2faEnabled = false;
     public hederaForm = this.fb.group({
         hederaAccountId: ['', Validators.required],
         hederaAccountKey: ['', Validators.required],
@@ -91,9 +95,9 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     private subscriptions = new Subscription()
     public isRestore = false;
 
-    public tab: 'general' | 'relayerAccounts' = 'general';
+    public tab: 'general' | 'relayerAccounts' | 'credentials' = 'general';
     public tabIndex = 0;
-    public tabs: ['general', 'relayerAccounts'] = ['general', 'relayerAccounts'];
+    public tabs: ['general', 'relayerAccounts', 'credentials'] = ['general', 'relayerAccounts', 'credentials'];
 
     public relayerAccountPage: any[];
     public relayerAccountCount: number;
@@ -182,6 +186,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         );
         this.loadProfile();
         this.step = 'HEDERA';
+        this.refreshOtpStatus();
     }
 
     ngOnDestroy(): void {
@@ -672,7 +677,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public openVCDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
@@ -691,7 +696,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '1000px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
@@ -708,7 +713,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public changePassword(profile: any) {
         this.dialogService.open(ChangePasswordComponent, {
             header: 'Change password',
-            width: '640px',
+            width: '720px',
             modal: true,
             data: {
                 login: profile?.username,
@@ -799,7 +804,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public onOpenAccount(item: any) {
         const dialogRef = this.dialogService.open(RelayerAccountDetailsDialog, {
             showHeader: false,
-            width: '1100px',
+            width: '90%',
             styleClass: 'guardian-dialog',
             data: {
                 relayerAccount: item
@@ -834,5 +839,46 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         for (const row of this.relayerAccountPage) {
             this.updateBalance(row);
         }
+    }
+
+    refreshOtpStatus() {
+        this.auth.getOtpStatus().subscribe((result) => {
+            this.is2faEnabled = result.enabled;
+        });
+    }
+
+    generate2fa() {
+        this.auth.generateOtpSecret().subscribe(config => {
+
+            this.dialogService.open(OtpConfigDialogComponent, {
+                header: 'Enable two-factor authentication',
+                width: '50vw',
+                closable: false,
+                data: { config: config }
+            }).onClose.subscribe((codes) => {
+                this.refreshOtpStatus();
+                if (codes && codes.length) {
+                    this.dialogService.open(OtpCodesDialogComponent, {
+                        header: "Save your recovery codes",
+                        data: { codes: codes }
+                    });
+                }
+            })
+        });
+    }
+
+    deactivate2fa() {
+        this.dialogService.open(OtpDisableDialogComponent, {
+            header: 'Deactivate two-factor authentication',
+            width: '50vw',
+            closable: false,
+
+        }).onClose.subscribe(result => {
+            if (result == true) {
+                this.auth.deactivateOtp().subscribe(() => {
+                    this.refreshOtpStatus();
+                });
+            }
+        })
     }
 }

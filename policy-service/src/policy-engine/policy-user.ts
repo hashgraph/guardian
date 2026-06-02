@@ -207,6 +207,17 @@ export class PolicyUser {
         );
     }
 
+    public getAuthUser(): IAuthUser {
+        return {
+            id: this._userId,
+            username: this.username,
+            did: this.did,
+            hederaAccountId: this._hederaAccountId,
+            permissions: this.permissions,
+            location: this.location
+        } as IAuthUser;
+    }
+
     /**
      * Set Group
      * @param group
@@ -401,6 +412,9 @@ export class UserCredentials {
     }
 
     private async isRelayerAccount(relayerAccount: string, userId: string | null): Promise<boolean> {
+        if (!relayerAccount) {
+            return false;
+        }
         if (relayerAccount && relayerAccount !== this._hederaAccountId) {
             return true;
         }

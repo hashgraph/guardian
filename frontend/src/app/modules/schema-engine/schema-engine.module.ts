@@ -23,6 +23,7 @@ import { VCFullscreenDialog } from './vc-fullscreen-dialog/vc-fullscreen-dialog.
 import { GeoImageComponent } from './geo-image/geo-image.component';
 import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.component';
 import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.component';
+import { ExportPlantUMLDialog } from './export-plantuml-dialog/export-plantuml-dialog.component';
 import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
 import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dialog.component';
@@ -52,6 +53,8 @@ import {TableFieldComponent} from './table-field/table-field.component';
 import {TableViewerComponent} from "./table-viewer/table-viewer.component";
 import { SchemaDeleteWarningDialogComponent } from './schema-delete-warning-dialog/schema-delete-warning-dialog.component';
 import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delete-dialog.component';
+import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-form-navigation.component';
+import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation/schema-form-view-navigation.component';
 
 @NgModule({
     declarations: [
@@ -68,6 +71,7 @@ import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delet
         GeoImageComponent,
         SchemaViewDialog,
         ExportSchemaDialog,
+        ExportPlantUMLDialog,
         SchemaFieldConfigurationComponent,
         EnumEditorDialog,
         CompareSchemaDialog,
@@ -82,7 +86,9 @@ import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delet
         DateTimeComponent,
         SchemaFormRootComponent,
         TableFieldComponent,
-        TableViewerComponent
+        TableViewerComponent,
+        SchemaFormNavigationComponent,
+        SchemaFormViewNavigationComponent
     ],
     imports: [
         CommonModule,
@@ -121,7 +127,9 @@ import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delet
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
         SchemaFormDialog,
-        SchemaFormRootComponent
+        SchemaFormRootComponent,
+        SchemaFormNavigationComponent,
+        SchemaFormViewNavigationComponent
     ],
     providers: [
         DialogService

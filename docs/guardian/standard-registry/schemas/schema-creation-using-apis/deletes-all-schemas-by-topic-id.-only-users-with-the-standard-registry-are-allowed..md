@@ -1,6 +1,6 @@
 # Deletes all schemas by topic id. Only users with the Standard Registry are allowed.
 
-<mark style="color:red;">DELETE</mark> `/schemas/topic/{topicId}`
+<mark style="color:red;">`DELETE`</mark> `/schemas/topic/{topicId}`
 
 Deletes all schema by topic ID.
 

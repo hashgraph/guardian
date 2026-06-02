@@ -1,5 +1,5 @@
 import { IVC, IVCDocument, GenerateUUIDv4, ArtifactType } from '@guardian/interfaces';
-import { Client } from '@hashgraph/sdk';
+import { Client } from '@hiero-ledger/sdk';
 
 /**
  * Transaction response callback
@@ -113,7 +113,26 @@ export function replaceAllEntities(
                 finder(child, name);
             }
         }
+
+        for (const key in o) {
+            if (!o.hasOwnProperty(key) || key === 'children') {
+                continue;
+            }
+
+            const v = o[key];
+
+            if (Array.isArray(v)) {
+                for (const item of v) {
+                    if (item && typeof item === 'object') {
+                        finder(item, name);
+                    }
+                }
+            } else if (v && typeof v === 'object') {
+                finder(v, name);
+            }
+        }
     }
+
     for (const name of names) {
         finder(obj, name);
     }
@@ -353,5 +372,43 @@ export function toBuffer(arrayBuffer?: Buffer | ArrayBuffer): Buffer | undefined
         return null;
     } else {
         return undefined;
+    }
+}
+
+export function ensurePrefix(text: string, prefixes: string | string[], defaultPrefix: string): string {
+    const list = Array.isArray(prefixes) ? prefixes : [prefixes];
+    if (list.some(p => text.startsWith(p))) {
+        return text;
+    }
+
+    return defaultPrefix + text;
+}
+
+export function stripPrefix(text: string, prefixes: string | string[]): string {
+    const list = Array.isArray(prefixes) ? prefixes : [prefixes];
+    for (const p of list) {
+        if (text.startsWith(p)) {
+            return text.slice(p.length);
+        }
+    }
+    return text
+}
+
+export function findBlocks(tree: any, filter: (block: any) => boolean): any[] {
+    const result: any[] = [];
+    _findBlocks(tree, filter, result);
+    return result;
+}
+
+function _findBlocks(node: any, filter: (block: any) => boolean, result: any[]): void {
+    if (node) {
+        if (filter(node)) {
+            result.push(node);
+        }
+        if (Array.isArray(node.children)) {
+            for (const child of node.children) {
+                _findBlocks(child, filter, result);
+            }
+        }
     }
 }

@@ -1,8 +1,31 @@
+const BASE = `http://localhost:${Cypress.env("portApi")}/`;
+
 const API = {
-    ApiServer: `http://localhost:${Cypress.env("portApi")}/`,
-    ApiIndexer: `http://localhost:${Cypress.env("portIndexer")}/`,
+    // Allow overriding full API origins (e.g. Docker Desktop).
+    ApiServer: (() => {
+        const apiServer = Cypress.env("apiServer");
+        if (apiServer) {
+            return apiServer.endsWith("/") ? apiServer : `${apiServer}/`;
+        }
+        return `http://localhost:${Cypress.env("portApi")}/`;
+    })(),
+    ApiIndexer: (() => {
+        const apiIndexer = Cypress.env("apiIndexer");
+        if (apiIndexer) {
+            return apiIndexer.endsWith("/") ? apiIndexer : `${apiIndexer}/`;
+        }
+        return `http://localhost:${Cypress.env("portIndexer")}/`;
+    })(),
     ApiMGS: `https://dev.guardianservice.app/api/v1/`,
 
+
+
+    //Discussions:    
+    Discussions: (policyId, documentId) => `${BASE}policy-comments/${policyId}/${documentId}/discussions`,
+    DiscussionsComments: (policyId, documentId, discussionId) => `${BASE}policy-comments/${policyId}/${documentId}/discussions/${discussionId}/comments`,
+    DiscussionsCommentsSearch: (policyId, documentId, discussionId) => `${BASE}policy-comments/${policyId}/${documentId}/discussions/${discussionId}/comments/search`,
+    AllowedUsers: (policyId, documentId) => `${BASE}policy-comments/${policyId}/${documentId}/users`,
+    PutFileIntoComment: (policyId, documentId, discussionId) => `${BASE}policy-comments/${policyId}/${documentId}/discussions/${discussionId}/comments/file`,
 
     //Accounts
     Accounts: "accounts/",
@@ -11,8 +34,8 @@ const API = {
     AccessToken: "accounts/access-token/",
     RootAuthorities: "accounts/root-authorities",
     Installer: "accounts/installer",
-    StandartRegistries:"accounts/standard-registries",
-    StandardRegistriesAggregated:"accounts/standard-registries/aggregated",
+    StandartRegistries: "accounts/standard-registries",
+    StandardRegistriesAggregated: "accounts/standard-registries/aggregated",
     Balance: "accounts/balance",
     AccountRegister: "accounts/register",
     AccountSession: "accounts/session",
@@ -146,6 +169,7 @@ const API = {
     ReportGridVerra: "tag/report_grid_verra/blocks",
     AssignVVBMR: "tag/assign_vvb_mr/blocks",
     MintTokenVerra: "tag/mint_token_verra/blocks",
+    RevokeProjectPP: "tag/revoke_project_pp_btn/blocks",
     Categories: "methodologies/categories/",
     AddValidationReport: "tag/add_new_validation_report/blocks",
     AddVerificationReport: "tag/add_verification_report/blocks",
@@ -155,7 +179,9 @@ const API = {
     RegWorkflowSteps: "tag/registrants_workflow_steps/blocks",
     Savepoint: "savepoints/",
     SavepointDelete: "savepoints/delete",
-
+    PolicyDocumentation: (policyId) => `${BASE}policies/${policyId}/about`,
+    BlockByTag: (policyId, tag) => `${BASE}policies/${policyId}/tag/${tag}/blocks`,
+ 
     //Records
     Record: "record/",
     RecordStatus: "status/",
@@ -212,6 +238,7 @@ const API = {
     Relationships: "relationships/",
     Documents: "documents/",
     Import: "import/",
+    Info: "info/",
 
     //Indexer
     IndexerRegistries: "entities/registries/",
@@ -222,7 +249,7 @@ const API = {
     IndexerVPs: "entities/vp-documents/",
     IndexerStatisticVCs: "entities/statistic-documents/",
     IndexerLabelVPs: "entities/label-documents/",
-    
+
     IndexerPolicies: "entities/policies/",
     IndexerTools: "entities/tools/",
     IndexerModules: "entities/modules/",
@@ -232,7 +259,7 @@ const API = {
     IndexerStatistics: "entities/statistics/",
     IndexerLabels: "entities/labels/",
     IndexerFormulas: "entities/formulas/",
-    
+
     IndexerNFTs: "entities/nfts/",
     IndexerTopics: "entities/topics/",
     IndexerContracts: "entities/contracts/",
@@ -272,12 +299,14 @@ const API = {
     //Permissions
     UsersPermissions: "permissions/users/",
 
+    //Relayer-accounts
+    RelayerAccounts: "relayer-accounts/",
+
     //MGS
     //Tenants
     TenantsUser: "tenants/user",
     TenantsDelete: "tenants/delete",
     TenantsInvite: "tenants/invite",
     TermsAgree: "accounts/terms/agree"
-    
 };
 export default API;

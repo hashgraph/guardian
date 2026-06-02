@@ -23,6 +23,10 @@ export interface Details<T extends Message | NFT | Token, RT = RawMessage> {
      * Raw message
      */
     row?: RT;
+    /**
+     * Tags
+     */
+    tags?: any[];
 }
 
 /**

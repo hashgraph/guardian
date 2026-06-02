@@ -39,6 +39,15 @@ export class PolicyInvitations extends RestoreEntity {
     role?: string;
 
     /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
+    /**
      * Create document
      */
     @BeforeCreate()

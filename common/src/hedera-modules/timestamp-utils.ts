@@ -1,4 +1,4 @@
-import { Timestamp } from '@hashgraph/sdk';
+import { Timestamp } from '@hiero-ledger/sdk';
 import moment from 'moment';
 
 /**

@@ -11,7 +11,7 @@ Here the images below show the selection of account type and selection of userna
 
 The header was also adapted for mobile for all types of users. The balance was maintained as one of the elements always present. The new header for mobile, these elements are always present.
 
-<figure><img src="../../../.gitbook/assets/3 (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/3 (3).png" alt=""><figcaption></figcaption></figure>
 
 The various menus and submenus (in case there are any) have been moved upon clicking on the hamburger menu, presenting the user with the following.
 
@@ -33,7 +33,7 @@ The user registration form into a policy has also been redesigned. This makes th
 
 The images below are the registration forms which have been redesigned
 
-![](<../../../.gitbook/assets/8 (2) (1).png>) ![](<../../../.gitbook/assets/9 (2) (1) (2).png>)
+![](<../../../.gitbook/assets/8 (2).png>) ![](<../../../.gitbook/assets/9 (2) (1).png>)
 
 ### User creating a retire request
 

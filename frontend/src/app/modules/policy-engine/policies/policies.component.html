@@ -23,6 +23,11 @@
                         <div class="tabview-label">Remote Policies</div>
                     </ng-template>
                 </p-tabPanel>
+                <p-tabPanel *ngIf="user.POLICIES_POLICY_EXECUTE && !user.POLICIES_POLICY_MANAGE" [selected]="tab === 'disconnected'">
+                    <ng-template pTemplate="header">
+                        <div class="tabview-label">Disconnected Policies</div>
+                    </ng-template>
+                </p-tabPanel>
             </p-tabView>
         </div>
     </ng-container>
@@ -59,7 +64,7 @@
                             label="Clear filters"
                             pButton></button>
                 </form>
-    
+
                 <div class="actions-container-btns">
                     <p-button
                         *ngIf="user.POLICIES_POLICY_CREATE"
@@ -125,7 +130,7 @@
             </div>
         </ng-container>
 
-        <ng-container *ngIf="tab === 'remote'"> 
+        <ng-container *ngIf="tab === 'remote'">
             <div class="actions-container" *ngIf="user.POLICIES_EXTERNAL_POLICY_CREATE">
                 <form *ngIf="hasPolicies" [formGroup]="filtersForm" class="policy-filters">
                     <span class="p-input-icon-right">
@@ -152,14 +157,7 @@
                         *ngIf="user.POLICIES_EXTERNAL_POLICY_CREATE"
                         (click)="importExternalPolicy()"
                         class="guardian-button guardian-button-primary">
-                        <div class="guardian-button-icon">
-                            <svg-icon
-                                class="icon-btn"
-                                src="/assets/images/icons/add.svg"
-                                svgClass="icon-color-secondary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Request Access</div>
+                        <div class="guardian-button-label">Request Remote Policy</div>
                     </button>
                 </div>
             </div>
@@ -181,6 +179,19 @@
                         <ng-template pTemplate="header">
                             <tr class="grid-table-header">
                                 <th
+                                    *ngIf="canDisplayColumn('select')"
+                                    class="header-cell-text cell-64"
+                                    pFrozenColumn>
+                                        <p-checkbox
+                                            class="guardian-checkbox checkbox-24"
+                                            (onChange)="onSelectAllItems($event)"
+                                            [disabled]="isAnyDeleteDisabled()"
+                                            [ngModel]="isAllSelected"
+                                            [binary]="true"
+                                        >
+                                        </p-checkbox>
+                                </th>
+                                <th
                                     *ngIf="canDisplayColumn('name')"
                                     class="header-cell-text cell-150"
                                     pFrozenColumn>Name
@@ -195,6 +206,15 @@
                                     *ngIf="canDisplayColumn('operations')"
                                     class="header-cell-text cell-120 cell-last"
                                     pFrozenColumn>Operations
+                                </th>
+                                <th
+                                    *ngIf="canDisplayColumn('disconnect')"
+                                    class="header-cell-text cell-150 cell-last"
+                                    pFrozenColumn>
+                                </th>
+                                <th
+                                    *ngIf="canDisplayColumn('modified')"
+                                    class="header-cell-text cell-description">Modified
                                 </th>
                                 <th
                                     *ngIf="canDisplayColumn('description')"
@@ -245,6 +265,21 @@
                         <ng-template let-policy pTemplate="body">
                             <tr class="grid-table-row">
                                 <td
+                                    *ngIf="canDisplayColumn('select')"
+                                    class="cell-64"
+                                    pFrozenColumn
+                                >
+                                    <p-checkbox
+                                        class="guardian-checkbox checkbox-24"
+                                        (onChange)="onSelectItem(policy)"
+                                        [disabled]="isDeleteDisabled(policy)"
+                                        [ngModel]="isSelected(policy)"
+                                        [binary]="true"
+                                    >
+                                    </p-checkbox>
+                                </td>
+
+                                <td
                                     *ngIf="canDisplayColumn('name')"
                                     class="text-truncate cell-150"
                                     pFrozenColumn
@@ -255,7 +290,7 @@
                                 <td
                                     *ngIf="canDisplayColumn('instance')"
                                     class="cell-{{sizeColumn('instance')}}"
-                                    [class.cell-last]="!canDisplayColumn('operations')"
+                                    [class.cell-last]="!canDisplayColumn('operations') && !canDisplayColumn('disconnect')"
                                     pFrozenColumn
                                 >
                                     <div *ngIf="showInstance(policy) as instanceLabel" class="instances">
@@ -303,7 +338,8 @@
 
                                 <td
                                     *ngIf="canDisplayColumn('operations')"
-                                    class="text-truncate cell-120 cell-last"
+                                    class="text-truncate cell-120"
+                                    [class.cell-last]="!canDisplayColumn('disconnect')"
                                     pFrozenColumn
                                 >
                                     <div class="commands-line">
@@ -329,6 +365,82 @@
                                             <svg-icon src="/assets/images/icons/menu-2.svg"
                                                       svgClass="primary-color"></svg-icon>
                                         </div>
+                                    </div>
+                                </td>
+                                <td
+                                    *ngIf="canDisplayColumn('disconnect')"
+                                    class="cell-150 cell-last cell-left-padding-0"
+                                    pFrozenColumn
+                                >
+                                    <button
+                                        *ngIf="tab !== 'disconnected'"
+                                        (click)="disconnect(policy, tab)"
+                                        class="guardian-button guardian-button-delete disconnect-btn">
+                                        <div class="guardian-button-icon">
+                                            <svg-icon class="icon-btn svg-icon"
+                                                src="/assets/images/icons/delete.svg"
+                                                svgClass="icon-color-delete">
+                                            </svg-icon>
+                                        </div>
+                                        Disconnect
+                                    </button>
+                                    <button
+                                        *ngIf="tab === 'disconnected'"
+                                        (click)="reconnect(policy, tab)"
+                                        class="guardian-button guardian-button-success disconnect-btn">
+                                        <div class="guardian-button-icon">
+                                            <svg-icon class="icon-btn svg-icon"
+                                                src="/assets/images/icons/refresh-2.svg"
+                                                svgClass="icon-color-success">
+                                            </svg-icon>
+                                        </div>
+                                        Reconnect
+                                    </button>
+                                </td>
+                                <td
+                                    *ngIf="canDisplayColumn('modified')"
+                                    class="text-truncate cell-description"
+                                >
+                                    <div *ngIf="policy?.originalChanged === true">
+                                        <button
+                                            (click)="comparePolicyOrigin(policy)"
+                                            class="guardian-button guardian-button-secondary original-status-btn"
+                                            pTooltip="Policy was modified after import"
+                                            tooltipPosition="bottom"
+                                            pButton>
+                                            <div class="guardian-button-icon">
+                                                <svg-icon
+                                                    class="icon-btn"
+                                                    src="/assets/images/icons/compare.svg"
+                                                    svgClass="icon-color-primary">
+                                                </svg-icon>
+                                            </div>
+                                            <div class="guardian-button-label">Compare</div>
+                                        </button>
+                                    </div>
+
+                                    <div *ngIf="policy?.originalChanged === false">
+                                        <button
+                                            class="button secondary original-status-btn"
+                                            [disabled]="true"
+                                            label="No changes"
+                                            pButton>
+                                        </button>
+                                    </div>
+
+                                    <div *ngIf="policy?.originalChanged === undefined">
+                                        <span
+                                            pTooltip="Policy modification tracking was likely disabled"
+                                            tooltipPosition="bottom"
+                                        >
+                                            <button
+                                                class="button secondary original-status-btn"
+                                                [disabled]="true"
+                                                label="Status unavailable"
+                                                pTooltip="Policy modification tracking was likely disabled"
+                                                pButton>
+                                            </button>
+                                        </span>
                                     </div>
                                 </td>
                                 <td
@@ -397,7 +509,7 @@
                                     class="cell-140 text-truncate"
                                 >
                                     <span class="text-truncate">
-                                        <hedera-explorer 
+                                        <hedera-explorer
                                             [params]="policy.topicId"
                                             type="topics">{{ policy.topicId }}</hedera-explorer>
                                     </span>
@@ -506,7 +618,7 @@
         <ng-container *ngIf="group.visible">
             <ng-container *ngIf="group.group">
                 <div
-                    class="policy-menu-btn sub-menu-button"
+                    class="policy-menu-btn sub-menu-button {{group.color}}"
                     (click)="onSubMenuClick($event, policySubMenu, group)"
                 >
                     <div>
@@ -524,13 +636,14 @@
                         (click)="button.onClick()"
                         [disabled]="button.disabled"
                         label="{{button.tooltip}}"
-                        class="policy-menu-btn"
+                        class="policy-menu-btn {{button.color}}"
                         [outlined]=true
                         [pTooltip]="button.tooltip"
                         tooltipPosition="bottom"
                         appendTo="body">
-                        <svg-icon src="/assets/images/icons/{{button.icon}}.svg"
-                                  [svgClass]="button.disabled ? 'disabled-color' : 'primary-color'"></svg-icon>
+                        <svg-icon 
+                            src="/assets/images/icons/{{button.icon}}.svg"
+                            [svgClass]="button.color"></svg-icon>
                     </p-button>
                 </ng-container>
             </ng-container>
@@ -547,12 +660,13 @@
                 (click)="button.onClick()"
                 [disabled]="button.disabled"
                 label="{{button.tooltip}}"
-                class="policy-menu-btn"
+                class="policy-menu-btn {{button.color}}"
                 [outlined]=true
                 [pTooltip]="button.tooltip"
                 tooltipPosition="bottom">
-                <svg-icon src="/assets/images/icons/{{button.icon}}.svg"
-                          [svgClass]="button.disabled ? 'disabled-color' : 'primary-color'"></svg-icon>
+                <svg-icon 
+                    src="/assets/images/icons/{{button.icon}}.svg"
+                    [svgClass]="button.color"></svg-icon>
             </p-button>
         </ng-container>
     </div>
@@ -566,6 +680,28 @@
         <span class="info-text">Please create a new policy to see the data</span>
     </div>
 </ng-template>
+
+<div *ngIf="isAnyItemSelected()" class="options-footer-container">
+    <div class="options-footer">
+        <div class="selected-info-block">
+            <span class="selected-info">{{ selectedItems.length | pluralize: 'policy' : 'policies'}} selected</span>
+            <p-button
+                (click)="onClearSelection()"
+                class="secondary-btn"
+                [outlined]="true"
+            >
+                Clear selection
+            </p-button>
+        </div>
+        <div>
+            <p-button
+                (click)="onDeleteItems()"
+                severity="danger"
+                label="Delete selected"
+                type="button"></p-button>
+        </div>
+    </div>
+</div>
 
 <ng-template #preloader>
     <div class="preloader-image"></div>

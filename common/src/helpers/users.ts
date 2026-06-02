@@ -364,4 +364,8 @@ export class Users extends NatsService {
     public async getRemoteUsers(did: string, userId: string | null): Promise<IAuthUser[]> {
         return await this.sendMessage(AuthEvents.GET_REMOTE_USERS, { did, userId });
     }
+
+    public async otpGenerateSecret(userId: string) {
+        return await this.sendMessage(AuthEvents.OTP_GENERATE_SECRET, { userId });
+    }
 }

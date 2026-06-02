@@ -19,7 +19,7 @@ export class SignAndSendRole {
         message: RoleMessage;
     }> {
         const { ref, subject, group, uuid, relayerAccount, userId } = options;
-        const did = group.owner;
+        const did = group.did;
         const vcHelper = new VcHelper();
         const userCred = await PolicyUtils.getUserCredentials(ref, did, userId);
         const userRelayerAccount = await userCred.loadRelayerAccount(ref, relayerAccount, userId);
@@ -50,7 +50,9 @@ export class SignAndSendRole {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
 
         return { vc: userVC, message: messageResult };
@@ -65,7 +67,7 @@ export class SignAndSendRole {
         userId: string | null
     }): Promise<any> {
         const { ref, subject, group, uuid, relayerAccount, userId } = options;
-        const did = group.owner;
+        const did = group.did;
         const vcHelper = new VcHelper();
         const userAccount = await PolicyUtils.getHederaAccountId(ref, did, userId);
 
@@ -162,7 +164,9 @@ export class SignAndSendRole {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: null,
+                mockId: null
             });
 
         return { vc: userVC, message: messageResult };

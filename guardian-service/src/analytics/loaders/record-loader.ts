@@ -54,7 +54,7 @@ export class RecordLoader {
 
         const children: DocumentModel[] = [];
         for (const document of documents) {
-            if (document.type === 'schema') {
+            if (document.type === 'schema' && document.document) {
                 const schemaModel = SchemaModel.from(document.document, this.options);
                 schemaModel.update(this.options);
                 this.cacheSchemas.addSchemaCache(document.id, schemaModel, schemaModel.iri);

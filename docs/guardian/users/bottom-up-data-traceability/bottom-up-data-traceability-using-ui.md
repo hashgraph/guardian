@@ -148,7 +148,7 @@ To enable the use of **Definitions** for creating **Assessments** of real data, 
 
 #### **3.1 Creation**
 
-Published **Definitions** can be used for creating an **Assessment** by pressing the **Create** button for the corresponding Statistics **Definition** which launches the **Assessment** wizar&#x64;**.**
+Published **Definitions** can be used for creating an **Assessment** by pressing the **Create** button for the corresponding Statistics **Definition** which launches the **Assessment Wizard**.
 
 ![](<../../../.gitbook/assets/16 (13).png>)
 
@@ -248,4 +248,4 @@ Example Hedera message on the publication of a new Statistics **Assessment**
 
 ## 2. Demo Video
 
-[Youtube](https://youtu.be/tYLsr4rxw58?si=XNRvpap7aosnwuhh\&t=107)
+[YouTube](https://youtu.be/tYLsr4rxw58?si=XNRvpap7aosnwuhh\&t=107)

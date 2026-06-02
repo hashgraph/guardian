@@ -17,6 +17,13 @@
     align-content: center;
 }
 
+.checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
 .group-container {
     margin-bottom: 18px;
 
@@ -155,7 +162,7 @@
 }
 
 .dialog-body {
-    height: 55vh;
+    max-height: 75vh;
     max-width: 100vw;
     overflow-y: auto;
 }
@@ -186,7 +193,11 @@
 
 .action-buttons {
     display: flex;
-    padding-top: 25px;
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
 }
 
 .cancel-button {
@@ -263,4 +274,10 @@
     animation-duration: 7.5s;
     animation-iteration-count: infinite;
     animation-timing-function: ease-in-out;
+}
+
+.original-tracking {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }

@@ -273,4 +273,8 @@ export class ModuleTemplate {
     public getTools(): Set<string> {
         return this._config.getTools();
     }
+
+    public find(types: string[]): PolicyBlock[] {
+        return this.allBlocks?.filter((b) => types.includes(b.blockType)) || [];
+    }
 }

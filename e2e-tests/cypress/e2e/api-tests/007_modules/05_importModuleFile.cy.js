@@ -1,3 +1,4 @@
+
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -6,76 +7,95 @@ context("Export Module from File", { tags: ['modules', 'thirdPool', 'all'] }, ()
 
     const SRUsername = Cypress.env('SRUser');
 
+    const modulesUrl = `${API.ApiServer}${API.ListOfAllModules}`;
+    const importUrl = `${modulesUrl}${API.ImportFile}`;
+
     let modules, lastModule, importedModule;
+
+    const getModulesWithAuth = (authorization) =>
+        cy.request({
+            method: METHOD.GET,
+            url: modulesUrl,
+            headers: { authorization },
+        });
+
+    const getModuleWithAuth = (authorization, uuid) =>
+        cy.request({
+            method: METHOD.GET,
+            url: modulesUrl + uuid,
+            headers: { authorization },
+        });
+
+    const postImportWithAuth = (authorization, file) =>
+        cy.request({
+            method: METHOD.POST,
+            url: importUrl,
+            body: file,
+            headers: {
+                "content-type": "binary/octet-stream",
+                authorization,
+            },
+            timeout: 180000,
+        });
+
+    const postImportWithoutAuth = (file, headers = {}) =>
+        cy.request({
+            method: METHOD.POST,
+            url: importUrl,
+            body: file,
+            headers: {
+                "content-type": "binary/octet-stream",
+                ...headers,
+            },
+            failOnStatusCode: false,
+        });
+
+    const readExportedModuleBlob = () =>
+        cy.fixture("exportedModule.module", "binary")
+            .then((binary) => Cypress.Blob.binaryStringToBlob(binary));
 
     it("Import module from IPFS", { tags: ['smoke', 'analytics'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("exportedModule.module", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-                .then((file) => {
-                    cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.ListOfAllModules + API.ImportFile,
-                        body: file,
-                        headers: {
-                            "content-type": "binary/octet-stream",
-                            authorization,
-                        },
-                        timeout: 180000,
-                    }).then((response) => {
-                        expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                    })
-                })
-        })
+            readExportedModuleBlob().then((file) => {
+                postImportWithAuth(authorization, file).then((response) => {
+                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                });
+            });
+        });
     });
 
     it("Verify import module", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.ListOfAllModules,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
+            getModulesWithAuth(authorization).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 modules = response.body;
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.ListOfAllModules + modules.at(0).uuid,
-                    headers: {
-                        authorization,
-                    },
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    importedModule = response.body;
-                    cy.request({
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.ListOfAllModules + modules.at(1).uuid,
-                        headers: {
-                            authorization,
-                        },
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.OK);
-                        lastModule = response.body;
 
-                        expect(importedModule._id).not.eql(lastModule._id)
+                getModuleWithAuth(authorization, modules.at(0).uuid).then((res0) => {
+                    expect(res0.status).eql(STATUS_CODE.OK);
+                    importedModule = res0.body;
+
+                    getModuleWithAuth(authorization, modules.at(1).uuid).then((res1) => {
+                        expect(res1.status).eql(STATUS_CODE.OK);
+                        lastModule = res1.body;
+
+                        expect(importedModule._id).not.eql(lastModule._id);
                         delete importedModule._id;
                         delete lastModule._id;
 
-                        expect(importedModule.configFileId).not.eql(lastModule.configFileId)
+                        expect(importedModule.configFileId).not.eql(lastModule.configFileId);
                         delete importedModule.configFileId;
                         delete lastModule.configFileId;
 
-                        expect(importedModule.id).not.eql(lastModule.id)
+                        expect(importedModule.id).not.eql(lastModule.id);
                         delete importedModule.id;
                         delete lastModule.id;
 
-                        expect(importedModule.uuid).not.eql(lastModule.uuid)
+                        expect(importedModule.uuid).not.eql(lastModule.uuid);
                         delete importedModule.uuid;
                         delete lastModule.uuid;
 
-                        expect(importedModule.name).to.match(new RegExp("^" + lastModule.name + "_\\d+$", "g"))
-                        delete importedModule.name
+                        expect(importedModule.name).to.match(new RegExp("^" + lastModule.name + "_\\d+$", "g"));
+                        delete importedModule.name;
                         delete lastModule.name;
 
                         delete importedModule.createDate;
@@ -84,62 +104,34 @@ context("Export Module from File", { tags: ['modules', 'thirdPool', 'all'] }, ()
                         delete lastModule.updateDate;
 
                         expect(importedModule).eql(lastModule);
-                    })
-                })
-            })
-        })
+                    });
+                });
+            });
+        });
     });
 
     it("Import module from IPFS without auth token - Negative", () => {
-        cy.fixture("exportedModule.module", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-            .then((file) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.ListOfAllModules + API.ImportFile,
-                    body: file,
-                    headers: {
-                        "content-type": "binary/octet-stream",
-                    },
-                    failOnStatusCode: false,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-                })
-            })
+        readExportedModuleBlob().then((file) => {
+            postImportWithoutAuth(file).then((response) => {
+                expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+            });
+        });
     });
 
     it("Import module from IPFS with invalid auth token - Negative", () => {
-        cy.fixture("exportedModule.module", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-            .then((file) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.ListOfAllModules + API.ImportFile,
-                    body: file,
-                    headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization: "Bearer wqe",
-                    },
-                    failOnStatusCode: false,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-                })
-            })
+        readExportedModuleBlob().then((file) => {
+            postImportWithoutAuth(file, { authorization: "Bearer wqe" }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+            });
+        });
     });
 
     it("Import module from IPFS with empty auth token - Negative", () => {
-        cy.fixture("exportedModule.module", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-            .then((file) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.ListOfAllModules + API.ImportFile,
-                    body: file,
-                    headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization: "",
-                    },
-                    failOnStatusCode: false,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-                })
-            })
+        readExportedModuleBlob().then((file) => {
+            postImportWithoutAuth(file, { authorization: "" }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+            });
+        });
     });
-})
+
+});

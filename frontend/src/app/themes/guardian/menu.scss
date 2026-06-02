@@ -12,4 +12,20 @@
     .p-overlaypanel-content {
         padding: 0px;
     }
+
+    .menu-item {
+        padding: 8px 16px;
+        min-width: 100px;
+        cursor: pointer;
+        max-width: 150px;
+        user-select: none;
+
+        &[selected="true"] {
+            background: #f0f3fc;
+        }
+
+        &:hover {
+            background: #e1e6fa;
+        }
+    }
 }

@@ -178,4 +178,27 @@ export interface SchemaField {
      * Suggest value
      */
     suggest?: any;
+
+    /**
+     * Is Field Updatable
+     */
+    isUpdatable: any;
+
+    /**
+     * Full type
+     */
+    fullType?: string;
+
+    /**
+     * Array level
+     */
+    arrayLvl?: number;
+}
+
+export interface IFieldNode {
+    path: string;
+    arrayLvl: number;
+    type: string;
+    field: SchemaField;
+    fields: IFieldNode[];
 }

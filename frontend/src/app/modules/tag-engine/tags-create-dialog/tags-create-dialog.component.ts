@@ -15,12 +15,15 @@ export class TagCreateDialog {
     dataForm = this.fb.group({
         name: ['', Validators.required],
         description: [''],
+        inheritTags: [false],
     });
     title: string = 'New Tag';
     schemas: any[] = [];
     schema: any;
     schemaForm: UntypedFormGroup;
     canAddDocument = false;
+    entities: any[] = [];
+    inheritTagsOption: boolean = false;
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -28,6 +31,8 @@ export class TagCreateDialog {
         private fb: UntypedFormBuilder,
         public data: DynamicDialogConfig) {
         this.schemas = data.data?.schemas;
+        this.entities = data.data?.entities;
+        this.inheritTagsOption = data.data?.inheritTagsOption;
         this.schemaForm = fb.group({});
     }
 
@@ -87,5 +92,9 @@ export class TagCreateDialog {
             }
         }
         return true;
+    }
+
+    get noSchemas(): boolean {
+        return !this.schemas?.length;
     }
 }

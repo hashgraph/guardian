@@ -80,6 +80,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
                         emitEvent: false,
                         emitModelToViewChange: false
                     });
+                    this.calendar.value = date.toDate()
                     input.value = moment(value, 'hh:mm:ss').format('HH:mm:ss');
                 } else if (!this.showTime) {
                     const date = moment(value, 'YYYY-MM-DD');
@@ -87,6 +88,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
                         emitEvent: false,
                         emitModelToViewChange: false
                     });
+                    this.calendar.value = date.toDate()
                     input.value = moment(value, 'YYYY-MM-DD').format('YYYY-MM-DD');
                 } else {
                     const date = moment(value);
@@ -94,6 +96,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
                         emitEvent: false,
                         emitModelToViewChange: false
                     })
+                    this.calendar.value = date.toDate()
                     input.value = moment(value).toISOString();
                 }
             }

@@ -2,7 +2,7 @@ import { SourceAddon, StateField } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyDocument } from '../policy-engine.interface.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils, QueryType } from '../helpers/utils.js';
 import ObjGet from 'lodash.get';
@@ -15,6 +15,7 @@ import { LocationType } from '@guardian/interfaces';
 @SourceAddon({
     blockType: 'documentsSourceAddon',
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Source',
         title: `Add 'DocumentsSourceAddon' Addon`,
@@ -24,7 +25,114 @@ import { LocationType } from '@guardian/interfaces';
         control: ControlType.Special,
         input: null,
         output: null,
-        defaultEvent: false
+        defaultEvent: false,
+        properties: [{
+            name: 'dataType',
+            label: 'Data Type',
+            title: 'Data Type',
+            type: PropertyType.Select,
+            items: [
+                { label: 'Collection (VC)', value: 'vc-documents' },
+                { label: 'Collection (DID)', value: 'did-documents' },
+                { label: 'Collection (Approve)', value: 'approve' },
+                { label: 'Collection (VP)', value: 'vp-documents' }
+            ],
+            editable: true
+        }, {
+            name: 'schema',
+            label: 'Schema',
+            title: 'Schema',
+            type: PropertyType.Schemas,
+            editable: true
+        }, {
+            name: 'onlyOwnDocuments',
+            label: 'Owned by User',
+            title: 'Owned by User',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'onlyOwnByGroupDocuments',
+            label: 'Owned by Group',
+            title: 'Owned by Group',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'onlyAssignDocuments',
+            label: 'Assigned to User',
+            title: 'Assigned to User',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'onlyAssignByGroupDocuments',
+            label: 'Assigned to Group',
+            title: 'Assigned to Group',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'hidePreviousVersions',
+            label: 'Hide Previous Versions',
+            title: 'Hide Previous Versions',
+            type: PropertyType.Checkbox,
+            editable: true
+        }, {
+            name: 'orderField',
+            label: 'Order Field',
+            title: 'Order Field',
+            type: PropertyType.Input,
+            editable: true
+        }, {
+            name: 'orderDirection',
+            label: 'Order Direction',
+            title: 'Order Direction',
+            type: PropertyType.Select,
+            items: [
+                { label: 'None', value: '' },
+                { label: 'ASC', value: 'ASC' },
+                { label: 'DESC', value: 'DESC' }
+            ],
+            editable: true
+        }, {
+            name: 'filters',
+            label: 'Filters',
+            title: 'Filters',
+            type: PropertyType.Array,
+            editable: true,
+            items: {
+                label: 'Field',
+                value: '',
+                properties: [{
+                    name: 'type',
+                    label: 'Type',
+                    title: 'Type',
+                    type: PropertyType.Select,
+                    items: [
+                        { label: 'Equal', value: 'equal'},
+                        { label: 'Not Equal', value: 'not_equal'},
+                        { label: 'In', value: 'in'},
+                        { label: 'Not In', value: 'not_in'},
+                        { label: 'Greater Than', value: 'gt'},
+                        { label: 'Greater Than or Equal', value: 'gte'},
+                        { label: 'Less Than', value: 'lt'},
+                        { label: 'Less Than or Equal', value: 'lte'},
+                        { label: 'User Defined', value: 'user_defined'}
+                    ],
+                    editable: true
+                }, {
+                    name: 'field',
+                    label: 'Field',
+                    title: 'Field',
+                    type: PropertyType.Path,
+                    editable: false
+                }, {
+                    name: 'value',
+                    label: 'Value',
+                    title: 'Value',
+                    type: PropertyType.Input,
+                    editable: true
+                }]
+            }
+        }
+        ]
     },
     variables: [
         { path: 'options.schema', alias: 'schema', type: 'Schema' }
@@ -87,33 +195,36 @@ export class DocumentsSourceAddon {
         otherOptions?: any
     ) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const options = await ref.getOptions(user);
 
         const filters: any = {};
-        if (!Array.isArray(ref.options.filters)) {
+        if (!Array.isArray(options.filters)) {
             throw new BlockActionError('filters option must be an array', ref.blockType, ref.uuid);
         }
 
-        if (ref.options.onlyOwnDocuments) {
+        if (options.onlyOwnDocuments) {
             filters.owner = user.did;
         }
-        if (ref.options.onlyOwnByGroupDocuments) {
+        if (options.onlyOwnByGroupDocuments) {
             filters.group = user.group;
         }
-        if (ref.options.onlyAssignDocuments) {
+        if (options.onlyAssignDocuments) {
             filters.assignedTo = user.did;
         }
-        if (ref.options.onlyAssignByGroupDocuments) {
+        if (options.onlyAssignByGroupDocuments) {
             filters.assignedToGroup = user.group;
         }
-        if (ref.options.hidePreviousVersions) {
+        if (options.hidePreviousVersions) {
             filters.edited = { $ne: true };
         }
 
-        if (ref.options.schema) {
-            filters.schema = ref.options.schema;
+        if (options.schema) {
+            filters.schema = options.schema;
         }
 
-        for (const filter of ref.options.filters) {
+        filters.initId = { $exists: false }
+
+        for (const filter of options.filters) {
             const expr = filters[filter.field] || {};
 
             const query = PolicyUtils.parseQuery(filter.type, filter.value);
@@ -148,17 +259,17 @@ export class DocumentsSourceAddon {
             } else {
                 otherOptions.orderBy.createDate = stateData.orderDirection;
             }
-        } else if (ref.options.orderDirection) {
+        } else if (options.orderDirection) {
             otherOptions.orderBy = {};
-            if (ref.options.orderField) {
-                otherOptions.orderBy[ref.options.orderField] = ref.options.orderDirection;
+            if (options.orderField) {
+                otherOptions.orderBy[options.orderField] = options.orderDirection;
             } else {
-                otherOptions.orderBy.createDate = ref.options.orderDirection;
+                otherOptions.orderBy.createDate = options.orderDirection;
             }
         }
 
         let data: IPolicyDocument[] | number;
-        switch (ref.options.dataType) {
+        switch (options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
                 data = await ref.databaseServer.getVcDocuments(filters, otherOptions, countResult) as number | IPolicyDocument[];
@@ -171,7 +282,18 @@ export class DocumentsSourceAddon {
                 data = await ref.databaseServer.getVpDocuments(filters, otherOptions, countResult) as number | IPolicyDocument[];
                 if (!countResult) {
                     for (const item of data as any[]) {
-                        [item.serials, item.amount, item.error, item.wasTransferNeeded, item.transferSerials, item.transferAmount, item.tokenIds] = await ref.databaseServer.getVPMintInformation(item);
+                        const info = await ref.databaseServer.getVPMintInformation(item);
+                        item.serials = info.serials;
+                        item.amount = info.amount;
+                        item.error = info.error;
+                        item.wasTransferNeeded = info.wasTransferNeeded;
+                        item.transferSerials = info.transferSerials;
+                        item.mintAmount = info.mintAmount;
+                        item.transferAmount = info.transferAmount;
+                        item.mintExpected = info.mintExpected;
+                        item.transferExpected = info.transferExpected;
+                        item.tokenIds = info.tokenIds;
+                        item.mainDocument = info.mainDocument;
                     }
                 }
                 break;
@@ -190,7 +312,7 @@ export class DocumentsSourceAddon {
                 data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult, user.userId);
                 break;
             default:
-                throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
+                throw new BlockActionError(`dataType "${options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
 
         if (!countResult) {
@@ -223,33 +345,33 @@ export class DocumentsSourceAddon {
      */
     async getFromSourceFilters(user: PolicyUser, globalFilters: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-
+        const options = await ref.getOptions(user);
         const filters: any = [];
-        if (!Array.isArray(ref.options.filters)) {
+        if (!Array.isArray(options.filters)) {
             throw new BlockActionError('filters option must be an array', ref.blockType, ref.uuid);
         }
 
-        if (ref.options.onlyOwnDocuments) {
+        if (options.onlyOwnDocuments) {
             filters.push({ $eq: [user.did, '$owner'] });
         }
-        if (ref.options.onlyOwnByGroupDocuments) {
+        if (options.onlyOwnByGroupDocuments) {
             filters.push({ $eq: [user.group, '$group'] });
         }
-        if (ref.options.onlyAssignDocuments) {
+        if (options.onlyAssignDocuments) {
             filters.push({ $eq: [user.did, '$assignedTo'] });
         }
-        if (ref.options.onlyAssignByGroupDocuments) {
+        if (options.onlyAssignByGroupDocuments) {
             filters.push({ $eq: [user.group, '$assignedToGroup'] });
         }
-        if (ref.options.hidePreviousVersions) {
+        if (options.hidePreviousVersions) {
             filters.push({ $ne: [true, '$assignedToGroup'] });
         }
 
-        if (ref.options.schema) {
-            filters.push({ $eq: [ref.options.schema, '$schema'] });
+        if (options.schema) {
+            filters.push({ $eq: [options.schema, '$schema'] });
         }
 
-        for (const filter of ref.options.filters) {
+        for (const filter of options.filters) {
             const queryType = filter.type as QueryType;
             const queryValue = PolicyUtils.getQueryValue(queryType, filter.value);
             const queryExpression = PolicyUtils.getQueryExpression(queryType, queryValue);

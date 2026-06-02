@@ -1,3 +1,4 @@
+import { DataBaseHelper } from '@indexer/common';
 import JSZip from 'jszip';
 export interface IPolicyComponents {
     policy: any;
@@ -104,4 +105,15 @@ export async function parsePolicyFile(
         console.log('Failed to parse policy')
         return null;
     }
+}
+
+export async function getPolicyData(policyRow: any) {
+    const policyFileName = policyRow?.files[0];
+    if(!policyFileName) {
+        return null;
+    }
+    const fileBuffer = await DataBaseHelper.loadFile(policyFileName, true);
+    const policyData = await parsePolicyFile(fileBuffer, false);
+    
+    return policyData;
 }

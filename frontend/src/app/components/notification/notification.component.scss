@@ -79,6 +79,7 @@
     flex-direction: column;
     gap: 10px;
     padding: 15px 15px 5px 15px;
+    width: 360px;
 
     &__delimiter {
         width: 60%;
@@ -109,9 +110,13 @@
 
 .notification-list {
     padding: 5px;
-    max-height: 300px;
-    overflow-y: auto;
     position: relative;
+
+    &--feed {
+        max-height: 300px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
 }
 
 .link-btn {
@@ -146,7 +151,8 @@
 .progress,
 .notification {
     padding: 10px;
-    width: 300px;
+    width: auto;
+    box-sizing: border-box;
     border-radius: 8px;
     outline: 1px solid #2c78f654;
 }
@@ -173,6 +179,8 @@
     &__title {
         display: flex;
         column-gap: 8px;
+        min-width: 0;
+        overflow: hidden;
 
         span {
             color: #000;
@@ -181,6 +189,10 @@
             font-style: normal;
             font-weight: 600;
             line-height: normal;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     }
 

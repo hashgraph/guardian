@@ -274,7 +274,8 @@
 }
 
 .dialog-body {
-    height: 40vh;
+    height: 100vh;
+    max-height: 75vh;
     overflow-y: auto;
 }
 
@@ -304,6 +305,19 @@
 .disabled-icon-color {
     fill: var(--color-grey-5) !important;
     color: var(--color-grey-5) !important;
+}
+
+.dialog-header {
+    .header-item {
+        padding: 6px 12px;
+        margin: 0px 16px;
+        border-radius: 6px;
+        font-size: var(--guardian-primary-font-size);
+        color: var(--guardian-dry-run-color);
+        background: var(--guardian-dry-run-background);
+        user-select: none;
+        cursor: default;
+    }
 }
 
 // ::ng-deep {

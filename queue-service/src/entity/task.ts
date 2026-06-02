@@ -3,16 +3,26 @@ import { ITask, WorkerTaskType } from '@guardian/interfaces';
 import { BaseEntity } from '@guardian/common';
 
 @Entity()
-@Index({ name: 'task_entity_idx', properties: ['sent', 'done', 'processedTime', 'createDate'] })
-export class TaskEntity extends BaseEntity implements ITask{
-    @Property({nullable: true})
+@Index({ name: 'idx_status_createDate', properties: ['done', 'sent', 'createDate'], options: { createDate: -1 } })
+@Index({ name: 'idx_status_processedTime', properties: ['done', 'sent', 'processedTime'], options: { processedTime: -1 } })
+@Index({ name: 'idx_processedTime_priority', properties: ['processedTime', 'priority'] })
+export class TaskEntity extends BaseEntity implements ITask {
+    @Index({ name: 'userId' })
+    @Property({ nullable: true })
     userId: string | null;
 
-    @Property({nullable: true})
+    @Index({ name: 'taskId' })
+    @Property({ nullable: true })
     taskId: string;
 
-    @Property({nullable: true})
+    @Property({ nullable: true })
     priority: number;
+
+    @Property({ nullable: true })
+    dryRun: string;
+
+    @Property({ nullable: true })
+    mockId: string;
 
     @Property()
     type: WorkerTaskType;
@@ -20,30 +30,30 @@ export class TaskEntity extends BaseEntity implements ITask{
     @Property()
     data: any;
 
-    @Property({nullable: true})
+    @Property({ nullable: true })
     sent: boolean;
 
-    @Property({nullable: true})
+    @Property({ nullable: true })
     isRetryableTask: boolean;
 
-    @Property({nullable: true})
+    @Property({ nullable: true })
     attempts: number
 
-    @Property({nullable: true})
+    @Property({ nullable: true })
     processedTime: Date;
 
-    @Property({nullable: true})
+    @Property({ nullable: true })
     done: boolean;
 
-    @Property({nullable: true})
+    @Property({ nullable: true })
     isError: boolean;
 
-    @Property({nullable: true})
+    @Property({ nullable: true })
     errorReason: string;
 
-    @Property({nullable: true})
+    @Property({ nullable: true })
     attempt: number;
 
-    @Property({nullable: true})
+    @Property({ nullable: true })
     interception: string | null;
 }

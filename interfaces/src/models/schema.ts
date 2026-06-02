@@ -6,7 +6,7 @@ import { ISchema } from '../interface/schema.interface.js';
 import { SchemaEntity } from '../type/schema-entity.type.js';
 import { SchemaStatus } from '../type/schema-status.type.js';
 import { GenerateUUIDv4 } from '../helpers/generate-uuid-v4.js';
-import { SchemaField } from '../interface/schema-field.interface.js';
+import { IFieldNode, SchemaField } from '../interface/schema-field.interface.js';
 import { SchemaCategory } from '../type/schema-category.type.js';
 
 /**
@@ -140,6 +140,10 @@ export class Schema implements ISchema {
      */
     public codeVersion?: string;
     /**
+     * Topic count
+     */
+    public topicCount?: number;
+    /**
      * Schema constructor
      * @param schema
      * @param includeSystemProperties
@@ -200,6 +204,7 @@ export class Schema implements ISchema {
             this.component = (schema as any).component || (schema as any).__component;
             this.errors = schema.errors;
             this.codeVersion = schema.codeVersion;
+            this.topicCount = schema.topicCount;
         } else {
             this._id = undefined;
             this.id = undefined;
@@ -256,6 +261,7 @@ export class Schema implements ISchema {
         this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
         this.setPaths(this.fields, '', this.iri + '/');
+        this.setTypes(this.fields, null);
     }
 
     /**
@@ -270,6 +276,54 @@ export class Schema implements ISchema {
                 this.setPaths(f.fields, f.path + '.', f.fullPath + '.');
             }
         }
+    }
+
+    /**
+     * Parse document
+     * @private
+     */
+    private setTypes(fields: SchemaField[], parent: SchemaField | null): void {
+        for (const f of fields) {
+            f.arrayLvl = (parent ? parent.arrayLvl : 0) + (f.isArray ? 1 : 0);
+            f.fullType = (f.isRef ? 'object' : (f.type || 'Help Text')) + '[]'.repeat(f.arrayLvl);
+            if (Array.isArray(f.fields)) {
+                this.setTypes(f.fields, f);
+            }
+        }
+    }
+
+    /**
+     * Deep find
+     * @public
+     */
+    public getDeepFields(): IFieldNode[] {
+        return this._getDeepFields(this.fields, '', null);
+    }
+
+    /**
+     * Deep find
+     * @private
+     */
+    private _getDeepFields(fields: SchemaField[], parentPath: string, parent: IFieldNode | null): IFieldNode[] {
+        if (!Array.isArray(fields) || !fields.length) {
+            return [];
+        }
+        const result: IFieldNode[] = new Array(fields.length);
+        for (let i = 0; i < fields.length; i++) {
+            const element = fields[i];
+            const arrayLvl = (parent ? parent.arrayLvl : 0) + (element.isArray ? 1 : 0);
+            const path = parentPath + element.name;
+            const type = (element.isRef ? 'object' : (element.type || 'Help Text')) + '[]'.repeat(arrayLvl);
+            const node: any = {
+                path,
+                type,
+                arrayLvl,
+                field: element
+            }
+            node.fields = this._getDeepFields(element.fields, path + '.', node);
+            result[i] = node;
+        }
+        return result;
     }
 
     /**
@@ -342,6 +396,7 @@ export class Schema implements ISchema {
         clone.fields = this.fields;
         clone.conditions = this.conditions;
         clone.userDID = this.userDID;
+        clone.topicCount = this.topicCount;
         return clone;
     }
 
@@ -503,6 +558,39 @@ export class Schema implements ISchema {
     public static from(response: ISchema): Schema | null {
         try {
             return new Schema(response);
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
+
+    /**
+     * Create Schema
+     */
+    public static fromDocument(document: ISchemaDocument): Schema | null {
+        try {
+            return new Schema({ document });
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
+
+    /**
+     * Create Schema
+     */
+    public static fromVc(document: any): Schema | null {
+        try {
+            const defsObj = document.$defs;
+            if (!defsObj) {
+                return null;
+            }
+            const defsKeys = Object.keys(defsObj);
+            for (const key of defsKeys) {
+                const nestedSchema = defsObj[key];
+                return new Schema({ document: nestedSchema });
+            }
+            return null;
         } catch (error) {
             console.error(error);
             return null;

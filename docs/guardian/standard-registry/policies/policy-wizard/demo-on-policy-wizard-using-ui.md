@@ -53,7 +53,7 @@ If **Approve and Reject** and **Minting tokens** are set to _enable_ the corresp
 Note: We can select multiple schemas by entering the schemas names separated by a delimiter: ",".
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/image (17) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (17) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 3.1.1 {role} configuration
 

@@ -1,7 +1,7 @@
 import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelper, Schema as SchemaCollection, MessageServer, NewNotifier, Users, TopicConfig, TopicHelper, Wallet, KeyType, EncryptVcHelper } from '@guardian/common';
 import { EntityOwner, GenerateUUIDv4, LocationType, PolicyStatus, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
-import { PrivateKey } from '@hashgraph/sdk';
+import { PrivateKey } from '@hiero-ledger/sdk';
 import * as crypto from 'crypto';
 
 /**
@@ -97,10 +97,20 @@ export class PolicyCommentsUtils {
                 owner: policy.owner,
                 policyId: policy.id,
                 policyUUID: policy.uuid
-            }, user.id, { admin: true, submit: false });
+            }, {
+                admin: true,
+                submit: false
+            }, {
+                userId: user.id
+            });
             await topicConfig.saveKeys(user.id);
             await DatabaseServer.saveTopic(topicConfig.toObject());
-            await topicHelper.twoWayLink(topicConfig, rootTopicConfig, null, user.id);
+            await topicHelper.twoWayLink({
+                topic: topicConfig,
+                parent: rootTopicConfig,
+                rationale: null,
+                userId: user.id
+            });
 
             policy.commentsTopicId = topicConfig.topicId;
             await DatabaseServer.updatePolicy(policy);

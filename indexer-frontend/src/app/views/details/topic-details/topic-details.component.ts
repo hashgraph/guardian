@@ -19,6 +19,7 @@ import {
 import { TagModule } from 'primeng/tag';
 import { ActivityComponent } from '@components/activity/activity.component';
 import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 export enum TopicType {
     UserTopic = 'USER_TOPIC',
@@ -102,10 +103,11 @@ export class TopicDetailsComponent extends BaseDetailsComponent {
 
     constructor(
         entitiesService: EntitiesService,
+        dialogService: DialogService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(entitiesService, route, router);
+        super(entitiesService, dialogService, route, router);
     }
 
     protected override loadData(): void {

@@ -1,5 +1,5 @@
 import { BaseEntity } from '../models/index.js';
-import { GenerateUUIDv4, LocationType, PolicyAvailability, PolicyCategoryExport, PolicyStatus } from '@guardian/interfaces';
+import { GenerateUUIDv4, LocationType, PolicyAvailability, PolicyCategoryExport, PolicyEditableFieldDTO, PolicyStatus } from '@guardian/interfaces';
 import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
@@ -112,6 +112,12 @@ export class Policy extends BaseEntity {
      */
     @Property({ nullable: true, type: 'unknown' })
     policyTokens?: any;
+
+    /**
+     * Policy documentation
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    policyDocumentation?: any[];
 
     /**
      * Policy topic id
@@ -262,6 +268,18 @@ export class Policy extends BaseEntity {
     actionsTopicId?: string;
 
     /**
+     * RecordsTopicId
+     */
+    @Property({ nullable: true })
+    recordsTopicId?: string;
+
+    /**
+     * Automatically record policy steps
+     */
+    @Property({ nullable: true })
+    autoRecordSteps?: boolean;
+
+    /**
      * old file id
      */
     @Property({ persist: false, nullable: true })
@@ -272,6 +290,27 @@ export class Policy extends BaseEntity {
      */
     @Property({ persist: false, nullable: true })
     _hashMapFileId?: ObjectId;
+
+    @Property({ nullable: true })
+    originalZipId?: ObjectId;
+
+    @Property({ nullable: true })
+    originalChanged?: boolean;
+
+    @Property({ nullable: true })
+    originalHash?: string;
+
+    @Property({ nullable: true })
+    originalMessageId?: string;
+
+    @Property({ nullable: true })
+    editableParametersSettings?: PolicyEditableFieldDTO[];
+
+    /**
+     * File id of the original policy zip (publish flow).
+     */
+    @Property({ nullable: true })
+    contentFileId?: string;
 
     /**
      * Set policy defaults
@@ -381,6 +420,21 @@ export class Policy extends BaseEntity {
                 .catch((reason) => {
                     console.error(`AfterDelete: Policy, ${this._id}, hasMapFileId`)
                     console.error(reason)
+                });
+        }
+    }
+
+    /**
+     * Delete original policy zip (publish flow)
+     */
+    @AfterDelete()
+    deleteContentFile() {
+        if (this.contentFileId) {
+            DataBaseHelper.gridFS
+                .delete(new ObjectId(this.contentFileId))
+                .catch((reason) => {
+                    console.error('AfterDelete: Policy, contentFileId');
+                    console.error(reason);
                 });
         }
     }

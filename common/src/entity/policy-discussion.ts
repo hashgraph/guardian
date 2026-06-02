@@ -208,6 +208,15 @@ export class PolicyDiscussion extends RestoreEntity {
     _encryptedDocumentFileId?: ObjectId;
 
     /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

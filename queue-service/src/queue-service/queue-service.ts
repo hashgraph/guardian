@@ -55,18 +55,14 @@ export class QueueService extends NatsService {
                 } else {
                     task.isError = true;
                     task.errorReason = data.error;
-                    if (!task.interception) {
-                        await this.completeTaskInQueue(data.id, data.data, data.error);
-                    }
+                    await this.completeTaskInQueue(data.id, data.data, data.error);
                 }
             } else {
                 task.attempt = 0;
                 task.isError = true;
                 task.errorReason = data.error;
 
-                if (!task.interception) {
-                    await this.completeTaskInQueue(data.id, data.data, data.error);
-                }
+                await this.completeTaskInQueue(data.id, data.data, data.error);
             }
 
             await dataBaseServer.save(TaskEntity, task);
@@ -194,6 +190,8 @@ export class QueueService extends NatsService {
         return {
             id: task.taskId,
             priority: task.priority,
+            dryRun: task.dryRun,
+            mockId: task.mockId,
             type: task.type,
             data: task.data,
         };

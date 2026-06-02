@@ -243,15 +243,30 @@
                         label="Allow multiple answers"></p-checkbox>
                 </div>
 
+                <div class="checkbox-field-container">
+                    <p-checkbox 
+                        class="guardian-checkbox-secondary checkbox-24"
+                        [formControl]="field.isUpdatable" 
+                        [binary]="true"
+                        label="Updatable Field">
+                    </p-checkbox>
+                </div>
+
                 <div *ngIf="field.autocalculated.value" class="checkbox-field-container auto-calculate">
-                    <label class="form-label">Required</label>
-                    <button
-                        (click)="onEditExpression()"
-                        class="edit-button secondary"
-                        [ngClass]="{'danger': !this.field.expression.value}"
-                        label="Edit expression"
-                        pButton>
-                    </button>
+                    <label class="form-label">Expression</label>
+                    <div class="expression-btn-row">
+                        <button
+                            (click)="onEditExpression()"
+                            class="edit-button secondary"
+                            [ngClass]="{'danger': !this.field.expression.value}"
+                            label="Edit expression"
+                            pButton>
+                        </button>
+                        <i class="pi pi-question-circle expression-help-icon"
+                           pTooltip="Use schema field names to build JavaScript expressions.&#10;Operators: +, -, *, /, %, ==, !=, <, >, &&, ||, ? :&#10;Functions: Math.round(), Math.abs(), Math.min(), Math.max()&#10;Example: field1 > 100 ? field1 * 0.9 : field1"
+                           tooltipPosition="right"
+                           [escape]="false"></i>
+                    </div>
                 </div>
 
                 <div *ngIf="canBePrivate" class="checkbox-field-container private">

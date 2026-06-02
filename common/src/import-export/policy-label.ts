@@ -19,6 +19,7 @@ import {
 import { PolicyStatisticImportExport } from './policy-statistic.js';
 import { PolicyImportExport } from './policy.js';
 import { DatabaseServer } from '../database-modules/index.js';
+import {ImportExportUtils} from './utils.js';
 
 /**
  * PolicyLabel components
@@ -72,7 +73,10 @@ export class PolicyLabelImportExport {
         delete object.createDate;
         delete object.updateDate;
         const zip = new JSZip();
-        zip.file(PolicyLabelImportExport.fileName, JSON.stringify(object));
+
+        const ZIP_FILE_OPTIONS = ImportExportUtils.getDeterministicZipFileOptions();
+        zip.file(PolicyLabelImportExport.fileName, JSON.stringify(object), ZIP_FILE_OPTIONS);
+
         return zip;
     }
 

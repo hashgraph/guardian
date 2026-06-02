@@ -55,6 +55,9 @@ export class ButtonConfigComponent implements OnInit {
         this.properties = block.properties;
         this.properties.uiMetaData = this.properties.uiMetaData || {};
         this.properties.uiMetaData.buttons = this.properties.uiMetaData.buttons || [];
+
+        this.ensureButtonsDefaults(this.properties.uiMetaData.buttons);
+
         for (const i in this.properties.uiMetaData.buttons) {
             this.propHidden.buttons[i] = {};
         }
@@ -69,7 +72,10 @@ export class ButtonConfigComponent implements OnInit {
             tag: `Button_${this.properties.uiMetaData.buttons.length}`,
             name: '',
             type: 'selector',
-            filters: []
+            filters: [],
+            incomingHideEventsEnabled: false,
+            outgoingHideEventsEnabled: false,
+            visibleButtons: ''
         })
         this.propHidden.buttons[this.properties.uiMetaData.buttons.length - 1] = {};
     }
@@ -92,5 +98,17 @@ export class ButtonConfigComponent implements OnInit {
 
     onSave() {
         this.item.changed = true;
+    }
+
+    private ensureButtonsDefaults(buttons: any[]): void {
+        if (!Array.isArray(buttons)) {
+            return;
+        }
+
+        for (const button of buttons) {
+            button.incomingHideEventsEnabled ??= false;
+            button.outgoingHideEventsEnabled ??= false;
+            button.visibleButtons ??= '';
+        }
     }
 }

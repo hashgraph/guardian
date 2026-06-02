@@ -1,3 +1,5 @@
+import { ObjectId } from 'bson';
+
 /**
  * Schema data types
  */
@@ -158,10 +160,13 @@ export interface IPolicyRawData {
     instanceTopicId?: string;
     version?: string;
     config?: IBlockRawData;
+    tools?: string[];
     policyRoles?: string[];
     policyGroups?: string[];
     policyTopics?: string[];
     policyTokens?: string[];
+    originalZipId?: ObjectId;
+    originalMessageId?: string;
 }
 
 /**
@@ -585,4 +590,8 @@ export interface IRecordResult {
      * Document body (JSON)
      */
     document: any;
+    /**
+     * Recorded action identifier
+     */
+    recordActionId?: string | null;
 }

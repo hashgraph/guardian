@@ -33,6 +33,7 @@ export class FieldControl {
     public controlExample: UntypedFormControl;
     public autocalculated: UntypedFormControl;
     public expression: UntypedFormControl;
+    public isUpdatable: UntypedFormControl;
 
     private readonly _defaultFieldMap!: any;
     private _entityType: UntypedFormControl | undefined;
@@ -85,6 +86,7 @@ export class FieldControl {
             this.controlExample = new UntypedFormControl(field.examples?.[0]);
             this.autocalculated = new UntypedFormControl(field.autocalculate);
             this.expression = new UntypedFormControl(field.expression);
+            this.isUpdatable = new UntypedFormControl(field.isUpdatable);
         } else {
             this.controlKey = new UntypedFormControl(name || this.name, [
                 Validators.required,
@@ -115,6 +117,7 @@ export class FieldControl {
             this.property = new UntypedFormControl('');
             this.autocalculated = new UntypedFormControl(false);
             this.expression = new UntypedFormControl('');
+            this.isUpdatable = new UntypedFormControl(false);
         }
         if (this._entityType) {
             this._entityType.valueChanges
@@ -225,7 +228,8 @@ export class FieldControl {
             suggest: this.controlSuggest,
             example: this.controlExample,
             autocalculate: this.autocalculated,
-            expression: this.expression
+            expression: this.expression,
+            isUpdatable: this.isUpdatable
         });
     }
 
@@ -255,6 +259,7 @@ export class FieldControl {
             const property = group.property;
             const suggest = group.suggest;
             const example = group.example;
+            const isUpdatable = group.isUpdatable;
             return {
                 key,
                 title,
@@ -277,7 +282,8 @@ export class FieldControl {
                 suggest,
                 example,
                 autocalculate,
-                expression
+                expression,
+                isUpdatable
             };
         } else {
             return null;

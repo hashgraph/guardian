@@ -65,6 +65,10 @@ export interface Relationship {
      * Name
      */
     name: string;
+    /**
+     * Tags
+     */
+    tagsCount: number;
 }
 
 /**

@@ -8,7 +8,7 @@ Mongo DB databases set in .env (.env.docker) files or via environment variables 
 
 * auth-service - auth\_db
 * guardian-service - guardian\_db
-* logger-service (not nesessary) - logger\_db
+* logger-service (not necessary) - logger\_db
 
 Example using mongo utils:
 
@@ -28,6 +28,6 @@ mongorestore --db guardian_db ./dump/guardian_db
 mongorestore --db logger_db ./dump/logger_db
 ```
 
-#### Hashicorp Vault:
+#### HashiCorp Vault:
 
-For Hashicorp vault backup and restore use this instructions: [https://developer.hashicorp.com/vault/tutorials/standard-procedures/sop-backup](https://developer.hashicorp.com/vault/tutorials/standard-procedures/sop-backup)
+For HashiCorp vault backup and restore use this instructions: [https://developer.hashicorp.com/vault/tutorials/standard-procedures/sop-backup](https://developer.hashicorp.com/vault/tutorials/standard-procedures/sop-backup)

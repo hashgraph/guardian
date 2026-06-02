@@ -17,9 +17,10 @@ import { SendMessages } from './send-messages.js';
 import { RelayerAccountAction } from './relayer-account.js';
 import { PolicyDiscussionAction } from './policy-discussion.js';
 import { PolicyCommentAction } from './policy-comment.js';
+import { PolicyDisconnectAction } from './policy-disconnect.js';
 
 export class PolicyActionsUtils {
-    private static needKey(status: PolicyStatus, availability: PolicyAvailability): boolean {
+    public static needKey(status: PolicyStatus, availability: PolicyAvailability): boolean {
         switch (status) {
             case PolicyStatus.DRY_RUN:
             case PolicyStatus.DEMO:
@@ -80,7 +81,8 @@ export class PolicyActionsUtils {
         remoteAction: PolicyAction,
         user: PolicyUser,
         policyOwner: string,
-        policyOwnerId: string | null
+        policyOwnerId: string | null,
+        policyId: string,
     ) {
         const type = remoteAction?.document?.type;
         switch (type) {
@@ -92,6 +94,9 @@ export class PolicyActionsUtils {
             }
             case PolicyActionType.CreatePolicyComment: {
                 return await PolicyCommentAction.complete(remoteAction);
+            }
+            case PolicyActionType.DisconnectPolicy: {
+                return await PolicyDisconnectAction.complete(remoteAction, policyId, user);
             }
             default:
                 return false;
@@ -150,7 +155,7 @@ export class PolicyActionsUtils {
         message: RoleMessage
     }> {
         const { ref, group, userId } = options;
-        const did = group.owner;
+        const did = group.did;
         const userCred = await PolicyUtils.getUserCredentials(ref, did, userId);
 
         if (userCred.location === LocationType.LOCAL) {
@@ -204,11 +209,11 @@ export class PolicyActionsUtils {
         user: PolicyUser,
         relayerAccount: string,
         userId: string | null
-    }): Promise<string> {
+    }, actionStatusId?: string): Promise<string> {
         const { ref, type, user, userId } = options;
         try {
             if (type === 'UUID') {
-                return await ref.components.generateUUID();
+                return await ref.components.generateUUID(actionStatusId);
             }
             if (type === 'OWNER') {
                 return user.did;
@@ -219,7 +224,7 @@ export class PolicyActionsUtils {
             if (type === 'DID') {
                 const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
                 if (userCred.location === LocationType.LOCAL) {
-                    return await GenerateDID.local(options);
+                    return await GenerateDID.local(options, actionStatusId);
                 } else {
                     const data = await GenerateDID.request(options);
                     return new Promise((resolve, reject) => {
@@ -571,5 +576,16 @@ export class PolicyActionsUtils {
         const data = await PolicyCommentAction.request(options);
         const controller = PolicyComponentsUtils.getActionsController(policyId);
         return await controller.sendRemoteAction(user, data, true);
+    }
+
+    public static async disconnectPolicy(options: {
+        policyId: string,
+        user: PolicyUser,
+        userId: string | null
+    }): Promise<PolicyComment> {
+        const { policyId, user } = options;
+        const data = await PolicyDisconnectAction.request(options);
+        const controller = PolicyComponentsUtils.getActionsController(policyId);
+        return await controller.sendRemoteAction(user, data, false);
     }
 }

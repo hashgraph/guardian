@@ -25,6 +25,7 @@ export interface BaseColumn {
     width?: string;
     minWidth?: string;
     maxWidth?: string;
+    className?: string;
     visibility?: (row?:any) => boolean;
 }
 

@@ -7,6 +7,7 @@ export interface TagItem {
     readonly description: string;
     readonly entity: string;
     readonly target: string;
+    readonly targets: string[];
     readonly localTarget: string;
     readonly owner: string;
     readonly status: TagStatus;

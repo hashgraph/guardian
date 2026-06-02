@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { Component, ElementRef, ViewChild } from '@angular/core';
+import { FormControl, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { concatMap, debounceTime, distinctUntilChanged, finalize, map, scan, startWith, Subject, switchMap, takeUntil, takeWhile, tap } from 'rxjs';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ToolsService } from 'src/app/services/tools.service';
 
 /**
  * Search policy dialog.
@@ -26,7 +28,7 @@ export class SearchPolicyDialog {
         tokensCount: new UntypedFormControl(1),
         vcDocumentsCount: new UntypedFormControl(1),
         vpDocumentsCount: new UntypedFormControl(1),
-        toolName: new UntypedFormControl('')
+        toolMessageIds: new UntypedFormControl([])
     });
     public types = [{
         name: 'Search only imported',
@@ -56,18 +58,61 @@ export class SearchPolicyDialog {
         return this.filtersForm.value.type === 'Global';
     }
 
+    public tools: ToolOption[] = [];
+    public toolSearchControl = new UntypedFormControl('');
+
+    private destroy$ = new Subject<void>();
+
+    public isLargeSize: boolean = true;
+    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
+
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private analyticsService: AnalyticsService,
         private policyEngineService: PolicyEngineService,
+        private toolsService: ToolsService,
         private router: Router
     ) {
         this.policy = this.config.data.policy;
+
+        this.toolSearchControl.valueChanges.pipe(
+            map(v => (v ?? '').trim()),
+            debounceTime(250),
+            distinctUntilChanged(),
+            startWith(''),
+            switchMap(query => this.fetchTools(query)),
+            takeUntil(this.destroy$)
+        ).subscribe(items => {
+            this.tools = this.getToolOptions(items);
+        });
+    }
+
+    private getToolOptions(tools: any) {
+        if (tools?.length > 0) {
+            return tools.map((tool: any) => ({
+                id: tool.messageId,
+                label: tool.name
+            }))
+        }
+        return [];
+    }
+
+    private fetchTools(query: string) {
+        this.loading = true;
+        return this.toolsService.page(0, 100, query).pipe(
+            map((data: any) => data?.body ?? []),
+            finalize(() => this.loading = false)
+        );
     }
 
     ngOnInit() {
         this.load();
+    }
+
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.unsubscribe();
     }
 
     public load() {
@@ -103,8 +148,8 @@ export class SearchPolicyDialog {
             options.minVpCount = filters.vpDocumentsCount || 1;
             this.filtersCount++;
         }
-        if (filters.toolName) {
-            options.toolName = filters.toolName;
+        if (filters.toolMessageIds && filters.toolMessageIds?.length > 0) {
+            options.toolMessageIds = filters.toolMessageIds;
             this.filtersCount++;
         }
         this.error = null;
@@ -187,7 +232,8 @@ export class SearchPolicyDialog {
                 vpDocuments: false,
                 tokensCount: 1,
                 vcDocumentsCount: 1,
-                vpDocumentsCount: 1
+                vpDocumentsCount: 1,
+                toolMessageIds: []
             })
             this.load();
         }, 0);
@@ -204,7 +250,8 @@ export class SearchPolicyDialog {
             vpDocuments: false,
             tokensCount: 1,
             vcDocumentsCount: 1,
-            vpDocumentsCount: 1
+            vpDocumentsCount: 1,
+            toolMessageIds: []
         })
         this.select();
         this.load();
@@ -265,4 +312,30 @@ export class SearchPolicyDialog {
                 this.loading = false;
             });
     }
+
+    public toggleSize(): void {
+        this.isLargeSize = !this.isLargeSize;
+        setTimeout(() => {
+            if (this.dialogHeader) {
+                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
+                if (dialogEl) {
+                    if (this.isLargeSize) {
+                        dialogEl.style.width = '90vw';
+                        dialogEl.style.maxWidth = '90vw';
+                    } else {
+                        dialogEl.style.width = '50vw';
+                        dialogEl.style.maxWidth = '50vw';
+                    }
+                    dialogEl.style.maxHeight = '90vh'
+                    dialogEl.style.margin = 'auto';
+                    dialogEl.style.transition = 'all 0.3s ease';
+                }
+            }
+        }, 100);
+    }
+}
+
+class ToolOption {
+    id: string;
+    label: string;
 }

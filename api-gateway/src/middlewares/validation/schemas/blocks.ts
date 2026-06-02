@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 
 export class BlockDTO {
     @ApiProperty({ type: 'string' })
@@ -9,6 +9,30 @@ export class BlockDTO {
 
     @ApiProperty({ type: () => BlockDTO, isArray: true })
     blocks: BlockDTO[];
+}
+
+@ApiExtraModels(BlockDTO)
+export class ResponseDTOWithSyncEvents {
+  @ApiProperty({
+    type: 'object',
+    nullable: true,
+    additionalProperties: true,
+  })
+  response: Record<string, any> | null;
+
+  @ApiProperty({
+    type: 'object',
+    nullable: true,
+    additionalProperties: true,
+  })
+  result: Record<string, any> | null;
+
+  @ApiProperty({
+    type: 'object',
+    isArray: true,
+    additionalProperties: true,
+  })
+  steps: Record<string, any>[];
 }
 
 export class BlockErrorsDTO {
@@ -43,4 +67,13 @@ export class ValidationErrorsDTO {
 
     @ApiProperty({ type: 'string', isArray: true, required: false })
     infos?: string[];
+
+    @ApiProperty({ type: 'string', required: false, description: 'Config block ID (for tool validation)' })
+    id?: string;
+
+    @ApiProperty({ type: 'array', items: { type: 'object' }, description: 'Tool-level errors (for tool validation)' })
+    tools?: any[];
+
+    @ApiProperty({ type: 'boolean', description: 'Overall validation result (for tool validation)' })
+    isValid?: boolean;
 }

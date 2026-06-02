@@ -8,7 +8,7 @@ import {
     FileCreateTransaction,
     PrivateKey,
     Status,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 /**
  * Network
