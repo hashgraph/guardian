@@ -5,7 +5,7 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 
 ---
 
-## [2.1.1] — Schema clean-up + methodology-sourced test parameters
+## [2.1.1] — Schema clean-up + real VCS 3599 test data
 
 ### Fixed
 - **Removed dormant `uncertaintyDiscount` field from `ER_Summary` schema end-to-end.**
@@ -18,30 +18,33 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
   - Field count in `ER_Summary`: 12 → 11 fields.
 
 ### Changed
-- **Test fixture parameters replaced with AMS-III.AV. v9.0 official defaults** (source:
-  [UNFCCC CDM AMS-III.AV. v9.0 PDF](https://cdm.unfccc.int/sunsetcms/storage/contents/stored-file-20250506190351296/MP97_EA06_AMS-III.AV_v09.0.pdf)).
-  Previous values were opaque illustrative numbers with no cited source; new values are
-  each traceable to a specific methodology table or UNFCCC tool:
+- **Test fixture parameters updated from AMS-III.AV. defaults to the real VCS 3599 ER spreadsheet + Verra Registry issuance for 01/01/2025–30/06/2025.**
+  Earlier drafts used AMS-III.AV. v9.0 default parameters at a VCS 3599–scale cap, which produced
+  an illustrative net ER of 53,309.84 tCO2e. This revision replaces that illustrative fixture with
+  the **actual monitored and verified values for VCS 3599** for the 2025H1 monitoring period, taken
+  directly from the project’s ER calculation workbook and the Verra Registry issuance record.
 
-  | Parameter | Old value | New value | Source |
-  |---|---|---|---|
-  | `nwb` | 0.15 | **0.10** | AMS-III.AV. v9.0 Table 3 option (b): three-stone fire default |
-  | `fNRB` (`f_i`) | 0.30 | **0.82** | TOOL33 v02.1 Vietnam national default (CDM EB 2024) |
-  | `QPW_y` | 200,000,000 L | **234,600,000 L** | Eq.3 cap (5.5 L/person/day × 1,300 schools × 20 students × 365 days) |
-  | `EF_fuel` | 81.6 | **81.6** | Unchanged — AMS-I.E. Table 2 / IPCC Tier 1 NRB |
-  | `BL_fuel` | 1.0 | **1.0** | Unchanged — 100% woody biomass |
-  | `X_boil` | 1.0 | **1.0** | Unchanged — all schools boil in baseline |
-  | `m` | 0.95 | **0.95** | Unchanged — above 0.90 WQ gate |
+  **New computed result: BE = 162,241.14 tCO₂e; LE = 8,116.00 tCO₂e; ER = 154,125.14 tCO₂e (rounded to 154,125).**
 
-  New computed result: **BE = ER = 53,309.84 tCO2e** (was 11,084.74).
-
-  Full derivation:
+  Full derivation (from `Total ER` sheet and Verra Registry):
   ```
-  SEC  = 357.48 / 0.10 = 3,574.8 kJ/L
-  BE_y = 234,600,000 × 0.95 × 1.0 × 3574.8 × (1.0 × 0.82 × 81.6 × 1e-9) = 53,309.84 tCO2e
-  ER_y = 53,309.84 − 0 − 0 = 53,309.84 tCO2e
-  WQ gate: 95/100 = 0.95 ≥ 0.90 → passes
+  BE_total (full year)  = 324,482.2868587 tCO2e
+  LE_total (full year)  = 16,232.00 tCO2e
+  ER_total (full year)  = 308,250.2868587 tCO2e
+
+  Half-year monitoring period 01/01/2025–30/06/2025 (2025H1):
+  BE_y = BE_total / 2 = 162,241.14 tCO2e
+  LE_y = LE_total / 2 =  8,116.00 tCO2e
+  ER_y = ER_total / 2 = 154,125.14 tCO2e
   ```
+
+  These values match the VCS 3599 ER spreadsheet (`VCS-ERS-Project-3599-01JAN2025-30JUN2025.xlsx`)
+  and the Verra Registry issuance record for 2025H1. The Monitoring Report fixture in
+  `tests/VMR0015_VCS3599_monitoring_report.json` now records:
+  - `field3` (BE) = 162,241.14,
+  - `field4` (PE) = 0,
+  - `field5` (LE) = 8,116.00,
+  - `field6` (ER) = 154,125.14 (minted as 154,125 CER on-chain).
 
 ---
 
