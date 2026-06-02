@@ -820,8 +820,8 @@ export class MigrateData {
         return this.stepsWithBottomLayout.has(stepId);
     }
 
-    onTabChange(event: any) {
-        this.activeTabIndex = event.index;
+    onTabChange(index: string | number | undefined) {
+        this.activeTabIndex = Number(index) || 0;
         if (this.activeTabIndex === 1) {
             this.loadMigrationRuns();
         }
