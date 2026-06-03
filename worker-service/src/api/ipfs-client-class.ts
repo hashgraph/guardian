@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { axiosGetWithRetry } from './helpers/utils.js';
 import { create } from 'kubo-rpc-client'
 import { FilebaseClient } from '@filebase/client';
 import { StoreMemory } from '@storacha/client/stores/memory';
@@ -201,7 +201,8 @@ export class IpfsClientClass {
      */
     public async getFile(cid: string): Promise<any> {
         const _cid = this.parseCID(cid);
-        const fileRes = await axios.get(
+        const fileRes = await axiosGetWithRetry(
+            'IPFS gateway',
             this.IPFS_PUBLIC_GATEWAY
                 ?.replace('${cid}', _cid)
                 ?.replace('{cid}', _cid),
