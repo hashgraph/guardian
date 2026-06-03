@@ -110,9 +110,9 @@ jobs:
           rm -fv swagger.yaml
           rm -fv swagger-indexer.yaml
           rm -fv swagger-analytics.yaml
-          curl -o swagger.yaml http://localhost:3002/api-docs-yaml
-          curl -o swagger-indexer.yaml http://localhost:3021/api-docs-yaml
-          curl -o swagger-analytics.yaml http://localhost:3020/api-docs-yaml
+          curl -o swagger.yaml http://127.0.0.1:3002/api-docs-yaml
+          curl -o swagger-indexer.yaml http://127.0.0.1:3021/api-docs-yaml
+          curl -o swagger-analytics.yaml http://127.0.0.1:3020/api-docs-yaml
           git add swagger.yaml
           git add swagger-indexer.yaml
           git add swagger-analytics.yaml
