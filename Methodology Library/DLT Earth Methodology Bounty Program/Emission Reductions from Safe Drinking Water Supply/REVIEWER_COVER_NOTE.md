@@ -57,6 +57,7 @@ match the Verra Registry issuance record for this period.
 This policy was imported, dry-run, and **published** on a Guardian testnet instance:
 - `tests/VMR0015_dryrun_record.record` — the Guardian recording (its 17 project-schema IDs match this policy 17/17).
 - `tests/VMR0015_dryrun_publish_proof.csv` — the signed `PUBLISH` Verifiable Credential (Ed25519, Hedera testnet DID) for `VMR0015 v1.0 Safe Drinking Water dMRV`, version 2.0.0.
+- - **Earlier AI-generated `tc1` .record/expected files were removed** because their block tags and schema IDs did not match this policy. The current `tests/VMR0015_dryrun_record.record` and `tests/VMR0015_dryrun_publish_proof.csv` were regenerated from this `VMR0015.policy` (17 schemas) and verified against the schema UUID list in `tests/README.md`. See CHANGELOG [2.0.0] "Removed" section for context.
 
 ## What changed in this update (v2.1.1)
 - **Removed dormant `uncertaintyDiscount` field** from `ER_Summary` schema end-to-end (properties, required array, JSON-LD context). The field’s description “Fixed 0.89 per VMR0015” was factually incorrect; AMS-III.AV. mandates no blanket multiplier.
