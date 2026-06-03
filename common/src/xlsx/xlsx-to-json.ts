@@ -303,8 +303,7 @@ export class XlsxToJson {
                 }
                 if (table.isSchemaHeader(title)) {
                     table.setRow(title, row);
-                }
-                if (table.isFieldHeader(title)) {
+                } else if (table.isFieldHeader(title)) {
                     break;
                 }
             }
@@ -376,12 +375,16 @@ export class XlsxToJson {
             let parents: SchemaField[] = [];
             for (; row < range.e.r; row++) {
                 const groupIndex = worksheet.getRow(row).getOutline();
+                const parentField = groupIndex > 0 ? parents[groupIndex - 1] : null;
+                const effectiveSchemaName = parentField?.customType === 'subSchema'
+                    ? (parentField.property || parentField.description || schema.name)
+                    : schema.name;
                 const field: SchemaField = XlsxToJson.readField(
                     worksheet,
                     table,
                     row,
                     xlsxResult,
-                    schema.name
+                    effectiveSchemaName
                 );
                 if (field) {
                     allFields.set(field.title, field);
@@ -406,7 +409,7 @@ export class XlsxToJson {
             const createInlineSchemas = (schemaFields: SchemaField[]) => {
                 for (const field of schemaFields) {
                     if (field.isRef && field.customType === 'subSchema') {
-                        const name = field.description;
+                        const name = field.property || field.description;
                         const childFields = field.fields || [];
                         if (seenSchemaNames.has(name)) {
                             const existing = seenSchemaNames.get(name);
@@ -685,21 +688,24 @@ export class XlsxToJson {
                 field.unit = xlsxToUnit(format);
             }
             if (fieldType.name === 'Sub-Schema') {
-                const subSchemaName = field.description;
+                const subSchemaName = param || field.description;
                 field.type = xlsxResult.addLink(subSchemaName, null);
+                field.property = subSchemaName;
             }
             if (fieldType.name === 'Enum') {
-                let enumObject = xlsxResult.getEnumByField(schemaName, field.description);
+                const enumFieldName = param || field.description;
+                let enumObject = xlsxResult.getEnumByField(schemaName, enumFieldName);
+                let enumName: string = enumFieldName;
 
-                let enumName: string;
                 if (!enumObject) {
+                    // Legacy fallback: hyperlink on Parameter cell points to an old-style enum tab
                     const hyperlink = worksheet
                         .getCell(table.getCol(Dictionary.PARAMETER), row)
                         .getLink();
-                    enumName = hyperlink?.worksheet || param;
-                    enumObject = xlsxResult.getEnum(enumName);
-                } else {
-                    enumName = field.description;
+                    if (hyperlink?.worksheet) {
+                        enumName = hyperlink.worksheet;
+                        enumObject = xlsxResult.getEnum(enumName);
+                    }
                 }
 
                 if (enumObject) {
@@ -1041,7 +1047,7 @@ export class XlsxToJson {
             return false;
         }
         for (let i = 0; i < a.length; i++) {
-            if (a[i].name !== b[i].name || a[i].description !== b[i].description) {
+            if (a[i].description !== b[i].description) {
                 return false;
             }
             if (a[i].isRef && a[i].customType === 'subSchema') {

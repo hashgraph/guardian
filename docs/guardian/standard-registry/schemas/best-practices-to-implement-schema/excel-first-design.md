@@ -10,7 +10,7 @@ Detailed best practices for Excel-first design in building Hedera Guardian schem
     * Row 1: Schema Name (e.g., "Project Description (Auto)")
     * Row 2: Schema Description
     * Row 3: Schema Type (e.g., "Verifiable Credentials")
-    * Row 4: Column headings for schema field attributes (Required Field, Field Type, Parameter, Visibility, Question, Allow Multiple Answers, Answer, Default, Suggest, Key).
+    * Row 4: Column headings for schema field attributes (Required Field, Field Type, Parameter, Visibility, Description, Allow Multiple Answers, Test Value, Default Value, Suggest Value, Key).
 
     <figure><img src="../../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 *   **Define Each Field with Clear Attributes**\

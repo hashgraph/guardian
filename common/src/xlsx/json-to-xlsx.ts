@@ -31,6 +31,15 @@ export class JsonToXlsx {
             JsonToXlsx.collectInlineRefs(schema.fields, inlineSchemaIRIs);
         }
 
+        // Map inline schema IRI to display name for Parameter column
+        const _subSchemaNamesCache = new Map<string, string>();
+        for (const item of schemas) {
+            const schema = new Schema(item);
+            if (inlineSchemaIRIs.has(schema.iri)) {
+                _subSchemaNamesCache.set(schema.iri, schema.name);
+            }
+        }
+
         // Schemas
         for (const item of schemas) {
             const schema = new Schema(item);
@@ -94,7 +103,8 @@ export class JsonToXlsx {
                 item.schema,
                 item.tool,
                 _schemaCache,
-                _enumsCache
+                _enumsCache,
+                _subSchemaNamesCache
             );
         }
         //Write
@@ -161,7 +171,8 @@ export class JsonToXlsx {
         schema: Schema,
         tool: PolicyTool,
         schemaCache: Map<string, string>,
-        enumsCache: Map<string, XlsxEnum>
+        enumsCache: Map<string, XlsxEnum>,
+        subSchemaNames: Map<string, string> = new Map()
     ): void {
         const range = worksheet.getRange();
 
@@ -226,7 +237,8 @@ export class JsonToXlsx {
                 schemaCache,
                 enumsCache,
                 fieldCache,
-                row
+                row,
+                subSchemaNames
             );
             row = JsonToXlsx.writeSubFields(
                 worksheet,
@@ -234,7 +246,8 @@ export class JsonToXlsx {
                 field,
                 schemaCache,
                 enumsCache,
-                row
+                row,
+                subSchemaNames
             );
         }
 
@@ -256,7 +269,8 @@ export class JsonToXlsx {
         enumsCache: Map<string, XlsxEnum>,
         fieldCache: Map<string, IRowField>,
         row: number,
-        parent?: SchemaField
+        subSchemaNames: Map<string, string> = new Map(),
+        parent?: SchemaField,
     ) {
         const fieldItemStyle = parent ? table.subItemStyle : table.fieldItemStyle;
         for (const header of table.fieldHeaders) {
@@ -307,6 +321,13 @@ export class JsonToXlsx {
                 worksheet
                     .getCell(table.getCol(Dictionary.FIELD_TYPE), row)
                     .setValue(Dictionary.SUB_SCHEMA);
+                const subSchemaName = subSchemaNames.get(field.type);
+                if (subSchemaName) {
+                    worksheet
+                        .getCell(table.getCol(Dictionary.PARAMETER), row)
+                        .setValue(stringToXlsx(subSchemaName))
+                        .setStyle(table.paramStyle);
+                }
             }
         } else {
             throw new Error(`Unknown field type (${worksheet.name}: ${field.name}).`);
@@ -431,7 +452,8 @@ export class JsonToXlsx {
         parent: SchemaField,
         schemaCache: Map<string, string>,
         enumsCache: Map<string, XlsxEnum>,
-        row: number
+        row: number,
+        subSchemaNames: Map<string, string> = new Map()
     ): number {
         if (!parent || !parent.isRef || !Array.isArray(parent.fields) || parent.fields.length === 0) {
             return row;
@@ -459,6 +481,7 @@ export class JsonToXlsx {
                 enumsCache,
                 fieldCache,
                 row,
+                subSchemaNames,
                 parent
             );
             worksheet
@@ -470,7 +493,8 @@ export class JsonToXlsx {
                 field,
                 schemaCache,
                 enumsCache,
-                row
+                row,
+                subSchemaNames
             );
         }
 

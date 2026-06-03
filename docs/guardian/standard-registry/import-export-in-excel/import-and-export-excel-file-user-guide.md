@@ -101,12 +101,12 @@ All schemas created for importing into Guardian must follow the design of the te
   * No – always hidden
   * EXACT({FieldName},{Value}) – only shown when the condition is true
   * NOT(EXACT({FieldName},{Value})) – only shown when the condition is not true
-* _**Question**_ – Description of the field. This is the text which users would see when filling out the form in Guardian.
+* _**Description**_ – Description of the field. This is the text which users would see when filling out the form in Guardian.
 * _**Allow Multiple Answers**_ – Determines if the data is an array or a single item (Yes/No)
-* _**Answer**_ – example of the valid data
+* _**Test Value**_ – example of the valid data
 
 {% hint style="info" %}
-**Note:** Currently only expression containing simple arithmetic operations are supported for **Auto-Calculate** in the _**Answer.**_ When specified it would result an the generation of the function template as shown on the example below.
+**Note:** Currently only expression containing simple arithmetic operations are supported for **Auto-Calculate** in the _**Test Value.**_ When specified it would result an the generation of the function template as shown on the example below.
 {% endhint %}
 
 ![](<../../../.gitbook/assets/8 (15).png>)
@@ -129,11 +129,11 @@ For math expressions in Excel schema documents to be recognised by Guardian the 
 
 <figure><img src="../../../.gitbook/assets/image (466).png" alt=""><figcaption></figcaption></figure>
 
-2. The expression specified in the corresponding cell in the “Answer” column
+2. The expression specified in the corresponding cell in the “Test Value” column
 
 <figure><img src="../../../.gitbook/assets/image (467).png" alt=""><figcaption></figcaption></figure>
 
-Expressions can contain references to cells in the ‘Answer’ column from the current schema (as shown above) and all embedded schemas. To use fields from embedded schemas these fields need to be added to the parent (current) schema as shown below.
+Expressions can contain references to cells in the ‘Test Value’ column from the current schema (as shown above) and all embedded schemas. To use fields from embedded schemas these fields need to be added to the parent (current) schema as shown below.
 
 <figure><img src="../../../.gitbook/assets/image (465).png" alt=""><figcaption></figcaption></figure>
 
@@ -143,7 +143,7 @@ These field from embedded schemas must be grouped to ‘fold’ under the main f
 
 Only the fields that are used in the expression need to be brought into the parent schema, all the others don’t need to be mentioned.
 
-The fields from embedded schema definition tab (e.g. titled as ‘Production Device’ on the screenshot below) and their duplicates in the parent schema where they used for calculations expression must be identical at all times as best observed via values in the ‘Question' column.'
+The fields from embedded schema definition tab (e.g. titled as ‘Production Device’ on the screenshot below) and their duplicates in the parent schema where they used for calculations expression must be identical at all times as best observed via values in the ‘Description’ column.’
 
 <figure><img src="../../../.gitbook/assets/image (463).png" alt=""><figcaption></figcaption></figure>
 

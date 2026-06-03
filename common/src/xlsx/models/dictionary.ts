@@ -15,14 +15,14 @@ export enum Dictionary {
     REQUIRED_FIELD = 'Required Field',
     FIELD_TYPE = 'Field Type',
     PARAMETER = 'Parameter',
-    QUESTION = 'Question',
+    QUESTION = 'Description',
     ALLOW_MULTIPLE_ANSWERS = 'Allow Multiple Answers',
-    ANSWER = 'Answer',
+    ANSWER = 'Test Value',
     KEY = 'Key',
     AUTO_CALCULATE = 'Auto-Calculate',
     SUB_SCHEMA = 'Sub-Schema',
     SCHEMA_NAME = 'Schema',
-    SCHEMA_DESCRIPTION = 'Description',
+    SCHEMA_DESCRIPTION = 'Schema Description',
     VISIBILITY = 'Visibility',
     SCHEMA_TYPE = 'Schema Type',
     SCHEMA_TOOL = 'Tool',
@@ -32,8 +32,8 @@ export enum Dictionary {
     ENUM_IPFS = 'Loaded to IPFS',
     ENUM_VALUE = 'Value',
     SHARED_ENUM_SHEET = 'Enums',
-    DEFAULT = 'Default',
-    SUGGEST = 'Suggest',
+    DEFAULT = 'Default Value',
+    SUGGEST = 'Suggest Value',
 }
 
 export class FieldTypes {
