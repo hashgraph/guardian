@@ -74,7 +74,7 @@ const tabs = [
 
 const SYSTEM_KEYS = new Set(['@context', 'type', 'id', 'policyId', 'ref', 'uuid']);
 
-interface VcField { label: string; value: string }
+interface VcField { label: string; value: string; description?: string }
 interface VcTable { label: string; columns: string[]; rows: Record<string, string>[] }
 interface VcGroup { title: string; fields: VcField[]; tables: VcTable[] }
 interface VcDocData { fields: VcField[]; tables: VcTable[]; groups: VcGroup[] }
@@ -87,9 +87,11 @@ const docSearchQuery = ref('');
 
 function filterDoc(doc: VcDocData, q: string): VcDocData | null {
     if (!q) return doc;
-    const fields = doc.fields.filter(f =>
-        f.label.toLowerCase().includes(q) || f.value.toLowerCase().includes(q),
-    );
+    const fieldMatches = (f: VcField) =>
+        f.label.toLowerCase().includes(q)
+        || f.value.toLowerCase().includes(q)
+        || (f.description?.toLowerCase().includes(q) ?? false);
+    const fields = doc.fields.filter(fieldMatches);
     const tables = doc.tables.filter(t =>
         t.label.toLowerCase().includes(q)
         || t.columns.some(c => humanizeKey(c).toLowerCase().includes(q))
@@ -97,9 +99,7 @@ function filterDoc(doc: VcDocData, q: string): VcDocData | null {
     );
     const groups = doc.groups
         .map(g => {
-            const gf = g.fields.filter(f =>
-                f.label.toLowerCase().includes(q) || f.value.toLowerCase().includes(q),
-            );
+            const gf = g.fields.filter(fieldMatches);
             const gt = g.tables.filter(t =>
                 t.label.toLowerCase().includes(q)
                 || t.rows.some(r => Object.values(r).some(v => v.toLowerCase().includes(q))),
@@ -139,6 +139,44 @@ const schemaFieldTitles = computed<Record<string, Record<string, string>>>(() =>
     return map;
 });
 
+// Schema field descriptions — surfaced as tooltips next to field labels. Some
+// methodologies define long descriptions for fields that only have terse
+// titles (e.g. "G373"), so showing them inline would crowd the layout.
+const schemaFieldDescriptions = computed<Record<string, Record<string, string>>>(() => {
+    const schemas = decodedMethodology.data.value?.availableSchemas ?? [];
+    const map: Record<string, Record<string, string>> = {};
+    for (const s of schemas) {
+        const fieldMap: Record<string, string> = {};
+        for (const f of s.fields ?? []) {
+            if (SYSTEM_KEYS.has(f.fieldKey)) continue;
+            if (f.description) fieldMap[f.fieldKey] = f.description;
+        }
+        map[bareUuid(s.schemaId)] = fieldMap;
+        map[s.schemaId] = fieldMap;
+    }
+    return map;
+});
+
+// Global fallback map: field key → description, merged across every schema in
+// the policy. Used when the per-schema lookup misses — typically when a
+// nested object lacks a `type` field, so structureVcData can't recover the
+// right sub-schema UUID. Within one policy, field keys like G6 / G373 are
+// effectively unique, so a flat merged lookup is safe.
+const allFieldDescriptions = computed<Record<string, string>>(() => {
+    const schemas = decodedMethodology.data.value?.availableSchemas ?? [];
+    const map: Record<string, string> = {};
+    for (const s of schemas) {
+        for (const f of s.fields ?? []) {
+            if (SYSTEM_KEYS.has(f.fieldKey)) continue;
+            if (!f.description) continue;
+            // First-seen wins so the top-level schema's description (more
+            // authoritative) isn't overwritten by a later duplicate.
+            if (!map[f.fieldKey]) map[f.fieldKey] = f.description;
+        }
+    }
+    return map;
+});
+
 const schemaNames = computed<Record<string, string>>(() => {
     const schemas = decodedMethodology.data.value?.availableSchemas ?? [];
     const map: Record<string, string> = {};
@@ -172,6 +210,14 @@ function resolveTitle(key: string, schemaUuid: string): string {
         .replace(/([a-z])([A-Z])/g, '$1 $2')
         .replace(/[_-]/g, ' ')
         .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function resolveDescription(key: string, schemaUuid: string): string | undefined {
+    const descs = schemaFieldDescriptions.value[schemaUuid]
+        ?? schemaFieldDescriptions.value[bareUuid(schemaUuid)];
+    // Fall back to the policy-wide map so nested-group fields whose
+    // sub-schema we couldn't resolve still get tooltips.
+    return descs?.[key] ?? allFieldDescriptions.value[key];
 }
 
 function humanizeKey(key: string): string {
@@ -249,16 +295,17 @@ function structureVcData(obj: Record<string, any>, schemaUuid: string): VcDocDat
         if (val == null || val === '') continue;
 
         const label = resolveTitle(key, schemaUuid);
+        const description = resolveDescription(key, schemaUuid);
 
         if (isArrayOfObjects(val)) {
             tables.push(buildTable(label, val));
         } else if (typeof val === 'object' && !Array.isArray(val) && isDateRange(val)) {
             const from = formatDate(val['from'] as string);
             const to = formatDate(val['to'] as string);
-            fields.push({ label, value: `${from} → ${to}` });
+            fields.push({ label, value: `${from} → ${to}`, description });
         } else if (typeof val === 'object' && !Array.isArray(val) && isCoordinates(val)) {
             const coords = val['coordinates'] as number[];
-            fields.push({ label, value: `${coords[0]}, ${coords[1]}` });
+            fields.push({ label, value: `${coords[0]}, ${coords[1]}`, description });
         } else if (typeof val === 'object' && !Array.isArray(val)) {
             const nestedType = val['type'] as string | undefined;
             let nestedId: string;
@@ -278,10 +325,10 @@ function structureVcData(obj: Record<string, any>, schemaUuid: string): VcDocDat
         } else if (Array.isArray(val)) {
             const displayable = val.filter(v => v != null && v !== '');
             if (displayable.length > 0) {
-                fields.push({ label, value: displayable.join(', ') });
+                fields.push({ label, value: displayable.join(', '), description });
             }
         } else {
-            fields.push({ label, value: String(val) });
+            fields.push({ label, value: String(val), description });
         }
     }
     return { fields, tables, groups };
@@ -751,7 +798,10 @@ const emissions = computed(() => {
                                             :key="f.label"
                                             class="bg-card px-5 py-3"
                                         >
-                                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">{{ f.label }}</div>
+                                            <div class="flex items-center gap-1 mb-0.5">
+                                                <span class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ f.label }}</span>
+                                                <InfoTooltip v-if="f.description" :text="f.description" />
+                                            </div>
                                             <div class="text-sm text-foreground break-words">{{ f.value }}</div>
                                         </div>
                                         <div v-if="doc.fields.length % 2 === 1" class="hidden sm:block bg-card" />
@@ -808,7 +858,10 @@ const emissions = computed(() => {
                                                 :key="f.label"
                                                 class="bg-card px-5 py-3"
                                             >
-                                                <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">{{ f.label }}</div>
+                                                <div class="flex items-center gap-1 mb-0.5">
+                                                    <span class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ f.label }}</span>
+                                                    <InfoTooltip v-if="f.description" :text="f.description" />
+                                                </div>
                                                 <div class="text-sm text-foreground break-words tabular-nums">{{ f.value }}</div>
                                             </div>
                                             <template v-for="_ in (3 - (group.fields.length % 3)) % 3" :key="'pad-' + _">
