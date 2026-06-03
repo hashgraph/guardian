@@ -5,13 +5,15 @@
 
 This note orients reviewers in ~2 minutes. Full detail is in [`README.md`](./README.md).
 
-## What’s in the folder (everything in one place)
+## What's in the folder (everything in one place)
 - **`VMR0015.policy`** — the Guardian policy import package (version 2.0.0). Implements the **real AMS-III.AV. equations** on-chain (BE from methodology parameters; `ER = BE − PE − LE`) with a water-quality gate. Dry-run validated (evidence in `tests/`).
 - **`VMR0015_policy.json`** — readable policy config (review without importing).
 - **`schemas/`** — all **17 schemas** as standalone JSON (extracted from the binary, identical to it) + an index.
 - **`formulas/`** — the **formula linked definitions** artifact (`VMR0015_formula.zip`) + readable `formula.json` + docs.
 - **`tests/`** — canonical test data + dry-run validation evidence (recording + signed publish credential).
-- **`README.md` / `CHANGELOG.md`** — Verra alignment, scope of what is/isn’t implemented on-chain, and the change history.
+- **`README.md` / `CHANGELOG.md`** — Verra alignment, scope of what is/isn't implemented on-chain, and the change history.
+
+> **Note on `.policy` export vs. repository:** The `VMR0015.policy` binary export does **not** bundle the `tests/`, `formulas/`, `tools/`, or `tokens/` directories — Guardian's export format includes only `policy.json`, `schemas/`, `systemSchemas/`, `proof.json`, and the IPFS package. All test artifacts (`VMR0015_dryrun_record.record`, `VMR0015_dryrun_publish_proof.csv`, fixture JSON) live in this repository's `tests/` directory. To verify the dry-run evidence, **clone the repository and inspect `tests/` there** — do not expect them inside the imported `.policy` bundle.
 
 ## Both formula artifacts are present and describe the same math
 - **Formula calculation block** — `calculate_report_fields` inside `VMR0015.policy` (executes the math at submission).
@@ -38,7 +40,7 @@ PE_y = 0 tCO₂e
 LE_y =  8,116.00 tCO₂e
 ER_y = 154,125.14 tCO₂e → mints 154,125 CER
 ```
-These values are taken directly from the project’s ER calculation workbook
+These values are taken directly from the project's ER calculation workbook
 (`VCS-ERS-Project-3599-01JAN2025-30JUN2025.xlsx`, sheet `Total ER`) and
 match the Verra Registry issuance record for this period.
 
@@ -50,26 +52,27 @@ match the Verra Registry issuance record for this period.
 
 ## Three things to know before testing
 - **Real methodology math, no blanket discount.** Baseline emissions are derived from AMS-III.AV. parameters (Eq. 1/5), not entered as a lump sum. The earlier fixed ×0.89 multiplier has been **removed** — AMS-III.AV. does not mandate one; conservativeness is carried by the `m` term and the water-quality gate.
-- **Water-quality gate at the methodology’s real threshold.** ER is zeroed when more than 10% of appliances fail (pass-rate < 0.90), computed from the report’s passing/total appliance counts, fail-closed on missing data.
-- **Test data — real Verra project and real ER spreadsheet totals.** The fixture is grounded in registered Verra project **VCS 3599 — Safe Drinking Water for Schools in Viet Nam** (methodology AMS-III.AV.), monitoring period 01/01/2025–30/06/2025. Registry: https://registry.verra.org/app/projectDetail/VCS/3599. The BE, LE, and ER values in the test Monitoring Report are taken directly from the project’s ER calculation spreadsheet and match the Verra Registry issuance for this period.
+- **Water-quality gate at the methodology's real threshold.** ER is zeroed when more than 10% of appliances fail (pass-rate < 0.90), computed from the report's passing/total appliance counts, fail-closed on missing data.
+- **Test data — real Verra project and real ER spreadsheet totals.** The fixture is grounded in registered Verra project **VCS 3599 — Safe Drinking Water for Schools in Viet Nam** (methodology AMS-III.AV.), monitoring period 01/01/2025–30/06/2025. Registry: https://registry.verra.org/app/projectDetail/VCS/3599. The BE, LE, and ER values in the test Monitoring Report are taken directly from the project's ER calculation spreadsheet and match the Verra Registry issuance for this period.
 
 ## Policy-integrity / dry-run evidence
 This policy was imported, dry-run, and **published** on a Guardian testnet instance:
-- `tests/VMR0015_dryrun_record.record` — the Guardian recording (its 17 project-schema IDs match this policy 17/17).
+- `tests/VMR0015_dryrun_record.record` — the Guardian recording (its 17 project-schema IDs match this policy 17/17). **This record was captured against the current build with the water-quality gate set to pass-rate < 0.90** (the live threshold encoded in `calculate_report_fields`).
 - `tests/VMR0015_dryrun_publish_proof.csv` — the signed `PUBLISH` Verifiable Credential (Ed25519, Hedera testnet DID) for `VMR0015 v1.0 Safe Drinking Water dMRV`, version 2.0.0.
-- - **Earlier AI-generated `tc1` .record/expected files were removed** because their block tags and schema IDs did not match this policy. The current `tests/VMR0015_dryrun_record.record` and `tests/VMR0015_dryrun_publish_proof.csv` were regenerated from this `VMR0015.policy` (17 schemas) and verified against the schema UUID list in `tests/README.md`. See CHANGELOG [2.0.0] "Removed" section for context.
+- **Earlier AI-generated `tc1` .record/expected files were removed** because their block tags and schema IDs did not match this policy. The current `tests/VMR0015_dryrun_record.record` and `tests/VMR0015_dryrun_publish_proof.csv` were regenerated from this `VMR0015.policy` (17 schemas) and verified against the schema UUID list in `tests/README.md`. See CHANGELOG [2.0.0] "Removed" section for context.
+- **These test files live in the git repository's `tests/` directory and are not bundled inside the Guardian `.policy` export file.** To verify, clone the repo and inspect `tests/` directly.
 
 ## What changed in this update (v2.1.1)
-- **Removed dormant `uncertaintyDiscount` field** from `ER_Summary` schema end-to-end (properties, required array, JSON-LD context). The field’s description “Fixed 0.89 per VMR0015” was factually incorrect; AMS-III.AV. mandates no blanket multiplier.
-- **Canonical fixture updated to real VCS 3599 data for 2025H1.** Expected result is now **154,125.14 tCO₂e (rounded to 154,125)**, matching the project’s ER spreadsheet and Verra Registry issuance, instead of the earlier illustrative 53,309.84 tCO₂e default-parameter fixture.
+- **Removed dormant `uncertaintyDiscount` field** from `ER_Summary` schema end-to-end (properties, required array, JSON-LD context). The field's description "Fixed 0.89 per VMR0015" was factually incorrect; AMS-III.AV. mandates no blanket multiplier.
+- **Canonical fixture updated to real VCS 3599 data for 2025H1.** Expected result is now **154,125.14 tCO₂e (rounded to 154,125)**, matching the project's ER spreadsheet and Verra Registry issuance, instead of the earlier illustrative 53,309.84 tCO₂e default-parameter fixture.
 - **Rebuilt the calculation on the real AMS-III.AV. equations** (SEC = 357.48/nwb; BE = QPW·m·X_boil·SEC·(BL_fuel·f_i·EF_fuel·1e-9); ER = BE−PE−LE).
-- **Set the water-quality gate to the methodology’s real >10%-fail threshold** (pass-rate < 0.90 → ER = 0), fail-closed.
+- **Set the water-quality gate to the methodology's real >10%-fail threshold** (pass-rate < 0.90 → ER = 0), fail-closed.
 - **Bundled dry-run validation evidence** (recording + signed publish credential).
-- **Aligned all documentation** (README, CHANGELOG, tests, formulas) to the real equations and cited the primary UNFCCC AMS-III.AV. source alongside Verra and the project’s ER spreadsheet.
+- **Aligned all documentation** (README, CHANGELOG, tests, formulas) to the real equations and cited the primary UNFCCC AMS-III.AV. source alongside Verra and the project's ER spreadsheet.
 
 ## Sources
 - VMR0015 v1.0 — https://verra.org/methodologies/vmr0015-revisiontoams-iii-av-low-greenhouse-gas-emitting-safe-drinking-water-production-systems-v1-0/
 - AMS-III.AV. v9.0 (primary; Eq. 1/5/7, Table 3, 357.48 constant) — https://cdm.unfccc.int/sunsetcms/storage/contents/stored-file-20250506190351296/MP97_EA06_AMS-III.AV_v09.0.pdf
-- AMS-III.AV. original (357.48 derivation) — https://cdm.unfccc.int/sunsetcms/storage/contents/stored-file-20180620192618906/Annex%209%20-%20AMS-III.AV.pdf
+- AMS-III.AV. original (357.35 derivation) — https://cdm.unfccc.int/sunsetcms/storage/contents/stored-file-20180620192618906/Annex%209%20-%20AMS-III.AV.pdf
 - VCS 3599 ER spreadsheet — VCS-ERS-Project-3599-01JAN2025-30JUN2025.xlsx (sheet `Total ER`)
 - Verra Registry — https://registry.verra.org/app/projectDetail/VCS/3599
