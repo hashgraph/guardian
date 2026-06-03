@@ -51,7 +51,7 @@ const navItems = computed(() => [
     >
         <!-- Logo -->
         <div class="flex flex-col">
-            <div class="flex h-12 items-center px-4">
+            <div class="flex h-12 items-center" :class="collapsed ? 'justify-center' : 'px-4'">
                 <Transition
                     enter-active-class="transition-all duration-200 delay-100 ease-out"
                     enter-from-class="opacity-0 -translate-x-2"
