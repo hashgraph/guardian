@@ -70,17 +70,18 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
   - `SEC = 357.48 / nwb` (Eq. 5; `357.48 = 4.186 x (100 - 20) + 0.01 x 2260`).
   - `BE_y = QPW_y x m x X_boil x SEC x (BL_fuel x f_i x EF_fuel x 1e-9)` (Eq. 1, tCO₂e).
   - `ER_y = BE_y - PE_y - LE_y` (Eq. 7); negatives clamp to 0; `nwb <= 0` yields BE = 0.
-- **Water-quality gate set to the methodology's real threshold.** ER is zeroed when **more than 10% of appliances fail** (appliance pass-rate < 0.90), computed from passing/total counts, **fail-closed** when appliance evidence is missing. (Previously a dormant 95% placeholder that never triggered.)
+- **Water-quality gate set to the methodology's real threshold.** ER is zeroed when **more than 10% of appliances fail** (appliance pass-rate < 0.90), computed from passing/total counts, **fail-closed** when appliance evidence is missing. *(Previously a dormant 95% placeholder that never triggered.)*
 
 ### Removed
-- **The fixed x0.89 uncertainty discount.** AMS-III.AV. does not mandate a single blanket multiplier; conservativeness is carried by the `m` term and the water-quality gate. The earlier Formula Linked Definition's `u_def` factor is likewise dropped.
+- **The fixed x0.89 uncertainty discount.** *(Removed in [2.1.0]; see above.)* AMS-III.AV. does not mandate a single blanket multiplier; conservativeness is carried by the `m` term and the water-quality gate. The earlier Formula Linked Definition's `u_def` factor is likewise dropped.
 
 ### Added
 - **Expanded Monitoring Report schema** to capture the real parameters: `QPW_y`, `m`, `X_boil`, `nwb`, `EF_fuel`, `f_i` (fNRB), `BL_fuel`, and appliances passing / total.
-- **Dry-run validation evidence** in `tests/`: `VMR0015_dryrun_record.record` (Guardian recording; schema IDs match this policy 17/17) and `VMR0015_dryrun_publish_proof.csv` (signed `PUBLISH` Verifiable Credential, Ed25519 / Hedera testnet) confirming the policy imports, dry-runs, and publishes cleanly.
+- **Dry-run validation evidence** in `tests/`: `VMR0015_dryrun_record.record` (Guardian recording; schema IDs match this policy 17/17) and `VMR0015_dryrun_publish_proof.csv` (signed `PUBLISH` Verifiable Credential, Ed25519 / Hedera testnet) confirming the policy imports, dry-runs, and publishes cleanly. *(Supersedes the earlier "can be generated on request" note — real record and proof are now bundled in `tests/`.)* **Note:** these test artifacts live in the git repository's `tests/` directory and are **not** bundled inside the Guardian `.policy` export file; clone the repo to inspect them.
+- **The dry-run record was captured with the water-quality gate at pass-rate < 0.90** (the live threshold in `calculate_report_fields`). Replay at or near the 0.90 boundary will behave consistently with this gate value.
 
 ### Changed
-- **Test fixture updated** to the real parameters at VCS 3599 scale; computed `BE = ER = 11,084.74 tCO₂e` (pass-rate 0.95). Branches verified: pass → 11,084.74; fail (<0.90) → 0; no appliance data → 0; `nwb = 0` → 0.
+- **Test fixture updated** to the real parameters at VCS 3599 scale; computed `BE = ER = 11,084.74 tCO₂e` (pass-rate 0.95) *(was 11,084.74; updated to 154,125.14 in [2.1.1])*. Branches verified: pass → 11,084.74; fail (<0.90) → 0; no appliance data → 0; `nwb = 0` → 0.
 - **Documentation now cites the primary UNFCCC AMS-III.AV. source** alongside Verra.
 - Resolved the prior "internal policy name carries a dev suffix" cleanup item — the published export's internal name is `VMR0015 v1.0 Safe Drinking Water dMRV`.
 
@@ -92,8 +93,8 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 - **`calculate_report_fields` now reads the Monitoring Report as flat scalars.**
   - **Symptom:** a correctly filled Monitoring Report computed `field6 = 0`, so the token minted zero.
   - **Root cause:** the Monitoring Report schema (`#31d7ef1c`) defines `field3`/`field4`/`field5` (BE/PE/LE) as **flat numbers** and `field2` as a "Period Reference" string. The calculation block was reading them as **nested objects** (`raw.field4.field1`, etc.) and treating `field2` as a water-quality array — yielding `0` on every flat report.
-  -   > **Note (2025):** `#31d7ef1c` was the Monitoring Report schema IRI in v2.0.0. The current canonical IRI is `#db884e2d` (used in v2.1.0+ and referenced by the formula linked definitions and all current documentation).
-  - **Fix:** the block now reads flat scalars via `toNum(raw.field3 / field4 / field5)`; computes `ER = (BE − PE − LE) × 0.89`; clamps negatives to `0`. The WHO water-quality gate is now **optional and dormant** — it applies only when an explicit pass-rate is supplied (`field10` or a `wqSamples` array), and the current Monitoring Report schema does not expose `field10`, so a normal flat report computes correctly without it.
+  - > **Note (2025):** `#31d7ef1c` was the Monitoring Report schema IRI in v2.0.0. The current canonical IRI is `#db884e2d` (used in v2.1.0+ and referenced by the formula linked definitions and all current documentation).
+  - **Fix:** the block now reads flat scalars via `toNum(raw.field3 / field4 / field5)`; computes `ER = (BE − PE − LE) × 0.89` *(removed in [2.1.0] — see above)*; clamps negatives to `0`. The WHO water-quality gate is now **optional and dormant** — it applies only when an explicit pass-rate is supplied (`field10` or a `wqSamples` array), and the current Monitoring Report schema does not expose `field10`, so a normal flat report computes correctly without it.
   - **Verification:** a flat Monitoring Report with `field3 = 154125`, `field4 = 0`, `field5 = 0` now computes `field6 = 137,171.25`.
 
 ### Added
@@ -103,10 +104,10 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 ### Changed
 - **Test data re-grounded on a registered Verra project.** Replaced the earlier non-Verra example with **VCS 3599 — Grouped Projects for Safe Drinking Water for Schools in Viet Nam** (registered, AMS-III.AV.), using its public registry record. See [`tests/README.md`](./tests/README.md).
 - **Documentation aligned with Verra's published VMR0015 v1.0**, including the six official updates over AMS-III.AV. and the core equation `ER_y = BE_y − PE_y − LE_y` (§3.9.1).
-- **Clarified the ×0.89 factor** as a conservativeness choice of this implementation, not a Verra-mandated blanket parameter.
+- **Clarified the ×0.89 factor** as a conservativeness choice of this implementation, not a Verra-mandated blanket parameter. *(Removed entirely in [2.1.0].)*
 
 ### Removed
-- **Fabricated policy-integrity-test `.record`.** The earlier bundled `.record` (`cb0543b3-…`) was AI-generated and did **not** match this policy's block tags / schema IDs; it would fail deterministic replay.
+- **Fabricated policy-integrity-test `.record`.** The earlier bundled `.record` (`cb0543b3-…`) was AI-generated and did **not** match this policy's block tags / schema IDs; it would fail deterministic replay. *(Superseded in [2.1.0] — real dry-run record and publish proof now bundled in `tests/`.)*
 - **Stale audit/evidence files** (`AUDIT.md`, `evidence/`, the duplicate dry-run `Policy File (JSON)` export, and a calculations workbook) that referenced superseded policy IDs.
 
 ---
