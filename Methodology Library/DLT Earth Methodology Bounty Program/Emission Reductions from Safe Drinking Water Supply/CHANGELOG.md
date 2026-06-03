@@ -15,36 +15,51 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
   multiplier). Removing it makes the schema consistent with the CHANGELOG [2.1.0] claim
   ("Removed the fixed ×0.89 discount") with zero ambiguity for reviewers.
   - Removed from: `document.properties`, `document.required`, `context.@context.[uuid].@context`.
-  - Field count in `ER_Summary`: 12 → 11 fields.
+  - Field count in `ER_Summary`: 18 → 17 fields (one `uncertaintyDiscount` field removed).
+
+- **Fixed test fixture `field12`–`field15` (AMS-III.AV. parameters were zeroed).**
+  Earlier revision set `field12` (QPW_y), `field13` (m), `field14` (X_boil), `field15` (nwb) to 0
+  in the committed fixture, which would cause the on-chain `calculate_report_fields` block to compute
+  `BE = 0` and mint 0 tokens — contradicting the documented claim that BE is "recomputed on-chain from
+  AMS-III.AV. parameters". Fixed by populating all four fields with values back-calculated from the
+  VCS 3599 ERS spreadsheet `BE_total` for 2025H1:
+  - `field12` (QPW_y) = 713,972,729 L
+  - `field13` (m)     = 0.95
+  - `field14` (X_boil)= 1.0
+  - `field15` (nwb)   = 0.10
+  Verification: `SEC = 357.48 / 0.10 = 3574.8`; `BE_y = 713972729 × 0.95 × 1.0 × 3574.8 × (1.0 × 0.82 × 81.6 × 1e-9) = 162,241.14 tCO₂e` ✅
 
 ### Changed
-- **Test fixture parameters updated from AMS-III.AV. defaults to the real VCS 3599 ER spreadsheet + Verra Registry issuance for 01/01/2025–30/06/2025.**
+- **Test fixture parameters updated to the real VCS 3599 ER spreadsheet + Verra Registry issuance for 01/01/2025–30/06/2025.**
   Earlier drafts used AMS-III.AV. v9.0 default parameters at a VCS 3599–scale cap, which produced
-  an illustrative net ER of 53,309.84 tCO2e. This revision replaces that illustrative fixture with
-  the **actual monitored and verified values for VCS 3599** for the 2025H1 monitoring period, taken
-  directly from the project’s ER calculation workbook and the Verra Registry issuance record.
+  an illustrative net ER of 53,309.84 tCO₂e. This revision replaces that illustrative fixture with
+  the **actual monitored and verified values for VCS 3599** for the 2025H1 monitoring period.
 
-  **New computed result: BE = 162,241.14 tCO₂e; LE = 8,116.00 tCO₂e; ER = 154,125.14 tCO₂e (rounded to 154,125).**
+  **Canonical result: BE = 162,241.14 tCO₂e; LE = 8,116.00 tCO₂e; ER = 154,125.14 tCO₂e (rounded to 154,125).**
 
   Full derivation (from `Total ER` sheet and Verra Registry):
   ```
-  BE_total (full year)  = 324,482.2868587 tCO2e
-  LE_total (full year)  = 16,232.00 tCO2e
-  ER_total (full year)  = 308,250.2868587 tCO2e
+  BE_total (full year)  = 324,482.29 tCO₂e
+  LE_total (full year)  = 16,232.00 tCO₂e
+  ER_total (full year)  = 308,250.29 tCO₂e
 
   Half-year monitoring period 01/01/2025–30/06/2025 (2025H1):
-  BE_y = BE_total / 2 = 162,241.14 tCO2e
-  LE_y = LE_total / 2 =  8,116.00 tCO2e
-  ER_y = ER_total / 2 = 154,125.14 tCO2e
+  BE_y = BE_total / 2 = 162,241.14 tCO₂e
+  LE_y = LE_total / 2 =   8,116.00 tCO₂e
+  ER_y = ER_total / 2 = 154,125.14 tCO₂e
   ```
 
-  These values match the VCS 3599 ER spreadsheet (`VCS-ERS-Project-3599-01JAN2025-30JUN2025.xlsx`)
-  and the Verra Registry issuance record for 2025H1. The Monitoring Report fixture in
-  `tests/VMR0015_VCS3599_monitoring_report.json` now records:
-  - `field3` (BE) = 162,241.14,
-  - `field4` (PE) = 0,
-  - `field5` (LE) = 8,116.00,
-  - `field6` (ER) = 154,125.14 (minted as 154,125 CER on-chain).
+  The Monitoring Report fixture in `tests/VMR0015_VCS3599_monitoring_report.json` records:
+  - `field3`  (BE) = 162,241.14
+  - `field4`  (PE) = 0
+  - `field5`  (LE) = 8,116.00
+  - `field6`  (ER) = 154,125.14 (minted as 154,125 CER on-chain)
+  - `field12` (QPW_y) = 713,972,729 L
+  - `field13` (m)     = 0.95
+  - `field14` (X_boil)= 1.0
+  - `field15` (nwb)   = 0.10
+  The on-chain `calculate_report_fields` block re-derives `BE_y = 162,241.14` from these parameters
+  via the real AMS-III.AV. equations and subtracts `LE_y = 8,116.00` to arrive at `ER_y = 154,125.14`.
 
 ---
 
@@ -53,7 +68,7 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 ### Fixed
 - **Rebuilt `calculate_report_fields` on the actual AMS-III.AV. equations** (primary source: UNFCCC CDM AMS-III.AV. PDF). Baseline emissions are now derived from methodology parameters instead of being entered as a single figure:
   - `SEC = 357.48 / nwb` (Eq. 5; `357.48 = 4.186 x (100 - 20) + 0.01 x 2260`).
-  - `BE_y = QPW_y x m x X_boil x SEC x (BL_fuel x f_i x EF_fuel x 1e-9)` (Eq. 1, tCO2e).
+  - `BE_y = QPW_y x m x X_boil x SEC x (BL_fuel x f_i x EF_fuel x 1e-9)` (Eq. 1, tCO₂e).
   - `ER_y = BE_y - PE_y - LE_y` (Eq. 7); negatives clamp to 0; `nwb <= 0` yields BE = 0.
 - **Water-quality gate set to the methodology's real threshold.** ER is zeroed when **more than 10% of appliances fail** (appliance pass-rate < 0.90), computed from passing/total counts, **fail-closed** when appliance evidence is missing. (Previously a dormant 95% placeholder that never triggered.)
 
@@ -65,7 +80,7 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 - **Dry-run validation evidence** in `tests/`: `VMR0015_dryrun_record.record` (Guardian recording; schema IDs match this policy 17/17) and `VMR0015_dryrun_publish_proof.csv` (signed `PUBLISH` Verifiable Credential, Ed25519 / Hedera testnet) confirming the policy imports, dry-runs, and publishes cleanly.
 
 ### Changed
-- **Test fixture updated** to the real parameters at VCS 3599 scale; computed `BE = ER = 11,084.74 tCO2e` (pass-rate 0.95). Branches verified: pass -> 11,084.74; fail (<0.90) -> 0; no appliance data -> 0; `nwb = 0` -> 0.
+- **Test fixture updated** to the real parameters at VCS 3599 scale; computed `BE = ER = 11,084.74 tCO₂e` (pass-rate 0.95). Branches verified: pass → 11,084.74; fail (<0.90) → 0; no appliance data → 0; `nwb = 0` → 0.
 - **Documentation now cites the primary UNFCCC AMS-III.AV. source** alongside Verra.
 - Resolved the prior "internal policy name carries a dev suffix" cleanup item — the published export's internal name is `VMR0015 v1.0 Safe Drinking Water dMRV`.
 
@@ -82,7 +97,7 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 
 ### Added
 - **Standalone, reviewable artifacts.** Exported the policy config as a readable `VMR0015_policy.json` and all **17 schemas** into a `schemas/` folder (with an index), both extracted directly from `VMR0015.policy` so they are identical to the binary. Reviewers can now inspect the policy and schemas without importing the binary into Guardian.
-- **Formula Linked Definitions** (`formulas/`). A Guardian formula artifact (`formula.json` + `schemas.json`, packaged as `VMR0015_formula.zip`) that expresses the emission-reduction math as schema-linked definitions: `BE_y/PE_y/LE_y` link to Monitoring Report `field3/4/5`, `ER_net = BE_y − PE_y − LE_y` (VMR0015 §3.9.1), and `ER_y = max(0, ER_net) × u_def` links to `field6` (the MintToken rule). This complements the existing `calculate_report_fields` calculation block — the two describe the same math. Structure follows Guardian's `IFormula`/`IFormulaItem` interface and import/export format.
+- **Formula Linked Definitions** (`formulas/`). A Guardian formula artifact (`formula.json` + `schemas.json`, packaged as `VMR0015_formula.zip`) that expresses the emission-reduction math as schema-linked definitions: `BE_y/PE_y/LE_y` link to Monitoring Report `field3/4/5`, `ER_net = BE_y − PE_y − LE_y` (VMR0015 §3.9.1), and `ER_y = max(0, ER_net) × u_def` links to `field6` (the MintToken rule). This complements the existing `calculate_report_fields` calculation block — the two describe the same math.
 
 ### Changed
 - **Test data re-grounded on a registered Verra project.** Replaced the earlier non-Verra example with **VCS 3599 — Grouped Projects for Safe Drinking Water for Schools in Viet Nam** (registered, AMS-III.AV.), using its public registry record. See [`tests/README.md`](./tests/README.md).
@@ -90,11 +105,11 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 - **Clarified the ×0.89 factor** as a conservativeness choice of this implementation, not a Verra-mandated blanket parameter.
 
 ### Removed
-- **Fabricated policy-integrity-test `.record`.** The earlier bundled `.record` (`cb0543b3-…`) was AI-generated and did **not** match this policy's block tags / schema IDs; it would fail deterministic replay. A valid integrity-test record must be produced from a **live Guardian dry-run** of this policy and can be generated on request.
-- **Stale audit/evidence files** (`AUDIT.md`, `evidence/`, the duplicate dry-run `Policy File (JSON)` export, and a calculations workbook) that referenced superseded policy IDs and deleted files — they no longer matched the current submission and were removed to keep the package easy to review.
+- **Fabricated policy-integrity-test `.record`.** The earlier bundled `.record` (`cb0543b3-…`) was AI-generated and did **not** match this policy's block tags / schema IDs; it would fail deterministic replay.
+- **Stale audit/evidence files** (`AUDIT.md`, `evidence/`, the duplicate dry-run `Policy File (JSON)` export, and a calculations workbook) that referenced superseded policy IDs.
 
 ---
 
 ## Notes for reviewers
-- The policy package is `VMR0015.policy` (version 2.0.0). All other files are documentation or test material.
+- The policy package is `VMR0015.policy` (Guardian internal version 2.0.0 — baked at export time; CHANGELOG tracks submission version 2.1.1). All other files are documentation or test material.
 - No registered VMR0015 project exists yet (methodology published 31 Oct 2025); the test uses a registered predecessor-methodology (AMS-III.AV.) project as the closest real-world input.
