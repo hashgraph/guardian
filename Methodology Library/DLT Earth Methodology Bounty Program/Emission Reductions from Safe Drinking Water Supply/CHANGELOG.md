@@ -92,6 +92,7 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 - **`calculate_report_fields` now reads the Monitoring Report as flat scalars.**
   - **Symptom:** a correctly filled Monitoring Report computed `field6 = 0`, so the token minted zero.
   - **Root cause:** the Monitoring Report schema (`#31d7ef1c`) defines `field3`/`field4`/`field5` (BE/PE/LE) as **flat numbers** and `field2` as a "Period Reference" string. The calculation block was reading them as **nested objects** (`raw.field4.field1`, etc.) and treating `field2` as a water-quality array — yielding `0` on every flat report.
+  -   > **Note (2025):** `#31d7ef1c` was the Monitoring Report schema IRI in v2.0.0. The current canonical IRI is `#db884e2d` (used in v2.1.0+ and referenced by the formula linked definitions and all current documentation).
   - **Fix:** the block now reads flat scalars via `toNum(raw.field3 / field4 / field5)`; computes `ER = (BE − PE − LE) × 0.89`; clamps negatives to `0`. The WHO water-quality gate is now **optional and dormant** — it applies only when an explicit pass-rate is supplied (`field10` or a `wqSamples` array), and the current Monitoring Report schema does not expose `field10`, so a normal flat report computes correctly without it.
   - **Verification:** a flat Monitoring Report with `field3 = 154125`, `field4 = 0`, `field5 = 0` now computes `field6 = 137,171.25`.
 
