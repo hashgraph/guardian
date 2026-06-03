@@ -81,7 +81,9 @@ export class JsonToXlsx {
                 item.schema as Schema,
                 _enums,
                 _enumsCache,
-                enumWorksheet
+                enumWorksheet,
+                new Map(),
+                _subSchemaNamesCache
             );
         }
 
@@ -131,7 +133,8 @@ export class JsonToXlsx {
         _enums: XlsxEnum[],
         _enumsCache: Map<string, XlsxEnum>,
         enumWorksheet: Worksheet,
-        _seenMap: Map<string, XlsxEnum> = new Map()
+        _seenMap: Map<string, XlsxEnum> = new Map(),
+        subSchemaNames: Map<string, string> = new Map()
     ): void {
         for (const field of fields) {
             if (field.enum || field.remoteLink) {
@@ -152,7 +155,11 @@ export class JsonToXlsx {
                 }
             }
             if (field.isRef && field.fields) {
-                JsonToXlsx.collectEnums(field.fields, schema, _enums, _enumsCache, enumWorksheet, _seenMap);
+                const subName = subSchemaNames.get(field.type);
+                const subSchema = subName
+                    ? { ...schema, name: subName } as Schema
+                    : schema;
+                JsonToXlsx.collectEnums(field.fields, subSchema, _enums, _enumsCache, enumWorksheet, _seenMap, subSchemaNames);
             }
         }
     }
@@ -364,11 +371,6 @@ export class JsonToXlsx {
         if (field.enum || field.remoteLink) {
             const _enum = enumsCache.get(field.path);
             if (_enum) {
-                const startCell = _enum.worksheet.getCell(SharedEnumTable.COL_VALUE, _enum.rangeStartRow).address;
-                worksheet
-                    .getCell(table.getCol(Dictionary.PARAMETER), row)
-                    .setLink(Dictionary.SHARED_ENUM_SHEET, new Hyperlink(Dictionary.SHARED_ENUM_SHEET, startCell))
-                    .setStyle(table.linkStyle);
                 if (!field.isArray) {
                     worksheet
                         .getCell(table.getCol(Dictionary.ANSWER), row)
