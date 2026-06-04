@@ -899,7 +899,7 @@ export class XlsxToJson {
                     text: `Invalid visibility condition on field "${field?.description || key.path}".`,
                     message: `Row ${row}: Failed to parse Visibility formula "${rawConditionValue}". `
                         + `Supported formats: blank (always visible), "hidden" or "No" (always hidden), `
-                        + `EXACT(Gn,"value") or NOT(EXACT(Gn,"value")) where Gn is an Answer cell reference. `
+                        + `EXACT(Gn,"value") or NOT(EXACT(Gn,"value")) where Gn is an "Test Value" cell reference. `
                         + `Error: ${error?.toString()}`,
                     worksheet: worksheet.name,
                     cell: worksheet.getPath(table.getCol(Dictionary.VISIBILITY), row),
@@ -956,7 +956,7 @@ export class XlsxToJson {
                 type: 'error',
                 text: `Failed to resolve condition for field "${field?.description || key?.path}".`,
                 message: `Row ${row}: Visibility condition references a field that does not exist on this sheet. `
-                    + `Make sure the cell reference in EXACT(Gn, ...) points to an Answer cell of a field defined above this row. `
+                    + `Make sure the cell reference in EXACT(Gn, ...) points to an "Test Value" cell of a field defined above this row. `
                     + `Error: ${error?.toString()}`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.VISIBILITY), row),
