@@ -29,3 +29,4 @@ This cross-linking is what makes the docs navigable without requiring every page
 ### Related
 
 * [page-templates](page-templates/ "mention")
+* [Diátaxis Framework](https://diataxis.fr/)
