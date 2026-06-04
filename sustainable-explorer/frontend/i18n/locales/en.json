@@ -241,12 +241,9 @@
             "sdgs": "SDGs"
         },
         "presets": {
-            "issuingForestry": "Issuing Forestry",
             "goldStandard": "Gold Standard",
             "sdg13": "SDG 13: Climate Action",
-            "underValidation": "Under Validation",
-            "vintage2024": "Vintage 2024",
-            "blueCarbon": "Blue Carbon"
+            "vintage2024": "Vintage 2024"
         },
         "notFound": "Project not found",
         "details": {
@@ -319,9 +316,7 @@
             "fungible": "Fungible tokens",
             "nonFungible": "Non-Fungible (NFTs)",
             "minted2024": "Minted 2024",
-            "minted2025": "Minted 2025",
-            "blueCarbon": "Blue Carbon",
-            "forestry": "Forestry"
+            "minted2025": "Minted 2025"
         },
         "issuancesFound": "{count} issuances found",
         "totalSupply": "Total supply:",
@@ -341,7 +336,7 @@
             "token": "Token",
             "symbol": "Symbol",
             "type": "Type",
-            "supply": "Supply",
+            "supply": "Mint Amount",
             "mintDate": "Mint Date",
             "project": "Project",
             "methodology": "Methodology",
@@ -351,7 +346,7 @@
         "filters": {
             "tokenType": "Token Type",
             "registry": "Registry",
-            "supply": "Supply",
+            "supply": "Mint Amount",
             "mintDate": "Mint Date",
             "hideUnlinked": "Hide issuances with no project link"
         },
