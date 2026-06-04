@@ -7,7 +7,8 @@ In Guardian schemas usually exist within a Policy, a Tool or embedded into anoth
 When schemas are exported, they are packaged into a single Excel file formatted like the template mentioned above. It is recommended to experiment with exporting your existing policies and reviewing the resulting excel files so you can familiarize yourself with the format and the content.
 
 1. [Step By Step Process](import-and-export-excel-file-user-guide.md#id-1.-step-by-step-process)
-2. [Demo Video](import-and-export-excel-file-user-guide.md#id-2.-demo-video)
+2. [Validation Rules](import-and-export-excel-file-user-guide.md#id-2.-validation-rules)
+3. [Demo Video](import-and-export-excel-file-user-guide.md#id-3.-demo-video)
 
 ## 1. Step By Step Process
 
@@ -215,6 +216,55 @@ If Guardian was unable to parse the expression for any reason the following erro
 
 <figure><img src="../../../.gitbook/assets/image (477).png" alt=""><figcaption></figcaption></figure>
 
-## 2. Demo Video
+## 2. Validation Rules
+
+The following rules are enforced by the import engine. When a rule is violated the error message shown in the import dialog will describe what went wrong and how to fix it.
+
+### Schema sheet
+
+| Rule | What triggers it | How to fix |
+|---|---|---|
+| Schema name must not be empty | Cell A1 of the schema sheet is blank | Enter the schema name in cell A1 |
+| Column headers must match the template | A required column header (e.g. `Field Type`, `Required Field`) is missing or misspelled in the header row | Compare the header row against the downloaded template and correct any mismatches |
+
+### Field rows
+
+| Rule | What triggers it | How to fix |
+|---|---|---|
+| Field Type must not be empty | The `Field Type` cell for a row is blank | Set a valid type: `Number`, `Integer`, `String`, `Boolean`, `Date`, `Time`, `DateTime`, `Duration`, `URL`, `URI`, `Email`, `Image`, `File`, `Pattern`, `Help Text`, `GeoJSON`, `HederaAccount`, `Prefix`, `Postfix`, `Auto-Calculate`, `Enum`, `Sub-Schema` |
+| `Help Text` cannot be required | A `Help Text` field has `Required Field` = Yes | Set `Required Field` to No for all Help Text fields |
+| `Auto-Calculate` must have an expression | An `Auto-Calculate` field has an empty `Parameter` cell | Enter a math expression referencing other field cells (e.g. `G6 + G7`) in the `Parameter` column |
+| Field key cannot contain dots | The `Key` column value contains a `.` character | Remove dots from the key — dots are reserved as path separators |
+| Field keys must be unique per schema | Two fields on the same sheet share the same key value | Rename one of the fields in the `Key` column so every key is unique within the sheet |
+
+### Visibility column
+
+| Rule | What triggers it | How to fix |
+|---|---|---|
+| Visibility formula must be valid | The `Visibility` cell contains an unsupported formula | Use one of the supported formats: blank (always visible), `TRUE`, `FALSE`, `Hidden`, `EXACT(Gn,"value")`, `NOT(EXACT(Gn,"value"))`, `OR(EXACT(...), EXACT(...))`, `AND(EXACT(...), EXACT(...))` — where `Gn` is a cell reference in the `Test Value` column |
+| Visibility references a non-existent field | The cell reference inside `EXACT(...)` does not correspond to any field defined above | Make sure the cell reference points to the `Test Value` cell of a field that exists in the same sheet |
+
+### Enum fields
+
+| Rule | What triggers it | How to fix |
+|---|---|---|
+| Enum must exist in the Enums tab | An `Enum` field has no matching entry in the `Enums` tab | Add an entry to the `Enums` tab where `Schema name` exactly matches the owner schema name — the top-level schema name (cell A1) for root fields, or the sub-schema name (the `Parameter` value of the parent `Sub-Schema` field, or its `Description` if Parameter is empty) for nested fields — and `Field name` exactly matches the `Description` value of the enum field |
+| Enum must have at least one value | An enum entry in the `Enums` tab has no values | Add at least one value in the `Value` column for the enum group |
+| Enum values must be unique | The same value appears more than once in an enum list | Remove or rename the duplicate entry in the `Enums` tab |
+| Enum must upload successfully | `Loaded to IPFS` is `Yes` but the upload failed | Check your IPFS configuration, or set `Loaded to IPFS` to `No` to store the enum inline instead |
+
+### Enums tab (shared enum sheet)
+
+| Rule | What triggers it | How to fix |
+|---|---|---|
+| Column headers must match exactly | Any of the four header cells in the `Enums` sheet does not match the expected value | The headers must be exactly: column A — `Schema name`, column B — `Field name`, column C — `Loaded to IPFS`, column D — `Value` |
+
+### Sub-schemas (inline)
+
+| Rule | What triggers it | How to fix |
+|---|---|---|
+| Sub-schema defined multiple times with different fields | The same sub-schema name (the `Parameter` value of a `Sub-Schema` field, or its `Description` if Parameter is empty) appears more than once in the sheet with different child fields | Ensure all occurrences of the sub-schema have the same field structure, or set a different `Parameter` value on one of them to treat them as separate sub-schemas |
+
+## 3. Demo Video
 
 [Youtube](https://www.youtube.com/watch?v=o-4NHLREyBo\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=14\&t=1s)
