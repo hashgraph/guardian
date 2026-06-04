@@ -73,7 +73,7 @@
 }
 
 p-select,
-p-calendar {
+p-datepicker {
     height: 40px;
 }
 
@@ -134,7 +134,7 @@ p-calendar {
     height: 37px;
 }
 
-.content ::ng-deep .calendar-filter .p-datepicker-trigger {
+.content ::ng-deep .calendar-filter .p-datepicker-dropdown {
     position: absolute;
     top: 50%;
     right: 8px;

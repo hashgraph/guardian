@@ -402,16 +402,13 @@ button[disabled] {
     width: 330px;
     border-radius: 8px;
 
-    .p-button {
+    .p-datepicker-dropdown {
         position: absolute;
         left: calc(330px - 48px);
         box-sizing: border-box;
         background-color: transparent;
         border: transparent;
-
-        .p-button-icon {
-            color: var(--color-grey-3);
-        }
+        color: var(--color-grey-3);
     }
 }
 
