@@ -528,7 +528,8 @@
                 "instancePolicyTopic": "Tópico de la instancia de política",
                 "publishedAt": "Publicada el",
                 "registryDid": "DID del Registro",
-                "network": "Red"
+                "network": "Red",
+                "downloadPolicy": "Descargar paquete de política (.zip)"
             },
             "analytics": {
                 "schemaCount": "Conteo de esquemas",

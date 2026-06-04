@@ -533,7 +533,8 @@
                 "instancePolicyTopic": "Instance Policy Topic",
                 "publishedAt": "Published At",
                 "registryDid": "Registry DID",
-                "network": "Network"
+                "network": "Network",
+                "downloadPolicy": "Download policy package (.zip)"
             },
             "analytics": {
                 "schemaCount": "Schema Count",

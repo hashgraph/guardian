@@ -32,6 +32,7 @@ interface RawRow {
     decode_status: string | null;
     sectoral_scopes: unknown | null;
     emission_reduction_approach: unknown | null;
+    policy_source_cid: string | null;
 }
 
 /**
@@ -225,6 +226,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 s.schema_count,
                 reg.registry_name,
                 (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
+                p."sourceCid" AS policy_source_cid,
                 p."policyMapping"->'sectoralScopes' AS sectoral_scopes,
                 p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach
             FROM business_view bv
@@ -408,6 +410,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             totalRetired: lifecycle?.totalRetired,
             totalActive: lifecycle?.totalActive,
             decodeStatus: row.decode_status ?? null,
+            policySourceCid: row.policy_source_cid ?? null,
         };
     }
 }

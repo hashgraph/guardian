@@ -56,6 +56,7 @@ export interface MethodologyDto {
     totalRetired?: number;
     totalActive?: number;
     decodeStatus?: 'success' | 'failed' | 'pending' | 'unknown';
+    policySourceCid?: string | null;
 }
 
 export interface MethodologiesMeta {

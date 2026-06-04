@@ -396,12 +396,23 @@ export class ProjectMapperService {
         }
         let country = countries[0] ?? null;
 
-        // Geo fallback: if no country was extracted from the schema but the VC
-        // carries valid coordinates, derive the country via point-in-polygon
-        // against bundled country borders. Lets us fill in country for
-        // methodologies whose project schema has no country field (or whose
-        // mapping was incorrect / rejected).
-        if (!country && geoLngLat) {
+        // Geo fallback: derive country via point-in-polygon when:
+        //   1. No country was extracted, OR
+        //   2. The extracted value is clearly not a country name (a numeric
+        //      string, coordinate notation like "90.3563° E", or a short
+        //      non-word like "TST" / "tes"). These come from mis-mapped fields
+        //      where 'country' was pointed at a longitude or test value.
+        const isValidCountry = (s: string | null): boolean => {
+            if (!s) return false;
+            const trimmed = s.trim();
+            if (trimmed.length < 4 || trimmed.length > 100) return false;
+            // Looks like a number or coordinate (e.g. "32.5825", "90.3563° E", "-63.236047")
+            if (/^-?\d+(\.\d+)?(\s*°\s*[NSEW])?$/.test(trimmed)) return false;
+            // No letters at all → not a country name
+            if (!/[a-zA-Z]/.test(trimmed)) return false;
+            return true;
+        };
+        if (!isValidCountry(country) && geoLngLat) {
             const [lng, latVal] = geoLngLat;
             const lookup = await this.reverseGeoService.lookupCountry(latVal, lng);
             if (lookup) country = lookup.name;

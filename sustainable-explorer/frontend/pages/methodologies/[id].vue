@@ -27,6 +27,7 @@ import {
   RefreshCw,
   RotateCcw,
   Pencil,
+  Download,
 } from "lucide-vue-next";
 import { formatCredits, formatNumber } from "~/lib/format";
 import type {
@@ -121,11 +122,24 @@ async function copyValue(val: string) {
   } catch {}
 }
 
-const hashscanUrl = computed(() =>
-  methodology.value?.topicId
+const hashscanUrl = computed(() => {
+  // Prefer the exact transaction that published the policy document — its HCS
+  // consensus timestamp is methodology.sourceTimestamp. Fall back to the topic
+  // view when the timestamp is unavailable.
+  const ts = methodology.value?.sourceTimestamp;
+  if (ts) return `https://hashscan.io/${network.value}/transaction/${ts}`;
+  return methodology.value?.topicId
     ? `https://hashscan.io/${network.value}/topic/${methodology.value.topicId}`
-    : null,
-);
+    : null;
+});
+
+// Download the policy ZIP through our API (served from cached IPFS content).
+// Shown only once the policy is decoded — that's when the ZIP is cached.
+const policyPackageUrl = computed(() => {
+  if (methodology.value?.decodeStatus !== 'success') return null;
+  const base = (useRuntimeConfig().public.apiBaseUrl as string) || '';
+  return `${base}/api/v1/${network.value}/methodologies/${id.value}/policy-package`;
+});
 
 const publishedAt = computed(() => {
   const ts = methodology.value?.sourceTimestamp;
@@ -1861,8 +1875,9 @@ const issuanceTrendTotal = computed(() =>
               </div>
             </div>
 
-            <div v-if="hashscanUrl">
+            <div class="flex flex-wrap items-center gap-4">
               <a
+                v-if="hashscanUrl"
                 :href="hashscanUrl"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -1870,6 +1885,15 @@ const issuanceTrendTotal = computed(() =>
               >
                 <ExternalLink class="h-4 w-4" />
                 {{ $t('methodologies.detail.viewOnHashScan') }}
+              </a>
+              <a
+                v-if="policyPackageUrl"
+                :href="policyPackageUrl"
+                download
+                class="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
+              >
+                <Download class="h-4 w-4" />
+                {{ $t('methodologies.detail.policy.downloadPolicy') }}
               </a>
             </div>
           </div>

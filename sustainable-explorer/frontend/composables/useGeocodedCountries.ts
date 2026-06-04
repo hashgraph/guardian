@@ -1,4 +1,5 @@
 import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
+import { nominatimReverse } from '~/composables/useNominatim';
 import type { Project } from '~/types/models';
 
 // Module-level cache — persists across page navigations within the session.
@@ -15,19 +16,12 @@ async function drainQueue() {
     while (queue.length > 0) {
         const item = queue.shift()!;
         if (cache.has(item.id)) continue;
-        try {
-            const res = await $fetch<any>('https://nominatim.openstreetmap.org/reverse', {
-                params: { lat: item.lat, lon: item.lng, format: 'json', zoom: 3 },
-                headers: { 'Accept-Language': 'en' },
-            });
-            const name: string = res?.address?.country ?? '';
-            const code = COUNTRY_ALPHA3[name] ?? 'UNK';
-            if (code !== 'UNK') {
-                cache.set(item.id, code);
-                if (name) nameCache.set(item.id, name);
-                cacheRef.value++;
-            }
-        } catch { /* ignore */ }
+        const result = await nominatimReverse(item.lat, item.lng, n => COUNTRY_ALPHA3[n] ?? 'UNK');
+        if (result) {
+            cache.set(item.id, result.code);
+            nameCache.set(item.id, result.name);
+            cacheRef.value++;
+        }
         if (queue.length > 0) await new Promise(r => setTimeout(r, 1100));
     }
     queueRunning = false;

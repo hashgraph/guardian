@@ -141,6 +141,12 @@ export class MethodologyResponseDto {
     })
     decodeStatus: 'success' | 'failed' | 'pending' | 'unknown';
 
+    @ApiProperty({
+        nullable: true,
+        description: 'IPFS CID of the policy ZIP (the methodology definition package), or null if not decoded yet',
+    })
+    policySourceCid: string | null;
+
     static fromRow(
         row: MethodologyRow,
         network: string,
@@ -190,6 +196,7 @@ export class MethodologyResponseDto {
             totalRetired: row.totalRetired ?? 0,
             totalActive: row.totalActive ?? 0,
             decodeStatus,
+            policySourceCid: row.policySourceCid ?? null,
         };
     }
 }
