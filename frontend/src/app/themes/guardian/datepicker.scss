@@ -1,20 +1,14 @@
 .guardian-datepicker {
+    width: 100%;
 
-    .p-datepicker {
-        width: 100%;
-
-        .p-datepicker {
-            width: auto;
-            min-width: auto;
-        }
-
-        .p-inputtext {
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-        }
+    .p-datepicker-input {
+        flex: 1 1 auto;
+        width: 1% !important;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
     }
 
-    .p-datepicker-trigger {
+    .p-datepicker-dropdown {
         background: #fff;
         color: #727374;
         border-color: var(--guardian-grey-color-2, #E1E7EF);
@@ -31,11 +25,11 @@
         }
     }
 
-    .p-inputtext:enabled:focus+.p-datepicker-trigger {
+    .p-datepicker-input:enabled:focus+.p-datepicker-dropdown {
         border-color: var(--guardian-primary-color, #4169E2);
     }
 }
 
-.p-datepicker:not(.p-datepicker-inline) {
+.p-datepicker-panel:not(.p-datepicker-panel-inline) {
     min-width: 200px !important;
 }
