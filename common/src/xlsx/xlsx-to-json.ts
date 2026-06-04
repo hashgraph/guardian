@@ -57,7 +57,8 @@ export class XlsxToJson {
                             xlsxResult.addError({
                                 type: 'error',
                                 text: `Failed to upload enum "${worksheet.name}".`,
-                                message: `Failed to upload enum "${worksheet.name}".`,
+                                message: `Failed to upload enum "${worksheet.name}". `
+                                    + `Check your IPFS configuration, or set "Loaded to IPFS" to "No" in the header of the "${worksheet.name}" enum sheet.`,
                                 worksheet: worksheet.name
                             }, null);
                         }
@@ -199,7 +200,7 @@ export class XlsxToJson {
                     xlsxResult.addError({
                         type: 'warning',
                         text: 'Duplicate value.',
-                        message: 'Duplicate value.',
+                        message: `Duplicate enum value at row ${row}. Each value in an enum list must be unique — remove or rename the repeated entry.`,
                         worksheet: worksheet.name,
                         row
                     }, null);
@@ -229,6 +230,7 @@ export class XlsxToJson {
         let currentName: string = null;
         let currentIpfs: boolean = false;
         let currentItems: string[] = [];
+        let currentItemsSet: Set<string> = new Set();
         let groupStartRow: number = SharedEnumTable.FIRST_DATA_ROW;
         const seenNames = new Set<string>();
 
@@ -264,7 +266,8 @@ export class XlsxToJson {
                 xlsxResult.addError({
                     type: 'error',
                     text: `Failed to upload enum "${enumName}".`,
-                    message: `Failed to upload enum "${enumName}".`,
+                    message: `Failed to upload enum "${enumName}. `
+                        + `Check your IPFS configuration, or set "Loaded to IPFS" to "No" for this entry in the "${Dictionary.SHARED_ENUM_SHEET}" tab.`,
                     worksheet: worksheet.name
                 }, null);
                 return;
@@ -286,11 +289,23 @@ export class XlsxToJson {
                 currentName   = enumName;
                 currentIpfs   = xlsxToBoolean(ipfsRaw);
                 currentItems  = [];
+                currentItemsSet   = new Set();
                 groupStartRow = row;
             }
 
             if (value) {
-                currentItems.push(value);
+                if (currentItemsSet.has(value)) {
+                    xlsxResult.addError({
+                        type: 'warning',
+                        text: 'Duplicate value.',
+                        message: `Duplicate enum value "${value}" at row ${row}. Each value in an enum list must be unique — remove or rename the repeated entry.`,
+                        worksheet: worksheet.name,
+                        row
+                    }, null);
+                } else {
+                    currentItemsSet.add(value);
+                    currentItems.push(value);
+                }
             }
         }
         await flushGroup(currentName, currentIpfs, currentItems, groupStartRow, endRow);
@@ -337,7 +352,8 @@ export class XlsxToJson {
                 xlsxResult.addError({
                     type: 'error',
                     text: `Invalid headers. Header "${errorHeader.title}" not set.`,
-                    message: `Invalid headers. Header "${errorHeader.title}" not set.`,
+                    message: `Sheet "${worksheet.name}" is missing required column header "${errorHeader.title}". `
+                        + `Ensure the header row contains all required columns matching the template exactly.`,
                     worksheet: worksheet.name
                 }, schema);
                 return schema;
@@ -355,7 +371,7 @@ export class XlsxToJson {
                     xlsxResult.addError({
                         type: 'error',
                         text: 'Schema name is empty.',
-                        message: `Schema name is empty on sheet "${worksheet.name}".`,
+                        message: `Schema name is empty on sheet "${worksheet.name}". Enter the schema name in the first cell of row 1.`,
                         worksheet: worksheet.name,
                         cell: worksheet.getPath(startCol, nameRow),
                         row: nameRow,
@@ -429,7 +445,8 @@ export class XlsxToJson {
                                 xlsxResult.addError({
                                     type: 'warning',
                                     text: `Sub-schema "${name}" is defined more than once with different fields. The first definition will be used.`,
-                                    message: `Sub-schema "${name}" is defined more than once with different fields. The first definition will be used.`,
+                                    message: `Sub-schema "${name}" on sheet "${worksheet.name}" has conflicting field definitions across its occurrences. `
+                                        + `Ensure every use of this sub-schema has the same fields, or rename one of them to distinguish them.`,
                                     worksheet: worksheet.name,
                                 }, null);
                             }
@@ -619,8 +636,11 @@ export class XlsxToJson {
                 typeError = true;
                 xlsxResult.addError({
                     type: 'error',
-                    text: 'Unknown field type.',
-                    message: 'Unknown field type.',
+                    text: `Unknown field type (cell is empty).`,
+                    message: `Field Type cell is empty. `
+                        + `Supported types: Number, Integer, String, Boolean, Date, Time, DateTime, Duration, `
+                        + `URL, URI, Email, Image, File, Pattern, Help Text, GeoJSON, HederaAccount, `
+                        + `Prefix, Postfix, Auto-Calculate, Enum, Sub-Schema.`,
                     worksheet: worksheet.name,
                     cell: worksheet.getPath(table.getCol(Dictionary.FIELD_TYPE), row),
                     row,
@@ -666,7 +686,7 @@ export class XlsxToJson {
             xlsxResult.addError({
                 type: 'error',
                 text: 'Failed to parse field.',
-                message: error?.toString(),
+                message: `Failed to parse field at row ${row} on sheet "${worksheet.name}": ${error?.toString()}`,
                 worksheet: worksheet.name,
                 row
             }, field);
@@ -740,8 +760,9 @@ export class XlsxToJson {
                         field.remoteLink = null;
                         xlsxResult.addError({
                             type: 'error',
-                            text: `Enum named "${enumName}" not loaded.`,
-                            message: `Enum named "${enumName}" not loaded.`,
+                            text: `Enum "${enumName}" failed to load.`,
+                            message: `Enum "${enumName}" was found in the "Enums" tab but failed to upload to IPFS. `
+                                + `Try setting "Loaded to IPFS" to "No" in the Enums tab, or check your IPFS configuration.`,
                             worksheet: worksheet.name,
                             row
                         }, field);
@@ -761,8 +782,8 @@ export class XlsxToJson {
                 if (!(field.enum || field.remoteLink)) {
                     xlsxResult.addError({
                         type: 'error',
-                        text: `Enum named "${enumName}" is empty.`,
-                        message: `Enum named "${enumName}" is empty.`,
+                        text: `Enum "${enumName}" has no values.`,
+                        message: `Enum "${enumName}" was found but contains no values. Add at least one value in the "Value" column of the "Enums" tab.`,
                         worksheet: worksheet.name,
                         row
                     }, field);
@@ -795,11 +816,13 @@ export class XlsxToJson {
             if (field.autocalculate && !param) {
                 xlsxResult.addError({
                     type: 'error',
-                    text: `Auto-calculate field is empty.`,
-                    message: `Auto-calculate field is empty.`,
+                    text: `Auto-Calculate field is missing an expression.`,
+                    message: `Row ${row}: Auto-Calculate field "${field.description}" has no expression in the Parameter column. `
+                        + `Enter a math expression referencing other field cells, e.g. "G6 + G7".`,
                     worksheet: worksheet.name,
                     cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), row),
-                    row
+                    row,
+                    col: table.getCol(Dictionary.PARAMETER),
                 }, field);
             }
 
@@ -827,8 +850,8 @@ export class XlsxToJson {
         } catch (error) {
             xlsxResult.addError({
                 type: 'error',
-                text: 'Failed to parse params.',
-                message: error?.toString(),
+                text: `Failed to parse params for field "${field.description || '(unknown)'}" (${fieldType.name}).`,
+                message: `Row ${row}: Failed to parse params for "${field.description || '(unknown)'}" (type: ${fieldType.name}): ${error?.toString()}`,
                 worksheet: worksheet.name,
                 row
             }, field);
@@ -861,17 +884,23 @@ export class XlsxToJson {
             const cell = worksheet.getCell(table.getCol(Dictionary.VISIBILITY), row);
             let result: ICondition | null = null;
 
+            let rawConditionValue: string = '';
             try {
                 if (cell.isFormulae()) {
-                    result = XlsxToJson.parseCondition(cell.getFormulae());
+                    rawConditionValue = cell.getFormulae();
+                    result = XlsxToJson.parseCondition(rawConditionValue);
                 } else if (cell.isValue()) {
-                    result = XlsxToJson.parseCondition(xlsxToVisibility(cell.getValue<string>()));
+                    rawConditionValue = xlsxToVisibility(cell.getValue<string>());
+                    result = XlsxToJson.parseCondition(rawConditionValue);
                 }
             } catch (error) {
                 xlsxResult.addError({
                     type: 'error',
-                    text: `Failed to parse condition.`,
-                    message: error?.toString(),
+                    text: `Invalid visibility condition on field "${field?.description || key.path}".`,
+                    message: `Row ${row}: Failed to parse Visibility formula "${rawConditionValue}". `
+                        + `Supported formats: blank (always visible), "hidden" or "No" (always hidden), `
+                        + `EXACT(Gn,"value") or NOT(EXACT(Gn,"value")) where Gn is an Answer cell reference. `
+                        + `Error: ${error?.toString()}`,
                     worksheet: worksheet.name,
                     cell: worksheet.getPath(table.getCol(Dictionary.VISIBILITY), row),
                     row,
@@ -925,8 +954,10 @@ export class XlsxToJson {
         } catch (error) {
             xlsxResult.addError({
                 type: 'error',
-                text: 'Failed to parse condition.',
-                message: error?.toString(),
+                text: `Failed to resolve condition for field "${field?.description || key?.path}".`,
+                message: `Row ${row}: Visibility condition references a field that does not exist on this sheet. `
+                    + `Make sure the cell reference in EXACT(Gn, ...) points to an Answer cell of a field defined above this row. `
+                    + `Error: ${error?.toString()}`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.VISIBILITY), row),
                 row,
@@ -969,7 +1000,8 @@ export class XlsxToJson {
             xlsxResult.addError({
                 type: 'error',
                 text: 'Failed to parse expression.',
-                message: error?.toString(),
+                message: `Row ${row}: Failed to parse Auto-Calculate expression on sheet "${worksheet.name}". `
+                    + `Ensure the formula in the Test Value column is a valid math expression. Error: ${error?.toString()}`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.ANSWER), row),
                 row,
@@ -1106,7 +1138,7 @@ export class XlsxToJson {
             xlsxResult.addError({
                 type: 'warning',
                 text: `Invalid character.`,
-                message: `Dots are not allowed in the Keys (${name})`,
+                message: `Key "${name}" contains a dot ('.'), which is not allowed in field keys. The dot has been removed automatically — rename the key in the Key column to avoid this.`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
                 row,
@@ -1129,7 +1161,7 @@ export class XlsxToJson {
             xlsxResult.addError({
                 type: 'error',
                 text: `Failed to parse field.`,
-                message: `Key ${field.name} already exists`,
+                message: `Row ${row}: Field key "${field.name}" already exists on sheet "${worksheet.name}". Each field must have a unique key — rename it in the Key column.`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
                 row,
