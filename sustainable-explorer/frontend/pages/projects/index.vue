@@ -67,12 +67,9 @@ const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, act
     });
 
 const presets = computed(() => [
-    { label: t('projects.presets.issuingForestry'), filters: { status: 'Issuing', sector: 'Forestry and Land Use' } },
     { label: t('projects.presets.goldStandard'), filters: { registry: 'Gold Standard' } },
     { label: t('projects.presets.sdg13'), filters: { sdgs: '13' } },
-    { label: t('projects.presets.underValidation'), filters: { status: 'Under Validation' } },
     { label: t('projects.presets.vintage2024'), filters: { vintage: '2024|2024' } },
-    { label: t('projects.presets.blueCarbon'), search: 'Blue Carbon' },
 ]);
 
 // Summary statistics for filtered results
