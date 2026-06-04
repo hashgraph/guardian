@@ -873,10 +873,10 @@ const issuanceTrendTotal = computed(() =>
         <div class="px-5 py-3.5 border-b bg-muted/30 flex items-center justify-between">
           <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
             <BarChart3 class="h-4 w-4 text-primary" />
-            Methodology Dashboard
+            {{ $t('methodologies.detail.dashboard.title') }}
           </h2>
           <span class="text-[11px] text-muted-foreground">
-            {{ methodology.stats.projectCount }} projects &middot; {{ methodology.stats.issuanceCount }} issuances
+            {{ $t('methodologies.detail.dashboard.stats', { projects: methodology.stats.projectCount, issuances: methodology.stats.issuanceCount }) }}
           </span>
         </div>
 
@@ -893,7 +893,7 @@ const issuanceTrendTotal = computed(() =>
                 <h3 class="text-sm font-semibold text-foreground">{{ $t('methodologies.detail.charts.geographicDistribution') }}</h3>
                 <p class="text-xs text-muted-foreground mt-0.5">{{ $t('methodologies.detail.charts.geographicDistributionSub') }}</p>
               </div>
-              <span class="text-[11px] text-muted-foreground">{{ geoDistribution.length }} countr{{ geoDistribution.length !== 1 ? 'ies' : 'y' }}</span>
+              <span class="text-[11px] text-muted-foreground">{{ geoDistribution.length }} {{ geoDistribution.length !== 1 ? $t('methodologies.detail.charts.geographicCountries') : $t('methodologies.detail.charts.geographicCountry') }}</span>
             </div>
             <div v-if="geoDistribution.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
               <div v-for="item in geoDistribution" :key="item.country" class="flex items-center gap-2.5">
