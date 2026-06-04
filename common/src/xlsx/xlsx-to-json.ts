@@ -698,13 +698,14 @@ export class XlsxToJson {
                 let enumName: string = enumFieldName;
 
                 if (!enumObject) {
-                    // Legacy fallback: hyperlink on Parameter cell points to an old-style enum tab
+                    // Legacy fallback
                     const hyperlink = worksheet
                         .getCell(table.getCol(Dictionary.PARAMETER), row)
                         .getLink();
-                    if (hyperlink?.worksheet) {
-                        enumName = hyperlink.worksheet;
-                        enumObject = xlsxResult.getEnum(enumName);
+                    const legacyName = hyperlink?.worksheet || enumFieldName;
+                    if (legacyName) {
+                        enumName = legacyName;
+                        enumObject = xlsxResult.getEnum(legacyName);
                     }
                 }
 
