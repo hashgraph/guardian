@@ -39,5 +39,5 @@ Policy Integrity Tests are created and managed by Standard Registry operators an
 
 ### Related
 
-* Task: Create and run Policy Integrity Tests
+* [Task: Create a Policy Integrity Test](create-a-policy-integrity-test.md)
 
