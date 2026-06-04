@@ -7,6 +7,7 @@ import {
     loadResolutionMaps,
     extractLatLng,
     resolveCountryName,
+    findCountryInText,
 } from '../project-mapper/helpers';
 import {
     extractLatLngStrings,
@@ -395,6 +396,18 @@ export class ProjectMapperService {
                 .filter(s => s.length > 0);
         }
         let country = countries[0] ?? null;
+
+        // When the extracted value is a narrative phrase rather than a country
+        // name (e.g. "districts of Jaipur ... in North-West India"), scan it
+        // for any known country name embedded in the text and use that. This
+        // runs before geo fallback because text-based detection is cheaper and
+        // more accurate when the country is explicitly named.
+        const looksLikeNarrative = (s: string | null): boolean =>
+            !!s && (s.length > 60 || /\s/.test(s.trim()));
+        if (rawCountry && looksLikeNarrative(country)) {
+            const fromText = findCountryInText(rawCountry);
+            if (fromText) country = fromText;
+        }
 
         // Geo fallback: derive country via point-in-polygon when:
         //   1. No country was extracted, OR
