@@ -31,10 +31,21 @@ jobs:
       - name: Setup Yarn
         uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
         with:
-          cmd: install
+          cmd: --version
+
+      - name: Locate yarn cache
+        id: yarncache
+        run: echo "dir=$(yarn cache dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache yarn
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ steps.yarncache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Start NatsMQ
         uses: step-security/nats-action@2254b4cc4958120e36da3a096e8200dac968be1c # v0.1.4
@@ -55,7 +66,6 @@ jobs:
 
       - name: Build
         run: |
-          yarn
           pushd interfaces
           yarn run build
           popd
@@ -91,7 +101,7 @@ jobs:
           pushd analytics-service
           yarn start &
           popd
-          sleep 30
+          sleep 20
         env:
           QM_VERIFICATION: false
 
@@ -100,9 +110,9 @@ jobs:
           rm -fv swagger.yaml
           rm -fv swagger-indexer.yaml
           rm -fv swagger-analytics.yaml
-          curl -o swagger.yaml http://localhost:3002/api-docs-yaml
-          curl -o swagger-indexer.yaml http://localhost:3021/api-docs-yaml
-          curl -o swagger-analytics.yaml http://localhost:3020/api-docs-yaml
+          curl -o swagger.yaml http://127.0.0.1:3002/api-docs-yaml
+          curl -o swagger-indexer.yaml http://127.0.0.1:3021/api-docs-yaml
+          curl -o swagger-analytics.yaml http://127.0.0.1:3020/api-docs-yaml
           git add swagger.yaml
           git add swagger-indexer.yaml
           git add swagger-analytics.yaml
