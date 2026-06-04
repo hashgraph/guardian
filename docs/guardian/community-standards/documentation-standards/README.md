@@ -1,7 +1,3 @@
----
-if: visitor.claims.unsigned.isBetaUser === true
----
-
 # Documentation Standards
 
 Guardian docs are organized around a simple principle: every page has one job. A page that tries to explain a concept, walk through a task, and provide a full specification all at once ends up doing none of them well. Readers looking for a quick reference have to wade through prose. Readers following steps get distracted by background theory. Content becomes hard to maintain because changes to one concern ripple through unrelated content on the same page.
