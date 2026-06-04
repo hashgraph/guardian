@@ -667,12 +667,25 @@ const issuanceTrend = computed(() => {
     const year = new Date(iss.mintDate).getFullYear().toString();
     byYear[year] = (byYear[year] ?? 0) + iss.supply;
   }
-  const entries = Object.entries(byYear).sort(([a], [b]) => a.localeCompare(b));
-  const maxVal = entries.reduce((m, [, v]) => Math.max(m, v), 0);
+  const years = Object.keys(byYear).sort();
+  if (years.length === 0) return { data: [], unit: '' };
+
+  // Fill every year in the range (including gaps with 0) so the line connects.
+  // When there is only a single year, prepend the previous year at 0 to ensure
+  // at least two points so a line segment can be drawn.
+  const minYear = parseInt(years[0]);
+  const maxYear = parseInt(years[years.length - 1]);
+  const startYear = minYear === maxYear ? minYear - 1 : minYear;
+  const filled: [string, number][] = [];
+  for (let y = startYear; y <= maxYear; y++) {
+    filled.push([String(y), byYear[String(y)] ?? 0]);
+  }
+
+  const maxVal = filled.reduce((m, [, v]) => Math.max(m, v), 0);
   const divisor = maxVal >= 1_000_000 ? 1_000_000 : maxVal >= 1_000 ? 1_000 : 1;
   const unit = maxVal >= 1_000_000 ? 'M' : maxVal >= 1_000 ? 'K' : '';
   return {
-    data: entries.map(([label, value]) => ({ label, value: Math.round((value / divisor) * 10) / 10 })),
+    data: filled.map(([label, value]) => ({ label, value: Math.round((value / divisor) * 10) / 10 })),
     unit,
   };
 });
@@ -684,7 +697,7 @@ const vintageByIssuance = computed(() => {
     const match = raw.match(/\d{4}/);
     if (!match) continue;
     const year = match[0];
-    byVintage[year] = (byVintage[year] ?? 0) + (p.issuanceCount ?? 0);
+    byVintage[year] = (byVintage[year] ?? 0) + 1;
   }
   return Object.entries(byVintage)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -877,8 +890,8 @@ const issuanceTrendTotal = computed(() =>
           <div class="border-b px-5 py-4">
             <div class="flex items-center justify-between mb-4">
               <div>
-                <h3 class="text-sm font-semibold text-foreground">Geographic Distribution</h3>
-                <p class="text-xs text-muted-foreground mt-0.5">Project distribution by country</p>
+                <h3 class="text-sm font-semibold text-foreground">{{ $t('methodologies.detail.charts.geographicDistribution') }}</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">{{ $t('methodologies.detail.charts.geographicDistributionSub') }}</p>
               </div>
               <span class="text-[11px] text-muted-foreground">{{ geoDistribution.length }} countr{{ geoDistribution.length !== 1 ? 'ies' : 'y' }}</span>
             </div>
@@ -897,7 +910,7 @@ const issuanceTrendTotal = computed(() =>
                 <span class="text-xs tabular-nums text-muted-foreground w-4 text-right shrink-0">{{ item.projects }}</span>
               </div>
             </div>
-            <div v-else class="text-xs text-muted-foreground py-2">No geographic data available</div>
+            <div v-else class="text-xs text-muted-foreground py-2">{{ $t('methodologies.detail.charts.noGeographicData') }}</div>
           </div>
 
           <!-- Issuance Trend + Vintage Distribution -->
@@ -906,8 +919,8 @@ const issuanceTrendTotal = computed(() =>
           <div>
             <div class="flex items-center justify-between px-5 py-4">
               <div>
-                <h3 class="text-sm font-semibold text-foreground">Issuance Trend</h3>
-                <p class="text-xs text-muted-foreground mt-0.5">Volume ({{ issuanceTrend.unit || 'units' }}) by year</p>
+                <h3 class="text-sm font-semibold text-foreground">{{ $t('methodologies.detail.charts.issuanceTrend') }}</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">{{ $t('methodologies.detail.charts.issuanceTrendSub', { unit: issuanceTrend.unit || 'units' }) }}</p>
               </div>
             </div>
             <div class="px-5 pb-5">
@@ -917,11 +930,11 @@ const issuanceTrendTotal = computed(() =>
                   :unit="issuanceTrend.unit"
                   color="hsl(142, 76%, 36%)"
                   fill-color="hsl(142, 76%, 36%, 0.08)"
-                  empty-text="No issuance data available"
+                  :empty-text="$t('methodologies.detail.charts.noIssuanceData')"
                 />
                 <div class="flex items-center justify-between mt-4 pt-3 border-t">
-                  <span class="text-xs text-muted-foreground">{{ issuanceTrend.data.length }} year{{ issuanceTrend.data.length !== 1 ? 's' : '' }}</span>
-                  <span class="text-sm font-semibold text-foreground">{{ issuanceTrendTotal }}{{ issuanceTrend.unit }} total</span>
+                  <span class="text-xs text-muted-foreground">{{ issuanceTrend.data.length }} {{ issuanceTrend.data.length !== 1 ? $t('methodologies.detail.charts.issuanceTrendYears') : $t('methodologies.detail.charts.issuanceTrendYear') }}</span>
+                  <span class="text-sm font-semibold text-foreground">{{ $t('methodologies.detail.charts.issuanceTrendTotal', { total: issuanceTrendTotal, unit: issuanceTrend.unit }) }}</span>
                 </div>
               </div>
             </div>
@@ -931,8 +944,8 @@ const issuanceTrendTotal = computed(() =>
           <div>
             <div class="flex items-center justify-between px-5 py-4">
               <div>
-                <h3 class="text-sm font-semibold text-foreground">Vintage Distribution</h3>
-                <p class="text-xs text-muted-foreground mt-0.5">MintToken issuances by vintage year</p>
+                <h3 class="text-sm font-semibold text-foreground">{{ $t('methodologies.detail.charts.vintageDistribution') }}</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">{{ $t('methodologies.detail.charts.vintageDistributionSub') }}</p>
               </div>
             </div>
             <div class="px-5 pb-5">
@@ -952,11 +965,11 @@ const issuanceTrendTotal = computed(() =>
                   </div>
                 </div>
                 <div v-else class="flex items-center justify-center h-48 text-sm text-muted-foreground">
-                  No vintage data available
+                  {{ $t('methodologies.detail.charts.noVintageData') }}
                 </div>
                 <div class="flex items-center justify-between mt-4 pt-3 border-t">
-                  <span class="text-xs text-muted-foreground">{{ vintageByIssuance.length }} vintage{{ vintageByIssuance.length !== 1 ? 's' : '' }}</span>
-                  <span class="text-sm font-semibold text-foreground">{{ vintageTotal }} issuances</span>
+                  <span class="text-xs text-muted-foreground">{{ vintageByIssuance.length }} {{ vintageByIssuance.length !== 1 ? $t('methodologies.detail.charts.vintageYears') : $t('methodologies.detail.charts.vintageYear') }}</span>
+                  <span class="text-sm font-semibold text-foreground">{{ vintageTotal }} {{ vintageTotal !== 1 ? $t('methodologies.detail.charts.vintageProjects') : $t('methodologies.detail.charts.vintageProject') }}</span>
                 </div>
               </div>
             </div>

@@ -541,6 +541,24 @@
                 "trends": "Tendencias",
                 "trendsComingSoon": "Los gráficos de emisiones a lo largo del tiempo, tendencia de retiros y geografía estarán disponibles una vez que los datos de los documentos VC en vivo estén completamente sincronizados."
             },
+            "charts": {
+                "geographicDistribution": "Distribución geográfica",
+                "geographicDistributionSub": "Distribución de proyectos por país",
+                "noGeographicData": "No hay datos geográficos disponibles",
+                "issuanceTrend": "Tendencia de emisiones",
+                "issuanceTrendSub": "Volumen ({unit}) por año",
+                "noIssuanceData": "No hay datos de emisiones disponibles",
+                "issuanceTrendYear": "año",
+                "issuanceTrendYears": "años",
+                "issuanceTrendTotal": "{total}{unit} total",
+                "vintageDistribution": "Distribución por añada",
+                "vintageDistributionSub": "Distribución de proyectos por añada",
+                "noVintageData": "No hay datos de añada disponibles",
+                "vintageYear": "añada",
+                "vintageYears": "añadas",
+                "vintageProject": "proyecto",
+                "vintageProjects": "proyectos"
+            },
             "actions": {
                 "aboutTitle": "Acerca de esta metodología",
                 "instancePolicyTopicLabel": "Tópico de la instancia de política:",
