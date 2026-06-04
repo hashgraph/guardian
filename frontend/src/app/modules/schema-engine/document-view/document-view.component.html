@@ -33,7 +33,7 @@
 
                 <div class="guardian-accordion-container">
                     <p-accordion [value]="'0'" class="guardian-accordion">
-                        <p-accordion-panel>
+                        <p-accordion-panel value="0">
     <p-accordion-header>General Information</p-accordion-header>
     <p-accordion-content>
                             <div class="form-field-container">
@@ -156,7 +156,7 @@
                     <div *ngIf="subjects.length > 1" class="group-multiple-header">Credential Subjects</div>
                     <div *ngFor="let item of getItemsPage(subjects)" class="guardian-accordion-container">
                         <p-accordion [multiple]="true" [value]="['0']" class="guardian-accordion">
-                            <p-accordion-panel>
+                            <p-accordion-panel value="0">
     <p-accordion-header>{{getCredentialSubject(item)}}</p-accordion-header>
     <p-accordion-content>
                                 <app-schema-form-view 
@@ -193,7 +193,7 @@
                     <div *ngIf="subjects.length > 1" class="group-multiple-header">Verifiable Credentials</div>
                     <div *ngFor="let item of getItemsPage(subjects)" class="guardian-accordion-container">
                         <p-accordion [multiple]="true" [value]="['0']" class="guardian-accordion">
-                            <p-accordion-panel>
+                            <p-accordion-panel value="0">
     <p-accordion-header>{{getVerifiableCredential(item)}}</p-accordion-header>
     <p-accordion-content>
                                   <app-document-view
