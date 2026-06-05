@@ -1,5 +1,5 @@
-<div class="{{ user.POLICIES_POLICY_MANAGE ? 'content' : 'min-content' }}">
-    <div class="page-title">
+<div class="guardian-page" [class.policies-min-width]="!user.POLICIES_POLICY_MANAGE">
+    <div class="guardian-user-page-header">
         {{ user.POLICIES_POLICY_MANAGE ? "Manage Policies" : "List of Policies" }}
     </div>
 

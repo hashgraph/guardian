@@ -1,15 +1,4 @@
-.content,
-.min-content {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 0;
-    display: block;
-    margin: 56px 48px 0 48px;
-}
-
-.min-content {
+.policies-min-width {
     min-width: 1200px;
 }
 
@@ -481,14 +470,6 @@
         padding: 8px;
         border-radius: 8px;
     }
-}
-
-.page-title {
-    font-family: Poppins, serif;
-    font-size: 32px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: normal;
 }
 
 .primary-color {
