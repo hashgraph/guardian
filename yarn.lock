@@ -1582,11 +1582,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@indexer/common@npm:3.6.0, @indexer/common@workspace:indexer-common":
+"@indexer/common@workspace:*, @indexer/common@workspace:indexer-common":
   version: 0.0.0-use.local
   resolution: "@indexer/common@workspace:indexer-common"
   dependencies:
-    "@indexer/interfaces": "npm:3.6.0"
+    "@indexer/interfaces": "workspace:*"
     "@mikro-orm/core": "npm:6.4.16"
     "@mikro-orm/migrations-mongodb": "npm:6.4.16"
     "@mikro-orm/mongodb": "npm:6.4.16"
@@ -1609,7 +1609,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@indexer/interfaces@npm:3.6.0, @indexer/interfaces@workspace:indexer-interfaces":
+"@indexer/interfaces@workspace:*, @indexer/interfaces@workspace:indexer-interfaces":
   version: 0.0.0-use.local
   resolution: "@indexer/interfaces@workspace:indexer-interfaces"
   dependencies:
@@ -10325,8 +10325,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "indexer-api-gateway@workspace:indexer-api-gateway"
   dependencies:
-    "@indexer/common": "npm:3.6.0"
-    "@indexer/interfaces": "npm:3.6.0"
+    "@indexer/common": "workspace:*"
+    "@indexer/interfaces": "workspace:*"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/jwt": "npm:^11.0.0"
@@ -10374,8 +10374,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "indexer-service@workspace:indexer-service"
   dependencies:
-    "@indexer/common": "npm:3.6.0"
-    "@indexer/interfaces": "npm:3.6.0"
+    "@indexer/common": "workspace:*"
+    "@indexer/interfaces": "workspace:*"
     "@mikro-orm/core": "npm:6.4.16"
     "@mikro-orm/migrations-mongodb": "npm:6.4.16"
     "@mikro-orm/mongodb": "npm:6.4.16"
@@ -10412,8 +10412,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "indexer-worker-service@workspace:indexer-worker-service"
   dependencies:
-    "@indexer/common": "npm:3.6.0"
-    "@indexer/interfaces": "npm:3.6.0"
+    "@indexer/common": "workspace:*"
+    "@indexer/interfaces": "workspace:*"
     "@mikro-orm/core": "npm:6.4.16"
     "@mikro-orm/migrations-mongodb": "npm:6.4.16"
     "@mikro-orm/mongodb": "npm:6.4.16"
