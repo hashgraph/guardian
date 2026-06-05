@@ -31,19 +31,12 @@ export class JsonToXlsx {
             JsonToXlsx.collectInlineRefs(schema.fields, inlineSchemaIRIs);
         }
 
-        // Map inline schema IRI to display name for Parameter column
+        // Map inline schema IRI to display name for Parameter column and build top-level schema list
         const _subSchemaNamesCache = new Map<string, string>();
         for (const item of schemas) {
             const schema = new Schema(item);
             if (inlineSchemaIRIs.has(schema.iri)) {
                 _subSchemaNamesCache.set(schema.iri, schema.name);
-            }
-        }
-
-        // Schemas
-        for (const item of schemas) {
-            const schema = new Schema(item);
-            if (inlineSchemaIRIs.has(schema.iri)) {
                 continue;
             }
             JsonToXlsx.updateFieldPaths(schema.fields, schema.iri);
