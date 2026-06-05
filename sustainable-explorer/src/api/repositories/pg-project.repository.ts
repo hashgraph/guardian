@@ -290,6 +290,24 @@ export class PgProjectRepository extends ProjectRepository {
             // instance topic only. We intentionally exclude policyTopicId here because
             // multiple projects share the same policy topic; including it would return
             // credits belonging to sibling projects under the same Guardian policy.
+            //
+            // Guard: only use this fallback when this is the sole PROJECT in the topic.
+            // For grouped topics (multiple projects sharing one instance topic) the
+            // linker skips unresolvable mints to avoid misattribution — the fallback
+            // must apply the same rule, otherwise it cross-attributes every sibling's
+            // credits to this project. Mirrors mint-project-linker.ts fallback guard.
+            const siblingCountRows: Array<{ count: string }> = await this.dataSource.query(
+                `SELECT COUNT(*)::text AS count
+                 FROM business_view
+                 WHERE "viewType" = 'PROJECT'
+                   AND "relatedTopicId" = $1`,
+                [instanceTopicId],
+            );
+            const siblingCount = parseInt(siblingCountRows[0]?.count ?? '0', 10);
+
+            if (siblingCount > 1) {
+                // Shared topic — cannot safely attribute credits to this project alone.
+            } else {
             const creditRows: Array<{
                 tokenId: string | null;
                 name: string | null;
@@ -347,6 +365,7 @@ export class PgProjectRepository extends ProjectRepository {
             for (const i of issuances) {
                 if (i.type !== 'NON_FUNGIBLE_UNIQUE') totalIssued += i.supply;
             }
+            } // end else (siblingCount === 1)
         }
 
         const totalActive = totalIssued - totalRetired;

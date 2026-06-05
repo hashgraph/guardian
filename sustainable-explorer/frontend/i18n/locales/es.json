@@ -511,7 +511,7 @@
                     "project": "Proyecto",
                     "country": "País",
                     "registry": "Registro",
-                    "credits": "Créditos",
+                    "issuances": "Emisiones",
                     "status": "Estado"
                 },
                 "noProjects": "No se encontraron proyectos bajo esta política."

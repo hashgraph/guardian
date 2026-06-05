@@ -1525,7 +1525,7 @@ const lifecycleSummary = computed(() => {
                 <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.project') }}</th>
                 <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.country') }}</th>
                 <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.registry') }}</th>
-                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.credits') }}</th>
+                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.issuances') }}</th>
                 <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.status') }}</th>
               </tr>
             </thead>
@@ -1553,7 +1553,7 @@ const lifecycleSummary = computed(() => {
                   {{ p.registry || '—' }}
                 </td>
                 <td class="py-3 px-4 text-right tabular-nums text-sm font-medium text-foreground">
-                  {{ p.credits != null ? p.credits.toLocaleString() : '—' }}
+                  {{ p.issuanceCount != null ? p.issuanceCount.toLocaleString() : '—' }}
                 </td>
                 <td class="py-3 px-4">
                   <span
