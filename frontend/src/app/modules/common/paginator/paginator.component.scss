@@ -25,6 +25,24 @@
         font-size: 14px;
         line-height: 16px;
     }
+
+    ::ng-deep .p-select {
+        width: 125px;
+        height: 40px;
+        border-radius: 8px;
+    }
+
+    ::ng-deep .p-button {
+        border-radius: 8px;
+    }
+
+    ::ng-deep .p-inputtext {
+        color: var(--color-grey-5, #848fa9);
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        align-self: center;
+    }
 }
 
 .svg-btn {
