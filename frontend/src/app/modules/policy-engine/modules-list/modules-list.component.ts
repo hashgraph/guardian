@@ -62,6 +62,19 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     deleteTokenVisible: boolean = false;
     private currentModule: any;
 
+    public get filteredModules(): any[] {
+        if (!this.modules) {
+            return [];
+        }
+        if (!this.searchParam) {
+            return this.modules;
+        }
+        return this.modules.filter((module) =>
+            module.name.includes(this.searchParam) ||
+            module.description.includes(this.searchParam)
+        );
+    }
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
