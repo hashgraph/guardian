@@ -75,6 +75,13 @@
         height: var(--guardian-page-header-height);
         padding: var(--guardian-page-header-padding);
         position: relative;
+        margin-bottom: var(--guardian-page-header-gap);
+
+        /* Pages with a tab band get their spacing from the tabs; suppress the
+           header gap there so only no-tab pages receive it. */
+        &:has(+ .tabs-nav) {
+            margin-bottom: 0;
+        }
     }
 
     .guardian-user-page-toolbar {

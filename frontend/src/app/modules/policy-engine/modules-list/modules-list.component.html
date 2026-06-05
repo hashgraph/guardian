@@ -1,4 +1,4 @@
-<div class="container">
+<div class="guardian-page">
     <ng-container [ngTemplateOutlet]="header"></ng-container>
     <ng-container *ngIf="!loading && isConfirmed">
         <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
@@ -11,9 +11,7 @@
 </div>
 
 <ng-template #header>
-    <div class="header">
-        <h1>Modules</h1>
-    </div>
+    <div class="guardian-user-page-header">Modules</div>
 </ng-template>
 
 <ng-template #actionsContainer>
