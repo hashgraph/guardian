@@ -89,3 +89,17 @@ cannot be claimed if **more than 10% of appliances fail** the water-quality requ
 (<1 cfu/100 ml E. coli). The block reads the appliance pass/total counts (`field10` / `field11`) and zeroes
 the period's ER when the pass-rate is below 0.90. It is fail-closed: missing appliance evidence yields
 a pass-rate of 0 and therefore no issuance.
+
+## Dry-run record provenance note (b356cc8 correction)
+
+The `.record` file was captured against the live 0.90 WQ pass-rate gate reading flat integer counts
+from `field10` (appliances passing) and `field11` (appliances total), per AMS-III.AV. §8.4.
+The canonical fixture sets `field10 = 95` / `field11 = 100` so that pass-rate = 0.95, which clears
+the gate.
+
+> **b356cc8 arithmetic correction:** commit b356cc8 stated an intermediate result of 53,185.71 tCO₂e;
+> the correct result for those methodology-default parameters is **53,309.84 tCO₂e**. The canonical
+> test fixture uses back-calculated VCS 3599 monitored values (`QPW_y = 713,972,729 L`) which produce
+> `BE = 162,241.14`, `ER = 154,125.14 tCO₂e`, matching the Verra registry issuance of 154,125 VCUs
+> (13 Feb 2026). The b356cc8 figure was an intermediate working value and does not appear in any
+> schema, policy block, or minting rule; it has no effect on the on-chain result.
