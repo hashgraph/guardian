@@ -166,7 +166,7 @@
   "policyTokens": [
     {
       "templateTokenTag": "token1",
-      "tokenName": "CER VMR0015(Bikram)",
+      "tokenName": "CER VMR0015",
       "tokenSymbol": "CER",
       "tokenType": "fungible",
       "decimals": "2",
