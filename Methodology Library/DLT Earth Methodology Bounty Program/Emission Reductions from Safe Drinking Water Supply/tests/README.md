@@ -103,3 +103,15 @@ the gate.
 > `BE = 162,241.14`, `ER = 154,125.14 tCO₂e`, matching the Verra registry issuance of 154,125 VCUs
 > (13 Feb 2026). The b356cc8 figure was an intermediate working value and does not appear in any
 > schema, policy block, or minting rule; it has no effect on the on-chain result.
+
+## Note on proof file version vs submission version
+
+The `VMR0015_dryrun_publish_proof.csv` was captured when the policy was at Guardian internal
+version **2.0.0** (the version baked into the `.policy` export at the time of the dry-run).
+Subsequent documentation and schema clean-up commits advanced the CHANGELOG submission
+tracking version to **2.1.1**, but the `.policy` binary and the on-chain token logic are
+identical — only metadata and docs changed after the dry-run.
+
+**Bottom line:** The proof covers the exact policy binary that is submitted. The `2.0.0`
+label in the CSV is the Guardian-internal policy object version, not the submission
+CHANGELOG version. Reviewers should treat the proof as valid for the current submission.
