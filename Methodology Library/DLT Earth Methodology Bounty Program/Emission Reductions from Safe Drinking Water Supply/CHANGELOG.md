@@ -63,7 +63,7 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 
 ---
 
-## [2.1.0] — Real AMS-III.AV. equations + dry-run validation
+## [2.1.0]  > **Reviewer note:** The intermediate figures below (11,084.74 tCO₂e) reflect an early test fixture with zeroed AMS-III.AV. parameters and are **superseded by [2.1.1]** (BE = 162,241.14 · LE = 8,116.00 · ER = 154,125.14). Commit `0b68409` briefly applied a `u_def=0.89` uncertainty discount; this was reversed in the same [2.1.0] milestone (see Removed section). The canonical submission figures are in [2.1.1] above. — Real AMS-III.AV. equations + dry-run validation
 
 ### Fixed
 - **Rebuilt `calculate_report_fields` on the actual AMS-III.AV. equations** (primary source: UNFCCC CDM AMS-III.AV. PDF). Baseline emissions are now derived from methodology parameters instead of being entered as a single figure:
