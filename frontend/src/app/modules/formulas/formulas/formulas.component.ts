@@ -42,6 +42,7 @@ export class FormulasComponent implements OnInit {
     public currentPolicy: any = null;
 
     private subscription = new Subscription();
+    private initialized = false;
 
     constructor(
         private profileService: ProfileService,
@@ -142,6 +143,10 @@ export class FormulasComponent implements OnInit {
         this.pageCount = 0;
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
+                if (this.initialized) {
+                    return;
+                }
+                this.initialized = true;
                 this.loadProfile();
             })
         );
