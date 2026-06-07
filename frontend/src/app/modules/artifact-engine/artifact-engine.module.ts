@@ -10,6 +10,8 @@ import { CommonComponentsModule } from '../common/common-components.module';
 import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
@@ -27,6 +29,8 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         SelectModule,
         ButtonModule,
         DialogModule,
+        TableModule,
+        TooltipModule,
         AngularSvgIconModule.forRoot()
     ],
     exports: [
