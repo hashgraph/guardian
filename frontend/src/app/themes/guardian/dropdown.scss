@@ -227,3 +227,13 @@
         }
     }
 }
+
+.guardian-page .p-select {
+    height: 40px;
+
+    .p-select-label {
+        display: flex;
+        align-items: center;
+        padding: 8px 16px;
+    }
+}

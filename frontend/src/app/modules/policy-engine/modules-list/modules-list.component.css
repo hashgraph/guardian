@@ -209,7 +209,10 @@ button[disabled] {
 
 
 .p-tag {
+    display: inline-flex !important;
+    align-items: center;
     width: min-content;
+    padding: 6px 10px !important;
     border-radius: 6px;
     font-family: Inter, sans-serif;
     font-size: 14px;
@@ -277,20 +280,35 @@ button[disabled] {
 
 
 .module-actions-buttons-container {
+    display: flex;
+    gap: 6px;
     margin-left: auto;
 }
 
-.toolbar-btn ::ng-deep .p-button {
+.toolbar-btn-primary ::ng-deep .p-button {
     background: var(--color-primary);
+    border: 1px solid var(--color-primary);
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
-    margin-left: 10px;
+    margin-left: 6px;
     height: 40px;
+    padding: 8px 16px 8px 8px;
+    color: var(--color-grey-white, #FFF);
     border-radius: 8px;
 }
 
+.toolbar-btn-secondary ::ng-deep .p-button-outlined {
+    border: 1px solid var(--color-primary) !important;
+    color: var(--color-primary);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    margin-left: 6px;
+    background-color: #ffffff !important;
+}
 
 .compare-button ::ng-deep .p-button-outlined {
     color: var(--color-primary);
@@ -298,7 +316,6 @@ button[disabled] {
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
-    margin-left: 10px;
     background-color: #ffffff !important;
     border: 1px solid #cdddfd;
 }

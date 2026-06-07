@@ -7,7 +7,6 @@
     justify-content: space-between;
     flex-wrap: nowrap;
     z-index: 2;
-    margin-top: 24px;
     margin-bottom: 40px;
 
     .actions-container-btns {
@@ -165,6 +164,10 @@
         .mat-select-arrow-wrapper {
             transform: unset;
         }
+    }
+
+    .ml-8 {
+        margin-left: 16px;
     }
 }
 
@@ -618,7 +621,7 @@
 }
 
 .tags-dropdown {
-    margin-left: 10px;
+    margin-left: 16px;
     height: 40px;
 }
 

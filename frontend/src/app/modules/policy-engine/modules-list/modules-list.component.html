@@ -24,21 +24,21 @@
             <p-button
                 *ngIf="user.MODULES_MODULE_CREATE"
                 (click)="newModules()"
-                class="toolbar-btn">
+                class="toolbar-btn-primary">
                 <i class="pi pi-plus toolbar-icons"></i>
                 <span>Create a Module</span>
             </p-button>
             <p-button
                 *ngIf="user.MODULES_MODULE_CREATE"
                 (click)="importModules()"
-                class="toolbar-btn">
+                class="toolbar-btn-primary">
                 <i class="pi pi-file-import toolbar-icons"></i>
                 <span>Import</span>
             </p-button>
             <p-button
                 *ngIf="user.ANALYTIC_MODULE_READ"
                 (click)="compareModules()"
-                class="toolbar-btn compare-button"
+                class="toolbar-btn-secondary compare-button"
                 [outlined]=true>
                 <svg-icon src="/assets/images/icons/compare.svg" svgClass="icon-style-compare toolbar-icons"
                           class="icon-style-compare toolbar-icons"></svg-icon>

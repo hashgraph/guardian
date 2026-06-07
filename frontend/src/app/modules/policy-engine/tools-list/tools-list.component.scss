@@ -527,7 +527,7 @@
     ::ng-deep .p-button {
         background: var(--color-primary);
         border: 1px solid var(--color-primary);
-        margin-left: 10px;
+        margin-left: 6px;
         height: 40px;
         padding: 8px 16px 8px 8px;
         color: var(--color-grey-white, #FFF);
@@ -547,7 +547,7 @@
     ::ng-deep .p-button {
         border: 1px solid var(--color-primary, #CDDDFD) !important;
         background: var(--color-grey-white, #FFF);
-        margin-left: 10px;
+        margin-left: 6px;
         height: 40px;
         padding: 8px;
         color: var(--color-primary, #0031ff);
@@ -670,6 +670,7 @@
 }
 
 .tags-dropdown {
+    margin-left: 16px;
     height: 40px;
 }
 
@@ -773,7 +774,6 @@
     flex-direction: row;
     justify-content: space-between;
     font-size: 16px;
-    gap: 8px;
 
     &__control {
         margin-left: 20px;
@@ -781,6 +781,10 @@
         &:last-child {
             margin-right: 20px;
         }
+    }
+
+    .ml-8 {
+        margin-left: 16px;
     }
 }
 
