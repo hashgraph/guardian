@@ -12,6 +12,7 @@ import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { SelectModule } from 'primeng/select';
+import { ButtonModule } from 'primeng/button';
 import { NewPolicyStatisticsDialog } from './policy-statistics/dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
 import { TabsModule } from 'primeng/tabs';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -83,6 +84,7 @@ import { PolicyLabelDocumentConfigurationComponent } from './policy-labels/polic
         TooltipModule,
         InputTextModule,
         SelectModule,
+        ButtonModule,
         TabsModule,
         CheckboxModule,
         RadioButtonModule,

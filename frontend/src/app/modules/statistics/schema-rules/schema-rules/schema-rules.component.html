@@ -8,81 +8,61 @@
         <a [routerLink]="['/profile']">here</a>
     </div>
 
-    <div class="guardian-user-back-button">
-        <button
-            (click)="onBack()"
-            class="guardian-button guardian-button-secondary">
-            <div class="guardian-button-icon">
-                <svg-icon class="icon-btn svg-icon"
-                    src="/assets/images/icons/left-arrow.svg"
-                    svgClass="icon-color-primary">
-                </svg-icon>
-            </div>
-            <div class="guardian-button-label">Back to Policies</div>
-        </button>
-    </div>
-
     <div class="guardian-user-page-header">
         <span>{{title}}</span>
     </div>
 
-    <div class="guardian-user-page-toolbar">
-        <div class="guardian-user-page-filters">
+    <div class="actions-container">
+        <div class="dropdown-block">
             <p-select
                 (onChange)="onFilter($event)"
                 [(ngModel)]="currentPolicy"
                 [options]="allPolicies"
                 [showClear]="false"
-                class="guardian-dropdown"
-                placeholder="Select Policy"
-                panelStyleClass="guardian-dropdown-panel">
+                placeholder="Select Policy">
                 <ng-template pTemplate="selectedItem">
-                    <div *ngIf="currentPolicy && currentPolicy.instanceTopicId" class="guardian-dropdown-selected">
-                        <span class="guardian-dropdown-label">Policy</span>
-                        <span class="guardian-dropdown-item">{{ currentPolicy.name }}</span>
+                    <div *ngIf="currentPolicy && currentPolicy.instanceTopicId">
+                        <span class="dropdown-label">Policy</span>
+                        <span class="dropdown-item">{{ currentPolicy.name }}</span>
                     </div>
-                    <div *ngIf="!currentPolicy || !currentPolicy.instanceTopicId" class="guardian-dropdown-selected">
-                        <span class="guardian-dropdown-label">Policy</span>
-                        <span class="guardian-dropdown-item">All</span>
+                    <div *ngIf="!currentPolicy || !currentPolicy.instanceTopicId">
+                        <span class="dropdown-label">Policy</span>
+                        <span class="dropdown-item">All</span>
                     </div>
                 </ng-template>
                 <ng-template let-policy pTemplate="item">
-                    <div *ngIf="policy.instanceTopicId" class="guardian-dropdown-item">
+                    <div *ngIf="policy.instanceTopicId" class="dropdown-item">
                         <span>{{policy.name}}</span>
                         <span class="dropdown-policy-version">({{policy.version}})</span>
                     </div>
-                    <div *ngIf="!policy.instanceTopicId" class="guardian-dropdown-item">
+                    <div *ngIf="!policy.instanceTopicId" class="dropdown-item">
                         <span>All</span>
                     </div>
                 </ng-template>
             </p-select>
         </div>
-        <div class="guardian-user-page-buttons">
-            <button
+        <div class="module-actions-buttons-container">
+            <p-button
                 *ngIf="user.SCHEMAS_RULE_CREATE"
                 (click)="onCreate()"
-                class="guardian-button guardian-button-primary">
-                <div class="guardian-button-icon">
-                    <svg-icon class="icon-btn svg-icon"
-                        src="/assets/images/icons/add.svg"
-                        svgClass="icon-color-secondary">
-                    </svg-icon>
-                </div>
-                <div class="guardian-button-label">Create New</div>
-            </button>
+                class="toolbar-btn-primary">
+                <svg-icon class="icon-btn svg-icon"
+                    src="/assets/images/icons/add.svg"
+                    svgClass="icon-color-secondary">
+                </svg-icon>
+                <span>Create New</span>
+            </p-button>
 
-            <button
+            <p-button
                 *ngIf="user.SCHEMAS_RULE_CREATE"
                 (click)="onImport()"
-                class="guardian-button guardian-button-primary">
-                <div class="guardian-button-icon">
-                    <svg-icon class="icon-btn svg-icon"
-                        src="/assets/images/icons/import.svg"
-                        svgClass="icon-color-secondary">
-                    </svg-icon>
-                </div>
-                <div class="guardian-button-label">Import</div>
-            </button>
+                class="toolbar-btn-primary">
+                <svg-icon class="icon-btn svg-icon"
+                    src="/assets/images/icons/import.svg"
+                    svgClass="icon-color-secondary">
+                </svg-icon>
+                <span>Import</span>
+            </p-button>
         </div>
     </div>
 
