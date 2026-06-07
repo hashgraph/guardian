@@ -1,4 +1,4 @@
-<div class="container">
+<div class="guardian-page">
     <ng-container [ngTemplateOutlet]="header"></ng-container>
     <ng-container *ngIf="!isLoading">
         <ng-container [ngTemplateOutlet]="container"></ng-container>
@@ -10,9 +10,7 @@
 <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
 
 <ng-template #header>
-    <div class="header">
-        <h1>Settings</h1>
-    </div>
+    <div class="guardian-user-page-header">Settings</div>
 </ng-template>
 
 <ng-template #container>

@@ -17,28 +17,6 @@
     justify-content: center;
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    margin: 56px 48px 110px 48px;
-}
-
-.container>.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.container>.header>h1 {
-    width: 100%;
-    color: #000;
-    font-family: Poppins, serif;
-    font-size: 32px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 40px;
-}
-
 .tokenId {
     display: flex;
     white-space: nowrap;

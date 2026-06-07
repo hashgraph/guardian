@@ -1,4 +1,4 @@
-<div class="container" xmlns="http://www.w3.org/1999/html">
+<div class="guardian-page" xmlns="http://www.w3.org/1999/html">
     <ng-container [ngTemplateOutlet]="header"></ng-container>
     <ng-container *ngIf="!loading">
         <ng-container [ngTemplateOutlet]="container"></ng-container>
@@ -10,9 +10,7 @@
 <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
 
 <ng-template #header>
-    <div class="header">
-        <h1>Application Branding</h1>
-    </div>
+    <div class="guardian-user-page-header">Application Branding</div>
 </ng-template>
 
 <ng-template #container>

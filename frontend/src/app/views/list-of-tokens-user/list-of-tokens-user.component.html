@@ -1,8 +1,8 @@
-<div *ngIf="!loading" class="container">
+<div *ngIf="!loading" class="guardian-page">
     <div class="back-button">
-        <button 
-            *ngIf="tokenId" 
-            (click)="goToTokensPage()" 
+        <button
+            *ngIf="tokenId"
+            (click)="goToTokensPage()"
             class="guardian-button guardian-button-secondary">
             <div class="guardian-button-icon">
                 <svg-icon class="icon-btn svg-icon"
@@ -22,9 +22,7 @@
         </div>
     </div>
 
-    <div *ngIf="!tokenId" class="header">
-        <h1>List of Tokens</h1>
-    </div>
+    <div *ngIf="!tokenId" class="guardian-user-page-header">List of Tokens</div>
 
     <ng-container *ngIf="isConfirmed; else noDIDSettings">
 

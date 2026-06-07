@@ -1,4 +1,4 @@
-<div class="container">
+<div class="guardian-page">
     <ng-container [ngTemplateOutlet]="header"></ng-container>
     <ng-container *ngIf="!loading">
         <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
@@ -12,9 +12,7 @@
 </div>
 
 <ng-template #header>
-    <div class="header">
-        <h1>Logs</h1>
-    </div>
+    <div class="guardian-user-page-header">Logs</div>
 </ng-template>
 
 <ng-template #actionsContainer>

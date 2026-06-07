@@ -37,20 +37,13 @@
     justify-content: center;
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    margin: 18px 48px 56px 48px;
-    height: calc(100vh - 76px);
-}
-
-.container>.header {
+.guardian-page>.header {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.container>.header>h1 {
+.guardian-page>.header>h1 {
     width: 100%;
     color: #000;
     font-family: Poppins, serif;

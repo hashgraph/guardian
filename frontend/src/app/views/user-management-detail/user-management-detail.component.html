@@ -2,7 +2,7 @@
     <div class="preloader-image preloader-image-l-size"></div>
 </div>
 
-<div class="container">
+<div class="guardian-page">
     <div>
         <button (click)="goToPage()"
                 iconPos="left"
@@ -14,7 +14,7 @@
         </button>
     </div>
 
-    <div class="page-title">{{ username }}</div>
+    <div class="guardian-user-page-header">{{ username }}</div>
 
     <p-tabs [(value)]="selectedIndex" (valueChange)="onChange($event)">
         <p-tablist>
