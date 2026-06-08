@@ -69,6 +69,11 @@ a {
     min-width: 300px;
 }
 
+:host ::ng-deep .guardian-grid-container .guardian-grid-row td:has(.guardian-status-select) {
+    padding-top: 11px;
+    padding-bottom: 11px;
+}
+
 .dropdown-label {
     color: var(--color-grey-5);
     font-family: Inter, serif;
