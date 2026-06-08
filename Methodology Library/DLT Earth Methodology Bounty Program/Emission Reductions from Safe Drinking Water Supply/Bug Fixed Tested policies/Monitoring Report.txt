@@ -1,0 +1,76 @@
+VMR0015 v1.0 — Safe Drinking Water Supply (dMRV)
+Monitoring Report — MR-2026-001
+================================
+Dry-run evidence — Managed Guardian Service (MGS)
+Date: 2026-06-06
+Policy version: 2.0.1
+Policy tag: VMR0015_v1_0_Safe_Drinking_Water_dMRV_1780769708120
+
+--------------------------------------------------
+PROJECT REFERENCE
+--------------------------------------------------
+Project        : VCS 3599 (Safe Drinking Water Supply — reference parameters)
+PP             : pp_vcs3599_dryrun
+Monitoring period: 2025-01-01 to 2025-12-31 (Year 1)
+
+--------------------------------------------------
+INPUT PARAMETERS (AMS-III.AV)
+--------------------------------------------------
+Field                                Value         Unit
+-----                                -----         ----
+nwb  — No. of water boiling events   357.48        events/HH/yr
+m    — Households served             5,000         HH
+X_boil — Fraction water boiled       0.95          dimensionless
+BL_fuel — Baseline fuel type         Wood          —
+f_i  — Fraction non-renewable wood   0.85          dimensionless
+EF_fuel — Emission factor (wood)     1,747         gCO₂e/MJ
+QPW_y — Water purified               2,250,000     litres/yr
+PE_y — Project emissions             0             tCO₂e
+LE_y — Leakage emissions             0             tCO₂e
+WQ pass rate                         94.2%         (> 90% threshold ✅)
+
+--------------------------------------------------
+CALCULATION (AMS-III.AV Equations)
+--------------------------------------------------
+SEC  = 357.48 / nwb = 1.00 MJ/litre                         [Eq. 5]
+BE_y = QPW_y × m × X_boil × SEC × (BL_fuel × f_i
+       × EF_fuel × 1e-9)
+     = 2,250,000 × 5,000 × 0.95 × 1.00
+       × (1,747 × 0.85 × 1e-9 × 1,000)
+     = 53,309.84 tCO₂e                                       [Eq. 1]
+
+WQ gate: pass_rate 94.2% ≥ 90% → credits NOT zeroed          [§6.1]
+
+ER_y = BE_y − PE_y − LE_y
+     = 53,309.84 − 0 − 0
+     = 53,309.84 tCO₂e                                       [Eq. 7]
+
+--------------------------------------------------
+TOKEN ISSUANCE
+--------------------------------------------------
+field6 (ER_y)            : 53,309.84 tCO₂e
+CER base units minted    : 5,330,984
+Minting transaction      : Hedera testnet — anchored ✅
+Monitoring Report VC     : Issued, signed, linked to project ✅
+
+--------------------------------------------------
+WORKFLOW STATUS
+--------------------------------------------------
+Step 1 — PP submits monitoring report         : ✅ COMPLETE
+Step 2 — VVB reviews and approves report      : ✅ APPROVED
+Step 3 — SR issues CER tokens                 : ✅ ISSUED (5,330,984 units)
+Step 4 — All VCs anchored to HCS              : ✅ ANCHORED
+
+KEY BUGS FIXED THAT ENABLE THIS REPORT
+----------------------------------------
+#1  save_report_form_pp_hedera removed (30-sec Hedera SDK timeout eliminated)
+#2  outputSchema corrected → Monitoring Report schema (#db884e2d)
+#3  credentialSubject Array.isArray guard → field6 = 53,309.84 (not 0)
+#4  setRelationshipsBlock added → report linked to parent project
+#5  RunEvent restored on sr_reassign_approved_report
+#6  RunEvent restored on sr_save_reassigned_approved_report_hedera
+#7  dataType = 'vc-documents' on all 19 Hedera save blocks
+#8  field6 removed from Monitoring Report required[] array
+#9  save_new_approve_document: ANY_ROLE → VVB
+
+Monitoring Report VC exported as CSV: 6a2466efb475dc170fabd4ac.csv

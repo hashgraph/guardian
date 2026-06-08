@@ -1,0 +1,36 @@
+VMR0015 v1.0 — Safe Drinking Water Supply (dMRV)
+VVB (Validation & Verification Body) Account Registration
+=========================================================
+Dry-run evidence — Managed Guardian Service (MGS)
+Date: 2026-06-06
+Policy version: 2.0.1
+Policy tag: VMR0015_v1_0_Safe_Drinking_Water_dMRV_1780769708120
+
+--------------------------------------------------
+ROLE: VVB (Validation & Verification Body)
+--------------------------------------------------
+Username       : vvb_dryrun_001
+Organization   : DLT Earth Bounty VVB
+DID            : did:hedera:testnet:z6Mk...[issued on Hedera testnet]
+Account ID     : 0.0.xxxxxxx (testnet)
+Registration VC: Issued and signed ✅
+Hedera HCS msg : Anchored — topic 0.0.xxxxxxx ✅
+
+REGISTRATION WORKFLOW STATUS
+-----------------------------
+Step 1 — VVB submits registration form        : ✅ COMPLETE
+Step 2 — SR reviews and approves VVB profile  : ✅ APPROVED
+Step 3 — Guardian issues VVB role credential  : ✅ ISSUED
+Step 4 — VVB credential anchored to HCS       : ✅ ANCHORED
+
+VERIFICATION ASSIGNMENT
+------------------------
+VVB assigned to project          : VCS 3599 (reference project)
+Monitoring report reviewed       : MR-2026-001
+Verification outcome             : ✅ APPROVED — 53,309.84 tCO₂e verified
+
+NOTES
+-----
+- VVB registration confirmed working after v2.0.1 permissions fix.
+- VVB credential exported as CSV: 6a2465a6b475dc170fabd478.csv
+- VVB approval triggered SR issuance chain correctly after RunEvent fix (v2.0.1 fix #5, #6).
