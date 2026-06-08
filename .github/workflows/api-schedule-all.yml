@@ -147,8 +147,8 @@ jobs:
           context: ./e2e-tests
           tags: cypress-runner
           load: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=local,src=/tmp/buildkit-cache
+          cache-to: type=local,dest=/tmp/buildkit-cache,mode=min
 
       - name: Run Cypress Tests in Docker
         run: |
