@@ -1,4 +1,4 @@
-<div class="container">
+<div class="guardian-page">
     <ng-container
         *ngIf="loading && taskId"
         [ngTemplateOutlet]="taskExecution"
@@ -20,9 +20,7 @@
 </div>
 
 <ng-template #header>
-    <div class="header">
-        <h1>Profile</h1>
-    </div>
+    <div class="guardian-user-page-header">Profile</div>
 </ng-template>
 
 <ng-template #userInfo>
