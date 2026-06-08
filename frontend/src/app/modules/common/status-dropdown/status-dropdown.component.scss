@@ -115,36 +115,5 @@
 }
 
 .guardian-disabled-status {
-    height: 30px;
-    width: 140px;
-    border-radius: 6px;
-    display: flex;
-    justify-content: left;
-    align-items: center;
-    padding: 0px 0px 0px 16px;
-    font-family: Inter;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 16px;
     text-align: left;
-
-    &.status-DRAFT {
-        background: var(--guardian-primary-background, #e1e7fa);
-        color: var(--guardian-primary-color, #4169E2);
-    }
-
-    &.status-DRY_RUN {
-        background: var(--guardian-primary-background, #e1e7fa);
-        color: var(--guardian-primary-color, #4169E2);
-    }
-
-    &.status-PUBLISHED {
-        background: var(--guardian-success-background, #CAFDD9);
-        color: var(--guardian-success-color, #19BE47);
-    }
-
-    &.status-ERROR {
-        background: var(--guardian-failure-background, #FFEAEA);
-        color: var(--guardian-failure-color, #FF432A);
-    }
 }
