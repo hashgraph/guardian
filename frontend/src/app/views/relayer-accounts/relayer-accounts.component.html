@@ -12,38 +12,35 @@
         <span>{{title}}</span>
     </div>
 
-    <div class="guardian-user-page-toolbar">
-        <div class="guardian-user-page-filters">
-            <div class="search-filter">
-                <input
-                    [(ngModel)]="search"
-                    class="guardian-input search-policy-input"
-                    pInputText
-                    placeholder="Search by keyword"
-                    type="text" 
-                    (change)="onSearch()"/>
-                <i class="search-icon">
-                    <svg-icon 
-                        class="svg-icon-16" 
-                        src="/assets/images/icons/16/search.svg" 
-                        svgClass="icon-color-close">
-                    </svg-icon>
-                </i>
-            </div>
+    <div class="actions-container">
+        <div class="search-filter">
+            <input
+                [(ngModel)]="search"
+                class="guardian-input search-policy-input"
+                pInputText
+                placeholder="Search by keyword"
+                type="text"
+                (change)="onSearch()"/>
+            <i class="search-icon">
+                <svg-icon
+                    class="svg-icon-16"
+                    src="/assets/images/icons/16/search.svg"
+                    svgClass="icon-color-close">
+                </svg-icon>
+            </i>
         </div>
-        <div class="guardian-user-page-buttons">
-            <button
+        <div class="module-actions-buttons-container">
+            <p-button
                 (click)="updateAllBalance()"
-                class="guardian-button guardian-button-secondary">
-                <div class="guardian-button-icon">
-                    <svg-icon
-                        class="icon-btn"
-                        src="/assets/images/icons/refresh-2.svg"
-                        svgClass="icon-color-primary">
-                    </svg-icon>
-                </div>
-                <div class="guardian-button-label">Update All Accounts</div>
-            </button>
+                class="toolbar-btn-secondary"
+                [outlined]="true">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/refresh-2.svg"
+                    svgClass="icon-color-primary">
+                </svg-icon>
+                <span>Update All Accounts</span>
+            </p-button>
         </div>
     </div>
 

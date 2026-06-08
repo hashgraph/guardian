@@ -1,6 +1,6 @@
 .actions__tabs {
     position: relative;
-    margin-bottom: 1.5rem;
+    margin-bottom: 40px;
 
     &::after {
         content: "";
