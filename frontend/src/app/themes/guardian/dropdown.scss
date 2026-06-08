@@ -237,3 +237,51 @@
         padding: 8px 16px;
     }
 }
+
+.guardian-status-select.p-select {
+    height: 40px !important;
+    border-color: var(--color-primary) !important;
+    color: var(--color-primary) !important;
+    outline: none !important;
+    box-shadow: none !important;
+
+    .p-select-label,
+    .p-select-dropdown-icon {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-weight: 600;
+        color: inherit !important;
+    }
+
+    .p-select-dropdown {
+        color: inherit !important;
+    }
+
+    .p-select-label {
+        display: flex;
+        align-items: center;
+    }
+}
+
+.policy-status-select.guardian-status-select.p-select {
+    width: 150px !important;
+    min-width: 150px;
+}
+
+.guardian-dropdown-status.guardian-status-select.p-select {
+    width: 140px;
+}
+
+.status-actions-dropdown.guardian-status-select.p-select {
+    width: 130px;
+}
+
+.DRAFT-dropdown .guardian-status-select.p-select,
+.status-DRAFT.guardian-status-select.p-select {
+    background: #ffffff !important;
+}
+
+.DRY-RUN-dropdown .guardian-status-select.p-select,
+.status-DRY_RUN.guardian-status-select.p-select {
+    background: var(--guardian-dry-run-background) !important;
+}

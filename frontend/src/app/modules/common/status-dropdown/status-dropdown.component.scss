@@ -1,10 +1,8 @@
 .guardian-dropdown.guardian-dropdown-status::ng-deep {
-    height: 30px;
     width: 140px;
 
     .p-select {
         width: 140px;
-        height: 30px;
         border-radius: 6px;
 
         .p-inputtext {
@@ -20,28 +18,6 @@
     .p-select-dropdown .p-select-dropdown-icon {
         font-size: 12px;
         font-weight: bold;
-    }
-}
-
-.guardian-dropdown.guardian-dropdown-status.status-DRAFT::ng-deep {
-    .p-select {
-        border-color: var(--guardian-primary-color, #4169E2);
-        color: var(--guardian-primary-color, #4169E2);
-    }
-
-    .p-select-dropdown .p-select-dropdown-icon {
-        color: var(--guardian-primary-color, #4169E2);
-    }
-}
-
-.guardian-dropdown.guardian-dropdown-status.status-DRY_RUN::ng-deep {
-    .p-select {
-        border-color: var(--guardian-primary-color, #4169E2);
-        color: var(--guardian-primary-color, #4169E2);
-    }
-
-    .p-select-dropdown .p-select-dropdown-icon {
-        color: var(--guardian-primary-color, #4169E2);
     }
 }
 

@@ -253,6 +253,7 @@
                                     <ng-container *ngIf="showStatus(tool)">
                                         <p-select
                                             class="status-actions-dropdown {{tool.status}}-dropdown"
+                                            styleClass="guardian-status-select"
                                             appendTo="body"
                                             tooltipPosition="bottom"
                                             [attr.published]="tool.status == 'PUBLISH'"
