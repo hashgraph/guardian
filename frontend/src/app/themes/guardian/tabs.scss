@@ -104,3 +104,10 @@
         display: none;
     }
 }
+
+.guardian-page .tabs-nav {
+    .p-tablist-tab-list,
+    .p-tab {
+        border-bottom: 1px solid var(--color-grey-3, #E1E7EF);
+    }
+}

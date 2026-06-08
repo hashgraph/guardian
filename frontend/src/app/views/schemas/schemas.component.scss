@@ -122,17 +122,7 @@ a {
 .actions {
     display: flex;
     flex-direction: column;
-    row-gap: 40px;
     margin-bottom: 20px;
-}
-
-.tabs-nav {
-    ::ng-deep {
-        .p-tablist-tab-list,
-        .p-tab {
-            border-bottom: 1px solid var(--color-grey-3, #E1E7EF) !important;
-        }
-    }
 }
 
 .actions ::ng-deep button.mat-raised-button.mat-primary {
