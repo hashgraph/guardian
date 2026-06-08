@@ -256,6 +256,11 @@ export class InterfaceDocumentsSource {
         if (
             !enableCommonSorting && history
         ) {
+            // MGS #1076: avoid hydrating the multi-MB `DocumentState.document`
+            // field via MikroORM (IdentityMap pins it for the policy lifetime).
+            // Fetch only the createDate plus the two dot-paths actually read.
+            const timelineLabelPath = history.options.timelineLabelPath || 'option.status';
+            const timelineCommentPath = history.options.timelineDescriptionPath || 'option.comment';
             for (const document of data) {
                 const filter: any = { documentId: document.id };
 
@@ -269,29 +274,15 @@ export class InterfaceDocumentsSource {
                 }
 
                 document.history = (
-                    await ref.databaseServer.getDocumentStates(filter)
-                ).map((state) =>
-                    Object.assign(
-                        {},
-                        {
-                            labelValue: ObjGet(
-                                state.document,
-                                history
-                                    ? history.options.timelineLabelPath ||
-                                    'option.status'
-                                    : 'option.status'
-                            ),
-                            comment: ObjGet(
-                                state.document,
-                                history
-                                    ? history.options.timelineDescriptionPath ||
-                                    'option.comment'
-                                    : 'option.comment'
-                            ),
-                            created: state.createDate,
-                        }
+                    await ref.databaseServer.getDocumentStateHistory(
+                        filter,
+                        [timelineLabelPath, timelineCommentPath]
                     )
-                );
+                ).map((state) => ({
+                    labelValue: ObjGet(state.document, timelineLabelPath),
+                    comment: ObjGet(state.document, timelineCommentPath),
+                    created: state.createDate,
+                }));
             }
         }
 

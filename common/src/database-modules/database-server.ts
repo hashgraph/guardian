@@ -2685,6 +2685,35 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Lightweight history projection for `documents-source` blocks.
+     * Returns only `createDate` plus the top-level `document.<key>` subtrees
+     * that the caller actually reads (e.g. `document.option`). Bypasses the
+     * MikroORM IdentityMap because the result comes back via aggregation,
+     * not entity hydration — without this, methodologies that embed large
+     * payloads in `document` (notably VM0033) hold the entire field resident
+     * for the lifetime of the policy process. See #1076.
+     */
+    public async getDocumentStateHistory(
+        filters: FilterObject<DocumentState>,
+        documentSubpaths: string[],
+    ): Promise<Array<{ createDate: Date, document: any }>> {
+        const topLevelKeys = Array.from(new Set(
+            documentSubpaths
+                .map(p => (p || '').split('.', 1)[0])
+                .filter(k => /^[A-Za-z_][A-Za-z0-9_]*$/.test(k))
+        ));
+        const projection: any = { _id: 0, createDate: 1 };
+        for (const k of topLevelKeys) {
+            projection[`document.${k}`] = 1;
+        }
+        const pipeline: any[] = [
+            { $match: filters },
+            { $project: projection },
+        ];
+        return await this.aggregate(DocumentState, pipeline) as any;
+    }
+
+    /**
      * Get Dry Run id
      * @returns Dry Run id
      */
