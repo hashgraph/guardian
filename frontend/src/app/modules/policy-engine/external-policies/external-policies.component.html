@@ -12,31 +12,15 @@
         <span>{{title}}</span>
     </div>
 
-    <div class="guardian-user-page-toolbar">
-        <div class="guardian-user-page-filters">
-            <!-- <div class="guardian-search">
-                <input
-                    id="fieldSearch"
-                    placeholder="Search"
-                    pInputText
-                    type="text"
-                />
-            </div> -->
-        </div>
-        <div class="guardian-user-page-buttons">
-            <button
+    <div class="actions-container">
+        <div class="module-actions-buttons-container">
+            <p-button
                 *ngIf="user.POLICIES_EXTERNAL_POLICY_CREATE"
                 (click)="onImport()"
-                class="guardian-button guardian-button-primary">
-                <div class="guardian-button-icon">
-                    <svg-icon
-                        class="icon-btn"
-                        src="/assets/images/icons/add.svg"
-                        svgClass="icon-color-secondary">
-                    </svg-icon>
-                </div>
-                <div class="guardian-button-label">Request Remote Policy</div>
-            </button>
+                class="toolbar-btn-primary">
+                <i class="pi pi-plus toolbar-icons"></i>
+                <span>Request Remote Policy</span>
+            </p-button>
         </div>
     </div>
 
