@@ -1,7 +1,9 @@
-<div class="content">
+<div class="guardian-page">
     <div *ngIf="loading" class="loading">
         <p-progressSpinner></p-progressSpinner>
     </div>
+
+    <div class="guardian-user-page-header">Retirement</div>
 
     <ng-container *ngIf="!isConfirmed">
         <div class="not-exist">
@@ -10,49 +12,50 @@
     </ng-container>
 
     <ng-container *ngIf="isConfirmed">
-        <div class="actions">
-            <div style="text-align: end" class="buttons">
-                <button
-                    pButton
-                    label="Retire"
-                    icon="pi pi-eye"
-                    class="p-button"
-                    (click)="openRetirePoolsDialog()">
-                </button>
-                <button
-                    pButton
-                    label="Requests"
-                    icon="pi pi-eye"
-                    class="p-button"
-                    (click)="openRetireRequestsDialog()">
-                </button>
+        <div class="actions-container">
+            <div class="module-actions-buttons-container">
+                <p-button
+                    (click)="openRetirePoolsDialog()"
+                    class="toolbar-btn-primary">
+                    <i class="pi pi-eye toolbar-icons"></i>
+                    <span>Retire</span>
+                </p-button>
+                <p-button
+                    (click)="openRetireRequestsDialog()"
+                    class="toolbar-btn-primary">
+                    <i class="pi pi-eye toolbar-icons"></i>
+                    <span>Requests</span>
+                </p-button>
             </div>
         </div>
         <div class="table-container">
-            <ng-container>
-                <p-table [value]="contractRequests" class="retire-table">
+            <div class="guardian-grid-container">
+                <p-table
+                    [value]="contractRequests"
+                    class="guardian-grid-table"
+                    [scrollable]="true">
                     <ng-template pTemplate="header">
-                        <tr class="header">
-                            <th class="mat-header-cell">Contract Id</th>
-                            <th class="mat-header-cell">Date</th>
-                            <th class="mat-header-cell">Operations</th>
+                        <tr class="guardian-grid-header">
+                            <th class="header-cell-text" style="min-width: 260px; width: 260px;">Contract Id</th>
+                            <th class="header-cell-text" style="min-width: 220px; width: 220px;">Date</th>
+                            <th class="header-cell-text" style="min-width: 220px; width: 220px;">Operations</th>
                         </tr>
                     </ng-template>
 
                     <ng-template pTemplate="body" let-element>
-                        <tr class="body">
-                            <td class="mat-cell">
+                        <tr class="guardian-grid-row">
+                            <td class="row-cell-text" style="min-width: 260px; width: 260px;">
                                 <hedera-explorer type="accounts"
                                                  [params]="element.document.credentialSubject[0].contractId">
                                     {{ element.document.credentialSubject[0].contractId }}
                                 </hedera-explorer>
                             </td>
 
-                            <td class="mat-cell">
+                            <td class="row-cell-text" style="min-width: 220px; width: 220px;">
                                 {{ getDate(element.document.issuanceDate) }}
                             </td>
 
-                            <td class="mat-cell">
+                            <td class="row-cell-text" style="min-width: 220px; width: 220px;">
                                 <div class="view-action-btn" (click)="viewRetireRequest(element)">
                                     <span>View Details</span>
                                     <i class="pi pi-eye"></i>
@@ -62,15 +65,15 @@
                     </ng-template>
                 </p-table>
 
-            </ng-container>
-        </div>
-        <div class="table-paginator">
-            <app-paginator
-                [length]="contractsCount"
-                [pageIndex]="pageIndex"
-                [pageSize]="pageSize"
-                (page)="onPage($event)">
-            </app-paginator>
+                <div class="guardian-grid-paginator">
+                    <app-paginator
+                        [length]="contractsCount"
+                        [pageIndex]="pageIndex"
+                        [pageSize]="pageSize"
+                        (page)="onPage($event)">
+                    </app-paginator>
+                </div>
+            </div>
         </div>
     </ng-container>
 </div>
