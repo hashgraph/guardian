@@ -11,11 +11,6 @@
         padding-left: 16px;
     }
 }
-.guardian-dropdown {
-    &::ng-deep .p-select { 
-        width: 250px;
-    }
-}
 
 .grid-btn {
     width: 80px;
@@ -23,6 +18,61 @@
     margin-right: 16px;
 
     &:last-child {
-        margin-right: 0px; 
+        margin-right: 0px;
     }
+}
+
+.actions-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+
+.module-actions-buttons-container {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+}
+
+.toolbar-btn-primary ::ng-deep .p-button {
+    background: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    height: 40px;
+    padding: 8px 16px 8px 8px;
+    color: var(--color-grey-white, #FFF);
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 30px;
+    margin-left: 6px;
+}
+
+.module-actions-buttons-container svg {
+    margin-right: 8px;
+}
+
+:host ::ng-deep .dropdown-block .p-select {
+    height: 40px;
+    min-width: 300px;
+}
+
+.dropdown-label {
+    color: var(--color-grey-5);
+    font-family: Inter, serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    margin-right: 10px;
+}
+
+.dropdown-item {
+    color: var(--color-grey-black-2);
+    font-family: Inter, serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
 }
