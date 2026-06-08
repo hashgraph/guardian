@@ -92,7 +92,7 @@ All schemas created for importing into Guardian must follow the design of the te
   * Auto-Calculate
   * **Sub-schema name** – the name of the embedded schema (or the name of the tag in the spreadsheet)
 * _**Parameter**_ – additional field for information relevant for some data types
-  * Enum – name of the enumeration (or the name of the tab in the spreadsheet) - list of possible options
+  * Enum – unique name of the enumeration as listed in the shared **Enums** tab - list of possible options
   * Pattern – regular expression
   * Help Text – text style
   * Prefix – symbol

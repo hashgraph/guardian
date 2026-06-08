@@ -11,8 +11,7 @@ export class XlsxEnum {
     private _data: string[];
     private _schema: Schema;
     private _field: SchemaField;
-    private _schemaName: string;
-    private _fieldName: string;
+    private _enumName: string;
     private _ipfs: boolean;
     private _link: string;
     private _loaded: boolean;
@@ -42,38 +41,24 @@ export class XlsxEnum {
         return this._field;
     }
 
-    public get schemaName(): string {
-        return this._schemaName;
-    }
-
-    public get fieldName(): string {
-        return this._fieldName;
+    public get enumName(): string {
+        return this._enumName;
     }
 
     public get loaded(): boolean {
         return this._loaded;
     }
 
-    public get rangeStartRow(): number {
-        return this._range?.startRow ?? -1;
-    }
-
     public setSchema(schema: Schema) {
         this._schema = schema;
-        this._schemaName = schema.name;
     }
 
     public setField(field: SchemaField) {
         this._field = field;
-        this._fieldName = field.description;
     }
 
-    public setSchemaName(name: string) {
-        this._schemaName = name;
-    }
-
-    public setFieldName(name: string) {
-        this._fieldName = name;
+    public setEnumName(name: string) {
+        this._enumName = name;
     }
 
     public setIPFS(ipfs: boolean) {
@@ -90,17 +75,6 @@ export class XlsxEnum {
         } else {
             this._data = [];
         }
-    }
-
-    public getValue(): string {
-        const start = this.worksheet.getCell(this._range.startColumn, this._range.startRow);
-        const end = this.worksheet.getCell(this._range.endColumn, this._range.endRow);
-        const range = `'${this.sheetName}'!${start.address}:${end.address}`;
-        return `=(ARRAYTOTEXT(${range}))`;
-    }
-
-    public getResult(): string {
-        return this.data.join(';');
     }
 
     public getData(): string {

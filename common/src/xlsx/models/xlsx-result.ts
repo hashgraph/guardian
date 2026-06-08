@@ -304,9 +304,9 @@ export class XlsxResult {
         return null;
     }
 
-    public getEnumByField(schemaName: string, fieldName: string): XlsxEnum | null {
+    public getEnumByName(enumName: string): XlsxEnum | null {
         for (const item of this._enums) {
-            if (item.schemaName === schemaName && item.fieldName === fieldName) {
+            if (item.enumName === enumName) {
                 return item;
             }
         }

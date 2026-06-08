@@ -125,23 +125,15 @@ describe('JsonToXlsx.collectEnums', function () {
         assert.isTrue(enumsCache.has('#s:f'));
     });
 
-    it('recurses into inline sub-schema fields using the sub-schema display name', function () {
+    it('recurses into inline sub-schema fields and collects the nested enum', function () {
         const innerField = makeField({ name: 'inner', description: 'Color', enum: ['Red'], path: '#sub:inner' });
         const parentField = makeField({ name: 'sub', isRef: true, type: '#sub', fields: [innerField] });
         const subSchemaNames = new Map([['#sub', 'SubSchemaName']]);
         collectEnums([parentField], schema, enums, enumsCache, ws, seenMap, subSchemaNames);
         assert.equal(enums.length, 1);
-        assert.equal(enums[0].schemaName, 'SubSchemaName');
+        assert.equal(enums[0].enumName, 'Color');
+        assert.isTrue(enumsCache.has('#sub:inner'));
     });
-
-    it('uses the parent schema name when no sub-schema display name is registered', function () {
-        const innerField = makeField({ name: 'inner', description: 'Color', enum: ['Red'], path: '#sub:inner' });
-        const parentField = makeField({ name: 'sub', isRef: true, type: '#sub', fields: [innerField] });
-        collectEnums([parentField], schema, enums, enumsCache, ws, seenMap);
-        assert.equal(enums.length, 1);
-        assert.equal(enums[0].schemaName, schema.name);
-    });
-
 });
 
 // ---------------------------------------------------------------------------
@@ -150,57 +142,50 @@ describe('XlsxResult enum lookup', function () {
 
     beforeEach(function () { result = new XlsxResult(); });
 
-    function addEnum(schemaName, fieldName, worksheetName) {
+    function addNamedEnum(enumName, worksheetName = 'Enums') {
         const e = new XlsxEnum(mockWs(worksheetName));
-        e.setSchemaName(schemaName);
-        e.setFieldName(fieldName);
+        e.setEnumName(enumName);
         result.addEnum(e);
         return e;
     }
 
-    // --- new path: getEnumByField (shared enum tab) -------------------------
-    describe('getEnumByField — new shared-tab path', function () {
-        it('finds an enum by schema name and field name', function () {
-            const e = addEnum('MySchema', 'Status', 'Enums');
-            assert.strictEqual(result.getEnumByField('MySchema', 'Status'), e);
+    function addLegacyEnum(worksheetName) {
+        const e = new XlsxEnum(mockWs(worksheetName));
+        result.addEnum(e);
+        return e;
+    }
+
+    // --- new path: getEnumByName (shared enum tab keyed by Enum name) -------
+    describe('getEnumByName — shared-tab path', function () {
+        it('finds an enum by its unique name', function () {
+            const e = addNamedEnum('Status');
+            assert.strictEqual(result.getEnumByName('Status'), e);
         });
 
-        it('returns null when schema name does not match', function () {
-            addEnum('MySchema', 'Status', 'Enums');
-            assert.isNull(result.getEnumByField('OtherSchema', 'Status'));
+        it('returns null when the name does not match', function () {
+            addNamedEnum('Status');
+            assert.isNull(result.getEnumByName('Color'));
         });
 
-        it('returns null when field name does not match', function () {
-            addEnum('MySchema', 'Status', 'Enums');
-            assert.isNull(result.getEnumByField('MySchema', 'Color'));
-        });
-
-        it('returns the correct entry when multiple enums exist for the same schema', function () {
-            const e1 = addEnum('MySchema', 'Status',   'Enums');
-            const e2 = addEnum('MySchema', 'Category', 'Enums');
-            assert.strictEqual(result.getEnumByField('MySchema', 'Status'),   e1);
-            assert.strictEqual(result.getEnumByField('MySchema', 'Category'), e2);
+        it('returns the correct entry when multiple named enums exist', function () {
+            const e1 = addNamedEnum('Status');
+            const e2 = addNamedEnum('Category');
+            assert.strictEqual(result.getEnumByName('Status'),   e1);
+            assert.strictEqual(result.getEnumByName('Category'), e2);
         });
     });
 
     // --- old path: getEnum (per-tab legacy worksheet lookup) ----------------
     describe('getEnum — legacy per-tab path', function () {
         it('finds an enum by its worksheet name', function () {
-            const e = addEnum('MySchema', 'Status', 'MySchema_Status_Enum');
+            const e = addLegacyEnum('MySchema_Status_Enum');
             assert.strictEqual(result.getEnum('MySchema_Status_Enum'), e);
         });
 
         it('returns null when worksheet name does not match', function () {
-            addEnum('MySchema', 'Status', 'MySchema_Status_Enum');
+            addLegacyEnum('MySchema_Status_Enum');
             assert.isNull(result.getEnum('OtherTab'));
         });
-    });
-
-    // --- both lookups operate on the same registry -------------------------
-    it('getEnumByField and getEnum both resolve the same registered object', function () {
-        const e = addEnum('SchemaA', 'FieldX', 'SchemaA_FieldX_Enum');
-        assert.strictEqual(result.getEnumByField('SchemaA', 'FieldX'), e);
-        assert.strictEqual(result.getEnum('SchemaA_FieldX_Enum'), e);
     });
 });
 
@@ -225,15 +210,6 @@ function buildEnumWorksheet(wb, sheetName, schemaName, fieldName, ipfsFlag, valu
 // ---------------------------------------------------------------------------
 describe('XlsxToJson.readEnumSheet — old per-tab enum format', function () {
     const readEnumSheet = (...args) => XlsxToJson['readEnumSheet'](...args);
-
-    it('reads schema name, field name, and IPFS flag from header rows', async function () {
-        const wb = new Workbook();
-        const ws = buildEnumWorksheet(wb, 'MyEnum', 'TestSchema', 'Status', 'No', ['A', 'B']);
-        const result = new XlsxResult();
-        const e = await readEnumSheet(ws, result);
-        assert.equal(e.schemaName, 'TestSchema');
-        assert.equal(e.fieldName,  'Status');
-    });
 
     it('collects all values from data rows into the enum', async function () {
         const wb = new Workbook();
@@ -368,5 +344,79 @@ describe('JsonToXlsx.writeField — old vs new sub-schema rendering', function (
 
         const paramValue = ws.getValue(table.getCol('Parameter'), DATA_ROW);
         assert.equal(paramValue, 'MySubSchema');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Shared "Enums" tab (new format): header-name-based columns, rename, duplicates.
+//
+// `cols` maps the three headers to arbitrary column indices so column order /
+// reordering can be exercised. Each enum block: the first row carries the name +
+// IPFS flag (+ first value); following rows carry only the next value.
+function buildSharedEnumWorksheet(wb, cols, enums, headers = {}) {
+    const ws = wb.createWorksheet('Enums');
+    ws.setValue(headers.name  ?? 'Enum Name',      cols.name,  1);
+    ws.setValue(headers.ipfs  ?? 'Loaded to IPFS', cols.ipfs,  1);
+    ws.setValue(headers.value ?? 'Value',          cols.value, 1);
+    let row = 2;
+    for (const e of enums) {
+        const values = (e.values && e.values.length) ? e.values : [null];
+        values.forEach((v, i) => {
+            if (i === 0) {
+                ws.setValue(e.name, cols.name, row);
+                ws.setValue(e.ipfs ? 'Yes' : 'No', cols.ipfs, row);
+            }
+            if (v != null) { ws.setValue(v, cols.value, row); }
+            row++;
+        });
+    }
+    return ws;
+}
+
+describe('XlsxToJson — shared "Enums" tab', function () {
+    const isSharedEnumSheet = (ws) => XlsxToJson['isSharedEnumSheet'](ws);
+    const validateSharedEnumHeaders = (ws, result) => XlsxToJson['validateSharedEnumHeaders'](ws, result);
+    const readSharedEnumSheet = (ws, result) => XlsxToJson['readSharedEnumSheet'](ws, result, true);
+
+    it('detects the sheet and reads enums', async function () {
+        const wb = new Workbook();
+        const ws = buildSharedEnumWorksheet(wb, { name: 1, ipfs: 2, value: 3 }, [
+            { name: 'Status', ipfs: false, values: ['A', 'B'] },
+            { name: 'Color',  ipfs: false, values: ['Red', 'Green'] },
+        ]);
+        assert.isTrue(isSharedEnumSheet(ws));
+        const result = new XlsxResult();
+        const enums = await readSharedEnumSheet(ws, result);
+        assert.equal(enums.length, 2);
+        assert.deepEqual(enums.map(e => e.enumName), ['Status', 'Color']);
+        assert.deepEqual(enums[0].data, ['A', 'B']);
+        assert.deepEqual(enums[1].data, ['Red', 'Green']);
+    });
+
+    it('reports the missing header(s) via validateSharedEnumHeaders', function () {
+        const wb = new Workbook();
+        // omit the "Value" header by giving it a wrong label
+        const ws = buildSharedEnumWorksheet(wb, { name: 1, ipfs: 2, value: 3 },
+            [{ name: 'Status', ipfs: false, values: ['A'] }],
+            { value: 'Values' });
+        assert.isFalse(isSharedEnumSheet(ws));
+        const result = new XlsxResult();
+        validateSharedEnumHeaders(ws, result);
+        const errors = result['_errors'];
+        assert.isTrue(errors.some(e => e.type === 'error' && e.text.includes('"Value"')));
+    });
+
+    it('keeps the first definition and warns on a duplicate enum name', async function () {
+        const wb = new Workbook();
+        const ws = buildSharedEnumWorksheet(wb, { name: 1, ipfs: 2, value: 3 }, [
+            { name: 'Status', ipfs: false, values: ['A', 'B'] },
+            { name: 'Status', ipfs: false, values: ['X'] },
+        ]);
+        const result = new XlsxResult();
+        const enums = await readSharedEnumSheet(ws, result);
+        assert.equal(enums.length, 1);
+        assert.deepEqual(enums[0].data, ['A', 'B']); // first definition wins
+        const errors = result['_errors'];
+        assert.isTrue(errors.some(e => e.type === 'warning' && /Duplicate enum name "Status"/.test(e.text)));
     });
 });

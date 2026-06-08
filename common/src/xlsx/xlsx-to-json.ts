@@ -91,36 +91,53 @@ export class XlsxToJson {
         }
     }
 
+    /**
+     * Resolve the Enums-tab columns by matching header text on the header row, so the columns
+     * can appear in any order (and the user can reorder them) — mirroring how the schema field
+     * tab binds its columns. Returns null if any of the three required headers is missing.
+     */
+    private static resolveSharedEnumColumns(
+        worksheet: Worksheet
+    ): { name: number; ipfs: number; value: number } | null {
+        const range = worksheet.getRange();
+        let name: number | undefined;
+        let ipfs: number | undefined;
+        let value: number | undefined;
+        for (let col = range.s.c; col < range.e.c; col++) {
+            const header = worksheet.getValue<string>(col, SharedEnumTable.HEADER_ROW);
+            if (header === Dictionary.ENUM_NAME) { name = col; }
+            else if (header === Dictionary.ENUM_IPFS) { ipfs = col; }
+            else if (header === Dictionary.ENUM_VALUE) { value = col; }
+        }
+        if (name === undefined || ipfs === undefined || value === undefined) {
+            return null;
+        }
+        return { name, ipfs, value };
+    }
+
     private static isSharedEnumSheet(worksheet: Worksheet): boolean {
-        return (
-            worksheet.getValue<string>(SharedEnumTable.COL_SCHEMA, SharedEnumTable.HEADER_ROW) === Dictionary.ENUM_SCHEMA_NAME &&
-            worksheet.getValue<string>(SharedEnumTable.COL_FIELD,  SharedEnumTable.HEADER_ROW) === Dictionary.ENUM_FIELD_NAME  &&
-            worksheet.getValue<string>(SharedEnumTable.COL_IPFS,   SharedEnumTable.HEADER_ROW) === Dictionary.ENUM_IPFS        &&
-            worksheet.getValue<string>(SharedEnumTable.COL_VALUE,  SharedEnumTable.HEADER_ROW) === Dictionary.ENUM_VALUE
-        );
+        return XlsxToJson.resolveSharedEnumColumns(worksheet) !== null;
     }
 
     private static validateSharedEnumHeaders(worksheet: Worksheet, xlsxResult: XlsxResult): void {
-        const columns = [
-            { col: SharedEnumTable.COL_SCHEMA, expected: Dictionary.ENUM_SCHEMA_NAME },
-            { col: SharedEnumTable.COL_FIELD,  expected: Dictionary.ENUM_FIELD_NAME  },
-            { col: SharedEnumTable.COL_IPFS,   expected: Dictionary.ENUM_IPFS        },
-            { col: SharedEnumTable.COL_VALUE,  expected: Dictionary.ENUM_VALUE       },
-        ];
-        for (const { col, expected } of columns) {
-            const actual = worksheet.getValue<string>(col, SharedEnumTable.HEADER_ROW);
-            if (actual !== expected) {
-                const colLetter = String.fromCharCode(64 + col);
-                xlsxResult.addError({
-                    type: 'error',
-                    text: `"${Dictionary.SHARED_ENUM_SHEET}" sheet has an invalid header in column ${colLetter}: expected "${expected}", got "${actual ?? '(empty)'}".`,
-                    message: `"${Dictionary.SHARED_ENUM_SHEET}" sheet has an invalid header in column ${colLetter}: expected "${expected}", got "${actual ?? '(empty)'}".`,
-                    worksheet: worksheet.name,
-                    row: SharedEnumTable.HEADER_ROW,
-                    col
-                }, null);
-            }
+        if (XlsxToJson.resolveSharedEnumColumns(worksheet)) {
+            return;
         }
+        const range = worksheet.getRange();
+        const present = new Set<string>();
+        for (let col = range.s.c; col < range.e.c; col++) {
+            present.add(worksheet.getValue<string>(col, SharedEnumTable.HEADER_ROW));
+        }
+        const missing = [Dictionary.ENUM_NAME, Dictionary.ENUM_IPFS, Dictionary.ENUM_VALUE]
+            .filter(header => !present.has(header));
+        const text = `"${Dictionary.SHARED_ENUM_SHEET}" sheet is missing required header(s): ${missing.map(h => `"${h}"`).join(', ')}.`;
+        xlsxResult.addError({
+            type: 'error',
+            text,
+            message: text,
+            worksheet: worksheet.name,
+            row: SharedEnumTable.HEADER_ROW
+        }, null);
     }
 
     private static isEnum(worksheet: Worksheet): boolean {
@@ -170,12 +187,6 @@ export class XlsxToJson {
         }
         table.setEnd(endCol, row);
 
-        if (table.getRow(Dictionary.ENUM_SCHEMA_NAME) !== -1) {
-            _enum.setSchemaName(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_SCHEMA_NAME)));
-        }
-        if (table.getRow(Dictionary.ENUM_FIELD_NAME) !== -1) {
-            _enum.setFieldName(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_FIELD_NAME)));
-        }
         if (table.getRow(Dictionary.ENUM_IPFS) !== -1) {
             _enum.setIPFS(xlsxToBoolean(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_IPFS))));
         }
@@ -211,36 +222,50 @@ export class XlsxToJson {
         const range = worksheet.getRange();
         const endRow = range.e.r;
 
-        let currentSchemaName: string = null;
-        let currentFieldName: string = null;
+        const cols = XlsxToJson.resolveSharedEnumColumns(worksheet);
+        if (!cols) {
+            return result;
+        }
+
+        let currentName: string = null;
         let currentIpfs: boolean = false;
         let currentItems: string[] = [];
         let groupStartRow: number = SharedEnumTable.FIRST_DATA_ROW;
+        const seenNames = new Set<string>();
 
         const flushGroup = async (
-            schemaName: string,
-            fieldName: string,
+            enumName: string,
             ipfs: boolean,
             items: string[],
             startRow: number,
             nextRow: number
         ): Promise<void> => {
-            if (!schemaName || !fieldName) {
+            if (!enumName) {
                 return;
             }
+            if (seenNames.has(enumName)) {
+                xlsxResult.addError({
+                    type: 'warning',
+                    text: `Duplicate enum name "${enumName}" in the "${Dictionary.SHARED_ENUM_SHEET}" tab. The first definition is used; this one is ignored.`,
+                    message: `Duplicate enum name "${enumName}" in the "${Dictionary.SHARED_ENUM_SHEET}" tab. The first definition is used; this one is ignored.`,
+                    worksheet: worksheet.name,
+                    row: startRow
+                }, null);
+                return;
+            }
+            seenNames.add(enumName);
             const _enum = new XlsxEnum(worksheet);
-            _enum.setSchemaName(schemaName);
-            _enum.setFieldName(fieldName);
+            _enum.setEnumName(enumName);
             _enum.setIPFS(ipfs);
             _enum.setData([...items]);
-            _enum.setRange(Range.fromRows(startRow, nextRow - 1, SharedEnumTable.COL_VALUE));
+            _enum.setRange(Range.fromRows(startRow, nextRow - 1, cols.value));
 
             const loaded = await _enum.upload(preview);
             if (!loaded) {
                 xlsxResult.addError({
                     type: 'error',
-                    text: `Failed to upload enum "${schemaName}/${fieldName}".`,
-                    message: `Failed to upload enum "${schemaName}/${fieldName}".`,
+                    text: `Failed to upload enum "${enumName}".`,
+                    message: `Failed to upload enum "${enumName}".`,
                     worksheet: worksheet.name
                 }, null);
                 return;
@@ -249,34 +274,27 @@ export class XlsxToJson {
         };
 
         for (let row = SharedEnumTable.FIRST_DATA_ROW; row < endRow; row++) {
-            const schemaName = worksheet.getValue<string>(SharedEnumTable.COL_SCHEMA, row);
-            const fieldName  = worksheet.getValue<string>(SharedEnumTable.COL_FIELD,  row);
-            const ipfsRaw    = worksheet.getValue<string>(SharedEnumTable.COL_IPFS,   row);
-            const value      = worksheet.getValue<string>(SharedEnumTable.COL_VALUE,  row);
+            const enumName = worksheet.getValue<string>(cols.name,  row);
+            const ipfsRaw  = worksheet.getValue<string>(cols.ipfs,  row);
+            const value    = worksheet.getValue<string>(cols.value, row);
 
-            if (!schemaName && !fieldName && !value) {
+            if (!enumName && !value) {
                 continue;
             }
 
-            const isGroupHeader = !!(schemaName && fieldName);
-            const isNewGroup = isGroupHeader ||
-                               (schemaName && schemaName !== currentSchemaName) ||
-                               (fieldName  && fieldName  !== currentFieldName);
-
-            if (isNewGroup) {
-                await flushGroup(currentSchemaName, currentFieldName, currentIpfs, currentItems, groupStartRow, row);
-                currentSchemaName = schemaName || currentSchemaName;
-                currentFieldName  = fieldName  || currentFieldName;
-                currentIpfs       = xlsxToBoolean(ipfsRaw);
-                currentItems      = [];
-                groupStartRow     = row;
+            if (enumName) {
+                await flushGroup(currentName, currentIpfs, currentItems, groupStartRow, row);
+                currentName   = enumName;
+                currentIpfs   = xlsxToBoolean(ipfsRaw);
+                currentItems  = [];
+                groupStartRow = row;
             }
 
             if (value) {
                 currentItems.push(value);
             }
         }
-        await flushGroup(currentSchemaName, currentFieldName, currentIpfs, currentItems, groupStartRow, endRow);
+        await flushGroup(currentName, currentIpfs, currentItems, groupStartRow, endRow);
 
         return result;
     }
@@ -375,16 +393,11 @@ export class XlsxToJson {
             let parents: SchemaField[] = [];
             for (; row < range.e.r; row++) {
                 const groupIndex = worksheet.getRow(row).getOutline();
-                const parentField = groupIndex > 0 ? parents[groupIndex - 1] : null;
-                const effectiveSchemaName = parentField?.customType === 'subSchema'
-                    ? (parentField.property || parentField.description || schema.name)
-                    : schema.name;
                 const field: SchemaField = XlsxToJson.readField(
                     worksheet,
                     table,
                     row,
-                    xlsxResult,
-                    effectiveSchemaName
+                    xlsxResult
                 );
                 if (field) {
                     allFields.set(field.title, field);
@@ -539,8 +552,7 @@ export class XlsxToJson {
         worksheet: Worksheet,
         table: Table,
         row: number,
-        xlsxResult: XlsxResult,
-        schemaName: string = ''
+        xlsxResult: XlsxResult
     ): SchemaField {
         if (worksheet.empty(table.start.c, table.end.c, row)) {
             return null;
@@ -596,8 +608,7 @@ export class XlsxToJson {
                     field,
                     fieldType,
                     row,
-                    xlsxResult,
-                    schemaName
+                    xlsxResult
                 );
             } else if (type) {
                 const hyperlink = worksheet
@@ -670,8 +681,7 @@ export class XlsxToJson {
         field: SchemaField,
         fieldType: IFieldTypes,
         row: number,
-        xlsxResult: XlsxResult,
-        schemaName: string = ''
+        xlsxResult: XlsxResult
     ): void {
         try {
             const param = worksheet.getValue<string>(table.getCol(Dictionary.PARAMETER), row);
@@ -693,16 +703,15 @@ export class XlsxToJson {
                 field.property = subSchemaName;
             }
             if (fieldType.name === 'Enum') {
-                const enumFieldName = param || field.description;
-                let enumObject = xlsxResult.getEnumByField(schemaName, enumFieldName);
-                let enumName: string = enumFieldName;
+                let enumName: string = param || field.description;
+                let enumObject = xlsxResult.getEnumByName(enumName);
 
                 if (!enumObject) {
-                    // Legacy fallback
+                    // Legacy fallback: per-tab enum sheet referenced by hyperlink or name.
                     const hyperlink = worksheet
                         .getCell(table.getCol(Dictionary.PARAMETER), row)
                         .getLink();
-                    const legacyName = hyperlink?.worksheet || enumFieldName;
+                    const legacyName = hyperlink?.worksheet || enumName;
                     if (legacyName) {
                         enumName = legacyName;
                         enumObject = xlsxResult.getEnum(legacyName);

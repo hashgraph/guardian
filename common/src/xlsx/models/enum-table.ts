@@ -4,10 +4,9 @@ import { IPoint } from './workbook.js';
 import { TableHeader } from './table-header.js';
 
 export class SharedEnumTable {
-    static readonly COL_SCHEMA = 1;
-    static readonly COL_FIELD  = 2;
-    static readonly COL_IPFS   = 3;
-    static readonly COL_VALUE  = 4;
+    static readonly COL_NAME  = 1;
+    static readonly COL_IPFS  = 2;
+    static readonly COL_VALUE = 3;
     static readonly HEADER_ROW     = 1;
     static readonly FIRST_DATA_ROW = 2;
 
@@ -135,16 +134,6 @@ export class EnumTable {
         }
 
         this._headers = new Map<string, TableHeader>();
-        this._headers.set(Dictionary.ENUM_SCHEMA_NAME,
-            new TableHeader(Dictionary.ENUM_SCHEMA_NAME, false)
-                .setStyle(this.headersStyle)
-                .setWidth(30)
-        );
-        this._headers.set(Dictionary.ENUM_FIELD_NAME,
-            new TableHeader(Dictionary.ENUM_FIELD_NAME, false)
-                .setStyle(this.headersStyle)
-                .setWidth(30)
-        );
         this._headers.set(Dictionary.ENUM_IPFS,
             new TableHeader(Dictionary.ENUM_IPFS, false)
                 .setStyle(this.headersStyle)
@@ -177,8 +166,6 @@ export class EnumTable {
         const col = this.start.c;
         let row = this.start.r;
 
-        this._headers.get(Dictionary.ENUM_SCHEMA_NAME).setPoint(col, row++);
-        this._headers.get(Dictionary.ENUM_FIELD_NAME).setPoint(col, row++);
         this._headers.get(Dictionary.ENUM_IPFS).setPoint(col, row++);
         this.column = this.start.c
         this.end = {
@@ -189,15 +176,6 @@ export class EnumTable {
 
     public setEnd(c: number, r: number) {
         this.end = { c, r };
-    }
-
-    public getErrorHeader(): TableHeader | null {
-        for (const header of this._headers.values()) {
-            if (header.required && header.column === -1) {
-                return header;
-            }
-        }
-        return null;
     }
 
     public isHeader(value: string): boolean {

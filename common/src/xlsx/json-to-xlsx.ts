@@ -68,6 +68,7 @@ export class JsonToXlsx {
 
         // Enums
         const enumWorksheet = workbook.createWorksheet(Dictionary.SHARED_ENUM_SHEET);
+        const _enumNames = new Set<string>();
         for (const item of _schemas) {
             JsonToXlsx.collectEnums(
                 (item.schema as Schema).fields,
@@ -76,7 +77,8 @@ export class JsonToXlsx {
                 _enumsCache,
                 enumWorksheet,
                 new Map(),
-                _subSchemaNamesCache
+                _subSchemaNamesCache,
+                _enumNames
             );
         }
 
@@ -127,7 +129,8 @@ export class JsonToXlsx {
         _enumsCache: Map<string, XlsxEnum>,
         enumWorksheet: Worksheet,
         _seenMap: Map<string, XlsxEnum> = new Map(),
-        subSchemaNames: Map<string, string> = new Map()
+        subSchemaNames: Map<string, string> = new Map(),
+        usedNames: Set<string> = new Set()
     ): void {
         for (const field of fields) {
             if (field.enum || field.remoteLink) {
@@ -139,6 +142,7 @@ export class JsonToXlsx {
                     const _enum = new XlsxEnum(enumWorksheet);
                     _enum.setSchema(schema);
                     _enum.setField(field);
+                    _enum.setEnumName(JsonToXlsx.uniqueEnumName(field.description, usedNames));
                     if (field.enum) {
                         _enum.setData(field.enum);
                     }
@@ -152,9 +156,28 @@ export class JsonToXlsx {
                 const subSchema = subName
                     ? { ...schema, name: subName } as Schema
                     : schema;
-                JsonToXlsx.collectEnums(field.fields, subSchema, _enums, _enumsCache, enumWorksheet, _seenMap, subSchemaNames);
+                JsonToXlsx.collectEnums(field.fields, subSchema, _enums, _enumsCache, enumWorksheet, _seenMap, subSchemaNames, usedNames);
             }
         }
+    }
+
+    /**
+     * Build a workbook-unique enum name from a base string (the field description),
+     * appending a numeric suffix on collision so each named enum maps to one tab group.
+     */
+    private static uniqueEnumName(base: string, used: Set<string>): string {
+        const name = (base && base.trim()) ? base.trim() : 'Enum';
+        if (!used.has(name)) {
+            used.add(name);
+            return name;
+        }
+        let i = 2;
+        while (used.has(`${name} (${i})`)) {
+            i++;
+        }
+        const result = `${name} (${i})`;
+        used.add(result);
+        return result;
     }
 
     private static updateFieldPaths(fields: SchemaField[], parent: string) {
@@ -364,6 +387,10 @@ export class JsonToXlsx {
         if (field.enum || field.remoteLink) {
             const _enum = enumsCache.get(field.path);
             if (_enum) {
+                worksheet
+                    .getCell(table.getCol(Dictionary.PARAMETER), row)
+                    .setValue(stringToXlsx(_enum.enumName))
+                    .setStyle(table.paramStyle);
                 if (!field.isArray) {
                     worksheet
                         .getCell(table.getCol(Dictionary.ANSWER), row)
@@ -512,10 +539,7 @@ export class JsonToXlsx {
         const shared = new SharedEnumTable();
 
         worksheet
-            .setValue(Dictionary.ENUM_SCHEMA_NAME, SharedEnumTable.COL_SCHEMA, SharedEnumTable.HEADER_ROW)
-            .setStyle(shared.headerStyle);
-        worksheet
-            .setValue(Dictionary.ENUM_FIELD_NAME, SharedEnumTable.COL_FIELD, SharedEnumTable.HEADER_ROW)
+            .setValue(Dictionary.ENUM_NAME, SharedEnumTable.COL_NAME, SharedEnumTable.HEADER_ROW)
             .setStyle(shared.headerStyle);
         worksheet
             .setValue(Dictionary.ENUM_IPFS, SharedEnumTable.COL_IPFS, SharedEnumTable.HEADER_ROW)
@@ -524,8 +548,7 @@ export class JsonToXlsx {
             .setValue(Dictionary.ENUM_VALUE, SharedEnumTable.COL_VALUE, SharedEnumTable.HEADER_ROW)
             .setStyle(shared.headerStyle);
 
-        worksheet.getCol(SharedEnumTable.COL_SCHEMA).setWidth(30);
-        worksheet.getCol(SharedEnumTable.COL_FIELD).setWidth(30);
+        worksheet.getCol(SharedEnumTable.COL_NAME).setWidth(30);
         worksheet.getCol(SharedEnumTable.COL_IPFS).setWidth(20);
         worksheet.getCol(SharedEnumTable.COL_VALUE).setWidth(30);
 
@@ -537,12 +560,8 @@ export class JsonToXlsx {
 
             if (items.length === 0) {
                 worksheet
-                    .getCell(SharedEnumTable.COL_SCHEMA, currentRow)
-                    .setValue(stringToXlsx(xlsxEnum.schemaName))
-                    .setStyle(shared.itemStyle);
-                worksheet
-                    .getCell(SharedEnumTable.COL_FIELD, currentRow)
-                    .setValue(stringToXlsx(xlsxEnum.fieldName))
+                    .getCell(SharedEnumTable.COL_NAME, currentRow)
+                    .setValue(stringToXlsx(xlsxEnum.enumName))
                     .setStyle(shared.itemStyle);
                 worksheet
                     .getCell(SharedEnumTable.COL_IPFS, currentRow)
@@ -553,12 +572,8 @@ export class JsonToXlsx {
                 for (let i = 0; i < items.length; i++) {
                     if (i === 0) {
                         worksheet
-                            .getCell(SharedEnumTable.COL_SCHEMA, currentRow)
-                            .setValue(stringToXlsx(xlsxEnum.schemaName))
-                            .setStyle(shared.itemStyle);
-                        worksheet
-                            .getCell(SharedEnumTable.COL_FIELD, currentRow)
-                            .setValue(stringToXlsx(xlsxEnum.fieldName))
+                            .getCell(SharedEnumTable.COL_NAME, currentRow)
+                            .setValue(stringToXlsx(xlsxEnum.enumName))
                             .setStyle(shared.itemStyle);
                         worksheet
                             .getCell(SharedEnumTable.COL_IPFS, currentRow)
