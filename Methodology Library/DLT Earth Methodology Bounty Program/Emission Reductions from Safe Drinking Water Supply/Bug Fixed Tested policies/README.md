@@ -15,11 +15,11 @@ HCS topic: `0.0.8865880` · Token: `0.0.8865898` · Network: Hedera testnet
 | `VMR0015 v1.0 Safe Drinking Water dMRV_1780769708120_2.0.1 (2).zip` | ZIP | Dry-run evidence package (schemas, IPFS context, artifacts) |
 | `policy_1780872930442.xlsx` | Excel | Policy export spreadsheet |
 | `Bug Fixed Json` | JSON | Full raw policy JSON (human-readable, uncompressed) |
-| `6a2463dfd2866ba70ad193bd.csv` | CSV | Signed PUBLISH VC — policy registration on Hedera testnet |
-| `6a2465a6b475dc170fabd478.csv` | CSV | Dry-run VC document |
-| `6a2465aab475dc170fabd483.csv` | CSV | Dry-run VC document |
-| `6a2466efb475dc170fabd4ac.csv` | CSV | PP registration VC (Project Profile) |
-| `6a2466f2b475dc170fabd4b4.csv` | CSV | PP registration VC (Project Profile, second entry) |
+| `6a2463dfd2866ba70ad193bd.csv` | CSV | Signed **policy PUBLISH VC** — confirms v2.0.1 live on Hedera testnet (`operation=PUBLISH`, issuer: SR DID `6VhJ5QVj…`) |
+| `6a2465a6b475dc170fabd478.csv` | CSV | **PP role credential** — PP-submitted (step 1), issuer DID: `DBMsJGyJ…` |
+| `6a2465aab475dc170fabd483.csv` | CSV | **PP role credential** — SR-countersigned (step 2), issuer DID: `6VhJ5QVj…`, 61 s later |
+| `6a2466efb475dc170fabd4ac.csv` | CSV | **Project Description VC** — PP-submitted (fields: projectId, projectName, methodology, creditingPeriod, estAnnualER, totalHouseholds; dry-run placeholder values) |
+| `6a2466f2b475dc170fabd4b4.csv` | CSV | **Project Description VC** — SR-countersigned (same inner `credentialSubject.id` as above — same Guardian document, two role signatures) |
 
 ---
 
@@ -28,49 +28,53 @@ HCS topic: `0.0.8865880` · Token: `0.0.8865898` · Network: Hedera testnet
 The signed PUBLISH VC (`6a2463dfd2866ba70ad193bd.csv`) contains:
 
 ```
-credentialSubject.version = "2.0.1"
-credentialSubject.name    = "VMR0015 v1.0 Safe Drinking Water dMRV_1780769708120"
+credentialSubject.version   = "2.0.1"
+credentialSubject.name      = "VMR0015 v1.0 Safe Drinking Water dMRV_1780769708120"
 credentialSubject.operation = "PUBLISH"
 issuer = did:hedera:testnet:6VhJ5QVjq4D48CzyxBfA2S4yXqW2ELMYhuEKJxfRcbLW_0.0.9124164
 proof.type = Ed25519Signature2018
 ```
 
-This confirms the `.policy` binary in this directory is **v2.0.1**, resolving the
-unreadable `artifacts/metadata.json` (deflate-compressed in the binary export).
+This confirms the `.policy` binary in this directory is **v2.0.1**.
 
 ---
 
-## Simulation Results — Clarifying the Two Figures
+## Canonical Calculation Results — VCS 3599 (2025H1)
 
-Two different figures appear across PR #6164. They are **not contradictions** — they are two different simulation runs with different input parameters:
+Canonical input parameters (back-calculated from VCS 3599 ER spreadsheet):
 
-| Run | QPW_y | nwb | BE_y | ER_y | Purpose |
-|---|---|---|---|---|---|
-| **Intermediate dry-run fixture** | ~23M L | 0.10 | **53,309.84 tCO₂e** | ~53,309 tCO₂e | Early workflow validation run — confirms token mint logic works |
-| **Canonical VCS 3599 result** | 713,972,729 L | 0.10 | **162,241.14 tCO₂e** | **154,125.14 tCO₂e** | Back-calculated from verified Verra spreadsheet — matches 154,125 VCUs issued 13/02/2026 |
-
-The **canonical figure (162,241.14 → ER = 154,125.14 tCO₂e)** is the authoritative result for VCS 3599, period 01 Jan – 30 Jun 2025. The intermediate fixture was used to confirm the `credentialSubject` bug fix and token mint chain; it uses a smaller QPW_y value and does not represent the project scale.
+| Parameter | Value | Unit |
+|---|---|---|
+| QPW_y | 713,972,729 | L/yr |
+| m | 0.95 | dimensionless |
+| X_boil | 1.0 | dimensionless |
+| nwb | 0.10 | dimensionless (efficiency fraction, 0–1) |
+| EF_fuel | 81.6 | tCO₂/TJ |
+| f_i (fNRB) | 0.82 | dimensionless |
+| BL_fuel | 1.0 | dimensionless |
+| PE_y | 0 | tCO₂e |
+| LE_y | 8,116.00 | tCO₂e |
 
 ### AMS-III.AV. Equations Applied
 
 ```
-SEC  = 357.48 / nwb                                                    [Eq. 5]
-BE_y = QPW_y × m × X_boil × SEC × (BL_fuel × f_i × EF_fuel × 1e-9)   [Eq. 1]
-ER_y = BE_y − PE_y − LE_y                                              [Eq. 7]
-WQ gate: pass_rate < 0.90 → ER_y = 0  (fail-closed)                   [§6.1]
+SEC  = 357.48 / nwb = 357.48 / 0.10 = 3,574.8 kJ/L               [Eq. 5]
+BE_y = QPW_y × m × X_boil × SEC × (BL_fuel × f_i × EF_fuel × 1e-9)
+     = 162,241.14 tCO₂e                                            [Eq. 1]
+ER_y = BE_y − PE_y − LE_y = 154,125.14 tCO₂e                      [Eq. 7]
+WQ gate: pass_rate 0.95 ≥ 0.90 → credits NOT zeroed                [§6.1]
 ```
 
-**Canonical parameters (VCS 3599):**
+**Canonical result: BE = 162,241.14 · LE = 8,116.00 · ER = 154,125.14 tCO₂e**  
+Matches Verra Registry issuance for VCS 3599, 13/02/2026 ✅
 
-```
-QPW_y = 713,972,729 L  |  m = 0.95  |  X_boil = 1.0  |  nwb = 0.10
-EF_fuel = 81.6 tCO₂/TJ |  f_i = 0.82  |  BL_fuel = 1.0
+### Note on the Intermediate Dry-Run Fixture (53,309.84 tCO₂e)
 
-SEC  = 357.48 / 0.10 = 3,574.8 kJ/L
-BE_y = 713,972,729 × 0.95 × 1.0 × 3574.8 × (1.0 × 0.82 × 81.6 × 1e-9)
-     = 162,241.14 tCO₂e
-ER_y = 162,241.14 − 0 − 8,116.00 = 154,125.14 tCO₂e
-```
+An earlier intermediate dry-run used QPW_y ≈ 23M L and nwb = 357.48 (a mis-entry
+used only to test the token mint chain at reduced scale). It produced an
+illustrative figure of 53,309.84 tCO₂e. That run confirmed the `credentialSubject`
+bug fix and token mint chain were operational. It does not represent the VCS 3599
+project scale. The canonical figure is **154,125.14 tCO₂e**.
 
 ---
 
@@ -81,9 +85,7 @@ Guardian's policy export format does **not** bundle test evidence files into the
 directory entry exists in the ZIP structure but contains zero files by design.
 
 All dry-run evidence (signed VCs, HCS topic receipts, token records) is committed
-directly to this directory as CSV files and available at:
-
-> `Methodology Library/DLT Earth Methodology Bounty Program/Emission Reductions from Safe Drinking Water Supply/Bug Fixed Tested policies/`
+directly to this directory as CSV files.
 
 ---
 

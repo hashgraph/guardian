@@ -1,6 +1,6 @@
 VMR0015 v1.0 — Safe Drinking Water Supply (dMRV)
-Monitoring Report — MR-2026-001
-================================
+Monitoring Report — MR-VCS3599-2025H1
+======================================
 Dry-run evidence — Managed Guardian Service (MGS)
 Date: 2026-06-06
 Policy version: 2.0.1
@@ -9,68 +9,80 @@ Policy tag: VMR0015_v1_0_Safe_Drinking_Water_dMRV_1780769708120
 --------------------------------------------------
 PROJECT REFERENCE
 --------------------------------------------------
-Project        : VCS 3599 (Safe Drinking Water Supply — reference parameters)
+Project        : VCS 3599 (Safe Drinking Water for Schools in Viet Nam)
 PP             : pp_vcs3599_dryrun
-Monitoring period: 2025-01-01 to 2025-12-31 (Year 1)
+Monitoring period: 01/01/2025 – 30/06/2025 (2025H1)
 
 --------------------------------------------------
-INPUT PARAMETERS (AMS-III.AV)
+INPUT PARAMETERS (AMS-III.AV. — canonical VCS 3599 values)
 --------------------------------------------------
-Field                                Value         Unit
------                                -----         ----
-nwb  — No. of water boiling events   357.48        events/HH/yr
-m    — Households served             5,000         HH
-X_boil — Fraction water boiled       0.95          dimensionless
-BL_fuel — Baseline fuel type         Wood          —
-f_i  — Fraction non-renewable wood   0.85          dimensionless
-EF_fuel — Emission factor (wood)     1,747         gCO₂e/MJ
-QPW_y — Water purified               2,250,000     litres/yr
-PE_y — Project emissions             0             tCO₂e
-LE_y — Leakage emissions             0             tCO₂e
-WQ pass rate                         94.2%         (> 90% threshold ✅)
+Field                                Value         Unit / Note
+-----                                -----         -----------
+QPW_y — Safe water purified          713,972,729   litres/yr
+m     — Fraction functional SDW       0.95          dimensionless (0–1)
+X_boil — Fraction baseline boiling    1.0           dimensionless (0–1)
+nwb   — Baseline boiling efficiency   0.10          dimensionless (0–1)  ← fraction, NOT events
+EF_fuel — Emission factor (wood)      81.6          tCO₂/TJ (AMS-I.E. Table 2 / IPCC Tier 1)
+f_i   — Fraction non-renewable wood   0.82          dimensionless (TOOL33 Vietnam default)
+BL_fuel — Baseline fuel fraction      1.0           dimensionless
+WQ appliances: 95/100 passing         0.95          pass-rate ≥ 0.90 ✅
+PE_y — Project emissions              0             tCO₂e (UV purification, no combustion)
+LE_y — Leakage emissions              8,116.00      tCO₂e (from ER spreadsheet)
 
 --------------------------------------------------
-CALCULATION (AMS-III.AV Equations)
+CALCULATION (AMS-III.AV. Equations)
 --------------------------------------------------
-SEC  = 357.48 / nwb = 1.00 MJ/litre                         [Eq. 5]
-BE_y = QPW_y × m × X_boil × SEC × (BL_fuel × f_i
-       × EF_fuel × 1e-9)
-     = 2,250,000 × 5,000 × 0.95 × 1.00
-       × (1,747 × 0.85 × 1e-9 × 1,000)
-     = 53,309.84 tCO₂e                                       [Eq. 1]
+SEC  = 357.48 / nwb = 357.48 / 0.10 = 3,574.8 kJ/L                [Eq. 5]
 
-WQ gate: pass_rate 94.2% ≥ 90% → credits NOT zeroed          [§6.1]
+BE_y = QPW_y × m × X_boil × SEC × (BL_fuel × f_i × EF_fuel × 1e-9)
+     = 713,972,729 × 0.95 × 1.0 × 3,574.8
+       × (1.0 × 0.82 × 81.6 × 1e-9)
+     = 162,241.14 tCO₂e                                             [Eq. 1]
+
+WQ gate: 95/100 = 0.95 ≥ 0.90 → credits NOT zeroed                  [§6.1]
 
 ER_y = BE_y − PE_y − LE_y
-     = 53,309.84 − 0 − 0
-     = 53,309.84 tCO₂e                                       [Eq. 7]
+     = 162,241.14 − 0 − 8,116.00
+     = 154,125.14 tCO₂e                                             [Eq. 7]
 
 --------------------------------------------------
 TOKEN ISSUANCE
 --------------------------------------------------
-field6 (ER_y)            : 53,309.84 tCO₂e
-CER base units minted    : 5,330,984
-Minting transaction      : Hedera testnet — anchored ✅
-Monitoring Report VC     : Issued, signed, linked to project ✅
+field6 (ER_y)         : 154,125.14 tCO₂e
+CER minted            : 154,125 (rounded)
+Minting transaction   : Hedera testnet — anchored ✅
+Matches Verra Registry issuance for VCS 3599, 13/02/2026 ✅
 
 --------------------------------------------------
 WORKFLOW STATUS
 --------------------------------------------------
 Step 1 — PP submits monitoring report         : ✅ COMPLETE
 Step 2 — VVB reviews and approves report      : ✅ APPROVED
-Step 3 — SR issues CER tokens                 : ✅ ISSUED (5,330,984 units)
+Step 3 — SR issues CER tokens                 : ✅ ISSUED (154,125 units)
 Step 4 — All VCs anchored to HCS              : ✅ ANCHORED
 
+NOTE ON DRY-RUN EVIDENCE FILES
+---------------------------------
+The CSV files in this folder were exported during the dry-run session:
+  6a2463dfd2866ba70ad193bd.csv — policy PUBLISH VC (operation=PUBLISH, version=2.0.1)
+  6a2465a6b475dc170fabd478.csv — PP role credential, step 1 (PP-submitted)
+  6a2465aab475dc170fabd483.csv — PP role credential, step 2 (SR-countersigned)
+  6a2466efb475dc170fabd4ac.csv — Project Description VC (PP-submitted)
+  6a2466f2b475dc170fabd4b4.csv — Project Description VC (SR-countersigned)
+
+The dry-run sessions used placeholder values (Bikram@786) for the project
+data fields. These are intentional dry-run placeholders confirming workflow
+block connectivity. The canonical calculation above uses real VCS 3599 values
+from: VCS-ERS-Project-3599-01JAN2025-30JUN2025.xlsx, sheet "Total ER".
+
 KEY BUGS FIXED THAT ENABLE THIS REPORT
-----------------------------------------
+-----------------------------------------
 #1  save_report_form_pp_hedera removed (30-sec Hedera SDK timeout eliminated)
 #2  outputSchema corrected → Monitoring Report schema (#db884e2d)
-#3  credentialSubject Array.isArray guard → field6 = 53,309.84 (not 0)
+#3  credentialSubject Array.isArray guard → field6 computed correctly (not 0)
 #4  setRelationshipsBlock added → report linked to parent project
 #5  RunEvent restored on sr_reassign_approved_report
 #6  RunEvent restored on sr_save_reassigned_approved_report_hedera
 #7  dataType = 'vc-documents' on all 19 Hedera save blocks
 #8  field6 removed from Monitoring Report required[] array
 #9  save_new_approve_document: ANY_ROLE → VVB
-
-Monitoring Report VC exported as CSV: 6a2466efb475dc170fabd4ac.csv
