@@ -11,7 +11,7 @@
             <a [routerLink]="['/profile']">here</a>
         </div>
 
-        <div *ngIf="!loading" class="guardian-user-page-header">
+        <div class="guardian-user-page-header">
             <span>List of Tokens</span>
         </div>
 
@@ -203,20 +203,6 @@
 
 <ng-template #usingTokens>
     <div class="guardian-page">
-        <div class="back-button">
-            <button 
-                (click)="goToTokensPage()" 
-                class="guardian-button guardian-button-secondary">
-                <div class="guardian-button-icon">
-                    <svg-icon class="icon-btn svg-icon"
-                        src="/assets/images/icons/left-arrow.svg"
-                        svgClass="icon-color-primary">
-                    </svg-icon>
-                </div>
-                <div class="guardian-button-label">Back to List of Tokens</div>
-            </button>
-        </div>
-
         <div *ngIf="loading" class="guardian-loading">
             <div class="guardian-loading-image"></div>
         </div>
