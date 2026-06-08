@@ -57,6 +57,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         await this.scheduleTopicSyncs();
         await this.scheduleTokenSyncs();
         await this.schedulePolicyDecodeJobs();
+        await this.rescheduleOrphanedTopics();
 
         // Backfill IPFS fetches for VCs whose parent policy is now decoded but whose
         // fetch was skipped (they arrived before their policy was decoded).
@@ -261,7 +262,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
             cid: string;
         }> = await this.dataSource.query(`
                 SELECT
-                    m."topicId"                                  AS policy_topic_id,
+                    COALESCE(NULLIF(m.options->>'topicId', ''), m."topicId") AS policy_topic_id,
                     COALESCE(m.options->>'instanceTopicId', '')  AS instance_topic_id,
                     m."consensusTimestamp"                       AS consensus_timestamp,
                     f.cid
@@ -273,7 +274,7 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
                   AND array_length(m.files, 1) > 0
                   AND NOT EXISTS (
                       SELECT 1 FROM policy p
-                      WHERE p."policyTopicId" = m."topicId"
+                      WHERE p."policyTopicId" = COALESCE(NULLIF(m.options->>'topicId', ''), m."topicId")
                         AND COALESCE(p."instanceTopicId", '') =
                             COALESCE(m.options->>'instanceTopicId', '')
                         AND p."decodeStatus" = 'decoded'
@@ -295,6 +296,55 @@ export class SyncSchedulerService implements OnModuleInit, OnModuleDestroy {
         }
 
         this.logger.log(`Enqueued ${rows.length} missing policy decode job(s)`);
+    }
+
+    /**
+     * Boot-time rescue for orphaned topics: topic IDs that other messages
+     * reference (Topic.options.childId or Instance-Policy.options.instanceTopicId)
+     * but which never made it into topic_cache — typically because their
+     * topic-sync job failed and left the whole subtree unreachable. Re-enqueue a
+     * fresh topic-sync (from watermark 0) for each, removing any stale job first.
+     */
+    private async rescheduleOrphanedTopics(): Promise<void> {
+        const rows: Array<{ topic_id: string }> = await this.dataSource.query(`
+            SELECT DISTINCT refs.topic_id
+            FROM (
+                SELECT m.options->>'childId' AS topic_id
+                FROM message m
+                WHERE m.type = 'Topic'
+                  AND m.options->>'childId' IS NOT NULL
+                UNION
+                SELECT m.options->>'instanceTopicId' AS topic_id
+                FROM message m
+                WHERE m.type = 'Instance-Policy'
+                  AND m.options->>'instanceTopicId' IS NOT NULL
+            ) refs
+            WHERE refs.topic_id IS NOT NULL
+              AND refs.topic_id <> ''
+              AND NOT EXISTS (
+                  SELECT 1 FROM topic_cache tc WHERE tc."topicId" = refs.topic_id
+              )
+        `);
+
+        let enqueued = 0;
+        for (const row of rows) {
+            const jobId = `topic-${row.topic_id}-0`;
+            try {
+                await this.topicQueue.remove(jobId);
+            } catch {
+                // Job didn't exist — fine.
+            }
+            await this.topicQueue.add('sync', {
+                topicId: row.topic_id,
+                fromSequenceNumber: 0,
+                isOrgTopic: false,
+            }, { jobId });
+            enqueued++;
+        }
+
+        if (enqueued > 0) {
+            this.logger.log(`Rescued ${enqueued} orphaned topic(s) missing from topic_cache`);
+        }
     }
 
     /**

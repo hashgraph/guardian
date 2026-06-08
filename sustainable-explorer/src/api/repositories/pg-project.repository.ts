@@ -377,6 +377,7 @@ export class PgProjectRepository extends ProjectRepository {
                 const policyMapping = (pr.policyMapping ?? {}) as Record<string, unknown[]>;
 
                 const projectIris = new Set<string>();
+                const docTypeByIri = new Map<string, string>();
                 for (const entries of Object.values(policyMapping)) {
                     if (!Array.isArray(entries)) continue;
                     for (const entry of entries) {
@@ -384,6 +385,9 @@ export class PgProjectRepository extends ProjectRepository {
                         const e = entry as Record<string, unknown>;
                         if (e['isProjectSchema'] === true && typeof e['schemaIri'] === 'string') {
                             projectIris.add(e['schemaIri'] as string);
+                        }
+                        if (typeof e['schemaIri'] === 'string' && typeof e['docType'] === 'string') {
+                            docTypeByIri.set(e['schemaIri'] as string, e['docType'] as string);
                         }
                     }
                 }
@@ -395,6 +399,7 @@ export class PgProjectRepository extends ProjectRepository {
                         schemaId: iri,
                         name,
                         isProjectSchema: projectIris.has(iri),
+                        docType: docTypeByIri.get(iri) ?? 'unknown',
                     };
                 }).sort((a, b) => {
                     if (a.isProjectSchema && !b.isProjectSchema) return -1;
@@ -408,8 +413,8 @@ export class PgProjectRepository extends ProjectRepository {
     }
 
     async findActivity(sourceTimestamp: string): Promise<ActivityEventRow[]> {
-        const projectRows: Array<{ relatedTopicId: string | null }> = await this.dataSource.query(
-            `SELECT "relatedTopicId"
+        const projectRows: Array<{ relatedTopicId: string | null; businessData: Record<string, any> | null }> = await this.dataSource.query(
+            `SELECT "relatedTopicId", "businessData"
              FROM business_view
              WHERE "viewType" = 'PROJECT'
                AND "sourceTimestamp" = $1
@@ -450,26 +455,60 @@ export class PgProjectRepository extends ProjectRepository {
             }
         }
 
-        const rows: Array<{
-            consensusTimestamp: string;
-            type: string;
-            vc_schema_iri: string | null;
-        }> = await this.dataSource.query(
-            `SELECT
-                m."consensusTimestamp",
-                m.type,
-                split_part(
-                    m.documents -> 'credentialSubject' -> 0 ->> 'type',
-                    '&', 1
-                ) AS vc_schema_iri
-             FROM message m
-             WHERE m."topicId" = $1
-               AND m.type IN ('VC-Document', 'VP-Document')
-               AND m.documents IS NOT NULL
-             ORDER BY m."consensusTimestamp" ASC
-             LIMIT 100`,
+        // Scope the timeline. When multiple PROJECT rows share this instance topic,
+        // a full-topic scan over-lists sibling projects' VCs — so source the
+        // timeline from THIS project's own linkedVcs. A per-project dynamic topic
+        // (exactly one PROJECT row) keeps the existing full-topic scan.
+        const projectCountRows: Array<{ cnt: number }> = await this.dataSource.query(
+            `SELECT COUNT(*)::int AS cnt
+             FROM business_view
+             WHERE "viewType" = 'PROJECT' AND "relatedTopicId" = $1`,
             [topicId],
         );
+        const projectCount = projectCountRows[0]?.cnt ?? 1;
+
+        let rows: Array<{ consensusTimestamp: string; type: string; vc_schema_iri: string | null }>;
+        if (projectCount > 1) {
+            const linkedVcs = Array.isArray(projectRows[0].businessData?.['linkedVcs'])
+                ? (projectRows[0].businessData!['linkedVcs'] as Array<{ consensusTimestamp?: unknown }>)
+                : [];
+            const timestamps = linkedVcs
+                .map(v => v?.consensusTimestamp)
+                .filter((ts): ts is string => typeof ts === 'string' && ts.length > 0);
+            if (timestamps.length === 0) return [];
+            rows = await this.dataSource.query(
+                `SELECT
+                    m."consensusTimestamp",
+                    m.type,
+                    split_part(
+                        m.documents -> 'credentialSubject' -> 0 ->> 'type',
+                        '&', 1
+                    ) AS vc_schema_iri
+                 FROM message m
+                 WHERE m."consensusTimestamp" = ANY($1::varchar[])
+                   AND m.type IN ('VC-Document', 'VP-Document')
+                   AND m.documents IS NOT NULL
+                 ORDER BY m."consensusTimestamp" ASC`,
+                [timestamps],
+            );
+        } else {
+            rows = await this.dataSource.query(
+                `SELECT
+                    m."consensusTimestamp",
+                    m.type,
+                    split_part(
+                        m.documents -> 'credentialSubject' -> 0 ->> 'type',
+                        '&', 1
+                    ) AS vc_schema_iri
+                 FROM message m
+                 WHERE m."topicId" = $1
+                   AND m.type IN ('VC-Document', 'VP-Document')
+                   AND m.documents IS NOT NULL
+                 ORDER BY m."consensusTimestamp" ASC
+                 LIMIT 100`,
+                [topicId],
+            );
+        }
 
         return rows.map(r => ({
             consensusTimestamp: r.consensusTimestamp,

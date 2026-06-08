@@ -18,6 +18,7 @@ export interface LinkedSchema {
     schemaUuid: string;
     schemaName: string | null;
     isProjectSchema: boolean;
+    docType: string;
     vcCount: number;
     linkedVcs: LinkedVc[];
 }

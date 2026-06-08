@@ -13,6 +13,9 @@ export class ActivityEventDto {
     @ApiProperty({ description: 'Activity category: document | verification | registry | monitoring | credit' })
     type: string;
 
+    @ApiProperty({ nullable: true, description: 'Schema name of the VC for this activity, when known' })
+    schemaName: string | null;
+
     static fromRow(row: ActivityEventRow): ActivityEventDto {
         const seconds = parseFloat(row.consensusTimestamp);
         const date = new Date(seconds * 1000).toISOString().split('T')[0];
@@ -43,7 +46,7 @@ export class ActivityEventDto {
             action = row.schemaName ? `${row.schemaName} submitted` : 'Document submitted';
         }
 
-        return { date, action, type };
+        return { date, action, type, schemaName: row.schemaName ?? null };
     }
 }
 
@@ -90,6 +93,9 @@ export class LinkedSchemaDto {
 
     @ApiProperty({ description: 'True when this schema is flagged isProjectSchema in the policyMapping' })
     isProjectSchema: boolean;
+
+    @ApiProperty({ description: 'Coarse Guardian document type (pdd | monitoringReport | validationReport | verificationReport | registration | unknown)' })
+    docType: string;
 
     @ApiProperty({ description: 'Number of linked VCs carrying this schema UUID' })
     vcCount: number;
@@ -270,11 +276,12 @@ export class ProjectResponseDto {
         const trimSchemaId = (id: string): string =>
             id.replace(/^#/, '').split('&')[0].trim();
 
-        const schemaMetaMap = new Map<string, Pick<PolicySchemaRow, 'name' | 'isProjectSchema'>>();
+        const schemaMetaMap = new Map<string, Pick<PolicySchemaRow, 'name' | 'isProjectSchema' | 'docType'>>();
         for (const s of (row.policySchemas ?? [])) {
             schemaMetaMap.set(trimSchemaId(s.schemaId), {
                 name: s.name,
                 isProjectSchema: s.isProjectSchema,
+                docType: s.docType,
             });
         }
 
@@ -304,6 +311,7 @@ export class ProjectResponseDto {
                 schemaUuid: uuid,
                 schemaName: meta?.name ?? null,
                 isProjectSchema: meta?.isProjectSchema ?? false,
+                docType: meta?.docType ?? 'unknown',
                 vcCount: vcs.length,
                 linkedVcs: vcs,
             });
@@ -323,6 +331,7 @@ export class ProjectResponseDto {
                     schemaUuid: trimmed,
                     schemaName: s.name,
                     isProjectSchema: s.isProjectSchema,
+                    docType: s.docType,
                     vcCount: 0,
                     linkedVcs: [],
                 });

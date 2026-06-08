@@ -51,8 +51,8 @@ const displayCountry = computed(() => {
 
 // ─── Tabs (synced with URL hash) ──────────────────────────────────────────────
 
-type TabKey = 'summary' | 'issuances' | 'documents' | 'advanced';
-const VALID_TABS = new Set<TabKey>(['summary', 'issuances', 'documents', 'advanced']);
+type TabKey = 'summary' | 'pipeline' | 'issuances' | 'documents' | 'advanced';
+const VALID_TABS = new Set<TabKey>(['summary', 'pipeline', 'issuances', 'documents', 'advanced']);
 
 const router = useRouter();
 const initialHash = (route.hash?.replace('#', '') ?? '') as TabKey;
@@ -65,6 +65,7 @@ function setTab(key: TabKey) {
 
 const tabs = [
     { key: 'summary' as const,   label: 'Summary',              icon: FolderKanban },
+    { key: 'pipeline' as const,  label: 'Pipeline',             icon: Activity },
     { key: 'documents' as const, label: 'Detailed Information',  icon: FileText },
     { key: 'issuances' as const, label: 'Issuances & Credits',  icon: Coins },
     { key: 'advanced' as const,  label: 'Advanced',             icon: Shield },
@@ -623,6 +624,11 @@ const emissions = computed(() => {
                         </ClientOnly>
                     </div>
                 </div>
+            </div>
+
+            <!-- ── Tab: Pipeline & Trust Chain ─────────────────────────────────── -->
+            <div v-else-if="activeTab === 'pipeline'" class="p-6">
+                <ProjectPipeline :project="project" />
             </div>
 
             <!-- ── Tab: Issuances & Credits ────────────────────────────────────── -->

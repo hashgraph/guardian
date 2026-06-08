@@ -20,6 +20,7 @@ export interface PolicySchemaRow {
     schemaId: string;
     name: string | null;
     isProjectSchema: boolean;
+    docType: string;
 }
 
 export interface ProjectRow {

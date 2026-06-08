@@ -15,6 +15,12 @@ import { MappingModule } from './mapping/mapping.module';
 import { HederaService } from './services/hedera.service';
 import { IpfsService } from './services/ipfs.service';
 import { ProjectMapperService } from './services/project-mapper.service';
+import { TopicClassifierService } from './project-mapper/topic-classifier';
+import { DynamicTopicResolver } from './project-mapper/resolvers/dynamic-topic.resolver';
+import { CsRefResolver } from './project-mapper/resolvers/cs-ref.resolver';
+import { RelationshipsResolver } from './project-mapper/resolvers/relationships.resolver';
+import { ProjectSchemaResolver } from './project-mapper/resolvers/project-schema.resolver';
+import { ProjectKeyResolverChain } from './project-mapper/resolvers/resolver-chain.service';
 import { ReverseGeoService } from './services/reverse-geo.service';
 import { POLICY_ZIP_STORAGE } from './services/storage/policy-zip-storage.interface';
 import { LocalPolicyZipStorage } from './services/storage/local-policy-zip-storage.service';
@@ -117,6 +123,13 @@ export class WorkerModule {
                 IpfsService,
                 ReverseGeoService,
                 ProjectMapperService,
+                // Project-key resolver chain (M1→M4) + its dependencies.
+                TopicClassifierService,
+                DynamicTopicResolver,
+                CsRefResolver,
+                RelationshipsResolver,
+                ProjectSchemaResolver,
+                ProjectKeyResolverChain,
                 { provide: POLICY_ZIP_STORAGE, useClass: LocalPolicyZipStorage },
 
                 // Only processors for active queues

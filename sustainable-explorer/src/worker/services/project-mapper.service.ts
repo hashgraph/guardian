@@ -15,6 +15,17 @@ import {
 import { PROJECT_EXTRACT_FIELDS } from '../project-mapper/project-fields';
 import { isNonProjectCsType } from '../project-mapper/non-project-credential';
 import { ReverseGeoService } from './reverse-geo.service';
+import { ProjectKeyResolverChain } from '../project-mapper/resolvers/resolver-chain.service';
+import { PolicyMapping } from '../mapping/policy-pipeline.types';
+
+/**
+ * Fields a "date-only" source VC (monitoring/verification report) is allowed to
+ * contribute. All other PROJECT_EXTRACT_FIELDS are skipped for such VCs so their
+ * noisy descriptive fields never seed/fill project descriptive data.
+ */
+const DATE_ONLY_FIELD_KEYS = new Set<string>([
+    'vintageRaw', 'creditingPeriod', 'creditingPeriodStart', 'creditingPeriodEnd',
+]);
 
 /**
  * Per-VC project upsert service.
@@ -40,6 +51,7 @@ export class ProjectMapperService {
     constructor(
         private readonly dataSource: DataSource,
         private readonly reverseGeoService: ReverseGeoService,
+        private readonly resolverChain: ProjectKeyResolverChain,
     ) {}
 
     async upsertProjectFromVc(messageConsensusTimestamp: string): Promise<void> {
@@ -122,14 +134,7 @@ export class ProjectMapperService {
 
         const policyRow = policyRows[0];
         const { policyTopicId, instanceTopicId } = policyRow;
-        const policyMapping = (policyRow.policyMapping ?? {}) as Record<string, Array<{
-            source: string;
-            schemaIri?: string;
-            schemaType?: string;
-            fieldPath?: string;
-            isProjectSchema?: boolean;
-            score?: number;
-        }>>;
+        const policyMapping = (policyRow.policyMapping ?? {}) as PolicyMapping;
 
         // Build the cross-schema field map from policyMapping entries.
         // For each project extract field, pick the highest-scoring entry whose
@@ -198,78 +203,31 @@ export class ProjectMapperService {
             }
         }
 
-        let projectKey: string;
-        if (csRef) {
-            // Downstream VC pointing at a parent via cs.ref. Walk the chain
-            // to find the root cs.id. Then verify the root is actually a
-            // project-schema VC — if not, this VC is referencing an
-            // intermediate artifact (e.g., Estimated Removals) and should
-            // not seed a project row.
-            const refWalked = await this.resolveProjectKeyViaRef(vc.consensusTimestamp, csId);
-            const resolvedKey = refWalked?.projectKey ?? csRef;
-
-            if (policyHasProjectSchemaClassification && !isProjectSchemaVc) {
-                const isRefAProject = await this.isCsIdOnProjectSchema(resolvedKey, policyMapping);
-                if (!isRefAProject) {
-                    this.logger.debug(
-                        `vc=${messageConsensusTimestamp} cs.ref resolves to ${resolvedKey} which is not a project-schema VC — skipping`,
-                    );
-                    return;
-                }
-            }
-            projectKey = resolvedKey;
-        } else if (isProjectSchemaVc) {
-            // Project-schema VC with no cs.ref. Use this VC's own cs.id as the
-            // projectKey. Multiple project-schema VCs from the same signer share
-            // the same DID, so they merge naturally. VCs from different signers
-            // (e.g., VVB vs Registry) have different cs.id values but downstream
-            // monitoring/verification VCs carry cs.ref pointing to the correct
-            // project DID, which merges them via the csRef branch above.
-            //
-            // Relationship walks are NOT used here because they can resolve to
-            // non-project VCs (e.g., Role-Documents) whose cs.id is meaningless.
-            projectKey = csId;
-        } else if (policyHasProjectSchemaClassification) {
-            // Strict mode for classified policies: the decode pipeline knows
-            // which schema is the project schema, and this VC isn't on it
-            // (handled above) and carries no `cs.ref` to one. Therefore it's
-            // not a project artifact — drop without consulting the relationship
-            // walk. The walk would otherwise happily return another non-project
-            // ancestor's cs.id (e.g. a VVB chain that walks to another VVB),
-            // seeding a phantom row.
+        // Resolve the project key via the M1→M4 resolver chain (dynamic topic →
+        // cs.ref → gated relationships → project schema). The chain returns null
+        // when the VC is not a project artifact (rejected or all-pass) → skip it.
+        const resolvedProject = await this.resolverChain.resolve({
+            consensusTimestamp: vc.consensusTimestamp,
+            topicId: vc.topicId,
+            csId,
+            csRef,
+            isProjectSchemaVc,
+            policyHasProjectSchemaClassification,
+            policyMapping,
+        });
+        if (!resolvedProject) {
             this.logger.debug(
-                `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} not project schema, ` +
-                `no cs.ref; policy has a classified project schema → skipping`,
+                `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} → no projectKey resolved; skipping`,
             );
             return;
-        } else {
-            // Legacy / unclassified policy. Try the relationship walk for
-            // policies whose schemas weren't classified (older decodes or
-            // schemas that don't carry isProjectSchema markers). If that
-            // doesn't find an ancestor project, drop this VC.
-            const resolved =
-                await this.resolveProjectKeyViaRelationships(vc.consensusTimestamp, csId);
-
-            if (!resolved.walked) {
-                if (resolved.hadRelationships) {
-                    this.logger.debug(
-                        `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} has relationships but no VC parent → skipping`,
-                    );
-                    return;
-                }
-                if (await this.isDownstreamTopic(vc.topicId)) {
-                    this.logger.debug(
-                        `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} in downstream topic ${vc.topicId} with no relationships → skipping`,
-                    );
-                    return;
-                }
-                this.logger.debug(
-                    `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} is not a project schema and carries no ref/ancestor → skipping`,
-                );
-                return;
-            }
-            projectKey = resolved.projectKey;
         }
+        const projectKey = resolvedProject.projectKey;
+
+        // Coarse document type of THIS VC's schema (stamped at decode time).
+        // Validation reports contribute nothing; monitoring/verification reports
+        // contribute only dates + credits (descriptive fields are suppressed).
+        const vcDocType = this.docTypeForSchema(vcSchemaUuid, policyMapping);
+        const isDateOnlySource = vcDocType === 'monitoringReport' || vcDocType === 'verificationReport';
 
         // ── Per-VC field extraction from policyMapping ───────────────────────────
         // crossSchemaFieldMap[fieldKey] = fieldPath (only entries for this VC's
@@ -278,6 +236,8 @@ export class ProjectMapperService {
         let geoLngLat: [number, number] | null = null;
 
         for (const field of PROJECT_EXTRACT_FIELDS) {
+            if (vcDocType === 'validationReport') break;                          // contributes nothing
+            if (isDateOnlySource && !DATE_ONLY_FIELD_KEYS.has(field.key)) continue; // only dates/credits
             const path = crossSchemaFieldMap[field.key];
             if (!path) continue;
 
@@ -301,7 +261,7 @@ export class ProjectMapperService {
         // would require linking the MintToken to a project, which is done by
         // the credit query, not the project mapper.
         let creditsToAdd = 0;
-        {
+        if (vcDocType !== 'validationReport') {
             const er = cs['emission_reduction'] as Record<string, any> | undefined;
             if (er) {
                 const ery = parseFloat(String(er['ER_y'] ?? '0'));
@@ -560,9 +520,8 @@ export class ProjectMapperService {
         //
         // During fresh ingest IPFS fetches arrive in order, so an early
         // project-schema VC (e.g. cs.id=Yn886) gets processed BEFORE the
-        // newer canonical (cs.id=A9oX7) lands. At that moment
-        // findCanonicalProjectSchemaCsIdInTopic returns Yn886 (the only
-        // project-schema VC in the topic so far) and seeds a Yn886 row.
+        // newer canonical (cs.id=A9oX7) lands. At that moment a Yn886 row
+        // gets seeded (the only project-schema VC in the topic so far).
         // When A9oX7 arrives later, its row is created — but the Yn886
         // orphan stays behind. Sweep it here, scoped to project-schema VCs
         // only: delete any sibling PROJECT row in the same topic whose
@@ -586,287 +545,25 @@ export class ProjectMapperService {
         }
 
         this.logger.debug(
-            `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} key=${projectKey} ` +
+            `vc=${messageConsensusTimestamp} schema=${vcSchemaUuid} key=${projectKey} via=${resolvedProject.method} ` +
             `fields=[${Object.keys(extracted).join(',')}] credits=${creditsToAdd}`,
         );
     }
 
     /**
-     * Follows `credentialSubject[0].ref` (a DID pointing to the project's
-     * identity VC) to find the canonical project key. Each hop: find the VC
-     * whose `cs.id` equals the current ref, take ITS `cs.id` as the new
-     * candidate, and if THAT VC also carries a ref, recurse. Stops at the
-     * first VC without a `ref` (the project root).
-     *
-     * Returns null when:
-     *   - The starting VC has no `ref` (caller falls back to the HCS walk),
-     *   - The ref points to a cs.id that hasn't been ingested yet (defer to
-     *     HCS walk so we still produce *some* projectKey).
-     *
-     * Loop guard via visited refs; capped at 8 hops.
+     * Returns the coarse document type stamped (at decode time) on the policy
+     * mapping entry for the given schema UUID, or 'unknown' if none.
      */
-    private async resolveProjectKeyViaRef(
-        startTs: string,
-        startCsId: string,
-    ): Promise<{ projectKey: string } | null> {
-        const startRow: Array<{ ref: string | null }> = await this.dataSource.query(
-            `SELECT documents->'credentialSubject'->0->>'ref' AS ref
-             FROM message
-             WHERE "consensusTimestamp" = $1
-             LIMIT 1`,
-            [startTs],
-        );
-        const startRef = startRow[0]?.ref;
-        if (!startRef || typeof startRef !== 'string') return null;
-        if (startRef === startCsId) return null;     // self-ref → no useful pointer
-
-        let currentRef = startRef;
-        const visited = new Set<string>([startCsId, currentRef]);
-
-        for (let i = 0; i < 8; i++) {
-            const targetRow: Array<{ cs_id: string | null; next_ref: string | null }> =
-                await this.dataSource.query(
-                    `SELECT documents->'credentialSubject'->0->>'id'  AS cs_id,
-                            documents->'credentialSubject'->0->>'ref' AS next_ref
-                     FROM message
-                     WHERE type = 'VC-Document'
-                       AND documents->'credentialSubject'->0->>'id' = $1
-                     ORDER BY "consensusTimestamp" ASC
-                     LIMIT 1`,
-                    [currentRef],
-                );
-            if (targetRow.length === 0 || !targetRow[0].cs_id) {
-                // Ref doesn't resolve to any ingested VC. Let the HCS walk
-                // produce a fallback projectKey rather than returning a
-                // dangling ref.
-                return null;
-            }
-            const { cs_id, next_ref } = targetRow[0];
-            if (!next_ref || typeof next_ref !== 'string' || visited.has(next_ref)) {
-                return { projectKey: cs_id };
-            }
-            visited.add(next_ref);
-            currentRef = next_ref;
-        }
-        return { projectKey: currentRef };
-    }
-
-    /**
-     * Check if a given cs.id belongs to a VC whose schema is classified as
-     * the project schema for its policy. Used to verify that a cs.ref chain
-     * resolves to an actual project VC, not an intermediate artifact.
-     */
-    private async isCsIdOnProjectSchema(
-        csId: string,
-        policyMapping: Record<string, Array<{ isProjectSchema?: boolean; schemaIri?: string }>>,
-    ): Promise<boolean> {
-        const projectSchemaUuids = new Set<string>();
+    private docTypeForSchema(schemaUuid: string, policyMapping: PolicyMapping): string {
         for (const entries of Object.values(policyMapping)) {
             if (!Array.isArray(entries)) continue;
             for (const entry of entries) {
-                if (entry?.isProjectSchema === true && entry.schemaIri) {
-                    projectSchemaUuids.add(entry.schemaIri.split('&')[0].trim().replace(/^#/, ''));
-                }
+                if (entry.source !== 'schema' || !entry.schemaIri || !entry.docType) continue;
+                const uuid = entry.schemaIri.split('&')[0].trim().replace(/^#/, '');
+                if (uuid === schemaUuid) return entry.docType;
             }
         }
-        if (projectSchemaUuids.size === 0) return true;
-
-        const rows: Array<{ schema_type: string | null }> = await this.dataSource.query(
-            `SELECT documents->'credentialSubject'->0->>'type' AS schema_type
-             FROM message
-             WHERE type = 'VC-Document'
-               AND documents->'credentialSubject'->0->>'id' = $1
-             ORDER BY "consensusTimestamp" ASC
-             LIMIT 1`,
-            [csId],
-        );
-        if (rows.length === 0) return false;
-        const rawType = rows[0].schema_type ?? '';
-        const uuid = rawType.split('&')[0].trim().replace(/^#/, '');
-        return projectSchemaUuids.has(uuid);
-    }
-
-    /**
-     * Returns true when any OTHER VC's `credentialSubject[0].ref` equals the
-     * given csId. The presence of such a reference means downstream VCs
-     * explicitly treat this cs.id as the project's identity — we should not
-     * walk past it via HCS relationships to an older sibling.
-     */
-    private async isCsIdReferencedByOtherVcs(
-        csId: string,
-        selfTs: string,
-    ): Promise<boolean> {
-        const row: Array<{ exists: boolean }> = await this.dataSource.query(
-            `SELECT 1 AS exists
-             FROM message
-             WHERE type = 'VC-Document'
-               AND documents->'credentialSubject'->0->>'ref' = $1
-               AND "consensusTimestamp" <> $2
-             LIMIT 1`,
-            [csId, selfTs],
-        );
-        return row.length > 0;
-    }
-
-    /**
-     * Returns the cs.id of the LATEST project-schema VC (matched by schema
-     * UUID prefix on cs.type) in the given topic. Used as the canonical
-     * projectKey when multiple project-schema VCs in the same topic carry
-     * different cs.id values — they all collapse onto the latest registration's
-     * DID. Returns null when no project-schema VC exists in the topic.
-     *
-     * Query is bounded by the topicId index, then filters cs.type by prefix
-     * on the already-narrow result set. One round trip per project-schema VC.
-     */
-    private async findCanonicalProjectSchemaCsIdInTopic(
-        topicId: string,
-        schemaUuid: string,
-    ): Promise<string | null> {
-        const rows: Array<{ cs_id: string | null }> = await this.dataSource.query(
-            `SELECT documents->'credentialSubject'->0->>'id' AS cs_id
-             FROM message
-             WHERE type = 'VC-Document'
-               AND "topicId" = $1
-               AND documents->'credentialSubject'->0->>'type' LIKE $2 || '&%'
-               AND documents->'credentialSubject'->0->>'id' IS NOT NULL
-             ORDER BY "consensusTimestamp" DESC
-             LIMIT 1`,
-            [topicId, schemaUuid],
-        );
-        return rows[0]?.cs_id ?? null;
-    }
-
-    /**
-     * Walk `message.options.relationships` backwards from a VC to find the root
-     * cs.id-carrying VC in the chain. The root is treated as the project's
-     * identity, so monitoring / verification VCs merge into the project rather
-     * than creating phantom rows keyed by their own cs.id.
-     *
-     * Stops at the first ancestor that has no relationships (or no cs.id-
-     * carrying VC among its relationships). Up to 12 hops. Skips
-     * Role-Documents and other non-VC referenced messages.
-     */
-    private async resolveProjectKeyViaRelationships(
-        startTs: string,
-        startCsId: string,
-    ): Promise<{ projectKey: string; walked: boolean; hadRelationships: boolean }> {
-        // Content-level link (preferred). Many Guardian VCs (monitoring,
-        // verification, etc.) carry `credentialSubject[0].ref` pointing to the
-        // project's identity DID. That's a deterministic intra-policy link
-        // independent of HCS message relationships, which can branch through
-        // registry-side artifacts and produce sibling cs.id winners on
-        // different walks of the same logical project.
-        const refResolved = await this.resolveProjectKeyViaRef(startTs, startCsId);
-        if (refResolved) {
-            return {
-                projectKey: refResolved.projectKey,
-                walked: refResolved.projectKey !== startCsId,
-                hadRelationships: true,
-            };
-        }
-
-        // If THIS VC's cs.id is the target of other VCs' `ref` fields, it is
-        // the canonical project root — other monitoring/verification VCs in
-        // the policy explicitly point to it as the project identity. Don't
-        // walk past it to an older sibling registration just because the HCS
-        // relationship graph has one (Guardian sometimes publishes multiple
-        // registration VCs with different DIDs for the same logical project).
-        if (await this.isCsIdReferencedByOtherVcs(startCsId, startTs)) {
-            return { projectKey: startCsId, walked: false, hadRelationships: false };
-        }
-
-        // Fall back to BFS the ancestor tree via `options.relationships`. We
-        // must walk THROUGH cs.id-less intermediate VCs (e.g. wrapper / system
-        // VCs in some Guardian policies) — they don't claim a project
-        // identity but their parents do. Stopping at the first cs.id-less hop
-        // misses the real Project Registration VC further up.
-        //
-        // The winner is the OLDEST cs.id-carrying VC found anywhere in the
-        // reachable tree (oldest == closest to chain root == Project VC).
-        let oldestTs = startTs;
-        let oldestCsId = startCsId;
-        let walked = false;
-        let hadRelationships = false;
-
-        const visited = new Set<string>([startTs]);
-        const queue: string[] = [startTs];
-        let hops = 0;
-
-        while (queue.length > 0 && hops < 24) {
-            const currentTs = queue.shift()!;
-            hops++;
-
-            const relsRow: Array<{ rels: string[] | null }> = await this.dataSource.query(
-                `SELECT
-                    CASE
-                        WHEN jsonb_typeof(options->'relationships') = 'array'
-                            THEN ARRAY(SELECT jsonb_array_elements_text(options->'relationships'))
-                        ELSE NULL
-                    END AS rels
-                 FROM message
-                 WHERE "consensusTimestamp" = $1
-                 LIMIT 1`,
-                [currentTs],
-            );
-            const rels = relsRow[0]?.rels ?? [];
-            if (currentTs === startTs) hadRelationships = rels.length > 0;
-            if (rels.length === 0) continue;
-
-            const fresh = rels.filter(r => !visited.has(r));
-            if (fresh.length === 0) continue;
-
-            // Fetch all VC-Document parents in this hop (with or without
-            // cs.id) so we can both record candidates AND continue walking
-            // through cs.id-less ones.
-            const parents: Array<{ consensusTimestamp: string; cs_id: string | null }> =
-                await this.dataSource.query(
-                    `SELECT "consensusTimestamp",
-                            documents->'credentialSubject'->0->>'id' AS cs_id
-                     FROM message
-                     WHERE "consensusTimestamp" = ANY($1::text[])
-                       AND type = 'VC-Document'
-                     ORDER BY "consensusTimestamp" ASC`,
-                    [fresh],
-                );
-
-            for (const p of parents) {
-                visited.add(p.consensusTimestamp);
-                queue.push(p.consensusTimestamp);
-                if (p.cs_id && p.consensusTimestamp < oldestTs) {
-                    oldestTs = p.consensusTimestamp;
-                    oldestCsId = p.cs_id;
-                    walked = true;
-                }
-            }
-        }
-
-        return { projectKey: oldestCsId, walked, hadRelationships };
-    }
-
-    /**
-     * Downstream topic-name conventions used across Guardian policies. VCs in
-     * these topics describe monitoring / verification / minting artifacts and
-     * should not seed a project keyed by their own cs.id when they carry no
-     * `options.relationships` to walk back to a Project VC.
-     */
-    private static readonly DOWNSTREAM_TOPIC_NAMES = new Set<string>([
-        'Token_Minting',
-        'Verification',
-        'Validation',
-    ]);
-
-
-    private async isDownstreamTopic(topicId: string): Promise<boolean> {
-        const rows: Array<{ name: string | null }> = await this.dataSource.query(
-            `SELECT options->>'name' AS name
-             FROM message
-             WHERE type='Topic' AND "topicId"=$1
-             ORDER BY "consensusTimestamp" ASC
-             LIMIT 1`,
-            [topicId],
-        );
-        const name = rows[0]?.name;
-        return !!name && ProjectMapperService.DOWNSTREAM_TOPIC_NAMES.has(name);
+        return 'unknown';
     }
 
     private async queryPolicyByPolicyId(policyId: string): Promise<Array<{

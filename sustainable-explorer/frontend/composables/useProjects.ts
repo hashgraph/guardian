@@ -80,6 +80,7 @@ export function mapApiProject(raw: Record<string, any>): Project {
                 schemaUuid: s['schemaUuid'] ?? '',
                 schemaName: s['schemaName'] ?? null,
                 isProjectSchema: Boolean(s['isProjectSchema']),
+                docType: typeof s['docType'] === 'string' ? s['docType'] : 'unknown',
                 vcCount: typeof s['vcCount'] === 'number' ? s['vcCount'] : 0,
                 linkedVcs: Array.isArray(s['linkedVcs'])
                     ? (s['linkedVcs'] as Array<Record<string, any>>).map((v): LinkedVc => ({
@@ -188,6 +189,7 @@ export interface ActivityEvent {
     date: string;
     action: string;
     type: string;
+    schemaName: string | null;
 }
 
 const VALID_ACTIVITY_TYPES = new Set(['document', 'verification', 'registry', 'monitoring', 'credit']);
@@ -200,6 +202,7 @@ function mapActivityEvent(raw: Record<string, unknown>): ActivityEvent {
         date: typeof raw.date === 'string' ? raw.date : '',
         action: typeof raw.action === 'string' ? raw.action : 'Activity recorded',
         type,
+        schemaName: typeof raw.schemaName === 'string' ? raw.schemaName : null,
     };
 }
 

@@ -96,7 +96,9 @@ export async function buildMintProjectLinks(
                 bv."relatedTopicId" AS project_topic_id
             FROM rel_chain rc
             JOIN business_view bv
-                ON bv."sourceTimestamp" = rc.ts
+                ON (bv."sourceTimestamp" = rc.ts
+                    OR bv."businessData"->'linkedVcs' @>
+                       jsonb_build_array(jsonb_build_object('consensusTimestamp', rc.ts)))
                AND bv."viewType" = 'PROJECT'
             ORDER BY rc.depth ASC
             LIMIT 1
@@ -125,7 +127,10 @@ export async function buildMintProjectLinks(
                         bv."relatedTopicId" AS project_topic_id
                     FROM message m
                     JOIN business_view bv
-                        ON bv."projectKey" = m.documents->'credentialSubject'->0->>'ref'
+                        ON (bv."projectKey" = m.documents->'credentialSubject'->0->>'ref'
+                            OR bv."businessData"->'linkedVcs' @>
+                               jsonb_build_array(jsonb_build_object('csId',
+                                   m.documents->'credentialSubject'->0->>'ref')))
                        AND bv."viewType" = 'PROJECT'
                     WHERE m."topicId" = $1
                       AND m.type = 'VC-Document'

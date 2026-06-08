@@ -70,3 +70,11 @@ export type ProjectRecord = {
     vcCount: number;
     projectSchemaUuids: string[];
 };
+
+export type DocumentType =
+    | 'pdd'
+    | 'monitoringReport'
+    | 'validationReport'
+    | 'verificationReport'
+    | 'registration'
+    | 'unknown';
