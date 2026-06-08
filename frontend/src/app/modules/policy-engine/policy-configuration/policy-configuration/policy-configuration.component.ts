@@ -2379,7 +2379,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 }]
             },
         });
-        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
+        dialogRef?.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
             if (result === 'Save') {
                 this.asyncUpdatePolicy().pipe(takeUntil(this._destroy$)).subscribe(() => {
                     this.router.navigateByUrl('/policy-viewer');
