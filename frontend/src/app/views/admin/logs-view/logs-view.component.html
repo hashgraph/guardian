@@ -16,7 +16,7 @@
 </ng-template>
 
 <ng-template #actionsContainer>
-    <div class="actions-container">
+    <div class="actions-container logs-actions-container">
         <form [formGroup]="searchForm" class="filters-form" *useWithServiceDecorator="'LOGGER_SERVICE'">
             <p-multiSelect #searchInput (onFilter)="onFilter($event)"
                            [filter]="true" [options]="attributes"
@@ -70,6 +70,7 @@
                 [showIcon]="true"
                 [showTime]="true"
                 dateFormat="mm/dd/yy"
+                styleClass="logs-date-range"
                 selectionMode="range">
             </p-datepicker>
         </form>

@@ -46,7 +46,7 @@
     align-items: center;
     justify-content: space-between;
     column-gap: 16px;
-    row-gap: 12px;
+    row-gap: 40px;
 
     .filters-form {
         display: flex;
@@ -60,6 +60,7 @@
         display: flex;
         flex-wrap: wrap;
         align-items: center;
+        justify-content: flex-end;
         column-gap: 8px;
         row-gap: 8px;
         margin-left: auto;
@@ -342,13 +343,25 @@ button[disabled] {
     }
 }
 
-:host ::ng-deep .p-datepicker {
+:host ::ng-deep .logs-date-range {
+    position: relative;
+    display: inline-flex;
     width: 330px;
+    height: 40px;
     border-radius: 8px;
+
+    .p-datepicker-input {
+        width: 100%;
+        height: 40px;
+        padding-right: 44px;
+    }
 
     .p-datepicker-dropdown {
         position: absolute;
-        left: calc(330px - 48px);
+        right: 0;
+        top: 0;
+        width: 40px;
+        height: 40px;
         box-sizing: border-box;
         background-color: transparent;
         border: transparent;
@@ -371,5 +384,22 @@ button[disabled] {
 
 .color-search {
     fill: #B0B5BA;
+}
+
+@media (max-width: 960px) {
+    .logs-actions-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .logs-actions-container .filters-form,
+    .logs-actions-container .actions-buttons-group {
+        width: 100%;
+    }
+
+    .logs-actions-container .actions-buttons-group {
+        justify-content: flex-start;
+        margin-left: 0;
+    }
 }
 
