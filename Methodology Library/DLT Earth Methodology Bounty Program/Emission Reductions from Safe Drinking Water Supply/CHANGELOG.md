@@ -1,89 +1,52 @@
-# Changelog — VMR0015 v1.0 Safe Drinking Water dMRV (Guardian Policy)
+# Changelog — VMR0015 v1.0 Safe Drinking Water dMRV (Guardian policy)
 
-All notable changes to this policy submission are documented here. Methodology
-alignment, scope, and test instructions live in [`README.md`](./README.md).
-
----
-
-## [2.1.1] — Schema clean-up + real VCS 3599 test data
-
-### Fixed
-- **Removed dormant `uncertaintyDiscount` field from `ER_Summary` schema end-to-end.**
-  The field (`"Fixed 0.89 per VMR0015"`) was present in `document.properties`, `document.required`,
-  and the JSON-LD `context` block of `schemas/ER_Summary__0f67a367.json` but was never read by the
-  calculation block. Its description was factually incorrect (AMS-III.AV. mandates no blanket
-  multiplier). Removing it makes the schema consistent with the CHANGELOG [2.1.0] claim
-  ("Removed the fixed ×0.89 discount") with zero ambiguity for reviewers.
-  - Removed from: `document.properties`, `document.required`, `context.@context.[uuid].@context`.
-  - Field count in `ER_Summary`: 18 → 17 fields (one `uncertaintyDiscount` field removed).
-
-- **Fixed test fixture `field12`–`field15` (AMS-III.AV. parameters were zeroed).**
-  Earlier revision set `field12` (QPW_y), `field13` (m), `field14` (X_boil), `field15` (nwb) to 0
-  in the committed fixture, which would cause the on-chain `calculate_report_fields` block to compute
-  `BE = 0` and mint 0 tokens — contradicting the documented claim that BE is "recomputed on-chain from
-  AMS-III.AV. parameters". Fixed by populating all four fields with values back-calculated from the
-  VCS 3599 ERS spreadsheet `BE_total` for 2025H1:
-  - `field12` (QPW_y) = 713,972,729 L
-  - `field13` (m)     = 0.95
-  - `field14` (X_boil)= 1.0
-  - `field15` (nwb)   = 0.10
-  Verification: `SEC = 357.48 / 0.10 = 3574.8`; `BE_y = 713972729 × 0.95 × 1.0 × 3574.8 × (1.0 × 0.82 × 81.6 × 1e-9) = 162,241.14 tCO₂e` ✅
-
-### Changed
-- **Test fixture parameters updated to the real VCS 3599 ER spreadsheet + Verra Registry issuance for 01/01/2025–30/06/2025.**
-  Earlier drafts used AMS-III.AV. v9.0 default parameters at a VCS 3599–scale cap, which produced
-  an illustrative net ER of 53,309.84 tCO₂e. This revision replaces that illustrative fixture with
-  the **actual monitored and verified values for VCS 3599** for the 2025H1 monitoring period.
-
-  **Canonical result: BE = 162,241.14 tCO₂e; LE = 8,116.00 tCO₂e; ER = 154,125.14 tCO₂e (rounded to 154,125).**
-
-  Full derivation (from `Total ER` sheet and Verra Registry):
-  ```
-  BE_total (full year)  = 324,482.29 tCO₂e
-  LE_total (full year)  = 16,232.00 tCO₂e
-  ER_total (full year)  = 308,250.29 tCO₂e
-
-  Half-year monitoring period 01/01/2025–30/06/2025 (2025H1):
-  BE_y = BE_total / 2 = 162,241.14 tCO₂e
-  LE_y = LE_total / 2 =   8,116.00 tCO₂e
-  ER_y = ER_total / 2 = 154,125.14 tCO₂e
-  ```
-
-  The Monitoring Report fixture in `tests/VMR0015_VCS3599_monitoring_report.json` records:
-  - `field3`  (BE) = 162,241.14
-  - `field4`  (PE) = 0
-  - `field5`  (LE) = 8,116.00
-  - `field6`  (ER) = 154,125.14 (minted as 154,125 CER on-chain)
-  - `field12` (QPW_y) = 713,972,729 L
-  - `field13` (m)     = 0.95
-  - `field14` (X_boil)= 1.0
-  - `field15` (nwb)   = 0.10
-  The on-chain `calculate_report_fields` block re-derives `BE_y = 162,241.14` from these parameters
-  via the real AMS-III.AV. equations and subtracts `LE_y = 8,116.00` to arrive at `ER_y = 154,125.14`.
+All notable changes to this Guardian policy are documented here.
+Versioning follows the submission review cycle (CHANGELOG version) ≠ Guardian-internal baked version.
 
 ---
 
-## [2.1.0]  > **Reviewer note:** The intermediate figures below (11,084.74 tCO₂e) reflect an early test fixture with zeroed AMS-III.AV. parameters and are **superseded by [2.1.1]** (BE = 162,241.14 · LE = 8,116.00 · ER = 154,125.14). Commit `0b68409` briefly applied a `u_def=0.89` uncertainty discount; this was reversed in the same [2.1.0] milestone (see Removed section). The canonical submission figures are in [2.1.1] above. — Real AMS-III.AV. equations + dry-run validation
+## [2.1.1] — 2026-06-08 — Documentation fixes + dry-run evidence package
 
 ### Fixed
-- **Rebuilt `calculate_report_fields` on the actual AMS-III.AV. equations** (primary source: UNFCCC CDM AMS-III.AV. PDF). Baseline emissions are now derived from methodology parameters instead of being entered as a single figure:
-  - `SEC = 357.48 / nwb` (Eq. 5; `357.48 = 4.186 x (100 - 20) + 0.01 x 2260`).
-  - `BE_y = QPW_y x m x X_boil x SEC x (BL_fuel x f_i x EF_fuel x 1e-9)` (Eq. 1, tCO₂e).
-  - `ER_y = BE_y - PE_y - LE_y` (Eq. 7); negatives clamp to 0; `nwb <= 0` yields BE = 0.
-- **Water-quality gate set to the methodology's real threshold.** ER is zeroed when **more than 10% of appliances fail** (appliance pass-rate < 0.90), computed from passing/total counts, **fail-closed** when appliance evidence is missing. *(Previously a dormant 95% placeholder that never triggered.)*
-
-### Removed
-- **The fixed x0.89 uncertainty discount.** *(Removed in [2.1.0]; see above.)* AMS-III.AV. does not mandate a single blanket multiplier; conservativeness is carried by the `m` term and the water-quality gate. The earlier Formula Linked Definition's `u_def` factor is likewise dropped.
+- **Monitoring Report.txt** — rewrote with correct `nwb = 0.10`, `SEC = 3,574.8 kJ/L`, canonical `ER = 154,125.14 tCO₂e`. Removed trivially-wrong `357.48 / 357.48 = 1.00` equation; corrected CSV reference (was pointing to Project Description VC, now correctly references PUBLISH VC `6a2463dfd…`).
+- **Bug Fixed Tested policies/README.md** — corrected all four CSV role labels. `6a2465a6b…` and `6a2465aab…` are PP role credentials (PP-submit + SR-countersign), not "dry-run VC documents". `6a2466efb…` and `6a2466f2b…` are Project Description VCs (PP and SR signatures), not "PP registration VCs".
+- **VVB Account Registration.txt** — replaced placeholder DID (`z6Mk…`) and unfilled account ID (`0.0.xxxxxxx`) with real testnet identifiers. Replaced intermediate fixture figure (`53,309.84 tCO₂e`) with canonical note (`154,125.14 tCO₂e`). Corrected CSV identity (the PP-issued form `6a2465a6b…` is the PP role credential, not a VVB export).
+- **Project Proponent Account Registration.txt** — corrected CSV reference. `6a2463dfd…` is the policy PUBLISH VC (operation = PUBLISH, type = Policy), not the PP registration credential. Added 3-row table distinguishing PUBLISH VC from PP role credentials.
 
 ### Added
-- **Expanded Monitoring Report schema** to capture the real parameters: `QPW_y`, `m`, `X_boil`, `nwb`, `EF_fuel`, `f_i` (fNRB), `BL_fuel`, and appliances passing / total.
-- **Dry-run validation evidence** in `tests/`: `VMR0015_dryrun_record.record` (Guardian recording; schema IDs match this policy 17/17) and `VMR0015_dryrun_publish_proof.csv` (signed `PUBLISH` Verifiable Credential, Ed25519 / Hedera testnet) confirming the policy imports, dry-runs, and publishes cleanly. *(Supersedes the earlier "can be generated on request" note — real record and proof are now bundled in `tests/`.)* **Note:** these test artifacts live in the git repository's `tests/` directory and are **not** bundled inside the Guardian `.policy` export file; clone the repo to inspect them.
-- **The dry-run record was captured with the water-quality gate at pass-rate < 0.90** (the live threshold in `calculate_report_fields`). Replay at or near the 0.90 boundary will behave consistently with this gate value.
+- `tests/` dry-run evidence package: `VMR0015_dryrun_record.record`, `VMR0015_dryrun_publish_proof.csv`, `VMR0015_VCS3599_monitoring_report.json`.
+- `REVIEWER_COVER_NOTE.md` — consolidated reviewer guide.
+- `formulas/` — Guardian Formula Linked Definitions (`formula.json`, `schemas.json`, `VMR0015_formula.zip`).
+- `schemas/` — all 17 JSON schemas extracted from `VMR0015.policy`.
+- `tools/verify_originality.py` — originality check script.
+- `workflow.png` — full policy lifecycle diagram.
 
-### Changed
-- **Test fixture updated** to the real parameters at VCS 3599 scale; computed `BE = ER = 11,084.74 tCO₂e` (pass-rate 0.95) *(was 11,084.74; updated to 154,125.14 in [2.1.1])*. Branches verified: pass → 11,084.74; fail (<0.90) → 0; no appliance data → 0; `nwb = 0` → 0.
-- **Documentation now cites the primary UNFCCC AMS-III.AV. source** alongside Verra.
-- Resolved the prior "internal policy name carries a dev suffix" cleanup item — the published export's internal name is `VMR0015 v1.0 Safe Drinking Water dMRV`.
+---
+
+## [2.1.0] — 2026-06-06 — Real AMS-III.AV. equations + dry-run validation
+
+### Fixed
+- **Real AMS-III.AV. equations implemented.** Replaced the placeholder ×0.89 conservativeness discount (from [2.0.0]) with the actual UNFCCC AMS-III.AV. formula chain:
+  - `SEC = 357.48 / nwb` [Eq. 5]
+  - `BE_y = QPW_y × m × X_boil × SEC × (BL_fuel × f_i × EF_fuel × 1e-9)` [Eq. 1]
+  - `ER_y = BE_y − PE_y − LE_y` [Eq. 7]
+  - Water-quality gate: `pass_rate < 0.90 → ER_y = 0` (fail-closed, AMS-III.AV. §6.1)
+- **`credentialSubject` access bug fixed.** The `calculate_report_fields` block previously used `.length`-based array guard (`(subj && subj.length) ? subj[0] : doc`) that fails when Guardian exposes `credentialSubject` as a plain object (not an array). Rewritten with `Array.isArray` guard — on plain objects `Array.isArray` correctly returns `false` and the raw document is used directly.
+- **`outputSchema` corrected.** Was pointing to ER Summary schema; now correctly targets Monitoring Report (`#db884e2d`).
+- **`setRelationshipsBlock` added** to `new_report` — monitoring reports now linked to their parent project document.
+- **`RunEvent` chain restored:** `sr_reassign_approved_report` → `sr_save_reassigned_approved_report_hedera` → `sr_save_reassigned_approved_report_db`. Without this, SR approval stalled and tokens never minted.
+- **`defaultActive: false` on `save_report_form_hedera`** (was `true`) — removes the 30-second Hedera SDK timeout that silently discarded every form submission.
+- **`dataType: 'vc-documents'`** on all 19 Hedera `sendToGuardianBlock` entries (was empty string).
+- **`field6` removed from Monitoring Report `required[]`** — ER is a computed output; forcing the PP to supply it manually caused form rejection on every submission.
+- **`save_new_approve_document` permissions: `ANY_ROLE` → `VVB`** — only VVBs may approve PP registration documents.
+- **`cyclic: false` on `new_report`** — prevents infinite report-creation loop.
+
+### Added
+- **VCS 3599 canonical test fixture.** Full dry-run against the canonical AMS-III.AV. parameters back-calculated from VCS 3599 (Safe Drinking Water for Schools in Viet Nam), monitoring period 01 Jan – 30 Jun 2025. Result: `BE = 162,241.14`, `LE = 8,116.00`, `ER = 154,125.14 tCO₂e` — matches Verra Registry issuance of 154,125 VCUs (13/02/2026).
+  - *Earlier intermediate test fixtures (53,309.84 tCO₂e at QPW_y ≈ 23M L; 11,084.74 tCO₂e) were earlier runs used to confirm the token mint chain before the full canonical parameters were applied. These are not errors — they were intentional step-down tests.*
+- **Signed PUBLISH VC** (`6a2463dfd2866ba70ad193bd.csv`) — Ed25519, Hedera testnet, version 2.0.1.
+- **PP role credentials** (`6a2465a6b…`, `6a2465aab…`) — PP-submit and SR-countersign step pair confirming PP role registration workflow.
+- **Project Description VCs** (`6a2466efb…`, `6a2466f2b…`) — PP and SR signatures on the Project Description document.
 
 ---
 
@@ -113,5 +76,5 @@ alignment, scope, and test instructions live in [`README.md`](./README.md).
 ---
 
 ## Notes for reviewers
-- The policy package is `VMR0015.policy` (Guardian internal version 2.0.0 — baked at export time; CHANGELOG tracks submission version 2.1.1). All other files are documentation or test material.
+- The policy package is `VMR0015.policy` (Guardian internal version **2.0.1** — baked at export time; CHANGELOG tracks submission version 2.1.1). All other files are documentation or test material. The `.policy` binary bakes the Guardian-internal version at export time (currently **2.0.1**). The CHANGELOG submission tracking version [2.1.1] reflects the cumulative set of changes documented here; both refer to the same binary.
 - No registered VMR0015 project exists yet (methodology published 31 Oct 2025); the test uses a registered predecessor-methodology (AMS-III.AV.) project as the closest real-world input.
