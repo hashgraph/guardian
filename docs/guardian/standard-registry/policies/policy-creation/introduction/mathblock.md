@@ -46,7 +46,7 @@ To define a formula, complete the following steps:
 * Specify the formula name.
 * Add () after the formula name and list any parameters inside. Separate parameters with a comma (,).
 
-<figure><img src="../../../../../.gitbook/assets/image (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (3) (1) (5).png" alt=""><figcaption></figcaption></figure>
 
 * Create the expression using math notation or an alternative format (LaTeX, MathJSON).
 
@@ -54,7 +54,7 @@ To define a formula, complete the following steps:
 
 In some cases, switching between math notation, LaTeX and MathJSON can help you verify or correct a formula. You can edit in any format; the system automatically synchronizes changes across formats.
 
-<figure><img src="../../../../../.gitbook/assets/image (5) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (5) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 You can reuse defined formulas in other formulas (by name) and in the code on the Advanced tab.
 

@@ -7,14 +7,13 @@
     "private": true,
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",
-        "@azure/msal-node": "2.9.0",
         "image-size": "1.0.2"
     },
     "scripts": {
         "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*",
         "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\""
     },
-    "version": "3.6.0-rc",
+    "version": "3.6.0",
     "workspaces": [
         "interfaces",
         "common",
@@ -37,7 +36,6 @@
         "indexer-common",
         "indexer-api-gateway",
         "indexer-service",
-        "indexer-worker-service",
-        "contracts"
+        "indexer-worker-service"
     ]
 }

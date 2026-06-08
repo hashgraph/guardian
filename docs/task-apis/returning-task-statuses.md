@@ -1,49 +1,57 @@
 # Returning Task Statuses
 
-{% swagger method="get" path="" baseUrl="/tasks/{taskId}" summary="Returns task statuses." %}
-{% swagger-description %}
-Returns task statuses by Id.
-{% endswagger-description %}
+**`GET /tasks/{taskId}`**
 
-{% swagger-parameter in="path" name="taskId" type="String" required="true" %}
-Task ID
-{% endswagger-parameter %}
+Returns the current status and result of an asynchronous task by its ID.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `taskId` | string (UUID) | Yes | The unique identifier of the task |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TaskStatus'
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "action": "Create policy",
+  "done": true,
+  "error": null,
+  "result": {},
+  "steps": [
+    {
+      "time": "2024-06-01T12:34:56.789Z",
+      "message": "Policy created"
+    }
+  ]
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+| Field | Type | Description |
+|-------|------|-------------|
+| `taskId` | string | The task identifier |
+| `action` | string | Description of the task action |
+| `done` | boolean | Whether the task has completed |
+| `error` | object \| null | Error details if the task failed |
+| `result` | object \| null | Task result payload when done |
+| `steps` | array | Progress steps completed so far |
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `500 Internal Server Error` | Unexpected server failure |

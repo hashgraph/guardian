@@ -1,30 +1,57 @@
-# Sends Data from External Source
+# Sends Data from External Source (Specific Block)
 
-{% swagger method="post" path="" baseUrl="/external" summary="Sends data from an external source." %}
-{% swagger-description %}
-Sends data from an external source
-{% endswagger-description %}
+**`POST /external/{policyId}/{blockTag}`**
 
-{% swagger-parameter in="body" name="Object" required="true" %}
-Object that contains VC Document
-{% endswagger-parameter %}
+Sends a Verifiable Credential (VC) document from an external source to a specific policy block identified by `policyId` and `blockTag`.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The ID of the target policy |
+| `blockTag` | string | Yes | The tag name of the target policy block |
+
+### Request Body
+
+```json
 {
-    // Response
+  "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+  "policyTag": "example_policy_tag",
+  "document": {
+    "@context": ["https://www.w3.org/2018/credentials/v1"],
+    "id": "urn:uuid:63e3e5e8-a01b-3c00-1234-abcdef012345",
+    "type": ["VerifiableCredential"],
+    "issuer": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+    "issuanceDate": "2024-06-01T00:00:00.000Z",
+    "credentialSubject": {}
+  }
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-   content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `owner` | string | Yes | DID of the document owner |
+| `policyTag` | string | No | Tag of the policy (used for routing when `policyId` is not in path) |
+| `document` | object | Yes | The Verifiable Credential document |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+true
 ```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `500 Internal Server Error` | Unexpected server failure |

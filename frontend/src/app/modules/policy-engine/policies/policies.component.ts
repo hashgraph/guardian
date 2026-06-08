@@ -960,6 +960,7 @@ export class PoliciesComponent implements OnInit {
                 }]
             },
         });
+
         dialogRef?.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
             this.loading = true;
             this.policyEngineService

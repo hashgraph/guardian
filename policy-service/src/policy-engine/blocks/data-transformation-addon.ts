@@ -57,23 +57,39 @@ export class DataTransformationAddon {
                 },
             });
 
+            // Release the worker's V8 isolate; without this each invocation leaks ~30 MB.
+            const cleanup = () => {
+                worker.terminate().catch(() => {
+                    // Ignore errors during worker termination
+                });
+            };
+            worker.on('exit', (code) => {
+                cleanup();
+                if (code !== 0 && code !== null) {
+                    reject(new Error(`Data transformation worker exited with code ${code}`));
+                }
+            });
             const done = async (result: any | any[], final: boolean) => {
                 if (!result) {
                     if (final) {
+                        cleanup();
                         resolve(null);
                     }
                     return;
                 }
+                if (final) { cleanup(); }
                 resolve(result);
             }
 
             worker.on('error', (error) => {
+                cleanup();
                 reject(error);
             });
             worker.on('message', async (result: any) => {
                 try {
                     await done(result.result, result.final);
                 } catch (error) {
+                    cleanup();
                     reject(error);
                 }
             });

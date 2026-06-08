@@ -1,53 +1,49 @@
 # Schema Preview from Zip
 
-<mark style="color:green;">`POST`</mark> `/schemas/import/file/preview`
+**`POST /schemas/import/file/preview`**
 
-Previews the schema from a zip file. Only users with the Standard Registry role are allowed to make the request.
+Previews the schema from a zip file without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
 
-#### Request Body
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                               | Type | Description                                   |
-| ---------------------------------- | ---- | --------------------------------------------- |
-| <mark style="color:red;">\*</mark> |      | A zip file containing the schema to be viewed |
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
 
-{% tabs %}
-{% tab title="200: OK Successful Operation" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-}
+---
+
+## Request
+
+### Request Body
+
+**Content-Type:** `application/zip`
+
+A zip file containing the schema to be previewed.
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns a preview array of schema objects.
+
+```json
+[
+  {
+    "id": "f3b2a9c1e4d5678901234567",
+    "uuid": "f3b2a9c1e4d5678901234567",
+    "name": "Schema name",
+    "status": "DRAFT",
+    "version": "1.0.0"
+  }
+]
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
-
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

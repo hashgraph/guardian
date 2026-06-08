@@ -1,51 +1,43 @@
 # Export message IDs of Schema
 
-<mark style="color:green;">`POST`</mark> `/schemas/{schemaId}/export/message`
+**`GET /schemas/{schemaId}/export/message`**
 
-Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Standard Registry role are allowed to make the request.
+Returns Hedera message IDs of the published schemas. These messages contain IPFS CIDs of the schema files. Only users with the Standard Registry role are allowed to make the request.
 
-#### Path Parameters
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                                       | Type   | Description        |
-| ------------------------------------------ | ------ | ------------------ |
-| schemaID<mark style="color:red;">\*</mark> | String | Selected schema ID |
+**Permission:** `Permissions.SCHEMAS_SCHEMA_READ`
 
-{% tabs %}
-{% tab title="200: OK Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | String | Yes | Selected schema ID |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ExportSchema"
+  "id": "f3b2a9c1e4d5678901234567",
+  "messageId": "1700000000.000000001",
+  "cid": "QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco"
 }
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
-
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

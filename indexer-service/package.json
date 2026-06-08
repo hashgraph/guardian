@@ -1,16 +1,16 @@
 {
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@indexer/common": "3.6.0-rc",
-        "@indexer/interfaces": "3.6.0-rc",
+        "@indexer/common": "3.6.0",
+        "@indexer/interfaces": "3.6.0",
         "mongodb": "6.16.0",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
         "@mikro-orm/migrations-mongodb": "6.4.16",
-        "@nestjs/common": "^11.0.11",
-        "@nestjs/core": "^11.0.11",
-        "@nestjs/microservices": "^11.0.11",
-        "axios": "^1.8.3",
+        "@nestjs/common": "^11.1.24",
+        "@nestjs/core": "^11.1.24",
+        "@nestjs/microservices": "^11.1.24",
+        "axios": "^1.16.1",
         "bs58": "^6.0.0",
         "axios-retry": "^3.2.4",
         "cron": "^4.3.0",
@@ -54,5 +54,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.6.0-rc"
+    "version": "3.6.0"
 }

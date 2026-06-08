@@ -31,7 +31,7 @@ These steps are timestamped, ordered, and linked to IPFS payloads.”
 
 4. Login as VVB and submit VVB Registration:
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 5. Login as Standard Registry and approve the VVB:
 

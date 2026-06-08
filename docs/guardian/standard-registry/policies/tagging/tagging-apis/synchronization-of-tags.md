@@ -1,41 +1,63 @@
-# Synchronization of tags
+# Synchronization of Tags
 
-{% swagger method="post" path="" baseUrl="/tags/synchronization" summary="synchronization." %}
-{% swagger-description %}
-synchronization.
-{% endswagger-description %}
+**`POST /api/v1/tags/synchronization`**
 
-{% swagger-parameter in="body" name="entity" type="String" required="true" %}
-\[Schema, Policy, Token, Module, Contract, PolicyDocument]
-{% endswagger-parameter %}
+Synchronizes tags for a target entity with an external Hedera network, refreshing the local cache.
 
-{% swagger-parameter in="body" name="target" type="String" required="true" %}
-targetId
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Permission:** `Permissions.TAGS_TAG_READ`
+
+---
+
+## Request
+
+### Request Body
+
+```json
+{
+  "entity": "PolicyDocument",
+  "target": "1706823489.123456789"
+}
 ```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TagMap"
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `entity` | string | Yes | Entity type to synchronize tags for. One of: `Schema`, `Policy`, `Token`, `Module`, `Contract`, `PolicyDocument` |
+| `target` | string | Yes | Hedera message ID of the target entity |
+| `linkedItems` | boolean | No | Whether to include linked items during synchronization |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "entity": "PolicyDocument",
+  "target": "1706823489.123456789",
+  "refreshDate": "2024-02-01T12:00:00.000Z",
+  "tags": [
+    {
+      "id": "63e3e5e8a01b3c001234abcd",
+      "name": "example-tag",
+      "entity": "PolicyDocument",
+      "target": "1706823489.123456789",
+      "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+      "status": "Published"
+    }
+  ]
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+### Error Responses
 
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Missing or invalid `entity` or `target` field |
+| `500 Internal Server Error` | Unexpected server failure |

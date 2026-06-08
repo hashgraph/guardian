@@ -1,53 +1,47 @@
 # Retrieves Block Data by Tag
 
-### RETRIEVES BLOCK DATA BY TAG
+**`GET /policies/{policyId}/tag/{tagName}/blocks`**
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/tag/{tag}/blocks" summary="Requests block data" %}
-{% swagger-description %}
-Requests block data by tag. Only users with a role that described in block are allowed to make the request.
-{% endswagger-description %}
+Requests block data for the block identified by tag name within the specified policy.
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Selected Policy ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="path" name="tag" type="String" required="true" %}
-Tag from the selected policy
-{% endswagger-parameter %}
+**Permission:** `Permissions.POLICIES_POLICY_EXECUTE` or `Permissions.POLICIES_POLICY_MANAGE`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The policy ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
+| `tagName` | string | Yes | The block tag name (e.g. `submit_application`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    application/json:
-              schema:
-                $ref: '#/components/schemas/PolicyBlockData'
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "blockType": "requestVcDocumentBlock",
+  "schema": "#iREC_Application",
+  "data": {}
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-     application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Policy or block with given tag not found |
+| `503 Service Unavailable` | Policy block is temporarily unavailable |
+| `500 Internal Server Error` | Unexpected server failure |

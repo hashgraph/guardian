@@ -1,50 +1,43 @@
 # Displaying Current Settings
 
-## DISPLAYS CURRENT SETTINGS
+**`GET /settings/`**
 
-{% swagger method="get" path="" baseUrl="/settings" summary="Returns current settings" %}
-{% swagger-description %}
-Returns current settings. For users with the Standard Registry role only
-{% endswagger-description %}
+Returns the current system settings. For Standard Registry users only.
 
-{% swagger-response status="200: OK" description="Success Operation" %}
-```javascript
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.SETTINGS_SETTINGS_READ`
+
+---
+
+## Request
+
+No request body or parameters required.
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    type: object
-            properties:
-			operatorId:
-			  type: string
-			operatorKey:
-			  type: string
-			nftApiKey:
-			  type: string
+  "operatorAccountId": "0.0.4532001",
+  "operatorPrivateKey": "302e020100300506032b657004220420..."
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+| Field | Type | Description |
+|-------|------|-------------|
+| `operatorAccountId` | string | Hedera operator account ID |
+| `operatorPrivateKey` | string | Hedera operator private key |
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

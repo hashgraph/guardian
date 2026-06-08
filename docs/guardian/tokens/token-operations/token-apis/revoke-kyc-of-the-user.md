@@ -1,66 +1,49 @@
-# Revoke KYC of the user
+# Revoke KYC of the User
 
-### UNSETS KYC FLAG FOR THE USER
+**`PUT /api/v1/tokens/{tokenId}/{username}/revoke-kyc`**
 
-{% swagger method="put" path="" baseUrl="/tokens/{tokenId}/{username}/revoke-kyc" summary="Unsets the KYC flag for the user." %}
-{% swagger-description %}
-Unsets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Unsets (revokes) the KYC flag for the specified user on the given token. Only users with the Standard Registry role are allowed to make the request.
 
-{% swagger-parameter in="path" name="tokenID" type="String" required="true" %}
-Token ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="path" name="username" type="String" required="true" %}
-Username
-{% endswagger-parameter %}
+**Permission:** `Permissions.TOKENS_TOKEN_MANAGE`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tokenId` | string | Yes | The internal database ID of the token |
+| `username` | string | Yes | The username of the user whose KYC will be revoked |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TokenInfo'
+  "tokenId": "0.0.5000001",
+  "associated": true,
+  "balance": "0",
+  "hBarBalance": "10",
+  "frozen": false,
+  "kyc": false
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="400: Bad Request" description="Bad Request" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | User or token does not exist |
+| `422 Unprocessable Entity` | User is not registered |
+| `500 Internal Server Error` | Unexpected server failure |

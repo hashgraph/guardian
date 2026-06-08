@@ -72,6 +72,9 @@ async function preparePolicyPreviewMessage(
     });
     const message = await messageServer
         .getMessage<PolicyMessage>({ messageId, loadIPFS: true, userId, interception: userId });
+    if (!message) {
+        throw new Error('Invalid Message');
+    }
     if (message.type !== MessageType.InstancePolicy) {
         throw new Error('Invalid Message Type');
     }

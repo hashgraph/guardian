@@ -1,54 +1,57 @@
-# Importing Schema from IPFS
+# Importing Schema from IPFS (Async)
 
-{% swagger method="post" path="" baseUrl="/schemas/push/{topicId}/import/message" summary="Imports new schema from IPFS." %}
-{% swagger-description %}
-Imports new schema from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /schemas/push/{topicId}/import/message`**
 
-{% swagger-parameter in="body" required="true" type="String" name="messageId" %}
-Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
-{% endswagger-parameter %}
+Imports a new schema from IPFS into the local database asynchronously. Returns a task ID immediately; poll `GET /tasks/{taskId}` for the result.
 
-{% swagger-parameter in="path" name="topicId" type="String" required="true" %}
-Topic ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="202: Accepted" description="Accepted" %}
-```javascript
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `topicId` | string | Yes | The Hedera topic ID to import the schema under (e.g. `0.0.4532001`) |
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
+  "messageId": "1680000000.000000001"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messageId` | string | Yes | The Hedera message ID containing the IPFS CID of the schema |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
 {
-    // Response
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Import schema message"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+Poll `GET /tasks/{taskId}` to retrieve the result.
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+### Error Responses
 
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Message ID is missing |
+| `500 Internal Server Error` | Unexpected server failure |

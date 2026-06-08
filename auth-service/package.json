@@ -4,27 +4,27 @@
         "@entity": "dist/entity",
         "@helpers": "dist/helpers"
     },
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "3.6.0-rc",
-        "@guardian/interfaces": "3.6.0-rc",
+        "@guardian/common": "3.6.0",
+        "@guardian/interfaces": "3.6.0",
         "@meeco/cryppo": "^2.0.2",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
-        "@nestjs/common": "^11.0.11",
-        "@nestjs/core": "^11.0.11",
-        "@nestjs/microservices": "^11.0.11",
+        "@nestjs/common": "^11.1.24",
+        "@nestjs/core": "^11.1.24",
+        "@nestjs/microservices": "^11.1.24",
         "@sendgrid/mail": "^7.7.0",
-        "axios": "^1.8.3",
+        "axios": "^1.16.1",
         "base-x": "^4.0.0",
         "base64url": "^3.0.1",
         "cron": "^2.4.0",
         "dotenv": "^16.0.0",
-        "express": "^5.1.0",
+        "express": "5.2.1",
         "jsonwebtoken": "^8.5.1",
         "moment": "^2.29.4",
         "moment-timezone": "^0.5.45",
@@ -74,5 +74,5 @@
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
     },
     "type": "module",
-    "version": "3.6.0-rc"
+    "version": "3.6.0"
 }
