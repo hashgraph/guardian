@@ -41,10 +41,35 @@
 .actions-container {
     max-width: 100%;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     flex-wrap: wrap;
-    align-items: flex-start;
-    row-gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    column-gap: 16px;
+    row-gap: 12px;
+
+    .filters-form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: 12px;
+        row-gap: 12px;
+    }
+
+    .actions-buttons-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: 8px;
+        row-gap: 8px;
+        margin-left: auto;
+    }
+
+    .actions-buttons {
+        display: flex;
+        align-items: center;
+        column-gap: 8px;
+    }
 }
 
 :host ::ng-deep .message-type-container span.p-placeholder {
@@ -120,79 +145,20 @@
 }
 
 .table-container {
-    overflow-x: auto;
     margin-top: 40px;
-}
 
-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 8px;
-    overflow: visible;
-}
+    .log-cell-wrap {
+        white-space: normal;
+        word-break: break-word;
+    }
 
-.row-header {
-    border-radius: 8px 8px 0 0;
-}
-
-th {
-    color: var(--color-grey-5);
-    font-family: Inter, serif;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    text-align: left;
-    padding: 0 20px 0 24px;
-    text-transform: uppercase;
-}
-
-.table-paginator {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    column-gap: 24px;
-    padding: 0 16px 0 0;
-
-    color: var(--color-grey-black-2, #23252E);
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 16px;
-    /* 114.286% */
+    .guardian-grid-row td {
+        vertical-align: middle;
+    }
 }
 
 .color-grey-6 {
     color: var(--color-grey-5, #848FA9);
-}
-
-.row-item,
-.table-paginator {
-    height: 64px !important;
-    border-radius: 8px !important;
-    background: #FFF;
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
-}
-
-td {
-    color: var(--color-grey-black-1);
-    font-family: Inter, serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 16px;
-    text-align: left;
-    padding: 0 20px 0 24px;
-    text-overflow: ellipsis;
-}
-
-td:first-child {
-    border-radius: 8px 0 0 8px;
-}
-
-td:last-child {
-    border-radius: 0 8px 8px 0;
 }
 
 .disabled-color {

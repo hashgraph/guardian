@@ -17,137 +17,141 @@
 
 <ng-template #actionsContainer>
     <div class="actions-container">
-        <form [formGroup]="searchForm" *useWithServiceDecorator="'LOGGER_SERVICE'">
-            <div class="flex flex-column-gap-8" style="flex-wrap: wrap; row-gap: 8px;">
-                <p-multiSelect #searchInput (onFilter)="onFilter($event)"
-                               [filter]="true" [options]="attributes"
-                               emptyMessage=""
-                               formControlName="attributes" placeholder="Attributes">
-                    <ng-template let-item pTemplate="selectedItem">
-                        <div class="country-item country-item-value">
-                            <span class="grey-6">{{ item }}</span>
-                        </div>
-                    </ng-template>
-                    <ng-template let-item pTemplate="item">
-                        <div class="country-item">
-                            <div>{{ item }}</div>
-                        </div>
-                    </ng-template>
-                </p-multiSelect>
-                <span class="p-input-icon-right">
-                    <i>
-                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/search.svg" svgClass="color-search">
-                        </svg-icon>
-                    </i>
-                    <input
-                        [formControlName]="'message'"
-                        class="search-input"
-                        pInputText
-                        placeholder="Message"
-                    />
-                </span>
-                <p-select
-                    [formControlName]="'type'"
-                    [appendTo]="'body'"
-                    [options]="types"
-                    placeholder="Message Type"
-                    class="message-type-container">
-                    <ng-template let-item pTemplate="selectedItem">
-                        <div class="selected-type-value">
-                            <span class="grey-6">
-                                Message Type {{ item?.label }}
-                            </span>
-                        </div>
-                    </ng-template>
-                    <ng-template let-item pTemplate="item">
-                        <div class="country-item">
-                            <div>{{ item.label }}</div>
-                        </div>
-                    </ng-template>
-                </p-select>
-                <p-datepicker
-                    [formControl]="dateRangeForm"
-                    [placeholder]="'Enter date range'"
-                    [showIcon]="true"
-                    [showTime]="true"
-                    dateFormat="mm/dd/yy"
-                    selectionMode="range">
-                </p-datepicker>
-            </div>
+        <form [formGroup]="searchForm" class="filters-form" *useWithServiceDecorator="'LOGGER_SERVICE'">
+            <p-multiSelect #searchInput (onFilter)="onFilter($event)"
+                           [filter]="true" [options]="attributes"
+                           emptyMessage=""
+                           formControlName="attributes" placeholder="Attributes">
+                <ng-template let-item pTemplate="selectedItem">
+                    <div class="country-item country-item-value">
+                        <span class="grey-6">{{ item }}</span>
+                    </div>
+                </ng-template>
+                <ng-template let-item pTemplate="item">
+                    <div class="country-item">
+                        <div>{{ item }}</div>
+                    </div>
+                </ng-template>
+            </p-multiSelect>
+            <span class="p-input-icon-right">
+                <i>
+                    <svg-icon class="svg-icon-16" src="/assets/images/icons/16/search.svg" svgClass="color-search">
+                    </svg-icon>
+                </i>
+                <input
+                    [formControlName]="'message'"
+                    class="search-input"
+                    pInputText
+                    placeholder="Message"
+                />
+            </span>
+            <p-select
+                [formControlName]="'type'"
+                [appendTo]="'body'"
+                [options]="types"
+                placeholder="Message Type"
+                class="message-type-container">
+                <ng-template let-item pTemplate="selectedItem">
+                    <div class="selected-type-value">
+                        <span class="grey-6">
+                            Message Type {{ item?.label }}
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template let-item pTemplate="item">
+                    <div class="country-item">
+                        <div>{{ item.label }}</div>
+                    </div>
+                </ng-template>
+            </p-select>
+            <p-datepicker
+                [formControl]="dateRangeForm"
+                [placeholder]="'Enter date range'"
+                [showIcon]="true"
+                [showTime]="true"
+                dateFormat="mm/dd/yy"
+                selectionMode="range">
+            </p-datepicker>
         </form>
-      <div class="flex flex-column-gap-8" style="flex-wrap: wrap; row-gap: 8px;">
-        <div class="flex flex-column-gap-8" *useWithServiceDecorator="'LOGGER_SERVICE'">
-            <button
-                (click)="onApply()"
-                class="button"
-                label="Apply"
-                pButton
-                type="button"
-            ></button>
-            <button
-                (click)="clearValues()"
-                class="button secondary"
-                label="Clear filters"
-                pButton
-                type="button"
-            ></button>
-            <button
-                (click)="onSave()"
-                class="button"
-                label="Save logs"
-                pButton
-                type="button"
-            ></button>
+        <div class="actions-buttons-group">
+            <div class="actions-buttons" *useWithServiceDecorator="'LOGGER_SERVICE'">
+                <button
+                    (click)="onApply()"
+                    class="button"
+                    label="Apply"
+                    pButton
+                    type="button"
+                ></button>
+                <button
+                    (click)="clearValues()"
+                    class="button secondary"
+                    label="Clear filters"
+                    pButton
+                    type="button"
+                ></button>
+                <button
+                    (click)="onSave()"
+                    class="button"
+                    label="Save logs"
+                    pButton
+                    type="button"
+                ></button>
+            </div>
+            <div class="actions-buttons" *ngIf="seqUrl">
+                <button
+                    #seqButton
+                    (click)="onSeq()"
+                    class="button"
+                    label="Seq"
+                    pButton
+                    type="button"
+                ></button>
+            </div>
         </div>
-        <div class="flex flex-column-gap-8" *ngIf="seqUrl">
-          <button
-            #seqButton
-            (click)="onSeq()"
-            class="button"
-            label="Seq"
-            pButton
-            type="button"
-          ></button>
-        </div>
-      </div>
     </div>
 </ng-template>
 
 <ng-template #tableContainer>
     <ng-container *ngIf="logs && logs.length > 0; else noData">
         <div class="table-container">
-            <table>
-                <tr class="row-header">
-                    <th>TYPE</th>
-                    <th>DATE TIME</th>
-                    <th>MESSAGE</th>
-                    <th>ATTRIBUTES</th>
-                    <th>DETAILS</th>
-                </tr>
-                <ng-container *ngFor="let log of logs">
-                    <tr class="row-item">
-                        <td>{{ log.type }}</td>
-                        <td>{{ $any(log).datetime }}</td>
-                        <td>
-                            {{ log.message }}
-                        </td>
-                        <td>
-                            {{ log.attributes }}
-                        </td>
-                        <td>
-                            <button (click)="openDetails(log)" class="button secondary" pButton>Details</button>
-                        </td>
-                    </tr>
-                </ng-container>
-            </table>
+            <div class="guardian-grid-container">
+                <p-table
+                    [value]="logs"
+                    class="guardian-grid-table"
+                    [scrollable]="true"
+                >
+                    <ng-template pTemplate="header">
+                        <tr class="guardian-grid-header">
+                            <th class="header-cell-text" style="min-width: 120px;">Type</th>
+                            <th class="header-cell-text" style="min-width: 180px;">Date time</th>
+                            <th class="header-cell-text" style="min-width: 320px;">Message</th>
+                            <th class="header-cell-text" style="min-width: 220px;">Attributes</th>
+                            <th class="header-cell-text" style="min-width: 120px; width: 140px;">Details</th>
+                        </tr>
+                    </ng-template>
 
-            <app-paginator
-                    [pageIndex]="pageIndex"
-                    [pageSize]="pageSize"
-                [length]="totalCount"
-                (page)="onPage($event)"
-            ></app-paginator>
+                    <ng-template let-log pTemplate="body">
+                        <tr class="guardian-grid-row">
+                            <td class="row-cell-text" style="min-width: 120px;">{{ log.type }}</td>
+                            <td class="row-cell-text" style="min-width: 180px;">{{ $any(log).datetime }}</td>
+                            <td class="row-cell-text log-cell-wrap" style="min-width: 320px;">{{ log.message }}</td>
+                            <td class="row-cell-text log-cell-wrap" style="min-width: 220px;">{{ log.attributes }}</td>
+                            <td class="row-cell-text" style="min-width: 120px; width: 140px;">
+                                <button (click)="openDetails(log)" class="button secondary" pButton>Details</button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
 
+                <div class="guardian-grid-paginator">
+                    <app-paginator
+                        [pageIndex]="pageIndex"
+                        [pageSize]="pageSize"
+                        [length]="totalCount"
+                        (page)="onPage($event)"
+                    ></app-paginator>
+                </div>
+            </div>
         </div>
     </ng-container>
 </ng-template>
