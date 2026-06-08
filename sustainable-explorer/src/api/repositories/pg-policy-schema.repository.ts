@@ -149,7 +149,7 @@ export class PgPolicySchemaRepository extends PolicySchemaRepository {
             last_attempt_at: string | null;
             policy_mapping: Record<string, unknown> | null;
             raw_schema_json: Record<string, unknown> | null;
-            schema_fields: Record<string, unknown> | null;
+            schema_fields: unknown;
         }> = await this.dataSource.query(
             `SELECT
                 p."decodeStatus"    AS decode_status,
@@ -344,24 +344,59 @@ export class PgPolicySchemaRepository extends PolicySchemaRepository {
                 }
             }
 
-            // Build resolvedFields from policyMapping entries for this schema
+            // Build resolvedFields from policyMapping entries. Prefer entries
+            // on the project schema itself, but fall back to entries from
+            // ANY non-mintToken/standardRegistry schema. This lets users map
+            // fields like `country` to a sub-schema field (e.g.,
+            // "1.8 Project Location.projectSiteCountryarea") and still see
+            // it as the resolved mapping in the editor.
             const resolvedFields: Record<string, string | null> = {};
             for (const [fieldKey, entries] of Object.entries(policyMapping)) {
                 if (!Array.isArray(entries)) continue;
+                let primary: string | null = null;
+                let fallback: string | null = null;
                 for (const entry of entries) {
                     if (!entry || typeof entry !== 'object') continue;
                     const e = entry as Record<string, unknown>;
-                    if (e['schemaIri'] === projectSchemaId && typeof e['fieldPath'] === 'string') {
-                        resolvedFields[fieldKey] = e['fieldPath'] as string;
+                    const schemaType = e['schemaType'];
+                    if (schemaType === 'mintToken' || schemaType === 'standardRegistry') continue;
+                    if (typeof e['fieldPath'] !== 'string') continue;
+                    if (e['schemaIri'] === projectSchemaId) {
+                        primary = e['fieldPath'] as string;
                         break;
                     }
+                    if (fallback === null) fallback = e['fieldPath'] as string;
+                }
+                if (primary !== null) {
+                    resolvedFields[fieldKey] = primary;
+                } else if (fallback !== null) {
+                    resolvedFields[fieldKey] = fallback;
                 }
             }
 
-            // Determine geoKey from fieldMap
+            // Determine geoKey: prefer manual override from policyMapping['geo'],
+            // then auto-detect first isGeoJson field in the project schema.
             let geoKey = '';
-            for (const [k, v] of Object.entries(fieldMap)) {
-                if (v.isGeoJson) { geoKey = k; break; }
+            const geoEntries = Array.isArray(policyMapping['geo']) ? policyMapping['geo'] : [];
+            let geoPrimary: string | null = null;
+            let geoFallback: string | null = null;
+            for (const entry of geoEntries) {
+                if (!entry || typeof entry !== 'object') continue;
+                const e = entry as Record<string, unknown>;
+                const schemaType = e['schemaType'];
+                if (schemaType === 'mintToken' || schemaType === 'standardRegistry') continue;
+                if (typeof e['fieldPath'] !== 'string') continue;
+                if (e['schemaIri'] === projectSchemaId) {
+                    geoPrimary = e['fieldPath'] as string;
+                    break;
+                }
+                if (geoFallback === null) geoFallback = e['fieldPath'] as string;
+            }
+            geoKey = geoPrimary ?? geoFallback ?? '';
+            if (!geoKey) {
+                for (const [k, v] of Object.entries(fieldMap)) {
+                    if (v.isGeoJson) { geoKey = k; break; }
+                }
             }
 
             projectSchemaConfig = { geoKey, section: null, fieldMap, resolvedFields };
@@ -378,6 +413,14 @@ export class PgPolicySchemaRepository extends PolicySchemaRepository {
             schemaDescription: projectSchemaDescription,
             projectSchemaConfig,
             allSchemas,
+            schemaFields: Array.isArray(raw?.schema_fields) ? raw!.schema_fields as Array<{
+                path: string;
+                title: string;
+                description?: string;
+                type?: string;
+                isGeoJson?: boolean;
+                schemaIri: string;
+            }> : [],
         };
     }
 }

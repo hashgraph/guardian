@@ -199,6 +199,28 @@ export class DecodedMethodologyResponseDto {
         dto.availableSchemas = (row.allSchemas ?? [])
             .map(s => DecodedMethodologyResponseDto.summarizeSchema(s, schemasByUuid));
 
+        // Augment each schema's fields with deeply-nested paths from row.schemaFields
+        // (e.g., projectDetails.projectLocation.projectSiteCountryarea). The
+        // summarizeSchema walker only goes 1-2 levels deep; schemaFields was
+        // already computed by the decoder with full ancestor chains and is the
+        // authoritative source for user-pickable paths.
+        if (Array.isArray(row.schemaFields) && row.schemaFields.length > 0) {
+            const schemaByIri = new Map(dto.availableSchemas.map(s => [s.schemaId, s]));
+            for (const sf of row.schemaFields) {
+                if (!sf || !sf.path || !sf.schemaIri) continue;
+                const target = schemaByIri.get(sf.schemaIri);
+                if (!target) continue;
+                if (target.fields.some(f => f.fieldKey === sf.path)) continue;
+                target.fields.push({
+                    fieldKey: sf.path,
+                    title: sf.title || sf.path,
+                    description: sf.description || '',
+                    type: sf.type || '',
+                    isGeoJson: !!sf.isGeoJson,
+                });
+            }
+        }
+
         if (!row.projectSchemaConfig) {
             dto.projectSchema = null;
             return dto;
@@ -413,4 +435,16 @@ export interface DecodedMethodologyRow {
     projectSchemaConfig: Record<string, unknown> | null;
     /** All schemas imported for this policy. Empty when no schemas have been imported yet. */
     allSchemas: PolicySchemaSummaryRow[];
+    /** Flat list of every field path reachable from each schema's root.
+     *  Each entry: { path, title, description, type, isGeoJson, schemaIri }.
+     *  Used to expose deeply-nested paths (e.g., projectDetails.projectLocation.projectSiteCountryarea)
+     *  as mappable options in the editor. */
+    schemaFields: Array<{
+        path: string;
+        title: string;
+        description?: string;
+        type?: string;
+        isGeoJson?: boolean;
+        schemaIri: string;
+    }>;
 }

@@ -299,6 +299,7 @@ const EDITABLE_FIELD_KEYS: ResolvedFieldKey[] = [
   'creditingPeriodStart',
   'creditingPeriodEnd',
   'sdgOrCobenefits',
+  'geo',
 ];
 
 const FIELD_LABELS: Record<ResolvedFieldKey, string> = {
@@ -313,6 +314,7 @@ const FIELD_LABELS: Record<ResolvedFieldKey, string> = {
   creditingPeriodStart: 'Crediting Period Start',
   creditingPeriodEnd: 'Crediting Period End',
   sdgOrCobenefits: 'SDGs / Co-benefits',
+  geo: 'Project Location',
 };
 
 const editingMapping = ref(false);
@@ -320,14 +322,43 @@ const editingMapping = ref(false);
 const formState = ref<Record<ResolvedFieldKey, string>>({} as Record<ResolvedFieldKey, string>);
 const saveMappingPending = ref(false);
 
+// Look up the schemaIri that owns a given fieldPath. For nested paths like
+// "projectSiteCountryarea", the backend stores it under a sub-schema IRI
+// (e.g., "#3cbd0aa8-...&1.0.0"). We scan availableSchemas to find which
+// schema actually defines that field key, so the dropdown value matches.
+function findOwningSchemaIri(fieldPath: string, defaultIri: string): string {
+  const schemas = decodedData.value?.availableSchemas ?? [];
+  for (const s of schemas) {
+    if ((s.fields ?? []).some(f => f.fieldKey === fieldPath)) {
+      return s.schemaId;
+    }
+  }
+  return defaultIri;
+}
+
 function enterEditMode() {
   if (!decodedData.value?.projectSchema) return;
-  const resolved = decodedData.value.projectSchema.resolvedFields;
-  const schemaId = decodedData.value.projectSchema.schemaId;
+  const resolved = decodedData.value.projectSchema.resolvedFields as Record<string, { fieldKey: string } | null>;
+  const ps = decodedData.value.projectSchema;
+  const projectIri = ps.schemaId;
   const state = {} as Record<ResolvedFieldKey, string>;
   for (const key of EDITABLE_FIELD_KEYS) {
+    if (key === 'geo') {
+      if (ps.geoKey) {
+        const iri = findOwningSchemaIri(ps.geoKey, projectIri);
+        state[key] = `${iri}.${ps.geoKey}`;
+      } else {
+        state[key] = '';
+      }
+      continue;
+    }
     const rf = resolved[key];
-    state[key] = rf ? `${schemaId}.${rf.fieldKey}` : '';
+    if (rf) {
+      const iri = findOwningSchemaIri(rf.fieldKey, projectIri);
+      state[key] = `${iri}.${rf.fieldKey}`;
+    } else {
+      state[key] = '';
+    }
   }
   formState.value = state;
   editingMapping.value = true;
@@ -341,12 +372,27 @@ function cancelEditMode() {
 // Compute the initial (original) form state so we can diff to find changes.
 const originalFormState = computed<Record<ResolvedFieldKey, string>>(() => {
   if (!decodedData.value?.projectSchema) return {} as Record<ResolvedFieldKey, string>;
-  const resolved = decodedData.value.projectSchema.resolvedFields;
-  const schemaId = decodedData.value.projectSchema.schemaId;
+  const resolved = decodedData.value.projectSchema.resolvedFields as Record<string, { fieldKey: string } | null>;
+  const ps = decodedData.value.projectSchema;
+  const projectIri = ps.schemaId;
   const state = {} as Record<ResolvedFieldKey, string>;
   for (const key of EDITABLE_FIELD_KEYS) {
+    if (key === 'geo') {
+      if (ps.geoKey) {
+        const iri = findOwningSchemaIri(ps.geoKey, projectIri);
+        state[key] = `${iri}.${ps.geoKey}`;
+      } else {
+        state[key] = '';
+      }
+      continue;
+    }
     const rf = resolved[key];
-    state[key] = rf ? `${schemaId}.${rf.fieldKey}` : '';
+    if (rf) {
+      const iri = findOwningSchemaIri(rf.fieldKey, projectIri);
+      state[key] = `${iri}.${rf.fieldKey}`;
+    } else {
+      state[key] = '';
+    }
   }
   return state;
 });
@@ -473,7 +519,7 @@ const formatLastAttempt = (ts: string | null | undefined): string => {
   }
 };
 
-type ResolvedFieldKey = 'name' | 'description' | 'country' | 'developer' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriodStart' | 'creditingPeriodEnd' | 'sdgOrCobenefits';
+type ResolvedFieldKey = 'name' | 'description' | 'country' | 'developer' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriodStart' | 'creditingPeriodEnd' | 'sdgOrCobenefits' | 'geo';
 
 interface ProjectFieldRow {
   labelKey: string;
@@ -1073,15 +1119,28 @@ const lifecycleSummary = computed(() => {
                     {{ $t('methodologies.detail.decoded.fieldLabels.' + row.labelKey) }}
                   </td>
                   <td class="py-3 px-4">
-                    <!-- Geo row: special (not editable, uses geoKey directly) -->
+                    <!-- Geo row: dropdown in edit mode, geoKey display in view mode -->
                     <template v-if="row.fieldKey === 'geo'">
-                      <template v-if="decodedData.projectSchema.geoKey">
-                        <div class="text-sm text-foreground font-medium">
-                          {{ decodedData.projectSchema.geoFieldTitle || decodedData.projectSchema.geoKey }}
-                          <span class="text-muted-foreground font-normal">({{ decodedData.projectSchema.geoKey }})</span>
-                        </div>
+                      <template v-if="editingMapping">
+                        <select
+                          v-model="formState['geo']"
+                          class="w-full max-w-sm rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        >
+                          <option value="">{{ $t('methodologies.detail.decoded.actions.unmapped') }}</option>
+                          <optgroup v-for="group in mappingOptionGroups" :key="group.label" :label="group.label">
+                            <option v-for="opt in group.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                          </optgroup>
+                        </select>
                       </template>
-                      <span v-else class="text-sm text-muted-foreground">—</span>
+                      <template v-else>
+                        <template v-if="decodedData.projectSchema.geoKey">
+                          <div class="text-sm text-foreground font-medium">
+                            {{ decodedData.projectSchema.geoFieldTitle || decodedData.projectSchema.geoKey }}
+                            <span class="text-muted-foreground font-normal">({{ decodedData.projectSchema.geoKey }})</span>
+                          </div>
+                        </template>
+                        <span v-else class="text-sm text-muted-foreground">—</span>
+                      </template>
                     </template>
                     <!-- Crediting Period: combined view, split edit -->
                     <template v-else-if="row.fieldKey === 'creditingPeriod'">
