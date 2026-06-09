@@ -44,7 +44,7 @@ export class TextInputAutocompleteMenuComponent {
     }
 
     @HostListener('document:keydown.ArrowDown', ['$event'])
-    onArrowDown(event: KeyboardEvent) {
+    onArrowDown(event: Event) {
         event.preventDefault();
         const index = this.choices.indexOf(this.activeChoice);
         if (this.choices[index + 1]) {
@@ -53,7 +53,7 @@ export class TextInputAutocompleteMenuComponent {
     }
 
     @HostListener('document:keydown.ArrowUp', ['$event'])
-    onArrowUp(event: KeyboardEvent) {
+    onArrowUp(event: Event) {
         event.preventDefault();
         const index = this.choices.indexOf(this.activeChoice);
         if (this.choices[index - 1]) {
@@ -62,7 +62,7 @@ export class TextInputAutocompleteMenuComponent {
     }
 
     @HostListener('document:keydown.Enter', ['$event'])
-    onEnter(event: KeyboardEvent) {
+    onEnter(event: Event) {
         if (this.choices.indexOf(this.activeChoice) > -1) {
             event.preventDefault();
             this.selectChoice.next(this.activeChoice);

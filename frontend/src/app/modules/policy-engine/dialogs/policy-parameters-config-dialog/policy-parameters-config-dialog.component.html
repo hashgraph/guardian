@@ -13,7 +13,7 @@
   <div class="context">
     <form [formGroup]="form" (ngSubmit)="submit()" class="formgrid grid p-fluid">
       <div formArrayName="fields">
-        @for (fg of fieldGroups; track trackByIndex(i, fg); let i = $index) {
+        @for (fg of fieldGroups; track trackByIndex(i); let i = $index) {
           <div [formGroupName]="i">
             <div class="fields-grid group-container">
               <div class="field">

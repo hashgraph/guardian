@@ -210,7 +210,7 @@
                     }
                   }
                   <div class="if-rows">
-                    @for (row of getIfRows(condition); track trackByIndex(i, row); let i = $index) {
+                    @for (row of getIfRows(condition); track trackByIndex(i); let i = $index) {
                       <div class="if-condition-equality-container"
                         >
                         <div class="if-dropdown-field guardian-input-container">
@@ -331,7 +331,37 @@
               </div>
               <p class="condition-label">THEN</p>
               @if (condition.thenControls) {
-                <ng-template [ngTemplateOutlet]="Controls"></ng-template>
+                <div
+                  class="condition-container"
+                  >
+                  <div
+                    (cdkDropListDropped)="drop($event)"
+                    [cdkDropListAutoScrollDisabled]
+                    [cdkDropListData]="condition.thenControls"
+                    cdkDropList
+                    class="custom-fields"
+                    >
+                    @for (conditionField of condition.thenControls; track trackByFieldControl($index, conditionField)) {
+                      <div class="custom-schema-field">
+                        <schema-field-configuration
+                          (remove)="onConditionFieldRemove(condition,conditionField,'then')"
+                          [field]="conditionField"
+                          [types]="types"
+                          [form]="dataForm"
+                          [fieldsForm]="conditionsForm.get(condition.name)?.get('thenFieldControls')"
+                          [measureTypes]="measureTypes"
+                          [properties]="properties"
+                          [extended]="extended"
+                          [schemaTypes]="schemaTypes"
+                          [schemaTypeMap]="schemaTypeMap"
+                          [errors]="errors"
+                          [buildField]="buildField"
+                          >
+                        </schema-field-configuration>
+                      </div>
+                    }
+                  </div>
+                </div>
               }
               <button
                 (click)="onConditionFieldAdd(condition, 'then')"
@@ -378,8 +408,6 @@
                     }
                   </div>
                 </div>
-              } @else {
-                <ng-template [ngTemplateOutlet]="Controls"></ng-template>
               }
               <button
                 (click)="onConditionFieldAdd(condition, 'else')"

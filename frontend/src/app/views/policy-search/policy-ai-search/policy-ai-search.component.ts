@@ -51,7 +51,7 @@ export class PolicyAISearchComponent implements OnInit {
         });
     }
 
-    @HostListener('document:keydown.enter', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+    @HostListener('document:keydown.enter', ['$event']) onKeydownHandler(event: Event) {
         if (this.requestTextControl.value) {
             this.sendRequest();
         }

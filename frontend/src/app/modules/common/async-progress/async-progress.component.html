@@ -55,12 +55,11 @@
         </div>
         @if (node.steps.length && !node.minimized) {
           <div class="step-children sub-steps">
-            @for ( of node.steps; track ) {
-              <ng-template
-                [ngForOf]="node.steps"
-                [ngForTemplate]="nodeTemplateRef">
-              </ng-template>
-            }
+            <ng-template
+              ngFor
+              [ngForOf]="node.steps"
+              [ngForTemplate]="nodeTemplateRef">
+            </ng-template>
           </div>
         }
       </div>

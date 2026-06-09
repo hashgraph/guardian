@@ -129,8 +129,6 @@
         <ng-container
           [ngTemplateOutlet]="conditionValueTemplate"
         [ngTemplateOutletContext]="{ value: condition.formula }"></ng-container>
-      } @else {
-        <ng-template [ngTemplateOutlet]="'"></ng-template>
       }
     </div>
     @if (count>0) {

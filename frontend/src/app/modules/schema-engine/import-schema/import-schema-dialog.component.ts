@@ -16,7 +16,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     standalone: false
 })
 export class ImportSchemaDialog {
-    importType?: ImportType = 0;
+    importType?: ImportType | 2 = 0;
     dataForm = this.fb.group({
         timestamp: ['', Validators.required],
     });
@@ -63,7 +63,7 @@ export class ImportSchemaDialog {
         this.setImportType(typeof order === 'number' ? order : 0);
     }
 
-    setImportType(importType: ImportType) {
+    setImportType(importType: ImportType | 2) {
         this.importType = importType;
         this.isImportTypeSelected = true;
     }

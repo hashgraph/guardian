@@ -112,8 +112,9 @@ export class TextInputAutocompleteDirective implements OnDestroy {
     ) {
     }
 
-    @HostListener('keypress', ['$event.key'])
-    onKeypress(key: string) {
+    @HostListener('keypress', ['$event'])
+    onKeypress(event: Event) {
+        const key = event instanceof KeyboardEvent ? event.key : '';
         if (this.triggerCharacter.includes(key)) {
             this.usingShortcut = false;
             this.showMenu();
@@ -121,9 +122,11 @@ export class TextInputAutocompleteDirective implements OnDestroy {
     }
 
     @HostListener('keydown', ['$event'])
-    onKeyDown(event: KeyboardEvent) {
+    onKeyDown(event: Event) {
         if (this.keyboardShortcut) {
-            this.usingShortcutCharacter = this.keyboardShortcut(event)
+            this.usingShortcutCharacter = event instanceof KeyboardEvent
+                ? this.keyboardShortcut(event)
+                : '';
             this.usingShortcut = !!this.usingShortcutCharacter;
             if (this.usingShortcut) {
                 this.showMenu();
@@ -132,8 +135,13 @@ export class TextInputAutocompleteDirective implements OnDestroy {
         }
     }
 
-    @HostListener('input', ['$event.target.value'])
-    onChange(value: string) {
+    @HostListener('input', ['$event'])
+    onChange(event: Event | string) {
+        let value = typeof event === 'string'
+            ? event
+            : event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement
+                ? event.target.value
+                : '';
         if (this.menu) {
             const triggerCharacter = value[this.menu.triggerCharacterPosition];
             if (

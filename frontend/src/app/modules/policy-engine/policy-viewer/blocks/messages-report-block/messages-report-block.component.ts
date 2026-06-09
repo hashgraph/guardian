@@ -929,7 +929,7 @@ export class MessagesReportBlockComponent implements OnInit {
         }
     }
 
-    @HostListener('window:resize', ['$event'])
+    @HostListener('window:resize')
     onResize() {
         const container = this.element?.nativeElement?.children[0];
         if (container) {
