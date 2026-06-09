@@ -542,6 +542,30 @@
                 "trends": "Trends",
                 "trendsComingSoon": "Issuance over time, retirement trend, and geography charts will be available once live VC-Document data is fully synced."
             },
+            "dashboard": {
+                "title": "Methodology Dashboard",
+                "stats": "{projects} projects · {issuances} issuances"
+            },
+            "charts": {
+                "geographicDistribution": "Geographic Distribution",
+                "geographicDistributionSub": "Project distribution by country",
+                "noGeographicData": "No geographic data available",
+                "geographicCountry": "country",
+                "geographicCountries": "countries",
+                "issuanceTrend": "Issuance Trend",
+                "issuanceTrendSub": "Volume ({unit}) by year",
+                "noIssuanceData": "No issuance data available",
+                "issuanceTrendYear": "year",
+                "issuanceTrendYears": "years",
+                "issuanceTrendTotal": "{total}{unit} total",
+                "vintageDistribution": "Vintage Distribution",
+                "vintageDistributionSub": "Project distribution by vintage",
+                "noVintageData": "No vintage data available",
+                "vintageYear": "vintage",
+                "vintageYears": "vintages",
+                "vintageProject": "project",
+                "vintageProjects": "projects"
+            },
             "actions": {
                 "aboutTitle": "About this Methodology",
                 "instancePolicyTopicLabel": "Instance Policy Topic:",
