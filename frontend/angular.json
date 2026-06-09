@@ -114,7 +114,14 @@
                         ],
                         "tsConfig": "tsconfig.app.json",
                         "browser": "src/main.ts",
-                        "preserveSymlinks": true
+                        "preserveSymlinks": true,
+                        "stylePreprocessorOptions": {
+                            "sass": {
+                                "silenceDeprecations": [
+                                    "import"
+                                ]
+                            }
+                        }
                     }
                 },
                 "extract-i18n": {

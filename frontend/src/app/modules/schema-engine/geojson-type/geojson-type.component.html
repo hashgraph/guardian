@@ -120,7 +120,7 @@
                   required
                   class="full-width location-coordinates"
                 ></textarea>
-                @if (getErrorsByIndex(i)?.length) {
+                @if (getErrorsByIndex(i).length) {
                   <ul class="p-error validation-errors">
                     @for (err of getErrorsByIndex(i); track err) {
                       <li>{{ err }}</li>

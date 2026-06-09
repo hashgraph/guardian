@@ -40,9 +40,9 @@
     </div>
   }
 
-  @if ((deletableChildren?.length) || (blockedChildren?.length)) {
+  @if ((deletableChildren.length) || (blockedChildren.length)) {
     <div class="child-schemas-block">
-      @if (deletableChildren?.length) {
+      @if (deletableChildren.length) {
         @if (itemNames && itemNames.length && itemNames.length == 1) {
           <p class="delete-text">The "{{ itemNames[0] }}" schema includes child schemas. Select the checkbox below to also delete the following child schemas:</p>
         }
@@ -59,7 +59,7 @@
           </ul>
         </div>
       }
-      @if (blockedChildren?.length) {
+      @if (blockedChildren.length) {
         <p class="delete-text">Schemas referenced by other parents (will not be deleted):</p>
         <div class="schemas-block">
           <ul class="schemas-list">
@@ -73,7 +73,7 @@
           </ul>
         </div>
       }
-      @if (deletableChildren?.length) {
+      @if (deletableChildren.length) {
         <div style="margin-top: 16px;">
           <p-checkbox
             class="guardian-checkbox-secondary checkbox-24"

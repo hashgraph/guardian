@@ -23,7 +23,7 @@
         <p-accordion-panel value="input-events">
           <p-accordion-header>Input Events</p-accordion-header>
           <p-accordion-content>
-            @if (inputEvents?.length) {
+            @if (inputEvents.length) {
               <div class="merge-tree">
                 @for (item of inputEvents; track item) {
                   <div class="report-item report-item-small"
@@ -50,7 +50,7 @@
         <p-accordion-panel value="output-events">
           <p-accordion-header>Output Events</p-accordion-header>
           <p-accordion-content>
-            @if (outputEvents?.length) {
+            @if (outputEvents.length) {
               <div class="merge-tree">
                 @for (item of outputEvents; track item) {
                   <div class="report-item report-item-small"
@@ -77,7 +77,7 @@
         <p-accordion-panel value="variables">
           <p-accordion-header>Variables</p-accordion-header>
           <p-accordion-content>
-            @if (variables?.length) {
+            @if (variables.length) {
               <div class="merge-tree">
                 @for (item of variables; track item) {
                   <div class="report-item report-item-small"

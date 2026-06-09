@@ -15,7 +15,7 @@
   }
 
   <div class="dialog-grid-container">
-    @if (data?.length) {
+    @if (data.length) {
       <div class="dialog-grid-header">
         @for (col of columns; track col) {
           <div class="col-{{col.width}} col-id-header-{{col.id}}">
@@ -24,7 +24,7 @@
         }
       </div>
     }
-    @if (data?.length) {
+    @if (data.length) {
       <div class="dialog-grid-body">
         @for (item of data; track item) {
           <div class="dialog-grid-row row-{{height}}">
@@ -37,7 +37,7 @@
         }
       </div>
     }
-    @if (!data?.length) {
+    @if (!data.length) {
       <div class="dialog-grid-empty">
         <div>
           <svg-icon

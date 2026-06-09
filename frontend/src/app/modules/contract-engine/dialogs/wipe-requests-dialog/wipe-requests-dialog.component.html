@@ -1,6 +1,6 @@
 <app-dialog-wrapper (cancel)="onNoClick()" title="Wiper requests" [confirmVisible]="false" [syncVisible]="false"
   [loading]="loading">
-  @if (requests?.length) {
+  @if (requests.length) {
     @for (request of requests; track request) {
       <div class="request">
         <div class="profile">

@@ -754,7 +754,7 @@
             [attr.resizing-id]="id" [cdkDragStartDelay]="100" [ngStyle]="{ width: size, 'flex-basis': size }"
             cdkDrag class="center-container">
             <i *cdkDragPreview class="pi pi-sitemap"></i>
-            @if (!isTree && errors?.length) {
+            @if (!isTree && errors.length) {
               <div class="json-errors">
                 @for (item of errors; track item) {
                   <div class="errors-property">

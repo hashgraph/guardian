@@ -108,7 +108,7 @@
           <div class="field-container">
             <div class="field-header">Version</div>
             <div class="field-value">{{ policy.version || 'N\\A' }}</div>
-            @if (newVersions?.length) {
+            @if (newVersions.length) {
               <div class="field-value">
                 <app-new-versions
                   (onClick)="onNewVersionClick($event)"
@@ -155,7 +155,7 @@
               <div class="field-value">{{ similar }}</div>
             </div>
           }
-          @if (toolConfigs?.length) {
+          @if (toolConfigs.length) {
             <div class="field-container">
               <div class="field-header">Tools</div>
               <form [formGroup]="toolForm">

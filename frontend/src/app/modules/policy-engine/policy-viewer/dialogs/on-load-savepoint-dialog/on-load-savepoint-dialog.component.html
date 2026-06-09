@@ -11,7 +11,7 @@
     <div class="col date">Date &amp; Time</div>
   </div>
 
-  @if (items?.length) {
+  @if (items.length) {
     <div class="list">
       @for (item of items; track trackById($index, item)) {
         <div

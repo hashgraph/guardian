@@ -422,7 +422,7 @@
 
                 <div class="forms-container">
                     <form class="hedera-form">
-                        <ng-container *ngIf="currentStep?.id === 'select_sr'">
+                        <ng-container *ngIf="currentStep.id === 'select_sr'">
                             <div class="user-onboarding-wizard__header">
                                 <form
                                     *ngIf="hasRegistries"
@@ -495,7 +495,7 @@
                                 </ng-template>
                             </div>
                         </ng-container>
-                        <ng-container *ngIf="currentStep?.id === 'hedera_credentials'">
+                        <ng-container *ngIf="currentStep.id === 'hedera_credentials'">
                             <div class="step-container">
                                 <div class="hedera-credentials-title">
                                     Setup User
@@ -717,7 +717,7 @@
                                 </div>
                             </div>
                         </ng-container>
-                        <ng-container *ngIf="currentStep?.id === 'did_document'">
+                        <ng-container *ngIf="currentStep.id === 'did_document'">
                             <div class="step-container">
                                 <div class="hedera-credentials-title">
                                     Setup User
@@ -772,7 +772,7 @@
                                 </form>
                             </div>
                         </ng-container>
-                        <ng-container *ngIf="currentStep?.id === 'did_document_keys'">
+                        <ng-container *ngIf="currentStep.id === 'did_document_keys'">
                             <div class="step-container">
                                 <div class="hedera-credentials-title">
                                     DID Document signing keys
@@ -812,7 +812,7 @@
                                 </form>
                             </div>
                         </ng-container>
-                        <ng-container *ngIf="currentStep?.id === 'vc_document'">
+                        <ng-container *ngIf="currentStep.id === 'vc_document'">
                             <div class="hedera-credentials-title">
                                 VC Document
                             </div>

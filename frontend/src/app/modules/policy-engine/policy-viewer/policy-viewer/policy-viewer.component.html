@@ -278,7 +278,7 @@
                 Role: {{ policyInfo.userRoles.join(", ") }}
               </span>
             }
-            @if (editableParameters?.length) {
+            @if (editableParameters.length) {
               <button  (click)="openParametersSettings()" class="policy-settings-button guardian-button guardian-button-secondary">
                 <div class="guardian-button-icon">
                   <i class="pi pi-cog"></i>
@@ -314,7 +314,7 @@
             <p-tablist>
               <p-tab [value]="0">General</p-tab>
               <p-tab [value]="1">Export Documents</p-tab>
-              @if (permissions?.STANDARD_REGISTRY) {
+              @if (permissions.STANDARD_REGISTRY) {
                 <p-tab [value]="2">Mint Requests</p-tab>
               }
             </p-tablist>
@@ -364,7 +364,7 @@
               <p-tabpanel [value]="1">
                 <app-project-data-export></app-project-data-export>
               </p-tabpanel>
-              @if (permissions?.STANDARD_REGISTRY) {
+              @if (permissions.STANDARD_REGISTRY) {
                 <p-tabpanel [value]="2">
                   <app-mint-requests [policyId]="policyId"></app-mint-requests>
                 </p-tabpanel>

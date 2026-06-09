@@ -180,7 +180,7 @@
       </div>
     }
 
-    @if (user?.ANALYTIC_DOCUMENT_READ) {
+    @if (user.ANALYTIC_DOCUMENT_READ) {
       <app-compare-viewer
         [collapsed]="menuCollapsed"
         [active]="activeLink.startsWith('/compare')"
