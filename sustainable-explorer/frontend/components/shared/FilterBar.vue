@@ -10,6 +10,7 @@ export interface FilterOption {
     label: string;
     options: { value: string; label: string; icon?: string }[];
     multiSelect?: boolean;
+    searchable?: boolean;
     type?: 'select' | 'daterange' | 'yearrange' | 'numrange';
 }
 
@@ -36,6 +37,17 @@ const emit = defineEmits<{
 
 const openDropdown = ref<string | null>(null);
 const dropdownRefs = ref<Record<string, HTMLElement | null>>({});
+const dropdownSearch = ref<Record<string, string>>({});
+
+watch(openDropdown, (_newKey, oldKey) => {
+    if (oldKey) dropdownSearch.value[oldKey] = '';
+});
+
+function filteredOptions(filter: FilterOption): FilterOption['options'] {
+    const q = (dropdownSearch.value[filter.key] ?? '').toLowerCase().trim();
+    if (!q) return filter.options;
+    return filter.options.filter(o => o.label.toLowerCase().includes(q));
+}
 
 function toggleDropdown(key: string) {
     openDropdown.value = openDropdown.value === key ? null : key;
@@ -442,17 +454,34 @@ if (import.meta.client) {
                 <!-- Single-select dropdown -->
                 <div
                     v-else-if="openDropdown === filter.key"
-                    :class="[dropdownClass, 'absolute top-full mt-1 z-[9999] min-w-[10rem] max-w-[16rem] max-h-64 overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 shadow-md text-left']"
+                    :class="[dropdownClass, 'absolute top-full mt-1 z-[9999] min-w-[10rem] max-w-[16rem] rounded-md border bg-popover shadow-md text-left']"
                 >
-                    <button
-                        v-for="opt in [{ value: 'all', label: `${t('common.all')} ${filter.label}` }, ...filter.options]"
-                        :key="opt.value"
-                        class="flex w-full items-center justify-start text-left rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent"
-                        :class="(activeFilters[filter.key] || 'all') === opt.value ? 'font-medium text-foreground' : 'text-muted-foreground'"
-                        @click="selectFilter(filter.key, opt.value)"
-                    >
-                        <span class="min-w-0 break-words">{{ opt.label }}</span>
-                    </button>
+                    <!-- Inline search for searchable dropdowns -->
+                    <div v-if="filter.searchable" class="p-1 border-b border-border">
+                        <div class="relative">
+                            <Search class="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                            <input
+                                v-model="dropdownSearch[filter.key]"
+                                type="text"
+                                :placeholder="$t('common.searchEllipsis')"
+                                class="h-7 w-full rounded-sm border border-input bg-background pl-6 pr-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                                @click.stop
+                                @keydown.esc.stop="openDropdown = null"
+                            />
+                        </div>
+                    </div>
+                    <!-- Options list -->
+                    <div :class="['p-1 overflow-y-auto overflow-x-hidden', filter.searchable ? 'max-h-52' : 'max-h-64']">
+                        <button
+                            v-for="opt in [{ value: 'all', label: `${t('common.all')} ${filter.label}` }, ...filteredOptions(filter)]"
+                            :key="opt.value"
+                            class="flex w-full items-center justify-start text-left rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent"
+                            :class="(activeFilters[filter.key] || 'all') === opt.value ? 'font-medium text-foreground' : 'text-muted-foreground'"
+                            @click="selectFilter(filter.key, opt.value)"
+                        >
+                            <span class="min-w-0 break-words">{{ opt.label }}</span>
+                        </button>
+                    </div>
                 </div>
             </Transition>
         </div>

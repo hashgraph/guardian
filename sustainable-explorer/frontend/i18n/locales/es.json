@@ -234,6 +234,7 @@
         "filters": {
             "status": "Estado",
             "registry": "Registro",
+            "country": "País",
             "vintage": "Añada",
             "sector": "Sector",
             "sectoralScope": "Alcance sectorial",
