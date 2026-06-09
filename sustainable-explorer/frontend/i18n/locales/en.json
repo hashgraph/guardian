@@ -517,7 +517,7 @@
                     "project": "Project",
                     "country": "Country",
                     "registry": "Registry",
-                    "credits": "Credits",
+                    "issuances": "Issuances",
                     "status": "Status"
                 },
                 "noProjects": "No projects found under this policy."
