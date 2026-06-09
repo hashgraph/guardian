@@ -401,7 +401,7 @@ export class PgCreditRepository extends CreditRepository {
                 "topicId",
                 documents->'credentialSubject'->0->>'amount' AS amount,
                 documents->'credentialSubject'->0->>'date'   AS date,
-                documents->'credentialSubject'->0           AS document
+                documents                                    AS document
              FROM message
              WHERE type = 'VC-Document'
                AND documents IS NOT NULL
