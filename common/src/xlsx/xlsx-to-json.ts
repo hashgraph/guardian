@@ -92,9 +92,8 @@ export class XlsxToJson {
     }
 
     /**
-     * Resolve the Enums-tab columns by matching header text on the header row, so the columns
-     * can appear in any order (and the user can reorder them) — mirroring how the schema field
-     * tab binds its columns. Returns null if any of the three required headers is missing.
+     * Resolve the Enums-tab columns by matching header text on the header row.
+     * Returns null if any of the three required headers is missing.
      */
     private static resolveSharedEnumColumns(
         worksheet: Worksheet
@@ -719,6 +718,7 @@ export class XlsxToJson {
                 }
 
                 if (enumObject) {
+                    field.enumName = enumObject?.enumName || '';
                     if (enumObject.loaded) {
                         field.enum = enumObject?.getEnum();
                         field.remoteLink = enumObject?.getLink();
@@ -734,6 +734,7 @@ export class XlsxToJson {
                         }, field);
                     }
                 } else {
+                    field.enumName = '';
                     field.enum = [];
                     field.remoteLink = null;
                     xlsxResult.addError({

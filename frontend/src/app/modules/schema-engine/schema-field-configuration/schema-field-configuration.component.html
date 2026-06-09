@@ -293,6 +293,16 @@
         }
       </div>
       @if (enum && !loading) {
+          <div class="input-field-container guardian-input-container enum-name-field">
+              <label class="form-label" htmlFor="enumName">Enum name</label>
+              <input
+                  [formControl]="field.controlEnumName"
+                  id="enumName"
+                  pInputText
+                  placeholder="Enum name"
+                  type="text"
+              />
+          </div>
         <div class="enum-options-container">
           @if (field.controlEnum.value.length) {
             <div class="form-group enum-form-field">

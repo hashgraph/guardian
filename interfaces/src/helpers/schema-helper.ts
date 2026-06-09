@@ -62,6 +62,7 @@ export class SchemaHelper {
             field.format = _property.format ? String(_property.format) : null;
             field.pattern = _property.pattern ? String(_property.pattern) : null;
             field.enum = _property.enum;
+            field.enumName = _property.enumName;
             field.remoteLink = _property.$ref;
         }
         field.readOnly = !!(_property.readOnly || readonly);
@@ -179,6 +180,9 @@ export class SchemaHelper {
             }
             if (field.enum) {
                 item.enum = field.enum;
+            }
+            if (field.enumName) {
+                item.enumName = field.enumName;
             }
             if (field.format) {
                 item.format = field.format;

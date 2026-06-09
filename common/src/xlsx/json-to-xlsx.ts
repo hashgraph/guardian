@@ -134,21 +134,27 @@ export class JsonToXlsx {
     ): void {
         for (const field of fields) {
             if (field.enum || field.remoteLink) {
-                const key = `${schema.name}\0${field.description}`;
-                const existing = _seenMap.get(key);
+                const enumBaseName = field.enumName || field.description;
+                const existing = _seenMap.get(enumBaseName);
                 if (existing) {
-                    _enumsCache.set(field.path, existing);
-                } else {
-                    const _enum = new XlsxEnum(enumWorksheet);
-                    _enum.setSchema(schema);
-                    _enum.setField(field);
-                    _enum.setEnumName(JsonToXlsx.uniqueEnumName(field.description, usedNames));
-                    if (field.enum) {
-                        _enum.setData(field.enum);
+                    const existingValues = existing.data.join('\0');
+                    const currentValues = (field.enum || []).join('\0');
+                    if (existingValues === currentValues) {
+                        _enumsCache.set(field.path, existing);
+                        continue;
                     }
-                    _enums.push(_enum);
-                    _enumsCache.set(field.path, _enum);
-                    _seenMap.set(key, _enum);
+                }
+                const _enum = new XlsxEnum(enumWorksheet);
+                _enum.setSchema(schema);
+                _enum.setField(field);
+                _enum.setEnumName(JsonToXlsx.uniqueEnumName(enumBaseName, usedNames));
+                if (field.enum) {
+                    _enum.setData(field.enum);
+                }
+                _enums.push(_enum);
+                _enumsCache.set(field.path, _enum);
+                if (!existing) {
+                    _seenMap.set(enumBaseName, _enum);
                 }
             }
             if (field.isRef && field.fields) {
@@ -171,7 +177,7 @@ export class JsonToXlsx {
             used.add(name);
             return name;
         }
-        let i = 2;
+        let i = 1;
         while (used.has(`${name} (${i})`)) {
             i++;
         }
