@@ -1,79 +1,77 @@
 <div class="guardian-page">
-    <div *ngIf="loading" class="loading">
-        <p-progressSpinner></p-progressSpinner>
+  @if (loading) {
+    <div class="loading">
+      <p-progressSpinner></p-progressSpinner>
     </div>
+  }
 
-    <div class="guardian-user-page-header">Retirement</div>
+  <div class="guardian-user-page-header">Retirement</div>
 
-    <ng-container *ngIf="!isConfirmed">
-        <div class="not-exist">
-            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
-        </div>
-    </ng-container>
+  @if (!isConfirmed) {
+    <div class="not-exist">
+      Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+    </div>
+  }
 
-    <ng-container *ngIf="isConfirmed">
-        <div class="actions-container">
-            <div class="module-actions-buttons-container">
-                <p-button
-                    (click)="openRetirePoolsDialog()"
-                    class="toolbar-btn-primary">
-                    <i class="pi pi-eye toolbar-icons"></i>
-                    <span>Retire</span>
-                </p-button>
-                <p-button
-                    (click)="openRetireRequestsDialog()"
-                    class="toolbar-btn-primary">
-                    <i class="pi pi-eye toolbar-icons"></i>
-                    <span>Requests</span>
-                </p-button>
-            </div>
-        </div>
-        <div class="table-container">
-            <div class="guardian-grid-container">
-                <p-table
-                    [value]="contractRequests"
-                    class="guardian-grid-table"
-                    [scrollable]="true">
-                    <ng-template pTemplate="header">
-                        <tr class="guardian-grid-header">
-                            <th class="header-cell-text" style="min-width: 260px; width: 260px;">Contract Id</th>
-                            <th class="header-cell-text" style="min-width: 220px; width: 220px;">Date</th>
-                            <th class="header-cell-text" style="min-width: 220px; width: 220px;">Operations</th>
-                        </tr>
-                    </ng-template>
-
-                    <ng-template pTemplate="body" let-element>
-                        <tr class="guardian-grid-row">
-                            <td class="row-cell-text" style="min-width: 260px; width: 260px;">
-                                <hedera-explorer type="accounts"
-                                                 [params]="element.document.credentialSubject[0].contractId">
-                                    {{ element.document.credentialSubject[0].contractId }}
-                                </hedera-explorer>
-                            </td>
-
-                            <td class="row-cell-text" style="min-width: 220px; width: 220px;">
-                                {{ getDate(element.document.issuanceDate) }}
-                            </td>
-
-                            <td class="row-cell-text" style="min-width: 220px; width: 220px;">
-                                <div class="view-action-btn" (click)="viewRetireRequest(element)">
-                                    <span>View Details</span>
-                                    <i class="pi pi-eye"></i>
-                                </div>
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-
-                <div class="guardian-grid-paginator">
-                    <app-paginator
-                        [length]="contractsCount"
-                        [pageIndex]="pageIndex"
-                        [pageSize]="pageSize"
-                        (page)="onPage($event)">
-                    </app-paginator>
+  @if (isConfirmed) {
+    <div class="actions-container">
+      <div class="module-actions-buttons-container">
+        <p-button
+          (click)="openRetirePoolsDialog()"
+          class="toolbar-btn-primary">
+          <i class="pi pi-eye toolbar-icons"></i>
+          <span>Retire</span>
+        </p-button>
+        <p-button
+          (click)="openRetireRequestsDialog()"
+          class="toolbar-btn-primary">
+          <i class="pi pi-eye toolbar-icons"></i>
+          <span>Requests</span>
+        </p-button>
+      </div>
+    </div>
+    <div class="table-container">
+      <div class="guardian-grid-container">
+        <p-table
+          [value]="contractRequests"
+          class="guardian-grid-table"
+          [scrollable]="true">
+          <ng-template pTemplate="header">
+            <tr class="guardian-grid-header">
+              <th class="header-cell-text" style="min-width: 260px; width: 260px;">Contract Id</th>
+              <th class="header-cell-text" style="min-width: 220px; width: 220px;">Date</th>
+              <th class="header-cell-text" style="min-width: 220px; width: 220px;">Operations</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-element>
+            <tr class="guardian-grid-row">
+              <td class="row-cell-text" style="min-width: 260px; width: 260px;">
+                <hedera-explorer type="accounts"
+                  [params]="element.document.credentialSubject[0].contractId">
+                  {{ element.document.credentialSubject[0].contractId }}
+                </hedera-explorer>
+              </td>
+              <td class="row-cell-text" style="min-width: 220px; width: 220px;">
+                {{ getDate(element.document.issuanceDate) }}
+              </td>
+              <td class="row-cell-text" style="min-width: 220px; width: 220px;">
+                <div class="view-action-btn" (click)="viewRetireRequest(element)">
+                  <span>View Details</span>
+                  <i class="pi pi-eye"></i>
                 </div>
-            </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        <div class="guardian-grid-paginator">
+          <app-paginator
+            [length]="contractsCount"
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            (page)="onPage($event)">
+          </app-paginator>
         </div>
-    </ng-container>
+      </div>
+    </div>
+  }
 </div>

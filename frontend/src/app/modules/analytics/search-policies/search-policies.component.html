@@ -1,123 +1,138 @@
 <div class="content">
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
     </div>
+  }
 
-    <ng-container *ngIf="!owner">
-        <div class="not-exist">
-            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
-        </div>
-    </ng-container>
+  @if (!owner) {
+    <div class="not-exist">
+      Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+    </div>
+  }
 
-    <ng-container *ngIf="!policyId">
-        <div class="not-exist">No results found.</div>
-    </ng-container>
+  @if (!policyId) {
+    <div class="not-exist">No results found.</div>
+  }
 
-    <ng-container *ngIf="owner && policyId && policies">
-        <div class="actions-container">
-            <form class="policy-filters" [formGroup]="filtersForm">
-                <span>Filter by</span>
-
-                <div>
-                    <div class="p-fluid policy-filters__control">
-                        <label for="policyNameInput">Policy name</label>
-                        <input
-                            pInputText
-                            id="policyNameInput"
-                            placeholder="Policy name"
-                            formControlName="policyName">
-                    </div>
-                    <div *ngIf="hasTagOptions" class="p-fluid policy-filters__control">
-                        <label for="tagsDropdown">Tags</label>
-                        <p-select
-                            id="tagsDropdown"
-                            formControlName="tag"
-                            [options]="getTagOptions()"
-                            placeholder="Select a Tag"
-                            [appendTo]="'body'"
-                        >
-                        </p-select>
-                    </div>
-                </div>
-
-                <button *ngIf="lastFilters" mat-stroked-button (click)="clearFilters()">
-                    Clear filters
-                </button>
-            </form>
-
-            <div>
-                <button mat-raised-button color="primary" (click)="comparePolicy()" class="toolbar-btn">
-                    <svg-icon src="/assets/images/icons/compare.svg" svgClass="icon-style-compare"></svg-icon>
-                    <span>Compare ({{ selectedCount }})</span>
-                </button>
-            </div>
-        </div>
+  @if (owner && policyId && policies) {
+    <div class="actions-container">
+      <form class="policy-filters" [formGroup]="filtersForm">
+        <span>Filter by</span>
         <div>
-            <div class="table-container">
-                <p-table [value]="filteredPolicies" class="table">
-                    <ng-template pTemplate="header">
-                        <tr class="header">
-                            <th class="mat-header-cell">
-                                <p-checkbox [(ngModel)]="selectedAll" (onChange)="selectAllPolicy()"></p-checkbox>
-                            </th>
-                            <th class="mat-header-cell mat-column-topic">Hedera Topic Id</th>
-                            <th class="mat-header-cell mat-column-tokens">Tokens</th>
-                            <th class="mat-header-cell mat-column-schemas">Schemas</th>
-                            <th class="mat-header-cell mat-column-name">Policy Name</th>
-                            <th class="mat-header-cell mat-column-version">Version</th>
-                            <th class="mat-header-cell mat-column-tags">Tags</th>
-                            <th class="mat-header-cell mat-column-description">Description</th>
-                            <th class="mat-header-cell mat-column-status">Status</th>
-                            <th class="mat-header-cell mat-column-rate">Rate</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-element>
-                        <tr [attr.readonly]="element._readonly" class="body">
-                            <td class="mat-cell">
-                                <p-checkbox [(ngModel)]="element._select"
-                                            (onChange)="selectPolicy(element)"></p-checkbox>
-                            </td>
-                            <td class="mat-cell mat-column-topic">
-                                <hedera-explorer type="topics" [params]="element.topicId">
-                                    {{ element.topicId }}
-                                </hedera-explorer>
-                            </td>
-                            <td class="mat-cell mat-column-tokens">
-                                <a [routerLink]="['/tokens']" [queryParams]="{ policy: element.id }">Tokens</a>
-                            </td>
-                            <td class="mat-cell mat-column-schemas">
-                                <a [routerLink]="['/schemas']" [queryParams]="{ topic: element.topicId }">Schemas</a>
-                            </td>
-                            <td class="mat-cell mat-column-name" pTooltip="{{ element.name }}" tooltipPosition="top"
-                                [tooltipOptions]="{ tooltipStyleClass: 'guardian-tooltip' }">
-                                {{ element.name }}
-                            </td>
-                            <td class="mat-cell mat-column-version">{{ element.version }}</td>
-                            <td class="mat-cell mat-column-tags">
-                                <tags-explorer *ngIf="user.TAGS_TAG_READ" [user]="user" [data]="element._tags"
-                                               [owner]="owner" [target]="element.id" [schemas]="tagSchemas"
-                                               [entity]="tagEntity" [service]="tagsService"></tags-explorer>
-                            </td>
-                            <td class="mat-cell mat-column-description" pTooltip="{{ element.description }}"
-                                tooltipPosition="top"
-                                [tooltipOptions]="{ tooltipStyleClass: 'guardian-tooltip' }">
-                                {{ element.description }}
-                            </td>
-                            <td class="mat-cell mat-column-status">
-                                <div *ngIf="element.status === 'DRAFT'" class="status-draft">Draft</div>
-                                <div *ngIf="element.status === 'DRY-RUN'" class="status-dry-run">In Dry Run</div>
-                                <div *ngIf="element.status === 'DEMO'" class="status-dry-run">Demo</div>
-                                <div *ngIf="element.status === 'PUBLISH'" class="status-publish">Published</div>
-                                <div *ngIf="element.status === 'PUBLISH_ERROR'" class="status-failed">Not published
-                                </div>
-                            </td>
-                            <td class="mat-cell mat-column-rate">
-                                <div [ngClass]="element._color + ' color-field'">{{ element._rate }}</div>
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
+          <div class="p-fluid policy-filters__control">
+            <label for="policyNameInput">Policy name</label>
+            <input
+              pInputText
+              id="policyNameInput"
+              placeholder="Policy name"
+              formControlName="policyName">
+          </div>
+          @if (hasTagOptions) {
+            <div class="p-fluid policy-filters__control">
+              <label for="tagsDropdown">Tags</label>
+              <p-select
+                id="tagsDropdown"
+                formControlName="tag"
+                [options]="getTagOptions()"
+                placeholder="Select a Tag"
+                [appendTo]="'body'"
+                >
+              </p-select>
             </div>
+          }
         </div>
-    </ng-container>
+        @if (lastFilters) {
+          <button mat-stroked-button (click)="clearFilters()">
+            Clear filters
+          </button>
+        }
+      </form>
+      <div>
+        <button mat-raised-button color="primary" (click)="comparePolicy()" class="toolbar-btn">
+          <svg-icon src="/assets/images/icons/compare.svg" svgClass="icon-style-compare"></svg-icon>
+          <span>Compare ({{ selectedCount }})</span>
+        </button>
+      </div>
+    </div>
+    <div>
+      <div class="table-container">
+        <p-table [value]="filteredPolicies" class="table">
+          <ng-template pTemplate="header">
+            <tr class="header">
+              <th class="mat-header-cell">
+                <p-checkbox [(ngModel)]="selectedAll" (onChange)="selectAllPolicy()"></p-checkbox>
+              </th>
+              <th class="mat-header-cell mat-column-topic">Hedera Topic Id</th>
+              <th class="mat-header-cell mat-column-tokens">Tokens</th>
+              <th class="mat-header-cell mat-column-schemas">Schemas</th>
+              <th class="mat-header-cell mat-column-name">Policy Name</th>
+              <th class="mat-header-cell mat-column-version">Version</th>
+              <th class="mat-header-cell mat-column-tags">Tags</th>
+              <th class="mat-header-cell mat-column-description">Description</th>
+              <th class="mat-header-cell mat-column-status">Status</th>
+              <th class="mat-header-cell mat-column-rate">Rate</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-element>
+            <tr [attr.readonly]="element._readonly" class="body">
+              <td class="mat-cell">
+                <p-checkbox [(ngModel)]="element._select"
+                (onChange)="selectPolicy(element)"></p-checkbox>
+              </td>
+              <td class="mat-cell mat-column-topic">
+                <hedera-explorer type="topics" [params]="element.topicId">
+                  {{ element.topicId }}
+                </hedera-explorer>
+              </td>
+              <td class="mat-cell mat-column-tokens">
+                <a [routerLink]="['/tokens']" [queryParams]="{ policy: element.id }">Tokens</a>
+              </td>
+              <td class="mat-cell mat-column-schemas">
+                <a [routerLink]="['/schemas']" [queryParams]="{ topic: element.topicId }">Schemas</a>
+              </td>
+              <td class="mat-cell mat-column-name" pTooltip="{{ element.name }}" tooltipPosition="top"
+                [tooltipOptions]="{ tooltipStyleClass: 'guardian-tooltip' }">
+                {{ element.name }}
+              </td>
+              <td class="mat-cell mat-column-version">{{ element.version }}</td>
+              <td class="mat-cell mat-column-tags">
+                @if (user.TAGS_TAG_READ) {
+                  <tags-explorer [user]="user" [data]="element._tags"
+                    [owner]="owner" [target]="element.id" [schemas]="tagSchemas"
+                  [entity]="tagEntity" [service]="tagsService"></tags-explorer>
+                }
+              </td>
+              <td class="mat-cell mat-column-description" pTooltip="{{ element.description }}"
+                tooltipPosition="top"
+                [tooltipOptions]="{ tooltipStyleClass: 'guardian-tooltip' }">
+                {{ element.description }}
+              </td>
+              <td class="mat-cell mat-column-status">
+                @if (element.status === 'DRAFT') {
+                  <div class="status-draft">Draft</div>
+                }
+                @if (element.status === 'DRY-RUN') {
+                  <div class="status-dry-run">In Dry Run</div>
+                }
+                @if (element.status === 'DEMO') {
+                  <div class="status-dry-run">Demo</div>
+                }
+                @if (element.status === 'PUBLISH') {
+                  <div class="status-publish">Published</div>
+                }
+                @if (element.status === 'PUBLISH_ERROR') {
+                  <div class="status-failed">Not published
+                  </div>
+                }
+              </td>
+              <td class="mat-cell mat-column-rate">
+                <div [ngClass]="element._color + ' color-field'">{{ element._rate }}</div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  }
 </div>

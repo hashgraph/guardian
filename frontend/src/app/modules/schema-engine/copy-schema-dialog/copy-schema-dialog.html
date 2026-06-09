@@ -1,59 +1,67 @@
 <div class="dialog-header">
-    <div class="header-container">
-        <div *ngIf="type=='new'" class="header-text">
-            Copy Schema
-        </div>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    @if (type=='new') {
+      <div class="header-text">
+        Copy Schema
+      </div>
+    }
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 
 <div class="dialog-body">
-    <div class="context">
-        <form [formGroup]="dataForm">
-            <div class="form-group">
-                <label for="schemaName" class="form-label">* Schema Name</label>
-                <input pInputText id="schemaName" formControlName="name" placeholder="Schema Name" type="text">
-            </div>
-            <div *ngIf="isPolicy" class="form-group">
-                <label for="policyDropdown" class="form-label">* Policy</label>
-                <p-select id="policyDropdown" formControlName="topicId" [options]="getPoliciesWithDefault()"
-                    optionLabel="name" optionValue="topicId" [appendTo]="'body'" placeholder="Select a policy"
-                    (onChange)="onFilter($event)" class="full-width">
-                </p-select>
-            </div>
-            <div *ngIf="isTool" class="form-group">
-                <label for="toolDropdown" class="form-label">* Tool</label>
-                <p-select id="toolDropdown" formControlName="topicId" [options]="getToolsWithDefault()"
-                    optionLabel="name" optionValue="topicId" placeholder="Select a tool" (onChange)="onFilter($event)"
-                    class="full-width">
-                </p-select>
-            </div>
-            <div *ngIf="isSystem" class="form-group">
-                <label for="entityDropdown" class="form-label">For (Entity)</label>
-                <p-select id="entityDropdown" formControlName="entity" [options]="getEntitiesWithDefault()"
-                    optionLabel="label" optionValue="value" placeholder="Select an entity" class="full-width">
-                </p-select>
-            </div>
-            <div class="copy-nested-checkbox">
-                <p-checkbox binary="true" id="copyNested" formControlName="copyNested" />
-                <label for="copyNested" class="form-label ">Copy nested schemas</label>
-            </div>
-        </form>
-    </div>
+  <div class="context">
+    <form [formGroup]="dataForm">
+      <div class="form-group">
+        <label for="schemaName" class="form-label">* Schema Name</label>
+        <input pInputText id="schemaName" formControlName="name" placeholder="Schema Name" type="text">
+      </div>
+      @if (isPolicy) {
+        <div class="form-group">
+          <label for="policyDropdown" class="form-label">* Policy</label>
+          <p-select id="policyDropdown" formControlName="topicId" [options]="getPoliciesWithDefault()"
+            optionLabel="name" optionValue="topicId" [appendTo]="'body'" placeholder="Select a policy"
+            (onChange)="onFilter($event)" class="full-width">
+          </p-select>
+        </div>
+      }
+      @if (isTool) {
+        <div class="form-group">
+          <label for="toolDropdown" class="form-label">* Tool</label>
+          <p-select id="toolDropdown" formControlName="topicId" [options]="getToolsWithDefault()"
+            optionLabel="name" optionValue="topicId" placeholder="Select a tool" (onChange)="onFilter($event)"
+            class="full-width">
+          </p-select>
+        </div>
+      }
+      @if (isSystem) {
+        <div class="form-group">
+          <label for="entityDropdown" class="form-label">For (Entity)</label>
+          <p-select id="entityDropdown" formControlName="entity" [options]="getEntitiesWithDefault()"
+            optionLabel="label" optionValue="value" placeholder="Select an entity" class="full-width">
+          </p-select>
+        </div>
+      }
+      <div class="copy-nested-checkbox">
+        <p-checkbox binary="true" id="copyNested" formControlName="copyNested" />
+        <label for="copyNested" class="form-label ">Copy nested schemas</label>
+      </div>
+    </form>
+  </div>
 
 </div>
 
 
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="secondary-button">
-            <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
-        </div>
-        <div class="primary-button">
-            <button (click)="onCreate()" [disabled]="!dataForm.valid"
-                class="guardian-button guardian-button-primary">Copy schema</button>
-        </div>
+  <div class="action-buttons">
+    <div class="secondary-button">
+      <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
     </div>
+    <div class="primary-button">
+      <button (click)="onCreate()" [disabled]="!dataForm.valid"
+      class="guardian-button guardian-button-primary">Copy schema</button>
+    </div>
+  </div>
 </div>

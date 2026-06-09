@@ -1,4 +1,8 @@
 <div class="info-content">
-    <div *ngIf="title" class="info-title">{{title}}</div>
-    <div *ngIf="message" class="info-message">{{message}}</div>
+  @if (title) {
+    <div class="info-title">{{title}}</div>
+  }
+  @if (message) {
+    <div class="info-message">{{message}}</div>
+  }
 </div>

@@ -1,837 +1,889 @@
 <div [attr.instance]="!!policy" [attr.status]="policyInfo?.status" class="policy-content">
-    <ng-container *ngIf="!isConfirmed">
-        <div class="not-exist">
-            Before starting work you need to get DID
-            <a [routerLink]="['/profile']">here</a>
+  @if (!isConfirmed) {
+    <div class="not-exist">
+      Before starting work you need to get DID
+      <a [routerLink]="['/profile']">here</a>
+    </div>
+  }
+
+  @if (newRequestsExist) {
+    <div class="new-requests-exist">
+      <div>
+        <p>You have new remote policy requests awaiting your response. Please respond to proceed with the policy process.</p>
+        <p-button (onClick)="onPolicyRequests()" [outlined]="true">
+          View Policy Requests
+        </p-button>
+      </div>
+    </div>
+  }
+
+  @if (!newRequestsExist && newActionsExist) {
+    <div class="new-requests-exist">
+      <div>
+        <p>You have new remote policy actions. Wait for the event to be processed.</p>
+      </div>
+    </div>
+  }
+
+  @if (isConfirmed && !disconnected && (!policyId || !policy)) {
+    <div class="not-exist">
+      Policy doesn't exist
+    </div>
+  }
+
+  @if (isConfirmed && disconnected) {
+    <div
+      [attr.expired]="!!policyInfo.discontinuedDate"
+      [attr.policy-status]="policyInfo.status"
+      class="policy-header"
+      >
+      @if (!isDryRun && !policyInfo.discontinuedDate) {
+        <div>
+          <a (click)="onBack()" class="back-button">List of Policies</a>
         </div>
-    </ng-container>
-
-    <ng-container *ngIf="newRequestsExist">
-        <div class="new-requests-exist">
-            <div>
-                <p>You have new remote policy requests awaiting your response. Please respond to proceed with the policy process.</p>
-                <p-button (onClick)="onPolicyRequests()" [outlined]="true">
-                    View Policy Requests
-                </p-button>
-            </div>
-        </div>
-    </ng-container>
-
-    <ng-container *ngIf="!newRequestsExist && newActionsExist">
-        <div class="new-requests-exist">
-            <div>
-                <p>You have new remote policy actions. Wait for the event to be processed.</p>
-            </div>
-        </div>
-    </ng-container>
-
-    <ng-container *ngIf="isConfirmed && !disconnected && (!policyId || !policy)">
-        <div class="not-exist">
-            Policy doesn't exist
-        </div>
-    </ng-container>
-
-    <ng-container *ngIf="isConfirmed && disconnected">
-        <div
-            [attr.expired]="!!policyInfo.discontinuedDate"
-            [attr.policy-status]="policyInfo.status"
-            class="policy-header"
-        >
-            <div *ngIf="!isDryRun && !policyInfo.discontinuedDate">
-                <a (click)="onBack()" class="back-button">List of Policies</a>
-            </div>
-            <div *ngIf="policyInfo" class="policy-info-container">
-                <div class="policy-name-container">
-                    <span *ngIf="policyInfo && policyInfo.name">{{ policyInfo.name }}</span>
-                    <span *ngIf="policyInfo && policyInfo.status === 'VIEW'" class="policy-status">Remote</span>
-                </div>
-                <div class="policy-additional-info-container">
-                    <span
-                        *ngIf="policyInfo && policyInfo.version"
-                        [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
-                        class="additional-policy-info-text"
-                    >
-                        Version: ({{ policyInfo.version }})
-                    </span>
-                    <span
-                        *ngIf="!groups.length && !isMultipleGroups"
-                        [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
-                        class="additional-policy-info-text"
-                    >
-                        Role: {{ policyInfo.userRoles.join(", ") }}
-                    </span>
-                    <span *ngIf="isMultipleGroups" class="current-user-group">
-                        <span
-                            [ngClass]="isDryRun ? 'white-additional-policy-info-text' : ''"
-                            class="additional-policy-info-text"
-                            title="Group: {{userGroup}} / Role: {{userRole}}"
-                        >
-                            Group: {{ userGroup }} / Role: {{ userRole }}</span>
-                            <div>
-                                <i class="pi pi-caret-down"></i>
-                            </div>
-                    </span>
-                </div>
-            </div>
-        </div>
-        <div
-            [attr.policy-status]="policyInfo.status"
-            class="policy-body"
-        >
-            <div class="not-exist">
-                <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color"></svg-icon>
-                <span class="info-text-strong">You were disconnected from this policy</span>
-                <span class="info-text">If you wish to re-establish the connection and restore access, please press Reconnect.</span>
-                <button 
-                    (click)="reconnect()" 
-                    class="guardian-button guardian-button-secondary">
-                    <div class="guardian-button-icon">
-                        <svg-icon class="icon-btn svg-icon"
-                            src="/assets/images/icons/refresh-2.svg"
-                            svgClass="icon-color-primary">
-                        </svg-icon>
-                    </div>
-                    <div class="guardian-button-label">Reconnect</div>
-                </button>
-            </div>
-        </div>
-    </ng-container>
-
-    <ng-container *ngIf="isConfirmed && policyId && policy">
-        <div *ngIf="isDryRun" class="dry-run-content">
-            <div
-                [queryParams]="{ policyId }"
-                [routerLink]="['/policy-configuration']"
-                class="dry-run-action-btn"
-                title="Edit Policy"
-            >
-                <i class="pi pi-pencil"></i>
-                <span>Edit</span>
-            </div>
-
-            <div
-                (click)="restartDryRun()"
-                class="dry-run-action-btn"
-                title="Save Policy"
-            >
-                <svg-icon
-                    class="icon-style-restart_alt"
-                    src="/assets/images/icons/restart_alt.svg"
-                    svgClass="icon-style-restart_alt"></svg-icon>
-                <span>Restart</span>
-            </div>
-
-            <div class="delimiter"></div>
-
-            <div
-                class="dry-run-action-btn"
-                (click)="canCreateSavepoint && openAddSavepointDialog()"
-                [attr.aria-disabled]="!canCreateSavepoint"
-                pTooltip="{{ savepointLimitTooltip }}"
-                [tooltipDisabled]="canCreateSavepoint"
-                tooltipPosition="top"
-                tooltipStyleClass="guardian-tooltip"
-            >
-                    <i class="pi pi-flag"></i>
-                    <span>Savepoint</span>
-            </div>
-
-            <div
-                class="dry-run-action-btn"
-                (click)="canRestoreSavepoint && openClickRestoreSavepointDialog()"
-                [attr.aria-disabled]="!canRestoreSavepoint"
-                pTooltip="{{ canRestoreSavepoint ? 'Restore or manage savepoints' : 'No savepoint to restore yet' }}"
-                [tooltipDisabled]="canRestoreSavepoint"
-                tooltipPosition="top"
-                tooltipStyleClass="guardian-tooltip"
-            >
-                <i class="pi pi-undo"></i>
-                <span>Restore</span>
-            </div>
-
-            <div class="delimiter"></div>
-
-            <div (click)="createVirtualUser()" class="dry-run-action-btn">
-                <i class="pi pi-user-plus"></i>
-                <span>Create User</span>
-            </div>
-
-            <div (click)="menu.toggle($event)" class="dry-run-group-btn">
-                <i class="pi pi-users"></i>
-                <span>Users</span>
-                <div class="expand-group">
-                    <i class="pi pi-sort-down-fill"></i>
-                </div>
-            </div>
-
-            <div class="delimiter"></div>
-
-            <div
-                (click)="startRecord()"
-                [attr.disabled]="recordingActive"
-                class="dry-run-action-btn record-btn"
-                title="Start Record">
-                <i class="pi pi-circle-on"></i>
-                <span>Record</span>
-            </div>
-
-            <div
-                (click)="runRecord()"
-                [attr.disabled]="recordingActive"
-                class="dry-run-action-btn run-btn"
-                title="Run Record">
-                <i class="pi pi-play"></i>
-                <span>Run</span>
-            </div>
-
-            <div class="delimiter"></div>
-
-            <div
-                (click)="onView('policy')"
-                [attr.action]="view === 'policy'"
-                class="dry-run-btn"
-            >Policy View</div>
-
-            <div
-                (click)="onView('transactions')"
-                [attr.action]="view === 'transactions'"
-                class="dry-run-btn"
-            >Transactions</div>
-
-            <div
-                (click)="onView('artifacts')"
-                [attr.action]="view === 'artifacts'"
-                class="dry-run-btn"
-            >Artifacts</div>
-
-            <div
-                (click)="onView('ipfs')"
-                [attr.action]="view === 'ipfs'"
-                class="dry-run-btn"
-            >IPFS</div>
-
-            <div class="delimiter"></div>
-
-            <div
-                (click)="onView('mock_config')"
-                [attr.action]="view === 'mock_config'"
-                class="dry-run-btn"
-            >Mock Config</div>
-
-            <div
-                (click)="onView('mock_data')"
-                [attr.action]="view === 'mock_data'"
-                class="dry-run-btn"
-            >Mock Data</div>
-        </div>
-
-        <div
-            [attr.expired]="!!policyInfo.discontinuedDate"
-            [attr.policy-status]="policyInfo.status"
-            class="policy-header"
-        >
-            <div *ngIf="!isDryRun && !policyInfo.discontinuedDate">
-                <a
-                    (click)="onBack()"
-                    class="back-button"
+      }
+      @if (policyInfo) {
+        <div class="policy-info-container">
+          <div class="policy-name-container">
+            @if (policyInfo && policyInfo.name) {
+              <span>{{ policyInfo.name }}</span>
+            }
+            @if (policyInfo && policyInfo.status === 'VIEW') {
+              <span class="policy-status">Remote</span>
+            }
+          </div>
+          <div class="policy-additional-info-container">
+            @if (policyInfo && policyInfo.version) {
+              <span
+                [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
+                class="additional-policy-info-text"
                 >
-                    List of Policies
-                </a>
-            </div>
-            <div *ngIf="isDryRun || !!policyInfo.discontinuedDate" class="guardian-user-back-button">
-                <button
-                    (click)="onBack()"
-                    class="dry-run-back-button guardian-button guardian-button-secondary"
+                Version: ({{ policyInfo.version }})
+              </span>
+            }
+            @if (!groups.length && !isMultipleGroups) {
+              <span
+                [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
+                class="additional-policy-info-text"
                 >
-                    <div class="guardian-button-icon">
-                        <svg-icon class="icon-btn svg-icon"
-                                  src="/assets/images/icons/left-arrow.svg"
-                                  svgClass="icon-color-primary">
-                        </svg-icon>
-                    </div>
-                    <div class="guardian-button-label">Back to Manage Policies</div>
-                </button>
-            </div>
-            <div *ngIf="policyInfo" class="policy-info-container">
-                <div class="policy-name-container">
-                    <span *ngIf="policyInfo && policyInfo.name">{{ policyInfo.name }}</span>
-                    <span *ngIf="policyInfo && policyInfo.status === 'VIEW'" class="policy-status">Remote</span>
+                Role: {{ policyInfo.userRoles.join(", ") }}
+              </span>
+            }
+            @if (isMultipleGroups) {
+              <span class="current-user-group">
+                <span
+                  [ngClass]="isDryRun ? 'white-additional-policy-info-text' : ''"
+                  class="additional-policy-info-text"
+                  title="Group: {{userGroup}} / Role: {{userRole}}"
+                  >
+                Group: {{ userGroup }} / Role: {{ userRole }}</span>
+                <div>
+                  <i class="pi pi-caret-down"></i>
                 </div>
-
-                <div class="policy-additional-info-container">
-                    <span
-                        *ngIf="policyInfo && policyInfo.version"
-                        [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
-                        class="additional-policy-info-text"
-                    >
-                        Version: ({{ policyInfo.version }})
-                    </span>
-                    <span
-                        *ngIf="!groups.length && !isMultipleGroups"
-                        [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
-                        class="additional-policy-info-text"
-                    >
-                        Role: {{ policyInfo.userRoles.join(", ") }}
-                    </span>
-                    <button *ngIf="editableParameters?.length"  (click)="openParametersSettings()" class="policy-settings-button guardian-button guardian-button-secondary">
-                        <div class="guardian-button-icon">
-                            <i class="pi pi-cog"></i>
-                        </div>
-                        <div class="guardian-button-label">Policy Settings</div>
-                    </button>
-                    <span (click)="group.toggle($event)" *ngIf="isMultipleGroups" class="current-user-group">
-                        <span
-                            [ngClass]="isDryRun ? 'white-additional-policy-info-text' : ''"
-                            class="additional-policy-info-text"
-                            title="Group: {{userGroup}} / Role: {{userRole}}"
-                        >
-                            Group: {{ userGroup }} / Role: {{ userRole }}</span>
-                            <div>
-                                <i class="pi pi-caret-down"></i>
-                            </div>
-                    </span>
-                </div>
-            </div>
+              </span>
+            }
+          </div>
         </div>
+      }
+    </div>
+    <div
+      [attr.policy-status]="policyInfo.status"
+      class="policy-body"
+      >
+      <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color"></svg-icon>
+        <span class="info-text-strong">You were disconnected from this policy</span>
+        <span class="info-text">If you wish to re-establish the connection and restore access, please press Reconnect.</span>
+        <button
+          (click)="reconnect()"
+          class="guardian-button guardian-button-secondary">
+          <div class="guardian-button-icon">
+            <svg-icon class="icon-btn svg-icon"
+              src="/assets/images/icons/refresh-2.svg"
+              svgClass="icon-color-primary">
+            </svg-icon>
+          </div>
+          <div class="guardian-button-label">Reconnect</div>
+        </button>
+      </div>
+    </div>
+  }
 
+  @if (isConfirmed && policyId && policy) {
+    @if (isDryRun) {
+      <div class="dry-run-content">
         <div
-            [attr.hidden-container]="view !== 'policy'"
-            [attr.policy-status]="policyInfo.status"
-            *ngIf="view == 'policy'"
-            class="policy-body"
+          [queryParams]="{ policyId }"
+          [routerLink]="['/policy-configuration']"
+          class="dry-run-action-btn"
+          title="Edit Policy"
+          >
+          <i class="pi pi-pencil"></i>
+          <span>Edit</span>
+        </div>
+        <div
+          (click)="restartDryRun()"
+          class="dry-run-action-btn"
+          title="Save Policy"
+          >
+          <svg-icon
+            class="icon-style-restart_alt"
+            src="/assets/images/icons/restart_alt.svg"
+          svgClass="icon-style-restart_alt"></svg-icon>
+          <span>Restart</span>
+        </div>
+        <div class="delimiter"></div>
+        <div
+          class="dry-run-action-btn"
+          (click)="canCreateSavepoint && openAddSavepointDialog()"
+          [attr.aria-disabled]="!canCreateSavepoint"
+          pTooltip="{{ savepointLimitTooltip }}"
+          [tooltipDisabled]="canCreateSavepoint"
+          tooltipPosition="top"
+          tooltipStyleClass="guardian-tooltip"
+          >
+          <i class="pi pi-flag"></i>
+          <span>Savepoint</span>
+        </div>
+        <div
+          class="dry-run-action-btn"
+          (click)="canRestoreSavepoint && openClickRestoreSavepointDialog()"
+          [attr.aria-disabled]="!canRestoreSavepoint"
+          pTooltip="{{ canRestoreSavepoint ? 'Restore or manage savepoints' : 'No savepoint to restore yet' }}"
+          [tooltipDisabled]="canRestoreSavepoint"
+          tooltipPosition="top"
+          tooltipStyleClass="guardian-tooltip"
+          >
+          <i class="pi pi-undo"></i>
+          <span>Restore</span>
+        </div>
+        <div class="delimiter"></div>
+        <div (click)="createVirtualUser()" class="dry-run-action-btn">
+          <i class="pi pi-user-plus"></i>
+          <span>Create User</span>
+        </div>
+        <div (click)="menu.toggle($event)" class="dry-run-group-btn">
+          <i class="pi pi-users"></i>
+          <span>Users</span>
+          <div class="expand-group">
+            <i class="pi pi-sort-down-fill"></i>
+          </div>
+        </div>
+        <div class="delimiter"></div>
+        <div
+          (click)="startRecord()"
+          [attr.disabled]="recordingActive"
+          class="dry-run-action-btn record-btn"
+          title="Start Record">
+          <i class="pi pi-circle-on"></i>
+          <span>Record</span>
+        </div>
+        <div
+          (click)="runRecord()"
+          [attr.disabled]="recordingActive"
+          class="dry-run-action-btn run-btn"
+          title="Run Record">
+          <i class="pi pi-play"></i>
+          <span>Run</span>
+        </div>
+        <div class="delimiter"></div>
+        <div
+          (click)="onView('policy')"
+          [attr.action]="view === 'policy'"
+          class="dry-run-btn"
+        >Policy View</div>
+        <div
+          (click)="onView('transactions')"
+          [attr.action]="view === 'transactions'"
+          class="dry-run-btn"
+        >Transactions</div>
+        <div
+          (click)="onView('artifacts')"
+          [attr.action]="view === 'artifacts'"
+          class="dry-run-btn"
+        >Artifacts</div>
+        <div
+          (click)="onView('ipfs')"
+          [attr.action]="view === 'ipfs'"
+          class="dry-run-btn"
+        >IPFS</div>
+        <div class="delimiter"></div>
+        <div
+          (click)="onView('mock_config')"
+          [attr.action]="view === 'mock_config'"
+          class="dry-run-btn"
+        >Mock Config</div>
+        <div
+          (click)="onView('mock_data')"
+          [attr.action]="view === 'mock_data'"
+          class="dry-run-btn"
+        >Mock Data</div>
+      </div>
+    }
+    <div
+      [attr.expired]="!!policyInfo.discontinuedDate"
+      [attr.policy-status]="policyInfo.status"
+      class="policy-header"
+      >
+      @if (!isDryRun && !policyInfo.discontinuedDate) {
+        <div>
+          <a
+            (click)="onBack()"
+            class="back-button"
+            >
+            List of Policies
+          </a>
+        </div>
+      }
+      @if (isDryRun || !!policyInfo.discontinuedDate) {
+        <div class="guardian-user-back-button">
+          <button
+            (click)="onBack()"
+            class="dry-run-back-button guardian-button guardian-button-secondary"
+            >
+            <div class="guardian-button-icon">
+              <svg-icon class="icon-btn svg-icon"
+                src="/assets/images/icons/left-arrow.svg"
+                svgClass="icon-color-primary">
+              </svg-icon>
+            </div>
+            <div class="guardian-button-label">Back to Manage Policies</div>
+          </button>
+        </div>
+      }
+      @if (policyInfo) {
+        <div class="policy-info-container">
+          <div class="policy-name-container">
+            @if (policyInfo && policyInfo.name) {
+              <span>{{ policyInfo.name }}</span>
+            }
+            @if (policyInfo && policyInfo.status === 'VIEW') {
+              <span class="policy-status">Remote</span>
+            }
+          </div>
+          <div class="policy-additional-info-container">
+            @if (policyInfo && policyInfo.version) {
+              <span
+                [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
+                class="additional-policy-info-text"
+                >
+                Version: ({{ policyInfo.version }})
+              </span>
+            }
+            @if (!groups.length && !isMultipleGroups) {
+              <span
+                [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
+                class="additional-policy-info-text"
+                >
+                Role: {{ policyInfo.userRoles.join(", ") }}
+              </span>
+            }
+            @if (editableParameters?.length) {
+              <button  (click)="openParametersSettings()" class="policy-settings-button guardian-button guardian-button-secondary">
+                <div class="guardian-button-icon">
+                  <i class="pi pi-cog"></i>
+                </div>
+                <div class="guardian-button-label">Policy Settings</div>
+              </button>
+            }
+            @if (isMultipleGroups) {
+              <span (click)="group.toggle($event)" class="current-user-group">
+                <span
+                  [ngClass]="isDryRun ? 'white-additional-policy-info-text' : ''"
+                  class="additional-policy-info-text"
+                  title="Group: {{userGroup}} / Role: {{userRole}}"
+                  >
+                Group: {{ userGroup }} / Role: {{ userRole }}</span>
+                <div>
+                  <i class="pi pi-caret-down"></i>
+                </div>
+              </span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+    @if (view == 'policy') {
+      <div
+        [attr.hidden-container]="view !== 'policy'"
+        [attr.policy-status]="policyInfo.status"
+        class="policy-body"
         >
-            <ng-container *ngIf="!isDryRun; else dryRunContent">
-                <p-tabs [(value)]="activeTabIndex" (valueChange)="onTabChange($event)">
-                    <p-tablist>
-                        <p-tab [value]="0">General</p-tab>
-                        <p-tab [value]="1">Export Documents</p-tab>
-                        <p-tab *ngIf="permissions?.STANDARD_REGISTRY" [value]="2">Mint Requests</p-tab>
-                    </p-tablist>
-                    <p-tabpanels>
-                        <p-tabpanel [value]="0">
-                            <div class="policy-container {{!navigationFooterDisabled ? 'step-container' : 'no-step-container' }}">
-                                <progress-tracker
-                                    *ngIf="steps && steps.length > 0"
-                                    [steps]="steps"
-                                ></progress-tracker>
-                                <div class="policy-container-body">
-                                    <render-block
-                                        [block]="policy"
-                                        [dryRun]="isDryRun"
-                                        [policyId]="policyId"
-                                        [policyStatus]="policyInfo.status"
-                                        style="width: 100%;"
-                                        [savepointIds]="savepointIds"
-                                    ></render-block>
-
-                                    <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
-                                        <div class="progress-footer">
-                                            <button
-                                                (click)="onNavigationPrevButton()"
-                                                [disabled]="prevButtonDisabled"
-                                                class="button"
-                                                label="Previous"
-                                                pButton
-                                                type="button"></button>
-                                            <div *ngIf="!nextButtonDisabled">
-                                                <button
-                                                    (click)="onNavigationNextButton()"
-                                                    class="p-button"
-                                                    label="Next"
-                                                    pButton
-                                                    type="button"></button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </p-tabpanel>
-                        <p-tabpanel [value]="1">
-                            <app-project-data-export></app-project-data-export>
-                        </p-tabpanel>
-                        <p-tabpanel *ngIf="permissions?.STANDARD_REGISTRY" [value]="2">
-                            <app-mint-requests [policyId]="policyId"></app-mint-requests>
-                        </p-tabpanel>
-                    </p-tabpanels>
-                </p-tabs>
-            </ng-container>
-            <ng-template #dryRunContent>
+        @if (!isDryRun) {
+          <p-tabs [(value)]="activeTabIndex" (valueChange)="onTabChange($event)">
+            <p-tablist>
+              <p-tab [value]="0">General</p-tab>
+              <p-tab [value]="1">Export Documents</p-tab>
+              @if (permissions?.STANDARD_REGISTRY) {
+                <p-tab [value]="2">Mint Requests</p-tab>
+              }
+            </p-tablist>
+            <p-tabpanels>
+              <p-tabpanel [value]="0">
                 <div class="policy-container {{!navigationFooterDisabled ? 'step-container' : 'no-step-container' }}">
+                  @if (steps && steps.length > 0) {
                     <progress-tracker
-                        *ngIf="steps && steps.length > 0"
-                        [steps]="steps"
+                      [steps]="steps"
                     ></progress-tracker>
-                    <div class="policy-container-body">
-                        <render-block
-                            [block]="policy"
-                            [dryRun]="isDryRun"
-                            [policyId]="policyId"
-                            [policyStatus]="policyInfo.status"
-                            style="width: 100%;"
-                            [savepointIds]="savepointIds"
-                        ></render-block>
-
-                        <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
-                            <div class="progress-footer">
-                                <button
-                                    (click)="onNavigationPrevButton()"
-                                    [disabled]="prevButtonDisabled"
-                                    class="button"
-                                    label="Previous"
-                                    pButton
-                                    type="button"></button>
-                                <div *ngIf="!nextButtonDisabled">
-                                    <button
-                                        (click)="onNavigationNextButton()"
-                                        class="p-button"
-                                        label="Next"
-                                        pButton
-                                        type="button"></button>
-                                </div>
+                  }
+                  <div class="policy-container-body">
+                    <render-block
+                      [block]="policy"
+                      [dryRun]="isDryRun"
+                      [policyId]="policyId"
+                      [policyStatus]="policyInfo.status"
+                      style="width: 100%;"
+                      [savepointIds]="savepointIds"
+                    ></render-block>
+                    @if (!navigationFooterDisabled) {
+                      <div class="progress-footer-container">
+                        <div class="progress-footer">
+                          <button
+                            (click)="onNavigationPrevButton()"
+                            [disabled]="prevButtonDisabled"
+                            class="button"
+                            label="Previous"
+                            pButton
+                          type="button"></button>
+                          @if (!nextButtonDisabled) {
+                            <div>
+                              <button
+                                (click)="onNavigationNextButton()"
+                                class="p-button"
+                                label="Next"
+                                pButton
+                              type="button"></button>
                             </div>
+                          }
                         </div>
-                    </div>
+                      </div>
+                    }
+                  </div>
                 </div>
+              </p-tabpanel>
+              <p-tabpanel [value]="1">
+                <app-project-data-export></app-project-data-export>
+              </p-tabpanel>
+              @if (permissions?.STANDARD_REGISTRY) {
+                <p-tabpanel [value]="2">
+                  <app-mint-requests [policyId]="policyId"></app-mint-requests>
+                </p-tabpanel>
+              }
+            </p-tabpanels>
+          </p-tabs>
+        } @else {
+          <div class="policy-container {{!navigationFooterDisabled ? 'step-container' : 'no-step-container' }}">
+            @if (steps && steps.length > 0) {
+              <progress-tracker
+                [steps]="steps"
+              ></progress-tracker>
+            }
+            <div class="policy-container-body">
+              <render-block
+                [block]="policy"
+                [dryRun]="isDryRun"
+                [policyId]="policyId"
+                [policyStatus]="policyInfo.status"
+                style="width: 100%;"
+                [savepointIds]="savepointIds"
+              ></render-block>
+              @if (!navigationFooterDisabled) {
+                <div class="progress-footer-container">
+                  <div class="progress-footer">
+                    <button
+                      (click)="onNavigationPrevButton()"
+                      [disabled]="prevButtonDisabled"
+                      class="button"
+                      label="Previous"
+                      pButton
+                    type="button"></button>
+                    @if (!nextButtonDisabled) {
+                      <div>
+                        <button
+                          (click)="onNavigationNextButton()"
+                          class="p-button"
+                          label="Next"
+                          pButton
+                        type="button"></button>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+    @if (isDryRun) {
+      <div
+        [attr.hidden-container]="view === 'policy' || view === 'mock_config' || view === 'mock_data'"
+        [attr.policy-status]="policyInfo.status"
+        class="second-policy-container"
+        >
+        <div class="table-container">
+          <p-table [value]="documents" class="document-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Create Date</th>
+                <th>Type</th>
+                <th>Owner</th>
+                <th>Size</th>
+                <th>Url</th>
+                <th></th>
+              </tr>
             </ng-template>
+            <ng-template let-element pTemplate="body">
+              <tr>
+                <td>{{ element.createDate }}</td>
+                <td>{{ element.__type }}</td>
+                <td>{{ element.owner }}</td>
+                <td>{{ element.document?.size }} Byte</td>
+                <td>{{ element.documentURL }}</td>
+                <td>
+                  <div
+                    (click)="openDocument(element)"
+                    class="btn-settings"
+                    pTooltip="Document"
+                    tooltipPosition="top"
+                    tooltipStyleClass="guardian-tooltip"
+                    >
+                    <svg
+                      fill="none"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                      >
+                      <path
+                        class="icon-color"
+                        clip-rule="evenodd"
+                        d="M7.36842 3C6.06037 3 5 4.09894 5 5.45455V18.5455C5 19.9011 6.06038 21 7.36842 21H17.6316C18.9397 21 20 19.9011 20 18.5455V10.3636C20 10.1466 19.9168 9.93853 19.7688 9.78509L13.453 3.23966C13.3774 3.16136 13.2881 3.10055 13.191 3.05979C13.0978 3.02068 12.9973 3 12.8947 3H7.36842ZM12.1053 4.63636H7.36842C6.9324 4.63636 6.57895 5.00267 6.57895 5.45455V18.5455C6.57895 18.9973 6.93241 19.3636 7.36842 19.3636H17.6316C18.0676 19.3636 18.4211 18.9973 18.4211 18.5455V11.1818H12.8947C12.4587 11.1818 12.1053 10.8155 12.1053 10.3636V4.63636ZM17.3046 9.54548L13.6842 5.79347V9.54548H17.3046Z"
+                        fill="#23252E"
+                        fill-rule="evenodd"
+                        />
+                    </svg>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
         </div>
-
-        <div
-            *ngIf="isDryRun"
-            [attr.hidden-container]="view === 'policy' || view === 'mock_config' || view === 'mock_data'"
-            [attr.policy-status]="policyInfo.status"
-            class="second-policy-container"
+        <app-paginator
+          (page)="onPage($event)"
+          [length]="documentCount"
+          [pageIndex]="pageIndex"
+          [pageSize]="pageSize"
+        ></app-paginator>
+      </div>
+    }
+    @if (isDryRun) {
+      <div
+        [attr.hidden-container]="view !== 'mock_config'"
+        [attr.policy-status]="policyInfo.status"
+        class="second-policy-container"
         >
-            <div class="table-container">
-                <p-table [value]="documents" class="document-table">
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th>Create Date</th>
-                            <th>Type</th>
-                            <th>Owner</th>
-                            <th>Size</th>
-                            <th>Url</th>
-                            <th></th>
-                        </tr>
-                    </ng-template>
-                    <ng-template let-element pTemplate="body">
-                        <tr>
-                            <td>{{ element.createDate }}</td>
-                            <td>{{ element.__type }}</td>
-                            <td>{{ element.owner }}</td>
-                            <td>{{ element.document?.size }} Byte</td>
-                            <td>{{ element.documentURL }}</td>
-                            <td>
-                                <div
-                                    (click)="openDocument(element)"
-                                    class="btn-settings"
-                                    pTooltip="Document"
-                                    tooltipPosition="top"
-                                    tooltipStyleClass="guardian-tooltip"
-                                >
-                                    <svg
-                                        fill="none"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        width="24"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            class="icon-color"
-                                            clip-rule="evenodd"
-                                            d="M7.36842 3C6.06037 3 5 4.09894 5 5.45455V18.5455C5 19.9011 6.06038 21 7.36842 21H17.6316C18.9397 21 20 19.9011 20 18.5455V10.3636C20 10.1466 19.9168 9.93853 19.7688 9.78509L13.453 3.23966C13.3774 3.16136 13.2881 3.10055 13.191 3.05979C13.0978 3.02068 12.9973 3 12.8947 3H7.36842ZM12.1053 4.63636H7.36842C6.9324 4.63636 6.57895 5.00267 6.57895 5.45455V18.5455C6.57895 18.9973 6.93241 19.3636 7.36842 19.3636H17.6316C18.0676 19.3636 18.4211 18.9973 18.4211 18.5455V11.1818H12.8947C12.4587 11.1818 12.1053 10.8155 12.1053 10.3636V4.63636ZM17.3046 9.54548L13.6842 5.79347V9.54548H17.3046Z"
-                                            fill="#23252E"
-                                            fill-rule="evenodd"
-                                        />
-                                    </svg>
-                                </div>
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
+        <div class="mock-container">
+          <div class="mock-config-container">
+            <div class="mock-toggle">
+              <input type="checkbox" [checked]="mockConfig.enabled">
+              <label for="checkboxInput" class="toggleSwitch" (click)="enableMock()">
+              </label>
+              <span class="toggle-text" (click)="enableMock()">Enable Mock Data</span>
             </div>
-
-            <app-paginator
-                (page)="onPage($event)"
-                [length]="documentCount"
-                [pageIndex]="pageIndex"
-                [pageSize]="pageSize"
-            ></app-paginator>
-        </div>
-
-
-        <div
-            *ngIf="isDryRun"
-            [attr.hidden-container]="view !== 'mock_config'"
-            [attr.policy-status]="policyInfo.status"
-            class="second-policy-container"
-        > 
-            <div class="mock-container">
-                <div class="mock-config-container">
-                    <div class="mock-toggle">
-                        <input type="checkbox" [checked]="mockConfig.enabled">
-                            <label for="checkboxInput" class="toggleSwitch" (click)="enableMock()">
-                        </label>
-                        <span class="toggle-text" (click)="enableMock()">Enable Mock Data</span>
-                    </div>
-                    <div *ngIf="mockConfig.blocks?.length" class="dialog-grid-container" style="margin-top: 32px;max-height: calc(100vh - 380px);">
-                        <div class="dialog-grid-header">
-                            <div class="col-250">Type</div>
-                            <div class="col-auto">Tag</div>
-                            <div class="col-100">Enable</div>
-                        </div>
-                        <div class="dialog-grid-body">
-                            <div *ngFor="let block of mockConfig.blocks" class="dialog-grid-row row-52">
-                                <div class="col-250">
-                                    {{block.type}}
-                                </div>
-                                <div class="col-auto">
-                                    {{block.tag}}
-                                </div>
-                                <div class="col-100">
-                                    <div class="mock-toggle">
-                                        <input type="checkbox" [checked]="block.enabled">
-                                            <label for="checkboxInput" class="toggleSwitch" (click)="enableBlockMock(block)">
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mock-config-toggle">
-                        <button 
-                            (click)="onSaveMockConfig()" 
-                            class="guardian-button guardian-button-primary">
-                            <div class="guardian-button-label">Save</div>
-                        </button>
-                    </div>
+            @if (mockConfig.blocks?.length) {
+              <div class="dialog-grid-container" style="margin-top: 32px;max-height: calc(100vh - 380px);">
+                <div class="dialog-grid-header">
+                  <div class="col-250">Type</div>
+                  <div class="col-auto">Tag</div>
+                  <div class="col-100">Enable</div>
                 </div>
+                <div class="dialog-grid-body">
+                  @for (block of mockConfig.blocks; track block) {
+                    <div class="dialog-grid-row row-52">
+                      <div class="col-250">
+                        {{block.type}}
+                      </div>
+                      <div class="col-auto">
+                        {{block.tag}}
+                      </div>
+                      <div class="col-100">
+                        <div class="mock-toggle">
+                          <input type="checkbox" [checked]="block.enabled">
+                          <label for="checkboxInput" class="toggleSwitch" (click)="enableBlockMock(block)">
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+            <div class="mock-config-toggle">
+              <button
+                (click)="onSaveMockConfig()"
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-label">Save</div>
+              </button>
             </div>
+          </div>
         </div>
-        <div
-            *ngIf="isDryRun"
-            [attr.hidden-container]="view !== 'mock_data'"
-            [attr.policy-status]="policyInfo.status"
-            class="second-policy-container"
+      </div>
+    }
+    @if (isDryRun) {
+      <div
+        [attr.hidden-container]="view !== 'mock_data'"
+        [attr.policy-status]="policyInfo.status"
+        class="second-policy-container"
         >
-            <div class="mock-container">
-                <div class="mock-actions-buttons-container">
-                    <button
-                        *ngIf="mockTab === 'IPFS'"
-                        (click)="addMockData('IPFS')" 
-                        class="guardian-button guardian-button-primary">
-                        <div class="guardian-button-icon">
-                            <svg-icon class="icon-btn svg-icon"
-                                src="/assets/images/icons/add.svg"
-                                svgClass="icon-color-secondary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Add IPFS File Mock</div>
-                    </button>
-                    <button
-                        *ngIf="mockTab === 'Topics'"
-                        (click)="addMockData('MESSAGE')" 
-                        class="guardian-button guardian-button-primary">
-                        <div class="guardian-button-icon">
-                            <svg-icon class="icon-btn svg-icon"
-                                src="/assets/images/icons/add.svg"
-                                svgClass="icon-color-secondary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Add Topic / Message Mock</div>
-                    </button>
-                    <button
-                        *ngIf="mockTab === 'API'"
-                        (click)="addMockData('API')" 
-                        class="guardian-button guardian-button-primary">
-                        <div class="guardian-button-icon">
-                            <svg-icon class="icon-btn svg-icon"
-                                src="/assets/images/icons/add.svg"
-                                svgClass="icon-color-secondary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Add API Mock</div>
-                    </button>
-
-                    <div class="delimiter"></div>
-
-                    <button 
-                        (click)="onImportMock()" 
-                        class="guardian-button guardian-button-primary">
-                        <div class="guardian-button-icon">
-                            <svg-icon class="icon-btn svg-icon"
-                                src="/assets/images/icons/import.svg"
-                                svgClass="icon-color-secondary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Import</div>
-                    </button>
-                    <button 
-                        (click)="onExportMock()" 
-                        class="guardian-button guardian-button-primary">
-                        <div class="guardian-button-icon">
-                            <svg-icon class="icon-btn svg-icon"
-                                src="/assets/images/icons/export.svg"
-                                svgClass="icon-color-secondary">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-button-label">Export</div>
-                    </button>
+        <div class="mock-container">
+          <div class="mock-actions-buttons-container">
+            @if (mockTab === 'IPFS') {
+              <button
+                (click)="addMockData('IPFS')"
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                  <svg-icon class="icon-btn svg-icon"
+                    src="/assets/images/icons/add.svg"
+                    svgClass="icon-color-secondary">
+                  </svg-icon>
                 </div>
-                <div class="mock-tabs-nav">
-                    <p-tabs [(value)]="mockTabIndex" (valueChange)="onMockTab($event)" class="guardian-header-tabs">
-                        <p-tablist>
-                            <p-tab [value]="0"><div class="tabview-label">API Mocks</div></p-tab>
-                            <p-tab [value]="1"><div class="tabview-label">IPFS Files</div></p-tab>
-                            <p-tab [value]="2"><div class="tabview-label">Topics / Messages</div></p-tab>
-                        </p-tablist>
-                    </p-tabs>
-                </div>  
-                <div *ngIf="mockTab === 'IPFS'" class="mock-grid-container">
-                    <div *ngIf="mockIpfs" class="dialog-grid-container">
-                        <div class="dialog-grid-header">
-                            <div class="col-auto">CID</div>
-                            <div class="col-200"></div>
-                        </div>
-                        <div class="dialog-grid-body">
-                            <div *ngFor="let file of mockIpfs" class="dialog-grid-row row-52">
-                                <div class="col-auto">
-                                    {{file.cid}}
-                                </div>
-                                <div class="col-200 col-toolbar">
-                                    <div class="input-document-edit">
-                                        <button 
-                                            class="guardian-icon-button big" 
-                                            (click)="editMockData('IPFS', file)">
-                                            <svg-icon
-                                                class="icon-btn svg-icon"
-                                                src="/assets/images/icons/edit.svg"
-                                                svgClass="icon-color-primary">
-                                            </svg-icon>
-                                        </button>
-                                    </div>
-                                    <div class="input-document-open">
-                                        <button 
-                                            class="guardian-icon-button big" 
-                                            (click)="openDocument(file)">
-                                            <svg-icon
-                                                class="icon-btn svg-icon"
-                                                src="/assets/images/icons/document.svg"
-                                                svgClass="icon-color-primary">
-                                            </svg-icon>
-                                        </button>
-                                    </div>
-                                    <div class="input-document-open">
-                                        <button 
-                                            class="guardian-icon-button big" 
-                                            (click)="deleteMockData('IPFS', file)">
-                                            <svg-icon
-                                                class="icon-btn svg-icon"
-                                                src="/assets/images/icons/delete.svg"
-                                                svgClass="icon-color-delete">
-                                            </svg-icon>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="guardian-button-label">Add IPFS File Mock</div>
+              </button>
+            }
+            @if (mockTab === 'Topics') {
+              <button
+                (click)="addMockData('MESSAGE')"
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                  <svg-icon class="icon-btn svg-icon"
+                    src="/assets/images/icons/add.svg"
+                    svgClass="icon-color-secondary">
+                  </svg-icon>
                 </div>
-                <div *ngIf="mockTab === 'Topics'" class="mock-grid-container">
-                    <div *ngIf="mockTopics" class="dialog-grid-container">
-                        <div class="dialog-grid-header">
-                            <div class="col-200">Topic ID</div>
-                            <div class="col-200">Consensus Timestamp</div>
-                            <div class="col-auto">Messages</div>
-                            <div class="col-200"></div>
-                        </div>
-                        <div class="dialog-grid-body">
-                            <ng-container *ngFor="let topic of mockTopics">
-                                <div class="dialog-grid-row row-52 grid-row-header">
-                                    <div
-                                        class="guardian-collapse collapse-24"
-                                        [attr.collapsed]="!expandGrid[topic.topicId]"
-                                        (click)="expandGrid[topic.topicId] = !expandGrid[topic.topicId]"
-                                    >
-                                    </div>
-                                    {{topic.topicId}}
-                                    <span>{{topic.messages?.length}} messages</span>
-                                </div>
-                                <ng-container *ngIf="topic.messages?.length">
-                                    <ng-container *ngFor="let message of topic.messages">
-                                        <div *ngIf="expandGrid[message.topic_id]" class="dialog-grid-row row-52">
-                                            <div class="col-200">
-                                                {{message.topic_id}}
-                                            </div>
-                                            <div class="col-200">
-                                                {{message.consensus_timestamp}}
-                                            </div>
-                                            <div class="col-auto">
-                                                {{message.__message}}
-                                            </div>
-                                            <div class="col-200 col-toolbar">
-                                                <div class="input-document-edit">
-                                                    <button 
-                                                        class="guardian-icon-button big" 
-                                                        (click)="editMockData('MESSAGE', message)">
-                                                        <svg-icon
-                                                            class="icon-btn svg-icon"
-                                                            src="/assets/images/icons/edit.svg"
-                                                            svgClass="icon-color-primary">
-                                                        </svg-icon>
-                                                    </button>
-                                                </div>
-                                                <div class="input-document-open">
-                                                    <button 
-                                                        class="guardian-icon-button big" 
-                                                        (click)="openDocument(message)">
-                                                        <svg-icon
-                                                            class="icon-btn svg-icon"
-                                                            src="/assets/images/icons/document.svg"
-                                                            svgClass="icon-color-primary">
-                                                        </svg-icon>
-                                                    </button>
-                                                </div>
-                                                <div class="input-document-open">
-                                                    <button 
-                                                        class="guardian-icon-button big" 
-                                                        (click)="deleteMockData('MESSAGE', message)">
-                                                        <svg-icon
-                                                            class="icon-btn svg-icon"
-                                                            src="/assets/images/icons/delete.svg"
-                                                            svgClass="icon-color-delete">
-                                                        </svg-icon>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </ng-container>
-                                </ng-container>
-                            </ng-container>
-                        </div>
-                    </div>
+                <div class="guardian-button-label">Add Topic / Message Mock</div>
+              </button>
+            }
+            @if (mockTab === 'API') {
+              <button
+                (click)="addMockData('API')"
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                  <svg-icon class="icon-btn svg-icon"
+                    src="/assets/images/icons/add.svg"
+                    svgClass="icon-color-secondary">
+                  </svg-icon>
                 </div>
-                <div *ngIf="mockTab === 'API'" class="mock-grid-container">
-                    <div *ngIf="mockApi" class="dialog-grid-container">
-                        <div class="dialog-grid-header">
-                            <div class="col-200">Method</div>
-                            <div class="col-auto">URL</div>
-                            <div class="col-200"></div>
+                <div class="guardian-button-label">Add API Mock</div>
+              </button>
+            }
+            <div class="delimiter"></div>
+            <button
+              (click)="onImportMock()"
+              class="guardian-button guardian-button-primary">
+              <div class="guardian-button-icon">
+                <svg-icon class="icon-btn svg-icon"
+                  src="/assets/images/icons/import.svg"
+                  svgClass="icon-color-secondary">
+                </svg-icon>
+              </div>
+              <div class="guardian-button-label">Import</div>
+            </button>
+            <button
+              (click)="onExportMock()"
+              class="guardian-button guardian-button-primary">
+              <div class="guardian-button-icon">
+                <svg-icon class="icon-btn svg-icon"
+                  src="/assets/images/icons/export.svg"
+                  svgClass="icon-color-secondary">
+                </svg-icon>
+              </div>
+              <div class="guardian-button-label">Export</div>
+            </button>
+          </div>
+          <div class="mock-tabs-nav">
+            <p-tabs [(value)]="mockTabIndex" (valueChange)="onMockTab($event)" class="guardian-header-tabs">
+              <p-tablist>
+                <p-tab [value]="0"><div class="tabview-label">API Mocks</div></p-tab>
+                <p-tab [value]="1"><div class="tabview-label">IPFS Files</div></p-tab>
+                <p-tab [value]="2"><div class="tabview-label">Topics / Messages</div></p-tab>
+              </p-tablist>
+            </p-tabs>
+          </div>
+          @if (mockTab === 'IPFS') {
+            <div class="mock-grid-container">
+              @if (mockIpfs) {
+                <div class="dialog-grid-container">
+                  <div class="dialog-grid-header">
+                    <div class="col-auto">CID</div>
+                    <div class="col-200"></div>
+                  </div>
+                  <div class="dialog-grid-body">
+                    @for (file of mockIpfs; track file) {
+                      <div class="dialog-grid-row row-52">
+                        <div class="col-auto">
+                          {{file.cid}}
                         </div>
-                        <div class="dialog-grid-body">
-                            <div *ngFor="let api of mockApi" class="dialog-grid-row row-52">
-                                <div class="col-200">
-                                    {{api.request?.method}}
-                                </div>
-                                <div class="col-auto">
-                                    {{api.request?.url}}
-                                </div>
-                                <div class="col-200 col-toolbar">
-                                    <div class="input-document-edit">
-                                        <button 
-                                            class="guardian-icon-button big" 
-                                            (click)="editMockData('API', api)">
-                                            <svg-icon
-                                                class="icon-btn svg-icon"
-                                                src="/assets/images/icons/edit.svg"
-                                                svgClass="icon-color-primary">
-                                            </svg-icon>
-                                        </button>
-                                    </div>
-                                    <div class="input-document-open">
-                                        <button 
-                                            class="guardian-icon-button big" 
-                                            (click)="openDocument(api)">
-                                            <svg-icon
-                                                class="icon-btn svg-icon"
-                                                src="/assets/images/icons/document.svg"
-                                                svgClass="icon-color-primary">
-                                            </svg-icon>
-                                        </button>
-                                    </div>
-                                    <div class="input-document-open">
-                                        <button 
-                                            class="guardian-icon-button big" 
-                                            (click)="deleteMockData('API', api)">
-                                            <svg-icon
-                                                class="icon-btn svg-icon"
-                                                src="/assets/images/icons/delete.svg"
-                                                svgClass="icon-color-delete">
-                                            </svg-icon>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="col-200 col-toolbar">
+                          <div class="input-document-edit">
+                            <button
+                              class="guardian-icon-button big"
+                              (click)="editMockData('IPFS', file)">
+                              <svg-icon
+                                class="icon-btn svg-icon"
+                                src="/assets/images/icons/edit.svg"
+                                svgClass="icon-color-primary">
+                              </svg-icon>
+                            </button>
+                          </div>
+                          <div class="input-document-open">
+                            <button
+                              class="guardian-icon-button big"
+                              (click)="openDocument(file)">
+                              <svg-icon
+                                class="icon-btn svg-icon"
+                                src="/assets/images/icons/document.svg"
+                                svgClass="icon-color-primary">
+                              </svg-icon>
+                            </button>
+                          </div>
+                          <div class="input-document-open">
+                            <button
+                              class="guardian-icon-button big"
+                              (click)="deleteMockData('IPFS', file)">
+                              <svg-icon
+                                class="icon-btn svg-icon"
+                                src="/assets/images/icons/delete.svg"
+                                svgClass="icon-color-delete">
+                              </svg-icon>
+                            </button>
+                          </div>
                         </div>
-                    </div>
+                      </div>
+                    }
+                  </div>
                 </div>
+              }
             </div>
+          }
+          @if (mockTab === 'Topics') {
+            <div class="mock-grid-container">
+              @if (mockTopics) {
+                <div class="dialog-grid-container">
+                  <div class="dialog-grid-header">
+                    <div class="col-200">Topic ID</div>
+                    <div class="col-200">Consensus Timestamp</div>
+                    <div class="col-auto">Messages</div>
+                    <div class="col-200"></div>
+                  </div>
+                  <div class="dialog-grid-body">
+                    @for (topic of mockTopics; track topic) {
+                      <div class="dialog-grid-row row-52 grid-row-header">
+                        <div
+                          class="guardian-collapse collapse-24"
+                          [attr.collapsed]="!expandGrid[topic.topicId]"
+                          (click)="expandGrid[topic.topicId] = !expandGrid[topic.topicId]"
+                          >
+                        </div>
+                        {{topic.topicId}}
+                        <span>{{topic.messages?.length}} messages</span>
+                      </div>
+                      @if (topic.messages?.length) {
+                        @for (message of topic.messages; track message) {
+                          @if (expandGrid[message.topic_id]) {
+                            <div class="dialog-grid-row row-52">
+                              <div class="col-200">
+                                {{message.topic_id}}
+                              </div>
+                              <div class="col-200">
+                                {{message.consensus_timestamp}}
+                              </div>
+                              <div class="col-auto">
+                                {{message.__message}}
+                              </div>
+                              <div class="col-200 col-toolbar">
+                                <div class="input-document-edit">
+                                  <button
+                                    class="guardian-icon-button big"
+                                    (click)="editMockData('MESSAGE', message)">
+                                    <svg-icon
+                                      class="icon-btn svg-icon"
+                                      src="/assets/images/icons/edit.svg"
+                                      svgClass="icon-color-primary">
+                                    </svg-icon>
+                                  </button>
+                                </div>
+                                <div class="input-document-open">
+                                  <button
+                                    class="guardian-icon-button big"
+                                    (click)="openDocument(message)">
+                                    <svg-icon
+                                      class="icon-btn svg-icon"
+                                      src="/assets/images/icons/document.svg"
+                                      svgClass="icon-color-primary">
+                                    </svg-icon>
+                                  </button>
+                                </div>
+                                <div class="input-document-open">
+                                  <button
+                                    class="guardian-icon-button big"
+                                    (click)="deleteMockData('MESSAGE', message)">
+                                    <svg-icon
+                                      class="icon-btn svg-icon"
+                                      src="/assets/images/icons/delete.svg"
+                                      svgClass="icon-color-delete">
+                                    </svg-icon>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          }
+                        }
+                      }
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+          @if (mockTab === 'API') {
+            <div class="mock-grid-container">
+              @if (mockApi) {
+                <div class="dialog-grid-container">
+                  <div class="dialog-grid-header">
+                    <div class="col-200">Method</div>
+                    <div class="col-auto">URL</div>
+                    <div class="col-200"></div>
+                  </div>
+                  <div class="dialog-grid-body">
+                    @for (api of mockApi; track api) {
+                      <div class="dialog-grid-row row-52">
+                        <div class="col-200">
+                          {{api.request?.method}}
+                        </div>
+                        <div class="col-auto">
+                          {{api.request?.url}}
+                        </div>
+                        <div class="col-200 col-toolbar">
+                          <div class="input-document-edit">
+                            <button
+                              class="guardian-icon-button big"
+                              (click)="editMockData('API', api)">
+                              <svg-icon
+                                class="icon-btn svg-icon"
+                                src="/assets/images/icons/edit.svg"
+                                svgClass="icon-color-primary">
+                              </svg-icon>
+                            </button>
+                          </div>
+                          <div class="input-document-open">
+                            <button
+                              class="guardian-icon-button big"
+                              (click)="openDocument(api)">
+                              <svg-icon
+                                class="icon-btn svg-icon"
+                                src="/assets/images/icons/document.svg"
+                                svgClass="icon-color-primary">
+                              </svg-icon>
+                            </button>
+                          </div>
+                          <div class="input-document-open">
+                            <button
+                              class="guardian-icon-button big"
+                              (click)="deleteMockData('API', api)">
+                              <svg-icon
+                                class="icon-btn svg-icon"
+                                src="/assets/images/icons/delete.svg"
+                                svgClass="icon-color-delete">
+                              </svg-icon>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
         </div>
-    </ng-container>
+      </div>
+    }
+  }
 
 
+  @if (isDryRun && permissions.POLICIES_RECORD_ALL) {
     <app-record-controller
-        #recordController
-        (update)="updatePolicy()"
-        *ngIf="isDryRun && permissions.POLICIES_RECORD_ALL"
-        [(active)]="recordingActive"
-        [policyId]="policyId"
-        [withRecords]="policyInfo?.withRecords"
+      #recordController
+      (update)="updatePolicy()"
+      [(active)]="recordingActive"
+      [policyId]="policyId"
+      [withRecords]="policyInfo?.withRecords"
     ></app-record-controller>
+  }
 </div>
 
 <p-popover #menu>
+  @for (item of virtualUsers; track item) {
     <div
-        (click)="setVirtualUser(item, menu)"
-        *ngFor="let item of virtualUsers"
-        [attr.active]="item.active"
-        class="debug-user"
-    >
-        <div class="debug-user-name">{{ item.username }}</div>
-        <div class="debug-user-did">{{ item.hederaAccountId }}</div>
-        <div class="debug-user-did">{{ item.did }}</div>
+      (click)="setVirtualUser(item, menu)"
+      [attr.active]="item.active"
+      class="debug-user"
+      >
+      <div class="debug-user-name">{{ item.username }}</div>
+      <div class="debug-user-did">{{ item.hederaAccountId }}</div>
+      <div class="debug-user-did">{{ item.did }}</div>
     </div>
+  }
 </p-popover>
 
 <p-popover #group>
-    <div class="group-header">
-        Select Group
-    </div>
-    <div class="group-container">
-        <div
-            (click)="setGroup(item, group)"
-            *ngFor="let item of groups"
-            [attr.active]="item.active"
-            class="user-group"
+  <div class="group-header">
+    Select Group
+  </div>
+  <div class="group-container">
+    @for (item of groups; track item) {
+      <div
+        (click)="setGroup(item, group)"
+        [attr.active]="item.active"
+        class="user-group"
         >
-            <div class="user-group-header">
-                <span *ngIf="item.groupLabel">{{ item.groupLabel }}</span>
-                <span *ngIf="!item.groupLabel">{{ item.uuid }}</span>
-            </div>
-            <div class="user-group-value">
-                <span>Group: </span><span>{{ item.groupName }}</span>
-            </div>
-            <div class="user-group-value">
-                <span>Role: </span><span>{{ item.role }}</span>
-            </div>
-        </div>
-    </div>
-    <div (click)="setGroup(null, group)" class="user-group user-group-default">
         <div class="user-group-header">
-            Default state
+          @if (item.groupLabel) {
+            <span>{{ item.groupLabel }}</span>
+          }
+          @if (!item.groupLabel) {
+            <span>{{ item.uuid }}</span>
+          }
         </div>
         <div class="user-group-value">
-            <span>Group: </span><span>Not Set</span>
+          <span>Group: </span><span>{{ item.groupName }}</span>
         </div>
         <div class="user-group-value">
-            <span>Role: </span><span>Not Set</span>
+          <span>Role: </span><span>{{ item.role }}</span>
         </div>
+      </div>
+    }
+  </div>
+  <div (click)="setGroup(null, group)" class="user-group user-group-default">
+    <div class="user-group-header">
+      Default state
     </div>
+    <div class="user-group-value">
+      <span>Group: </span><span>Not Set</span>
+    </div>
+    <div class="user-group-value">
+      <span>Role: </span><span>Not Set</span>
+    </div>
+  </div>
 </p-popover>
 
 <ng-template #preloader>
-    <div class="preloader-image"></div>
+  <div class="preloader-image"></div>
 </ng-template>
 
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}

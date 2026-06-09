@@ -1,300 +1,324 @@
 <div #dialogHeader class="dialog-header">
-    <div *ngIf="policy" class="header-container">
-        <div class="header-text">Search based on</div>
-        <div class="header-item">{{policy.name}}</div>
+  @if (policy) {
+    <div class="header-container">
+      <div class="header-text">Search based on</div>
+      <div class="header-item">{{policy.name}}</div>
     </div>
-    <div *ngIf="!policy" class="header-container">
-        <div class="header-text">Search policies</div>
+  }
+  @if (!policy) {
+    <div class="header-container">
+      <div class="header-text">Search policies</div>
     </div>
-    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
-        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="close-icon-color"></svg-icon>
-    </div>
+  }
+  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+    <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="close-icon-color"></svg-icon>
+  </div>
 </div>
 <div class="dialog-body">
-    <div class="context">
-        <div *ngIf="loading" class="loading">
-            <div class="preloader-image preloader-image-l-size"></div>
-        </div>
+  <div class="context">
+    @if (loading) {
+      <div class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+      </div>
+    }
 
-        <form [formGroup]="filtersForm" class="filters">
-            <div class="filter-row">
-                <p-select
-                    [options]="types"
-                    appendTo="body"
-                    class="type-dropdown"
-                    formControlName="type"
-                    optionLabel="name"
-                    optionValue="value"
-                    placeholder="Type"
-                    (onChange)="changeType()"
-                >
-                    <ng-template let-filterSelectedProperty pTemplate="selectedItem">
-                        <span class="dropdown-type">Type:</span>
-                        <span>{{ filterSelectedProperty.name }}</span>
-                    </ng-template>
-                </p-select>
-                <span class="p-input-icon-right">
-                    <input
-                        class="search-policy-input"
-                        formControlName="policyName"
-                        pInputText
-                        placeholder="Search by keyword"
-                        type="text" />
-                    <i class="pi pi-search search-icon"></i>
-                </span>
-                <button (click)="clearFilters()"
-                    type="button"
-                    [disabled]="!filtersForm.dirty"
-                    class="button secondary"
-                    label="Clear filters"
-                    pButton></button>
-                <button (click)="showFilters()"
-                    *ngIf="showMoreFilters"
-                    type="button"
-                    class="button secondary"
-                    label="Filters ({{filtersCount}})"
-                    pButton>
-                    <svg-icon
-                        class="icon-btn"
-                        src="/assets/images/icons/filter-off.svg"
-                        svgClass="off-icon-color">
-                    </svg-icon>
-                </button>
-                <button (click)="showFilters()"
-                    *ngIf="!showMoreFilters"
-                    type="button"
-                    class="button"
-                    label="Filters ({{filtersCount}})"
-                    pButton>
-                    <svg-icon
-                        class="icon-btn"
-                        src="/assets/images/icons/filter-on.svg"
-                        svgClass="on-icon-color">
-                    </svg-icon>
-                </button>
+    <form [formGroup]="filtersForm" class="filters">
+      <div class="filter-row">
+        <p-select
+          [options]="types"
+          appendTo="body"
+          class="type-dropdown"
+          formControlName="type"
+          optionLabel="name"
+          optionValue="value"
+          placeholder="Type"
+          (onChange)="changeType()"
+          >
+          <ng-template let-filterSelectedProperty pTemplate="selectedItem">
+            <span class="dropdown-type">Type:</span>
+            <span>{{ filterSelectedProperty.name }}</span>
+          </ng-template>
+        </p-select>
+        <span class="p-input-icon-right">
+          <input
+            class="search-policy-input"
+            formControlName="policyName"
+            pInputText
+            placeholder="Search by keyword"
+            type="text" />
+          <i class="pi pi-search search-icon"></i>
+        </span>
+        <button (click)="clearFilters()"
+          type="button"
+          [disabled]="!filtersForm.dirty"
+          class="button secondary"
+          label="Clear filters"
+        pButton></button>
+        @if (showMoreFilters) {
+          <button (click)="showFilters()"
+            type="button"
+            class="button secondary"
+            label="Filters ({{filtersCount}})"
+            pButton>
+            <svg-icon
+              class="icon-btn"
+              src="/assets/images/icons/filter-off.svg"
+              svgClass="off-icon-color">
+            </svg-icon>
+          </button>
+        }
+        @if (!showMoreFilters) {
+          <button (click)="showFilters()"
+            type="button"
+            class="button"
+            label="Filters ({{filtersCount}})"
+            pButton>
+            <svg-icon
+              class="icon-btn"
+              src="/assets/images/icons/filter-on.svg"
+              svgClass="on-icon-color">
+            </svg-icon>
+          </button>
+        }
+      </div>
+      <div class="filter-group" [hidden]="!showMoreFilters">
+        <div class="filter-row">
+          <div class="filter">
+            <p-select
+              [options]="options"
+              appendTo="body"
+              class="type-dropdown"
+              formControlName="tokens"
+              optionLabel="name"
+              optionValue="value"
+              placeholder="Tokens">
+              <ng-template let-filterSelectedProperty pTemplate="selectedItem">
+                <span class="dropdown-type">Minted Tokens:</span>
+                <span>{{ filterSelectedProperty.name }}</span>
+              </ng-template>
+            </p-select>
+            <div [attr.hidden]="!filtersForm.value.tokens">
+              <span>Min Amount:</span>
+              <p-inputNumber
+                class="type-number"
+                formControlName="tokensCount"
+                mode="decimal"
+              [min]="1" ></p-inputNumber>
             </div>
-            <div class="filter-group" [hidden]="!showMoreFilters">
-                <div class="filter-row">
-                    <div class="filter">
-                        <p-select
-                            [options]="options"
-                            appendTo="body"
-                            class="type-dropdown"
-                            formControlName="tokens"
-                            optionLabel="name"
-                            optionValue="value"
-                            placeholder="Tokens">
-                            <ng-template let-filterSelectedProperty pTemplate="selectedItem">
-                                <span class="dropdown-type">Minted Tokens:</span>
-                                <span>{{ filterSelectedProperty.name }}</span>
-                            </ng-template>
-                        </p-select>
-                        <div [attr.hidden]="!filtersForm.value.tokens">
-                            <span>Min Amount:</span>
-                            <p-inputNumber
-                                class="type-number"
-                                formControlName="tokensCount"
-                                mode="decimal"
-                                [min]="1" ></p-inputNumber>
-                        </div>
-                    </div>
-                    <div class="filter">
-                        <p-select
-                            [options]="options"
-                            appendTo="body"
-                            class="type-dropdown"
-                            formControlName="vcDocuments"
-                            optionLabel="name"
-                            optionValue="value"
-                            placeholder="VC Documents">
-                            <ng-template let-filterSelectedProperty pTemplate="selectedItem">
-                                <span class="dropdown-type">VC Documents:</span>
-                                <span>{{ filterSelectedProperty.name }}</span>
-                            </ng-template>
-                        </p-select>
-                        <div [attr.hidden]="!filtersForm.value.vcDocuments">
-                            <span>Min Amount:</span>
-                            <p-inputNumber
-                                class="type-number"
-                                formControlName="vcDocumentsCount"
-                                mode="decimal"
-                                [min]="1" ></p-inputNumber>
-                        </div>
-                    </div>
+          </div>
+          <div class="filter">
+            <p-select
+              [options]="options"
+              appendTo="body"
+              class="type-dropdown"
+              formControlName="vcDocuments"
+              optionLabel="name"
+              optionValue="value"
+              placeholder="VC Documents">
+              <ng-template let-filterSelectedProperty pTemplate="selectedItem">
+                <span class="dropdown-type">VC Documents:</span>
+                <span>{{ filterSelectedProperty.name }}</span>
+              </ng-template>
+            </p-select>
+            <div [attr.hidden]="!filtersForm.value.vcDocuments">
+              <span>Min Amount:</span>
+              <p-inputNumber
+                class="type-number"
+                formControlName="vcDocumentsCount"
+                mode="decimal"
+              [min]="1" ></p-inputNumber>
+            </div>
+          </div>
+        </div>
+        <div class="filter-row">
+          <div class="filter">
+            <p-select
+              [options]="options"
+              appendTo="body"
+              class="type-dropdown"
+              formControlName="vpDocuments"
+              optionLabel="name"
+              optionValue="value"
+              placeholder="VP Documents">
+              <ng-template let-filterSelectedProperty pTemplate="selectedItem">
+                <span class="dropdown-type">VP Documents:</span>
+                <span>{{ filterSelectedProperty.name }}</span>
+              </ng-template>
+            </p-select>
+            <div [attr.hidden]="!filtersForm.value.vpDocuments">
+              <span>Min Amount:</span>
+              <p-inputNumber
+                class="type-number"
+                formControlName="vpDocumentsCount"
+                mode="decimal"
+              [min]="1" ></p-inputNumber>
+            </div>
+          </div>
+          <div class="filter">
+            <span class="p-input-icon-right">
+              <input
+                class="search-policy-input"
+                formControlName="owner"
+                pInputText
+                placeholder="Policy Owner"
+                type="text" />
+              <i class="pi pi-search search-icon"></i>
+            </span>
+          </div>
+        </div>
+        <div class="filter-row">
+          <div class="filter">
+            <p-multiSelect
+              formControlName="toolMessageIds"
+              [options]="tools"
+              optionLabel="label"
+              optionValue="id"
+              [filter]="false"
+              [showHeader]="true"
+              [showToggleAll]="false"
+              placeholder="Tool not selected"
+              display="comma"
+              class="type-multiselect"
+              panelStyleClass="tool-ms-panel"
+              [virtualScroll]="true"
+              [virtualScrollOptions]="{ itemSize: 40 }"
+              [loading]="loading"
+              appendTo="body"
+              >
+              <ng-template pTemplate="header">
+                <div class="tool-ms-header">
+                  <span class="p-input-icon-left">
+                    <i class="pi pi-search"></i>
+                    <input
+                      pInputText
+                      type="text"
+                      [formControl]="toolSearchControl"
+                      placeholder="Search by tool name"
+                      />
+                  </span>
+                  @if (loading) {
+                    <p-progressSpinner styleClass="ms-spinner"></p-progressSpinner>
+                  }
                 </div>
-                <div class="filter-row">
-                    <div class="filter">
-                        <p-select
-                            [options]="options"
-                            appendTo="body"
-                            class="type-dropdown"
-                            formControlName="vpDocuments"
-                            optionLabel="name"
-                            optionValue="value"
-                            placeholder="VP Documents">
-                            <ng-template let-filterSelectedProperty pTemplate="selectedItem">
-                                <span class="dropdown-type">VP Documents:</span>
-                                <span>{{ filterSelectedProperty.name }}</span>
-                            </ng-template>
-                        </p-select>
-                        <div [attr.hidden]="!filtersForm.value.vpDocuments">
-                            <span>Min Amount:</span>
-                            <p-inputNumber
-                                class="type-number"
-                                formControlName="vpDocumentsCount"
-                                mode="decimal"
-                                [min]="1" ></p-inputNumber>
-                        </div>
-                    </div>
-                    <div class="filter">
-                        <span class="p-input-icon-right">
-                            <input
-                                class="search-policy-input"
-                                formControlName="owner"
-                                pInputText
-                                placeholder="Policy Owner"
-                                type="text" />
-                            <i class="pi pi-search search-icon"></i>
-                        </span>
-                    </div>
-                </div>
-                <div class="filter-row">
-                    <div class="filter">
-                        <p-multiSelect
-                            formControlName="toolMessageIds"
-                            [options]="tools"
-                            optionLabel="label"
-                            optionValue="id"
-                            [filter]="false"
-                            [showHeader]="true"
-                            [showToggleAll]="false"
-                            placeholder="Tool not selected"
-                            display="comma"
-                            class="type-multiselect"
-                            panelStyleClass="tool-ms-panel"
-                            [virtualScroll]="true"
-                            [virtualScrollOptions]="{ itemSize: 40 }"
-                            [loading]="loading"
-                            appendTo="body"
-                        >
-                            <ng-template pTemplate="header">
-                                <div class="tool-ms-header">
-                                    <span class="p-input-icon-left">
-                                        <i class="pi pi-search"></i>
-                                        <input
-                                        pInputText
-                                        type="text"
-                                        [formControl]="toolSearchControl"
-                                        placeholder="Search by tool name"
-                                        />
-                                    </span>
-                                    <p-progressSpinner *ngIf="loading" styleClass="ms-spinner"></p-progressSpinner>
-                                </div>
-                            </ng-template>
+              </ng-template>
 
-                            <ng-template let-option pTemplate="item">
-                                <div class="p-multiselect-item-content">{{ option.label }}</div>
-                            </ng-template>
-                        </p-multiSelect>
-                    </div>
-                    <div class="filter">
-                    </div>
-                </div>
-                <div class="filter-row" style="justify-content: flex-end">
-                    <button (click)="applyFilters()"
-                        type="submit"
-                        [disabled]="!filtersForm.dirty"
-                        class="button"
-                        label="Apply Filters"
-                        pButton></button>
-                </div>
-            </div>
-        </form>
-        <div *ngIf="list && list.length" class="grid-container">
-            <div class="grid-header">
-                <div class="col-64">
-                    <input
-                        class="checkbox-input"
-                        type="checkbox"
-                        [checked]="selectedAll"
-                        (change)="onSelectAll()">
-                </div>
-                <div class="col-250">ID</div>
-                <div class="col-auto">Name</div>
-                <div class="col-200">Tags</div>
-                <div class="col-80 search-extra-column">VC</div>
-                <div class="col-80 search-extra-column">VP</div>
-                <div class="col-80 search-extra-column">Tokens</div>
-                <div *ngIf="policy" class="col-80">Rate</div>
-                <div *ngIf="globalType" class="col-120"></div>
-            </div>
-            <div class="grid-body">
-                <div *ngFor="let item of list" class="grid-row" (click)="onSelect(item)">
-                    <div class="col-64">
-                        <input
-                            class="checkbox-input"
-                            type="checkbox"
-                            [checked]="item._select"
-                            (change)="select()">
-                    </div>
-                    <div class="col-250">{{item.messageId || item.id}}</div>
-                    <div class="col-auto">{{item.name}}</div>
-                    <div class="col-200">{{item._tags}}</div>
-                    <div class="col-80 search-extra-column">{{item.vcCount}}</div>
-                    <div class="col-80 search-extra-column">{{item.vpCount}}</div>
-                    <div class="col-80 search-extra-column">{{item.tokensCount}}</div>
-                    <div *ngIf="policy" class="col-80 {{item._color}} color-field">{{item.rate}}%</div>
-                    <div *ngIf="globalType" class="col-120 toolbars">
-                        <p-button
-                            (click)="importPolicy(item)"
-                            class="toolbar-btn-primary"
-                            [pTooltip]="'Import Policy'"
-                            tooltipPosition="bottom">
-                            <svg-icon src="/assets/images/icons/import.svg" svgClass="on-icon-color"></svg-icon>
-                        </p-button>
-                    </div>
-                </div>
-            </div>
+              <ng-template let-option pTemplate="item">
+                <div class="p-multiselect-item-content">{{ option.label }}</div>
+              </ng-template>
+            </p-multiSelect>
+          </div>
+          <div class="filter">
+          </div>
         </div>
-        <div *ngIf="!list || !list.length" class="empty-grid">
-            <div class="empty-grid-icon">
-                <svg-icon
-                    class="svg-icon-32"
-                    src="/assets/images/icons/32/search.svg"
-                    svgClass="empty-icon-color">
-                </svg-icon>
-            </div>
-            <ng-container *ngIf="error">
-                <div class="empty-grid-header">Not available</div>
-                <div class="empty-grid-text">{{error}}</div>
-            </ng-container>
-            <ng-container *ngIf="!error">
-                <div class="empty-grid-header">There are no policies</div>
-                <div class="empty-grid-text">Please try to change or clear filters</div>
-            </ng-container>
+        <div class="filter-row" style="justify-content: flex-end">
+          <button (click)="applyFilters()"
+            type="submit"
+            [disabled]="!filtersForm.dirty"
+            class="button"
+            label="Apply Filters"
+          pButton></button>
         </div>
-    </div>
+      </div>
+    </form>
+    @if (list && list.length) {
+      <div class="grid-container">
+        <div class="grid-header">
+          <div class="col-64">
+            <input
+              class="checkbox-input"
+              type="checkbox"
+              [checked]="selectedAll"
+              (change)="onSelectAll()">
+          </div>
+          <div class="col-250">ID</div>
+          <div class="col-auto">Name</div>
+          <div class="col-200">Tags</div>
+          <div class="col-80 search-extra-column">VC</div>
+          <div class="col-80 search-extra-column">VP</div>
+          <div class="col-80 search-extra-column">Tokens</div>
+          @if (policy) {
+            <div class="col-80">Rate</div>
+          }
+          @if (globalType) {
+            <div class="col-120"></div>
+          }
+        </div>
+        <div class="grid-body">
+          @for (item of list; track item) {
+            <div class="grid-row" (click)="onSelect(item)">
+              <div class="col-64">
+                <input
+                  class="checkbox-input"
+                  type="checkbox"
+                  [checked]="item._select"
+                  (change)="select()">
+              </div>
+              <div class="col-250">{{item.messageId || item.id}}</div>
+              <div class="col-auto">{{item.name}}</div>
+              <div class="col-200">{{item._tags}}</div>
+              <div class="col-80 search-extra-column">{{item.vcCount}}</div>
+              <div class="col-80 search-extra-column">{{item.vpCount}}</div>
+              <div class="col-80 search-extra-column">{{item.tokensCount}}</div>
+              @if (policy) {
+                <div class="col-80 {{item._color}} color-field">{{item.rate}}%</div>
+              }
+              @if (globalType) {
+                <div class="col-120 toolbars">
+                  <p-button
+                    (click)="importPolicy(item)"
+                    class="toolbar-btn-primary"
+                    [pTooltip]="'Import Policy'"
+                    tooltipPosition="bottom">
+                    <svg-icon src="/assets/images/icons/import.svg" svgClass="on-icon-color"></svg-icon>
+                  </p-button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+    @if (!list || !list.length) {
+      <div class="empty-grid">
+        <div class="empty-grid-icon">
+          <svg-icon
+            class="svg-icon-32"
+            src="/assets/images/icons/32/search.svg"
+            svgClass="empty-icon-color">
+          </svg-icon>
+        </div>
+        @if (error) {
+          <div class="empty-grid-header">Not available</div>
+          <div class="empty-grid-text">{{error}}</div>
+        }
+        @if (!error) {
+          <div class="empty-grid-header">There are no policies</div>
+          <div class="empty-grid-text">Please try to change or clear filters</div>
+        }
+      </div>
+    }
+  </div>
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="cancel-button">
-            <button (click)="onClose()" class="button secondary" label="Cancel" pButton></button>
-        </div>
-        <div>
-            <button
-                (click)="onCompare()"
-                [disabled]="count<2"
-                class="button"
-                label="Compare with selected ({{count}})" pButton>
-                <svg-icon
-                    class="icon2-btn"
-                    src="/assets/images/icons/compare.svg"
-                    [svgClass]="count > 1 ? 'on-icon-color':'disabled-icon-color'">
-                </svg-icon>
-            </button>
-        </div>
+  <div class="action-buttons">
+    <div class="cancel-button">
+      <button (click)="onClose()" class="button secondary" label="Cancel" pButton></button>
     </div>
+    <div>
+      <button
+        (click)="onCompare()"
+        [disabled]="count<2"
+        class="button"
+        label="Compare with selected ({{count}})" pButton>
+        <svg-icon
+          class="icon2-btn"
+          src="/assets/images/icons/compare.svg"
+          [svgClass]="count > 1 ? 'on-icon-color':'disabled-icon-color'">
+        </svg-icon>
+      </button>
+    </div>
+  </div>
 </div>

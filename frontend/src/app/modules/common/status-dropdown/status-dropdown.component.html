@@ -1,6 +1,6 @@
-<p-select
+@if (!disabled) {
+  <p-select
     #dropdown
-    *ngIf="!disabled"
     [options]="list"
     [showClear]="false"
     class="guardian-dropdown guardian-dropdown-status status-{{status}}"
@@ -11,26 +11,28 @@
     [placeholder]="label"
     panelStyleClass="guardian-dropdown-panel guardian-dropdown-status-panel"
     (onChange)="onChange($event, dropdown)"
->
+    >
     <ng-template pTemplate="selectedItem">
-        {{label}}
+      {{label}}
     </ng-template>
     <ng-template let-option pTemplate="item">
-        <div>
-            <div class="dropdown-item-title status-{{option.value}}" >
-                {{ option.label }}
-            </div>
-            <span class="dropdown-item-description">
-                {{option.description}}
-            </span>
+      <div>
+        <div class="dropdown-item-title status-{{option.value}}" >
+          {{ option.label }}
         </div>
+        <span class="dropdown-item-description">
+          {{option.description}}
+        </span>
+      </div>
     </ng-template>
-</p-select>
-<div
-    *ngIf="disabled"
+  </p-select>
+}
+@if (disabled) {
+  <div
     class="guardian-disabled-status status-{{status}} p-tag"
     [class.p-tag-grey]="status === 'DRAFT' || status === 'DRY_RUN'"
     [class.p-tag-success]="status === 'PUBLISHED'"
     [class.p-tag-error]="status === 'ERROR'">
     {{label}}
-</div>
+  </div>
+}

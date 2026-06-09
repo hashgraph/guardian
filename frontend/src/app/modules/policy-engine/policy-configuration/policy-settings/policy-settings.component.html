@@ -1,372 +1,380 @@
 <div class="settings">
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
     </div>
-    <div class="settings-header">
-        <div class="settings-header-icon">
-            <i class="pi pi-cog"></i>
-        </div>
-        <div class="settings-header-path">
-            <span>Settings</span>
-        </div>
-        <div class="settings-header-buttons">
-            <div class="settings-header-button cancel" (click)="onSettingsCancel()">
-                Cancel
-            </div>
-            <div class="settings-header-button save" (click)="onSettingsSave()">
-                Save
-            </div>
-        </div>
+  }
+  <div class="settings-header">
+    <div class="settings-header-icon">
+      <i class="pi pi-cog"></i>
     </div>
-    <div class="settings-body">
-        <div class="settings-menu">
-            <div class="settings-menu-item" [attr.active]="settingsTab===0" (click)="onSettingsTab(0)">
-                <i class="pi pi-palette"></i>
-                <span>Themes</span>
-            </div>
-        </div>
-        <div class="settings-container" [attr.active]="settingsTab===0">
+    <div class="settings-header-path">
+      <span>Settings</span>
+    </div>
+    <div class="settings-header-buttons">
+      <div class="settings-header-button cancel" (click)="onSettingsCancel()">
+        Cancel
+      </div>
+      <div class="settings-header-button save" (click)="onSettingsSave()">
+        Save
+      </div>
+    </div>
+  </div>
+  <div class="settings-body">
+    <div class="settings-menu">
+      <div class="settings-menu-item" [attr.active]="settingsTab===0" (click)="onSettingsTab(0)">
+        <i class="pi pi-palette"></i>
+        <span>Themes</span>
+      </div>
+    </div>
+    <div class="settings-container" [attr.active]="settingsTab===0">
 
-            <div class="theme-container">
-                <div class="settings-select">
-                    <div class="p-fluid">
-                        <label for="themeDropdown" class="dropdown-label">Theme</label>
-                        <p-select
-                            [(ngModel)]="theme"
-                            [options]="themes"
-                            optionLabel="name"
-                            [appendTo]="'body'"
-                            (onChange)="onSelectTheme()"
-                            id="themeDropdown"
-                            [style]="{ 'outline': 'none', 'box-shadow': 'none' }"
-                            class="guardian-dropdown"
-                            appendTo="body"
+      <div class="theme-container">
+        <div class="settings-select">
+          <div class="p-fluid">
+            <label for="themeDropdown" class="dropdown-label">Theme</label>
+            <p-select
+              [(ngModel)]="theme"
+              [options]="themes"
+              optionLabel="name"
+              [appendTo]="'body'"
+              (onChange)="onSelectTheme()"
+              id="themeDropdown"
+              [style]="{ 'outline': 'none', 'box-shadow': 'none' }"
+              class="guardian-dropdown"
+              appendTo="body"
+              >
+              <ng-template let-option pTemplate="selectedItem">
+                {{ option.name }}
+              </ng-template>
+              <ng-template let-option pTemplate="item">
+                {{ option.name }}
+              </ng-template>
+            </p-select>
+          </div>
+
+        </div>
+        @if (theme) {
+          <div class="settings-sub-button" (click)="newTheme()">
+            <i class="pi pi-plus toolbar-icons"></i>
+            <span>New</span>
+          </div>
+          <div class="settings-sub-button" (click)="newTheme(theme)">
+            <i class="pi pi-copy"></i>
+            <span>Copy</span>
+          </div>
+          @if (!theme.readonly) {
+            <div class="settings-sub-button" (click)="editTheme(theme)">
+              <i class="pi pi-pencil"></i>
+              <span>Edit</span>
+            </div>
+          }
+          <div class="settings-button-delimiter"></div>
+          <div class="settings-sub-button" (click)="importTheme()">
+            <i class="pi pi-file-o"></i>
+            <span>Import</span>
+          </div>
+          @if (!theme.readonly) {
+            <div class="settings-sub-button" (click)="exportTheme(theme)">
+              <i class="pi pi-sort-alt"></i>
+              <span>Export</span>
+            </div>
+          }
+          @if (!theme.readonly) {
+            <div class="settings-button-delimiter"></div>
+          }
+          @if (!theme.readonly) {
+            <div class="settings-sub-button del" (click)="deleteTheme(theme)">
+              <i class="pi pi-trash"></i>
+              <span>Delete</span>
+            </div>
+          }
+        }
+      </div>
+
+      <div class="rules-container" [attr.readonly]="theme.readonly">
+        <div class="rules-header">
+          <div class="switch-btn">
+            <switch-button [on-label]="'Syntax'" [off-label]="'Blocks'"
+            [(value)]="isSyntax"></switch-button>
+          </div>
+        </div>
+        @if (!isSyntax) {
+          @for (rule of theme.rules; track rule; let i = $index) {
+            <div class="rule-color">
+              <div class="rule-color-number">
+                <div class="rule-up" (click)="ruleUp(rule)">
+                  <i class="pi pi-caret-up"></i>
+                </div>
+                <div>#{{ i + 1 }}</div>
+                <div class="rule-down" (click)="ruleDown(rule)">
+                  <i class="pi pi-caret-down"></i>
+                </div>
+              </div>
+              <div class="rule-color-container">
+                <div class="rule-color-filter">
+                  <div class="rule-condition-header">Condition</div>
+                  <div class="rule-condition-select">
+                    <p-select
+                      placeholder="Type"
+                      [(ngModel)]="rule.type"
+                      [options]="dropdownTypesOptions"
+                      optionLabel="label"
+                      class="guardian-dropdown guardian-dropdown-cell"
+                      appendTo="body">
+                    </p-select>
+                  </div>
+                  @if (rule.type === 'type' || rule.type === 'api' || rule.type === 'role') {
+                    <div
+                      class="rule-condition-label">
+                      Equal
+                    </div>
+                  }
+                  @if (rule.type === 'type') {
+                    <div class="rule-condition-select">
+                      <p-multiSelect
+                        placeholder="Blocks"
+                        [(ngModel)]="rule.multipleValue"
+                        [options]="allBlocks"
+                        optionLabel="name"
+                        optionValue="type"
+                        class="guardian-multiselect guardian-multiselect-cell"
+                        appendTo="body">
+                      </p-multiSelect>
+                    </div>
+                  }
+                  @if (rule.type === 'api') {
+                    <div class="rule-condition-select">
+                      <p-select
+                        placeholder="Type"
+                        [(ngModel)]="rule.singleValue"
+                        [options]="dropdownAccessesOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        class="guardian-dropdown guardian-dropdown-cell"
+                        appendTo="body">
+                      </p-select>
+                    </div>
+                  }
+                  @if (rule.type === 'role') {
+                    <div class="rule-condition-select">
+                      <p-select
+                        placeholder="Type"
+                        [(ngModel)]="rule.singleValue"
+                        [options]="dropdownRolesOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        class="guardian-dropdown guardian-dropdown-cell"
+                        appendTo="body">
+                      </p-select>
+                    </div>
+                  }
+                  @if (rule.type === 'custom') {
+                    <div class="rule-condition-select prop-condition">
+                      <input [(ngModel)]="rule.singleValue">
+                    </div>
+                  }
+                </div>
+                <div class="rule-color-prev">
+                  <div class="rule-color-label">
+                    Style
+                  </div>
+                  <div class="block-color-prev" [style]="blockStyle(rule)" theme-block theme-all>
+                    Block Name
+                  </div>
+                  <div class="rule-color-prop">
+                    <div class="rule-color-prop-value">
+                      <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                      [palette]="colorPalette" [(ngModel)]="rule.text"></ngx-colors>
+                    </div>
+                    <div class="rule-color-prop-name">Text</div>
+                  </div>
+                  <div class="rule-color-prop">
+                    <div class="rule-color-prop-value">
+                      <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                      [palette]="colorPalette" [(ngModel)]="rule.background"></ngx-colors>
+                    </div>
+                    <div class="rule-color-prop-name">Background</div>
+                  </div>
+                  <div class="rule-color-prop">
+                    <div class="rule-color-prop-value">
+                      <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                      [palette]="colorPalette" [(ngModel)]="rule.border"></ngx-colors>
+                    </div>
+                    <div class="rule-color-prop-name">Border</div>
+                  </div>
+                  <div class="rule-color-prop">
+                    <div class="rule-color-prop-select">
+                      <p-select
+                        placeholder="Type"
+                        [(ngModel)]="rule.shape"
+                        [options]="dropdownShapeOptions"
+                        optionValue="value"
+                        class="guardian-dropdown guardian-dropdown-cell"
+                        appendTo="body">
+                        <ng-template pTemplate="item" let-shape>
+                          <div [ngClass]="'shape-' + shape.value"></div>
+                        </ng-template>
+                        <ng-template pTemplate="selectedItem" let-shape>
+                          <div [ngClass]="'shape-' + shape.value"></div>
+                        </ng-template>
+                      </p-select>
+                    </div>
+                    <div class="rule-color-prop-name">Shape</div>
+                  </div>
+                  <div class="rule-color-prop">
+                    <div class="rule-color-prop-select">
+                      <p-select
+                        placeholder="Type"
+                        [(ngModel)]="rule.borderWidth"
+                        [options]="dropdownBorderWidthOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        class="guardian-dropdown guardian-dropdown-cell"
+                        appendTo="body"
                         >
-                            <ng-template let-option pTemplate="selectedItem">
-                                {{ option.name }}
-                            </ng-template>
-                            <ng-template let-option pTemplate="item">
-                                {{ option.name }}
-                            </ng-template>
-                        </p-select>
+                      </p-select>
                     </div>
-
+                    <div class="rule-color-prop-name">Border Width</div>
+                  </div>
                 </div>
-                <ng-container *ngIf="theme">
-                    <div class="settings-sub-button" (click)="newTheme()">
-                        <i class="pi pi-plus toolbar-icons"></i>
-                        <span>New</span>
-                    </div>
-                    <div class="settings-sub-button" (click)="newTheme(theme)">
-                        <i class="pi pi-copy"></i>
-                        <span>Copy</span>
-                    </div>
-                    <div *ngIf="!theme.readonly" class="settings-sub-button" (click)="editTheme(theme)">
-                        <i class="pi pi-pencil"></i>
-                        <span>Edit</span>
-                    </div>
-                    <div class="settings-button-delimiter"></div>
-                    <div class="settings-sub-button" (click)="importTheme()">
-                        <i class="pi pi-file-o"></i>
-                        <span>Import</span>
-                    </div>
-                    <div *ngIf="!theme.readonly" class="settings-sub-button" (click)="exportTheme(theme)">
-                        <i class="pi pi-sort-alt"></i>
-                        <span>Export</span>
-                    </div>
-                    <div *ngIf="!theme.readonly" class="settings-button-delimiter"></div>
-                    <div *ngIf="!theme.readonly" class="settings-sub-button del" (click)="deleteTheme(theme)">
-                        <i class="pi pi-trash"></i>
-                        <span>Delete</span>
-                    </div>
-                </ng-container>
-            </div>
-
-            <div class="rules-container" [attr.readonly]="theme.readonly">
-                <div class="rules-header">
-                    <div class="switch-btn">
-                        <switch-button [on-label]="'Syntax'" [off-label]="'Blocks'"
-                                       [(value)]="isSyntax"></switch-button>
-                    </div>
+                <div class="rule-description">
+                  <div class="rule-description-label">
+                    Description
+                  </div>
+                  <div class="rule-description-text">
+                    <textarea [(ngModel)]="rule.description"></textarea>
+                  </div>
                 </div>
-                <ng-container *ngIf="!isSyntax">
-                    <div class="rule-color" *ngFor="let rule of theme.rules; let i=index">
-                        <div class="rule-color-number">
-                            <div class="rule-up" (click)="ruleUp(rule)">
-                                <i class="pi pi-caret-up"></i>
-                            </div>
-                            <div>#{{ i + 1 }}</div>
-                            <div class="rule-down" (click)="ruleDown(rule)">
-                                <i class="pi pi-caret-down"></i>
-                            </div>
-                        </div>
-
-                        <div class="rule-color-container">
-                            <div class="rule-color-filter">
-
-                                <div class="rule-condition-header">Condition</div>
-                                <div class="rule-condition-select">
-                                    <p-select
-                                        placeholder="Type"
-                                        [(ngModel)]="rule.type"
-                                        [options]="dropdownTypesOptions"
-                                        optionLabel="label"
-                                        class="guardian-dropdown guardian-dropdown-cell"
-                                        appendTo="body">
-                                    </p-select>
-                                </div>
-
-                                <div *ngIf="rule.type === 'type' || rule.type === 'api' || rule.type === 'role'"
-                                     class="rule-condition-label">
-                                    Equal
-                                </div>
-
-                                <div *ngIf="rule.type === 'type'" class="rule-condition-select">
-                                    <p-multiSelect
-                                        placeholder="Blocks"
-                                        [(ngModel)]="rule.multipleValue"
-                                        [options]="allBlocks"
-                                        optionLabel="name"
-                                        optionValue="type"
-                                        class="guardian-multiselect guardian-multiselect-cell"
-                                        appendTo="body">
-                                    </p-multiSelect>
-                                </div>
-
-                                <div *ngIf="rule.type === 'api'" class="rule-condition-select">
-                                    <p-select
-                                        placeholder="Type"
-                                        [(ngModel)]="rule.singleValue"
-                                        [options]="dropdownAccessesOptions"
-                                        optionLabel="label"
-                                        optionValue="value"
-                                        class="guardian-dropdown guardian-dropdown-cell"
-                                        appendTo="body">
-                                    </p-select>
-                                </div>
-
-                                <div *ngIf="rule.type === 'role'" class="rule-condition-select">
-                                    <p-select
-                                        placeholder="Type"
-                                        [(ngModel)]="rule.singleValue"
-                                        [options]="dropdownRolesOptions"
-                                        optionLabel="label"
-                                        optionValue="value"
-                                        class="guardian-dropdown guardian-dropdown-cell"
-                                        appendTo="body">
-                                    </p-select>
-                                </div>
-
-                                <div *ngIf="rule.type === 'custom'" class="rule-condition-select prop-condition">
-                                    <input [(ngModel)]="rule.singleValue">
-                                </div>
-
-                            </div>
-                            <div class="rule-color-prev">
-                                <div class="rule-color-label">
-                                    Style
-                                </div>
-                                <div class="block-color-prev" [style]="blockStyle(rule)" theme-block theme-all>
-                                    Block Name
-                                </div>
-                                <div class="rule-color-prop">
-                                    <div class="rule-color-prop-value">
-                                        <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                                    [palette]="colorPalette" [(ngModel)]="rule.text"></ngx-colors>
-                                    </div>
-                                    <div class="rule-color-prop-name">Text</div>
-                                </div>
-                                <div class="rule-color-prop">
-                                    <div class="rule-color-prop-value">
-                                        <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                                    [palette]="colorPalette" [(ngModel)]="rule.background"></ngx-colors>
-                                    </div>
-                                    <div class="rule-color-prop-name">Background</div>
-                                </div>
-                                <div class="rule-color-prop">
-                                    <div class="rule-color-prop-value">
-                                        <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                                    [palette]="colorPalette" [(ngModel)]="rule.border"></ngx-colors>
-                                    </div>
-                                    <div class="rule-color-prop-name">Border</div>
-                                </div>
-
-                                <div class="rule-color-prop">
-                                    <div class="rule-color-prop-select">
-                                        <p-select
-                                            placeholder="Type"
-                                            [(ngModel)]="rule.shape"
-                                            [options]="dropdownShapeOptions"
-                                            optionValue="value"
-                                            class="guardian-dropdown guardian-dropdown-cell"
-                                            appendTo="body">
-                                            <ng-template pTemplate="item" let-shape>
-                                                <div [ngClass]="'shape-' + shape.value"></div>
-                                            </ng-template>
-                                            <ng-template pTemplate="selectedItem" let-shape>
-                                                <div [ngClass]="'shape-' + shape.value"></div>
-                                            </ng-template>
-                                        </p-select>
-                                    </div>
-                                    <div class="rule-color-prop-name">Shape</div>
-                                </div>
-                                <div class="rule-color-prop">
-                                    <div class="rule-color-prop-select">
-                                        <p-select
-                                            placeholder="Type"
-                                            [(ngModel)]="rule.borderWidth"
-                                            [options]="dropdownBorderWidthOptions"
-                                            optionLabel="label"
-                                            optionValue="value"
-                                            class="guardian-dropdown guardian-dropdown-cell"
-                                            appendTo="body"
-                                        >
-                                        </p-select>
-                                    </div>
-                                    <div class="rule-color-prop-name">Border Width</div>
-                                </div>
-                            </div>
-
-                            <div class="rule-description">
-                                <div class="rule-description-label">
-                                    Description
-                                </div>
-                                <div class="rule-description-text">
-                                    <textarea [(ngModel)]="rule.description"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="rule-color-delete">
-                            <div class="delete-btn" (click)="onDeleteRule(rule)">
-                                <i class="pi pi-trash"></i>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    <div class="rule-color" *ngIf="theme.default">
-                        <div class="rule-color-number">
-                        </div>
-
-                        <div class="rule-color-container">
-                            <div class="rule-color-prev">
-                                <div class="rule-color-label">
-                                    Default Style
-                                </div>
-                                <div class="block-color-prev" [style]="blockStyle(theme.default)" theme-block theme-all>
-                                    Block Name
-                                </div>
-                                <div class="rule-color-prop">
-                                    <div class="rule-color-prop-value">
-                                        <ngx-colors
-                                            ngx-colors-trigger
-                                            [colorPickerControls]="colorPickerControls"
-                                            [palette]="colorPalette"
-                                            [(ngModel)]="theme.default.text">
-                                        </ngx-colors>
-                                    </div>
-                                    <div class="rule-color-prop-name">Text</div>
-                                </div>
-                                <div class="rule-color-prop">
-                                    <div class="rule-color-prop-value">
-                                        <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                                    [palette]="colorPalette"
-                                                    [(ngModel)]="theme.default.background"></ngx-colors>
-                                    </div>
-                                    <div class="rule-color-prop-name">Background</div>
-                                </div>
-                                <div class="rule-color-prop">
-                                    <div class="rule-color-prop-value">
-                                        <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                                    [palette]="colorPalette"
-                                                    [(ngModel)]="theme.default.border"></ngx-colors>
-                                    </div>
-                                    <div class="rule-color-prop-name">Border</div>
-                                </div>
-
-                                <div class="rule-color-prop">
-                                    <div class="rule-color-prop-select">
-                                        <p-select
-                                            placeholder="Type"
-                                            [(ngModel)]="theme.default.shape"
-                                            [options]="dropdownThemeShapeOptions"
-                                            optionValue="value"
-                                            class="guardian-dropdown guardian-dropdown-cell"
-                                            appendTo="body">
-
-                                            <ng-template pTemplate="item" let-shape>
-                                                <div [ngClass]="'shape-' + shape.value"></div>
-                                            </ng-template>
-
-                                            <ng-template pTemplate="selectedItem" let-shape>
-                                                <div [ngClass]="'shape-' + shape.value"></div>
-                                            </ng-template>
-                                        </p-select>
-                                    </div>
-                                    <div class="rule-color-prop-name">Shape</div>
-                                </div>
-                                <div class="rule-color-prop">
-                                    <div class="rule-color-prop-select">
-                                        <p-select
-                                            placeholder="Type"
-                                            [(ngModel)]="theme.default.borderWidth"
-                                            [options]="dropdownBorderWidthOptions"
-                                            optionLabel="label"
-                                            optionValue="value"
-                                            class="guardian-dropdown guardian-dropdown-cell"
-                                            appendTo="body">
-                                        </p-select>
-                                    </div>
-                                    <div class="rule-color-prop-name">Border Width</div>
-                                </div>
-                            </div>
-
-                            <div class="rule-description">
-                                <div class="rule-description-label">
-                                    Description
-                                </div>
-                                <div class="rule-description-text">
-                                    <textarea [(ngModel)]="theme.default.description"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="rule-color-delete">
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="new-rule" (click)="onAddRule()">
-                            <i class="pi pi-plus"></i>
-                            <div class="new-rule-name">
-                                Create Rule
-                            </div>
-                        </div>
-                    </div>
-                </ng-container>
-
-                <ng-container *ngIf="isSyntax">
-                    <div class="rule-color" *ngFor="let syntaxGroup of theme.syntaxGroups">
-                        <div class="rule-color-number">
-                        </div>
-                        <div class="rule-color-syntax">
-                            <div class="rule-color-syntax-label">
-                                Group Name
-                            </div>
-                            <div [ngStyle]="{ 'color': syntaxGroup.color }"> {{ syntaxGroup.name }}</div>
-                            <div class="rule-color-syntax-label">
-                                Color
-                            </div>
-                            <div class="rule-color-prop">
-                                <div class="rule-color-prop-value">
-                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                                [palette]="colorPalette" [(ngModel)]="syntaxGroup.color"></ngx-colors>
-                                </div>
-                                <div class="rule-color-prop-name">Text Color</div>
-                            </div>
-                        </div>
-                    </div>
-                </ng-container>
+              </div>
+              <div class="rule-color-delete">
+                <div class="delete-btn" (click)="onDeleteRule(rule)">
+                  <i class="pi pi-trash"></i>
+                </div>
+              </div>
             </div>
-        </div>
+          }
+          @if (theme.default) {
+            <div class="rule-color">
+              <div class="rule-color-number">
+              </div>
+              <div class="rule-color-container">
+                <div class="rule-color-prev">
+                  <div class="rule-color-label">
+                    Default Style
+                  </div>
+                  <div class="block-color-prev" [style]="blockStyle(theme.default)" theme-block theme-all>
+                    Block Name
+                  </div>
+                  <div class="rule-color-prop">
+                    <div class="rule-color-prop-value">
+                      <ngx-colors
+                        ngx-colors-trigger
+                        [colorPickerControls]="colorPickerControls"
+                        [palette]="colorPalette"
+                        [(ngModel)]="theme.default.text">
+                      </ngx-colors>
+                    </div>
+                    <div class="rule-color-prop-name">Text</div>
+                  </div>
+                  <div class="rule-color-prop">
+                    <div class="rule-color-prop-value">
+                      <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                        [palette]="colorPalette"
+                      [(ngModel)]="theme.default.background"></ngx-colors>
+                    </div>
+                    <div class="rule-color-prop-name">Background</div>
+                  </div>
+                  <div class="rule-color-prop">
+                    <div class="rule-color-prop-value">
+                      <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                        [palette]="colorPalette"
+                      [(ngModel)]="theme.default.border"></ngx-colors>
+                    </div>
+                    <div class="rule-color-prop-name">Border</div>
+                  </div>
+                  <div class="rule-color-prop">
+                    <div class="rule-color-prop-select">
+                      <p-select
+                        placeholder="Type"
+                        [(ngModel)]="theme.default.shape"
+                        [options]="dropdownThemeShapeOptions"
+                        optionValue="value"
+                        class="guardian-dropdown guardian-dropdown-cell"
+                        appendTo="body">
+                        <ng-template pTemplate="item" let-shape>
+                          <div [ngClass]="'shape-' + shape.value"></div>
+                        </ng-template>
+                        <ng-template pTemplate="selectedItem" let-shape>
+                          <div [ngClass]="'shape-' + shape.value"></div>
+                        </ng-template>
+                      </p-select>
+                    </div>
+                    <div class="rule-color-prop-name">Shape</div>
+                  </div>
+                  <div class="rule-color-prop">
+                    <div class="rule-color-prop-select">
+                      <p-select
+                        placeholder="Type"
+                        [(ngModel)]="theme.default.borderWidth"
+                        [options]="dropdownBorderWidthOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        class="guardian-dropdown guardian-dropdown-cell"
+                        appendTo="body">
+                      </p-select>
+                    </div>
+                    <div class="rule-color-prop-name">Border Width</div>
+                  </div>
+                </div>
+                <div class="rule-description">
+                  <div class="rule-description-label">
+                    Description
+                  </div>
+                  <div class="rule-description-text">
+                    <textarea [(ngModel)]="theme.default.description"></textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="rule-color-delete">
+              </div>
+            </div>
+          }
+          <div>
+            <div class="new-rule" (click)="onAddRule()">
+              <i class="pi pi-plus"></i>
+              <div class="new-rule-name">
+                Create Rule
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (isSyntax) {
+          @for (syntaxGroup of theme.syntaxGroups; track syntaxGroup) {
+            <div class="rule-color">
+              <div class="rule-color-number">
+              </div>
+              <div class="rule-color-syntax">
+                <div class="rule-color-syntax-label">
+                  Group Name
+                </div>
+                <div [ngStyle]="{ 'color': syntaxGroup.color }"> {{ syntaxGroup.name }}</div>
+                <div class="rule-color-syntax-label">
+                  Color
+                </div>
+                <div class="rule-color-prop">
+                  <div class="rule-color-prop-value">
+                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                    [palette]="colorPalette" [(ngModel)]="syntaxGroup.color"></ngx-colors>
+                  </div>
+                  <div class="rule-color-prop-name">Text Color</div>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
     </div>
+  </div>
 </div>

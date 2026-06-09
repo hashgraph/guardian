@@ -1,120 +1,124 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+@if (properties) {
+  <table class="properties" [attr.readonly]="readonly">
     <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Document Type</td>
-        <td class="propRowCell">
-            <p-select
-                [(ngModel)]="properties.documentType"
-                [disabled]="readonly"
-                (onChange)="onSave()"
-                [appendTo]="'body'"
-                placeholder="Select a document type"
-                [options]="documentTypeOptions">
-            </p-select>
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Document Type</td>
+      <td class="propRowCell">
+        <p-select
+          [(ngModel)]="properties.documentType"
+          [disabled]="readonly"
+          (onChange)="onSave()"
+          [appendTo]="'body'"
+          placeholder="Select a document type"
+          [options]="documentTypeOptions">
+        </p-select>
+      </td>
     </tr>
     <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Check Schema</td>
-        <td class="propRowCell">
-            <select-schema
-                [schemas]="schemas"
-                [(value)]="properties.schema"
-                [disabled]="readonly"
-                (change)="onSave()"
-            ></select-schema>
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Check Schema</td>
+      <td class="propRowCell">
+        <select-schema
+          [schemas]="schemas"
+          [(value)]="properties.schema"
+          [disabled]="readonly"
+          (change)="onSave()"
+        ></select-schema>
+      </td>
     </tr>
     <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName" pTooltip="Check Owned by User" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Owned by User</td>
-        <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkOwnerDocument" [readonly]="readonly"
-                   (blur)="onSave()">
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName" pTooltip="Check Owned by User" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Owned by User</td>
+      <td class="propRowCell">
+        <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkOwnerDocument" [readonly]="readonly"
+          (blur)="onSave()">
+      </td>
     </tr>
     <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName" pTooltip="Check Owned by Group" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Owned by Group</td>
-        <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkOwnerByGroupDocument"
-                   [readonly]="readonly" (blur)="onSave()">
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName" pTooltip="Check Owned by Group" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Owned by Group</td>
+      <td class="propRowCell">
+        <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkOwnerByGroupDocument"
+          [readonly]="readonly" (blur)="onSave()">
+      </td>
     </tr>
     <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName" pTooltip="Check Assigned to User" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Assigned to User</td>
-        <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkAssignDocument" [readonly]="readonly"
-                   (blur)="onSave()">
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName" pTooltip="Check Assigned to User" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Assigned to User</td>
+      <td class="propRowCell">
+        <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkAssignDocument" [readonly]="readonly"
+          (blur)="onSave()">
+      </td>
     </tr>
     <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName" pTooltip="Check Assigned to Group" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Assigned to Group</td>
-        <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkAssignByGroupDocument"
-                   [readonly]="readonly" (blur)="onSave()">
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName" pTooltip="Check Assigned to Group" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Assigned to Group</td>
+      <td class="propRowCell">
+        <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkAssignByGroupDocument"
+          [readonly]="readonly" (blur)="onSave()">
+      </td>
     </tr>
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'conditionsGroup')"
-            [attr.collapse]="propHidden.conditionsGroup">
-            <i class="pi pi-caret-down"></i>
-        </td>
-        <td class="propHeaderCell cellName">Conditions</td>
-        <td class="propHeaderCell">
-            <div class="propAdd" (click)="addCondition()">
-                <i class="pi pi-plus"></i>
-                <span>Add Condition</span>
-            </div>
-        </td>
+      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'conditionsGroup')"
+        [attr.collapse]="propHidden.conditionsGroup">
+        <i class="pi pi-caret-down"></i>
+      </td>
+      <td class="propHeaderCell cellName">Conditions</td>
+      <td class="propHeaderCell">
+        <div class="propAdd" (click)="addCondition()">
+          <i class="pi pi-plus"></i>
+          <span>Add Condition</span>
+        </div>
+      </td>
     </tr>
-    <ng-container *ngFor="let condition of properties.conditions; let i=index">
-        <tr class="propRow" [attr.collapse]="propHidden.conditionsGroup">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.conditions, i)"
-                [attr.collapse]="propHidden.conditions[i]">
-                <i class="pi pi-caret-down"></i>
-            </td>
-            <td class="propRowCell cellName">Condition {{ i }}</td>
-            <td class="propRowCell">
-                <span *ngIf="condition.field && condition.type && condition.value"
-                      [title]="condition.field + ' ' + condition.type + ' ' + condition.value">
-                    {{ condition.field }} {{ condition.type }} {{ condition.value }}
-                </span>
-                <span class="remove-prop" [attr.readonly]="readonly" (click)="removeCondition(i)">
-                    <i class="pi pi-trash"></i>
-                </span>
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Type</td>
-            <td class="propRowCell">
-                <p-select
-                    [(ngModel)]="condition.type"
-                    [disabled]="readonly"
-                    (onChange)="onSave()"
-                    [appendTo]="'body'"
-                    placeholder="Select a condition type"
-                    [options]="conditionTypeOptions">
-                </p-select>
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Field</td>
-            <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="condition.field" [readonly]="readonly" (blur)="onSave()">
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Value</td>
-            <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="condition.value" [readonly]="readonly" (blur)="onSave()">
-            </td>
-        </tr>
-    </ng-container>
-</table>
+    @for (condition of properties.conditions; track condition; let i = $index) {
+      <tr class="propRow" [attr.collapse]="propHidden.conditionsGroup">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden.conditions, i)"
+          [attr.collapse]="propHidden.conditions[i]">
+          <i class="pi pi-caret-down"></i>
+        </td>
+        <td class="propRowCell cellName">Condition {{ i }}</td>
+        <td class="propRowCell">
+          @if (condition.field && condition.type && condition.value) {
+            <span
+              [title]="condition.field + ' ' + condition.type + ' ' + condition.value">
+              {{ condition.field }} {{ condition.type }} {{ condition.value }}
+            </span>
+          }
+          <span class="remove-prop" [attr.readonly]="readonly" (click)="removeCondition(i)">
+            <i class="pi pi-trash"></i>
+          </span>
+        </td>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Type</td>
+        <td class="propRowCell">
+          <p-select
+            [(ngModel)]="condition.type"
+            [disabled]="readonly"
+            (onChange)="onSave()"
+            [appendTo]="'body'"
+            placeholder="Select a condition type"
+            [options]="conditionTypeOptions">
+          </p-select>
+        </td>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Field</td>
+        <td class="propRowCell">
+          <input class="prop-input" [(ngModel)]="condition.field" [readonly]="readonly" (blur)="onSave()">
+        </td>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Value</td>
+        <td class="propRowCell">
+          <input class="prop-input" [(ngModel)]="condition.value" [readonly]="readonly" (blur)="onSave()">
+        </td>
+      </tr>
+    }
+  </table>
+}

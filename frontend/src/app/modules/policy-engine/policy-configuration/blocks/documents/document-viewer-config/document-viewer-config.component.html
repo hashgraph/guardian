@@ -1,231 +1,233 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+@if (properties) {
+  <table class="properties" [attr.readonly]="readonly">
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <i class="pi pi-caret-down"></i>
-        </td>
-        <td class="propHeaderCell cellName">UI</td>
-        <td class="propHeaderCell"></td>
+      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+        <i class="pi pi-caret-down"></i>
+      </td>
+      <td class="propHeaderCell cellName">UI</td>
+      <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Title</td>
+      <td class="propRowCell">
+        <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
+      </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName" pTooltip="Enable common sorting" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Enable common sorting</td>
+      <td class="propRowCell">
+        <input type="checkbox" [(ngModel)]="properties.uiMetaData.enableSorting" [readonly]="readonly"
+          (blur)="onSave()">
+      </td>
+    </tr>
+    <tr class="propHeader">
+      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fieldsGroup')"
+        [attr.collapse]="propHidden.fieldsGroup">
+        <i class="pi pi-caret-down"></i>
+      </td>
+      <td class="propHeaderCell cellName">Fields</td>
+      <td class="propHeaderCell">
+        <div class="propAdd" (click)="addField()">
+          <i class="pi pi-plus"></i>
+          <span>Add Field</span>
+        </div>
+      </td>
+    </tr>
+    @for (field of properties.uiMetaData.fields; track field; let i = $index) {
+      <tr class="propRow" [attr.collapse]="propHidden.fieldsGroup">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden.fields, i)"
+          [attr.collapse]="propHidden.fields[i]">
+          <i class="pi pi-caret-down"></i>
+        </td>
+        <td class="propRowCell cellName">{{ getFieldName(field, i) }}</td>
+        <td class="propRowCell not-editable-text">
+          <span>{{ field.name }}</span>
+          <span class="remove-prop" [attr.readonly]="readonly" (click)="removeField(i)">
+            <i class="pi pi-trash"></i>
+          </span>
+        </td>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Field Path</td>
+        <td class="propRowCell">
+          <document-path [(value)]="field.name" [readonly]="readonly" (change)="onSave()"></document-path>
+        </td>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Type</td>
+        <td class="propRowCell">
+          <p-select
+            [(ngModel)]="field.type"
+            (onChange)="onSelectFieldType(field)"
+            [disabled]="readonly"
+            placeholder="Select a field type"
+            [options]="fieldTypeOptions"
+            [appendTo]="'body'"
+            >
+          </p-select>
+        </td>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
+          <input class="prop-input" [(ngModel)]="field.title" [readonly]="readonly" (blur)="onSave()">
         </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName" pTooltip="Enable common sorting" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Enable common sorting</td>
+        <td class="propRowCell cellName">Tooltip</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="properties.uiMetaData.enableSorting" [readonly]="readonly"
-                   (blur)="onSave()">
+          <input class="prop-input" [(ngModel)]="field.tooltip" [readonly]="readonly" (blur)="onSave()">
         </td>
-    </tr>
-    <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fieldsGroup')"
-            [attr.collapse]="propHidden.fieldsGroup">
-            <i class="pi pi-caret-down"></i>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Cell Content</td>
+        <td class="propRowCell">
+          <input class="prop-input" [(ngModel)]="field.content" [readonly]="readonly" (blur)="onSave()">
         </td>
-        <td class="propHeaderCell cellName">Fields</td>
-        <td class="propHeaderCell">
-            <div class="propAdd" (click)="addField()">
-                <i class="pi pi-plus"></i>
-                <span>Add Field</span>
-            </div>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">UI Class</td>
+        <td class="propRowCell">
+          <input class="prop-input" [(ngModel)]="field.uiClass" [readonly]="readonly" (blur)="onSave()">
         </td>
-    </tr>
-    <ng-container *ngFor="let field of properties.uiMetaData.fields; let i=index">
-        <tr class="propRow" [attr.collapse]="propHidden.fieldsGroup">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.fields, i)"
-                [attr.collapse]="propHidden.fields[i]">
-                <i class="pi pi-caret-down"></i>
-            </td>
-            <td class="propRowCell cellName">{{ getFieldName(field, i) }}</td>
-            <td class="propRowCell not-editable-text">
-                <span>{{ field.name }}</span>
-                <span class="remove-prop" [attr.readonly]="readonly" (click)="removeField(i)">
-                    <i class="pi pi-trash"></i>
-                </span>
-            </td>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">width</td>
+        <td class="propRowCell">
+          <input class="prop-input" [(ngModel)]="field.width" [readonly]="readonly" (blur)="onSave()">
+        </td>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">
+          <i class="pi pi-link icon-link"></i> Bind Group
+        </td>
+        <td class="propRowCell">
+          <select-block [root]="module" [(value)]="field.bindGroup" [readonly]="readonly"
+          [blocks]="allBlocks"></select-block>
+        </td>
+      </tr>
+      @if (field.type=='button') {
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName" title="Hide when discontinued">
+            Hide when discontinued
+          </td>
+          <td class="propRowCell">
+            <p-checkbox
+              [(ngModel)]="field.hideWhenDiscontinued"
+              [binary]="true"
+              [readonly]="readonly"
+              (blur)="onSave()"
+              [style]="{marginLeft: '8px'}"
+            ></p-checkbox>
+          </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Field Path</td>
-            <td class="propRowCell">
-                <document-path [(value)]="field.name" [readonly]="readonly" (change)="onSave()"></document-path>
-            </td>
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">
+            <i class="pi pi-bolt icon-event"></i>
+            Action
+          </td>
+          <td class="propRowCell">
+            <p-select
+              [(ngModel)]="field.action"
+              [disabled]="readonly"
+              (onChange)="onSave()"
+              placeholder="Select an action"
+              [options]="actionOptions"
+              [appendTo]="'body'"
+              >
+            </p-select>
+          </td>
         </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Type</td>
-            <td class="propRowCell">
-                <p-select
-                    [(ngModel)]="field.type"
-                    (onChange)="onSelectFieldType(field)"
-                    [disabled]="readonly"
-                    placeholder="Select a field type"
-                    [options]="fieldTypeOptions"
-                    [appendTo]="'body'"
-                >
-                </p-select>
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Title</td>
-            <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.title" [readonly]="readonly" (blur)="onSave()">
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Tooltip</td>
-            <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.tooltip" [readonly]="readonly" (blur)="onSave()">
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Cell Content</td>
-            <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.content" [readonly]="readonly" (blur)="onSave()">
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">UI Class</td>
-            <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.uiClass" [readonly]="readonly" (blur)="onSave()">
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">width</td>
-            <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.width" [readonly]="readonly" (blur)="onSave()">
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+        @if (field.action=='link') {
+          <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">
-                <i class="pi pi-link icon-link"></i> Bind Group
+              <i class="pi pi-link icon-link"></i>
+              Bind Block
             </td>
             <td class="propRowCell">
-                <select-block [root]="module" [(value)]="field.bindGroup" [readonly]="readonly"
-                              [blocks]="allBlocks"></select-block>
+              <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
+              [blocks]="allBlocks"></select-block>
             </td>
+          </tr>
+        }
+        @if (field.action=='dialog') {
+          <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Dialog Type</td>
+            <td class="propRowCell">
+              <input class="prop-input" [(ngModel)]="field.dialogType" [readonly]="readonly"
+                (blur)="onSave()">
+            </td>
+          </tr>
+          <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Dialog Content</td>
+            <td class="propRowCell">
+              <input class="prop-input" [(ngModel)]="field.dialogContent" [readonly]="readonly"
+                (blur)="onSave()">
+            </td>
+          </tr>
+          <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Dialog Class</td>
+            <td class="propRowCell">
+              <input class="prop-input" [(ngModel)]="field.dialogClass" [readonly]="readonly"
+                (blur)="onSave()">
+            </td>
+          </tr>
+          <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">
+              <i class="pi pi-link icon-link"></i>
+              Bind Block
+            </td>
+            <td class="propRowCell">
+              <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
+              [blocks]="allBlocks"></select-block>
+            </td>
+          </tr>
+        }
+      }
+      @if (field.type=='block') {
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">
+            <i class="pi pi-link icon-link"></i>
+            Bind Block
+          </td>
+          <td class="propRowCell">
+            <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
+            [blocks]="allBlocks"></select-block>
+          </td>
         </tr>
-        <ng-container *ngIf="field.type=='button'">
-            <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName" title="Hide when discontinued">
-                    Hide when discontinued
-                </td>
-                <td class="propRowCell">
-                    <p-checkbox
-                        [(ngModel)]="field.hideWhenDiscontinued"
-                        [binary]="true"
-                        [readonly]="readonly"
-                        (blur)="onSave()"
-                        [style]="{marginLeft: '8px'}"
-                    ></p-checkbox>
-                </td>
-            </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">
-                    <i class="pi pi-bolt icon-event"></i>
-                    Action
-                </td>
-                <td class="propRowCell">
-                    <p-select
-                        [(ngModel)]="field.action"
-                        [disabled]="readonly"
-                        (onChange)="onSave()"
-                        placeholder="Select an action"
-                        [options]="actionOptions"
-                        [appendTo]="'body'"
-                    >
-                    </p-select>
-                </td>
-            </tr>
-            <ng-container *ngIf="field.action=='link'">
-                <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">
-                        <i class="pi pi-link icon-link"></i>
-                        Bind Block
-                    </td>
-                    <td class="propRowCell">
-                        <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
-                                      [blocks]="allBlocks"></select-block>
-                    </td>
-                </tr>
-            </ng-container>
-            <ng-container *ngIf="field.action=='dialog'">
-                <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Dialog Type</td>
-                    <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="field.dialogType" [readonly]="readonly"
-                               (blur)="onSave()">
-                    </td>
-                </tr>
-                <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Dialog Content</td>
-                    <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="field.dialogContent" [readonly]="readonly"
-                               (blur)="onSave()">
-                    </td>
-                </tr>
-                <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Dialog Class</td>
-                    <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="field.dialogClass" [readonly]="readonly"
-                               (blur)="onSave()">
-                    </td>
-                </tr>
-                <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">
-                        <i class="pi pi-link icon-link"></i>
-                        Bind Block
-                    </td>
-                    <td class="propRowCell">
-                        <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
-                                      [blocks]="allBlocks"></select-block>
-                    </td>
-                </tr>
-            </ng-container>
-        </ng-container>
-        <ng-container *ngIf="field.type=='block'">
-            <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">
-                    <i class="pi pi-link icon-link"></i>
-                    Bind Block
-                </td>
-                <td class="propRowCell">
-                    <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
-                                  [blocks]="allBlocks"></select-block>
-                </td>
-            </tr>
-        </ng-container>
-        <ng-container *ngIf="field.type=='blocks'">
-            <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">
-                    <i class="pi pi-link icon-link"></i>
-                    Bind Blocks
-                </td>
-                <td class="propRowCell">
-                    <select-block [root]="module" [(value)]="field.bindBlocks" [readonly]="readonly" [multiple]="true"
-                                  [blocks]="allBlocks"></select-block>
-                </td>
-            </tr>
-        </ng-container>
-    </ng-container>
-</table>
+      }
+      @if (field.type=='blocks') {
+        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">
+            <i class="pi pi-link icon-link"></i>
+            Bind Blocks
+          </td>
+          <td class="propRowCell">
+            <select-block [root]="module" [(value)]="field.bindBlocks" [readonly]="readonly" [multiple]="true"
+            [blocks]="allBlocks"></select-block>
+          </td>
+        </tr>
+      }
+    }
+  </table>
+}

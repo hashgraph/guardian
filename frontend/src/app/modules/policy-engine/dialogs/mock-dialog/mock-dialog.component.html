@@ -1,170 +1,180 @@
 <div class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">{{title}}</div>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    <div class="header-text">{{title}}</div>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 <div class="dialog-body" [attr.item-type]="type">
-    <div class="context">
-        <div *ngIf="loading" class="guardian-loading">
-            <div class="guardian-loading-image"></div>
+  <div class="context">
+    @if (loading) {
+      <div class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+      </div>
+    }
+
+    @if (type === 'IPFS') {
+      <form [formGroup]="dataForm">
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="version">* CID</label>
+          <input formControlName="cid" id="cid" pInputText type="text"/>
         </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="content">* File</label>
+          <input formControlName="content" id="content" pInputText type="text"/>
+        </div>
+      </form>
+    }
 
-        <form *ngIf="type === 'IPFS'" [formGroup]="dataForm">
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">* CID</label>
-                <input formControlName="cid" id="cid" pInputText type="text"/>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="content">* File</label>
-                <input formControlName="content" id="content" pInputText type="text"/>
-            </div>
-        </form>
+    @if (type === 'MESSAGE') {
+      <form [formGroup]="dataForm">
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="topicId">* Topic ID</label>
+          <input formControlName="topicId" id="topicId" pInputText type="text"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="consensusTimestamp">* Consensus Timestamp</label>
+          <input formControlName="consensusTimestamp" id="consensusTimestamp" pInputText type="text"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="message">* Message</label>
+          <input formControlName="message" id="message" pInputText type="text"/>
+        </div>
+      </form>
+    }
 
-        <form *ngIf="type === 'MESSAGE'" [formGroup]="dataForm">
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="topicId">* Topic ID</label>
-                <input formControlName="topicId" id="topicId" pInputText type="text"/>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="consensusTimestamp">* Consensus Timestamp</label>
-                <input formControlName="consensusTimestamp" id="consensusTimestamp" pInputText type="text"/>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="message">* Message</label>
-                <input formControlName="message" id="message" pInputText type="text"/>
-            </div>
-        </form>
+    @if (type === 'TOKEN') {
+      <form [formGroup]="dataForm">
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="tokenId">* Token ID</label>
+          <input formControlName="tokenId" id="tokenId" pInputText type="text"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="name">* Token Name</label>
+          <input formControlName="name" id="name" pInputText type="text"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="symbol">* Token Symbol</label>
+          <input formControlName="symbol" id="symbol" pInputText type="text"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="type">* Token Type</label>
+          <p-select
+            formControlName="type"
+            [options]="tokenTypes"
+            [showClear]="false"
+            class="guardian-dropdown"
+            appendTo="body"
+            placeholder="Not selected"
+            optionLabel="name"
+            optionValue="value"
+            panelStyleClass="guardian-dropdown-panel"
+            >
+          </p-select>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="decimals">* Decimals</label>
+          <input formControlName="decimals" id="decimals" pInputText type="text"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="version">* Treasury Account ID</label>
+          <input formControlName="treasuryId" id="treasuryId" pInputText type="text"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="version">Admin Key</label>
+          <p-checkbox
+            class="guardian-checkbox checkbox-24"
+            formControlName="adminKey"
+          [binary]="true"></p-checkbox>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="version">Supply Key</label>
+          <p-checkbox
+            class="guardian-checkbox checkbox-24"
+            formControlName="supplyKey"
+          [binary]="true"></p-checkbox>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="version">Freeze Key</label>
+          <p-checkbox
+            class="guardian-checkbox checkbox-24"
+            formControlName="freezeKey"
+          [binary]="true"></p-checkbox>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="version">Kyc Key</label>
+          <p-checkbox
+            class="guardian-checkbox checkbox-24"
+            formControlName="kycKey"
+          [binary]="true"></p-checkbox>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="version">Wipe Key</label>
+          <p-checkbox
+            class="guardian-checkbox checkbox-24"
+            formControlName="wipeKey"
+          [binary]="true"></p-checkbox>
+        </div>
+      </form>
+    }
 
-        <form *ngIf="type === 'TOKEN'" [formGroup]="dataForm">
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="tokenId">* Token ID</label>
-                <input formControlName="tokenId" id="tokenId" pInputText type="text"/>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="name">* Token Name</label>
-                <input formControlName="name" id="name" pInputText type="text"/>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="symbol">* Token Symbol</label>
-                <input formControlName="symbol" id="symbol" pInputText type="text"/>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="type">* Token Type</label>
-                <p-select
-                    formControlName="type"
-                    [options]="tokenTypes"
-                    [showClear]="false"
-                    class="guardian-dropdown"
-                    appendTo="body"
-                    placeholder="Not selected"
-                    optionLabel="name" 
-                    optionValue="value"
-                    panelStyleClass="guardian-dropdown-panel"
-                >
-                </p-select>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="decimals">* Decimals</label>
-                <input formControlName="decimals" id="decimals" pInputText type="text"/>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">* Treasury Account ID</label>
-                <input formControlName="treasuryId" id="treasuryId" pInputText type="text"/>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">Admin Key</label>
-                <p-checkbox 
-                    class="guardian-checkbox checkbox-24"
-                    formControlName="adminKey"
-                    [binary]="true"></p-checkbox>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">Supply Key</label>
-                <p-checkbox 
-                    class="guardian-checkbox checkbox-24"
-                    formControlName="supplyKey"
-                    [binary]="true"></p-checkbox>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">Freeze Key</label>
-                <p-checkbox 
-                    class="guardian-checkbox checkbox-24"
-                    formControlName="freezeKey"
-                    [binary]="true"></p-checkbox>
-            </div>      
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">Kyc Key</label>
-                <p-checkbox 
-                    class="guardian-checkbox checkbox-24"
-                    formControlName="kycKey"
-                    [binary]="true"></p-checkbox>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">Wipe Key</label>
-                <p-checkbox 
-                    class="guardian-checkbox checkbox-24"
-                    formControlName="wipeKey"
-                    [binary]="true"></p-checkbox>
-            </div>
-        </form>
-
-        <form *ngIf="type === 'API'" [formGroup]="dataForm">
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="method">* Method</label>
-                <p-select
-                    formControlName="method"
-                    [options]="apiTypes"
-                    [showClear]="false"
-                    class="guardian-dropdown"
-                    appendTo="body"
-                    placeholder="Not selected"
-                    optionLabel="name" 
-                    optionValue="value"
-                    panelStyleClass="guardian-dropdown-panel"
-                >
-                </p-select>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="url">* URL</label>
-                <input formControlName="url" id="url" pInputText type="text"/>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="responseType">* Response Type</label>
-                <p-select
-                    formControlName="responseType"
-                    [options]="responseTypes"
-                    [showClear]="false"
-                    class="guardian-dropdown"
-                    appendTo="body"
-                    placeholder="Not selected"
-                    optionLabel="name" 
-                    optionValue="value"
-                    panelStyleClass="guardian-dropdown-panel"
-                >
-                </p-select>
-            </div>
-            <div class="guardian-input-container">
-                <label class="form-label" htmlFor="response">* Response</label>
-                <input formControlName="response" id="response" pInputText type="text"/>
-            </div>
-        </form>
-    </div>
+    @if (type === 'API') {
+      <form [formGroup]="dataForm">
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="method">* Method</label>
+          <p-select
+            formControlName="method"
+            [options]="apiTypes"
+            [showClear]="false"
+            class="guardian-dropdown"
+            appendTo="body"
+            placeholder="Not selected"
+            optionLabel="name"
+            optionValue="value"
+            panelStyleClass="guardian-dropdown-panel"
+            >
+          </p-select>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="url">* URL</label>
+          <input formControlName="url" id="url" pInputText type="text"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="responseType">* Response Type</label>
+          <p-select
+            formControlName="responseType"
+            [options]="responseTypes"
+            [showClear]="false"
+            class="guardian-dropdown"
+            appendTo="body"
+            placeholder="Not selected"
+            optionLabel="name"
+            optionValue="value"
+            panelStyleClass="guardian-dropdown-panel"
+            >
+          </p-select>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="response">* Response</label>
+          <input formControlName="response" id="response" pInputText type="text"/>
+        </div>
+      </form>
+    }
+  </div>
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="dialog-button">
-            <button 
-                (click)="onClose()" 
-                class="guardian-button guardian-button-secondary">Close</button>
-        </div>
-        <div class="dialog-button">
-            <button 
-                (click)="onSubmit()" 
-                class="guardian-button guardian-button-primary"
-                [disabled]="dataForm.invalid">{{action}}</button>
-        </div>
+  <div class="action-buttons">
+    <div class="dialog-button">
+      <button
+        (click)="onClose()"
+      class="guardian-button guardian-button-secondary">Close</button>
     </div>
+    <div class="dialog-button">
+      <button
+        (click)="onSubmit()"
+        class="guardian-button guardian-button-primary"
+      [disabled]="dataForm.invalid">{{action}}</button>
+    </div>
+  </div>
 </div>

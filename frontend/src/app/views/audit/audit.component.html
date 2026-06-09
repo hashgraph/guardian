@@ -1,96 +1,102 @@
 <div class="content">
 
-    <div class="actions">
-        <div>
-            <div class="form-group">
-                <label for="standardRegistryDropdown" class="form-label">Standard Registry</label>
-                <p-select
-                    id="standardRegistryDropdown"
-                    [(ngModel)]="currentUser"
-                    (onChange)="onFilter('did')"
-                    [options]="users"
-                    optionLabel="username"
-                    optionValue="did"
-                    [showClear]="true"
-                    placeholder="All"
-                    [appendTo]="'body'"
-                >
-                </p-select>
-            </div>
-        </div>
-        <div>
-            <div class="form-group">
-                <label for="policyDropdown" class="form-label">Policy</label>
-                <p-select
-                    id="policyDropdown"
-                    [(ngModel)]="currentPolicy"
-                    (onChange)="onFilter('policyId')"
-                    [options]="policies"
-                    optionLabel="name"
-                    optionValue="id"
-                    [filter]="true"
-                    [appendTo]="'body'"
-                    [showClear]="true"
-                    placeholder="All policies">
-                    <ng-template let-policy pTemplate="item">
-                        <div class="policy-item">
-                            <span>{{ policy.name }}</span>
-                            <span> ({{ policy.id }})</span>
-                        </div>
-                    </ng-template>
-                </p-select>
-            </div>
-        </div>
+  <div class="actions">
+    <div>
+      <div class="form-group">
+        <label for="standardRegistryDropdown" class="form-label">Standard Registry</label>
+        <p-select
+          id="standardRegistryDropdown"
+          [(ngModel)]="currentUser"
+          (onChange)="onFilter('did')"
+          [options]="users"
+          optionLabel="username"
+          optionValue="did"
+          [showClear]="true"
+          placeholder="All"
+          [appendTo]="'body'"
+          >
+        </p-select>
+      </div>
     </div>
+    <div>
+      <div class="form-group">
+        <label for="policyDropdown" class="form-label">Policy</label>
+        <p-select
+          id="policyDropdown"
+          [(ngModel)]="currentPolicy"
+          (onChange)="onFilter('policyId')"
+          [options]="policies"
+          optionLabel="name"
+          optionValue="id"
+          [filter]="true"
+          [appendTo]="'body'"
+          [showClear]="true"
+          placeholder="All policies">
+          <ng-template let-policy pTemplate="item">
+            <div class="policy-item">
+              <span>{{ policy.name }}</span>
+              <span> ({{ policy.id }})</span>
+            </div>
+          </ng-template>
+        </p-select>
+      </div>
+    </div>
+  </div>
 
+  <div class="table-container">
     <div class="table-container">
-        <div class="table-container">
-            <p-table *ngIf="dataSource" [value]="dataSource" class="table">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th class="mat-header-cell">Policy Id</th>
-                        <th class="mat-header-cell">Hash</th>
-                        <th class="mat-header-cell">Id</th>
-                        <th class="mat-header-cell">Owner</th>
-                        <th class="mat-header-cell">Type</th>
-                        <th class="mat-header-cell">Create Date</th>
-                        <th class="mat-header-cell">Document</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-element>
-                    <tr>
-                        <td class="mat-cell">
-                            <a (click)="setFilter('policyId', element.policyId)">{{ element.policyId }}</a>
-                        </td>
-                        <td class="mat-cell">
-                            <a (click)="setFilter('hash', element.hash)">{{ element.hash }}</a>
-                        </td>
-                        <td class="mat-cell">
-                            <a (click)="setFilter('id', element.document.id)">{{ element.document.id }}</a>
-                        </td>
-                        <td class="mat-cell">{{ element.owner }}</td>
-                        <td class="mat-cell">{{ element.type }}</td>
-                        <td class="mat-cell">{{ element.createDate }}</td>
-                        <td class="mat-cell">
-                            <a (click)="openVP(element)">View Document</a>
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
-
+      @if (dataSource) {
+        <p-table [value]="dataSource" class="table">
+          <ng-template pTemplate="header">
+            <tr>
+              <th class="mat-header-cell">Policy Id</th>
+              <th class="mat-header-cell">Hash</th>
+              <th class="mat-header-cell">Id</th>
+              <th class="mat-header-cell">Owner</th>
+              <th class="mat-header-cell">Type</th>
+              <th class="mat-header-cell">Create Date</th>
+              <th class="mat-header-cell">Document</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-element>
+            <tr>
+              <td class="mat-cell">
+                <a (click)="setFilter('policyId', element.policyId)">{{ element.policyId }}</a>
+              </td>
+              <td class="mat-cell">
+                <a (click)="setFilter('hash', element.hash)">{{ element.hash }}</a>
+              </td>
+              <td class="mat-cell">
+                <a (click)="setFilter('id', element.document.id)">{{ element.document.id }}</a>
+              </td>
+              <td class="mat-cell">{{ element.owner }}</td>
+              <td class="mat-cell">{{ element.type }}</td>
+              <td class="mat-cell">{{ element.createDate }}</td>
+              <td class="mat-cell">
+                <a (click)="openVP(element)">View Document</a>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
     </div>
 
-    <div *ngIf="dataSource" class="table-paginator">
-        <app-paginator
-            [length]="dataCount"
-            [pageIndex]="pageIndex"
-            [pageSize]="pageSize"
-            (page)="onPage($event)">
-        </app-paginator>
-    </div>
+  </div>
 
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  @if (dataSource) {
+    <div class="table-paginator">
+      <app-paginator
+        [length]="dataCount"
+        [pageIndex]="pageIndex"
+        [pageSize]="pageSize"
+        (page)="onPage($event)">
+      </app-paginator>
     </div>
+  }
+
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+  }
 </div>

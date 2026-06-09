@@ -1,20 +1,24 @@
 <div class="content">
-    <div *ngIf="loading" class="loading">
-        <p-progressSpinner></p-progressSpinner>
+  @if (loading) {
+    <div class="loading">
+      <p-progressSpinner></p-progressSpinner>
     </div>
+  }
 
-    <ng-container *ngIf="!owner">
-        <div class="not-exist">
-            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
-        </div>
-    </ng-container>
-
-    <ng-container *ngIf="!policyId">
-        <div class="not-exist">No results found.</div>
-    </ng-container>
-
-
-    <div *ngIf="owner && policyId && results" class="content-result">
-        <app-compare-record [value]="results"></app-compare-record>
+  @if (!owner) {
+    <div class="not-exist">
+      Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
     </div>
+  }
+
+  @if (!policyId) {
+    <div class="not-exist">No results found.</div>
+  }
+
+
+  @if (owner && policyId && results) {
+    <div class="content-result">
+      <app-compare-record [value]="results"></app-compare-record>
+    </div>
+  }
 </div>

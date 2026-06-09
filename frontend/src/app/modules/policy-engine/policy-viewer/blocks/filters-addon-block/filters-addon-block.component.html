@@ -1,96 +1,136 @@
 <!-- <div *ngIf="type == 'unelected'" class="content">
-    <div class="btn-link" (click)="onFilters()">{{content}}</div>
+<div class="btn-link" (click)="onFilters()">{{content}}</div>
 </div> -->
 
 <div class="content" [attr.readonly-block]="readonly">
-    <div class="content-name">
-        {{content}}
-    </div>
-    <div class="grouped-content">
-        <div *ngIf="queryType === 'user_defined'" class="type-select user-defined-select">
-            <p-select
-                [options]="userDefinedOptions"
-                optionLabel="name"
-                optionValue="value"
-                [(ngModel)]="currentType"
-                [appendTo]="'body'"
-                [style]="{'width':'100%', 'border-radius': '8px 0 0 8px'}"
-                class="w-full"
-                (onChange)="onType($event)">
-                    <ng-template pTemplate="selectedItem" let-selectedOption>
-                        <span class="prefix-dropdown">Type</span>
-                        <span *ngIf="selectedOption">{{ selectedOption.name }}</span>
-                        <span *ngIf="!selectedOption">Not selected</span>
-                    </ng-template>
-            </p-select>
-        </div>
-        <div *ngIf="queryType !== 'user_defined'" class="content-type readonly-type">
-            <span *ngIf="!currentType" class="common-prefix-dropdown">Equal</span>
-            <span *ngIf="currentType === 'equal' || currentType === 'eq'" class="common-prefix-dropdown">Equal</span>
-            <span *ngIf="currentType === 'not_equal' || currentType === 'ne'" class="common-prefix-dropdown">Not Equal</span>
-            <span *ngIf="currentType === 'in'" class="common-prefix-dropdown">In</span>
-            <span *ngIf="currentType === 'not_in' || currentType === 'nin'" class="common-prefix-dropdown">Not In</span>
-            <span *ngIf="currentType === 'gt'" class="common-prefix-dropdown">Greater Than</span>
-            <span *ngIf="currentType === 'gte'" class="common-prefix-dropdown">Greater Than or Equal</span>
-            <span *ngIf="currentType === 'lt'" class="common-prefix-dropdown">Less Than</span>
-            <span *ngIf="currentType === 'lte'" class="common-prefix-dropdown">Less Than or Equal</span>
-        </div>
+  <div class="content-name">
+    {{content}}
+  </div>
+  <div class="grouped-content">
+    @if (queryType === 'user_defined') {
+      <div class="type-select user-defined-select">
+        <p-select
+          [options]="userDefinedOptions"
+          optionLabel="name"
+          optionValue="value"
+          [(ngModel)]="currentType"
+          [appendTo]="'body'"
+          [style]="{'width':'100%', 'border-radius': '8px 0 0 8px'}"
+          class="w-full"
+          (onChange)="onType($event)">
+          <ng-template pTemplate="selectedItem" let-selectedOption>
+            <span class="prefix-dropdown">Type</span>
+            @if (selectedOption) {
+              <span>{{ selectedOption.name }}</span>
+            }
+            @if (!selectedOption) {
+              <span>Not selected</span>
+            }
+          </ng-template>
+        </p-select>
+      </div>
+    }
+    @if (queryType !== 'user_defined') {
+      <div class="content-type readonly-type">
+        @if (!currentType) {
+          <span class="common-prefix-dropdown">Equal</span>
+        }
+        @if (currentType === 'equal' || currentType === 'eq') {
+          <span class="common-prefix-dropdown">Equal</span>
+        }
+        @if (currentType === 'not_equal' || currentType === 'ne') {
+          <span class="common-prefix-dropdown">Not Equal</span>
+        }
+        @if (currentType === 'in') {
+          <span class="common-prefix-dropdown">In</span>
+        }
+        @if (currentType === 'not_in' || currentType === 'nin') {
+          <span class="common-prefix-dropdown">Not In</span>
+        }
+        @if (currentType === 'gt') {
+          <span class="common-prefix-dropdown">Greater Than</span>
+        }
+        @if (currentType === 'gte') {
+          <span class="common-prefix-dropdown">Greater Than or Equal</span>
+        }
+        @if (currentType === 'lt') {
+          <span class="common-prefix-dropdown">Less Than</span>
+        }
+        @if (currentType === 'lte') {
+          <span class="common-prefix-dropdown">Less Than or Equal</span>
+        }
+      </div>
+    }
 
-        <div *ngIf="type == 'dropdown'" class="content-select" [attr.valid]="valid">
-            <p-select
-                *ngIf="!(currentType === 'in' || currentType === 'not_in' || currentType === 'nin')"
-                autoWidth="false"
-                [(ngModel)]="currentValue"
-                [options]="options"
-                optionLabel="name"
-                optionValue="value"
-                [appendTo]="'body'"
-                (onChange)="onFilters($event)"
-                [style]="{'width':'100%', 'height': '100%'}"
-                class="w-full filter-dropdown"
+    @if (type == 'dropdown') {
+      <div class="content-select" [attr.valid]="valid">
+        @if (!(currentType === 'in' || currentType === 'not_in' || currentType === 'nin')) {
+          <p-select
+            autoWidth="false"
+            [(ngModel)]="currentValue"
+            [options]="options"
+            optionLabel="name"
+            optionValue="value"
+            [appendTo]="'body'"
+            (onChange)="onFilters($event)"
+            [style]="{'width':'100%', 'height': '100%'}"
+            class="w-full filter-dropdown"
             >
-                <ng-template pTemplate="selectedItem" let-selectedOption>
-                    <span *ngIf="selectedOption"> {{ selectedOption.name }}</span>
-                    <span *ngIf="!selectedOption">Not selected</span>
-                </ng-template>
-            </p-select>
-            <p-multiSelect
-                *ngIf="currentType === 'in' || currentType === 'not_in' || currentType === 'nin'"
-                autoWidth="false"
-                [(ngModel)]="currentValue"
-                [options]="multioptions"
-                [showHeader]="false"
-                optionLabel="name"
-                optionValue="value"
-                [appendTo]="'body'"
-                (onChange)="onFilters($event)"
-                [style]="{'width':'100%', 'height': '100%'}"
-                class="w-full filter-dropdown"
-                panelStyleClass="guardian-multiselect-panel"
+            <ng-template pTemplate="selectedItem" let-selectedOption>
+              @if (selectedOption) {
+                <span> {{ selectedOption.name }}</span>
+              }
+              @if (!selectedOption) {
+                <span>Not selected</span>
+              }
+            </ng-template>
+          </p-select>
+        }
+        @if (currentType === 'in' || currentType === 'not_in' || currentType === 'nin') {
+          <p-multiSelect
+            autoWidth="false"
+            [(ngModel)]="currentValue"
+            [options]="multioptions"
+            [showHeader]="false"
+            optionLabel="name"
+            optionValue="value"
+            [appendTo]="'body'"
+            (onChange)="onFilters($event)"
+            [style]="{'width':'100%', 'height': '100%'}"
+            class="w-full filter-dropdown"
+            panelStyleClass="guardian-multiselect-panel"
             >
-            </p-multiSelect>
-        </div>
-        <div *ngIf="type == 'datepicker'" class="content-select" [attr.valid]="valid">
-            <p-datepicker
-                [style]="{'border-left': '0', 'border-radius': '0 8px 8px 0'}"
-                [(ngModel)]="currentValue"
-                (onSelect)="onFilters($event)"
-                styleClass="calendar-filter"
-                [showIcon]="true"
-                placeholder="Select date"
-                dateFormat="yy-mm-dd">
-            </p-datepicker>
-        </div>
-        <div *ngIf="type == 'input'" class="content-select" [attr.valid]="valid">
-            <input class="input-filter" [(ngModel)]="currentValue" (change)="onFilters($event)">
-        </div>
-    </div>
+          </p-multiSelect>
+        }
+      </div>
+    }
+    @if (type == 'datepicker') {
+      <div class="content-select" [attr.valid]="valid">
+        <p-datepicker
+          [style]="{'border-left': '0', 'border-radius': '0 8px 8px 0'}"
+          [(ngModel)]="currentValue"
+          (onSelect)="onFilters($event)"
+          styleClass="calendar-filter"
+          [showIcon]="true"
+          placeholder="Select date"
+          dateFormat="yy-mm-dd">
+        </p-datepicker>
+      </div>
+    }
+    @if (type == 'input') {
+      <div class="content-select" [attr.valid]="valid">
+        <input class="input-filter" [(ngModel)]="currentValue" (change)="onFilters($event)">
+      </div>
+    }
+  </div>
 </div>
 
 <ng-template #preloader>
-    <div class="preloader-image"></div>
+  <div class="preloader-image"></div>
 </ng-template>
 
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}

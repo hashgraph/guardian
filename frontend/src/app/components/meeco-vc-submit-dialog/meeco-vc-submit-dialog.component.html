@@ -1,36 +1,42 @@
 <h1 mat-dialog-title class="dialog-title">VC Subject Submission</h1>
 
 <div mat-dialog-content class="dialog-content">
-    <span class="dialog-content__note">
-        Please approve or reject your VC data <span *ngIf="!userRole">and select Guardian role</span>
-    </span>
+  <span class="dialog-content__note">
+    Please approve or reject your VC data @if (!userRole) {
+    <span>and select Guardian role</span>
+  }
+</span>
 
-    <div class="content">
-        <ul class="document">
-            <li *ngFor="let keyValue of vcSubject" class="document-item">
-                <label class="document-item__label">{{ keyValue[0] }}:</label>
-                <span class="document-item__value">{{ keyValue[1] || 'N/A' }}</span>
-            </li>
-        </ul>
+<div class="content">
+  <ul class="document">
+    @for (keyValue of vcSubject; track keyValue) {
+      <li class="document-item">
+        <label class="document-item__label">{{ keyValue[0] }}:</label>
+        <span class="document-item__value">{{ keyValue[1] || 'N/A' }}</span>
+      </li>
+    }
+  </ul>
 
-        <div *ngIf="!userRole" class="p-fluid content__role-select">
-            <label for="roleDropdown">Role</label>
-            <p-select
-                id="roleDropdown"
-                [(ngModel)]="selectedRole"
-                [options]="roles"
-                optionLabel="displayName"
-                [required]="true"
-                [appendTo]="'body'"
-                placeholder="Select Role">
-            </p-select>
-        </div>
+  @if (!userRole) {
+    <div class="p-fluid content__role-select">
+      <label for="roleDropdown">Role</label>
+      <p-select
+        id="roleDropdown"
+        [(ngModel)]="selectedRole"
+        [options]="roles"
+        optionLabel="displayName"
+        [required]="true"
+        [appendTo]="'body'"
+        placeholder="Select Role">
+      </p-select>
     </div>
+  }
+</div>
 </div>
 
 <div mat-dialog-actions class="dialog-actions">
-    <button mat-button (click)="onReject()">Reject</button>
-    <button mat-raised-button color="primary" (click)="onApprove()" [disabled]="isApproveBtnDisabled">
-        Approve
-    </button>
+  <button mat-button (click)="onReject()">Reject</button>
+  <button mat-raised-button color="primary" (click)="onApprove()" [disabled]="isApproveBtnDisabled">
+    Approve
+  </button>
 </div>

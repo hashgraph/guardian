@@ -1,440 +1,431 @@
 <div class="context">
-    <form *ngIf="started" [formGroup]="dataForm" class="context">
-        <div class="configurator-block-title">Schema Properties</div>
-        <div class="input-field-container guardian-input-container">
-            <label class="form-label" htmlFor="schemaName">* Schema Name</label>
-            <input
-                formControlName="name"
-                id="schemaName"
-                pInputText
-                placeholder="Schema Name"
-                type="text"
-            />
+  @if (started) {
+    <form [formGroup]="dataForm" class="context">
+      <div class="configurator-block-title">Schema Properties</div>
+      <div class="input-field-container guardian-input-container">
+        <label class="form-label" htmlFor="schemaName">* Schema Name</label>
+        <input
+          formControlName="name"
+          id="schemaName"
+          pInputText
+          placeholder="Schema Name"
+          type="text"
+          />
+      </div>
+      <div class="optional-row">
+        @if (isPolicy) {
+          <div class="dropdown-field guardian-input-container">
+            <label class="form-label" htmlFor="policy">* Policy</label>
+            @if (isNewSchema) {
+              <p-select
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel width-825"
+                (onChange)="onFilter($event)"
+                [options]="policies"
+                appendTo="body"
+                formControlName="topicId"
+                id="policy"
+                optionLabel="name"
+                optionValue="topicId"
+                placeholder="Policy"
+              ></p-select>
+            }
+            @if (!isNewSchema) {
+              <p-select
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel width-825"
+                (onChange)="onFilter($event)"
+                [options]="allPolicies"
+                [attr.disabled-dropdown]="true"
+                appendTo="body"
+                formControlName="topicId"
+                id="policy"
+                optionLabel="name"
+                optionValue="topicId"
+                placeholder="Policy"
+              ></p-select>
+            }
+          </div>
+        }
+        @if (isTool) {
+          <div class="dropdown-field guardian-input-container">
+            <label class="form-label" htmlFor="tools">* Tool</label>
+            <p-select
+              class="guardian-dropdown"
+              panelStyleClass="guardian-dropdown-panel width-825"
+              [options]="tools"
+              appendTo="body"
+              formControlName="topicId"
+              id="tools"
+              optionLabel="name"
+              optionValue="topicId"
+              placeholder="No binding"
+              [attr.disabled-dropdown]="!isNewSchema"
+            ></p-select>
+          </div>
+        }
+        @if (isSystem) {
+          <div class="dropdown-field guardian-input-container">
+            <label class="form-label" htmlFor="forSystemEntity">For (Entity)</label>
+            <p-select
+              class="guardian-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              [options]="systemEntityOptions"
+              appendTo="body"
+              formControlName="entity"
+              id="forSystemEntity"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Entity"
+            ></p-select>
+          </div>
+        }
+        @if (isPolicy || isModule) {
+          <div class="dropdown-field guardian-input-container">
+            <label class="form-label" htmlFor="forPolicyModuleEntity">For (Entity)</label>
+            <p-select
+              class="guardian-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              [options]="policyModuleEntityOptions"
+              appendTo="body"
+              formControlName="entity"
+              id="forPolicyModuleEntity"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Entity"
+            ></p-select>
+          </div>
+        }
+      </div>
+      <div class="guardian-input-container input-field-container" style="margin-bottom: 32px">
+        <label class="form-label" htmlFor="descriptionForSchema">Description</label>
+        <input
+          formControlName="description"
+          id="descriptionForSchema"
+          pInputText
+          placeholder="Description for Schema (optional)"
+          type="text"
+          />
+      </div>
+      @if (defaultFieldsMap[currentEntity]; as fields) {
+        <div class="configurator-block-title">System Fields</div>
+        <div class="fields">
+          <div class="custom-fields">
+            @for (field of fields; track trackBySchemaField($index, field)) {
+              <div class="custom-schema-field">
+                <schema-field-configuration
+                  [extended]="extended"
+                  [readonly]="true"
+                  [value]="field"
+                  [errors]="errors"
+                  >
+                </schema-field-configuration>
+              </div>
+            }
+          </div>
         </div>
-
-        <div class="optional-row">
-            <div *ngIf="isPolicy" class="dropdown-field guardian-input-container">
-                <label class="form-label" htmlFor="policy">* Policy</label>
-                <p-select
-                    *ngIf="isNewSchema"
-                    class="guardian-dropdown"
-                    panelStyleClass="guardian-dropdown-panel width-825"
-                    (onChange)="onFilter($event)"
-                    [options]="policies"
-                    appendTo="body"
-                    formControlName="topicId"
-                    id="policy"
-                    optionLabel="name"
-                    optionValue="topicId"
-                    placeholder="Policy"
-                ></p-select>
-                <p-select
-                    *ngIf="!isNewSchema"
-                    class="guardian-dropdown"
-                    panelStyleClass="guardian-dropdown-panel width-825"
-                    (onChange)="onFilter($event)"
-                    [options]="allPolicies"
-                    [attr.disabled-dropdown]="true"
-                    appendTo="body"
-                    formControlName="topicId"
-                    id="policy"
-                    optionLabel="name"
-                    optionValue="topicId"
-                    placeholder="Policy"
-                ></p-select>
-            </div>
-
-            <div *ngIf="isTool" class="dropdown-field guardian-input-container">
-                <label class="form-label" htmlFor="tools">* Tool</label>
-                <p-select
-                    class="guardian-dropdown"
-                    panelStyleClass="guardian-dropdown-panel width-825"
-                    [options]="tools"
-                    appendTo="body"
-                    formControlName="topicId"
-                    id="tools"
-                    optionLabel="name"
-                    optionValue="topicId"
-                    placeholder="No binding"
-                    [attr.disabled-dropdown]="!isNewSchema"
-                ></p-select>
-            </div>
-
-            <div *ngIf="isSystem" class="dropdown-field guardian-input-container">
-                <label class="form-label" htmlFor="forSystemEntity">For (Entity)</label>
-                <p-select
-                    class="guardian-dropdown"
-                    panelStyleClass="guardian-dropdown-panel"
-                    [options]="systemEntityOptions"
-                    appendTo="body"
-                    formControlName="entity"
-                    id="forSystemEntity"
-                    optionLabel="label"
-                    optionValue="value"
-                    placeholder="Entity"
-                ></p-select>
-            </div>
-
-            <div *ngIf="isPolicy || isModule" class="dropdown-field guardian-input-container">
-                <label class="form-label" htmlFor="forPolicyModuleEntity">For (Entity)</label>
-                <p-select
-                    class="guardian-dropdown"
-                    panelStyleClass="guardian-dropdown-panel"
-                    [options]="policyModuleEntityOptions"
-                    appendTo="body"
-                    formControlName="entity"
-                    id="forPolicyModuleEntity"
-                    optionLabel="label"
-                    optionValue="value"
-                    placeholder="Entity"
-                ></p-select>
-            </div>
-        </div>
-
-        <div class="guardian-input-container input-field-container" style="margin-bottom: 32px">
-            <label class="form-label" htmlFor="descriptionForSchema">Description</label>
-            <input
-                formControlName="description"
-                id="descriptionForSchema"
-                pInputText
-                placeholder="Description for Schema (optional)"
-                type="text"
-            />
-        </div>
-
-        <ng-container *ngIf="defaultFieldsMap[currentEntity]; let fields">
-            <div class="configurator-block-title">System Fields</div>
-            <div class="fields">
-                <div class="custom-fields">
-                    <div *ngFor="let field of fields; trackBy: trackBySchemaField" class="custom-schema-field">
-                        <schema-field-configuration
-                            [extended]="extended"
-                            [readonly]="true"
-                            [value]="field"
-                            [errors]="errors"
-                        >
-                        </schema-field-configuration>
-                    </div>
-                </div>
-            </div>
-        </ng-container>
-
-        <div class="configurator-block-title">Fields</div>
-
-        <div *ngIf="fields && fields.length" class="fields">
-            <div (cdkDropListDropped)="drop($event)"
-                 [cdkDropListData]="fields"
-                 cdkDropList
-                 class="custom-fields"
+      }
+      <div class="configurator-block-title">Fields</div>
+      @if (fields && fields.length) {
+        <div class="fields">
+          <div (cdkDropListDropped)="drop($event)"
+            [cdkDropListData]="fields"
+            cdkDropList
+            class="custom-fields"
             >
-                <div *ngFor="let field of fields; trackBy: trackByFieldControl" class="custom-schema-field">
-                    <schema-field-configuration
-                        (remove)="onRemove(field)"
-                        [extended]="extended"
-                        [types]="types"
-                        [field]="field"
-                        [form]="dataForm"
-                        [fieldsForm]="fieldsForm"
-                        [measureTypes]="measureTypes"
-                        [private]="dataForm.value?.entity === 'EVC'"
-                        [properties]="properties"
-                        [schemaTypes]="schemaTypes"
-                        [schemaTypeMap]="schemaTypeMap"
-                        [errors]="errors"
-                        [buildField]="buildField"
-                    >
-                    </schema-field-configuration>
-                </div>
-            </div>
+            @for (field of fields; track trackByFieldControl($index, field)) {
+              <div class="custom-schema-field">
+                <schema-field-configuration
+                  (remove)="onRemove(field)"
+                  [extended]="extended"
+                  [types]="types"
+                  [field]="field"
+                  [form]="dataForm"
+                  [fieldsForm]="fieldsForm"
+                  [measureTypes]="measureTypes"
+                  [private]="dataForm.value?.entity === 'EVC'"
+                  [properties]="properties"
+                  [schemaTypes]="schemaTypes"
+                  [schemaTypeMap]="schemaTypeMap"
+                  [errors]="errors"
+                  [buildField]="buildField"
+                  >
+                </schema-field-configuration>
+              </div>
+            }
+          </div>
         </div>
-
-        <button 
-            (click)="onAdd($event)" 
-            class="guardian-button guardian-button-secondary add-btn">
-            <div class="guardian-button-icon">
-                <svg-icon 
-                    class="icon-btn svg-icon" 
-                    src="/assets/images/icons/add.svg"
-                    svgClass="icon-color-primary">
-                </svg-icon>
-            </div>
-            <div class="guardian-button-label">Add Field</div>
-        </button>
-
-        <div class="configurator-block-title">Conditions</div>
-
-        <ng-template [ngIf]="fields && fields.length > 0">
-            <div
-                *ngIf="conditions && conditions.length"
-                class="conditions-container"
+      }
+      <button
+        (click)="onAdd($event)"
+        class="guardian-button guardian-button-secondary add-btn">
+        <div class="guardian-button-icon">
+          <svg-icon
+            class="icon-btn svg-icon"
+            src="/assets/images/icons/add.svg"
+            svgClass="icon-color-primary">
+          </svg-icon>
+        </div>
+        <div class="guardian-button-label">Add Field</div>
+      </button>
+      <div class="configurator-block-title">Conditions</div>
+      @if (fields && fields.length > 0) {
+        @if (conditions && conditions.length) {
+          <div
+            class="conditions-container"
             >
-                <div *ngFor="let condition of conditions; trackBy: trackByCondition">
-                    <div class="condition-item">
-                        <div class="condition-item">
-                            <div class="condition-if-container">
-                                <div class="if-mode-dropdown guardian-input-container" style="min-width: 180px;">
-                                    <p-select
-                                        class="guardian-dropdown"
-                                        panelStyleClass="guardian-dropdown-panel"
-                                        [options]="ifModeOptions"
-                                        [formControl]="getOperatorControl(condition)"
-                                        appendTo="body"
-                                        placeholder="IF mode"
-                                        (onChange)="onIfModeChange(condition)">
-                                    </p-select>
-                                </div>
-                                <ng-container [ngSwitch]="getOperatorValue(condition)">
-                                    <div *ngSwitchCase="'SINGLE'" class="if-label-mode">
-                                        <span class="condition-label if-text-mode">IF</span>
-                                    </div>
-
-                                    <div *ngSwitchCase="'AND'" class="if-label-mode">
-                                        <span class="condition-label if-text-mode">IF ALL</span><span>of the rules
-                                            match</span>
-                                    </div>
-                                    <div *ngSwitchCase="'OR'" class="if-label-mode">
-                                        <span class="condition-label if-text-mode">IF ANY</span><span> rules
-                                            match</span>
-
-                                    </div>
-                                </ng-container>
-
-                                <div class="if-rows">
-                                    <div class="if-condition-equality-container"
-                                        *ngFor="let row of getIfRows(condition); let i = index; trackBy: trackByIndex">
-                                        <div class="if-dropdown-field guardian-input-container">
-                                            <label class="form-label">* Field</label>
-                                            <p-select
-                                                class="guardian-dropdown"
-                                                panelStyleClass="guardian-dropdown-panel"
-                                                [options]="getFieldsForCondition(condition)"
-                                                appendTo="body"
-                                                optionLabel="controlDescription.value"
-                                                placeholder="Field"
-                                                [formControl]="getRowFieldControl(row)"
-                                                (onChange)="onIfRowFieldChange(condition, i, $event)">
-                                            </p-select>
-                                        </div>
-
-                                        <div *ngIf="getRowField(row)" class="equal-label">=</div>
-
-
-                                        <ng-container [ngSwitch]="true">
-                                            <div
-                                                *ngSwitchCase="isFieldType1(getRowField(row))"
-                                                class="input-field-container guardian-input-container"
-                                                style="margin-bottom: unset"
-                                            >
-                                                <label class="form-label">Field value</label>
-                                                <input
-                                                    [formControl]="getRowValueControl(row)"
-                                                    pInputText
-                                                    placeholder="Field value"
-                                                    type="text"
-                                                />
-                                            </div>
-
-                                            <div
-                                                *ngSwitchCase="isFieldType2(getRowField(row))"
-                                                class="input-field-container guardian-input-container"
-                                                style="margin-bottom: unset"
-                                            >
-                                                <label class="form-label">* Field value</label>
-                                                <input
-                                                    [formControl]="getRowValueControl(row)"
-                                                    pInputText
-                                                    placeholder="Field value"
-                                                    step="1"
-                                                    type="time"
-                                                />
-                                            </div>
-
-                                            <div *ngSwitchCase="isFieldType3(getRowField(row))"
-                                                class="form-group required-form-field guardian-input-container">
-                                                <label class="form-label">Choose a date &amp; time</label>
-                                                <p-datepicker
-                                                    styleClass="guardian-datepicker"
-                                                    [formControl]="getRowValueControl(row)"
-                                                    [showTime]="true"
-                                                    [hourFormat]="'12'"
-                                                    appendTo="body"></p-datepicker>
-                                            </div>
-
-                                            <div *ngSwitchCase="isFieldType4(getRowField(row))"
-                                                class="form-group example-full-width required-form-field">
-                                                <label class="form-label">Choose a date</label>
-                                                <p-datepicker
-                                                    styleClass="guardian-datepicker"
-                                                    [formControl]="getRowValueControl(row)"
-                                                    [showTime]="false"
-                                                    appendTo="body"></p-datepicker>
-                                            </div>
-
-                                            <div *ngSwitchCase="isFieldType5(getRowField(row))"
-                                                class="radio-button-container">
-                                                <div>
-                                                    <p-radioButton
-                                                        [name]="'booleanOption' + condition.name + i"
-                                                        [value]="true"
-                                                        [formControl]="getRowValueControl(row)"
-                                                        class="guardian-radio-button boolean-option"
-                                                        label="True">
-                                                    </p-radioButton>
-                                                </div>
-                                                <div>
-                                                    <p-radioButton
-                                                        [name]="'booleanOption' + condition.name + i"
-                                                        [value]="false"
-                                                        [formControl]="getRowValueControl(row)"
-                                                        class="guardian-radio-button boolean-option"
-                                                        label="False">
-                                                    </p-radioButton>
-                                                </div>
-                                            </div>
-                                        </ng-container>
-                                        <button
-                                            *ngIf="getOperatorValue(condition) !== 'SINGLE' && getIfRows(condition).length > 1"
-                                            (click)="onIfRowRemove(condition, i)"
-                                            class="guardian-icon-button guardian-button-delete rmv-condition-btn">
-                                            <div class="guardian-button-icon">
-                                                <svg-icon class="icon-btn svg-icon"
-                                                    src="/assets/images/icons/delete.svg" svgClass="icon-color-delete">
-                                                </svg-icon>
-                                            </div>
-                                        </button>
-                                    </div>
-
-                                    <button *ngIf="getOperatorValue(condition) !== 'SINGLE'"
-                                        (click)="onIfRowAdd(condition)"
-                                        class="guardian-button guardian-button-secondary add-rule-btn">
-                                        <div class="guardian-button-label">Add rule</div>
-                                    </button>
-                                </div>
-                            </div>
+            @for (condition of conditions; track trackByCondition($index, condition)) {
+              <div>
+                <div class="condition-item">
+                  <div class="condition-item">
+                    <div class="condition-if-container">
+                      <div class="if-mode-dropdown guardian-input-container" style="min-width: 180px;">
+                        <p-select
+                          class="guardian-dropdown"
+                          panelStyleClass="guardian-dropdown-panel"
+                          [options]="ifModeOptions"
+                          [formControl]="getOperatorControl(condition)"
+                          appendTo="body"
+                          placeholder="IF mode"
+                          (onChange)="onIfModeChange(condition)">
+                        </p-select>
+                      </div>
+                      @switch (getOperatorValue(condition)) {
+                        @case ('SINGLE') {
+                          <div class="if-label-mode">
+                            <span class="condition-label if-text-mode">IF</span>
+                          </div>
+                        }
+                        @case ('AND') {
+                          <div class="if-label-mode">
+                            <span class="condition-label if-text-mode">IF ALL</span><span>of the rules
+                          match</span>
                         </div>
-
-                        <p class="condition-label">THEN</p>
-                        <div
-                            *ngIf="condition.thenControls"
-                            class="condition-container"
+                      }
+                      @case ('OR') {
+                        <div class="if-label-mode">
+                          <span class="condition-label if-text-mode">IF ANY</span><span> rules
+                        match</span>
+                      </div>
+                    }
+                  }
+                  <div class="if-rows">
+                    @for (row of getIfRows(condition); track trackByIndex(i, row); let i = $index) {
+                      <div class="if-condition-equality-container"
                         >
-                            <div
-                                (cdkDropListDropped)="drop($event)"
-                                [cdkDropListAutoScrollDisabled]
-                                [cdkDropListData]="condition.thenControls"
-                                cdkDropList
-                                class="custom-fields"
-                            >
-                                <div *ngFor="let conditionField of condition.thenControls; trackBy: trackByFieldControl" class="custom-schema-field">
-                                    <schema-field-configuration
-                                        (remove)="onConditionFieldRemove(condition,conditionField,'then')"
-                                        [field]="conditionField"
-                                        [types]="types"
-                                        [form]="dataForm"
-                                        [fieldsForm]="conditionsForm.get(condition.name)?.get('thenFieldControls')"
-                                        [measureTypes]="measureTypes"
-                                        [properties]="properties"
-                                        [extended]="extended"
-                                        [schemaTypes]="schemaTypes"
-                                        [schemaTypeMap]="schemaTypeMap"
-                                        [errors]="errors"
-                                        [buildField]="buildField"
-                                    >
-                                    </schema-field-configuration>
-                                </div>
-                            </div>
+                        <div class="if-dropdown-field guardian-input-container">
+                          <label class="form-label">* Field</label>
+                          <p-select
+                            class="guardian-dropdown"
+                            panelStyleClass="guardian-dropdown-panel"
+                            [options]="getFieldsForCondition(condition)"
+                            appendTo="body"
+                            optionLabel="controlDescription.value"
+                            placeholder="Field"
+                            [formControl]="getRowFieldControl(row)"
+                            (onChange)="onIfRowFieldChange(condition, i, $event)">
+                          </p-select>
                         </div>
-
-                        <button 
-                            (click)="onConditionFieldAdd(condition, 'then')"
-                            class="guardian-button guardian-button-secondary add-btn">
-                            <div class="guardian-button-icon">
-                                <svg-icon 
-                                    class="icon-btn svg-icon" 
-                                    src="/assets/images/icons/add.svg"
-                                    svgClass="icon-color-primary">
-                                </svg-icon>
-                            </div>
-                            <div class="guardian-button-label">Add THEN Field</div>
-                        </button>
-
-                        <p class="condition-label">ELSE</p>
-                        <div
-                            *ngIf="condition.elseControls"
-                            class="condition-container"
-                        >
+                        @if (getRowField(row)) {
+                          <div class="equal-label">=</div>
+                        }
+                        @switch (true) {
+                          @case (isFieldType1(getRowField(row))) {
                             <div
-                                (cdkDropListDropped)="drop($event)"
-                                [cdkDropListAutoScrollDisabled]
-                                [cdkDropListData]="condition.elseControls"
-                                cdkDropList
-                                class="custom-fields"
-                            >
-                                <div *ngFor="let conditionField of condition.elseControls; trackBy: trackByFieldControl" class="custom-schema-field">
-                                    <schema-field-configuration
-                                        (remove)="onConditionFieldRemove(condition,conditionField,'else')"
-                                        [field]="conditionField"
-                                        [types]="types"
-                                        [form]="dataForm"
-                                        [fieldsForm]="conditionsForm.get(condition.name)?.get('elseFieldControls')"
-                                        [measureTypes]="measureTypes"
-                                        [properties]="properties"
-                                        [extended]="extended"
-                                        [schemaTypes]="schemaTypes"
-                                        [schemaTypeMap]="schemaTypeMap"
-                                        [errors]="errors"
-                                        [buildField]="buildField"
-                                    >
-                                    </schema-field-configuration>
-                                </div>
+                              class="input-field-container guardian-input-container"
+                              style="margin-bottom: unset"
+                              >
+                              <label class="form-label">Field value</label>
+                              <input
+                                [formControl]="getRowValueControl(row)"
+                                pInputText
+                                placeholder="Field value"
+                                type="text"
+                                />
                             </div>
-                        </div>
-
-                        <button 
-                            (click)="onConditionFieldAdd(condition, 'else')"
-                            class="guardian-button guardian-button-secondary add-btn">
+                          }
+                          @case (isFieldType2(getRowField(row))) {
+                            <div
+                              class="input-field-container guardian-input-container"
+                              style="margin-bottom: unset"
+                              >
+                              <label class="form-label">* Field value</label>
+                              <input
+                                [formControl]="getRowValueControl(row)"
+                                pInputText
+                                placeholder="Field value"
+                                step="1"
+                                type="time"
+                                />
+                            </div>
+                          }
+                          @case (isFieldType3(getRowField(row))) {
+                            <div
+                              class="form-group required-form-field guardian-input-container">
+                              <label class="form-label">Choose a date &amp; time</label>
+                              <p-datepicker
+                                styleClass="guardian-datepicker"
+                                [formControl]="getRowValueControl(row)"
+                                [showTime]="true"
+                                [hourFormat]="'12'"
+                              appendTo="body"></p-datepicker>
+                            </div>
+                          }
+                          @case (isFieldType4(getRowField(row))) {
+                            <div
+                              class="form-group example-full-width required-form-field">
+                              <label class="form-label">Choose a date</label>
+                              <p-datepicker
+                                styleClass="guardian-datepicker"
+                                [formControl]="getRowValueControl(row)"
+                                [showTime]="false"
+                              appendTo="body"></p-datepicker>
+                            </div>
+                          }
+                          @case (isFieldType5(getRowField(row))) {
+                            <div
+                              class="radio-button-container">
+                              <div>
+                                <p-radioButton
+                                  [name]="'booleanOption' + condition.name + i"
+                                  [value]="true"
+                                  [formControl]="getRowValueControl(row)"
+                                  class="guardian-radio-button boolean-option"
+                                  label="True">
+                                </p-radioButton>
+                              </div>
+                              <div>
+                                <p-radioButton
+                                  [name]="'booleanOption' + condition.name + i"
+                                  [value]="false"
+                                  [formControl]="getRowValueControl(row)"
+                                  class="guardian-radio-button boolean-option"
+                                  label="False">
+                                </p-radioButton>
+                              </div>
+                            </div>
+                          }
+                        }
+                        @if (getOperatorValue(condition) !== 'SINGLE' && getIfRows(condition).length > 1) {
+                          <button
+                            (click)="onIfRowRemove(condition, i)"
+                            class="guardian-icon-button guardian-button-delete rmv-condition-btn">
                             <div class="guardian-button-icon">
-                                <svg-icon 
-                                    class="icon-btn svg-icon" 
-                                    src="/assets/images/icons/add.svg"
-                                    svgClass="icon-color-primary">
-                                </svg-icon>
+                              <svg-icon class="icon-btn svg-icon"
+                                src="/assets/images/icons/delete.svg" svgClass="icon-color-delete">
+                              </svg-icon>
                             </div>
-                            <div class="guardian-button-label">Add ELSE Field</div>
-                        </button>
-
-                        <button 
-                            (click)="onConditionRemove(condition)"
-                            class="guardian-button guardian-button-delete rmv-btn">
-                            <div class="guardian-button-icon">
-                                <svg-icon 
-                                    class="icon-btn svg-icon" 
-                                    src="/assets/images/icons/delete.svg"
-                                    svgClass="icon-color-delete">
-                                </svg-icon>
-                            </div>
-                            <div class="guardian-button-label">Remove Condition</div>
-                        </button>
-                    </div>
+                          </button>
+                        }
+                      </div>
+                    }
+                    @if (getOperatorValue(condition) !== 'SINGLE') {
+                      <button
+                        (click)="onIfRowAdd(condition)"
+                        class="guardian-button guardian-button-secondary add-rule-btn">
+                        <div class="guardian-button-label">Add rule</div>
+                      </button>
+                    }
+                  </div>
                 </div>
-            </div>
-
-            <button 
-                (click)="onConditionAdd()"
+              </div>
+              <p class="condition-label">THEN</p>
+              @if (condition.thenControls) {
+                <ng-template [ngTemplateOutlet]="Controls"></ng-template>
+              }
+              <button
+                (click)="onConditionFieldAdd(condition, 'then')"
                 class="guardian-button guardian-button-secondary add-btn">
                 <div class="guardian-button-icon">
-                    <svg-icon 
-                        class="icon-btn svg-icon" 
-                        src="/assets/images/icons/add.svg"
-                        svgClass="icon-color-primary">
-                    </svg-icon>
+                  <svg-icon
+                    class="icon-btn svg-icon"
+                    src="/assets/images/icons/add.svg"
+                    svgClass="icon-color-primary">
+                  </svg-icon>
                 </div>
-                <div class="guardian-button-label">Add Condition</div>
-            </button>
-        </ng-template>
-
-        <ng-template [ngIf]="fields.length == 0">
-            <div class="no-conditions-label">To add Conditions first you need to add field</div>
-        </ng-template>
-    </form>
+                <div class="guardian-button-label">Add THEN Field</div>
+              </button>
+              <p class="condition-label">ELSE</p>
+              @if (condition.elseControls) {
+                <div
+                  class="condition-container"
+                  >
+                  <div
+                    (cdkDropListDropped)="drop($event)"
+                    [cdkDropListAutoScrollDisabled]
+                    [cdkDropListData]="condition.elseControls"
+                    cdkDropList
+                    class="custom-fields"
+                    >
+                    @for (conditionField of condition.elseControls; track trackByFieldControl($index, conditionField)) {
+                      <div class="custom-schema-field">
+                        <schema-field-configuration
+                          (remove)="onConditionFieldRemove(condition,conditionField,'else')"
+                          [field]="conditionField"
+                          [types]="types"
+                          [form]="dataForm"
+                          [fieldsForm]="conditionsForm.get(condition.name)?.get('elseFieldControls')"
+                          [measureTypes]="measureTypes"
+                          [properties]="properties"
+                          [extended]="extended"
+                          [schemaTypes]="schemaTypes"
+                          [schemaTypeMap]="schemaTypeMap"
+                          [errors]="errors"
+                          [buildField]="buildField"
+                          >
+                        </schema-field-configuration>
+                      </div>
+                    }
+                  </div>
+                </div>
+              } @else {
+                <ng-template [ngTemplateOutlet]="Controls"></ng-template>
+              }
+              <button
+                (click)="onConditionFieldAdd(condition, 'else')"
+                class="guardian-button guardian-button-secondary add-btn">
+                <div class="guardian-button-icon">
+                  <svg-icon
+                    class="icon-btn svg-icon"
+                    src="/assets/images/icons/add.svg"
+                    svgClass="icon-color-primary">
+                  </svg-icon>
+                </div>
+                <div class="guardian-button-label">Add ELSE Field</div>
+              </button>
+              <button
+                (click)="onConditionRemove(condition)"
+                class="guardian-button guardian-button-delete rmv-btn">
+                <div class="guardian-button-icon">
+                  <svg-icon
+                    class="icon-btn svg-icon"
+                    src="/assets/images/icons/delete.svg"
+                    svgClass="icon-color-delete">
+                  </svg-icon>
+                </div>
+                <div class="guardian-button-label">Remove Condition</div>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+    <button
+      (click)="onConditionAdd()"
+      class="guardian-button guardian-button-secondary add-btn">
+      <div class="guardian-button-icon">
+        <svg-icon
+          class="icon-btn svg-icon"
+          src="/assets/images/icons/add.svg"
+          svgClass="icon-color-primary">
+        </svg-icon>
+      </div>
+      <div class="guardian-button-label">Add Condition</div>
+    </button>
+  }
+  @if (fields.length == 0) {
+    <div class="no-conditions-label">To add Conditions first you need to add field</div>
+  }
+</form>
+}
 </div>

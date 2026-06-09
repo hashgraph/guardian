@@ -1,136 +1,150 @@
 <div #dialogHeader class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">{{title}}</div>
-        <div *ngIf="tags && tags.length > 0" class="tags-container">
-            <div class="tag-item" *ngFor="let tag of tags" (click)="onOpenTag(tag)">
-                <svg-icon
-                    class="svg-icon-16"
-                    src="/assets/images/icons/16/label.svg"
-                    svgClass="primary-color">
-                </svg-icon>
-                <div class="name">
-                    {{ tag.name }}
-                </div>
+  <div class="header-container">
+    <div class="header-text">{{title}}</div>
+    @if (tags && tags.length > 0) {
+      <div class="tags-container">
+        @for (tag of tags; track tag) {
+          <div class="tag-item" (click)="onOpenTag(tag)">
+            <svg-icon
+              class="svg-icon-16"
+              src="/assets/images/icons/16/label.svg"
+              svgClass="primary-color">
+            </svg-icon>
+            <div class="name">
+              {{ tag.name }}
             </div>
-        </div>
-    </div>
-    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
-        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+    <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 <div class="dialog-body">
-    <div class="context">
-        <div *ngIf="loading" class="guardian-loading">
-            <div class="guardian-loading-image"></div>
-        </div>
-        <div class="view-dialog-bar" *ngIf="((isVcDocument || isVpDocument) && toggle) || isCompare">
-            <p-selectButton 
-                *ngIf="(isVcDocument || isVpDocument) && toggle"
-                class="guardian-select-button"
-                [options]="viewDocumentOptions" 
-                [(ngModel)]="viewDocument" 
-                optionLabel="label"
-                optionValue="value"
-                [unselectable]="true"
+  <div class="context">
+    @if (loading) {
+      <div class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+      </div>
+    }
+    @if (((isVcDocument || isVpDocument) && toggle) || isCompare) {
+      <div class="view-dialog-bar">
+        @if ((isVcDocument || isVpDocument) && toggle) {
+          <p-selectButton
+            class="guardian-select-button"
+            [options]="viewDocumentOptions"
+            [(ngModel)]="viewDocument"
+            optionLabel="label"
+            optionValue="value"
+            [unselectable]="true"
             >
-                <ng-template let-item pTemplate>
-                    <div class="guardian-select-button-item">
-                        <svg-icon 
-                            class="svg-icon-16"
-                            src="/assets/images/icons/16/{{item.icon}}.svg"></svg-icon>
-                        <span>{{item.label}}</span>
-                    </div>
-                </ng-template>
-            </p-selectButton>
-
-
-            <div class="option-buttons">
-                <button 
-                    *ngIf="messageId && !dryRun && canExport"
-                    (click)="onFindInExport()" 
-                    class="guardian-button guardian-button-secondary">Export</button>
-
-                <app-compare-btn 
-                    *ngIf="isCompare"
-                    [id]="id" 
-                    type="document" 
-                    class="compare-container"
-                    buttonStyle="guardian"></app-compare-btn>
-
-                <p-select
-                    *ngIf="allVcDocs.length > 1"
-                    [options]="versionOptions"
-                    [(ngModel)]="selectedVersionIndex"
-                    (onChange)="onVersionChange($event)"
-                    placeholder="Select Revision"
-                    class="version-dropdown"
-                    [appendTo]="'body'"
-                    styleClass="guardian-dropdown"
-                ></p-select>
+            <ng-template let-item pTemplate>
+              <div class="guardian-select-button-item">
+                <svg-icon
+                  class="svg-icon-16"
+                src="/assets/images/icons/16/{{item.icon}}.svg"></svg-icon>
+                <span>{{item.label}}</span>
+              </div>
+            </ng-template>
+          </p-selectButton>
+        }
+        <div class="option-buttons">
+          @if (messageId && !dryRun && canExport) {
+            <button
+              (click)="onFindInExport()"
+            class="guardian-button guardian-button-secondary">Export</button>
+          }
+          @if (isCompare) {
+            <app-compare-btn
+              [id]="id"
+              type="document"
+              class="compare-container"
+            buttonStyle="guardian"></app-compare-btn>
+          }
+          @if (allVcDocs.length > 1) {
+            <p-select
+              [options]="versionOptions"
+              [(ngModel)]="selectedVersionIndex"
+              (onChange)="onVersionChange($event)"
+              placeholder="Select Revision"
+              class="version-dropdown"
+              [appendTo]="'body'"
+              styleClass="guardian-dropdown"
+            ></p-select>
+          }
+        </div>
+      </div>
+    }
+    <div class="view-dialog-content">
+      @if (viewDocument === true) {
+        @if (!loading) {
+          <app-document-view
+            [policyId]="policyId"
+            [documentId]="documentId"
+            [schemaId]="schemaId"
+            [document]="document"
+            [dryRun]="dryRun"
+            [getByUser]="getByUser"
+            [schema]="schema"
+            [type]="type"
+          [dialogContext]="'viewer'"></app-document-view>
+        }
+      }
+      @if (viewDocument === false) {
+        @if (fileSize <= 1) {
+          @if (type !== 'TEXT') {
+            <div class="json">
+              {{ json }}
             </div>
-        </div>
-        <div class="view-dialog-content">
-            <ng-container *ngIf="viewDocument === true">
-                <app-document-view 
-                    *ngIf="!loading"
-                    [policyId]="policyId"
-                    [documentId]="documentId"
-                    [schemaId]="schemaId"
-                    [document]="document" 
-                    [dryRun]="dryRun" 
-                    [getByUser]="getByUser" 
-                    [schema]="schema"
-                    [type]="type"
-                    [dialogContext]="'viewer'"></app-document-view>
-            </ng-container>
-            <ng-container *ngIf="viewDocument === false">
-                <ng-container *ngIf="fileSize <= 1; else fileIsTooBigTemplate">
-                    <div *ngIf="type !== 'TEXT'" class="json">
-                        {{ json }}
-                    </div>
-                    <div *ngIf="type === 'TEXT'" class="text">
-                        {{ text }}
-                    </div>
-                </ng-container>
-                <ng-template #fileIsTooBigTemplate>
-                    <b class="form-label">This file is too large to view. ({{ fileSize }} MB)</b>
-                    <p class="form-label ">File exceeds in-browser preview limits. To view it, please download the file and open it locally.</p>
-                </ng-template>
-            </ng-container>
-            <ng-container *ngIf="additionalOptionsData">
-                <ng-container *ngFor="let option of additionalOptionsData">
-                    <ng-container *ngIf="option.optionValue === viewDocument">
-                        <div *ngIf="option.type === IntegrationDataTypes.JSON || option.type === IntegrationDataTypes.CSV" class="json">
-                            {{ option.data }}
-                        </div>
-
-                        <ng-container *ngIf="option.type === IntegrationDataTypes.GEOTIFF || option.type === IntegrationDataTypes.GEOJSON">
-                            <app-geo-image [data]="option.data" />
-                        </ng-container>
-
-                        <div *ngIf="option.type === IntegrationDataTypes.TEXT" class="text">
-                            {{ option.data }}
-                        </div>
-                    </ng-container>
-                </ng-container>
-            </ng-container>
-        </div>
+          }
+          @if (type === 'TEXT') {
+            <div class="text">
+              {{ text }}
+            </div>
+          }
+        } @else {
+          <b class="form-label">This file is too large to view. ({{ fileSize }} MB)</b>
+          <p class="form-label ">File exceeds in-browser preview limits. To view it, please download the file and open it locally.</p>
+        }
+      }
+      @if (additionalOptionsData) {
+        @for (option of additionalOptionsData; track option) {
+          @if (option.optionValue === viewDocument) {
+            @if (option.type === IntegrationDataTypes.JSON || option.type === IntegrationDataTypes.CSV) {
+              <div class="json">
+                {{ option.data }}
+              </div>
+            }
+            @if (option.type === IntegrationDataTypes.GEOTIFF || option.type === IntegrationDataTypes.GEOJSON) {
+              <app-geo-image [data]="option.data" />
+            }
+            @if (option.type === IntegrationDataTypes.TEXT) {
+              <div class="text">
+                {{ option.data }}
+              </div>
+            }
+          }
+        }
+      }
     </div>
+  </div>
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="dialog-button">
-            <button 
-                (click)="onDownloadJsonFile()" 
-                class="guardian-button guardian-button-secondary">Download</button>
-        </div>
-        <div class="dialog-button">
-            <button 
-                (click)="onClose()" 
-                class="guardian-button guardian-button-secondary">Close</button>
-        </div>
+  <div class="action-buttons">
+    <div class="dialog-button">
+      <button
+        (click)="onDownloadJsonFile()"
+      class="guardian-button guardian-button-secondary">Download</button>
     </div>
+    <div class="dialog-button">
+      <button
+        (click)="onClose()"
+      class="guardian-button guardian-button-secondary">Close</button>
+    </div>
+  </div>
 </div>

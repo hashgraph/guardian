@@ -1,67 +1,73 @@
 <div class="dialog-body">
-    <ng-container *ngIf="!loading">
-        <p-tabs [(value)]="importType" (valueChange)="handleChangeTab($event)">
-            <p-tablist>
-                <p-tab *ngFor="let tab of items; let i = index" [value]="i"><div class="tabview-label">{{ tab.label }}</div></p-tab>
-            </p-tablist>
-        </p-tabs>
+  @if (!loading) {
+    <p-tabs [(value)]="importType" (valueChange)="handleChangeTab($event)">
+      <p-tablist>
+        @for (tab of items; track tab; let i = $index) {
+          <p-tab [value]="i"><div class="tabview-label">{{ tab.label }}</div></p-tab>
+        }
+      </p-tablist>
+    </p-tabs>
+    @if (isImportTypeSelected) {
+      @switch (this.importType) {
+        @case (0) {
+          <app-file-drag-n-drop
+            (onFileLoaded)="importFromFile($event)"
+            dropZoneLabel="Import Schema .schema file"
+            fileExtension="schema"
+          ></app-file-drag-n-drop>
+        }
+        @case (1) {
+          <form [formGroup]="dataForm">
+            <label class="form-label" htmlFor="timestamp">Message timestamp</label>
+            <input
+              formControlName="timestamp"
+              id="timestamp"
+              pInputText
+              placeholder="Timestamp"
+              type="text"
+              />
+          </form>
+        }
+        @case (2) {
+          <app-file-drag-n-drop
+            (onFileLoaded)="importFromExcel($event)"
+            dropZoneLabel="Import Schema .xlsx file"
+            fileExtension="xlsx"
+          ></app-file-drag-n-drop>
+        }
+      }
+    }
+  }
 
-        <ng-container *ngIf="isImportTypeSelected" [ngSwitch]="this.importType">
-            <ng-template [ngSwitchCase]="0">
-                <app-file-drag-n-drop
-                    (onFileLoaded)="importFromFile($event)"
-                    dropZoneLabel="Import Schema .schema file"
-                    fileExtension="schema"
-                ></app-file-drag-n-drop>
-            </ng-template>
-            <ng-template [ngSwitchCase]="1">
-                <form [formGroup]="dataForm">
-                    <label class="form-label" htmlFor="timestamp">Message timestamp</label>
-                    <input
-                        formControlName="timestamp"
-                        id="timestamp"
-                        pInputText
-                        placeholder="Timestamp"
-                        type="text"
-                    />
-                </form>
-            </ng-template>
-            <ng-template [ngSwitchCase]="2">
-                <app-file-drag-n-drop
-                    (onFileLoaded)="importFromExcel($event)"
-                    dropZoneLabel="Import Schema .xlsx file"
-                    fileExtension="xlsx"
-                ></app-file-drag-n-drop>
-            </ng-template>
-        </ng-container>
-    </ng-container>
-
-    <div *ngIf="loading && !taskId" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  @if (loading && !taskId) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
     </div>
+  }
+  @if (loading && taskId) {
     <async-progress
-            (completed)="onAsyncCompleted()"
-            (error)="onAsyncError($event)"
-            *ngIf="loading && taskId"
-            [taskId]="taskId"
+      (completed)="onAsyncCompleted()"
+      (error)="onAsyncError($event)"
+      [taskId]="taskId"
     ></async-progress>
+  }
 </div>
 
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="cancel-button">
-            <button (click)="onNoClick()"
-                    class="button secondary"
-                    label="Close"
-                    pButton
-                    styleClass="p-button-outlined"
-            ></button>
-        </div>
-        <div>
-            <button (click)="this.importType === 1 ? importFromMessage() : ''" class="button"
-                    label="Import"
-                    pButton
-            ></button>
-        </div>
+  <div class="action-buttons">
+    <div class="cancel-button">
+      <button (click)="onNoClick()"
+        class="button secondary"
+        label="Close"
+        pButton
+        styleClass="p-button-outlined"
+      ></button>
     </div>
+    <div>
+      <button (click)="this.importType === 1 ? importFromMessage() : ''" class="button"
+        label="Import"
+        pButton
+      ></button>
+    </div>
+  </div>
 </div>

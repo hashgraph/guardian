@@ -1,135 +1,146 @@
 <div class="switch-btn">
-    <switch-button 
-        [on-label]="'JSON'" 
-        [off-label]="'Form'" 
-        [(value)]="isJSON"
-        [disalbed]="loading"
-        (valueChange)="onViewTypeChange()">
-    </switch-button>
+  <switch-button
+    [on-label]="'JSON'"
+    [off-label]="'Form'"
+    [(value)]="isJSON"
+    [disalbed]="loading"
+    (valueChange)="onViewTypeChange()">
+  </switch-button>
 </div>
-<ng-container *ngIf="isJSON; else form">
-    <div class="form-group type-selector">
-        <ng-container *ngIf="fileImportSize <= 1; else fileIsTooBigTemplate">
-            <label for="geoJsonInput" class="form-label coordinates-input">GeoJSON</label>
-            <textarea
-                pInputTextarea
-                id="geoJsonInput"
-                placeholder="{}"
-                [disabled]="isDisabled"
-                required
-                [(ngModel)]="jsonInput"
-                (ngModelChange)="jsonChanged()"
-                class="full-width">
-            </textarea>
-            <ng-container *ngIf="haveErrors()">
-                <ul class="p-error validation-errors">
-                    <li *ngFor="let err of getAllErrors()">{{ err }}</li>
-                </ul>
-            </ng-container>
-        </ng-container>
-        <ng-template #fileIsTooBigTemplate>
-            <b class="form-label" class="form-label coordinates-input">File was imported successfully, but it’s too large to view.</b>
-            <p class="form-label" class="form-label coordinates-input">{{ fileImportName }} ({{ fileImportSize }} MB) exceeds in-browser preview limits.</p>
-        </ng-template>
-        <app-file-drag-n-drop
-            *ngIf="!isDisabled"
-            (onFileLoaded)="importFromFile($event)"
-            [dropZoneLabel]="'Upload file (.json, .kml, .geojson)'"
-            [fileExtension]="'.json, .kml, .geojson'"
-        ></app-file-drag-n-drop>
-    </div>
-</ng-container>
-<ng-template #form>
-    <div class="map-container">
-        <div class="map" #map id="map"></div>
-        <button
-            *ngIf="canDownload() && isDisabled"
+@if (isJSON) {
+  <div class="form-group type-selector">
+    @if (fileImportSize <= 1) {
+      <label for="geoJsonInput" class="form-label coordinates-input">GeoJSON</label>
+      <textarea
+        pInputTextarea
+        id="geoJsonInput"
+        placeholder="{}"
+        [disabled]="isDisabled"
+        required
+        [(ngModel)]="jsonInput"
+        (ngModelChange)="jsonChanged()"
+        class="full-width">
+      </textarea>
+      @if (haveErrors()) {
+        <ul class="p-error validation-errors">
+          @for (err of getAllErrors(); track err) {
+            <li>{{ err }}</li>
+          }
+        </ul>
+      }
+    } @else {
+      <b class="form-label" class="form-label coordinates-input">File was imported successfully, but it’s too large to view.</b>
+      <p class="form-label" class="form-label coordinates-input">{{ fileImportName }} ({{ fileImportSize }} MB) exceeds in-browser preview limits.</p>
+    }
+    @if (!isDisabled) {
+      <app-file-drag-n-drop
+        (onFileLoaded)="importFromFile($event)"
+        [dropZoneLabel]="'Upload file (.json, .kml, .geojson)'"
+        [fileExtension]="'.json, .kml, .geojson'"
+      ></app-file-drag-n-drop>
+    }
+  </div>
+} @else {
+  <div class="map-container">
+    <div class="map" #map id="map"></div>
+    @if (canDownload() && isDisabled) {
+      <button
+        pButton
+        class="add-feature-button download-geo"
+        label="Download GeoJSON"
+        (click)="downloadGeoJSON()">
+      </button>
+    }
+  </div>
+  @if (!isDisabled) {
+    <div class="map-control-block">
+      <div class="map-control-buttons">
+        @if (importedLocations && importedLocations.length > 0) {
+          <button
+            (click)="selectAllImportedFeatures()"
+            pButton
+            class="add-feature-button"
+            label="Include all"
+          ></button>
+        }
+        @if (geometriesList && geometriesList.length > 0) {
+          <button
+            (click)="clearSelectionFeatures()"
+            pButton
+            class="add-feature-button"
+            label="Clear"
+          ></button>
+        }
+        @if (!isDisabled && displayLocationEditor()) {
+          <button
+            (click)="addGeometry()"
+            pButton
+            class="add-feature-button"
+            label="Add Geometry"
+          ></button>
+        }
+        @if (canDownload()) {
+          <button
             pButton
             class="add-feature-button download-geo"
             label="Download GeoJSON"
             (click)="downloadGeoJSON()">
-        </button>
-    </div>
-    <div *ngIf="!isDisabled" class="map-control-block">
-        <div class="map-control-buttons">
-            <button
-                *ngIf="importedLocations && importedLocations.length > 0"
-                (click)="selectAllImportedFeatures()"
+          </button>
+        }
+      </div>
+      @if (displayLocationEditor()) {
+        @for (geometry of geometriesList; track geometry; let i = $index) {
+          <div>
+            <div class="location-control">
+              <p class="location-name">Location: {{i + 1}}</p>
+              <div class="form-group type-selector">
+                <p class="location-form-label">Type</p>
+                <p-select
+                  id="typeDropdown"
+                  [(ngModel)]="geometry.type"
+                  [options]="typeOptions"
+                  [disabled]="isDisabled"
+                  placeholder="None"
+                  class="full-width"
+                  (onChange)="onTypeChange(geometry)">
+                </p-select>
+                @if (!type) {
+                  <small class="p-error">This field is required.</small>
+                }
+              </div>
+              <div class="form-group type-selector">
+                <p class="location-form-label">Coordinates</p>
+                <textarea
+                  id="coordinatesInput"
+                  [(ngModel)]="geometry.coordinatesString"
+                  [placeholder]="geometry.coordinatesPlaceholder"
+                  (ngModelChange)="coordinatesChanged($event, geometry, i)"
+                  [disabled]="isDisabled"
+                  pInputTextarea
+                  required
+                  class="full-width location-coordinates"
+                ></textarea>
+                @if (getErrorsByIndex(i)?.length) {
+                  <ul class="p-error validation-errors">
+                    @for (err of getErrorsByIndex(i); track err) {
+                      <li>{{ err }}</li>
+                    }
+                  </ul>
+                }
+              </div>
+              <button
+                (click)="deleteGeometry(geometry.id)"
                 pButton
-                class="add-feature-button"
-                label="Include all"
-            ></button>
-            <button
-                *ngIf="geometriesList && geometriesList.length > 0"
-                (click)="clearSelectionFeatures()"
-                pButton
-                class="add-feature-button"
-                label="Clear"
-            ></button>
-
-            <button
-                *ngIf="!isDisabled && displayLocationEditor()"
-                (click)="addGeometry()"
-                pButton
-                class="add-feature-button"
-                label="Add Geometry"
-            ></button>
-            <button
-                *ngIf="canDownload()"
-                pButton
-                class="add-feature-button download-geo"
-                label="Download GeoJSON"
-                (click)="downloadGeoJSON()">
-            </button>
-        </div>
-
-        <ng-container *ngIf="displayLocationEditor(); else tooManyFeaturesAdded">
-            <div *ngFor="let geometry of geometriesList; let i = index">
-                <div class="location-control">
-                    <p class="location-name">Location: {{i + 1}}</p>
-                    <div class="form-group type-selector">
-                        <p class="location-form-label">Type</p>
-                        <p-select
-                            id="typeDropdown"
-                            [(ngModel)]="geometry.type"
-                            [options]="typeOptions"
-                            [disabled]="isDisabled"
-                            placeholder="None"
-                            class="full-width"
-                            (onChange)="onTypeChange(geometry)">
-                        </p-select>
-                        <small *ngIf="!type" class="p-error">This field is required.</small>
-                    </div>
-                    <div class="form-group type-selector">
-                        <p class="location-form-label">Coordinates</p>
-                        <textarea
-                            id="coordinatesInput"
-                            [(ngModel)]="geometry.coordinatesString"
-                            [placeholder]="geometry.coordinatesPlaceholder"
-                            (ngModelChange)="coordinatesChanged($event, geometry, i)"
-                            [disabled]="isDisabled"
-                            pInputTextarea
-                            required
-                            class="full-width location-coordinates"
-                        ></textarea>
-                        <ng-container *ngIf="getErrorsByIndex(i)?.length">
-                            <ul class="p-error validation-errors">
-                                <li *ngFor="let err of getErrorsByIndex(i)">{{ err }}</li>
-                            </ul>
-                        </ng-container>
-                    </div>
-                    <button
-                        (click)="deleteGeometry(geometry.id)"
-                        pButton
-                        class="delete-feature-button guardian-button guardian-button-delete"
-                        label="Delete Geometry"
-                    ></button>
-                </div>
+                class="delete-feature-button guardian-button guardian-button-delete"
+                label="Delete Geometry"
+              ></button>
             </div>
-        </ng-container>
-        <ng-template #tooManyFeaturesAdded>
-            <b class="form-label" class="form-label coordinates-input">This file is too large to view.</b>
-            <span class="form-label" class="form-label coordinates-input">{{ fileImportName }} ({{ fileImportSize }} MB) exceeds in-browser preview limits.</span>
-        </ng-template>
+          </div>
+        }
+      } @else {
+        <b class="form-label" class="form-label coordinates-input">This file is too large to view.</b>
+        <span class="form-label" class="form-label coordinates-input">{{ fileImportName }} ({{ fileImportSize }} MB) exceeds in-browser preview limits.</span>
+      }
     </div>
-</ng-template>
+  }
+}

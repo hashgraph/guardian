@@ -1,128 +1,164 @@
 <div #dialogHeader class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">Code Editor</div>
+  <div class="header-container">
+    <div class="header-text">Code Editor</div>
+  </div>
+  @if (helpContext) {
+    <div class="header-icon help-toggle" (click)="toggleHelpPanel()" title="Toggle expression help">
+      <i class="pi pi-question-circle"></i>
     </div>
-    <div *ngIf="helpContext" class="header-icon help-toggle" (click)="toggleHelpPanel()" title="Toggle expression help">
-        <i class="pi pi-question-circle"></i>
-    </div>
-    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
-        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  }
+  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+    <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 <div class="dialog-body">
-    <div *ngIf="loading" class="guardian-loading">
-        <div class="guardian-loading-image"></div>
+  @if (loading) {
+    <div class="guardian-loading">
+      <div class="guardian-loading-image"></div>
     </div>
-    <div class="editor-area">
-        <div class="context" (click)="focusEditor()">
-            <ngx-codemirror
-                *ngIf="initDialog"
-                [(ngModel)]="expression"
-                [options]="codeMirrorOptions"></ngx-codemirror>
-        </div>
-        <div *ngIf="helpContext && helpPanelOpen" class="help-panel" (click)="$event.stopPropagation()">
-            <div class="help-panel-header">
-                <span>Expression Help</span>
-                <i class="pi pi-times help-panel-close" (click)="toggleHelpPanel()"></i>
-            </div>
-
-            <div *ngIf="helpContext.scopeNote" class="help-section">
-                <div class="help-section-note">{{ helpContext.scopeNote }}</div>
-            </div>
-
-            <div *ngIf="helpContext.availableFields?.length" class="help-section">
-                <div class="help-section-title">Available Fields</div>
-                <div class="help-field-chips">
-                    <span
-                        *ngFor="let f of helpContext.availableFields"
-                        class="field-chip"
-                        (click)="insertField(f)"
-                        title="Click to insert">{{ f }}</span>
-                </div>
-            </div>
-
-            <div *ngIf="helpContext.operators?.length" class="help-section">
-                <div class="help-section-title">Operators</div>
-                <div class="help-operator-list">
-                    <div *ngFor="let op of helpContext.operators" class="help-operator-item">
-                        <code>{{ op.symbol }}</code>
-                        <span>{{ op.label }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div *ngIf="helpContext.functions?.length" class="help-section">
-                <div class="help-section-title">Functions</div>
-                <div *ngFor="let cat of helpContext.functions" class="help-fn-category">
-                    <div class="help-fn-category-header" (click)="expandedCategories[cat.category] = !expandedCategories[cat.category]">
-                        <span>{{ cat.category }}</span>
-                        <i [class]="expandedCategories[cat.category] ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" class="help-fn-toggle"></i>
-                    </div>
-                    <div *ngIf="expandedCategories[cat.category]" class="help-fn-list">
-                        <div *ngFor="let fn of cat.items" class="help-fn-item">
-                            <code class="help-fn-name" (click)="insertField(fn.name + '()')">{{ fn.name }}</code>
-                            <span class="help-fn-desc">{{ fn.description }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div *ngIf="helpContext.parameters?.length" class="help-section">
-                <div class="help-section-title">Parameters</div>
-                <div *ngFor="let param of helpContext.parameters" class="help-param">
-                    <div class="help-param-header">
-                        <code class="help-param-name" (click)="insertField(param.name)">{{ param.name }}</code>
-                        <span class="help-param-desc">{{ param.description }}</span>
-                    </div>
-                    <div *ngIf="param.methods?.length" class="help-param-methods">
-                        <div *ngFor="let m of param.methods" class="help-param-method">
-                            <code (click)="insertField(param.name + '.' + m.name + '()')">{{ param.name }}.{{ m.name }}()</code>
-                            <span>{{ m.description }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div *ngIf="helpContext.examples?.length" class="help-section">
-                <div class="help-section-title">Examples</div>
-                <div *ngFor="let ex of helpContext.examples" class="help-example">
-                    <div class="help-example-label">{{ ex.label }}</div>
-                    <code class="help-example-code">{{ ex.code }}</code>
-                </div>
-            </div>
-        </div>
+  }
+  <div class="editor-area">
+    <div class="context" (click)="focusEditor()">
+      @if (initDialog) {
+        <ngx-codemirror
+          [(ngModel)]="expression"
+        [options]="codeMirrorOptions"></ngx-codemirror>
+      }
     </div>
+    @if (helpContext && helpPanelOpen) {
+      <div class="help-panel" (click)="$event.stopPropagation()">
+        <div class="help-panel-header">
+          <span>Expression Help</span>
+          <i class="pi pi-times help-panel-close" (click)="toggleHelpPanel()"></i>
+        </div>
+        @if (helpContext.scopeNote) {
+          <div class="help-section">
+            <div class="help-section-note">{{ helpContext.scopeNote }}</div>
+          </div>
+        }
+        @if (helpContext.availableFields?.length) {
+          <div class="help-section">
+            <div class="help-section-title">Available Fields</div>
+            <div class="help-field-chips">
+              @for (f of helpContext.availableFields; track f) {
+                <span
+                  class="field-chip"
+                  (click)="insertField(f)"
+                title="Click to insert">{{ f }}</span>
+              }
+            </div>
+          </div>
+        }
+        @if (helpContext.operators?.length) {
+          <div class="help-section">
+            <div class="help-section-title">Operators</div>
+            <div class="help-operator-list">
+              @for (op of helpContext.operators; track op) {
+                <div class="help-operator-item">
+                  <code>{{ op.symbol }}</code>
+                  <span>{{ op.label }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+        @if (helpContext.functions?.length) {
+          <div class="help-section">
+            <div class="help-section-title">Functions</div>
+            @for (cat of helpContext.functions; track cat) {
+              <div class="help-fn-category">
+                <div class="help-fn-category-header" (click)="expandedCategories[cat.category] = !expandedCategories[cat.category]">
+                  <span>{{ cat.category }}</span>
+                  <i [class]="expandedCategories[cat.category] ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" class="help-fn-toggle"></i>
+                </div>
+                @if (expandedCategories[cat.category]) {
+                  <div class="help-fn-list">
+                    @for (fn of cat.items; track fn) {
+                      <div class="help-fn-item">
+                        <code class="help-fn-name" (click)="insertField(fn.name + '()')">{{ fn.name }}</code>
+                        <span class="help-fn-desc">{{ fn.description }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+        @if (helpContext.parameters?.length) {
+          <div class="help-section">
+            <div class="help-section-title">Parameters</div>
+            @for (param of helpContext.parameters; track param) {
+              <div class="help-param">
+                <div class="help-param-header">
+                  <code class="help-param-name" (click)="insertField(param.name)">{{ param.name }}</code>
+                  <span class="help-param-desc">{{ param.description }}</span>
+                </div>
+                @if (param.methods?.length) {
+                  <div class="help-param-methods">
+                    @for (m of param.methods; track m) {
+                      <div class="help-param-method">
+                        <code (click)="insertField(param.name + '.' + m.name + '()')">{{ param.name }}.{{ m.name }}()</code>
+                        <span>{{ m.description }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+        @if (helpContext.examples?.length) {
+          <div class="help-section">
+            <div class="help-section-title">Examples</div>
+            @for (ex of helpContext.examples; track ex) {
+              <div class="help-example">
+                <div class="help-example-label">{{ ex.label }}</div>
+                <code class="help-example-code">{{ ex.code }}</code>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
 </div>
-<div *ngIf="validationErrors.length" class="validation-errors">
+@if (validationErrors.length) {
+  <div class="validation-errors">
     <div class="validation-errors-header">
-        <i class="pi pi-exclamation-triangle"></i>
-        <span>Validation warnings</span>
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>Validation warnings</span>
     </div>
-    <div *ngFor="let err of validationErrors" class="validation-error-item">{{ err }}</div>
+    @for (err of validationErrors; track err) {
+      <div class="validation-error-item">{{ err }}</div>
+    }
     <div class="validation-errors-actions">
-        <button (click)="validationErrors = []" class="guardian-button guardian-button-secondary">Fix</button>
-        <button (click)="forceSave()" class="guardian-button guardian-button-primary">Save Anyway</button>
+      <button (click)="validationErrors = []" class="guardian-button guardian-button-secondary">Fix</button>
+      <button (click)="forceSave()" class="guardian-button guardian-button-primary">Save Anyway</button>
     </div>
-</div>
+  </div>
+}
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="dialog-button">
-            <button
-                (click)="onClose()"
-                class="guardian-button guardian-button-secondary">Close</button>
-        </div>
-        <div *ngIf="test" class="dialog-button">
-            <button
-                (click)="onTest()"
-                class="guardian-button guardian-button-primary">Test</button>
-        </div>
-        <div class="dialog-button">
-            <button
-                (click)="onSave()"
-                class="guardian-button guardian-button-primary">Save</button>
-        </div>
+  <div class="action-buttons">
+    <div class="dialog-button">
+      <button
+        (click)="onClose()"
+      class="guardian-button guardian-button-secondary">Close</button>
     </div>
+    @if (test) {
+      <div class="dialog-button">
+        <button
+          (click)="onTest()"
+        class="guardian-button guardian-button-primary">Test</button>
+      </div>
+    }
+    <div class="dialog-button">
+      <button
+        (click)="onSave()"
+      class="guardian-button guardian-button-primary">Save</button>
+    </div>
+  </div>
 </div>

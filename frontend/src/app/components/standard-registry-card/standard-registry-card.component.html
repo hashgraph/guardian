@@ -1,61 +1,60 @@
 <li class="standard-registry__card" (click)="onCardClick()"
-    [ngClass]="{ 'standard-registry__card--selected': isRegistrySelected }">
-    <div class="standard-registry__header">
-        <div class="standard-registry__topic">
-            <label class="standard-registry-label">Standard Registry</label>
-            <span>{{ registry.hederaAccountId }}</span>
-        </div>
-
-        <ng-container *ngIf="registry.policies.length > 0; else noPolicies">
-
-            <div
-                class="policies-menu-trigger"
-                (click)="togglePoliciesMenu($event)"
-            >
-
-
-                <span>
-                    {{ registry.policies.length }} {{ getPoliciesLabel(registry.policies.length) }}
-                </span>
-
-                <i
-                    class="pi pi-chevron-down policies-menu-icon"
-                    [ngClass]="{ 'policies-menu-icon--opened': isPoliciesMenuOpened }"
-                ></i>
-            </div>
-
-            <p-popover #policiesOverlay>
-                <ul class="policies-list">
-                    <li *ngFor="let policy of registry.policies" class="policies-list__item">
-                        <span>{{ policy.name }}</span>
-                        <span *ngIf="policy.version">({{ policy.version }})</span>
-                    </li>
-                </ul>
-            </p-popover>
-
-        </ng-container>
-
-        <ng-template #noPolicies>
-            <span class="no-policies">No policies</span>
-        </ng-template>
+  [ngClass]="{ 'standard-registry__card--selected': isRegistrySelected }">
+  <div class="standard-registry__header">
+    <div class="standard-registry__topic">
+      <label class="standard-registry-label">Standard Registry</label>
+      <span>{{ registry.hederaAccountId }}</span>
     </div>
 
-    <ul class="standard-registry__details">
-        <li class="standard-registry__detail">
-            <label>Standard registry did</label>
-            <span>{{ registry.did }}</span>
-        </li>
-
-        <li class="standard-registry__detail">
-            <label>Username</label>
-            <span>{{ registry.username }}</span>
-        </li>
-
-        <ng-container *ngIf="fields.length">
-            <li *ngFor="let item of fields" class="standard-registry__detail">
-                <label>{{ item.name }}</label>
-                <span>{{ item.value }}</span>
+    @if (registry.policies.length > 0) {
+      <div
+        class="policies-menu-trigger"
+        (click)="togglePoliciesMenu($event)"
+        >
+        <span>
+          {{ registry.policies.length }} {{ getPoliciesLabel(registry.policies.length) }}
+        </span>
+        <i
+          class="pi pi-chevron-down policies-menu-icon"
+          [ngClass]="{ 'policies-menu-icon--opened': isPoliciesMenuOpened }"
+        ></i>
+      </div>
+      <p-popover #policiesOverlay>
+        <ul class="policies-list">
+          @for (policy of registry.policies; track policy) {
+            <li class="policies-list__item">
+              <span>{{ policy.name }}</span>
+              @if (policy.version) {
+                <span>({{ policy.version }})</span>
+              }
             </li>
-        </ng-container>
-    </ul>
+          }
+        </ul>
+      </p-popover>
+    } @else {
+      <span class="no-policies">No policies</span>
+    }
+
+  </div>
+
+  <ul class="standard-registry__details">
+    <li class="standard-registry__detail">
+      <label>Standard registry did</label>
+      <span>{{ registry.did }}</span>
+    </li>
+
+    <li class="standard-registry__detail">
+      <label>Username</label>
+      <span>{{ registry.username }}</span>
+    </li>
+
+    @if (fields.length) {
+      @for (item of fields; track item) {
+        <li class="standard-registry__detail">
+          <label>{{ item.name }}</label>
+          <span>{{ item.value }}</span>
+        </li>
+      }
+    }
+  </ul>
 </li>

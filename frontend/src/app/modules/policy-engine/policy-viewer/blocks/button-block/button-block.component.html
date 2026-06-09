@@ -1,23 +1,34 @@
-<div class="content" *ngIf="commonVisible" [attr.readonly-block]="readonly">
-    <ng-container *ngFor="let button of buttons" >
-        <div *ngIf="button.type == 'selector' && button.visible && button.name && isBtnVisible(button)">
-            <div *ngIf="button.name" class="btn-option {{button.uiClass}}" (click)="onSelect(button)">
-                {{button.name}}
+@if (commonVisible) {
+  <div class="content" [attr.readonly-block]="readonly">
+    @for (button of buttons; track button) {
+      @if (button.type == 'selector' && button.visible && button.name && isBtnVisible(button)) {
+        <div>
+          @if (button.name) {
+            <div class="btn-option {{button.uiClass}}" (click)="onSelect(button)">
+              {{button.name}}
             </div>
+          }
         </div>
-
-        <div *ngIf="button.type === 'selector-dialog' && button.visible && button.name && isBtnVisible(button)">
-            <div *ngIf="button.name" class="btn-option {{button.uiClass}}" (click)="onSelectDialog(button)">
-                {{button.name}}
+      }
+      @if (button.type === 'selector-dialog' && button.visible && button.name && isBtnVisible(button)) {
+        <div>
+          @if (button.name) {
+            <div class="btn-option {{button.uiClass}}" (click)="onSelectDialog(button)">
+              {{button.name}}
             </div>
+          }
         </div>
-    </ng-container>
-</div>
+      }
+    }
+  </div>
+}
 
 <ng-template #preloader>
-    <div class="preloader-image"></div>
+  <div class="preloader-image"></div>
 </ng-template>
 
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}

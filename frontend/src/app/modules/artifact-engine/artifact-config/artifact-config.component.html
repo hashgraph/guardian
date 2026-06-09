@@ -1,138 +1,148 @@
 <div class="guardian-page">
-    <ng-container [ngTemplateOutlet]="header"></ng-container>
-    <ng-container *ngIf="!loading && isConfirmed">
-        <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
-        <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
-    </ng-container>
-    <ng-container *ngIf="!loading && !isConfirmed" [ngTemplateOutlet]="noDIDSettings"></ng-container>
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  <ng-container [ngTemplateOutlet]="header"></ng-container>
+  @if (!loading && isConfirmed) {
+    <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
+    <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
+  }
+  @if (!loading && !isConfirmed) {
+    <ng-container [ngTemplateOutlet]="noDIDSettings"></ng-container>
+  }
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
     </div>
+  }
 </div>
 
 <ng-template #header>
-    <div class="guardian-user-page-header">Artifacts</div>
+  <div class="guardian-user-page-header">Artifacts</div>
 </ng-template>
 
 <ng-template #actionsContainer>
-    <div class="actions-container">
-        <div class="dropdown-block">
-            <p-select (onChange)="onFilter()" [(ngModel)]="currentPolicy" [options]="filterOptions!">
-                <ng-template pTemplate="selectedItem">
-                    <div *ngIf="currentPolicy">
-                        <span class="dropdown-label">Policy</span>
-                        <span *ngIf="currentPolicy.name !== 'all'" class="dropdown-item">{{ currentPolicy.name }}</span>
-                    </div>
-                </ng-template>
-                <ng-template let-policy pTemplate="item">
-                    <div class="dropdown-item">
-                        {{ policy.name + (policy.id !== 'all' ? ' (' + policy.id + ')' : '') }}
-                    </div>
-                </ng-template>
-            </p-select>
-        </div>
-        <div class="module-actions-buttons-container">
-            <p-button
-                *ngIf="user.ARTIFACTS_FILE_CREATE"
-                (click)="importArtifacts()"
-                class="toolbar-btn-primary">
-                <i class="pi pi-download toolbar-icons"></i>
-                <span>Import an Artifact</span>
-            </p-button>
-        </div>
+  <div class="actions-container">
+    <div class="dropdown-block">
+      <p-select (onChange)="onFilter()" [(ngModel)]="currentPolicy" [options]="filterOptions!">
+        <ng-template pTemplate="selectedItem">
+          @if (currentPolicy) {
+            <div>
+              <span class="dropdown-label">Policy</span>
+              @if (currentPolicy.name !== 'all') {
+                <span class="dropdown-item">{{ currentPolicy.name }}</span>
+              }
+            </div>
+          }
+        </ng-template>
+        <ng-template let-policy pTemplate="item">
+          <div class="dropdown-item">
+            {{ policy.name + (policy.id !== 'all' ? ' (' + policy.id + ')' : '') }}
+          </div>
+        </ng-template>
+      </p-select>
     </div>
+    <div class="module-actions-buttons-container">
+      @if (user.ARTIFACTS_FILE_CREATE) {
+        <p-button
+          (click)="importArtifacts()"
+          class="toolbar-btn-primary">
+          <i class="pi pi-download toolbar-icons"></i>
+          <span>Import an Artifact</span>
+        </p-button>
+      }
+    </div>
+  </div>
 </ng-template>
 
 <ng-template #tableContainer>
-    <ng-container *ngIf="artifacts && artifacts.length > 0 else noData">
-        <div class="table-container">
-            <div class="guardian-grid-container">
-                <p-table
-                    [value]="artifacts"
-                    class="guardian-grid-table"
-                    [scrollable]="true"
-                >
-                    <ng-template pTemplate="header">
-                        <tr class="guardian-grid-header">
-                            <th class="header-cell-text" style="min-width: 300px; max-width: 300px;">ID</th>
-                            <th class="header-cell-text" style="min-width: 300px; max-width: 300px;">Policy</th>
-                            <th class="header-cell-text" style="min-width: 225px; max-width: 225px;">Name</th>
-                            <th class="header-cell-text" style="min-width: 140px;">Extention</th>
-                            <th class="header-cell-text" style="min-width: 140px;">Type</th>
-                            <th class="header-cell-text" style="min-width: 140px; width: 160px;">Operations</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template let-artifact pTemplate="body">
-                        <tr class="guardian-grid-row">
-                            <td class="row-cell-text" style="min-width: 300px; max-width: 300px;" pTooltip="{{ artifact.uuid }}" tooltipPosition="top">
-                                <span class="text-truncate">{{ artifact.uuid || '–' }}</span>
-                            </td>
-                            <td class="row-cell-text" style="min-width: 300px; max-width: 300px;" pTooltip="{{ policyNameById[artifact.policyId] }}" tooltipPosition="top">
-                                <span class="text-truncate">{{ policyNameById[artifact.policyId] || '–' }}</span>
-                            </td>
-                            <td class="row-cell-text" style="min-width: 225px; max-width: 225px;" pTooltip="{{ artifact.name }}" tooltipPosition="top">
-                                <span class="text-truncate">{{ artifact.name || '–' }}</span>
-                            </td>
-                            <td class="row-cell-text" style="min-width: 140px;">{{ artifact.extention || '–' }}</td>
-                            <td class="row-cell-text" style="min-width: 140px;">{{ artifact.type || '–' }}</td>
-                            <td class="row-cell-text" style="min-width: 140px; width: 160px;">
-                                <div class="flex flex-sb-c">
-                                    <div class="flex flex-column-gap-20">
-                                        <svg-icon
-                                            *ngIf="user.ARTIFACTS_FILE_DELETE"
-                                            (click)="artifact.editable ? openDeleteArtifactDialog(artifact) : null"
-                                            class="opacity-icon"
-                                            src="/assets/images/icons/delete.svg"
-                                            [svgClass]="artifact.editable ? 'accent-color-red' : 'disabled-color'"></svg-icon>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-
-                <div class="guardian-grid-paginator">
-                    <app-paginator
-                        class="guardian-grid-paginator"
-                        [pageIndex]="pageIndex"
-                        [pageSize]="pageSize"
-                        [length]="artifactsCount"
-                        (page)="onPage($event)"
-                    ></app-paginator>
+  @if (artifacts && artifacts.length > 0) {
+    <div class="table-container">
+      <div class="guardian-grid-container">
+        <p-table
+          [value]="artifacts"
+          class="guardian-grid-table"
+          [scrollable]="true"
+          >
+          <ng-template pTemplate="header">
+            <tr class="guardian-grid-header">
+              <th class="header-cell-text" style="min-width: 300px; max-width: 300px;">ID</th>
+              <th class="header-cell-text" style="min-width: 300px; max-width: 300px;">Policy</th>
+              <th class="header-cell-text" style="min-width: 225px; max-width: 225px;">Name</th>
+              <th class="header-cell-text" style="min-width: 140px;">Extention</th>
+              <th class="header-cell-text" style="min-width: 140px;">Type</th>
+              <th class="header-cell-text" style="min-width: 140px; width: 160px;">Operations</th>
+            </tr>
+          </ng-template>
+          <ng-template let-artifact pTemplate="body">
+            <tr class="guardian-grid-row">
+              <td class="row-cell-text" style="min-width: 300px; max-width: 300px;" pTooltip="{{ artifact.uuid }}" tooltipPosition="top">
+                <span class="text-truncate">{{ artifact.uuid || '–' }}</span>
+              </td>
+              <td class="row-cell-text" style="min-width: 300px; max-width: 300px;" pTooltip="{{ policyNameById[artifact.policyId] }}" tooltipPosition="top">
+                <span class="text-truncate">{{ policyNameById[artifact.policyId] || '–' }}</span>
+              </td>
+              <td class="row-cell-text" style="min-width: 225px; max-width: 225px;" pTooltip="{{ artifact.name }}" tooltipPosition="top">
+                <span class="text-truncate">{{ artifact.name || '–' }}</span>
+              </td>
+              <td class="row-cell-text" style="min-width: 140px;">{{ artifact.extention || '–' }}</td>
+              <td class="row-cell-text" style="min-width: 140px;">{{ artifact.type || '–' }}</td>
+              <td class="row-cell-text" style="min-width: 140px; width: 160px;">
+                <div class="flex flex-sb-c">
+                  <div class="flex flex-column-gap-20">
+                    @if (user.ARTIFACTS_FILE_DELETE) {
+                      <svg-icon
+                        (click)="artifact.editable ? openDeleteArtifactDialog(artifact) : null"
+                        class="opacity-icon"
+                        src="/assets/images/icons/delete.svg"
+                      [svgClass]="artifact.editable ? 'accent-color-red' : 'disabled-color'"></svg-icon>
+                    }
+                  </div>
                 </div>
-            </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        <div class="guardian-grid-paginator">
+          <app-paginator
+            class="guardian-grid-paginator"
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            [length]="artifactsCount"
+            (page)="onPage($event)"
+          ></app-paginator>
         </div>
-    </ng-container>
+      </div>
+    </div>
+  } @else {
+    <div class="not-exist">
+      <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+      </svg-icon>
+      <span class="info-text-strong">No Artifacts</span>
+      @if (currentPolicy) {
+        <span class="info-text">in Policy with name <u>{{ currentPolicy.name }}</u></span>
+      }
+    </div>
+  }
 </ng-template>
 
-<ng-template #noData>
-    <div class="not-exist">
-        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
-        </svg-icon>
-        <span class="info-text-strong">No Artifacts</span>
-        <span *ngIf="currentPolicy" class="info-text">in Policy with name <u>{{ currentPolicy.name }}</u></span>
-    </div>
-</ng-template>
 
 <ng-template #noDIDSettings>
-    <div class="not-exist">
-        <span>Before starting work you need to get DID <a [routerLink]="['/profile']">here</a></span>
-    </div>
+  <div class="not-exist">
+    <span>Before starting work you need to get DID <a [routerLink]="['/profile']">here</a></span>
+  </div>
 </ng-template>
 
 <p-dialog [(visible)]="deleteArtifactVisible" [closable]="true" [draggable]="false" [modal]="true">
-    <ng-template pTemplate="header">
-        <span class="modal-header">Delete Artifact</span>
-    </ng-template>
-    <ng-template pTemplate="container">
-        <div class="" style="padding: 0 10px 0 10px;">
-            Are you sure to delete artifact?
-        </div>
-    </ng-template>
-    <ng-template pTemplate="footer">
-        <button (click)="deleteArtifact(false)" class="button secondary" label="Cancel" pButton
-                type="button"></button>
-        <button (click)="deleteArtifact(true)" [label]="'Delete'" class="button button-color-red" pButton
-                type="button"></button>
-    </ng-template>
+  <ng-template pTemplate="header">
+    <span class="modal-header">Delete Artifact</span>
+  </ng-template>
+  <ng-template pTemplate="container">
+    <div class="" style="padding: 0 10px 0 10px;">
+      Are you sure to delete artifact?
+    </div>
+  </ng-template>
+  <ng-template pTemplate="footer">
+    <button (click)="deleteArtifact(false)" class="button secondary" label="Cancel" pButton
+    type="button"></button>
+    <button (click)="deleteArtifact(true)" [label]="'Delete'" class="button button-color-red" pButton
+    type="button"></button>
+  </ng-template>
 </p-dialog>

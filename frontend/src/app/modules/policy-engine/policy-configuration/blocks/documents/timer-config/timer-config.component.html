@@ -1,63 +1,68 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+@if (properties) {
+  <table class="properties" [attr.readonly]="readonly">
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')"
-            [attr.collapse]="propHidden.options">
-            <i class="pi pi-caret-down"></i>
-        </td>
-        <td class="propHeaderCell cellName">Options</td>
-        <td class="propHeaderCell"></td>
+      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')"
+        [attr.collapse]="propHidden.options">
+        <i class="pi pi-caret-down"></i>
+      </td>
+      <td class="propHeaderCell cellName">Options</td>
+      <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.options">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Start Date</td>
-        <td class="propRowCell">
-            <datetime-picker
-                [(value)]="properties.startDate"
-                [readonly]="readonly"
-                [appendTo]="'body'"
-            ></datetime-picker>
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Start Date</td>
+      <td class="propRowCell">
+        <datetime-picker
+          [(value)]="properties.startDate"
+          [readonly]="readonly"
+          [appendTo]="'body'"
+        ></datetime-picker>
+      </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.options">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">End Date</td>
-        <td class="propRowCell">
-            <datetime-picker
-                [(value)]="properties.endDate"
-                [readonly]="readonly"
-                [appendTo]="'body'"
-            ></datetime-picker>
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">End Date</td>
+      <td class="propRowCell">
+        <datetime-picker
+          [(value)]="properties.endDate"
+          [readonly]="readonly"
+          [appendTo]="'body'"
+        ></datetime-picker>
+      </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.options">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Period</td>
-        <td class="propRowCell">
-            <p-select
-                [(ngModel)]="properties.period"
-                [disabled]="readonly"
-                (onHide)="selectPeriod()"
-                placeholder="Select a period"
-                [options]="periodOptions"
-                [appendTo]="'body'"
-            >
-            </p-select>
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Period</td>
+      <td class="propRowCell">
+        <p-select
+          [(ngModel)]="properties.period"
+          [disabled]="readonly"
+          (onHide)="selectPeriod()"
+          placeholder="Select a period"
+          [options]="periodOptions"
+          [appendTo]="'body'"
+          >
+        </p-select>
+      </td>
     </tr>
-    <tr class="propRow" *ngIf="properties.period == 'custom'" [attr.collapse]="propHidden.options">
+    @if (properties.period == 'custom') {
+      <tr class="propRow" [attr.collapse]="propHidden.options">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Mask</td>
         <td class="propRowCell">
-            <span>{{ properties.periodMask }}</span>
+          <span>{{ properties.periodMask }}</span>
         </td>
-    </tr>
-    <tr class="propRow" *ngIf="properties.period == 'custom'" [attr.collapse]="propHidden.options">
+      </tr>
+    }
+    @if (properties.period == 'custom') {
+      <tr class="propRow" [attr.collapse]="propHidden.options">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Interval</td>
         <td class="propRowCell">
-            <span>{{ properties.periodInterval }}</span>
+          <span>{{ properties.periodInterval }}</span>
         </td>
-    </tr>
-
-</table>
+      </tr>
+    }
+  </table>
+}

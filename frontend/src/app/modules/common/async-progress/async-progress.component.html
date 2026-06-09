@@ -1,51 +1,68 @@
 <div class="center-container">
-    <div class="task-viewer">
-        <div class="header">{{ action }}...</div>
-        <div class="progress-bar-container">
-            <div class="progress-bar">
-                <div class="progress-bar-value" [style.width.%]="progressValue"></div>
-            </div>
-        </div>
-        <div #status class="status-items scroller">
-            <ng-container *ngIf="newProgress">
-                <div class="step-children root-steps">
-                    <ng-container *ngFor="let step of steps">
-                        <ng-template
-                            [ngTemplateOutlet]="nodeTemplateRef"
-                            [ngTemplateOutletContext]="{ $implicit: step }">
-                        </ng-template>
-                    </ng-container>
-                </div>
-            </ng-container>
-            <ng-container *ngIf="!newProgress">
-                <ng-container *ngFor="let status of statuses">
-                    <div *ngIf="isInfo(status)" class="info-part">INFO: {{ status.message }}</div>
-                    <div *ngIf="!isInfo(status)" class="non-info-part">
-                        {{ status.message }} <span>{{ status.type }}</span></div>
-                </ng-container>
-            </ng-container>
-            <div class="scroller-anchor"></div>
-        </div>
+  <div class="task-viewer">
+    <div class="header">{{ action }}...</div>
+    <div class="progress-bar-container">
+      <div class="progress-bar">
+        <div class="progress-bar-value" [style.width.%]="progressValue"></div>
+      </div>
     </div>
-</div>
-
-<ng-template #nodeTemplateRef let-node>
-	<div *ngIf="!isWait(node)" class="step-container">
-        <div class="step-body">
-            <div class="step-name">{{node.name}}</div>
-            <div class="step-status">
-                <span *ngIf="isCompleted(node)" class="step-completed">{{node.progress}}%</span>
-                <span *ngIf="isFailed(node)" class="step-failed">Failed</span>
-                <span *ngIf="isStarted(node)" class="step-started">{{node.progress}}%</span>
-                <span *ngIf="isSkipped(node)" class="step-started">Skipped</span>
-            </div>
+    <div #status class="status-items scroller">
+      @if (newProgress) {
+        <div class="step-children root-steps">
+          @for (step of steps; track step) {
+            <ng-template
+              [ngTemplateOutlet]="nodeTemplateRef"
+              [ngTemplateOutletContext]="{ $implicit: step }">
+            </ng-template>
+          }
         </div>
-		<div *ngIf="node.steps.length && !node.minimized" class="step-children sub-steps">
-			<ng-template
-				ngFor
-				[ngForOf]="node.steps"
-				[ngForTemplate]="nodeTemplateRef">
-			</ng-template>
-		</div>
-	</div>
-</ng-template>
+      }
+      @if (!newProgress) {
+        @for (status of statuses; track status) {
+          @if (isInfo(status)) {
+            <div class="info-part">INFO: {{ status.message }}</div>
+          }
+          @if (!isInfo(status)) {
+            <div class="non-info-part">
+              {{ status.message }} <span>{{ status.type }}</span></div>
+            }
+          }
+        }
+        <div class="scroller-anchor"></div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #nodeTemplateRef let-node>
+    @if (!isWait(node)) {
+      <div class="step-container">
+        <div class="step-body">
+          <div class="step-name">{{node.name}}</div>
+          <div class="step-status">
+            @if (isCompleted(node)) {
+              <span class="step-completed">{{node.progress}}%</span>
+            }
+            @if (isFailed(node)) {
+              <span class="step-failed">Failed</span>
+            }
+            @if (isStarted(node)) {
+              <span class="step-started">{{node.progress}}%</span>
+            }
+            @if (isSkipped(node)) {
+              <span class="step-started">Skipped</span>
+            }
+          </div>
+        </div>
+        @if (node.steps.length && !node.minimized) {
+          <div class="step-children sub-steps">
+            @for ( of node.steps; track ) {
+              <ng-template
+                [ngForOf]="node.steps"
+                [ngForTemplate]="nodeTemplateRef">
+              </ng-template>
+            }
+          </div>
+        }
+      </div>
+    }
+  </ng-template>

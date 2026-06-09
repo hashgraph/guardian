@@ -1,79 +1,89 @@
 <div #dialogHeader class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">User Manage</div>
-        <div *ngIf="policy" class="header-item">{{policy.name}}</div>
-    </div>
-    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
-        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    <div class="header-text">User Manage</div>
+    @if (policy) {
+      <div class="header-item">{{policy.name}}</div>
+    }
+  </div>
+  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+    <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 <div class="dialog-body">
-    <div class="context">
-        <div *ngIf="loading" class="guardian-loading">
-            <div class="guardian-loading-image"></div>
-        </div>
+  <div class="context">
+    @if (loading) {
+      <div class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+      </div>
+    }
 
-        <form class="filters">
-            <div class="filter-row">
-                <span class="p-input-icon-right">
-                    <input
-                        class="guardian-input search-policy-input"
-                        [formControl]="searchFilter"
-                        pInputText
-                        placeholder="Search by keyword"
-                        type="text" 
-                        (change)="onFilter()"/>
-                    <i class="pi pi-search search-icon"></i>
-                </span>
-            </div>
-        </form>
-        <div *ngIf="page && page.length" class="grid-container">
-            <div class="grid-header">
-                <div class="col-auto">Username</div>
-                <div class="col-110">Assigned</div>
-            </div>
-            <div class="grid-body">
-                <div *ngFor="let item of page" class="grid-row">
-                    <div class="col-auto">{{item.username}}</div>
-                    <div class="col-110 center">
-                        <input 
-                            class="checkbox-input" 
-                            type="checkbox" 
-                            [disabled]="readonly"
-                            [checked]="item.assigned" 
-                            (change)="assignPolicy(item)">
-                    </div>
-                </div>
-            </div>
-            <app-paginator
-                [pageIndex]="pageIndex"
-                [pageSize]="pageSize"
-                [length]="count"
-                (page)="onPage($event)"
-            ></app-paginator>
+    <form class="filters">
+      <div class="filter-row">
+        <span class="p-input-icon-right">
+          <input
+            class="guardian-input search-policy-input"
+            [formControl]="searchFilter"
+            pInputText
+            placeholder="Search by keyword"
+            type="text"
+            (change)="onFilter()"/>
+          <i class="pi pi-search search-icon"></i>
+        </span>
+      </div>
+    </form>
+    @if (page && page.length) {
+      <div class="grid-container">
+        <div class="grid-header">
+          <div class="col-auto">Username</div>
+          <div class="col-110">Assigned</div>
         </div>
-        <div *ngIf="!page || !page.length" class="empty-grid">
-            <div class="empty-grid-icon">
-                <svg-icon
-                    class="svg-icon-32"
-                    src="/assets/images/icons/32/search.svg"
-                    svgClass="empty-icon-color">
-                </svg-icon>
+        <div class="grid-body">
+          @for (item of page; track item) {
+            <div class="grid-row">
+              <div class="col-auto">{{item.username}}</div>
+              <div class="col-110 center">
+                <input
+                  class="checkbox-input"
+                  type="checkbox"
+                  [disabled]="readonly"
+                  [checked]="item.assigned"
+                  (change)="assignPolicy(item)">
+              </div>
             </div>
-            <div class="empty-grid-header">There are no users</div>
-            <div class="empty-grid-text">Please try to change or clear filters</div>
+          }
         </div>
-    </div>
+        <app-paginator
+          [pageIndex]="pageIndex"
+          [pageSize]="pageSize"
+          [length]="count"
+          (page)="onPage($event)"
+        ></app-paginator>
+      </div>
+    }
+    @if (!page || !page.length) {
+      <div class="empty-grid">
+        <div class="empty-grid-icon">
+          <svg-icon
+            class="svg-icon-32"
+            src="/assets/images/icons/32/search.svg"
+            svgClass="empty-icon-color">
+          </svg-icon>
+        </div>
+        <div class="empty-grid-header">There are no users</div>
+        <div class="empty-grid-text">Please try to change or clear filters</div>
+      </div>
+    }
+  </div>
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="dialog-button">
-            <button 
-                (click)="onClose()" 
-                class="guardian-button guardian-button-secondary">Cancel</button>
-        </div>
+  <div class="action-buttons">
+    <div class="dialog-button">
+      <button
+        (click)="onClose()"
+      class="guardian-button guardian-button-secondary">Cancel</button>
     </div>
+  </div>
 </div>

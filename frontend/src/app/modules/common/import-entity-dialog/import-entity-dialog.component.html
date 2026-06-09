@@ -1,111 +1,127 @@
 <div class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">{{title}}</div>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    <div class="header-text">{{title}}</div>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 <div class="dialog-body">
-    <div class="context">
-        <div *ngIf="loading && !taskId" class="guardian-loading">
-            <div class="guardian-loading-image"></div>
+  <div class="context">
+    @if (loading && !taskId) {
+      <div class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+      </div>
+    }
+
+    @if (canImportFile && canImportMessage) {
+      <p-tabs class="action-tabs" [(value)]="tabIndex" (valueChange)="setImportType($event)">
+        <p-tablist>
+          @for (tab of items; track tab; let i = $index) {
+            <p-tab [value]="i"><div class="tabview-label">{{ tab.label }}</div></p-tab>
+          }
+        </p-tablist>
+      </p-tabs>
+    }
+
+    <div class="form-container">
+      @if (type === 'record' && canUseImportedRecords) {
+        <div class="record-source-selector">
+          <label class="form-label">Record source</label>
+          <p-select
+            [options]="recordSourceOptions"
+            [(ngModel)]="recordSource"
+            appendTo="body"
+            (onChange)="onRecordSourceChange($event.value)"
+            styleClass="guardian-dropdown"
+            class="guardian-dropdown"
+            panelStyleClass="guardian-dropdown-panel"
+          ></p-select>
         </div>
-
-        <p-tabs *ngIf="canImportFile && canImportMessage" class="action-tabs" [(value)]="tabIndex" (valueChange)="setImportType($event)">
-            <p-tablist>
-                <p-tab *ngFor="let tab of items; let i = index" [value]="i"><div class="tabview-label">{{ tab.label }}</div></p-tab>
-            </p-tablist>
-        </p-tabs>
-
-        <div class="form-container">
-            <div class="record-source-selector" *ngIf="type === 'record' && canUseImportedRecords">
-                <label class="form-label">Record source</label>
-                <p-select
-                    [options]="recordSourceOptions"
-                    [(ngModel)]="recordSource"
-                    appendTo="body"
-                    (onChange)="onRecordSourceChange($event.value)"
-                    styleClass="guardian-dropdown"
-                    class="guardian-dropdown"
-                    panelStyleClass="guardian-dropdown-panel"
-                ></p-select>
-            </div>
-            <div class="record-sync-checkbox" *ngIf="type === 'record' && recordSource === 'imported'">
-                <p-checkbox
-                    [(ngModel)]="syncNewRecords"
-                    binary="true"
-                    inputId="includeNewlyRecordedSteps"
-                ></p-checkbox>
-                <label class="p-checkbox-label" for="includeNewlyRecordedSteps">Include newly recorded steps</label>
-            </div>
-            <div class="record-policy-selector" *ngIf="type === 'record' && recordSource === 'otherPolicy'">
-                <label class="form-label">Policy with imported records</label>
-                <p-select
-                    #policyDropdown
-                    [(ngModel)]="selectedPolicy"
-                    [options]="policiesWithImportedRecords"
-                    [optionLabel]="'name'"
-                    [filter]="true"
-                    [filterBy]="'name'"
-                    [disabled]="policiesLoading"
-                    appendTo="body"
-                    placeholder="Select policy"
-                    [panelStyle]="{ maxWidth: '656px' }"
-                    styleClass="guardian-dropdown"
-                    panelStyleClass="guardian-dropdown-panel"
-                    class="guardian-dropdown"
-                >
-                    <ng-template let-item pTemplate="item">
-                        <span [title]="item.name">{{ item?.name }}</span>
-                    </ng-template>
-                    <ng-template let-item pTemplate="selectedItem" >
-                        <span [title]="item.name">{{ item?.name }}</span>
-                    </ng-template>
-                </p-select>
-            </div>
-
-            <app-file-drag-n-drop
-                *ngIf="importType === 0 && (type !== 'record' || recordSource === 'file')"
-                (onFileLoaded)="importFromFile($event)"
-                [dropZoneLabel]="placeholder"
-                [fileExtension]="fileExtension"
-            ></app-file-drag-n-drop>
-
-            <form  *ngIf="importType === 1" [formGroup]="dataForm">
-                <div class="guardian-input-container">
-                    <label class="form-label" htmlFor="version">* Message timestamp</label>
-                    <input 
-                        id="timestamp" 
-                        formControlName="timestamp" 
-                        placeholder="0000000000.000000000" 
-                        pInputText 
-                        type="text"/>
-                </div>
-            </form>
+      }
+      @if (type === 'record' && recordSource === 'imported') {
+        <div class="record-sync-checkbox">
+          <p-checkbox
+            [(ngModel)]="syncNewRecords"
+            binary="true"
+            inputId="includeNewlyRecordedSteps"
+          ></p-checkbox>
+          <label class="p-checkbox-label" for="includeNewlyRecordedSteps">Include newly recorded steps</label>
         </div>
+      }
+      @if (type === 'record' && recordSource === 'otherPolicy') {
+        <div class="record-policy-selector">
+          <label class="form-label">Policy with imported records</label>
+          <p-select
+            #policyDropdown
+            [(ngModel)]="selectedPolicy"
+            [options]="policiesWithImportedRecords"
+            [optionLabel]="'name'"
+            [filter]="true"
+            [filterBy]="'name'"
+            [disabled]="policiesLoading"
+            appendTo="body"
+            placeholder="Select policy"
+            [panelStyle]="{ maxWidth: '656px' }"
+            styleClass="guardian-dropdown"
+            panelStyleClass="guardian-dropdown-panel"
+            class="guardian-dropdown"
+            >
+            <ng-template let-item pTemplate="item">
+              <span [title]="item.name">{{ item?.name }}</span>
+            </ng-template>
+            <ng-template let-item pTemplate="selectedItem" >
+              <span [title]="item.name">{{ item?.name }}</span>
+            </ng-template>
+          </p-select>
+        </div>
+      }
 
-        <async-progress
-            class="async-progress"
-            *ngIf="loading && taskId"
-            (completed)="onAsyncCompleted()"
-            (error)="onAsyncError($event)"
-            [taskId]="taskId"
-        ></async-progress>
+      @if (importType === 0 && (type !== 'record' || recordSource === 'file')) {
+        <app-file-drag-n-drop
+          (onFileLoaded)="importFromFile($event)"
+          [dropZoneLabel]="placeholder"
+          [fileExtension]="fileExtension"
+        ></app-file-drag-n-drop>
+      }
+
+      @if (importType === 1) {
+        <form  [formGroup]="dataForm">
+          <div class="guardian-input-container">
+            <label class="form-label" htmlFor="version">* Message timestamp</label>
+            <input
+              id="timestamp"
+              formControlName="timestamp"
+              placeholder="0000000000.000000000"
+              pInputText
+              type="text"/>
+          </div>
+        </form>
+      }
     </div>
+
+    @if (loading && taskId) {
+      <async-progress
+        class="async-progress"
+        (completed)="onAsyncCompleted()"
+        (error)="onAsyncError($event)"
+        [taskId]="taskId"
+      ></async-progress>
+    }
+  </div>
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="dialog-button">
-            <button 
-                (click)="onClose()" 
-                class="guardian-button guardian-button-secondary">Close</button>
-        </div>
-        <div class="dialog-button">
-            <button 
-                (click)="onPrimaryAction()" 
-                class="guardian-button guardian-button-primary"
-                [disabled]="isPrimaryActionDisabled()">Import</button>
-        </div>
+  <div class="action-buttons">
+    <div class="dialog-button">
+      <button
+        (click)="onClose()"
+      class="guardian-button guardian-button-secondary">Close</button>
     </div>
+    <div class="dialog-button">
+      <button
+        (click)="onPrimaryAction()"
+        class="guardian-button guardian-button-primary"
+      [disabled]="isPrimaryActionDisabled()">Import</button>
+    </div>
+  </div>
 </div>

@@ -1,84 +1,85 @@
-<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+@if (properties) {
+  <table class="properties" [attr.readonly]="readonly">
     <tr class="propRow">
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Input Documents</td>
+      <td class="propRowCell">
+        <p-select
+          [(ngModel)]="properties.inputDocuments"
+          [disabled]="readonly"
+          (onChange)="onSave()"
+          placeholder="Select input document type"
+          [options]="inputDocumentsOptions"
+          [appendTo]="'body'"
+          >
+        </p-select>
+      </td>
+    </tr>
+    <tr class="propRow">
+      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'inputSchemaGroup')"
+        [attr.collapse]="propHidden.inputSchemaGroup">
+        <i class="pi pi-caret-down"></i>
+      </td>
+      <td class="propRowCell cellName">Input Schema</td>
+      <td class="propRowCell">
+        <select-schema
+          [schemas]="schemas"
+          [(value)]="properties.inputSchema"
+          [disabled]="readonly"
+          (change)="onSelectInput()"
+        ></select-schema>
+      </td>
+    </tr>
+    @if (properties.inputSchema) {
+      <tr class="propRow subRow" [attr.collapse]="propHidden.inputSchemaGroup">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Input Documents</td>
-        <td class="propRowCell">
-            <p-select
-                [(ngModel)]="properties.inputDocuments"
-                [disabled]="readonly"
-                (onChange)="onSave()"
-                placeholder="Select input document type"
-                [options]="inputDocumentsOptions"
-                [appendTo]="'body'"
-            >
-            </p-select>
+        <td class="propRowCell cellName cellTitle">Description</td>
+        <td class="propRowCell cellTitle">Alias</td>
+      </tr>
+    }
+    @for (field of properties.inputFields; track field; let i = $index) {
+      <tr class="propRow subRow" [attr.collapse]="propHidden.inputSchemaGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">
+          <span class="lvl" [attr.lvl]="field.lvl">{{ field.title }}</span>
         </td>
-    </tr>
+        <td class="propRowCell">
+          <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly" (blur)="onSave()">
+        </td>
+      </tr>
+    }
     <tr class="propRow">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'inputSchemaGroup')"
-            [attr.collapse]="propHidden.inputSchemaGroup">
-            <i class="pi pi-caret-down"></i>
-        </td>
-        <td class="propRowCell cellName">Input Schema</td>
-        <td class="propRowCell">
-            <select-schema
-                [schemas]="schemas"
-                [(value)]="properties.inputSchema"
-                [disabled]="readonly"
-                (change)="onSelectInput()"
-            ></select-schema>
-        </td>
+      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'outputSchemaGroup')"
+        [attr.collapse]="propHidden.outputSchemaGroup">
+        <i class="pi pi-caret-down"></i>
+      </td>
+      <td class="propRowCell cellName">Output Schema</td>
+      <td class="propRowCell">
+        <select-schema
+          [schemas]="schemas"
+          [(value)]="properties.outputSchema"
+          [disabled]="readonly"
+          (change)="onSelectOutput()"
+        ></select-schema>
+      </td>
     </tr>
-    <ng-container *ngIf="properties.inputSchema">
-        <tr class="propRow subRow" [attr.collapse]="propHidden.inputSchemaGroup">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName cellTitle">Description</td>
-            <td class="propRowCell cellTitle">Alias</td>
-        </tr>
-    </ng-container>
-    <ng-container *ngFor="let field of properties.inputFields; let i=index">
-        <tr class="propRow subRow" [attr.collapse]="propHidden.inputSchemaGroup">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">
-                <span class="lvl" [attr.lvl]="field.lvl">{{ field.title }}</span>
-            </td>
-            <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly" (blur)="onSave()">
-            </td>
-        </tr>
-    </ng-container>
-
-    <tr class="propRow">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'outputSchemaGroup')"
-            [attr.collapse]="propHidden.outputSchemaGroup">
-            <i class="pi pi-caret-down"></i>
+    @if (properties.outputSchema) {
+      <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName cellTitle">Description</td>
+        <td class="propRowCell cellTitle">Variable</td>
+      </tr>
+    }
+    @for (field of properties.outputFields; track field; let i = $index) {
+      <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">
+          <span class="lvl" [attr.lvl]="field.lvl">{{ field.title }}</span>
         </td>
-        <td class="propRowCell cellName">Output Schema</td>
         <td class="propRowCell">
-            <select-schema
-                [schemas]="schemas"
-                [(value)]="properties.outputSchema"
-                [disabled]="readonly"
-                (change)="onSelectOutput()"
-            ></select-schema>
+          <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly" (blur)="onSave()">
         </td>
-    </tr>
-    <ng-container *ngIf="properties.outputSchema">
-        <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName cellTitle">Description</td>
-            <td class="propRowCell cellTitle">Variable</td>
-        </tr>
-    </ng-container>
-    <ng-container *ngFor="let field of properties.outputFields; let i=index">
-        <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">
-                <span class="lvl" [attr.lvl]="field.lvl">{{ field.title }}</span>
-            </td>
-            <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly" (blur)="onSave()">
-            </td>
-        </tr>
-    </ng-container>
-</table>
+      </tr>
+    }
+  </table>
+}

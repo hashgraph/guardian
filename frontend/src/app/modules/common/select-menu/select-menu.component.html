@@ -1,22 +1,23 @@
-<ng-container *ngIf="options; else elseTemplate">
-    <div class="select-menu" (click)="publishMenu.toggle($event)">
-        <ng-container *ngTemplateOutlet="tempOutlet"></ng-container>
-        <i class="pi pi-sort-down-fill"></i>
-    </div>
-    <p-popover #publishMenu [styleClass]="'select-menu-panel'">
-        <ng-container *ngFor="let item of options">
-            <div *ngIf="hasPermissions(item.permissions)" class="select-menu-item" (click)="onAction(item)">
-                <div class="select-menu-item-title" [style.color]="item.color">{{ item.title }}</div>
-                <div class="select-menu-item-description">{{ item.description }}</div>
-            </div>
-        </ng-container>
-    </p-popover>
-</ng-container>
-<ng-template #elseTemplate>
-    <div class="select-menu-min" (click)="onClick()">
-        <ng-container *ngTemplateOutlet="tempOutlet"></ng-container>
-    </div>
-</ng-template>
+@if (options) {
+  <div class="select-menu" (click)="publishMenu.toggle($event)">
+    <ng-container *ngTemplateOutlet="tempOutlet"></ng-container>
+    <i class="pi pi-sort-down-fill"></i>
+  </div>
+  <p-popover #publishMenu [styleClass]="'select-menu-panel'">
+    @for (item of options; track item) {
+      @if (hasPermissions(item.permissions)) {
+        <div class="select-menu-item" (click)="onAction(item)">
+          <div class="select-menu-item-title" [style.color]="item.color">{{ item.title }}</div>
+          <div class="select-menu-item-description">{{ item.description }}</div>
+        </div>
+      }
+    }
+  </p-popover>
+} @else {
+  <div class="select-menu-min" (click)="onClick()">
+    <ng-container *ngTemplateOutlet="tempOutlet"></ng-container>
+  </div>
+}
 <ng-template #tempOutlet>
-    <ng-content></ng-content>
+  <ng-content></ng-content>
 </ng-template>

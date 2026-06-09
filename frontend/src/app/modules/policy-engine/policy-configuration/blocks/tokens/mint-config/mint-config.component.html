@@ -1,96 +1,106 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+@if (properties) {
+  <table class="properties" [attr.readonly]="readonly">
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <i class="pi pi-caret-down"></i>
-        </td>
-        <td class="propHeaderCell cellName">Properties</td>
-        <td class="propHeaderCell"></td>
+      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+        <i class="pi pi-caret-down"></i>
+      </td>
+      <td class="propHeaderCell cellName">Properties</td>
+      <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Use Template</td>
-        <td class="propRowCell">
-            <input class="prop-input" type="checkbox" (change)="onUseTemplateChange()"
-                   [(ngModel)]="properties.useTemplate" [readonly]="readonly" (blur)="onSave()">
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Use Template</td>
+      <td class="propRowCell">
+        <input class="prop-input" type="checkbox" (change)="onUseTemplateChange()"
+          [(ngModel)]="properties.useTemplate" [readonly]="readonly" (blur)="onSave()">
+      </td>
     </tr>
-    <tr *ngIf="!properties.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
+    @if (!properties.useTemplate) {
+      <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token</td>
         <td class="propRowCell">
-            <p-select [(ngModel)]="properties.tokenId"
-                        [options]="tokens"
-                        [disabled]="readonly"
-                        (onChange)="onSave()"
-                        placeholder="Select Token"
-                        optionLabel="name"
-                        optionValue="value"
-                        [appendTo]="'body'"
+          <p-select [(ngModel)]="properties.tokenId"
+            [options]="tokens"
+            [disabled]="readonly"
+            (onChange)="onSave()"
+            placeholder="Select Token"
+            optionLabel="name"
+            optionValue="value"
+            [appendTo]="'body'"
             >
-            </p-select>
+          </p-select>
         </td>
-    </tr>
-    <tr *ngIf="properties.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
+      </tr>
+    }
+    @if (properties.useTemplate) {
+      <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token Template</td>
         <td class="propRowCell">
-            <p-select [(ngModel)]="properties.template"
-                        [options]="tokenTemplate"
-                        [disabled]="readonly"
-                        (onChange)="onSave()"
-                        placeholder="Select Template"
-                        optionLabel="name"
-                        optionValue="value"
-                        [appendTo]="'body'"
+          <p-select [(ngModel)]="properties.template"
+            [options]="tokenTemplate"
+            [disabled]="readonly"
+            (onChange)="onSave()"
+            placeholder="Select Template"
+            optionLabel="name"
+            optionValue="value"
+            [appendTo]="'body'"
             >
-            </p-select>
+          </p-select>
         </td>
+      </tr>
+    }
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Rule</td>
+      <td class="propRowCell">
+        <input class="prop-input" [(ngModel)]="properties.rule" [readonly]="readonly" (blur)="onSave()">
+      </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Rule</td>
-        <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="properties.rule" [readonly]="readonly" (blur)="onSave()">
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Account Type</td>
+      <td class="propRowCell">
+        <p-select [(ngModel)]="properties.accountType"
+          [options]="accountTypeOptions"
+          [disabled]="readonly"
+          (onChange)="changeAccountType()"
+          placeholder="Select Account Type"
+          optionLabel="label"
+          optionValue="value"
+          [appendTo]="'body'"
+          >
+        </p-select>
+      </td>
     </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Account Type</td>
-        <td class="propRowCell">
-            <p-select [(ngModel)]="properties.accountType"
-                        [options]="accountTypeOptions"
-                        [disabled]="readonly"
-                        (onChange)="changeAccountType()"
-                        placeholder="Select Account Type"
-                        optionLabel="label"
-                        optionValue="value"
-                        [appendTo]="'body'"
-            >
-            </p-select>
-        </td>
-    </tr>
-    <tr *ngIf="properties.accountType==='custom'" class="propRow" [attr.collapse]="propHidden.main">
+    @if (properties.accountType==='custom') {
+      <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Id (Field)</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="properties.accountId" [readonly]="readonly" (blur)="onSave()">
+          <input class="prop-input" [(ngModel)]="properties.accountId" [readonly]="readonly" (blur)="onSave()">
         </td>
-    </tr>
-    <tr *ngIf="properties.accountType==='custom-value'" class="propRow" [attr.collapse]="propHidden.main">
+      </tr>
+    }
+    @if (properties.accountType==='custom-value') {
+      <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Id (Value)</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="properties.accountIdValue" [readonly]="readonly" (blur)="onSave()">
+          <input class="prop-input" [(ngModel)]="properties.accountIdValue" [readonly]="readonly" (blur)="onSave()">
         </td>
-    </tr>
+      </tr>
+    }
     <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Memo</td>
-        <td class="propRowCell">
-            <span class="mint-memo-prefix" pTooltip="VP message identifier">**********.*********</span>
-            <input class="prop-input" class="mint-memo-input" [(ngModel)]="properties.memo" [readonly]="readonly"
-                   (blur)="onSave()">
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Memo</td>
+      <td class="propRowCell">
+        <span class="mint-memo-prefix" pTooltip="VP message identifier">**********.*********</span>
+        <input class="prop-input" class="mint-memo-input" [(ngModel)]="properties.memo" [readonly]="readonly"
+          (blur)="onSave()">
+      </td>
     </tr>
-</table>
+  </table>
+}
