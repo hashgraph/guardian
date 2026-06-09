@@ -234,6 +234,7 @@
         "filters": {
             "status": "Status",
             "registry": "Registry",
+            "country": "Country",
             "vintage": "Vintage",
             "sector": "Sector",
             "sectoralScope": "Sectoral Scope",
