@@ -178,6 +178,9 @@ export class CustomLogicBlock {
     ): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             let settled = false;
+            // Set synchronously when a terminal 'complete' message starts being handled, so
+            // the worker 'exit' fallback below does not race the in-progress completion.
+            let finalizing = false;
             const safeResolve = (value: any) => {
                 if (!settled) {
                     settled = true;
@@ -334,9 +337,31 @@ export class CustomLogicBlock {
                             safeReject(error);
                         }
                     } else {
+                        // Give the worker an explicit minimal env instead of inheriting the
+                        // full process environment. The worker reads nothing from process.env;
+                        // these keys cover Node/pyodide runtime needs.
+                        const sandboxEnvAllowlist = ['PATH', 'HOME', 'TMPDIR', 'LANG', 'LC_ALL', 'TZ'];
+                        const sandboxEnv: Record<string, string> = {};
+                        for (const key of sandboxEnvAllowlist) {
+                            if (typeof process.env[key] === 'string') {
+                                sandboxEnv[key] = process.env[key];
+                            }
+                        }
+
+                        // Cap the pyodide worker's heap (MB) so a misbehaving script can't exhaust
+                        // host memory. Env-tunable; the default is conservative.
+                        const parsedHeapMb = parseInt(process.env.PYTHON_SANDBOX_HEAP_MB, 10);
+                        const maxOldGenerationSizeMb = Number.isFinite(parsedHeapMb) && parsedHeapMb > 0
+                            ? parsedHeapMb
+                            : 512;
+
                         const worker = new Worker(
                             path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-python-worker.js'),
-                            { workerData: pythonWorkerData });
+                            {
+                                workerData: pythonWorkerData,
+                                env: sandboxEnv,
+                                resourceLimits: { maxOldGenerationSizeMb }
+                            });
 
                         const pendingDones: Promise<void>[] = [];
 
@@ -348,7 +373,15 @@ export class CustomLogicBlock {
 
                         worker.on('exit', async (code) => {
                             clearTimeout(workerTimer);
-                            // Wait for all pending done() calls to finish
+                            // Fallback only: normal completion is handled by the 'complete'
+                            // message below. Reaching here unsettled means the worker died
+                            // without sending a terminal message (crash, OOM heap cap, terminate).
+                            if (settled || finalizing) {
+                                // A terminal message already drove resolution; just make sure
+                                // tables are released (e.g. the python-error path doesn't dispose).
+                                try { disposeTables(); } catch { /* */ }
+                                return;
+                            }
                             if (pendingDones.length > 0) {
                                 try { await Promise.all(pendingDones); } catch { /* already handled */ }
                             } else {
@@ -365,10 +398,26 @@ export class CustomLogicBlock {
                             try { disposeTables(); } catch { /* */ }
                             safeReject(error);
                         });
-                        worker.on('message', (data) => {
+                        worker.on('message', async (data) => {
                             if (data?.error) {
                                 clearTimeout(workerTimer);
                                 safeReject(new Error(data.error));
+                                return;
+                            }
+                            // Terminal sentinel: every done/debug message preceding it on this
+                            // FIFO channel has already been handled, so awaiting pendingDones
+                            // here drains them all before we dispose and resolve. disposeTables
+                            // is idempotent, so calling it here (a final done() may have already
+                            // disposed) is safe; safeResolve(null) is a no-op once a done() with
+                            // final=true has resolved with its result.
+                            if (data?.type === 'complete') {
+                                finalizing = true;
+                                clearTimeout(workerTimer);
+                                if (pendingDones.length > 0) {
+                                    try { await Promise.all(pendingDones); } catch { /* already handled */ }
+                                }
+                                try { disposeTables(); } catch { /* */ }
+                                safeResolve(null);
                                 return;
                             }
                             try {
