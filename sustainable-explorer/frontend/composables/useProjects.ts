@@ -33,6 +33,7 @@ export const COUNTRY_ALPHA3: Record<string, string> = {
     'Guinea': 'GIN', 'Guinea-Bissau': 'GNB', 'Guyana': 'GUY',
     // H
     'Haiti': 'HTI', 'Honduras': 'HND', 'Hungary': 'HUN',
+    'Hong Kong': 'HKG',
     // I
     'Iceland': 'ISL', 'India': 'IND', 'Indonesia': 'IDN', 'Iran': 'IRN',
     'Iraq': 'IRQ', 'Ireland': 'IRL', 'Israel': 'ISR', 'Italy': 'ITA',
@@ -51,7 +52,7 @@ export const COUNTRY_ALPHA3: Record<string, string> = {
     'Mali': 'MLI', 'Malta': 'MLT', 'Marshall Islands': 'MHL', 'Mauritania': 'MRT',
     'Mauritius': 'MUS', 'Mexico': 'MEX', 'Micronesia': 'FSM', 'Moldova': 'MDA',
     'Monaco': 'MCO', 'Mongolia': 'MNG', 'Montenegro': 'MNE', 'Morocco': 'MAR',
-    'Mozambique': 'MOZ', 'Myanmar': 'MMR', 'Burma': 'MMR',
+    'Mozambique': 'MOZ', 'Myanmar': 'MMR', 'Burma': 'MMR', "MEX": 'MEX', 'Macau': 'MAC',
     // N
     'Namibia': 'NAM', 'Nauru': 'NRU', 'Nepal': 'NPL', 'Netherlands': 'NLD',
     'New Zealand': 'NZL', 'Nicaragua': 'NIC', 'Niger': 'NER', 'Nigeria': 'NGA',
@@ -61,11 +62,11 @@ export const COUNTRY_ALPHA3: Record<string, string> = {
     // P
     'Pakistan': 'PAK', 'Palau': 'PLW', 'Palestine': 'PSE', 'Panama': 'PAN',
     'Papua New Guinea': 'PNG', 'Paraguay': 'PRY', 'Peru': 'PER', 'Philippines': 'PHL',
-    'Poland': 'POL', 'Portugal': 'PRT',
+    'Poland': 'POL', 'Portugal': 'PRT', 'Puerto Rico': 'PRI', 
     // Q
     'Qatar': 'QAT',
     // R
-    'Romania': 'ROU', 'Russia': 'RUS', 'Russian Federation': 'RUS', 'Rwanda': 'RWA',
+    'Romania': 'ROU', 'Russia': 'RUS', 'Russian Federation': 'RUS', 'Rwanda': 'RWA', 'Réunion': 'REU',
     // S
     'Saint Kitts and Nevis': 'KNA', 'Saint Lucia': 'LCA',
     'Saint Vincent and the Grenadines': 'VCT', 'Samoa': 'WSM', 'San Marino': 'SMR',
