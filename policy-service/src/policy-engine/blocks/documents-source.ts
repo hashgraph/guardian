@@ -256,9 +256,6 @@ export class InterfaceDocumentsSource {
         if (
             !enableCommonSorting && history
         ) {
-            // MGS #1076: avoid hydrating the multi-MB `DocumentState.document`
-            // field via MikroORM (IdentityMap pins it for the policy lifetime).
-            // Fetch only the createDate plus the two dot-paths actually read.
             const timelineLabelPath = history.options.timelineLabelPath || 'option.status';
             const timelineCommentPath = history.options.timelineDescriptionPath || 'option.comment';
             for (const document of data) {
