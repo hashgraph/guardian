@@ -5422,7 +5422,7 @@ __metadata:
     "@types/jszip": "npm:^3.4.1"
     "@types/node": "npm:^22.15.19"
     class-transformer: "npm:^0.5.1"
-    class-validator: "npm:0.14.3"
+    class-validator: "npm:0.15.1"
     cron: "npm:^4.3.0"
     dotenv: "npm:^16.0.0"
     excel4node: "npm:^1.8.2"
@@ -5573,7 +5573,7 @@ __metadata:
     async-mutex: "npm:^0.4.0"
     axios: "npm:^1.16.1"
     class-transformer: "npm:^0.5.1"
-    class-validator: "npm:0.14.3"
+    class-validator: "npm:0.15.1"
     dotenv: "npm:^16.0.0"
     express: "npm:5.2.1"
     hpp: "npm:^0.2.3"
@@ -6922,14 +6922,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"class-validator@npm:0.14.3":
-  version: 0.14.3
-  resolution: "class-validator@npm:0.14.3"
+"class-validator@npm:0.15.1":
+  version: 0.15.1
+  resolution: "class-validator@npm:0.15.1"
   dependencies:
     "@types/validator": "npm:^13.15.3"
     libphonenumber-js: "npm:^1.11.1"
-    validator: "npm:^13.15.20"
-  checksum: 10c0/6d451c359aecb04479b95034b10cca02015d3b6f34480574c618c070e12f3676cb4cdfa76bfa61353356a483ff01326e9ce3f07ef584be6c31806190117f7fa4
+    validator: "npm:^13.15.22"
+  checksum: 10c0/bc030e0118d79a5fc2d053dfd4c7475092dd159222eafe946c2b01d7ff22a0a8075c8713a96239a3db536ff2a18e18d791c3a6bfabd66dbac077f7d3fd950402
   languageName: node
   linkType: hard
 
@@ -10343,7 +10343,7 @@ __metadata:
     axios: "npm:^1.16.1"
     chai: "npm:^4.3.4"
     class-transformer: "npm:^0.5.1"
-    class-validator: "npm:0.14.3"
+    class-validator: "npm:0.15.1"
     cross-env: "npm:^7.0.3"
     dotenv: "npm:^16.0.0"
     express: "npm:5.2.1"
@@ -18021,7 +18021,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"validator@npm:^13.15.20":
+"validator@npm:^13.15.22":
   version: 13.15.35
   resolution: "validator@npm:13.15.35"
   checksum: 10c0/1958ebcad578128d154853a2b9bf5b95e7738dcc7d1d065e50a969812272312ec379dcaf375b9d7545e04a71de6755f60f5a4b49c1405737a9c80e11da297eef
