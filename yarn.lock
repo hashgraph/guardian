@@ -1458,7 +1458,7 @@ __metadata:
     esmock: "npm:^2.6.7"
     exceljs: "npm:^4.4.0"
     express: "npm:5.2.1"
-    geotiff: "npm:^2.1.4-beta.0"
+    geotiff: "npm:^3.0.5"
     js-base64: "npm:^3.6.1"
     jsonld-signatures: "npm:11.5.0"
     jszip: "npm:^3.7.1"
@@ -3018,7 +3018,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@petamoriken/float16@npm:^3.4.7":
+"@petamoriken/float16@npm:^3.9.3":
   version: 3.9.3
   resolution: "@petamoriken/float16@npm:3.9.3"
   checksum: 10c0/de0a1a0224862cba16e6b614e6a5dd557c545c3f0372db21f61d7bcce7595fa63a28d10512c908acfbe177d209a39cea406f190159936f5891b3c095d460fdc2
@@ -9518,19 +9518,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"geotiff@npm:^2.1.4-beta.0":
-  version: 2.1.4-beta.0
-  resolution: "geotiff@npm:2.1.4-beta.0"
+"geotiff@npm:^3.0.5":
+  version: 3.0.5
+  resolution: "geotiff@npm:3.0.5"
   dependencies:
-    "@petamoriken/float16": "npm:^3.4.7"
+    "@petamoriken/float16": "npm:^3.9.3"
     lerc: "npm:^3.0.0"
     pako: "npm:^2.0.4"
     parse-headers: "npm:^2.0.2"
     quick-lru: "npm:^6.1.1"
     web-worker: "npm:^1.5.0"
     xml-utils: "npm:^1.10.2"
-    zstddec: "npm:^0.2.0-alpha.3"
-  checksum: 10c0/2fd6ab11b0d69e60a8c9b5c1949d2a63a81be8d12e7ee174fcc0645fda69262066d03c0addbd8970f7cb4b0400a1a707282b81e5c4c92d6445220d8b6c761619
+    zstddec: "npm:^0.2.0"
+  checksum: 10c0/f3bcfdacc80d032b1edc7f5f35e6b00baf87b715f441edf96c2aac02f682e9a4f2af7f7fe60471687eaa8505ecf6f74465186e96ff9fae703f839c73aa7f25d0
   languageName: node
   linkType: hard
 
@@ -18613,9 +18613,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zstddec@npm:^0.2.0-alpha.3":
-  version: 0.2.0-alpha.3
-  resolution: "zstddec@npm:0.2.0-alpha.3"
-  checksum: 10c0/4010077c475b702e150e9f3e41aaff9e724001b6c85de42c92064e88fcda4325a6f07c8a64edf122d3414e57372ceb864223df61c266bbaf126ec7ce18e8e8b5
+"zstddec@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "zstddec@npm:0.2.0"
+  checksum: 10c0/58d0facb7171dfdab6b7cc1e2e3dcd23f4e3e4318fe0bbc5a293925f231b8f7932c82e2930867f4174fd4ccd443ee18b80cc240464bfd2519a82e92c7dc46b4a
   languageName: node
   linkType: hard
