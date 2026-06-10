@@ -42,7 +42,7 @@
         "@types/deep-equal": "^1.0.1",
         "@types/express": "^5.0.1",
         "@types/glob": "^8.1.0",
-        "@types/node": "^22.15.19",
+        "@types/node": "^25.9.2",
         "chai": "4.3.4",
         "mocha": "^9.2.0",
         "mocha-junit-reporter": "^2.0.2",
