@@ -74,9 +74,9 @@ const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, act
     });
 
 const presets = computed(() => [
-    { label: t('projects.presets.goldStandard'), filters: { registry: 'Gold Standard' } },
-    { label: t('projects.presets.sdg13'), filters: { sdgs: '13' } },
-    { label: t('projects.presets.vintage2024'), filters: { vintage: '2024|2024' } },
+    { label: t('projects.presets.goldStandard'), filters: { registry: 'Gold Standard' } as Record<string, string> },
+    { label: t('projects.presets.sdg13'), filters: { sdgs: '13' } as Record<string, string> },
+    { label: t('projects.presets.vintage2024'), filters: { vintage: '2024|2024' } as Record<string, string> },
 ]);
 
 // Summary statistics for filtered results
@@ -175,7 +175,7 @@ const statusColor: Record<string, string> = {
                     v-for="preset in presets"
                     :key="preset.label"
                     class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                    @click="applyPreset({ search: preset.search, filters: preset.filters } as any)"
+                    @click="applyPreset({ filters: preset.filters })"
                 >
                     {{ preset.label }}
                 </button>
@@ -277,8 +277,8 @@ const statusColor: Record<string, string> = {
                                 <span v-else class="text-xs">—</span>
                             </td>
                             <td class="py-3 px-4 text-muted-foreground text-xs break-words">{{ p.registry }}</td>
-                            <td class="py-3 px-4">
-                                <span class="block text-xs bg-muted rounded px-1.5 py-0.5 cursor-default truncate">{{ p.methodology }}</span>
+                            <td class="py-3 px-4 max-w-0">
+                                <span class="block text-xs bg-muted rounded px-1.5 py-0.5 cursor-default break-words">{{ p.methodology }}</span>
                             </td>
                             <td class="py-3 px-4">
                                 <span class="block text-xs text-muted-foreground cursor-default truncate">{{ p.sector }}</span>
