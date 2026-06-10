@@ -304,7 +304,7 @@ export class FileHelper {
 
     private static _decryptKey(line: string): string {
         if (line) {
-            return line;
+            return FileHelper._flat(line);
         } else {
             return null;
         }
@@ -318,9 +318,13 @@ export class FileHelper {
         }
     }
 
+    private static _flat(value: string): string {
+        return value == null ? value : Buffer.from(value, 'utf8').toString('utf8');
+    }
+
     private static _readString(header: FileHeaders, lines: string[], cursor: Cursor): string {
         if (lines[cursor.index] && lines[cursor.index].startsWith(header)) {
-            return lines[cursor.index++].substring(header.length);
+            return FileHelper._flat(lines[cursor.index++].substring(header.length));
         } else {
             return null;
         }
