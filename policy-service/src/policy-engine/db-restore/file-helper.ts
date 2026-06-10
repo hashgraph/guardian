@@ -318,15 +318,6 @@ export class FileHelper {
         }
     }
 
-    /**
-     * Force a flat, standalone copy of a string.
-     *
-     * `String.prototype.split`/`substring` return V8 `SlicedString`s that keep the
-     * ENTIRE parent string alive. The parsed diff only retains tiny header fields
-     * (uuid/type/hash), but as slices they pin the whole multi-MB source file for the
-     * lifetime of `PolicyRestore.lastDiff.file`. Round-tripping through a Buffer yields a
-     * fresh, flat string that does not reference the source, letting it be GC'd.
-     */
     private static _flat(value: string): string {
         return value == null ? value : Buffer.from(value, 'utf8').toString('utf8');
     }
