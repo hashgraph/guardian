@@ -1,5 +1,4 @@
 {
-    "packageManager": "yarn@1.22.21",
     "imports": {
         "#api": "./dist/api",
         "#helpers": "./dist/helpers",
@@ -14,12 +13,12 @@
     },
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@indexer/interfaces": "3.6.0",
-        "@indexer/common": "3.6.0",
+        "@indexer/common": "workspace:*",
+        "@indexer/interfaces": "workspace:*",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
-        "@nestjs/microservices": "^11.1.24",
         "@nestjs/jwt": "^11.0.0",
+        "@nestjs/microservices": "^11.1.24",
         "@nestjs/platform-express": "^11.1.24",
         "@nestjs/swagger": "^11.4.4",
         "@types/express-fileupload": "^1.4.1",
@@ -38,17 +37,17 @@
         "prom-client": "^14.1.1",
         "prometheus-api-metrics": "4.0.0",
         "reflect-metadata": "^0.1.13",
+        "rxjs": "^7.8.1",
         "ws": "^8.2.1",
         "yaml": "2.8.3",
-        "yup": "^1.1.1",
-        "rxjs": "^7.8.1"
+        "yup": "^1.1.1"
     },
     "description": "",
     "devDependencies": {
         "@types/express": "^5.0.1",
+        "@types/glob": "^8.1.0",
         "@types/jszip": "^3.4.1",
         "@types/node": "^22.15.19",
-        "@types/glob": "^8.1.0",
         "@types/ws": "^8.2.2",
         "chai": "^4.3.4",
         "cross-env": "^7.0.3",

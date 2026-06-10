@@ -5,8 +5,8 @@
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "3.6.0",
-        "@guardian/interfaces": "3.6.0",
+        "@guardian/common": "workspace:*",
+        "@guardian/interfaces": "workspace:*",
         "@mikro-orm/core": "6.4.16",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
@@ -17,8 +17,8 @@
     },
     "description": "",
     "devDependencies": {
-        "@types/node": "^22.15.19",
         "@types/glob": "^8.1.0",
+        "@types/node": "^22.15.19",
         "nodemon": "^2.0.12",
         "tslint": "^6.1.3",
         "typescript": "^5.8.3"
@@ -26,7 +26,6 @@
     "license": "Apache-2.0",
     "main": "dist/index.js",
     "name": "logger-service",
-    "packageManager": "yarn@1.22.21",
     "imports": {
         "#constants": "./dist/constants/index.js"
     },

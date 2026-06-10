@@ -24,7 +24,7 @@ services:
       - message-broker
       - mongo
     volumes:
-      - ./indexer-api-gateway/configs:/usr/local/app/configs:ro
+      - ./indexer-api-gateway/configs:/usr/local/app/indexer-api-gateway/configs:ro
     <<: *service-template
     expose:
       - '3021'
@@ -38,8 +38,8 @@ services:
       - message-broker
       - mongo
     volumes:
-      - ./indexer-service/tls:/usr/local/app/tls:ro
-      - ./indexer-service/configs:/usr/local/app/configs:ro
+      - ./indexer-service/tls:/usr/local/app/indexer-service/tls:ro
+      - ./indexer-service/configs:/usr/local/app/indexer-service/configs:ro
     <<: *service-template
     expose:
       - '6555'
@@ -65,8 +65,8 @@ services:
       - message-broker
       - mongo
     volumes:
-      - ./indexer-worker-service/tls:/usr/local/app/tls:ro
-      - ./indexer-worker-service/configs:/usr/local/app/configs:ro
+      - ./indexer-worker-service/tls:/usr/local/app/indexer-worker-service/tls:ro
+      - ./indexer-worker-service/configs:/usr/local/app/indexer-worker-service/configs:ro
     <<: *service-template
     deploy:
       replicas: 3
