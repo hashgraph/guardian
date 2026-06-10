@@ -99,7 +99,7 @@ export class BrandingService {
             }
             if (brandingData.companyName) {
                 if (companyName) {
-                    companyName.innerHTML = brandingData.companyName;
+                    companyName.textContent = brandingData.companyName;
                 }
                 document.title = brandingData.companyName;
             }
