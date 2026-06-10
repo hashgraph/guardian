@@ -1,5 +1,4 @@
 {
-    "packageManager": "yarn@1.22.21",
     "_moduleAliases": {
         "@api": "dist/api",
         "@helpers": "dist/helpers",
@@ -13,8 +12,8 @@
     },
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@guardian/common": "3.6.0",
-        "@guardian/interfaces": "3.6.0",
+        "@guardian/common": "workspace:*",
+        "@guardian/interfaces": "workspace:*",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
@@ -37,9 +36,9 @@
     "description": "",
     "devDependencies": {
         "@types/express": "^5.0.1",
+        "@types/glob": "^8.1.0",
         "@types/jszip": "^3.4.1",
         "@types/node": "^22.15.19",
-        "@types/glob": "^8.1.0",
         "mocha": "^9.2.0",
         "mocha-junit-reporter": "^2.0.2",
         "nodemon": "^2.0.12",
