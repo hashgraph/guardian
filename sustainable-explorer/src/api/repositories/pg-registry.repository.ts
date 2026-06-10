@@ -103,6 +103,17 @@ export class PgRegistryRepository extends RegistryRepository {
                 bv."searchVector" @@ plainto_tsquery('english', ${tsParam})
                 OR bv."displayName" ILIKE ${likeParam}
                 OR bv."registryDid" ILIKE ${likeParam}
+                OR bv."relatedTopicId" ILIKE ${likeParam}
+                OR bv."businessData"->>'geography' ILIKE ${likeParam}
+                OR bv."businessData"->'options'->>'geography' ILIKE ${likeParam}
+                OR bv."businessData"->'options'->'attributes'->>'geography' ILIKE ${likeParam}
+                OR bv."businessData"->'options'->'attributes'->>'Country' ILIKE ${likeParam}
+                OR bv."businessData"->>'law' ILIKE ${likeParam}
+                OR bv."businessData"->'options'->>'law' ILIKE ${likeParam}
+                OR bv."businessData"->'options'->'attributes'->>'law' ILIKE ${likeParam}
+                OR bv."businessData"->>'tags' ILIKE ${likeParam}
+                OR bv."businessData"->'options'->>'tags' ILIKE ${likeParam}
+                OR bv."businessData"->'options'->'attributes'->>'tags' ILIKE ${likeParam}
                 OR similarity(COALESCE(bv."displayName", ''), ${simParam}) > 0.3
             )`);
 
