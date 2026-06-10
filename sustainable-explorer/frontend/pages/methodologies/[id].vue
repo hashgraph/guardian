@@ -27,6 +27,7 @@ import {
   RefreshCw,
   RotateCcw,
   Pencil,
+  Download,
 } from "lucide-vue-next";
 import { formatCredits, formatNumber } from "~/lib/format";
 import type {
@@ -35,6 +36,7 @@ import type {
 } from "~/composables/api/useMethodologiesApi";
 import type { DecodedMethodologyResponse } from "~/composables/api/useDecodedMethodologyApi";
 import { mapApiProject } from "~/composables/useProjects";
+import { meetsDashboardThreshold } from "~/lib/methodology-threshold";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -120,17 +122,36 @@ async function copyValue(val: string) {
   } catch {}
 }
 
-const hashscanUrl = computed(() =>
-  methodology.value?.topicId
+const hashscanUrl = computed(() => {
+  // Prefer the exact transaction that published the policy document — its HCS
+  // consensus timestamp is methodology.sourceTimestamp. Fall back to the topic
+  // view when the timestamp is unavailable.
+  const ts = methodology.value?.sourceTimestamp;
+  if (ts) return `https://hashscan.io/${network.value}/transaction/${ts}`;
+  return methodology.value?.topicId
     ? `https://hashscan.io/${network.value}/topic/${methodology.value.topicId}`
-    : null,
-);
+    : null;
+});
+
+// Download the policy ZIP through our API (served from cached IPFS content).
+// Shown only once the policy is decoded — that's when the ZIP is cached.
+const policyPackageUrl = computed(() => {
+  if (methodology.value?.decodeStatus !== 'success') return null;
+  const base = (useRuntimeConfig().public.apiBaseUrl as string) || '';
+  return `${base}/api/v1/${network.value}/methodologies/${id.value}/policy-package`;
+});
 
 const publishedAt = computed(() => {
   const ts = methodology.value?.sourceTimestamp;
   if (!ts) return null;
   return new Date(parseFloat(ts) * 1000).toLocaleString();
 });
+
+const showDashboard = computed(() =>
+  methodology.value
+    ? meetsDashboardThreshold(methodology.value.stats.projectCount, methodology.value.stats.issuanceCount)
+    : false,
+);
 
 // Linked Projects: fetch when tab is activated
 const linkedProjects = ref<Record<string, any>[]>([]);
@@ -144,6 +165,22 @@ if (import.meta.client) {
   const config = useRuntimeConfig();
   const baseURL = config.public.apiBaseUrl as string;
 
+  async function loadLinkedProjects(instId: string) {
+    linkedProjectsPending.value = true;
+    try {
+      const res = await $fetch<{ data: Record<string, any>[]; meta: { total: number } }>(
+        `/api/v1/${network.value}/projects`,
+        { baseURL, query: { instanceTopicId: instId, limit: 100, page: 1 } },
+      );
+      linkedProjects.value = res.data ?? [];
+    } catch {
+      linkedProjects.value = [];
+    } finally {
+      linkedProjectsPending.value = false;
+      linkedProjectsLoaded.value = true;
+    }
+  }
+
   // Linked projects scope to this *version* of the methodology — filtered by
   // instanceTopicId (the URL id), not policyTopicId, so v0.1 and v0.2 of the
   // same policy show different project lists.
@@ -153,19 +190,19 @@ if (import.meta.client) {
       if (tab !== 'projects' || !instId) return;
       if (instId === oldInstId && linkedProjectsLoaded.value) return;
       linkedProjectsLoaded.value = false;
-      linkedProjectsPending.value = true;
-      try {
-        const res = await $fetch<{ data: Record<string, any>[]; meta: { total: number } }>(
-          `/api/v1/${network.value}/projects`,
-          { baseURL, query: { instanceTopicId: instId, limit: 100, page: 1 } },
-        );
-        linkedProjects.value = res.data ?? [];
-      } catch {
-        linkedProjects.value = [];
-      } finally {
-        linkedProjectsPending.value = false;
-        linkedProjectsLoaded.value = true;
-      }
+      await loadLinkedProjects(instId);
+    },
+    { immediate: true },
+  );
+
+  // Eagerly load for dashboard section when threshold is met
+  watch(
+    [methodology, id] as const,
+    ([m, instId]) => {
+      if (!m || !instId) return;
+      if (!meetsDashboardThreshold(m.stats.projectCount, m.stats.issuanceCount)) return;
+      if (linkedProjectsLoaded.value) return;
+      loadLinkedProjects(instId);
     },
     { immediate: true },
   );
@@ -285,6 +322,7 @@ const EDITABLE_FIELD_KEYS: ResolvedFieldKey[] = [
   'creditingPeriodStart',
   'creditingPeriodEnd',
   'sdgOrCobenefits',
+  'geo',
 ];
 
 const FIELD_LABELS: Record<ResolvedFieldKey, string> = {
@@ -299,6 +337,7 @@ const FIELD_LABELS: Record<ResolvedFieldKey, string> = {
   creditingPeriodStart: 'Crediting Period Start',
   creditingPeriodEnd: 'Crediting Period End',
   sdgOrCobenefits: 'SDGs / Co-benefits',
+  geo: 'Project Location',
 };
 
 const editingMapping = ref(false);
@@ -306,14 +345,43 @@ const editingMapping = ref(false);
 const formState = ref<Record<ResolvedFieldKey, string>>({} as Record<ResolvedFieldKey, string>);
 const saveMappingPending = ref(false);
 
+// Look up the schemaIri that owns a given fieldPath. For nested paths like
+// "projectSiteCountryarea", the backend stores it under a sub-schema IRI
+// (e.g., "#3cbd0aa8-...&1.0.0"). We scan availableSchemas to find which
+// schema actually defines that field key, so the dropdown value matches.
+function findOwningSchemaIri(fieldPath: string, defaultIri: string): string {
+  const schemas = decodedData.value?.availableSchemas ?? [];
+  for (const s of schemas) {
+    if ((s.fields ?? []).some(f => f.fieldKey === fieldPath)) {
+      return s.schemaId;
+    }
+  }
+  return defaultIri;
+}
+
 function enterEditMode() {
   if (!decodedData.value?.projectSchema) return;
-  const resolved = decodedData.value.projectSchema.resolvedFields;
-  const schemaId = decodedData.value.projectSchema.schemaId;
+  const resolved = decodedData.value.projectSchema.resolvedFields as Record<string, { fieldKey: string } | null>;
+  const ps = decodedData.value.projectSchema;
+  const projectIri = ps.schemaId;
   const state = {} as Record<ResolvedFieldKey, string>;
   for (const key of EDITABLE_FIELD_KEYS) {
+    if (key === 'geo') {
+      if (ps.geoKey) {
+        const iri = findOwningSchemaIri(ps.geoKey, projectIri);
+        state[key] = `${iri}.${ps.geoKey}`;
+      } else {
+        state[key] = '';
+      }
+      continue;
+    }
     const rf = resolved[key];
-    state[key] = rf ? `${schemaId}.${rf.fieldKey}` : '';
+    if (rf) {
+      const iri = findOwningSchemaIri(rf.fieldKey, projectIri);
+      state[key] = `${iri}.${rf.fieldKey}`;
+    } else {
+      state[key] = '';
+    }
   }
   formState.value = state;
   editingMapping.value = true;
@@ -327,12 +395,27 @@ function cancelEditMode() {
 // Compute the initial (original) form state so we can diff to find changes.
 const originalFormState = computed<Record<ResolvedFieldKey, string>>(() => {
   if (!decodedData.value?.projectSchema) return {} as Record<ResolvedFieldKey, string>;
-  const resolved = decodedData.value.projectSchema.resolvedFields;
-  const schemaId = decodedData.value.projectSchema.schemaId;
+  const resolved = decodedData.value.projectSchema.resolvedFields as Record<string, { fieldKey: string } | null>;
+  const ps = decodedData.value.projectSchema;
+  const projectIri = ps.schemaId;
   const state = {} as Record<ResolvedFieldKey, string>;
   for (const key of EDITABLE_FIELD_KEYS) {
+    if (key === 'geo') {
+      if (ps.geoKey) {
+        const iri = findOwningSchemaIri(ps.geoKey, projectIri);
+        state[key] = `${iri}.${ps.geoKey}`;
+      } else {
+        state[key] = '';
+      }
+      continue;
+    }
     const rf = resolved[key];
-    state[key] = rf ? `${schemaId}.${rf.fieldKey}` : '';
+    if (rf) {
+      const iri = findOwningSchemaIri(rf.fieldKey, projectIri);
+      state[key] = `${iri}.${rf.fieldKey}`;
+    } else {
+      state[key] = '';
+    }
   }
   return state;
 });
@@ -459,7 +542,7 @@ const formatLastAttempt = (ts: string | null | undefined): string => {
   }
 };
 
-type ResolvedFieldKey = 'name' | 'description' | 'country' | 'developer' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriodStart' | 'creditingPeriodEnd' | 'sdgOrCobenefits';
+type ResolvedFieldKey = 'name' | 'description' | 'country' | 'developer' | 'category' | 'scale' | 'sector' | 'vintageRaw' | 'creditingPeriodStart' | 'creditingPeriodEnd' | 'sdgOrCobenefits' | 'geo';
 
 interface ProjectFieldRow {
   labelKey: string;
@@ -596,6 +679,84 @@ const lifecycleSummary = computed(() => {
   const active = methodology.value?.totalActive ?? 0;
   return { totalIssued, totalRetired, active };
 });
+
+// ─── Methodology Dashboard ────────────────────────────────────────────────────
+
+const INVALID_COUNTRY_LOWER = new Set([
+  'not applicable', 'not specified', 'n/a', 'na', 'none', 'not stated',
+  'not available', 'not provided', 'unknown',
+  'point', 'multipoint', 'linestring', 'multilinestring',
+  'polygon', 'multipolygon', 'geometrycollection',
+]);
+
+const geoDistribution = computed(() => {
+  // Subscribe to geocoding cache updates so this recomputes when lat/lng lookups resolve
+  const counts: Record<string, { projects: number; code: string }> = {};
+  for (const p of linkedProjectsMapped.value) {
+    const code = resolvedProjectCode(p);
+    if (code === 'UNK') continue;
+    const name = resolvedProjectName(p);
+    if (!name || INVALID_COUNTRY_LOWER.has(name.toLowerCase())) continue;
+    if (!counts[name]) counts[name] = { projects: 0, code };
+    counts[name].projects++;
+  }
+  return Object.entries(counts)
+    .map(([country, d]) => ({ country, projects: d.projects, code: d.code }))
+    .sort((a, b) => b.projects - a.projects)
+    .slice(0, 8);
+});
+
+const issuanceTrend = computed(() => {
+  const byYear: Record<string, number> = {};
+  for (const iss of (methodology.value?.issuances ?? [])) {
+    if (!iss.mintDate) continue;
+    const year = new Date(iss.mintDate).getFullYear().toString();
+    byYear[year] = (byYear[year] ?? 0) + iss.supply;
+  }
+  const years = Object.keys(byYear).sort();
+  if (years.length === 0) return { data: [], unit: '' };
+
+  // Fill every year in the range (including gaps with 0) so the line connects.
+  // When there is only a single year, prepend the previous year at 0 to ensure
+  // at least two points so a line segment can be drawn.
+  const minYear = parseInt(years[0]);
+  const maxYear = parseInt(years[years.length - 1]);
+  const startYear = minYear === maxYear ? minYear - 1 : minYear;
+  const filled: [string, number][] = [];
+  for (let y = startYear; y <= maxYear; y++) {
+    filled.push([String(y), byYear[String(y)] ?? 0]);
+  }
+
+  const maxVal = filled.reduce((m, [, v]) => Math.max(m, v), 0);
+  const divisor = maxVal >= 1_000_000 ? 1_000_000 : maxVal >= 1_000 ? 1_000 : 1;
+  const unit = maxVal >= 1_000_000 ? 'M' : maxVal >= 1_000 ? 'K' : '';
+  return {
+    data: filled.map(([label, value]) => ({ label, value: Math.round((value / divisor) * 10) / 10 })),
+    unit,
+  };
+});
+
+const vintageByIssuance = computed(() => {
+  const byVintage: Record<string, number> = {};
+  for (const p of linkedProjectsMapped.value) {
+    const raw = p.vintage?.trim() || (p.creditingPeriodStart ? String(new Date(p.creditingPeriodStart).getFullYear()) : '');
+    const match = raw.match(/\d{4}/);
+    if (!match) continue;
+    const year = match[0];
+    byVintage[year] = (byVintage[year] ?? 0) + 1;
+  }
+  return Object.entries(byVintage)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([label, value]) => ({ label, value }));
+});
+
+const vintageMax = computed(() => Math.max(...vintageByIssuance.value.map(v => v.value), 0));
+
+const vintageTotal = computed(() => vintageByIssuance.value.reduce((s, v) => s + v.value, 0));
+
+const issuanceTrendTotal = computed(() =>
+  Math.round(issuanceTrend.value.data.reduce((s, d) => s + d.value, 0) * 10) / 10,
+);
 </script>
 
 <template>
@@ -751,6 +912,116 @@ const lifecycleSummary = computed(() => {
             </span>
           </div>
         </div>
+      </div>
+
+      <!-- Methodology Dashboard -->
+      <div v-if="showDashboard" class="rounded-xl border bg-card overflow-hidden">
+        <div class="px-5 py-3.5 border-b bg-muted/30 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+            <BarChart3 class="h-4 w-4 text-primary" />
+            {{ $t('methodologies.detail.dashboard.title') }}
+          </h2>
+          <span class="text-[11px] text-muted-foreground">
+            {{ $t('methodologies.detail.dashboard.stats', { projects: methodology.stats.projectCount, issuances: methodology.stats.issuanceCount }) }}
+          </span>
+        </div>
+
+        <div v-if="linkedProjectsPending && linkedProjects.length === 0" class="px-5 py-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <RefreshCw class="h-4 w-4 animate-spin" />
+          Loading dashboard data...
+        </div>
+
+        <div v-else>
+          <!-- Geographic Distribution (full width) -->
+          <div class="border-b px-5 py-4">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-sm font-semibold text-foreground">{{ $t('methodologies.detail.charts.geographicDistribution') }}</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">{{ $t('methodologies.detail.charts.geographicDistributionSub') }}</p>
+              </div>
+              <span class="text-[11px] text-muted-foreground">{{ geoDistribution.length }} {{ geoDistribution.length !== 1 ? $t('methodologies.detail.charts.geographicCountries') : $t('methodologies.detail.charts.geographicCountry') }}</span>
+            </div>
+            <div v-if="geoDistribution.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
+              <div v-for="item in geoDistribution" :key="item.country" class="flex items-center gap-2.5">
+                <div class="flex items-center gap-1.5 w-32 shrink-0 min-w-0">
+                  <CountryFlag :code="item.code" size="sm" />
+                  <span class="text-xs text-foreground truncate">{{ item.country }}</span>
+                </div>
+                <div class="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    class="h-full bg-primary rounded-full transition-all duration-500"
+                    :style="{ width: `${(item.projects / geoDistribution[0].projects) * 100}%` }"
+                  />
+                </div>
+                <span class="text-xs tabular-nums text-muted-foreground w-4 text-right shrink-0">{{ item.projects }}</span>
+              </div>
+            </div>
+            <div v-else class="text-xs text-muted-foreground py-2">{{ $t('methodologies.detail.charts.noGeographicData') }}</div>
+          </div>
+
+          <!-- Issuance Trend + Vintage Distribution -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x">
+          <!-- Issuance Trend -->
+          <div>
+            <div class="flex items-center justify-between px-5 py-4">
+              <div>
+                <h3 class="text-sm font-semibold text-foreground">{{ $t('methodologies.detail.charts.issuanceTrend') }}</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">{{ $t('methodologies.detail.charts.issuanceTrendSub', { unit: issuanceTrend.unit || 'units' }) }}</p>
+              </div>
+            </div>
+            <div class="px-5 pb-5">
+              <div class="rounded-xl border bg-card p-5">
+                <TrendLineChart
+                  :data="issuanceTrend.data"
+                  :unit="issuanceTrend.unit"
+                  color="hsl(142, 76%, 36%)"
+                  fill-color="hsl(142, 76%, 36%, 0.08)"
+                  :empty-text="$t('methodologies.detail.charts.noIssuanceData')"
+                />
+                <div class="flex items-center justify-between mt-4 pt-3 border-t">
+                  <span class="text-xs text-muted-foreground">{{ issuanceTrend.data.length }} {{ issuanceTrend.data.length !== 1 ? $t('methodologies.detail.charts.issuanceTrendYears') : $t('methodologies.detail.charts.issuanceTrendYear') }}</span>
+                  <span class="text-sm font-semibold text-foreground">{{ $t('methodologies.detail.charts.issuanceTrendTotal', { total: issuanceTrendTotal, unit: issuanceTrend.unit }) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vintage Distribution -->
+          <div>
+            <div class="flex items-center justify-between px-5 py-4">
+              <div>
+                <h3 class="text-sm font-semibold text-foreground">{{ $t('methodologies.detail.charts.vintageDistribution') }}</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">{{ $t('methodologies.detail.charts.vintageDistributionSub') }}</p>
+              </div>
+            </div>
+            <div class="px-5 pb-5">
+              <div class="rounded-xl border bg-card p-5">
+                <div v-if="vintageByIssuance.length > 0" class="flex items-end gap-3 h-48">
+                  <div
+                    v-for="item in vintageByIssuance"
+                    :key="item.label"
+                    class="flex-1 flex flex-col items-center gap-2"
+                  >
+                    <span class="text-[11px] font-medium text-muted-foreground tabular-nums">{{ item.value }}</span>
+                    <div
+                      class="w-full rounded-t-md bg-chart-2/80 hover:bg-chart-2 transition-colors"
+                      :style="{ height: `${vintageMax > 0 ? (item.value / vintageMax) * 140 : 0}px` }"
+                    />
+                    <span class="text-[11px] text-muted-foreground">{{ item.label }}</span>
+                  </div>
+                </div>
+                <div v-else class="flex items-center justify-center h-48 text-sm text-muted-foreground">
+                  {{ $t('methodologies.detail.charts.noVintageData') }}
+                </div>
+                <div class="flex items-center justify-between mt-4 pt-3 border-t">
+                  <span class="text-xs text-muted-foreground">{{ vintageByIssuance.length }} {{ vintageByIssuance.length !== 1 ? $t('methodologies.detail.charts.vintageYears') : $t('methodologies.detail.charts.vintageYear') }}</span>
+                  <span class="text-sm font-semibold text-foreground">{{ vintageTotal }} {{ vintageTotal !== 1 ? $t('methodologies.detail.charts.vintageProjects') : $t('methodologies.detail.charts.vintageProject') }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div><!-- end Issuance + Vintage grid -->
+        </div><!-- end v-else -->
       </div>
 
       <!-- Tab Navigation -->
@@ -1059,15 +1330,28 @@ const lifecycleSummary = computed(() => {
                     {{ $t('methodologies.detail.decoded.fieldLabels.' + row.labelKey) }}
                   </td>
                   <td class="py-3 px-4">
-                    <!-- Geo row: special (not editable, uses geoKey directly) -->
+                    <!-- Geo row: dropdown in edit mode, geoKey display in view mode -->
                     <template v-if="row.fieldKey === 'geo'">
-                      <template v-if="decodedData.projectSchema.geoKey">
-                        <div class="text-sm text-foreground font-medium">
-                          {{ decodedData.projectSchema.geoFieldTitle || decodedData.projectSchema.geoKey }}
-                          <span class="text-muted-foreground font-normal">({{ decodedData.projectSchema.geoKey }})</span>
-                        </div>
+                      <template v-if="editingMapping">
+                        <select
+                          v-model="formState['geo']"
+                          class="w-full max-w-sm rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        >
+                          <option value="">{{ $t('methodologies.detail.decoded.actions.unmapped') }}</option>
+                          <optgroup v-for="group in mappingOptionGroups" :key="group.label" :label="group.label">
+                            <option v-for="opt in group.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                          </optgroup>
+                        </select>
                       </template>
-                      <span v-else class="text-sm text-muted-foreground">—</span>
+                      <template v-else>
+                        <template v-if="decodedData.projectSchema.geoKey">
+                          <div class="text-sm text-foreground font-medium">
+                            {{ decodedData.projectSchema.geoFieldTitle || decodedData.projectSchema.geoKey }}
+                            <span class="text-muted-foreground font-normal">({{ decodedData.projectSchema.geoKey }})</span>
+                          </div>
+                        </template>
+                        <span v-else class="text-sm text-muted-foreground">—</span>
+                      </template>
                     </template>
                     <!-- Crediting Period: combined view, split edit -->
                     <template v-else-if="row.fieldKey === 'creditingPeriod'">
@@ -1511,7 +1795,7 @@ const lifecycleSummary = computed(() => {
                 <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.project') }}</th>
                 <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.country') }}</th>
                 <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.registry') }}</th>
-                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.credits') }}</th>
+                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.issuances') }}</th>
                 <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.status') }}</th>
               </tr>
             </thead>
@@ -1539,7 +1823,7 @@ const lifecycleSummary = computed(() => {
                   {{ p.registry || '—' }}
                 </td>
                 <td class="py-3 px-4 text-right tabular-nums text-sm font-medium text-foreground">
-                  {{ p.credits != null ? p.credits.toLocaleString() : '—' }}
+                  {{ p.issuanceCount != null ? p.issuanceCount.toLocaleString() : '—' }}
                 </td>
                 <td class="py-3 px-4">
                   <span
@@ -1663,8 +1947,9 @@ const lifecycleSummary = computed(() => {
               </div>
             </div>
 
-            <div v-if="hashscanUrl">
+            <div class="flex flex-wrap items-center gap-4">
               <a
+                v-if="hashscanUrl"
                 :href="hashscanUrl"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -1672,6 +1957,15 @@ const lifecycleSummary = computed(() => {
               >
                 <ExternalLink class="h-4 w-4" />
                 {{ $t('methodologies.detail.viewOnHashScan') }}
+              </a>
+              <a
+                v-if="policyPackageUrl"
+                :href="policyPackageUrl"
+                download
+                class="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
+              >
+                <Download class="h-4 w-4" />
+                {{ $t('methodologies.detail.policy.downloadPolicy') }}
               </a>
             </div>
           </div>
@@ -1753,7 +2047,7 @@ const lifecycleSummary = computed(() => {
                   <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token</th>
                   <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token ID</th>
                   <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
-                  <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Supply</th>
+                  <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('credits.columns.supply') }}</th>
                   <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Mint Date</th>
                   <th class="text-center py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Raw Data</th>
                 </tr>

@@ -197,6 +197,20 @@ class RetryByTopicBodyDto {
     includeChildTopics?: boolean;
 }
 
+class RequeueTopicBodyDto {
+    @ApiProperty({ description: 'Hedera topic ID to enqueue for sync (e.g. 0.0.43065)' })
+    @IsString()
+    topicId: string;
+
+    @ApiPropertyOptional({
+        description: 'When true, restart from sequence 0 (re-process all messages). ' +
+            'When false (default), resume from the current watermark.',
+    })
+    @IsOptional()
+    @IsBoolean()
+    fromStart?: boolean;
+}
+
 class IpfsCidStatusDto {
     @ApiProperty({ description: 'IPFS content identifier (CID)' })
     cid: string;
@@ -798,6 +812,81 @@ export class QueueStatusController {
             search,
             topics,
         };
+    }
+
+    @Post(':network/sync-status/requeue-topic')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Manually enqueue a topic for sync',
+        description:
+            'Upserts the topic into topic_cache (creating the row if missing, ' +
+            'setting hasNext=true) and enqueues a TOPIC_SYNC job. Use this when ' +
+            'ONLY_REGISTRY_TOPIC was added after the seed topic was fully crawled, ' +
+            'or when you need to manually re-trigger a sync for a stalled topic.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiBody({ type: RequeueTopicBodyDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Topic enqueued for sync',
+        schema: { example: { queued: true, topicId: '0.0.43065', fromSequenceNumber: 0 } },
+    })
+    @ApiResponse({ status: 400, description: 'Invalid topic ID format' })
+    async requeueTopic(
+        @Param('network') network: string,
+        @Body() body: RequeueTopicBodyDto,
+    ): Promise<{ queued: boolean; topicId: string; fromSequenceNumber: number }> {
+        const ds = this.dataSources.getDataSource(network);
+        const topicId = body.topicId.trim();
+
+        if (!/^0\.0\.\d+$/.test(topicId)) {
+            throw new HttpException(
+                `Invalid topic ID "${topicId}". Expected format "0.0.<number>".`,
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+
+        // Upsert the topic_cache row. If new, start from sequence 0.
+        // If existing, either reset to 0 or resume from current watermark.
+        const fromStart = body.fromStart === true;
+        await ds.query(
+            `INSERT INTO topic_cache ("topicId", status, messages, "hasNext", "lastUpdate")
+             VALUES ($1, 'NEW', 0, true, $2)
+             ON CONFLICT ("topicId") DO UPDATE SET
+                 "hasNext"    = true,
+                 messages     = CASE WHEN $3::boolean THEN 0 ELSE topic_cache.messages END,
+                 "lastUpdate" = EXCLUDED."lastUpdate"`,
+            [topicId, Date.now().toString(), fromStart],
+        );
+
+        const currentRows: Array<{ messages: number }> = await ds.query(
+            `SELECT messages FROM topic_cache WHERE "topicId" = $1 LIMIT 1`,
+            [topicId],
+        );
+        const fromSeq = currentRows[0]?.messages ?? 0;
+
+        // Enqueue a TOPIC_SYNC job. Remove any stale job at the same watermark
+        // so BullMQ doesn't dedupe and skip.
+        const topicQueue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.TOPIC_SYNC);
+        const jobId = `topic-${topicId}-${fromSeq}`;
+        try {
+            const stale = await topicQueue.getJob(jobId);
+            if (stale) await stale.remove();
+        } catch {
+            // Not present — fine.
+        }
+
+        await topicQueue.add(
+            'sync',
+            { topicId, fromSequenceNumber: fromSeq, isOrgTopic: false },
+            { jobId, priority: 1 },
+        );
+
+        this.logger.log(
+            `requeueTopic: network=${network} topicId=${topicId} fromSeq=${fromSeq} fromStart=${fromStart}`,
+        );
+
+        return { queued: true, topicId, fromSequenceNumber: fromSeq };
     }
 
     @Get(':network/sync-status/tokens')

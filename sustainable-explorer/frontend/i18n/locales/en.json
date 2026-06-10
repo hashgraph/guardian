@@ -234,6 +234,7 @@
         "filters": {
             "status": "Status",
             "registry": "Registry",
+            "country": "Country",
             "vintage": "Vintage",
             "sector": "Sector",
             "sectoralScope": "Sectoral Scope",
@@ -241,12 +242,9 @@
             "sdgs": "SDGs"
         },
         "presets": {
-            "issuingForestry": "Issuing Forestry",
             "goldStandard": "Gold Standard",
             "sdg13": "SDG 13: Climate Action",
-            "underValidation": "Under Validation",
-            "vintage2024": "Vintage 2024",
-            "blueCarbon": "Blue Carbon"
+            "vintage2024": "Vintage 2024"
         },
         "notFound": "Project not found",
         "details": {
@@ -319,9 +317,7 @@
             "fungible": "Fungible tokens",
             "nonFungible": "Non-Fungible (NFTs)",
             "minted2024": "Minted 2024",
-            "minted2025": "Minted 2025",
-            "blueCarbon": "Blue Carbon",
-            "forestry": "Forestry"
+            "minted2025": "Minted 2025"
         },
         "issuancesFound": "{count} issuances found",
         "totalSupply": "Total supply:",
@@ -341,7 +337,7 @@
             "token": "Token",
             "symbol": "Symbol",
             "type": "Type",
-            "supply": "Supply",
+            "supply": "Mint Amount",
             "mintDate": "Mint Date",
             "project": "Project",
             "methodology": "Methodology",
@@ -351,7 +347,7 @@
         "filters": {
             "tokenType": "Token Type",
             "registry": "Registry",
-            "supply": "Supply",
+            "supply": "Mint Amount",
             "mintDate": "Mint Date",
             "hideUnlinked": "Hide issuances with no project link"
         },
@@ -521,7 +517,7 @@
                     "project": "Project",
                     "country": "Country",
                     "registry": "Registry",
-                    "credits": "Credits",
+                    "issuances": "Issuances",
                     "status": "Status"
                 },
                 "noProjects": "No projects found under this policy."
@@ -533,7 +529,8 @@
                 "instancePolicyTopic": "Instance Policy Topic",
                 "publishedAt": "Published At",
                 "registryDid": "Registry DID",
-                "network": "Network"
+                "network": "Network",
+                "downloadPolicy": "Download policy package (.zip)"
             },
             "analytics": {
                 "schemaCount": "Schema Count",
@@ -544,6 +541,30 @@
                 "issuancesSub": "Credits issued",
                 "trends": "Trends",
                 "trendsComingSoon": "Issuance over time, retirement trend, and geography charts will be available once live VC-Document data is fully synced."
+            },
+            "dashboard": {
+                "title": "Methodology Dashboard",
+                "stats": "{projects} projects · {issuances} issuances"
+            },
+            "charts": {
+                "geographicDistribution": "Geographic Distribution",
+                "geographicDistributionSub": "Project distribution by country",
+                "noGeographicData": "No geographic data available",
+                "geographicCountry": "country",
+                "geographicCountries": "countries",
+                "issuanceTrend": "Issuance Trend",
+                "issuanceTrendSub": "Volume ({unit}) by year",
+                "noIssuanceData": "No issuance data available",
+                "issuanceTrendYear": "year",
+                "issuanceTrendYears": "years",
+                "issuanceTrendTotal": "{total}{unit} total",
+                "vintageDistribution": "Vintage Distribution",
+                "vintageDistributionSub": "Project distribution by vintage",
+                "noVintageData": "No vintage data available",
+                "vintageYear": "vintage",
+                "vintageYears": "vintages",
+                "vintageProject": "project",
+                "vintageProjects": "projects"
             },
             "actions": {
                 "aboutTitle": "About this Methodology",

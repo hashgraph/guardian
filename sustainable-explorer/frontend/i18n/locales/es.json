@@ -234,6 +234,7 @@
         "filters": {
             "status": "Estado",
             "registry": "Registro",
+            "country": "País",
             "vintage": "Añada",
             "sector": "Sector",
             "sectoralScope": "Alcance sectorial",
@@ -241,12 +242,9 @@
             "sdgs": "ODS"
         },
         "presets": {
-            "issuingForestry": "Forestal en emisión",
             "goldStandard": "Gold Standard",
             "sdg13": "ODS 13: Acción por el clima",
-            "underValidation": "En validación",
-            "vintage2024": "Añada 2024",
-            "blueCarbon": "Carbono azul"
+            "vintage2024": "Añada 2024"
         },
         "notFound": "Proyecto no encontrado",
         "details": {
@@ -314,9 +312,7 @@
             "fungible": "Tokens fungibles",
             "nonFungible": "No fungibles (NFTs)",
             "minted2024": "Acuñados en 2024",
-            "minted2025": "Acuñados en 2025",
-            "blueCarbon": "Carbono azul",
-            "forestry": "Silvicultura"
+            "minted2025": "Acuñados en 2025"
         },
         "issuancesFound": "{count} emisiones encontradas",
         "totalSupply": "Suministro total:",
@@ -336,7 +332,7 @@
             "token": "Token",
             "symbol": "Símbolo",
             "type": "Tipo",
-            "supply": "Suministro",
+            "supply": "Monto acuñado",
             "mintDate": "Fecha de emisión",
             "project": "Proyecto",
             "methodology": "Metodología",
@@ -346,7 +342,7 @@
         "filters": {
             "tokenType": "Tipo de token",
             "registry": "Registro",
-            "supply": "Suministro",
+            "supply": "Monto acuñado",
             "mintDate": "Fecha de emisión",
             "hideUnlinked": "Ocultar emisiones sin proyecto vinculado"
         },
@@ -516,7 +512,7 @@
                     "project": "Proyecto",
                     "country": "País",
                     "registry": "Registro",
-                    "credits": "Créditos",
+                    "issuances": "Emisiones",
                     "status": "Estado"
                 },
                 "noProjects": "No se encontraron proyectos bajo esta política."
@@ -528,7 +524,8 @@
                 "instancePolicyTopic": "Tópico de la instancia de política",
                 "publishedAt": "Publicada el",
                 "registryDid": "DID del Registro",
-                "network": "Red"
+                "network": "Red",
+                "downloadPolicy": "Descargar paquete de política (.zip)"
             },
             "analytics": {
                 "schemaCount": "Conteo de esquemas",
@@ -539,6 +536,30 @@
                 "issuancesSub": "Créditos emitidos",
                 "trends": "Tendencias",
                 "trendsComingSoon": "Los gráficos de emisiones a lo largo del tiempo, tendencia de retiros y geografía estarán disponibles una vez que los datos de los documentos VC en vivo estén completamente sincronizados."
+            },
+            "dashboard": {
+                "title": "Panel de metodología",
+                "stats": "{projects} proyectos · {issuances} emisiones"
+            },
+            "charts": {
+                "geographicDistribution": "Distribución geográfica",
+                "geographicDistributionSub": "Distribución de proyectos por país",
+                "noGeographicData": "No hay datos geográficos disponibles",
+                "geographicCountry": "país",
+                "geographicCountries": "países",
+                "issuanceTrend": "Tendencia de emisiones",
+                "issuanceTrendSub": "Volumen ({unit}) por año",
+                "noIssuanceData": "No hay datos de emisiones disponibles",
+                "issuanceTrendYear": "año",
+                "issuanceTrendYears": "años",
+                "issuanceTrendTotal": "{total}{unit} total",
+                "vintageDistribution": "Distribución por añada",
+                "vintageDistributionSub": "Distribución de proyectos por añada",
+                "noVintageData": "No hay datos de añada disponibles",
+                "vintageYear": "añada",
+                "vintageYears": "añadas",
+                "vintageProject": "proyecto",
+                "vintageProjects": "proyectos"
             },
             "actions": {
                 "aboutTitle": "Acerca de esta metodología",

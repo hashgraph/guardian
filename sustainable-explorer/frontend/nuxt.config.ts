@@ -62,8 +62,9 @@ export default defineNuxtConfig({
             // SSE (EventSource) must bypass the Nitro proxy — connect directly to the API.
             // Override via NUXT_PUBLIC_SSE_API_BASE_URL in production.
             sseApiBaseUrl: process.env.NUXT_PUBLIC_SSE_API_BASE_URL || 'http://localhost:3030',
-            // Reverse-geocoding endpoint. Override via NUXT_PUBLIC_GEOCODER_URL.
+            // Nominatim geocoding endpoints. Override via NUXT_PUBLIC_GEOCODER_URL / NUXT_PUBLIC_GEOCODER_SEARCH_URL.
             geocoderUrl: 'https://nominatim.openstreetmap.org/reverse',
+            geocoderSearchUrl: 'https://nominatim.openstreetmap.org/search',
             // Google Apps Script Web App URL that receives feedback submissions.
             // Leave empty to hide the feedback widget. Set via NUXT_PUBLIC_FEEDBACK_WEBHOOK_URL.
             feedbackWebhookUrl: process.env.NUXT_PUBLIC_FEEDBACK_WEBHOOK_URL || '',

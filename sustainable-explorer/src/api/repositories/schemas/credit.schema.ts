@@ -1,26 +1,33 @@
 import { FieldSchema } from '../query-builder';
 
 /**
- * Field schema for the Credits endpoint.
+ * Field schema for the Credits/Issuances endpoint.
  *
- * Adding a new filter only requires adding an entry here. The
- * PgCreditRepository's QueryBuilder will pick it up automatically.
+ * Column aliases match the SELECT output of pg-credit.repository.ts findAll(),
+ * which is sourced from MintToken VCs (message table) grouped by
+ * (tokenId, project_key).
  *
- * Notes:
- *   - `bv` is the alias used for `business_view` in the repository's queries.
- *   - `tc` is the alias used for `token_cache` (LEFT JOIN on tokenId).
- *   - `reg.registry_name` comes from a LATERAL join that resolves the
- *     publishing registry's display name.
+ * Table aliases in use:
+ *   m    — message (MintToken VC rows)
+ *   pml  — project_mint_link (pre-computed per-project attribution)
+ *   tc   — token_cache (Mirror Node token metadata)
+ *   proj — LATERAL: resolved project from business_view PROJECT
+ *   meth — LATERAL: resolved methodology from business_view METHODOLOGY
+ *   reg  — LATERAL: resolved registry from business_view REGISTRY
+ *
+ * Aggregate fields (supply, mintDate) use SELECT output aliases so ORDER BY
+ * can reference them by name in a grouped query. They carry no filter operator
+ * since aggregate expressions cannot appear in a WHERE clause.
  */
 export const CREDIT_FIELD_SCHEMA: FieldSchema = {
-    // ── token_cache columns ─────────────────────────────────────────────
+    // ── Token identity ──────────────────────────────────────────────────
     tokenId: {
-        sql: 'tc."tokenId"',
+        sql: `(m.documents->'credentialSubject'->0->>'tokenId')`,
         filter: 'eq',
         sortable: true,
     },
     name: {
-        sql: 'COALESCE(tc.name, bv."displayName")',
+        sql: 'tc.name',
         filter: 'ilike',
         sortable: true,
     },
@@ -31,39 +38,28 @@ export const CREDIT_FIELD_SCHEMA: FieldSchema = {
     },
     type: {
         sql: 'tc.type',
-        filter: 'ilike',
-        sortable: true,
-    },
-    supply: {
-        sql: 'COALESCE(tc."totalSupply", 0)',
         sortable: true,
     },
 
-    // ── Lateral registry join ───────────────────────────────────────────
+    // ── Aggregates (SELECT aliases — sortable only) ─────────────────────
+    supply: {
+        sql: 'total_supply',
+        sortable: true,
+    },
+    mintDate: {
+        sql: 'mint_date',
+        sortable: true,
+    },
+
+    // ── Attribution ─────────────────────────────────────────────────────
     registry: {
         sql: 'reg.registry_name',
         filter: 'ilike',
         sortable: true,
     },
     registryDid: {
-        sql: 'bv."registryDid"',
+        sql: 'proj.registry_did',
         filter: 'eq',
-        sortable: true,
-    },
-
-    // ── Computed date from consensus timestamp ──────────────────────────
-    mintDate: {
-        sql: 'to_timestamp(bv."sourceTimestamp"::numeric)',
-        sortable: true,
-    },
-
-    // ── Audit columns ───────────────────────────────────────────────────
-    createdAt: {
-        sql: 'bv."createdAt"',
-        sortable: true,
-    },
-    updatedAt: {
-        sql: 'bv."updatedAt"',
         sortable: true,
     },
 };

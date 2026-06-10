@@ -38,18 +38,25 @@ export const MV_METHODOLOGY_STATS_CREATE_SQL = `
               AND p."businessData"->>'instanceTopicId' = mb."relatedTopicId"
         ), 0)::bigint AS instance_project_count,
         COALESCE((
-            SELECT COUNT(DISTINCT bv."businessData"->>'tokenId')
-            FROM business_view bv
-            WHERE bv."viewType" = 'CREDIT'
-              AND bv."relatedTopicId" IN (mb.policy_topic_id, mb."relatedTopicId")
-              AND bv."businessData"->>'tokenId' IS NOT NULL
+            SELECT COUNT(DISTINCT pml.token_id)
+            FROM project_mint_link pml
+            JOIN business_view proj
+                ON proj."projectKey" = pml.project_key
+               AND proj."viewType" = 'PROJECT'
+               AND (
+                   proj."businessData"->>'instanceTopicId' = mb."relatedTopicId"
+                   OR proj."businessData"->>'policyTopicId' = mb.policy_topic_id
+               )
+            WHERE pml.token_id IS NOT NULL
         ), 0)::bigint AS issuance_count,
         COALESCE((
-            SELECT COUNT(DISTINCT bv."businessData"->>'tokenId')
-            FROM business_view bv
-            WHERE bv."viewType" = 'CREDIT'
-              AND bv."relatedTopicId" = mb."relatedTopicId"
-              AND bv."businessData"->>'tokenId' IS NOT NULL
+            SELECT COUNT(DISTINCT pml.token_id)
+            FROM project_mint_link pml
+            JOIN business_view proj
+                ON proj."projectKey" = pml.project_key
+               AND proj."viewType" = 'PROJECT'
+               AND proj."businessData"->>'instanceTopicId' = mb."relatedTopicId"
+            WHERE pml.token_id IS NOT NULL
         ), 0)::bigint AS instance_issuance_count,
         COALESCE((
             SELECT COUNT(DISTINCT entry_iri)

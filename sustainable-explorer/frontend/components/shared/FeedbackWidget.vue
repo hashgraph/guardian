@@ -106,7 +106,7 @@ async function submit() {
         <button
             v-if="!open"
             type="button"
-            class="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
+            class="fixed bottom-5 right-5 z-[1100] inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
             :title="t('feedback.button')"
             @click="openForm"
         >
@@ -125,7 +125,7 @@ async function submit() {
         >
             <div
                 v-if="open"
-                class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30"
+                class="fixed inset-0 z-[1200] flex items-end sm:items-center justify-center bg-black/30"
                 @click.self="closeForm"
             >
                 <div class="bg-card rounded-xl border shadow-xl p-5 w-full max-w-md space-y-4 mx-4 mb-4 sm:mb-0">

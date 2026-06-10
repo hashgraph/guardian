@@ -9,13 +9,17 @@ const props = defineProps<{
 
 const color = props.color || 'hsl(var(--primary))';
 const fillColor = props.fillColor || 'hsl(var(--primary) / 0.1)';
-const unit = props.unit || 'M';
+const unit = computed(() => props.unit ?? 'M');
 
 const chartHeight = 160;
 const chartWidth = 500;
 const padX = 10;
 const padTop = 10;
 const padBottom = 0;
+
+const TOOLTIP_W = 80;
+const TOOLTIP_H = 20;
+const TOOLTIP_PAD = 4; // min distance from viewBox top
 
 const maxVal = computed(() => {
     const vals = props.data.map(d => d.value);
@@ -60,6 +64,20 @@ const areaPath = computed(() => {
 });
 
 const hoveredIndex = ref<number | null>(null);
+
+const hoveredPoint = computed(() =>
+    hoveredIndex.value !== null ? points.value[hoveredIndex.value] ?? null : null,
+);
+
+// Tooltip box — x clamped so it never overflows left/right,
+// y clamped so it never overflows the top of the viewBox.
+const tooltipBox = computed(() => {
+    const pt = hoveredPoint.value;
+    if (!pt) return null;
+    const x = Math.min(Math.max(pt.x - TOOLTIP_W / 2, padX), chartWidth - padX - TOOLTIP_W);
+    const y = Math.max(pt.y - TOOLTIP_H - 12, TOOLTIP_PAD);
+    return { x, y, textX: x + TOOLTIP_W / 2, textY: y + TOOLTIP_H - 6 };
+});
 </script>
 
 <template>
@@ -102,18 +120,8 @@ const hoveredIndex = ref<number | null>(null);
                     stroke-linejoin="round"
                 />
 
-                <!-- Data points + hover zones -->
+                <!-- Dots + x-axis labels + hit areas -->
                 <g v-for="(pt, i) in points" :key="`pt-${i}`">
-                    <!-- Invisible wider hit area -->
-                    <rect
-                        :x="pt.x - (chartWidth / points.length) / 2"
-                        :y="0"
-                        :width="chartWidth / points.length"
-                        :height="chartHeight"
-                        fill="transparent"
-                        @mouseenter="hoveredIndex = i"
-                    />
-
                     <!-- Vertical guide on hover -->
                     <line
                         v-if="hoveredIndex === i"
@@ -138,30 +146,7 @@ const hoveredIndex = ref<number | null>(null);
                         class="transition-all duration-150"
                     />
 
-                    <!-- Value tooltip on hover -->
-                    <g v-if="hoveredIndex === i">
-                        <rect
-                            :x="pt.x - 24"
-                            :y="pt.y - 24"
-                            width="48"
-                            height="18"
-                            rx="4"
-                            fill="hsl(var(--foreground))"
-                            opacity="0.9"
-                        />
-                        <text
-                            :x="pt.x"
-                            :y="pt.y - 13"
-                            text-anchor="middle"
-                            fill="hsl(var(--background))"
-                            font-size="10"
-                            font-weight="600"
-                        >
-                            {{ pt.value }}{{ unit }}
-                        </text>
-                    </g>
-
-                    <!-- X-axis labels -->
+                    <!-- X-axis label -->
                     <text
                         :x="pt.x"
                         :y="chartHeight + 14"
@@ -172,6 +157,38 @@ const hoveredIndex = ref<number | null>(null);
                         :font-weight="hoveredIndex === i ? 600 : 400"
                     >
                         {{ pt.label }}
+                    </text>
+
+                    <!-- Invisible wider hit area (rendered last so it captures events over the dot) -->
+                    <rect
+                        :x="pt.x - (chartWidth / points.length) / 2"
+                        :y="0"
+                        :width="chartWidth / points.length"
+                        :height="chartHeight"
+                        fill="transparent"
+                        @mouseenter="hoveredIndex = i"
+                    />
+                </g>
+
+                <!-- Tooltip overlay — rendered last so it always paints on top -->
+                <g v-if="hoveredPoint && tooltipBox">
+                    <rect
+                        :x="tooltipBox.x"
+                        :y="tooltipBox.y"
+                        :width="TOOLTIP_W"
+                        :height="TOOLTIP_H"
+                        rx="4"
+                        :style="{ fill: 'var(--color-foreground)', opacity: '0.9' }"
+                    />
+                    <text
+                        :x="tooltipBox.textX"
+                        :y="tooltipBox.textY"
+                        text-anchor="middle"
+                        :style="{ fill: 'var(--color-background)' }"
+                        font-size="10"
+                        font-weight="600"
+                    >
+                        {{ hoveredPoint.label }}: {{ hoveredPoint.value !== 0 ? `${hoveredPoint.value}${unit}` : '0' }}
                     </text>
                 </g>
             </svg>

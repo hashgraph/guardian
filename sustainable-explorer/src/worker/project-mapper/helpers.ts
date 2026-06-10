@@ -32,6 +32,46 @@ export function resolveCountryName(raw: string): string {
     return trimmed;
 }
 
+// Lazily-built list of all known country names from ISO 3166-1 alpha-2 codes,
+// sorted longest-first so multi-word names like "United States" match before
+// single-word names that may appear as substrings ("United").
+let _knownCountries: string[] | null = null;
+function knownCountries(): string[] {
+    if (_knownCountries) return _knownCountries;
+    const out: string[] = [];
+    for (let a = 65; a <= 90; a++) {
+        for (let b = 65; b <= 90; b++) {
+            const code = String.fromCharCode(a, b);
+            try {
+                const name = countryDisplay.of(code);
+                if (name && name !== code && /^[A-Za-z][A-Za-z .,'()-]+$/.test(name)) {
+                    out.push(name);
+                }
+            } catch { /* skip invalid */ }
+        }
+    }
+    out.sort((a, b) => b.length - a.length);
+    _knownCountries = out;
+    return out;
+}
+
+/**
+ * Scans a free-form text for a known country name and returns the matched
+ * name when found. Useful for paragraph-like values such as
+ * "districts of Jaipur, Udaipur and Rajsamand in North-West India" — picks
+ * up "India" at the end. Returns null when no known country is mentioned.
+ */
+export function findCountryInText(text: string): string | null {
+    if (!text) return null;
+    const haystack = ` ${text} `;
+    for (const name of knownCountries()) {
+        const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(`[^A-Za-z]${escaped}[^A-Za-z]`, 'i');
+        if (re.test(haystack)) return name;
+    }
+    return null;
+}
+
 // ---------------------------------------------------------------------------
 // Sector normalisation
 // ---------------------------------------------------------------------------

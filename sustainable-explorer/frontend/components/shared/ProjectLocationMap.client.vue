@@ -6,6 +6,7 @@ const props = defineProps<{
     lat: number;
     lng: number;
     name: string;
+    approximate?: boolean;
 }>();
 
 const mapContainer = ref<HTMLElement | null>(null);
@@ -16,7 +17,7 @@ onMounted(() => {
 
     map = L.map(mapContainer.value, {
         center: [props.lat, props.lng],
-        zoom: 8,
+        zoom: props.approximate ? 5 : 8,
         zoomControl: true,
         scrollWheelZoom: true,
     });
@@ -46,5 +47,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div ref="mapContainer" class="h-full w-full rounded-lg" />
+    <div class="relative h-full w-full">
+        <div ref="mapContainer" class="h-full w-full rounded-lg" />
+        <div
+            v-if="approximate"
+            class="absolute bottom-2 left-2 z-[1000] rounded bg-background/80 px-2 py-0.5 text-[10px] text-muted-foreground backdrop-blur-sm"
+        >
+            Approximate location
+        </div>
+    </div>
 </template>

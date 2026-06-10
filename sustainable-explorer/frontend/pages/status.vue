@@ -73,6 +73,41 @@ function clearTopicFilters() {
     topicPage.value = 1;
 }
 
+// ─── Requeue topic (manual sync trigger) ─────────────────────────────────────
+
+const requeueInput = ref('');
+const requeueFromStart = ref(false);
+const requeuePending = ref<Record<string, boolean>>({});
+
+async function requeueTopic(topicId: string, fromStart: boolean) {
+    if (!topicId) return;
+    if (!/^0\.0\.\d+$/.test(topicId.trim())) {
+        await showToast('Invalid topic ID format. Expected "0.0.<number>".', 'error');
+        return;
+    }
+    requeuePending.value[topicId] = true;
+    try {
+        await $fetch(
+            `/api/v1/${network.value}/sync-status/requeue-topic`,
+            {
+                method: 'POST',
+                body: { topicId: topicId.trim(), fromStart },
+                baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
+            },
+        );
+        await showToast(`Topic ${topicId} queued for sync`);
+        // Reset input and refresh the topics list
+        if (topicId === requeueInput.value.trim()) {
+            requeueInput.value = '';
+            requeueFromStart.value = false;
+        }
+    } catch (err: any) {
+        await showToast(`Failed to requeue ${topicId}: ${err?.message ?? 'Unknown error'}`, 'error');
+    } finally {
+        requeuePending.value[topicId] = false;
+    }
+}
+
 function clearTokenFilters() {
     tokenSearch.value = '';
     tokenTypeFilter.value = '';
@@ -984,6 +1019,35 @@ function formatTs(ts: number): string {
                                 Clear
                             </button>
                         </div>
+
+                        <!-- Manual requeue: add a new topic or re-trigger an existing one -->
+                        <div class="flex items-center gap-2 flex-wrap mb-2 rounded-md border border-dashed bg-muted/20 px-3 py-2">
+                            <span class="text-xs font-medium text-muted-foreground">Requeue topic:</span>
+                            <input
+                                v-model="requeueInput"
+                                type="text"
+                                placeholder="0.0.43065"
+                                class="h-8 rounded-md border border-input bg-card px-3 font-mono text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-40"
+                                @keyup.enter="requeueTopic(requeueInput, requeueFromStart)"
+                            />
+                            <label class="inline-flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none">
+                                <input
+                                    v-model="requeueFromStart"
+                                    type="checkbox"
+                                    class="h-3.5 w-3.5 rounded border-border accent-primary"
+                                />
+                                From start (re-process all messages)
+                            </label>
+                            <button
+                                :disabled="!requeueInput.trim() || !!requeuePending[requeueInput.trim()]"
+                                class="inline-flex items-center gap-1 h-8 rounded-md px-3 text-xs font-medium border border-primary/50 text-primary hover:bg-primary/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                @click="requeueTopic(requeueInput, requeueFromStart)"
+                            >
+                                <Loader2 v-if="requeuePending[requeueInput.trim()]" class="h-3 w-3 animate-spin" />
+                                <RefreshCw v-else class="h-3 w-3" />
+                                Queue
+                            </button>
+                        </div>
                         <div class="rounded-lg border bg-card overflow-hidden">
                             <table class="w-full text-sm">
                                 <thead>
@@ -993,14 +1057,15 @@ function formatTs(ts: number): string {
                                         <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Has Next</th>
                                         <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
                                         <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Update</th>
+                                        <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
                                     <tr v-if="topicsPending">
-                                        <td colspan="5" class="py-6 text-center text-xs text-muted-foreground">Loading…</td>
+                                        <td colspan="6" class="py-6 text-center text-xs text-muted-foreground">Loading…</td>
                                     </tr>
                                     <tr v-else-if="(syncTopicsData?.topics ?? []).length === 0">
-                                        <td colspan="5" class="py-6 text-center text-xs text-muted-foreground">No topics found</td>
+                                        <td colspan="6" class="py-6 text-center text-xs text-muted-foreground">No topics found</td>
                                     </tr>
                                     <tr v-for="topic in (syncTopicsData?.topics ?? [])" :key="topic.topicId" class="hover:bg-muted/20">
                                         <td class="py-2 px-3 font-mono text-xs">{{ topic.topicId }}</td>
@@ -1017,6 +1082,18 @@ function formatTs(ts: number): string {
                                             <span class="text-xs bg-muted rounded px-1.5 py-0.5">{{ topic.status }}</span>
                                         </td>
                                         <td class="py-2 px-3 text-right text-muted-foreground text-xs">{{ formatRelativeTime(topic.lastUpdate) }}</td>
+                                        <td class="py-2 px-3 text-center">
+                                            <button
+                                                :disabled="!!requeuePending[topic.topicId]"
+                                                title="Requeue topic from current watermark"
+                                                class="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] border border-border hover:bg-muted transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+                                                @click="requeueTopic(topic.topicId, false)"
+                                            >
+                                                <Loader2 v-if="requeuePending[topic.topicId]" class="h-3 w-3 animate-spin" />
+                                                <RefreshCw v-else class="h-3 w-3" />
+                                                Requeue
+                                            </button>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>

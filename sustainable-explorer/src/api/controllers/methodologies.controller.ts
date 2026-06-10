@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Patch, Param, Query, Body, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Query, Body, StreamableFile, NotFoundException } from '@nestjs/common';
 import {
     ApiTags,
     ApiOperation,
     ApiResponse,
     ApiParam,
     ApiBody,
+    ApiProduces,
 } from '@nestjs/swagger';
 import { MethodologiesService } from '../services/methodologies.service';
 import { MappingReprocessService } from '../services/mapping-reprocess.service';
@@ -96,6 +97,35 @@ export class MethodologiesController {
             throw new NotFoundException(`Methodology with ID "${id}" not found on ${network}`);
         }
         return result;
+    }
+
+    @Get(':id/policy-package')
+    @ApiOperation({
+        summary: 'Download the methodology\'s policy ZIP package',
+        description:
+            'Streams the policy ZIP (the methodology definition package) from the indexer\'s ' +
+            'cached IPFS content (ipfs_files), resolved via the policy\'s sourceCid. ' +
+            'Available once the policy has been decoded; returns 404 when the ZIP has not ' +
+            'been cached yet.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'], description: 'Hedera network' })
+    @ApiParam({ name: 'id', description: 'Hedera policy topic ID of the methodology' })
+    @ApiProduces('application/zip')
+    @ApiResponse({ status: 200, description: 'The policy ZIP file' })
+    @ApiResponse({ status: 404, description: 'Policy package not cached for this methodology' })
+    async downloadPolicyPackage(
+        @Param('network') network: string,
+        @Param('id') id: string,
+    ): Promise<StreamableFile> {
+        const pkg = await this.methodologiesService.getPolicyPackage(network, id);
+        if (!pkg) {
+            throw new NotFoundException(`No cached policy package for methodology "${id}" on ${network}`);
+        }
+        return new StreamableFile(pkg.content, {
+            type: 'application/zip',
+            disposition: `attachment; filename="policy-${id}.zip"`,
+            length: pkg.content.length,
+        });
     }
 
     // TODO: gate behind admin auth once decided

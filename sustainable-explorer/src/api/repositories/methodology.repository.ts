@@ -60,6 +60,8 @@ export interface MethodologyRow {
     totalActive?: number;
     /** Decode status from policy table ('success' / 'pending' / 'failed' / null). */
     decodeStatus: string | null;
+    /** IPFS CID of the policy ZIP (policy.sourceCid). Only populated by findById. */
+    policySourceCid?: string | null;
 }
 
 export interface MethodologyListResult {

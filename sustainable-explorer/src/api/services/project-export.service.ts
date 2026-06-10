@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PROJECT_EXTRACT_FIELDS } from '../../worker/project-mapper/project-fields';
+import { findCountryInText } from '../../worker/project-mapper/helpers';
 import { IWA_TO_CADTRUST, IWA_TO_CDOP } from '../../shared/config/standard-field-mappings.generated';
 import { ProjectResponseDto } from '../dto/project.dto';
 
@@ -122,6 +123,12 @@ function resolveValue(project: ProjectResponseDto, key: string): unknown {
 export class ProjectExportService {
     async exportProject(project: ProjectResponseDto, format: ExportFormat): Promise<Record<string, unknown>> {
         let country: string | null = isValidCountry(project.country) ? project.country : null;
+
+        // Text-scan for an embedded country name first (e.g. when project.country
+        // is a narrative phrase like "districts of Jaipur ... in North-West India").
+        if (!country && project.country) {
+            country = findCountryInText(project.country);
+        }
 
         if (!country && project.lat != null && project.lng != null) {
             country = await reverseGeoCountry(project.lat, project.lng);

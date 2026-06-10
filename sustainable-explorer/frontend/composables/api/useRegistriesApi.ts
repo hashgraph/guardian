@@ -164,10 +164,15 @@ export const useRegistryApi = (opts: { id: Ref<string>; network: Ref<string> }) 
         key.value,
         async () => {
             if (!opts.id.value) return null;
+            // The detail route accepts either an internal id or a full DID
+            // (`did:hedera:...`). The backend exposes both as separate routes:
+            // /registries/id/:id and /registries/:did.
+            const idVal = opts.id.value;
+            const url = idVal.startsWith('did:')
+                ? `${baseURL}/api/v1/${opts.network.value}/registries/${encodeURIComponent(idVal)}`
+                : `${baseURL}/api/v1/${opts.network.value}/registries/id/${idVal}`;
             try {
-                return await $fetch<RegistryDto>(
-                    `${baseURL}/api/v1/${opts.network.value}/registries/id/${opts.id.value}`,
-                );
+                return await $fetch<RegistryDto>(url);
             } catch (err) {
                 console.error('[useRegistryApi] fetch failed:', err);
                 return null;

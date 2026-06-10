@@ -80,8 +80,6 @@ const presets = computed(() => [
     { label: t('credits.presets.nonFungible'), filters: { type: 'Non-Fungible' } },
     { label: t('credits.presets.minted2024'), filters: { mintDate: '2024-01-01|2024-12-31' } },
     { label: t('credits.presets.minted2025'), filters: { mintDate: '2025-01-01|2025-12-31' } },
-    { label: t('credits.presets.blueCarbon'), search: 'Blue Carbon' },
-    { label: t('credits.presets.forestry'), search: 'Forestry' },
 ]);
 
 const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i) => i));
@@ -243,7 +241,18 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
                                     <TruncatedText v-if="c.methodologyDisplay" :text="c.methodologyDisplay" />
                                     <span v-else class="text-muted-foreground/40">-</span>
                                 </td>
-                                <td class="py-3 px-4 whitespace-nowrap text-muted-foreground">{{ c.registry ?? '-' }}</td>
+                                <td class="py-3 px-4 whitespace-nowrap">
+                                    <NuxtLink
+                                        v-if="c.registryDid && c.registry"
+                                        :to="`/registries/${encodeURIComponent(c.registryDid)}`"
+                                        class="text-muted-foreground hover:text-primary hover:underline transition-colors"
+                                        :title="c.registryDid"
+                                        @click.stop
+                                    >
+                                        {{ c.registry }}
+                                    </NuxtLink>
+                                    <span v-else class="text-muted-foreground">{{ c.registry ?? '-' }}</span>
+                                </td>
                                 <td class="py-3 px-3 text-center">
                                     <button
                                         class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
