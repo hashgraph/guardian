@@ -304,7 +304,7 @@ export class FileHelper {
 
     private static _decryptKey(line: string): string {
         if (line) {
-            return line;
+            return FileHelper._flat(line);
         } else {
             return null;
         }
@@ -318,9 +318,22 @@ export class FileHelper {
         }
     }
 
+    /**
+     * Force a flat, standalone copy of a string.
+     *
+     * `String.prototype.split`/`substring` return V8 `SlicedString`s that keep the
+     * ENTIRE parent string alive. The parsed diff only retains tiny header fields
+     * (uuid/type/hash), but as slices they pin the whole multi-MB source file for the
+     * lifetime of `PolicyRestore.lastDiff.file`. Round-tripping through a Buffer yields a
+     * fresh, flat string that does not reference the source, letting it be GC'd.
+     */
+    private static _flat(value: string): string {
+        return value == null ? value : Buffer.from(value, 'utf8').toString('utf8');
+    }
+
     private static _readString(header: FileHeaders, lines: string[], cursor: Cursor): string {
         if (lines[cursor.index] && lines[cursor.index].startsWith(header)) {
-            return lines[cursor.index++].substring(header.length);
+            return FileHelper._flat(lines[cursor.index++].substring(header.length));
         } else {
             return null;
         }
