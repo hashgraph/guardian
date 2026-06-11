@@ -2687,7 +2687,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public async getDocumentStateHistory(
         filters: FilterObject<DocumentState>,
         documentSubpaths: string[],
-    ): Promise<Array<{ createDate: Date, document: any }>> {
+    ): Promise<{ createDate: Date, document: any }[]> {
         const topLevelKeys = Array.from(new Set(
             documentSubpaths.map(p => (p || '').split('.', 1)[0])
         ));
