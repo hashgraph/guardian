@@ -332,6 +332,6 @@ button[disabled] {
     margin-right: 6px;
 }
 
-.module-actions-buttons-container svg.icon-style-compare {
+.module-actions-buttons-container .icon-style-compare svg {
     fill: var(--color-primary);
 }
