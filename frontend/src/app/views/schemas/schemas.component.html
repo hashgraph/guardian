@@ -1,3 +1,8 @@
+@if (loading) {
+  <div class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+  </div>
+} @else {
 <div class="guardian-page">
   <div class="guardian-user-page-header">Schemas</div>
 
@@ -743,11 +748,6 @@
     </div>
   }
 </div>
-
-@if (loading) {
-  <div class="loading">
-    <div class="preloader-image preloader-image-l-size"></div>
-  </div>
 }
 
 <p-popover #schemaMenu>

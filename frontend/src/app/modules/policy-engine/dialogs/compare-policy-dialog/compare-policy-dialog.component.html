@@ -124,7 +124,12 @@
               @for (item of localItemsFiltered; track item) {
                 <div class="policy-list-item" (click)="onSelectLocalItem(item)">
                   <div class="policy-list-item__selected">
-                    <p-checkbox [ngModel]="item._selected" [binary]="true" ></p-checkbox>
+                    <p-checkbox
+                      [(ngModel)]="item._selected"
+                      [binary]="true"
+                      (click)="$event.stopPropagation()"
+                      (onChange)="updateLocalIds()">
+                    </p-checkbox>
                   </div>
                   <div class="policy-list-item__name">{{item.name}}</div>
                 </div>
