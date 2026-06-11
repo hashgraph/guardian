@@ -702,7 +702,20 @@ export class XlsxToJson {
                 field.property = subSchemaName;
             }
             if (fieldType.name === 'Enum') {
-                let enumName: string = param || field.description;
+                if (!param) {
+                    field.enumName = '';
+                    field.enum = [];
+                    field.remoteLink = null;
+                    xlsxResult.addError({
+                        type: 'error',
+                        text: 'Enum field is missing a value in the Parameter column.',
+                        message: 'Enum field is missing a value in the Parameter column.',
+                        worksheet: worksheet.name,
+                        row
+                    }, field);
+                    return;
+                }
+                let enumName: string = param;
                 let enumObject = xlsxResult.getEnumByName(enumName);
 
                 if (!enumObject) {
