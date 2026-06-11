@@ -296,8 +296,8 @@ const statusColor: Record<string, string> = {
                                 <span v-else class="text-xs">—</span>
                             </td>
                             <td class="py-3 px-4 text-muted-foreground text-xs break-words">{{ p.registry }}</td>
-                            <td class="py-3 px-4">
-                                <span class="block text-xs bg-muted rounded px-1.5 py-0.5 cursor-default truncate">{{ p.methodology }}</span>
+                            <td class="py-3 px-4 max-w-0">
+                                <span class="block text-xs bg-muted rounded px-1.5 py-0.5 cursor-default break-words">{{ p.methodology }}</span>
                             </td>
                             <td class="py-3 px-4">
                                 <span class="block text-xs text-muted-foreground cursor-default truncate">{{ p.sector }}</span>

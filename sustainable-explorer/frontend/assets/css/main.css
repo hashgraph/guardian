@@ -130,3 +130,8 @@ pre {
         scroll-behavior: auto !important;
     }
 }
+
+/* Override Leaflet's default #ddd container background to match the CARTO light tile ocean color */
+.leaflet-container {
+    background: #D4DADC !important;
+}

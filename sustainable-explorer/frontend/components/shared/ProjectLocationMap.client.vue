@@ -20,6 +20,9 @@ onMounted(() => {
         zoom: props.approximate ? 5 : 8,
         zoomControl: true,
         scrollWheelZoom: true,
+        minZoom: 2,
+        maxBounds: [[-85, -180], [85, 180]],
+        maxBoundsViscosity: 1.0,
     });
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -45,6 +48,7 @@ onUnmounted(() => {
     map = null;
 });
 </script>
+
 
 <template>
     <div class="relative h-full w-full">
