@@ -2684,6 +2684,27 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return await this.find(DocumentState, filters, options);
     }
 
+    public async getDocumentStateHistory(
+        filters: FilterObject<DocumentState>,
+        documentSubpaths: string[],
+    ): Promise<Array<{ createDate: Date, document: any }>> {
+        const topLevelKeys = Array.from(new Set(
+            documentSubpaths.map(p => (p || '').split('.', 1)[0])
+        ));
+        const projection: any = { _id: 0, createDate: 1 };
+        for (const key of topLevelKeys) {
+            if (!key || key.startsWith('$') || key.includes('.') || key.includes('\0')) {
+                continue;
+            }
+            projection[`document.${key}`] = 1;
+        }
+        const pipeline: any[] = [
+            { $match: filters },
+            { $project: projection },
+        ];
+        return await this.aggregate(DocumentState, pipeline) as any;
+    }
+
     /**
      * Get Dry Run id
      * @returns Dry Run id
