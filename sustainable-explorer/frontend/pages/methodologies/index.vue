@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { BookOpen, Copy, Check } from "lucide-vue-next";
-import type { FilterField } from "~/components/shared/DataFilters.vue";
+import { useDebounceFn } from '@vueuse/core';
+import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import type {
   MethodologySortKey,
   MethodologySortDir,
@@ -38,24 +39,46 @@ const columnToApiSort: Record<ColumnKey, MethodologySortKey | null> = {
 
 // Reactive query state
 const route = useRoute();
+const router = useRouter();
 const initialFilters: Record<string, any> = {};
 if (route.query.registryDid && typeof route.query.registryDid === "string") {
   initialFilters.registryDid = route.query.registryDid;
 }
-// Dashboard top-registries row links here with registryName=<display name>
-// so the user lands on the methodologies list pre-filtered to that registry.
 if (route.query.registryName && typeof route.query.registryName === "string") {
   initialFilters.registryName = route.query.registryName;
 }
-if (route.query.name && typeof route.query.name === "string") {
-  initialFilters.name = route.query.name;
+if (route.query.decodeStatus && typeof route.query.decodeStatus === "string") {
+  initialFilters.decodeStatus = route.query.decodeStatus;
 }
 const filters = ref<Record<string, any>>(initialFilters);
 const currentPage = ref(1);
 const pageSize = ref(10);
 
-// Placeholder search ref kept for the composable signature.
-const searchQuery = ref("");
+// Unified search — debounced so each keystroke doesn't fire an API request.
+const localSearch = ref(
+  typeof route.query.search === "string" ? route.query.search :
+  typeof route.query.name === "string" ? route.query.name : ""
+);
+const searchQuery = ref(localSearch.value.trim());
+const debouncedSearch = useDebounceFn((val: string) => {
+  searchQuery.value = val.trim();
+}, 300);
+
+function syncToUrl() {
+  const q: Record<string, string> = { ...(route.query as Record<string, string>) };
+  const search = localSearch.value.trim();
+  if (search) q.search = search; else delete q.search;
+  delete q.name;
+  if (filters.value.registryName) q.registryName = String(filters.value.registryName); else delete q.registryName;
+  if (filters.value.decodeStatus) q.decodeStatus = String(filters.value.decodeStatus); else delete q.decodeStatus;
+  if (filters.value.registryDid) q.registryDid = String(filters.value.registryDid); else delete q.registryDid;
+  router.replace({ query: q });
+}
+
+watch(localSearch, (val) => {
+  debouncedSearch(val);
+  syncToUrl();
+});
 
 // Fetch the registries list once so the registry filter can render as a
 // labeled dropdown (registry name + topic id) rather than a free-text DID.
@@ -64,6 +87,7 @@ const registriesLimit = ref(500);
 const registriesSearch = ref('');
 const registriesSortBy = ref(null);
 const registriesSortDir = ref(null);
+const registriesFilters = ref({ hideEmpty: true });
 const { data: registriesData } = useRegistriesApi({
   page: registriesPage,
   limit: registriesLimit,
@@ -71,76 +95,60 @@ const { data: registriesData } = useRegistriesApi({
   network: computed(() => network.value),
   sortBy: registriesSortBy as any,
   sortDir: registriesSortDir as any,
+  filters: registriesFilters,
 });
 
-const registryDidOptions = computed(() => {
-  // Surface the registry's topic ID (e.g. 0.0.3054097) as the primary label
-  // — that's the "Registry ID" the rest of the UI shows. The registry name
-  // sits in parens for readability. The submitted value is still the DID,
-  // because that's what the methodologies endpoint filters by.
-  // DataFilters auto-prepends an empty `<option value="">{{ placeholder }}</option>`
-  // for select fields, so we don't include the "All" option here.
-  return (registriesData.value?.data ?? [])
-    .filter((r: any) => r.did && r.relatedTopicId)
-    .map((r: any) => ({
-      value: r.did as string,
-      label: r.name
-        ? `${r.relatedTopicId} — ${r.name}`
-        : (r.relatedTopicId as string),
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+const registryNameOptions = computed(() => {
+    // Deduplicate by name — a single registry can appear under multiple DIDs
+    // (policy versions). Using the name as both value and key collapses them.
+    const names = new Set<string>();
+    for (const r of (registriesData.value?.data ?? [])) {
+        if (r.name) names.add(r.name);
+    }
+    return [...names]
+        .sort((a, b) => a.localeCompare(b))
+        .map(n => ({ value: n, label: n }));
 });
 
-const filterFields = computed<FilterField[]>(() => [
-  {
-    key: "name",
-    label: t("methodologies.filters.name"),
-    type: "text",
-    placeholder: t("methodologies.filters.namePlaceholder"),
-    width: "md",
-  },
-  {
-    key: "registryDid",
-    label: t("methodologies.filters.registryId"),
-    type: "select",
-    width: "md",
-    placeholder: t("methodologies.filters.registryAll"),
-    options: registryDidOptions.value,
-  },
-  {
-    key: "registryName",
-    label: t("methodologies.filters.registryName"),
-    type: "text",
-    placeholder: t("methodologies.filters.registryNamePlaceholder"),
-    width: "md",
-  },
-  {
-    key: "id",
-    label: t("methodologies.filters.id"),
-    type: "text",
-    placeholder: "0.0.xxxx",
-    width: "sm",
-  },
-  {
-    key: "description",
-    label: t("methodologies.filters.description"),
-    type: "text",
-    width: "md",
-  },
-  {
-    key: "decodeStatus",
-    label: t("methodologies.filters.decoded"),
-    type: "select",
-    width: "sm",
-    options: [
-      { value: "", label: t("methodologies.filters.decodedAll") },
-      { value: "success", label: t("methodologies.decodeStatus.success") },
-      { value: "failed", label: t("methodologies.decodeStatus.failed") },
-      { value: "pending", label: t("methodologies.decodeStatus.pending") },
-      { value: "unknown", label: t("methodologies.decodeStatus.unknown") },
-    ],
-  },
+const barFilters = computed<FilterOption[]>(() => [
+    {
+        key: 'registryName',
+        label: t('methodologies.filters.registry'),
+        multiSelect: true,
+        searchable: true,
+        options: registryNameOptions.value,
+    },
+    {
+        key: 'decodeStatus',
+        label: t('methodologies.filters.decoded'),
+        options: [
+            { value: 'success', label: t('methodologies.decodeStatus.success') },
+            { value: 'failed', label: t('methodologies.decodeStatus.failed') },
+            { value: 'pending', label: t('methodologies.decodeStatus.pending') },
+            { value: 'unknown', label: t('methodologies.decodeStatus.unknown') },
+        ],
+    },
 ]);
+
+const activeFilterRecord = computed<Record<string, string>>(() => {
+    const r: Record<string, string> = {};
+    if (filters.value.registryName) r.registryName = String(filters.value.registryName);
+    if (filters.value.decodeStatus) r.decodeStatus = String(filters.value.decodeStatus);
+    return r;
+});
+
+function setMethodologyFilter(key: string, value: string) {
+    const next = { ...filters.value };
+    if (!value || value === 'all') delete next[key];
+    else next[key] = value;
+    filters.value = next;
+}
+
+function clearMethodologyFilters() {
+    filters.value = {};
+    localSearch.value = '';
+    searchQuery.value = '';
+}
 
 const sortKey = ref<ColumnKey | null>("createdAt");
 const sortDir = ref<SortDirection>("desc");
@@ -222,6 +230,7 @@ watch(
   filters,
   () => {
     currentPage.value = 1;
+    syncToUrl();
   },
   { deep: true },
 );
@@ -303,7 +312,16 @@ const skeletonRows = computed(() =>
     </div>
 
     <div class="px-6 pb-3">
-      <DataFilters v-model="filters" :fields="filterFields" />
+      <FilterBar
+        v-model="localSearch"
+        :filters="barFilters"
+        :active-filters="activeFilterRecord"
+        :result-count="totalCount"
+        :total-count="statTotal"
+        :search-placeholder="$t('methodologies.searchPlaceholder')"
+        @filter="setMethodologyFilter"
+        @clear="clearMethodologyFilters"
+      />
     </div>
 
     <div class="px-6 pb-6">

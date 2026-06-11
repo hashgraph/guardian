@@ -244,7 +244,9 @@
         "presets": {
             "goldStandard": "Gold Standard",
             "sdg13": "ODS 13: Acción por el clima",
-            "vintage2024": "Añada 2024"
+            "vintage2022": "Añada 2022",
+            "issuingEnergy": "Emitiendo Energía",
+            "glycolRecycling": "Reciclaje de Glicol"
         },
         "notFound": "Proyecto no encontrado",
         "details": {
@@ -306,7 +308,7 @@
     "credits": {
         "title": "Emisiones",
         "subtitle": "Tokens emitidos en Hedera",
-        "searchPlaceholder": "Buscar por nombre, símbolo, ID de token...",
+        "searchPlaceholder": "Buscar emisiones...",
         "quickFilters": "Filtros rápidos:",
         "presets": {
             "fungible": "Tokens fungibles",
@@ -597,6 +599,7 @@
     "registries": {
         "title": "Registros",
         "subtitle": "Registros Estándar que operan en la red de Guardian",
+        "searchPlaceholder": "Buscar registros...",
         "noMatch": "Ningún registro coincide con tus filtros",
         "columns": {
             "name": "Nombre",

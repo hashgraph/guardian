@@ -76,8 +76,16 @@ const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, act
 const presets = computed(() => [
     { label: t('projects.presets.goldStandard'), filters: { registry: 'Gold Standard' } as Record<string, string> },
     { label: t('projects.presets.sdg13'), filters: { sdgs: '13' } as Record<string, string> },
-    { label: t('projects.presets.vintage2024'), filters: { vintage: '2024|2024' } as Record<string, string> },
+    { label: t('projects.presets.vintage2022'), filters: { vintage: '2022|2022' } as Record<string, string> },
+    { label: t('projects.presets.issuingEnergy'), filters: { status: 'Issuing', sector: 'Energy' } as Record<string, string> },
+    { label: t('projects.presets.glycolRecycling'), filters: { sector: 'Glycol Recycling' } as Record<string, string> },
 ]);
+
+function isPresetActive(preset: { filters: Record<string, string> }): boolean {
+    const af = activeFilters.value;
+    const entries = Object.entries(preset.filters);
+    return entries.length > 0 && entries.every(([key, value]) => af[key] === value);
+}
 
 // Summary statistics for filtered results
 const summaryStats = computed(() => {
@@ -97,11 +105,14 @@ const filters = computed<FilterOption[]>(() => [
     {
         key: 'registry',
         label: t('projects.filters.registry'),
+        multiSelect: true,
+        searchable: true,
         options: filterOptions.value.registries.map(r => ({ value: r, label: r })),
     },
     {
         key: 'country',
         label: t('projects.filters.country'),
+        multiSelect: true,
         searchable: true,
         options: countryFilterOptions.value.map(c => ({ value: c, label: c })),
     },
@@ -114,6 +125,7 @@ const filters = computed<FilterOption[]>(() => [
     {
         key: 'sector',
         label: t('projects.filters.sector'),
+        multiSelect: true,
         options: filterOptions.value.sectors.map(s => ({ value: s, label: s })),
     },
     {
@@ -124,6 +136,8 @@ const filters = computed<FilterOption[]>(() => [
     {
         key: 'developer',
         label: t('projects.filters.developer'),
+        multiSelect: true,
+        searchable: true,
         options: filterOptions.value.developers.map(d => ({ value: d, label: d })),
     },
     {
@@ -174,7 +188,12 @@ const statusColor: Record<string, string> = {
                 <button
                     v-for="preset in presets"
                     :key="preset.label"
-                    class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    :class="[
+                        'inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors',
+                        isPresetActive(preset)
+                            ? 'border-primary/50 bg-primary/10 text-primary'
+                            : 'border-primary/25 text-muted-foreground hover:bg-muted hover:text-foreground'
+                    ]"
                     @click="applyPreset({ filters: preset.filters })"
                 >
                     {{ preset.label }}
