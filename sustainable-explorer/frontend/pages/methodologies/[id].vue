@@ -666,10 +666,25 @@ const vcViewerOpen = ref(false);
 const vcViewerTitle = ref('');
 const vcViewerData = ref<Record<string, any> | null>(null);
 
-function viewIssuanceVc(c: { tokenId: string; name: string; rawVc: Record<string, any> | null }) {
+async function viewIssuanceVc(c: { tokenId: string; name: string }) {
   vcViewerTitle.value = c.name || c.tokenId;
-  vcViewerData.value = c.rawVc;
   vcViewerOpen.value = true;
+  vcViewerData.value = null;
+  const apiBaseURL = (useRuntimeConfig().public.apiBaseUrl as string) || '';
+  try {
+    const raw = await $fetch<{ mintEvents: Array<{ document: Record<string, any> | null }> }>(
+      `/api/v1/${network.value}/credits/${encodeURIComponent(c.tokenId)}/raw`,
+      { baseURL: apiBaseURL },
+    );
+    const events = raw.mintEvents ?? [];
+    vcViewerData.value = events[events.length - 1]?.document ?? null;
+  } catch (err) {
+    vcViewerData.value = {
+      error: 'Failed to load raw data',
+      message: err instanceof Error ? err.message : String(err),
+      tokenId: c.tokenId,
+    };
+  }
 }
 
 // Lifecycle summary — sourced from backend-computed totals on the methodology
