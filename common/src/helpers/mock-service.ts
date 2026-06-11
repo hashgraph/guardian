@@ -157,7 +157,7 @@ export class MockHelper {
         if (event.type === MockType.API) {
             return await MockHelper.api(event.mockId, event.data);
         }
-        throw new Error('Invalid method');
+        throw new Error('Invalid Mock method');
     }
 
     public static getBuffer(content: Buffer<ArrayBufferLike>): string {
@@ -183,7 +183,7 @@ export class MockHelper {
         if (row && row.document) {
             return row.document;
         } else {
-            throw new Error('Invalid cid');
+            throw new Error('Invalid CID');
         }
     }
 
@@ -256,7 +256,7 @@ export class MockHelper {
         sequence_number: string;
         topicId: string;
         message: string;
-    }> {
+    } | null> {
         if (params.timeStamp) {
             const row = await DatabaseServer.getMock(mockId, MockEntityType.MESSAGE, {
                 'transaction.consensus_timestamp': params.timeStamp
@@ -279,6 +279,7 @@ export class MockHelper {
                 return null;
             }
         }
+        return null;
     }
 
     private static async getHederaMessages(
@@ -291,7 +292,7 @@ export class MockHelper {
         sequence_number: string;
         topicId: string;
         message: string;
-    }[]> {
+    }[] | null> {
         let result: any[];
         if (params.startTimestamp) {
             let rows = await DatabaseServer.getMocks(mockId, MockEntityType.MESSAGE, {
@@ -327,7 +328,7 @@ export class MockHelper {
         });
 
         if (!row) {
-            throw new Error('Response not found');
+            throw new Error('Mocked response was not found');
         }
 
         if (row.request.responseType === 'JSON') {
@@ -359,7 +360,7 @@ export class MockHelper {
         accountId: string,
         transaction: Transaction
     ): {
-        type: MockEntityType,
+        type: MockEntityType | null,
         transaction: any
     } {
         if (type === 'TokenCreateTransaction') {
@@ -370,7 +371,7 @@ export class MockHelper {
             const name = t.tokenName;
             const symbol = t.tokenSymbol;
             const tokenType = t.tokenType === TokenType.FungibleCommon ? 'FUNGIBLE_COMMON' : 'NON_FUNGIBLE_UNIQUE';
-            const decimals = t.decimals.toInt();
+            const decimals = t.decimals?.toInt();
             const adminKey = !!t.adminKey;
             const supplyKey = !!t.supplyKey;
             const freezeKey = !!t.freezeKey;
@@ -500,8 +501,9 @@ export class MockHelper {
             const t = transaction as TopicMessageSubmitTransaction;
             const timestamp = MockHelper.getTimestamp();
             const consensusTimestamp = MockHelper.timestampToString(timestamp);
-            const topicId = t.topicId.toString();
-            const message = t.getMessage().toString();
+            const topicId = t.topicId?.toString();
+            const messageBytes = t.getMessage();
+            const message = messageBytes ? Buffer.from(messageBytes).toString('utf8') : '';
             const base64 = Buffer.from(message, 'utf8').toString('base64');
 
             return {
@@ -581,7 +583,9 @@ export class MockHelper {
 
         for (const row of rows) {
             if (row.type === MockEntityType.FILE) {
-                ipfsMap.set(row.cid, row.document);
+                if (row.cid) {
+                    ipfsMap.set(row.cid, row.document);
+                }
             } else if (row.type === MockEntityType.TOPIC) {
                 const transaction = row.transaction;
                 const topic = topicMap.get(transaction.topic_id);
@@ -603,7 +607,7 @@ export class MockHelper {
                 const transaction = row.transaction;
                 tokenMap.set(transaction.token_id, row.transaction);
             } else if (row.type === MockEntityType.ACCOUNT) {
-                return null;
+                continue;
             } else if (row.type === MockEntityType.API) {
                 const request = row.request;
                 const response = row.response;
@@ -638,7 +642,7 @@ export class MockHelper {
             api.push(config);
         }
 
-        const userRows = await DatabaseServer.getVirtualUsers(mockId, null, true, true);
+        const userRows = await DatabaseServer.getVirtualUsers(mockId, undefined, true, true);
         const users: any[] = [];
         for (const user of userRows) {
             if (user.username !== 'Administrator') {
