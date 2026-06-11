@@ -34,6 +34,7 @@ export class SharedEnumTable {
 
 export class EnumTable {
     private readonly _headers: Map<string, TableHeader>;
+    private readonly _legacyHeaders: Set<string> = new Set(['Schema name', 'Field name']);
 
     public readonly headersStyle: Partial<ExcelJS.Style>;
     public readonly descriptionStyle: Partial<ExcelJS.Style>;
@@ -179,6 +180,6 @@ export class EnumTable {
     }
 
     public isHeader(value: string): boolean {
-        return this._headers.has(value);
+        return this._headers.has(value) || this._legacyHeaders.has(value);
     }
 }
