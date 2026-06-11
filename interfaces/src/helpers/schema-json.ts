@@ -378,7 +378,7 @@ export class SchemaToJson {
             }
             json.if.AND = ic.AND
                 .filter((p: any) => p?.field?.name !== undefined)
-                .map((p: any) => ({ field: p.field.name, value: p.fieldValue }));
+                .map((p: any) => ({ field: p.field.name, fieldValue: p.fieldValue }));
             return json;
         }
 

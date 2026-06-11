@@ -948,6 +948,19 @@ export class SchemaConfigurationComponent implements OnInit {
             }
         }
 
+        const fieldsBySchemaName = new Map<string, SchemaField>(fields.map(f => [f.name, f]));
+
+        const getPickedName = (r: any): string | undefined => {
+            if (Array.isArray(r?.field?.fieldPath) && r.field.fieldPath.length > 0) {
+                return r.field.fieldPath[0];
+            }
+            if (Array.isArray(r?.fieldPath) && r.fieldPath.length > 0) {
+                return r.fieldPath[0];
+            }
+            return r?.field?.key || r?.field?.controlKey?.value ||
+                (typeof r?.field === 'string' ? r.field : undefined);
+        };
+
         const conditions: SchemaCondition[] = [];
         for (const element of this.conditions) {
             const conditionValue = value.conditions[element.name];
@@ -977,14 +990,10 @@ export class SchemaConfigurationComponent implements OnInit {
                 continue;
             }
 
-            const getPickedName = (r: any): string | undefined => {
-                return r?.field?.name || r?.field?.key || r?.field?.controlKey?.value || r?.field;
-            };
-
             if (op === 'SINGLE') {
                 const row = rows[0];
                 const name = getPickedName(row);
-                const sf = name ? allFieldsByName.get(name) : undefined;
+                const sf = name ? fieldsBySchemaName.get(name) : undefined;
                 if (!sf) {
                     continue;
                 }
@@ -1001,7 +1010,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 const arr = rows
                     .map(r => {
                         const name = getPickedName(r);
-                        const sf = name ? allFieldsByName.get(name) : undefined;
+                        const sf = name ? fieldsBySchemaName.get(name) : undefined;
                         if (!sf) {
                             return null;
                         }
