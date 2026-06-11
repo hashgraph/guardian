@@ -319,7 +319,7 @@ export class FileHelper {
     }
 
     private static _flat(value: string): string {
-        return value == null ? value : Buffer.from(value, 'utf8').toString('utf8');
+        return value === null ? value : Buffer.from(value, 'utf8').toString('utf8');
     }
 
     private static _readString(header: FileHeaders, lines: string[], cursor: Cursor): string {
