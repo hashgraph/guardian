@@ -92,8 +92,8 @@ const visibleFilterOptions = computed(() => ({
 }));
 
 const filters = computed<FilterOption[]>(() => [
-    { key: 'type', label: t('credits.filters.tokenType'), options: visibleFilterOptions.value.types.map(x => ({ value: x, label: x })) },
-    { key: 'registry', label: t('credits.filters.registry'), options: visibleFilterOptions.value.registries.map(r => ({ value: r, label: r })) },
+    { key: 'type', label: t('credits.filters.tokenType'), multiSelect: true, options: visibleFilterOptions.value.types.map(x => ({ value: x, label: x })) },
+    { key: 'registry', label: t('credits.filters.registry'), multiSelect: true, searchable: true, options: visibleFilterOptions.value.registries.map(r => ({ value: r, label: r })) },
     { key: 'supply', label: t('credits.filters.supply'), type: 'numrange', options: [] },
     { key: 'mintDate', label: t('credits.filters.mintDate'), type: 'daterange', options: [] },
 ]);
@@ -168,7 +168,7 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
                     v-for="preset in presets"
                     :key="preset.label"
                     class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                    @click="applyPreset({ search: preset.search, filters: preset.filters } as any)"
+                    @click="applyPreset({ filters: preset.filters })"
                 >
                     {{ preset.label }}
                 </button>
