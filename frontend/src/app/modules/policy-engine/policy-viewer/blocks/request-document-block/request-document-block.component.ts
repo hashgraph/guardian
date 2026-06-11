@@ -63,11 +63,11 @@ export class RequestDocumentBlockComponent
     extends AbstractUIBlockComponent<IRequestDocumentData>
     implements OnInit {
 
-    @Input('id') id!: string;
-    @Input('policyId') policyId!: string;
-    @Input('static') static!: any;
+    @Input('id') override id!: string;
+    @Input('policyId') override policyId!: string;
+    @Input('static') override static!: any;
     @Input('dryRun') dryRun!: any;
-    @Input('savepointIds') savepointIds?: string[] | null = null;
+    @Input('savepointIds') override savepointIds?: string[] | null = null;
     @Input('policyStatus') policyStatus!: string;
 
     @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
