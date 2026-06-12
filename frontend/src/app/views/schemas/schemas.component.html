@@ -8,10 +8,10 @@
 
   <div class="actions">
     <div class="tabs-nav">
-      <p-tabs [value]="0">
+      <p-tabs [value]="type">
         <p-tablist>
-          @for (tab of schemasTypes; track tab; let i = $index) {
-            <p-tab [value]="i" (click)="onChangeType(tab.value)"><div class="tabview-label">{{ tab.label }}</div></p-tab>
+          @for (tab of schemasTypes; track tab) {
+            <p-tab [value]="tab.value" (click)="onChangeType(tab.value)"><div class="tabview-label">{{ tab.label }}</div></p-tab>
           }
         </p-tablist>
       </p-tabs>
