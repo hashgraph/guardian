@@ -41,7 +41,7 @@ import {
 import { IDocumentOptions } from '../hedera-modules/vcjs/vcjs.js';
 import { KeyType, Users, Wallet } from '../helpers/index.js';
 import { IAuthUser } from '../interfaces/index.js';
-import { Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
+import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { bls12_381 } from '@noble/curves/bls12-381';
 import { Hashing } from '../hedera-modules/hashing.js';
 import { DatabaseServer } from '../database-modules/index.js';
