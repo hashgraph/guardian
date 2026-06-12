@@ -1428,7 +1428,7 @@ __metadata:
     "@nestjs/microservices": "npm:^11.1.24"
     "@noble/curves": "npm:^1.3.0"
     "@transmute/credentials-context": "npm:0.7.0-unstable.80"
-    "@transmute/did-context": "npm:0.7.0-unstable.80"
+    "@transmute/did-context": "npm:0.7.0-unstable.82"
     "@transmute/ed25519-signature-2018": "npm:0.7.0-unstable.80"
     "@transmute/jsonld-schema": "npm:0.7.0-unstable.80"
     "@transmute/security-context": "npm:0.7.0-unstable.80"
@@ -4249,10 +4249,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@transmute/did-context@npm:0.7.0-unstable.80":
-  version: 0.7.0-unstable.80
-  resolution: "@transmute/did-context@npm:0.7.0-unstable.80"
-  checksum: 10c0/b8fddaea9f83af7466221e13b72461ebbc30c3ac8574c32ece7d6dfe5ccd63951e77282f1f1d9e61bc9c8751e35f7566a9349d0d08210f275bf95e9f8a9a7d3e
+"@transmute/did-context@npm:0.7.0-unstable.82":
+  version: 0.7.0-unstable.82
+  resolution: "@transmute/did-context@npm:0.7.0-unstable.82"
+  checksum: 10c0/143950a755560bfd2790a68b86a0ec17d7da6daebf4711d20bd8184f0629ca3b541bdd87bf02e620f6f2aaebc6a0b53c08c03e107c6de78e598b429c8caef031
   languageName: node
   linkType: hard
 
@@ -13175,7 +13175,7 @@ __metadata:
   resolution: "mrv-sender@workspace:mrv-sender"
   dependencies:
     "@transmute/credentials-context": "npm:0.7.0-unstable.80"
-    "@transmute/did-context": "npm:0.7.0-unstable.80"
+    "@transmute/did-context": "npm:0.7.0-unstable.82"
     "@transmute/ed25519-signature-2018": "npm:0.7.0-unstable.80"
     "@transmute/security-context": "npm:0.7.0-unstable.80"
     "@transmute/vc.js": "npm:0.7.0-unstable.80"
