@@ -441,7 +441,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     }
 
     setParents(root: any) {
-        root.children?.forEach((child: any) => {
+        root?.children?.forEach((child: any) => {
             child.parent = root;
             this.setParents(child);
         });
