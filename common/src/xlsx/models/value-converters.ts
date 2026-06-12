@@ -22,7 +22,7 @@ export function xlsxToEntity(value: string): SchemaEntity {
 }
 
 export function xlsxToUnit(format: string): string {
-    if (!format) return '';
+    if (!format) { return ''; }
     return format.match(/[^0,\#,\_,\s,\-,\*,\;,\?,\@,\,,\."]{1,}/g)?.[0] ?? '';
 }
 
