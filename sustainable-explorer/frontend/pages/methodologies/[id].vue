@@ -2025,7 +2025,6 @@ const issuanceTrendTotal = computed(() =>
             <div class="text-2xl font-bold text-foreground tabular-nums">
               {{ formatCredits(methodology.stats.issuanceCount) }}
             </div>
-            <div class="text-xs text-muted-foreground mt-1">{{ $t('methodologies.detail.analytics.issuancesSub') }}</div>
           </div>
         </div>
 
