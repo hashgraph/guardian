@@ -32,7 +32,7 @@
         "dotenv": "^16.0.0",
         "express": "5.2.1",
         "js-yaml": "^4.1.0",
-        "morgan": "1.10.1",
+        "morgan": "1.11.0",
         "swagger-ui-express": "4.6.3",
         "typescript": "^5.8.3",
         "yup": "^1.0.2"
