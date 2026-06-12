@@ -22,6 +22,7 @@ export class RelationshipsResolver extends BaseProjectKeyResolver {
         // an ungated relationships walk can mis-key (e.g. VVB chains).
         const confirmed = await this.confirmProjectKey(walked.projectKey, ctx.policyMapping);
         if (!confirmed) return this.pass();
-        return this.resolved(confirmed);
+        const rootVcTimestamp = await this.earliestTimestampForCsId(confirmed);
+        return this.resolved(confirmed, { rootVcTimestamp });
     }
 }

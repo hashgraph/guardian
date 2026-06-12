@@ -56,6 +56,10 @@ export class TopicSyncProcessor extends WorkerHost {
             }, {
                 jobId: `topic-${topicId}-poll-${Date.now()}`,
                 delay,
+                // Each poll is a uniquely-named keep-alive job; without these the
+                // completed/failed sets grow unbounded and eventually OOM Redict.
+                removeOnComplete: true,
+                removeOnFail: 1000,
             });
             this.logger.debug(`No new messages for topic ${topicId}, re-polling in ${delay}ms`);
             return;
@@ -79,6 +83,10 @@ export class TopicSyncProcessor extends WorkerHost {
                 opts: {
                     priority: isOrgTopic ? 1 : 10,
                     jobId: `msg-${msg.consensus_timestamp}`,
+                    // Trim on finish — message data lives in Postgres, so retained
+                    // completed/failed job hashes are pure Redict bloat.
+                    removeOnComplete: true,
+                    removeOnFail: 1000,
                 },
             })),
         );
@@ -108,6 +116,10 @@ export class TopicSyncProcessor extends WorkerHost {
         }, {
             jobId: `topic-${topicId}-${maxSequence}-${Date.now()}`,
             delay: nextDelay,
+            // Uniquely-named per page/watermark — trim on finish so they don't
+            // accumulate in the completed/failed sets and exhaust Redict memory.
+            removeOnComplete: true,
+            removeOnFail: 1000,
         });
 
         this.logger.log(

@@ -17,6 +17,10 @@ export class DynamicTopicResolver extends BaseProjectKeyResolver {
     async resolve(ctx: ResolutionContext): Promise<ResolutionOutcome> {
         const classification = await this.topicClassifier.classifyTopic(this.dataSource, ctx.topicId);
         if (classification.kind !== 'dynamic-project') return this.pass();
-        return this.resolved(ctx.topicId);
+        // Key by the topic's canonical project cs.id (uniform cs.id keys across
+        // all methods); record the dynamic topic in metadata. Every VC in the
+        // topic resolves to the same canonical cs.id, so they still merge.
+        const csId = (await this.canonicalCsIdInTopic(ctx.topicId, ctx.policyMapping)) ?? ctx.csId;
+        return this.resolved(csId, { dynamicTopicId: ctx.topicId });
     }
 }

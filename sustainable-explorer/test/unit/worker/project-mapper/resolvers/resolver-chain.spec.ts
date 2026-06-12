@@ -30,10 +30,10 @@ const build = (r1: ReturnType<typeof fake>, r2: ReturnType<typeof fake>, r3: Ret
 
 describe('ProjectKeyResolverChain', () => {
     it('returns the first resolved result and short-circuits', async () => {
-        const r1 = fake(async () => ({ status: 'resolved', projectKey: 'K1', method: 'topic' }));
+        const r1 = fake(async () => ({ status: 'resolved', projectKey: 'K1', method: 'topic', metadata: { dynamicTopicId: '0.0.123' } }));
         const r2 = fake(pass);
         const chain = build(r1, r2, fake(pass), fake(pass));
-        await expect(chain.resolve(ctx)).resolves.toEqual({ projectKey: 'K1', method: 'topic' });
+        await expect(chain.resolve(ctx)).resolves.toEqual({ projectKey: 'K1', method: 'topic', metadata: { dynamicTopicId: '0.0.123' } });
         expect(r2.resolve).not.toHaveBeenCalled();
     });
 
@@ -47,10 +47,10 @@ describe('ProjectKeyResolverChain', () => {
     it('absorbs a throwing strategy as pass and continues the chain', async () => {
         const chain = build(
             fake(async () => { throw new Error('boom'); }),
-            fake(async () => ({ status: 'resolved', projectKey: 'K2', method: 'csRef' })),
+            fake(async () => ({ status: 'resolved', projectKey: 'K2', method: 'csRef', metadata: { rootVcTimestamp: '1699999999.0' } })),
             fake(pass), fake(pass),
         );
-        await expect(chain.resolve(ctx)).resolves.toEqual({ projectKey: 'K2', method: 'csRef' });
+        await expect(chain.resolve(ctx)).resolves.toEqual({ projectKey: 'K2', method: 'csRef', metadata: { rootVcTimestamp: '1699999999.0' } });
     });
 
     it('returns null when every strategy passes', async () => {

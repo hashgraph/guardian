@@ -237,8 +237,13 @@ export class ProjectMapperService {
         let geoLngLat: [number, number] | null = null;
 
         for (const field of PROJECT_EXTRACT_FIELDS) {
-            if (vcDocType === 'validationReport') break;                          // contributes nothing
-            if (isDateOnlySource && !DATE_ONLY_FIELD_KEYS.has(field.key)) continue; // only dates/credits
+            // `name` is always allowed (it only ever GAP-FILLS via the merge SQL —
+            // a non-project VC never overwrites an existing name). This lets a
+            // project whose project-schema VC never landed still show a real
+            // title from a data-bearing schema instead of falling back to the DID.
+            const alwaysAllowed = field.key === 'name';
+            if (vcDocType === 'validationReport' && !alwaysAllowed) continue;       // validation: only name
+            if (isDateOnlySource && !DATE_ONLY_FIELD_KEYS.has(field.key) && !alwaysAllowed) continue; // else dates only
             const path = crossSchemaFieldMap[field.key];
             if (!path) continue;
 
@@ -348,12 +353,17 @@ export class ProjectMapperService {
         // store the rest in `countries[]` for future multi-country UI work.
         // The 200-char guard still rejects mis-mapped narrative paragraphs.
         const rawCountry = extracted['country'];
+        // Reject values that are clearly not places — URLs, IPFS/file URIs, or a
+        // raw CID — which leak in when the country field path lands on a geo/file
+        // attribute (e.g. a KML file reference).
+        const isNonLocation = (s: string): boolean =>
+            /:\/\//.test(s) || /^(Qm[1-9A-HJ-NP-Za-km-z]{44}|baf[a-z0-9]{20,})$/i.test(s.trim());
         let countries: string[] = [];
-        if (rawCountry && rawCountry.length <= 200) {
+        if (rawCountry && rawCountry.length <= 200 && !isNonLocation(rawCountry)) {
             countries = rawCountry
                 .split(',')
                 .map(s => resolveCountryName(s.trim()))
-                .filter(s => s.length > 0);
+                .filter(s => s.length > 0 && !isNonLocation(s));
         }
         let country = countries[0] ?? null;
 
@@ -445,6 +455,13 @@ export class ProjectMapperService {
         if (creditingPeriodStart) newFields.creditingPeriodStart = creditingPeriodStart;
         if (creditingPeriodEnd) newFields.creditingPeriodEnd = creditingPeriodEnd;
         newFields.status = 'Issuing';
+        newFields.decodeMethod = resolvedProject.method;
+        // Method-specific resolution anchor (M1: dynamic topic id; M2/M3/M4: root
+        // VC timestamp the cs.id key was derived from). Merge-friendly: only
+        // non-empty keys are written so later VCs don't clobber it with {}.
+        if (resolvedProject.metadata && Object.keys(resolvedProject.metadata).length > 0) {
+            newFields.metadata = resolvedProject.metadata;
+        }
 
         // Track this VC's contribution. The SQL UPDATE below dedupes by
         // consensusTimestamp so re-running upsert for the same VC is idempotent.

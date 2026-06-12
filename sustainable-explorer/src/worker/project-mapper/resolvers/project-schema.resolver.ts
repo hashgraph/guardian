@@ -13,7 +13,10 @@ export class ProjectSchemaResolver extends BaseProjectKeyResolver {
     }
 
     async resolve(ctx: ResolutionContext): Promise<ResolutionOutcome> {
-        if (ctx.isProjectSchemaVc) return this.resolved(ctx.csId);
+        if (ctx.isProjectSchemaVc) {
+            const rootVcTimestamp = await this.earliestTimestampForCsId(ctx.csId);
+            return this.resolved(ctx.csId, { rootVcTimestamp });
+        }
         if (ctx.policyHasProjectSchemaClassification) {
             return this.reject('not the project schema, no cs.ref/ancestor');
         }

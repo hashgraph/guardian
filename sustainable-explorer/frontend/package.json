@@ -12,6 +12,7 @@
         "@tanstack/vue-table": "^8",
         "@unovis/ts": "^1",
         "@unovis/vue": "^1",
+        "@vue-flow/core": "^1.48.2",
         "@vue-leaflet/vue-leaflet": "^0.10",
         "@vueuse/core": "^12",
         "class-variance-authority": "^0.7",

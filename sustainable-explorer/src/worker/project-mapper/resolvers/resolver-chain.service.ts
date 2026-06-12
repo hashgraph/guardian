@@ -46,7 +46,7 @@ export class ProjectKeyResolverChain {
         for (const { name, resolver, breaker } of this.chain) {
             const outcome = await breaker.run(() => resolver.resolve(ctx), PASS);
             if (outcome.status === 'resolved') {
-                return { projectKey: outcome.projectKey, method: outcome.method };
+                return { projectKey: outcome.projectKey, method: outcome.method, metadata: outcome.metadata };
             }
             if (outcome.status === 'reject') {
                 this.logger.debug(`${name} rejected projectKey for ts=${ctx.consensusTimestamp}: ${outcome.reason}`);

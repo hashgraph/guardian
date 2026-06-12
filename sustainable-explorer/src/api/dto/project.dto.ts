@@ -1,7 +1,7 @@
 import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
-import { ProjectRow, ActivityEventRow, PolicySchemaRow } from '../repositories/project.repository';
+import { ProjectRow, ActivityEventRow, PolicySchemaRow, IssuanceEventRow } from '../repositories/project.repository';
 
 export class ActivityEventDto {
     @ApiProperty({ description: 'Date of the activity (YYYY-MM-DD)' })
@@ -71,6 +71,49 @@ export class IssuanceDto {
 
     @ApiProperty({ nullable: true, description: 'Raw MintToken VC document from the Hedera message' })
     rawVc: Record<string, any> | null;
+}
+
+export class IssuanceEventDto {
+    @ApiProperty({ description: 'HCS consensus timestamp of the MintToken VC message' })
+    mintConsensusTimestamp: string;
+
+    @ApiProperty({ nullable: true, description: 'Hedera token ID (e.g. 0.0.12345)' })
+    tokenId: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Token name from token_cache' })
+    name: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Token symbol from token_cache' })
+    symbol: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Token type (FUNGIBLE_COMMON or NON_FUNGIBLE_UNIQUE)' })
+    type: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Minted amount for this event' })
+    amount: number | null;
+
+    @ApiProperty({ nullable: true, description: 'Mint date (YYYY-MM-DD)' })
+    mintDate: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Link method used to associate this mint with the project (relationship | cs_ref | ref_root | topic_scope)' })
+    linkMethod: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Raw MintToken VC document from the Hedera message' })
+    rawVc: Record<string, any> | null;
+
+    static fromRow(row: IssuanceEventRow): IssuanceEventDto {
+        return {
+            mintConsensusTimestamp: row.mintConsensusTimestamp,
+            tokenId: row.tokenId ?? null,
+            name: row.name ?? null,
+            symbol: row.symbol ?? null,
+            type: row.type ?? null,
+            amount: row.amount ?? null,
+            mintDate: row.mintDate ?? null,
+            linkMethod: row.linkMethod ?? null,
+            rawVc: row.rawVc ?? null,
+        };
+    }
 }
 
 export class LinkedVcDto {
@@ -233,6 +276,12 @@ export class ProjectResponseDto {
     @ApiProperty({ description: 'Number of VC-Document messages that contributed to this project row' })
     vcCount: number;
 
+    @ApiProperty({ nullable: true, description: 'Resolver method that established this project identity: topic | csRef | relationships | projectSchema' })
+    decodeMethod: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Resolution anchor metadata: { dynamicTopicId } for the topic method, { rootVcTimestamp } for cs.ref / relationships / projectSchema' })
+    metadata: Record<string, unknown> | null;
+
     @ApiProperty({ description: 'HCS consensus timestamp of the earliest source VC message' })
     sourceTimestamp: string;
 
@@ -247,6 +296,9 @@ export class ProjectResponseDto {
 
     @ApiProperty({ type: [IssuanceDto], description: 'Linked token issuances for this project' })
     issuances: IssuanceDto[];
+
+    @ApiProperty({ type: [IssuanceEventDto], description: 'Per-mint-event issuance history, oldest first' })
+    issuanceEvents: IssuanceEventDto[];
 
     @ApiProperty({ description: 'Total credits ever minted (NFT serials + fungible supply)' })
     totalIssued: number;
@@ -358,10 +410,20 @@ export class ProjectResponseDto {
             return 0;
         });
 
+        // Friendly display name: when the stored displayName is a bare DID or
+        // topic id (the project-schema VC never landed to supply a real title),
+        // fall back to the project schema's name, then the methodology name.
+        const rawName = row.displayName ?? '';
+        const looksLikeId = !rawName || /^did:/i.test(rawName) || /^\d+\.\d+\.\d+$/.test(rawName) || rawName === (row.projectKey ?? '');
+        const projectSchemaName = linkedSchemas.find(s => s.isProjectSchema && s.schemaName)?.schemaName ?? null;
+        const friendlyName = looksLikeId
+            ? (projectSchemaName ?? (typeof data['methodology'] === 'string' ? (data['methodology'] as string) : null) ?? rawName)
+            : rawName;
+
         return {
             id: row.id,
             network,
-            name: row.displayName,
+            name: friendlyName,
             description: typeof data['description'] === 'string' ? data['description'] : null,
             country: typeof data['country'] === 'string' ? data['country'] : null,
             lat: typeof data['lat'] === 'number' ? data['lat'] : null,
@@ -386,6 +448,10 @@ export class ProjectResponseDto {
             policyTopicId: typeof data['policyTopicId'] === 'string' ? data['policyTopicId'] : null,
             instanceTopicId: typeof data['instanceTopicId'] === 'string' ? data['instanceTopicId'] : null,
             vcCount: typeof data['vcCount'] === 'number' ? data['vcCount'] : 0,
+            decodeMethod: typeof data['decodeMethod'] === 'string' ? data['decodeMethod'] : null,
+            metadata: data['metadata'] && typeof data['metadata'] === 'object' && !Array.isArray(data['metadata'])
+                ? (data['metadata'] as Record<string, unknown>)
+                : null,
             sourceTimestamp: row.sourceTimestamp,
             projectKey: row.projectKey ?? null,
             updatedAt: row.updatedAt,
@@ -398,6 +464,7 @@ export class ProjectResponseDto {
                 mintDate: i.mintDate,
                 rawVc: i.rawVc ?? null,
             })),
+            issuanceEvents: (row.issuanceEvents ?? []).map(e => IssuanceEventDto.fromRow(e)),
             issuanceCount: row.issuanceCount ?? 0,
             totalIssued: row.totalIssued ?? 0,
             totalRetired: row.totalRetired ?? 0,

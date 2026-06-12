@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {
     BookOpen, Coins, Layers, Shield,
-    Globe, MapPin, Clock, Activity,
+    Globe, MapPin,
     Network, FileText, ChevronDown,
-    CheckCircle2, Circle, Zap, Database,
+    Database,
     FolderKanban, BarChart3, RotateCcw, CloudDownload, Loader2, Search, X, Download,
 } from 'lucide-vue-next';
 import type { Credit } from '~/types/models';
@@ -19,7 +19,6 @@ const route = useRoute();
 const { network } = useNetwork();
 const projectId = computed(() => route.params.id as string);
 const { project, pending } = useProjectDetail(projectId);
-const { activity: activityEvents } = useProjectActivity(projectId);
 
 // When the API returns no country (UNK) but we have valid coordinates, fall back
 // to a Nominatim reverse-geocode lookup so the correct flag is shown.
@@ -38,14 +37,17 @@ const INVALID_COUNTRY = new Set([
 ]);
 const displayCountryCode = computed(() => geocodedCountry.value?.code ?? project.value?.countryCode ?? 'UNK');
 const displayCountry = computed(() => {
-    const raw = geocodedCountry.value?.name ?? project.value?.country ?? '';
-    return INVALID_COUNTRY.has(raw.toLowerCase().trim()) ? '' : raw;
+    const raw = (geocodedCountry.value?.name ?? project.value?.country ?? '').trim();
+    if (!raw || INVALID_COUNTRY.has(raw.toLowerCase())) return '';
+    // Never show a URL / IPFS-or-file URI / raw CID as a location.
+    if (/:\/\//.test(raw) || /^(Qm[1-9A-HJ-NP-Za-km-z]{44}|baf[a-z0-9]{20,})$/i.test(raw)) return '';
+    return raw;
 });
 
 // ─── Tabs (synced with URL hash) ──────────────────────────────────────────────
 
-type TabKey = 'summary' | 'pipeline' | 'issuances' | 'documents' | 'advanced';
-const VALID_TABS = new Set<TabKey>(['summary', 'pipeline', 'issuances', 'documents', 'advanced']);
+type TabKey = 'summary' | 'issuances' | 'documents' | 'advanced';
+const VALID_TABS = new Set<TabKey>(['summary', 'issuances', 'documents', 'advanced']);
 
 const router = useRouter();
 const initialHash = (route.hash?.replace('#', '') ?? '') as TabKey;
@@ -58,7 +60,6 @@ function setTab(key: TabKey) {
 
 const tabs = [
     { key: 'summary' as const,   label: 'Summary',              icon: FolderKanban },
-    { key: 'pipeline' as const,  label: 'Pipeline',             icon: Activity },
     { key: 'documents' as const, label: 'Detailed Information',  icon: FileText },
     { key: 'issuances' as const, label: 'Issuances & Credits',  icon: Coins },
     { key: 'advanced' as const,  label: 'Advanced',             icon: Shield },
@@ -395,7 +396,7 @@ async function viewProjectVc() {
 function handleViewVc(c: Credit) {
     vcViewerTitle.value = c.name;
     const issuance = project.value?.issuances?.find(i => i.tokenId === c.tokenId);
-    vcViewerData.value = issuance?.rawVc ?? null;
+    vcViewerData.value = issuance?.rawVc ?? c.rawVc ?? null;
     vcViewerOpen.value = true;
 }
 
@@ -486,31 +487,7 @@ const hashscanTopicUrl = computed(() => {
     return `https://hashscan.io/${network.value}/topic/${project.value.topicId}`;
 });
 
-// ─── Activity log ──────────────────────────────────────────────────────────────
-
-const activityLog = computed(() => activityEvents.value ?? []);
-
-const activityTypeIcon: Record<string, { icon: any; color: string }> = {
-    document: { icon: FileText, color: 'text-muted-foreground bg-muted' },
-    verification: { icon: Shield, color: 'text-amber-600 bg-amber-50' },
-    registry: { icon: Database, color: 'text-primary bg-primary/10' },
-    monitoring: { icon: Activity, color: 'text-sky-600 bg-sky-50' },
-    credit: { icon: Coins, color: 'text-emerald-600 bg-emerald-50' },
-};
-
-// ─── Methodology workflow steps ────────────────────────────────────────────────
-
-const methodologySteps = computed(() => {
-    if (!project.value) return [];
-    return [
-        { label: 'Project Design', desc: 'PDD submission & stakeholder consultation', status: 'complete' },
-        { label: 'Validation', desc: 'Third-party validation audit', status: 'complete' },
-        { label: 'Registration', desc: 'Project registration on registry', status: 'complete' },
-        { label: 'Monitoring', desc: 'Data collection & MRV reporting', status: ['Verified', 'Issuing', 'Completed'].includes(project.value.status) ? 'complete' : (project.value.status === 'Under Validation' ? 'active' : 'pending') },
-        { label: 'Verification', desc: 'Emission reduction verification', status: ['Issuing', 'Completed'].includes(project.value.status) ? 'complete' : (project.value.status === 'Verified' ? 'active' : 'pending') },
-        { label: 'Issuance', desc: 'Token minting to Hedera', status: project.value.status === 'Completed' ? 'complete' : (project.value.status === 'Issuing' ? 'active' : 'pending') },
-    ];
-});
+// ─── Methodology name ──────────────────────────────────────────────────────────
 
 const fullMethodologyName = computed(() => {
     if (!project.value) return '';
@@ -695,11 +672,6 @@ const emissions = computed(() => {
                         </ClientOnly>
                     </div>
                 </div>
-            </div>
-
-            <!-- ── Tab: Pipeline & Trust Chain ─────────────────────────────────── -->
-            <div v-else-if="activeTab === 'pipeline'" class="p-6">
-                <ProjectPipeline :project="project" />
             </div>
 
             <!-- ── Tab: Issuances & Credits ────────────────────────────────────── -->
@@ -991,6 +963,12 @@ const emissions = computed(() => {
                 <!-- Hedera On-Chain References -->
                 <HederaReferences :project="project" :network="network" />
 
+                <!-- Pipeline (moved from the former Pipeline tab) -->
+                <ClientOnly>
+                    <ProjectPolicyCanvas :project="project" />
+                </ClientOnly>
+                <ProjectPipeline :project="project" />
+
                 <!-- Linked VCs (raw) -->
                 <LinkedVcsPanel
                     :project="project"
@@ -998,86 +976,8 @@ const emissions = computed(() => {
                     @view-vc-json="handleViewVcJson"
                 />
 
-                <!-- Activity Log -->
-                <div class="rounded-xl border bg-card overflow-hidden">
-                    <div class="px-5 py-3.5 border-b bg-muted/30">
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
-                            <Clock class="h-4 w-4 text-primary" />
-                            Activity Log
-                        </h2>
-                    </div>
-                    <div v-if="activityLog.length > 0" class="px-5 py-5">
-                        <div class="relative">
-                            <div class="absolute left-[15px] top-3 bottom-3 w-px bg-border" />
-                            <div
-                                v-for="(event, idx) in activityLog"
-                                :key="idx"
-                                class="relative flex items-start gap-4 pb-5 last:pb-0"
-                            >
-                                <div :class="[activityTypeIcon[event.type]?.color || 'text-muted-foreground bg-muted', 'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full']">
-                                    <component :is="activityTypeIcon[event.type]?.icon || Circle" class="h-3.5 w-3.5" />
-                                </div>
-                                <div class="pt-1">
-                                    <div class="text-sm text-foreground">{{ event.action }}</div>
-                                    <div class="text-[11px] text-muted-foreground mt-0.5">{{ event.date }}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else class="px-5 py-8 text-center text-sm text-muted-foreground">
-                        No activity log entries available for this project.
-                    </div>
-                </div>
-
-                <!-- Methodology Workflow -->
-                <div class="rounded-xl border bg-card overflow-hidden">
-                    <div class="px-5 py-3.5 border-b bg-muted/30">
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
-                            <BookOpen class="h-4 w-4 text-primary" />
-                            Methodology
-                        </h2>
-                        <p class="text-[11px] text-muted-foreground mt-0.5">{{ fullMethodologyName }}</p>
-                    </div>
-                    <div class="px-5 py-5">
-                        <div class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Workflow</div>
-                        <div class="flex items-center gap-0 overflow-x-auto pb-2">
-                            <template v-for="(step, idx) in methodologySteps" :key="idx">
-                                <div class="flex flex-col items-center min-w-[120px]">
-                                    <div
-                                        :class="[
-                                            step.status === 'complete' ? 'bg-emerald-50 border-emerald-200' :
-                                            step.status === 'active' ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20' :
-                                            'bg-muted/50 border-border',
-                                            'flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
-                                        ]"
-                                    >
-                                        <CheckCircle2 v-if="step.status === 'complete'" class="h-5 w-5 text-emerald-600" />
-                                        <Zap v-else-if="step.status === 'active'" class="h-5 w-5 text-primary" />
-                                        <Circle v-else class="h-5 w-5 text-muted-foreground/40" />
-                                    </div>
-                                    <div class="mt-2 text-center">
-                                        <div
-                                            :class="[
-                                                step.status === 'active' ? 'text-primary font-semibold' :
-                                                step.status === 'complete' ? 'text-foreground font-medium' :
-                                                'text-muted-foreground',
-                                                'text-xs',
-                                            ]"
-                                        >
-                                            {{ step.label }}
-                                        </div>
-                                        <div class="text-[10px] text-muted-foreground mt-0.5 max-w-[110px] leading-tight">{{ step.desc }}</div>
-                                    </div>
-                                </div>
-                                <div
-                                    v-if="idx < methodologySteps.length - 1"
-                                    class="flex-1 min-w-[24px] h-px mt-[-24px]"
-                                    :class="step.status === 'complete' ? 'bg-emerald-300' : 'bg-border'"
-                                />
-                            </template>
-                        </div>
-                    </div>
-                </div>
+                <!-- Trust Chain (moved from Pipeline tab) -->
+                <ProjectTrustChain :project="project" />
 
                 <!-- Methodology Field Mapping (lazy) -->
                 <div class="rounded-xl border bg-card overflow-hidden">

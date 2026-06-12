@@ -14,15 +14,15 @@ const baseCtx: ResolutionContext = {
     policyMapping: {},
 };
 
-const resolver = new ProjectSchemaResolver(
-    {} as unknown as DataSource,
-    {} as unknown as TopicClassifierService,
-);
+// earliestTimestampForCsId issues one query; return the root VC's timestamp.
+const ds = { query: async () => [{ ts: '1699999999.0' }] } as unknown as DataSource;
+const resolver = new ProjectSchemaResolver(ds, {} as unknown as TopicClassifierService);
 
 describe('ProjectSchemaResolver (M4)', () => {
-    it('keys a project-schema VC by its own cs.id', async () => {
+    it('keys a project-schema VC by its own cs.id, recording rootVcTimestamp', async () => {
         await expect(resolver.resolve({ ...baseCtx, isProjectSchemaVc: true })).resolves.toEqual({
             status: 'resolved', projectKey: 'did:hedera:testnet:proj', method: 'projectSchema',
+            metadata: { rootVcTimestamp: '1699999999.0' },
         });
     });
 

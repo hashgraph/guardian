@@ -2,13 +2,15 @@ import { Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
 /**
- * Resolves each unlinked MintToken VC to its specific project and upserts
- * the result into project_mint_link.
+ * Resolves each unlinked or stale-linked MintToken VC to its specific project
+ * and upserts the result into project_mint_link.
  *
  * Called from BusinessViewBuilderProcessor after registry/methodology/credit
- * views are built. The function is incremental — only unlinked mints are
- * processed on each run, so subsequent calls are near-free when no new
- * MintToken VCs have arrived.
+ * views are built. The function is incremental: it processes mints that have
+ * NO link at all, AND mints whose existing link's project_key no longer matches
+ * any PROJECT row in business_view (stale links that arise after a project is
+ * re-keyed during M1 re-processing). The ON CONFLICT DO UPDATE upsert repairs
+ * the stale row when the mint is successfully re-resolved.
  *
  * Resolution strategy:
  *   1. Walk options.relationships via recursive CTE (up to 15 hops) until an
@@ -21,6 +23,12 @@ import { DataSource } from 'typeorm';
  *      ref ("I am a report FOR this project"), making it a more semantically
  *      precise link than topic-scope. Only used when exactly one project is
  *      referenced to avoid misattribution in shared PoA topics.
+ *   1.75 Ref-root match: walk the relationship ancestors for the mint and
+ *      look for a PROJECT row whose projectKey equals an ancestor VC's own
+ *      cs.id OR its cs.ref. This decouples mint linking from linkedVcs
+ *      completeness — the relationship walk often reaches lifecycle VCs
+ *      whose cs.ref IS the project key even when those VCs are not yet in
+ *      linkedVcs.
  *   2. Topic-scope fallback: only when the instance topic contains exactly
  *      one project. Grouped topics without a resolved chain are skipped to
  *      avoid misattribution.
@@ -46,7 +54,10 @@ export async function buildMintProjectLinks(
         WHERE m.type = 'VC-Document'
           AND m.documents->'credentialSubject'->0->>'type' LIKE 'MintToken%'
           AND NOT EXISTS (
-              SELECT 1 FROM project_mint_link pml
+              SELECT 1
+              FROM project_mint_link pml
+              JOIN business_view bv
+                ON bv."projectKey" = pml.project_key AND bv."viewType" = 'PROJECT'
               WHERE pml.mint_consensus_timestamp = m."consensusTimestamp"
           )
         ORDER BY m."consensusTimestamp"
@@ -58,6 +69,7 @@ export async function buildMintProjectLinks(
 
     let linked = 0;
     let csRef = 0;
+    let refRoot = 0;
     let fallback = 0;
     let skipped = 0;
 
@@ -144,6 +156,52 @@ export async function buildMintProjectLinks(
                 linkMethod = 'cs_ref';
                 csRef++;
             } else {
+                // Step 1.75 — ref-root match: walk relationship ancestors for this mint
+                // and match a PROJECT row whose projectKey equals an ancestor VC's own
+                // cs.id OR its cs.ref. This decouples mint linking from linkedVcs
+                // completeness — the relationship walk often lands on lifecycle VCs
+                // whose cs.ref IS the project key even when those VCs are not (yet)
+                // in linkedVcs.
+                const refRootRows: Array<{ project_key: string; project_topic_id: string }> =
+                    await dataSource.query(`
+                        WITH RECURSIVE rel_chain(ts, depth) AS (
+                            SELECT
+                                jsonb_array_elements_text(m.options->'relationships')::varchar AS ts,
+                                1 AS depth
+                            FROM message m
+                            WHERE m."consensusTimestamp" = $1
+                              AND m.options->'relationships' IS NOT NULL
+                              AND jsonb_typeof(m.options->'relationships') = 'array'
+                              AND jsonb_array_length(m.options->'relationships') > 0
+
+                            UNION ALL
+
+                            SELECT
+                                jsonb_array_elements_text(p.options->'relationships')::varchar,
+                                rc.depth + 1
+                            FROM rel_chain rc
+                            JOIN message p ON p."consensusTimestamp" = rc.ts
+                            WHERE rc.depth < 15
+                              AND p.options->'relationships' IS NOT NULL
+                              AND p.options->'relationships' != 'null'::jsonb
+                              AND jsonb_typeof(p.options->'relationships') = 'array'
+                        )
+                        SELECT bv."projectKey" AS project_key, bv."relatedTopicId" AS project_topic_id
+                        FROM rel_chain rc
+                        JOIN message a ON a."consensusTimestamp" = rc.ts AND a.type = 'VC-Document'
+                        JOIN business_view bv ON bv."viewType" = 'PROJECT'
+                            AND (bv."projectKey" = a.documents->'credentialSubject'->0->>'id'
+                                 OR bv."projectKey" = a.documents->'credentialSubject'->0->>'ref')
+                        ORDER BY rc.depth ASC
+                        LIMIT 1
+                    `, [mint.consensusTimestamp]);
+
+                if (refRootRows.length > 0) {
+                    projectKey = refRootRows[0].project_key;
+                    projectTopicId = refRootRows[0].project_topic_id;
+                    linkMethod = 'ref_root';
+                    refRoot++;
+                } else {
                 // Step 2 — topic-scope fallback: safe only for unambiguous single-project topics.
                 const fallbackRows: Array<{ project_key: string; relatedTopicId: string }> =
                     await dataSource.query(`
@@ -168,7 +226,8 @@ export async function buildMintProjectLinks(
                 projectTopicId = fallbackRows[0].relatedTopicId;
                 linkMethod = 'topic_scope';
                 fallback++;
-            }
+                } // end else (Step 2)
+            } // end else (Step 1.75 miss)
         }
 
         // amount arrives as a JSONB string; parseFloat handles decimal values
@@ -197,6 +256,6 @@ export async function buildMintProjectLinks(
     }
 
     logger.log(
-        `MintProjectLinker: ${linked} via relationship, ${csRef} via cs.ref, ${fallback} via topic-scope, ${skipped} skipped`,
+        `MintProjectLinker: ${linked} via relationship, ${csRef} via cs.ref, ${refRoot} via ref-root, ${fallback} via topic-scope, ${skipped} skipped`,
     );
 }

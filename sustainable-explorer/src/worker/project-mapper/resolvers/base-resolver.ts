@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { PolicyMapping } from '../../mapping/policy-pipeline.types';
 import { TopicClassifierService } from '../topic-classifier';
-import { ResolutionContext, ResolutionOutcome } from './resolver.types';
+import { ResolutionContext, ResolutionOutcome, ResolutionMetadata } from './resolver.types';
 
 @Injectable()
 export abstract class BaseProjectKeyResolver {
@@ -16,14 +16,69 @@ export abstract class BaseProjectKeyResolver {
     abstract resolve(ctx: ResolutionContext): Promise<ResolutionOutcome>;
 
     // ---- outcome factory helpers (used by subclasses) ----
-    protected resolved(projectKey: string): ResolutionOutcome {
-        return { status: 'resolved', projectKey, method: this.method };
+    protected resolved(projectKey: string, metadata: ResolutionMetadata = {}): ResolutionOutcome {
+        return { status: 'resolved', projectKey, method: this.method, metadata };
     }
     protected pass(): ResolutionOutcome {
         return { status: 'pass' };
     }
     protected reject(reason: string): ResolutionOutcome {
         return { status: 'reject', reason };
+    }
+
+    /**
+     * Earliest (chain-root) consensus timestamp of the VC carrying a given cs.id.
+     * Recorded as metadata.rootVcTimestamp so a cs.id key is traceable to the
+     * transaction that anchors it. Returns '' when the cs.id has no ingested VC.
+     */
+    protected async earliestTimestampForCsId(csId: string): Promise<string> {
+        const rows: Array<{ ts: string }> = await this.dataSource.query(
+            `SELECT "consensusTimestamp" AS ts
+             FROM message
+             WHERE type = 'VC-Document'
+               AND documents->'credentialSubject'->0->>'id' = $1
+             ORDER BY "consensusTimestamp" ASC
+             LIMIT 1`,
+            [csId],
+        );
+        return rows[0]?.ts ?? '';
+    }
+
+    /**
+     * Canonical cs.id for a (per-project) dynamic topic: the EARLIEST
+     * project-schema VC's cs.id in the topic, so every VC in the topic resolves
+     * to one stable key. Falls back to the earliest cs.id-carrying VC in the
+     * topic, then to null. Used by M1 so dynamic-topic projects are keyed by a
+     * cs.id (with the topic recorded in metadata) — not by the topic id.
+     */
+    protected async canonicalCsIdInTopic(topicId: string, policyMapping: PolicyMapping): Promise<string | null> {
+        const uuids = [...this.projectSchemaUuids(policyMapping)];
+        if (uuids.length > 0) {
+            const rows: Array<{ cs_id: string | null }> = await this.dataSource.query(
+                `SELECT documents->'credentialSubject'->0->>'id' AS cs_id
+                 FROM message
+                 WHERE type = 'VC-Document'
+                   AND "topicId" = $1
+                   AND documents IS NOT NULL
+                   AND documents->'credentialSubject'->0->>'id' IS NOT NULL
+                   AND regexp_replace(split_part(documents->'credentialSubject'->0->>'type','&',1),'^#','') = ANY($2::text[])
+                 ORDER BY "consensusTimestamp" ASC
+                 LIMIT 1`,
+                [topicId, uuids],
+            );
+            if (rows[0]?.cs_id) return rows[0].cs_id;
+        }
+        const any: Array<{ cs_id: string | null }> = await this.dataSource.query(
+            `SELECT documents->'credentialSubject'->0->>'id' AS cs_id
+             FROM message
+             WHERE type = 'VC-Document'
+               AND "topicId" = $1
+               AND documents->'credentialSubject'->0->>'id' IS NOT NULL
+             ORDER BY "consensusTimestamp" ASC
+             LIMIT 1`,
+            [topicId],
+        );
+        return any[0]?.cs_id ?? null;
     }
 
     // ---- ported graph helpers + new helpers below ----

@@ -16,6 +16,18 @@ export interface IssuanceRow {
     rawVc?: Record<string, any> | null;
 }
 
+export interface IssuanceEventRow {
+    mintConsensusTimestamp: string;
+    tokenId: string | null;
+    name: string | null;
+    symbol: string | null;
+    type: string | null;
+    amount: number | null;
+    mintDate: string | null;
+    linkMethod: string | null;
+    rawVc: Record<string, any> | null;
+}
+
 export interface PolicySchemaRow {
     schemaId: string;
     name: string | null;
@@ -37,6 +49,7 @@ export interface ProjectRow {
     createdAt: Date;
     updatedAt: Date;
     issuances?: IssuanceRow[];
+    issuanceEvents?: IssuanceEventRow[];
     issuanceCount?: number;
     totalIssued?: number;
     totalRetired?: number;

@@ -8,6 +8,18 @@ export interface ProjectIssuance {
     rawVc?: Record<string, any> | null;
 }
 
+export interface IssuanceEvent {
+    mintConsensusTimestamp: string;
+    tokenId: string | null;
+    name: string | null;
+    symbol: string | null;
+    type: string | null;
+    amount: number | null;
+    mintDate: string | null;
+    linkMethod: string | null;
+    rawVc: Record<string, any> | null;
+}
+
 export interface LinkedVc {
     consensusTimestamp: string;
     topicId: string;
@@ -53,12 +65,15 @@ export interface Project {
     sourceTimestamp?: string;
     projectKey?: string | null;
     issuances?: ProjectIssuance[];
+    issuanceEvents?: IssuanceEvent[];
     issuanceCount?: number;
     linkedSchemas?: LinkedSchema[];
     totalIssued?: number;
     totalRetired?: number;
     totalActive?: number;
     rawVc?: Record<string, any>;
+    decodeMethod?: string | null;
+    metadata?: Record<string, unknown> | null;
 }
 
 export interface Credit {

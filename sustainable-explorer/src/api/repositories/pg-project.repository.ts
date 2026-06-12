@@ -5,6 +5,7 @@ import {
     ProjectListResult,
     ProjectRow,
     IssuanceRow,
+    IssuanceEventRow,
     ActivityEventRow,
     PolicySchemaRow,
 } from './project.repository';
@@ -200,6 +201,7 @@ export class PgProjectRepository extends ProjectRepository {
         // walking options.relationships, so this query is correct even for
         // grouped projects that share one instance topic.
         let issuances: IssuanceRow[] = [];
+        let issuanceEvents: IssuanceEventRow[] = [];
         let totalIssued = 0;
         let totalRetired = 0;
 
@@ -208,12 +210,16 @@ export class PgProjectRepository extends ProjectRepository {
             amount: number | null;
             mint_date: Date | null;
             documents: Record<string, any> | null;
+            mint_ts: string;
+            link_method: string | null;
         }> = await this.dataSource.query(
             `SELECT
                 pml.token_id,
                 pml.amount,
                 pml.mint_date,
-                m.documents
+                m.documents,
+                pml.mint_consensus_timestamp AS mint_ts,
+                pml.link_method
              FROM project_mint_link pml
              JOIN message m ON m."consensusTimestamp" = pml.mint_consensus_timestamp
              WHERE pml.project_key = $1
@@ -259,6 +265,23 @@ export class PgProjectRepository extends ProjectRepository {
                         ? data.mintDate.toISOString().split('T')[0]
                         : null,
                     rawVc: data.rawVc,
+                };
+            });
+
+            // Per-mint-event issuance history — one entry per MintToken VC row,
+            // ordered oldest-first (same ORDER BY as the mintTokenRows query).
+            issuanceEvents = mintTokenRows.map(r => {
+                const meta = r.token_id ? metaMap.get(r.token_id) : undefined;
+                return {
+                    mintConsensusTimestamp: r.mint_ts,
+                    tokenId: r.token_id ?? null,
+                    name: meta?.name ?? null,
+                    symbol: meta?.symbol ?? null,
+                    type: meta?.type ?? null,
+                    amount: r.amount != null ? Number(r.amount) : null,
+                    mintDate: r.mint_date ? r.mint_date.toISOString().split('T')[0] : null,
+                    linkMethod: r.link_method ?? null,
+                    rawVc: r.documents ?? null,
                 };
             });
 
@@ -428,7 +451,7 @@ export class PgProjectRepository extends ProjectRepository {
             }
         }
 
-        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive }, policySchemas);
+        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive }, policySchemas, issuanceEvents);
     }
 
     async findActivity(sourceTimestamp: string): Promise<ActivityEventRow[]> {
@@ -541,6 +564,7 @@ export class PgProjectRepository extends ProjectRepository {
         issuances?: IssuanceRow[],
         lifecycle?: { totalIssued: number; totalRetired: number; totalActive: number },
         policySchemas?: PolicySchemaRow[],
+        issuanceEvents?: IssuanceEventRow[],
     ): ProjectRow {
         return {
             id: row.id,
@@ -556,6 +580,7 @@ export class PgProjectRepository extends ProjectRepository {
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
             issuances,
+            issuanceEvents: issuanceEvents ?? [],
             issuanceCount: row.issuance_count ?? undefined,
             totalIssued: lifecycle?.totalIssued,
             totalRetired: lifecycle?.totalRetired,

@@ -121,3 +121,82 @@ Decisions D7–D10 (real endpoint/field names; reuse stamped docType; implement 
 FE typecheck (`npx nuxi typecheck`): error set IDENTICAL to frozen baseline (FilterBar×2, useProjects:173
 TS2321×2 [was :172, shifted by additive edit], methodologies/[id]×7, status.vue×1). New .vue files = 0 errors.
 PHASE 5 COMPLETE. ALL PHASES (1–5) COMPLETE.
+
+## Phase 6 — Pipeline step-map + decodeMethod badge (Tasks 6.1–6.4) — ✅ COMPLETE
+
+### Files changed
+- `src/worker/services/project-mapper.service.ts` — added `newFields.decodeMethod = resolvedProject.method;` after `newFields.status = 'Issuing'`. Upsert SQL untouched.
+- `src/api/dto/project.dto.ts` — added `decodeMethod: string | null` @ApiProperty field alongside vcCount; added `decodeMethod` in fromRow return object.
+- `frontend/types/models.ts` — added `decodeMethod?: string | null` to Project interface.
+- `frontend/composables/useProjects.ts` — added `decodeMethod: typeof raw.decodeMethod === 'string' ? raw.decodeMethod : null` in mapApiProject return object.
+- `frontend/components/project/ProjectTrustChain.vue` — CREATED: verbatim copy of old ProjectPipeline.vue (flat VC trust-chain timeline).
+- `frontend/components/project/ProjectPipeline.vue` — REWRITTEN: one card per schema (step-map), decode-method badge at top, data-present indicator with CheckCircle2/Circle, ⓘ→RawVcDrawer on latest VC per schema.
+- `frontend/pages/projects/[id].vue` — removed Activity Log card + Methodology Workflow card from Advanced tab; inserted `<ProjectTrustChain :project="project" />`; removed `useProjectActivity`/`activityEvents`/`activityLog`/`activityTypeIcon`/`methodologySteps` symbols; removed unused lucide icons (Clock, CheckCircle2, Circle, Zap). `fullMethodologyName` kept (still used by Methodology Field Mapping block at lines 1023/1025). Pipeline tab unchanged (auto-updated via component rewrite).
+
+### Verification
+- TSC_EXIT:0 (backend tsc --noEmit -p tsconfig.json)
+- Jest: Tests: 5 failed, 65 passed, 70 total — matches frozen baseline
+- Frontend nuxi typecheck: exit 2 with exactly the frozen baseline errors (FilterBar.vue×2, useProjects.ts:174 TS2321×2, methodologies/[id].vue×7, status.vue×1). Zero new errors introduced.
+
+## Phase 7 — Policy Flowchart Canvas (Tasks 7.1–7.3) — ✅ COMPLETE
+
+### Dependency added
+- `@vue-flow/core@1.48.2` installed via `yarn add` in `frontend/`.
+- `build.transpile` fix NOT needed — `.client.vue` suffix prevents SSR touching vue-flow; build passed without it.
+
+### Files changed
+- `frontend/components/project/ProjectPolicyCanvas.client.vue` — CREATED. `.client.vue` suffix for DOM-bound vue-flow. Imports VueFlow + Node/Edge types, `@vue-flow/core/dist/style.css` + `theme-default.css`. Custom `#node-step` slot renders a 220px card per schema: docType icon+label, schemaName, project-schema chip, VC availability row (CheckCircle2 / Circle), ⓘ button with `@mousedown.stop @click.stop` → RawVcDrawer. Nodes grouped by DOC_TYPE_RANK into columns (x = colIdx × 260, y = rowIdx × 140). Fan-out edges link every node in column i to every node in column i+1. `decodeMeta` computed with decode badge in header. Empty state when no linkedSchemas. Fixed-height container `h-[440px]`.
+- `frontend/components/project/ProjectPipeline.vue` — removed `decodeMeta` computed (interface + switch block) and the badge `<span>` from the header template. Step-map list and all other markup preserved.
+- `frontend/pages/projects/[id].vue` — Pipeline tab panel changed from `class="p-6"` to `class="p-6 space-y-6"`, `<ClientOnly><ProjectPolicyCanvas :project="project" /></ClientOnly>` added above `<ProjectPipeline>`.
+
+### Verification
+- @vue-flow/core version: 1.48.2 (yarn)
+- `build.transpile` needed: NO
+- `npx nuxi typecheck`: exit 2 with exactly the frozen baseline errors (FilterBar.vue×2, useProjects.ts TS2321×2, methodologies/[id].vue×7, status.vue×1). Zero new errors.
+- `npx nuxi build`: PASS — client built in ~46s, server built in ~9s, no SSR/transpile errors.
+- Backend `tsc --noEmit -p tsconfig.json`: EXIT 0
+- Backend `jest`: Tests: 5 failed, 65 passed, 70 total — matches frozen baseline exactly. No backend files touched.
+
+## Phase 8 — Schema labels in RawVcDrawer (Tasks 8.1–8.2) — ✅ COMPLETE
+
+### Files changed
+- `src/api/services/mapping-reprocess.service.ts` — additive: new private method `buildVcFieldLabels(ds, consensusTimestamp, document)` (extracts bareUuid from cs[0].type, joins message→policy on policyId WHERE decodeStatus='decoded', iterates schemaFields entries matching bareUuid, returns path→(description||title) map; wrapped in try/catch → returns {} on any error); new public method `getLinkedVcEvidence(network, projectId, consensusTimestamp)` (calls existing `getLinkedVcDocument`, then `buildVcFieldLabels`; returns `{ document, fieldLabels }`). getLinkedVcDocument unchanged.
+- `src/api/services/project.service.ts` — additive: passthrough `getLinkedVcEvidence(network, projectId, consensusTimestamp)` delegating to `mappingReprocessService.getLinkedVcEvidence`. getLinkedVcDocument passthrough unchanged.
+- `src/api/controllers/project.controller.ts` — additive: new route `@Get(':id/vc-evidence/:consensusTimestamp')` with `@ApiOperation`, `@ApiParam` ×3, `@ApiResponse` ×2 mirroring linked-vcs handler style. Calls `projectsService.getLinkedVcEvidence`. Existing linked-vcs route and all other routes unchanged.
+- `frontend/components/project/RawVcDrawer.vue` — added `fieldLabels = ref<Record<string,string>>({})`. `load()` now fetches `/vc-evidence/${props.consensusTimestamp}` (was `/linked-vcs/`), sets `vcDoc.value = res.document ?? null` + `fieldLabels.value = res.fieldLabels ?? {}`, resets `fieldLabels.value = {}` at start. `fields` computed uses `fieldLabels.value[key] || humanizeKey(key)` as label. No other consumers of /linked-vcs touched (RelationshipDiagram, [id].vue remain on /linked-vcs).
+
+### Verification
+- TSC_EXIT: 0
+- Jest: Tests: 5 failed, 65 passed, 70 total — frozen baseline exactly
+- Frontend nuxi typecheck: exit 2 with exactly the frozen baseline errors (methodologies/[id].vue×7, status.vue×1). Zero new errors from RawVcDrawer.vue.
+- curl `http://localhost:3030/api/v1/mainnet/projects/1759413394.156986243/vc-evidence/1759413394.156986243`: response shape `{ "document": {...}, "fieldLabels": {...} }` confirmed. fieldLabels has entries e.g. `"projectDescription":"Project Description"`. 2139 entries total (covers all schemas in the policy).
+- /linked-vcs route: HTTP 200 confirmed still working. No changes to RelationshipDiagram or [id].vue.
+
+## Phase 10B — IssuancesTable per-mint-event history (frontend) — ✅ COMPLETE
+
+### Files changed
+- `frontend/types/models.ts` — added `IssuanceEvent` interface (8 fields matching backend DTO); added `issuanceEvents?: IssuanceEvent[]` to `Project` interface (next to `issuances`).
+- `frontend/composables/useProjects.ts` — import `IssuanceEvent`; in `mapApiProject` added `issuanceEvents` mapping after `issuances` (Array.isArray guard; per-field typeof guards for string/number/object; defaults [] / null).
+- `frontend/components/project/IssuancesTable.vue` — reworked: primary path renders one row per `issuanceEvent` (Date/Token/Amount/Raw Data columns); per-token totals strip (border-t, px-5 py-2.5, text-xs muted) below history table; fallback v-else-if renders original per-token table verbatim when only `issuances` exist; empty state unchanged. Badge count shows events.length when events present, else linkedCredits.length. `makeEventCredit()` builds Credit-shaped payload with rawVc directly on it. linkMethod NOT shown in UI. Added no new imports.
+- `frontend/pages/projects/[id].vue` — `handleViewVc` now uses `issuance?.rawVc ?? c.rawVc ?? null` so event Credits (which carry rawVc on the payload) display correctly.
+
+### Verification
+- `npx nuxi typecheck`: exit 2 with exactly the frozen baseline errors (FilterBar.vue TS1117×2, useProjects.ts TS2321×2 at ~line 262, methodologies/[id].vue TS7053×5, credits/index.vue TS2339, projects/index.vue TS2339, status.vue TS2345). ZERO new errors.
+- view-vc emit contract preserved: still `(e: 'view-vc', payload: Credit): void`.
+- Fallback per-token table: markup preserved verbatim in `v-else-if="linkedCredits.length > 0"` branch.
+
+## Phase 10A — MintToken self-heal + M2 gate relax + issuance events API (Tasks 10.1–10.4, 10.6) — COMPLETE
+
+### Files changed
+- `src/worker/project-mapper/mint-project-linker.ts` — (10.1) candidate query NOT EXISTS now JOINs business_view to also pick up mints whose project_key no longer matches any PROJECT row (stale links self-heal on each run). Doc comment updated. (10.3) Added Step 1.75 (ref_root) between Step 1.5 and Step 2: recursive CTE walk of relationship ancestors; matches a PROJECT row where projectKey = ancestor cs.id OR cs.ref; linkMethod='ref_root', counter refRoot added. Final log line includes refRoot count.
+- `src/worker/project-mapper/resolvers/cs-ref.resolver.ts` — (10.2) M2 gate now also accepts a resolved root that is an already-known PROJECT row (isKnownProjectRow check added after onProjectSchema fails). Reject message updated. Comment explains ELV/registration-doc anchor case and order-dependence.
+- `src/api/repositories/project.repository.ts` — (10.4a/c) Added IssuanceEventRow interface; added issuanceEvents?: IssuanceEventRow[] to ProjectRow.
+- `src/api/repositories/pg-project.repository.ts` — (10.4a) mintTokenRows query SELECTs pml.mint_consensus_timestamp AS mint_ts, pml.link_method. (10.4b) issuanceEvents array built from mintTokenRows after metaMap is available. (10.4c) mapRow accepts + returns issuanceEvents (default []).
+- `src/api/dto/project.dto.ts` — (10.4d) New IssuanceEventDto class with @ApiProperty on all 8 fields + static fromRow. issuanceEvents: IssuanceEventDto[] added to ProjectResponseDto with @ApiProperty. Mapped in fromRow via IssuanceEventDto.fromRow.
+- `test/unit/worker/project-mapper/resolvers/cs-ref.resolver.spec.ts` — (10.6) New spec: 4 tests (pass with no csRef; classified + on-schema resolves; classified + NOT on schema but IS known PROJECT row resolves; classified + neither rejects).
+
+### Verification
+- `tsc --noEmit`: exit 0
+- `jest`: Tests: 5 failed, 76 passed, 81 total (baseline was 72 passed / 5 failed; +4 from new cs-ref spec). All 5 failures are pre-existing frozen failures.
+- Linker trigger/cadence: unchanged — still called from BusinessViewBuilderProcessor at end of view build.
+- Per-token aggregation logic: untouched — issuanceEvents is built separately after the aggregation loop.

@@ -17,14 +17,23 @@ export class CsRefResolver extends BaseProjectKeyResolver {
         const refWalked = await this.resolveViaRef(ctx.consensusTimestamp, ctx.csId);
         const resolvedKey = refWalked?.projectKey ?? ctx.csRef;
         // Classified policy + this VC isn't itself the project schema → the chain
-        // terminus must land on a project-schema VC, else this references an
-        // intermediate artifact and must not seed a project.
+        // terminus must land on a project-schema VC OR an already-known PROJECT row.
+        // Roots that already key a PROJECT row are accepted even when their schema
+        // isn't the designated project schema — Guardian policies often anchor the
+        // chain on a registration doc (ELV case); requiring the project schema
+        // force-dropped the whole lifecycle.
+        //
+        // Order-dependence note: the PROJECT row must exist before this resolver
+        // is reached. Resolution passes are iterative, so on the first pass the
+        // row may not exist yet and the mint will be deferred; on a later pass
+        // (after the project view is built) this branch succeeds.
         if (ctx.policyHasProjectSchemaClassification && !ctx.isProjectSchemaVc) {
             const onProjectSchema = await this.isCsIdOnProjectSchema(resolvedKey, ctx.policyMapping);
-            if (!onProjectSchema) {
-                return this.reject('cs.ref resolves to non-project-schema VC');
+            if (!onProjectSchema && !(await this.isKnownProjectRow(resolvedKey))) {
+                return this.reject('cs.ref resolves to non-project-schema VC with no known project row');
             }
         }
-        return this.resolved(resolvedKey);
+        const rootVcTimestamp = await this.earliestTimestampForCsId(resolvedKey);
+        return this.resolved(resolvedKey, { rootVcTimestamp });
     }
 }

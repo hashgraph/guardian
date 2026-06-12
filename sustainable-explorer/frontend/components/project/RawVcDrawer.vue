@@ -17,6 +17,7 @@ const config = useRuntimeConfig();
 const loading = ref(false);
 const error = ref(false);
 const vcDoc = ref<Record<string, any> | null>(null);
+const fieldLabels = ref<Record<string, string>>({});
 
 const SYSTEM_KEYS = new Set(['@context', 'type', 'id', 'policyId', 'ref', 'uuid']);
 
@@ -29,20 +30,33 @@ function humanizeKey(key: string): string {
         .replace(/\b\w/g, c => c.toUpperCase());
 }
 
-function formatValue(v: unknown): string {
+// Label for a (possibly nested) field path. Guardian VCs nest sub-schema data as
+// objects whose keys are generic (field0, field1…). The policy's schemaFields are
+// flattened to dotted paths (e.g. "field0.field3" → "Project Name"), and the
+// backend returns those in fieldLabels — so a nested key resolves via its full
+// dotted path, falling back to a humanized key when unlabeled.
+function labelForPath(path: string, key: string): string {
+    return fieldLabels.value[path] || humanizeKey(key);
+}
+
+function formatValue(v: unknown, pathPrefix = ''): string {
     if (v == null || v === '') return '—';
     if (typeof v === 'string') return v;
     if (typeof v === 'number' || typeof v === 'boolean') return String(v);
     if (Array.isArray(v)) {
         if (v.length === 0) return '—';
-        return v.map(x => (x && typeof x === 'object' ? formatValue(x) : String(x))).join(', ');
+        // Array items share the parent's sub-paths (schema paths carry no index).
+        return v.map(x => (x && typeof x === 'object' ? formatValue(x, pathPrefix) : String(x))).join(', ');
     }
     if (typeof v === 'object') {
         const obj = v as Record<string, unknown>;
         const keys = Object.keys(obj).filter(k => !SYSTEM_KEYS.has(k));
         if (keys.length === 0) return '—';
         return keys
-            .map(k => `${humanizeKey(k)}: ${obj[k] && typeof obj[k] === 'object' ? '…' : String(obj[k] ?? '—')}`)
+            .map(k => {
+                const childPath = pathPrefix ? `${pathPrefix}.${k}` : k;
+                return `${labelForPath(childPath, k)}: ${obj[k] && typeof obj[k] === 'object' ? '…' : String(obj[k] ?? '—')}`;
+            })
             .join(' · ');
     }
     return String(v);
@@ -54,12 +68,15 @@ async function load() {
     loading.value = true;
     error.value = false;
     vcDoc.value = null;
+    fieldLabels.value = {};
     try {
         const baseURL = config.public.apiBaseUrl as string;
-        vcDoc.value = await $fetch<Record<string, any>>(
-            `/api/v1/${props.network}/projects/${props.projectId}/linked-vcs/${props.consensusTimestamp}`,
+        const res = await $fetch<{ document: Record<string, any>; fieldLabels: Record<string, string> }>(
+            `/api/v1/${props.network}/projects/${props.projectId}/vc-evidence/${props.consensusTimestamp}`,
             { baseURL },
         );
+        vcDoc.value = res.document ?? null;
+        fieldLabels.value = (res.fieldLabels ?? {}) as Record<string, string>;
     } catch {
         error.value = true;
     } finally {
@@ -97,7 +114,7 @@ const fields = computed<DisplayField[]>(() => {
     for (const [key, val] of Object.entries(cs)) {
         if (SYSTEM_KEYS.has(key)) continue;
         if (val == null || val === '') continue;
-        out.push({ label: humanizeKey(key), value: formatValue(val) });
+        out.push({ label: fieldLabels.value[key] || humanizeKey(key), value: formatValue(val, key) });
     }
     return out;
 });
