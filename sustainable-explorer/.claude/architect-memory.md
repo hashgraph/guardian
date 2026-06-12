@@ -334,6 +334,27 @@ DRAWER needs labels → use an ADDITIVE endpoint, touch nothing else.
 not "Field4" (needs running api+frontend; otherwise inspect code + a curl of the new
 endpoint).
 
+## Phase 10.1 — Mint Token node overlay (canvas) — ✅ COMPLETE
+User: Mint Token action node showed "Awaiting data" despite linked issuances. Cause: canvas
+overlay matches node.schemaUuid→linkedVcs; action nodes have schemaUuid=null → never lit.
+Fix (architect-direct, small): (1) backend getLinkedVcDocument verification widened — accepts
+timestamps in project_mint_link (project_key match) besides linkedVcs, so RawVcDrawer can open
+MintToken VCs (LIVE: vc-evidence for mint ts on Amines = HTTP 200, was 404). (2) canvas
+`mintOverlay` computed from project.issuanceEvents → applied to category 'action' nodes
+(vcCount=events.length, latestVc=last event's mintConsensusTimestamp; ⓘ opens drawer). NOTE:
+all action nodes in a policy share the project-level overlay (fine for the common 1-mint-block
+case). tsc 0; jest 76p/5f; canvas type-clean. POST-RESTART CONFIRMED WORKING: linker live
+(150 links on Amines incl. 2 ref_root). OPEN UX ITEM (user not yet decided): group 150×(+1)
+NFT mint events by token+date in IssuancesTable; issuanceCount list-vs-detail inconsistency.
+
+## Phase 10.2 — Multi-record count on canvas nodes — ✅ COMPLETE
+User asked how multiple issuances visualize on the Mint node (was: latest-only, no count).
+Canvas node availability row now shows "×N · latest <ts>" when vcCount>1 (single record keeps
+"Data present · <ts>"), tooltip carries the full text, ⓘ titled "View latest raw VC". Generic:
+benefits multi-VC document schemas (e.g. 9 monitoring reports) AND mint overlays (×150). ⓘ
+still opens the LATEST VC only — full per-event history intentionally lives in the Issuances
+tab. Canvas type-clean.
+
 ## Phase 10 — Issuance↔Project linking — ✅ COMPLETE (architect-reviewed)
 
 Pass A (api-dev junior): 10.1 linker self-heal (candidate NOT EXISTS now JOINs business_view —

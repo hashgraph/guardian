@@ -733,8 +733,8 @@ export class MappingReprocessService {
         const ds = this.dataSources.getDataSource(network);
 
         // Resolve the project and verify the timestamp is in its linkedVcs.
-        const projectRows: Array<{ businessData: Record<string, unknown> | null }> = await ds.query(
-            `SELECT "businessData"
+        const projectRows: Array<{ projectKey: string | null; businessData: Record<string, unknown> | null }> = await ds.query(
+            `SELECT "projectKey", "businessData"
              FROM business_view
              WHERE "viewType" = 'PROJECT'
                AND ("sourceTimestamp" = $1 OR "projectKey" = $1)
@@ -753,9 +753,22 @@ export class MappingReprocessService {
             ? (businessData['linkedVcs'] as Array<Record<string, unknown>>)
             : [];
 
-        const isLinked = linkedVcs.some(
+        let isLinked = linkedVcs.some(
             v => typeof v['consensusTimestamp'] === 'string' && v['consensusTimestamp'] === consensusTimestamp,
         );
+
+        // MintToken VCs are attributed via project_mint_link (the mint linker),
+        // not businessData.linkedVcs — accept those too so issuance evidence is
+        // viewable from the project namespace.
+        if (!isLinked && projectRows[0].projectKey) {
+            const mintRows: unknown[] = await ds.query(
+                `SELECT 1 FROM project_mint_link
+                 WHERE mint_consensus_timestamp = $1 AND project_key = $2
+                 LIMIT 1`,
+                [consensusTimestamp, projectRows[0].projectKey],
+            );
+            isLinked = mintRows.length > 0;
+        }
 
         if (!isLinked) {
             throw new NotFoundException(

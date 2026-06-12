@@ -94,6 +94,20 @@ const lanes = computed<string[]>(() => {
     return ordered;
 });
 
+// Mint/action overlay: action nodes carry no schema, so the linkedVcs match
+// can never light them up. Issuances are attributed via project_mint_link and
+// arrive as issuanceEvents — when the project has any, the Mint Token action
+// is factually "done", with the latest mint VC as its evidence.
+const mintOverlay = computed<VcInfo | null>(() => {
+    const events = props.project.issuanceEvents ?? [];
+    if (events.length === 0) return null;
+    const latest = events[events.length - 1]; // API order: oldest first
+    return {
+        vcCount: events.length,
+        latestVc: { consensusTimestamp: latest.mintConsensusTimestamp, topicId: '' },
+    };
+});
+
 const nodes = computed<Node[]>(() => {
     const g = graph.value;
     if (!g || g.nodes.length === 0) return [];
@@ -125,7 +139,9 @@ const nodes = computed<Node[]>(() => {
     });
 
     for (const n of g.nodes) {
-        const info = n.schemaUuid ? vc[n.schemaUuid] : undefined;
+        const info = n.schemaUuid
+            ? vc[n.schemaUuid]
+            : (n.category === 'action' ? mintOverlay.value ?? undefined : undefined);
         out.push({
             id: n.tag,
             type: 'step',
@@ -308,8 +324,12 @@ async function openPolicyJson() {
                             <div class="flex min-w-0 items-center gap-1">
                                 <template v-if="data.vcCount > 0">
                                     <CheckCircle2 class="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                                    <span class="truncate text-[11px] text-emerald-700">
-                                        Data present · {{ formatTimestamp(data.latestVc?.consensusTimestamp ?? '') }}
+                                    <span
+                                        class="truncate text-[11px] text-emerald-700"
+                                        :title="`${data.vcCount} record(s) · latest ${formatTimestamp(data.latestVc?.consensusTimestamp ?? '')}`"
+                                    >
+                                        <template v-if="data.vcCount > 1">×{{ data.vcCount }} · latest {{ formatTimestamp(data.latestVc?.consensusTimestamp ?? '') }}</template>
+                                        <template v-else>Data present · {{ formatTimestamp(data.latestVc?.consensusTimestamp ?? '') }}</template>
                                     </span>
                                 </template>
                                 <template v-else>
@@ -320,7 +340,7 @@ async function openPolicyJson() {
                             <button
                                 v-if="data.vcCount > 0"
                                 class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
-                                title="View raw VC"
+                                :title="data.vcCount > 1 ? 'View latest raw VC' : 'View raw VC'"
                                 @mousedown.stop
                                 @click.stop="openDrawer(data)"
                             >
