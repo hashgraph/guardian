@@ -1352,15 +1352,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formulajs/formulajs@npm:4.5.4":
-  version: 4.5.4
-  resolution: "@formulajs/formulajs@npm:4.5.4"
+"@formulajs/formulajs@npm:4.6.0":
+  version: 4.6.0
+  resolution: "@formulajs/formulajs@npm:4.6.0"
   dependencies:
     bessel: "npm:^1.0.2"
     jstat: "npm:^1.9.6"
   bin:
     formulajs: bin/cli.js
-  checksum: 10c0/a1a88fcd371c409461a9236ab89d1c254610096d89c4ff30cdb96e7eb45b1c28b3726bd96dbeafc239fcb18b86ec9ec4495f1e094e70e00ff82689d788619e52
+  checksum: 10c0/f9f1d94d44e03d5b31ebc0404cbed6b51a374351f0d87ac4d61d6c536007f23e60f836dc5ca577d3c3c45f32b3ea865533da1bc7cd34d3eba5cdef29ea0c148d
   languageName: node
   linkType: hard
 
@@ -1414,7 +1414,7 @@ __metadata:
     "@aws-sdk/client-secrets-manager": "npm:^3.812.0"
     "@azure/identity": "npm:^4.10.0"
     "@azure/keyvault-secrets": "npm:^4.9.0"
-    "@formulajs/formulajs": "npm:4.5.4"
+    "@formulajs/formulajs": "npm:4.6.0"
     "@google-cloud/secret-manager": "npm:^4.2.2"
     "@guardian/interfaces": "workspace:*"
     "@hiero-ledger/sdk": "npm:2.84.0"
@@ -9857,7 +9857,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "guardian-service@workspace:guardian-service"
   dependencies:
-    "@formulajs/formulajs": "npm:4.5.4"
+    "@formulajs/formulajs": "npm:4.6.0"
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
     "@hiero-ledger/proto": "npm:2.31.0"

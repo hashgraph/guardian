@@ -16,7 +16,7 @@
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@formulajs/formulajs": "4.5.4",
+        "@formulajs/formulajs": "4.6.0",
         "@guardian/common": "workspace:*",
         "@guardian/interfaces": "workspace:*",
         "@hiero-ledger/proto": "2.31.0",
