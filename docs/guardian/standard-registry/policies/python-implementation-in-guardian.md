@@ -232,6 +232,7 @@ Python code in custom logic blocks runs in a sandboxed environment. The followin
 | `builtins.__import__` | Guarded via closure to prevent bypass |
 | Dry-run input depth/size | Capped at 64 levels / 100k nodes before `pyodide.toPy` conversion |
 | Execution timeout | Configurable via `PYTHON_SANDBOX_TIMEOUT_MS` (default 120s) |
+| Worker heap memory | Capped via the Worker's `resourceLimits`, tunable with `PYTHON_SANDBOX_HEAP_MB` (default 512 MB). Applies only to Pyodide mode; Docker mode uses `PYTHON_SANDBOX_MEMORY` instead. |
 
 #### Docker Mode Restrictions
 
@@ -272,4 +273,5 @@ All restrictions above are provided by Docker container isolation:
 | `PYTHON_SANDBOX_MEMORY` | `512m` | No (Docker mode only) | Container memory limit (passed to `docker run --memory` and `--memory-swap`). Accepts the same suffix forms as Docker (`b`, `k`, `m`, `g`). |
 | `PYTHON_SANDBOX_CPUS` | `1.0` | No (Docker mode only) | Container CPU quota (passed to `docker run --cpus`). |
 | `PYTHON_SANDBOX_PIDS` | `128` | No (Docker mode only) | Container PID limit (passed to `docker run --pids-limit`). |
+| `PYTHON_SANDBOX_HEAP_MB` | `512` | No (Pyodide mode only) | Pyodide worker heap cap in megabytes (Node `Worker` `resourceLimits.maxOldGenerationSizeMb`). Ignored in Docker mode, which uses `PYTHON_SANDBOX_MEMORY`. |
 | `DRY_RUN_BLOCK_TIMEOUT_MS` | `180000` | Yes | Overall timeout for the Policy Editor "Test" dialog (dry-run block execution). Provided by all env templates; no in-code fallback. Must be larger than `PYTHON_SANDBOX_TIMEOUT_MS` to leave room for Pyodide cold start. |
