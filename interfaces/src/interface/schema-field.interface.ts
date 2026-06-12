@@ -110,6 +110,11 @@ export interface SchemaField {
     enum?: string[];
 
     /**
+     * Enum name
+     */
+    enumName?: string;
+
+    /**
      * Enum values
      */
     availableOptions?: string[];

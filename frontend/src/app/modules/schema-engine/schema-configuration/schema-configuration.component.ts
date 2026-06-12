@@ -614,12 +614,11 @@ export class SchemaConfigurationComponent implements OnInit {
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
             const option = this.schemaTypeMap[key];
-            if (field.customType) {
+            if (field.customType && field.customType !== 'subSchema') {
                 if (option.customType === field.customType) {
                     return key;
-                } else {
-                    continue;
                 }
+                continue;
             }
             if (option.type === field.type) {
                 if (
@@ -769,6 +768,7 @@ export class SchemaConfigurationComponent implements OnInit {
             unit,
             remoteLink,
             enumArray,
+            enumName,
             availableOptionsArray,
             textColor,
             textSize,
@@ -869,6 +869,7 @@ export class SchemaConfigurationComponent implements OnInit {
             readOnly: false,
             remoteLink: type?.customType === 'enum' ? remoteLink : undefined,
             enum: type?.customType === 'enum' && !remoteLink ? enumArray : undefined,
+            enumName: type?.customType === 'enum' ? enumName : undefined,
             availableOptions: availableOptionsArray || type?.availableOptions,
             isPrivate: this.dataForm.value?.entity === SchemaEntity.EVC ? isPrivate : undefined,
             default: defaultValue,

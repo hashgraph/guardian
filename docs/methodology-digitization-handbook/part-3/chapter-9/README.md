@@ -23,9 +23,9 @@ Excel-first approach also enables easier collaboration with carbon domain expert
 
 Every Guardian schema follows this Excel structure:
 
-| Required Field | Field Type             | Parameter         | Visibility        | Question             | Allow Multiple Answers | Answer        |
+| Required Field | Field Type             | Parameter         | Visibility        | Description          | Allow Multiple Answers | Test Value    |
 | -------------- | ---------------------- | ----------------- | ----------------- | -------------------- | ---------------------- | ------------- |
-| Yes/No         | String/Number/Enum/etc | Reference to enum | TRUE/FALSE/hidden | User-facing question | Yes/No                 | Default value |
+| Yes/No         | String/Number/Enum/etc | Reference to enum | TRUE/FALSE/hidden | User-facing label    | Yes/No                 | Sample value  |
 
 **Field Configuration Meaning**:
 
@@ -33,9 +33,9 @@ Every Guardian schema follows this Excel structure:
 * **Field Type**: Data type (String, Number, Date, Enum, Boolean, Sub-Schema, etc.)
 * **Parameter**: Reference to enum options or calculation parameters
 * **Visibility**: Field display conditions (TRUE=always visible, FALSE=hidden unless condition met)
-* **Question**: Text that users see as the field label
+* **Description**: Text that users see as the field label
 * **Allow Multiple Answers**: Whether field accepts multiple values
-* **Answer**: Default value or example shown to users
+* **Test Value**: Sample value used when pressing the Test button in dry-run mode
 
 ## Building the Primary Schema Structure
 
@@ -51,7 +51,7 @@ Start your Excel file with these header rows:
 Row 1: Project Description (Auto)
 Row 2: Description
 Row 3: Schema Type | Verifiable Credentials
-Row 4: Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Row 4: Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 ```
 
 This establishes your schema as a Verifiable Credentials type that Guardian will process into on-chain records.
@@ -97,7 +97,7 @@ Create a new worksheet "VCS Project Description v4.4" with basic project informa
 VCS Project Description v4.4
 Description
 Schema Type | Sub-Schema
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | String | | | Project title | No | example
 Yes | String | | | Project ID | No | example
 Yes | URL | | | Project Website | No | https://example.com
@@ -113,7 +113,7 @@ Create "CCB" worksheet for additional community/biodiversity requirements:
 CCB
 Description
 Schema Type | Sub-Schema
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | String | | | CCB Standard | No | example
 Yes | String | | | CCB Project Type | No | example
 Yes | Date | | | Auditor Site Visit Start Date | No | 2000-01-01
@@ -212,7 +212,7 @@ Description | Biomass estimation using AR Tool 14
 Schema Type | Tool-integration
 Tool | AR Tool 14
 Tool Id | [tool message id if available]
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | Number | | | Tree height (m) | No | 1
 Yes | Number | | | Diameter at breast height (cm) | No | 1
 Yes | Number | | | Wood density (g cm-3) | No | 1
@@ -234,7 +234,7 @@ Create "(New) Final Baseline Emissions" worksheet:
 (New) Final Baseline Emissions
 Description
 Schema Type | Sub-Schema
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | Number | | | Year t | No | 1
 Yes | String | | | Stratum number | No | example
 Yes | Enum | It's a baseline scenari (enum) | | It's a baseline scenario or project scenario? | No | Baseline scenario
