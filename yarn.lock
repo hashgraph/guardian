@@ -1524,6 +1524,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hiero-ledger/proto@npm:2.31.0":
+  version: 2.31.0
+  resolution: "@hiero-ledger/proto@npm:2.31.0"
+  dependencies:
+    long: "npm:5.3.1"
+  peerDependencies:
+    ansi-regex: 6.2.2
+    ansi-styles: 6.2.3
+    debug: 4.4.1
+    protobufjs: 8.0.1
+    strip-ansi: 7.1.2
+  checksum: 10c0/16e2e729ac15c01a210bbfd616d948eec662bac6cc5a574689de2355b2d88102efffc326a4b198f8e357a96e5617229d853d614521e3815593fa0cc39fc35ae9
+  languageName: node
+  linkType: hard
+
 "@hiero-ledger/sdk@npm:2.84.0":
   version: 2.84.0
   resolution: "@hiero-ledger/sdk@npm:2.84.0"
@@ -9868,7 +9883,7 @@ __metadata:
     "@formulajs/formulajs": "npm:4.5.4"
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/proto": "npm:2.30.0"
+    "@hiero-ledger/proto": "npm:2.31.0"
     "@mikro-orm/core": "npm:6.4.16"
     "@mikro-orm/mongodb": "npm:6.4.16"
     "@nestjs/common": "npm:^11.1.24"
