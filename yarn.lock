@@ -1431,7 +1431,7 @@ __metadata:
     "@transmute/did-context": "npm:0.7.0-unstable.80"
     "@transmute/ed25519-signature-2018": "npm:0.7.0-unstable.80"
     "@transmute/jsonld-schema": "npm:0.7.0-unstable.80"
-    "@transmute/security-context": "npm:0.7.0-unstable.80"
+    "@transmute/security-context": "npm:0.7.0-unstable.82"
     "@transmute/vc.js": "npm:0.7.0-unstable.80"
     "@types/express": "npm:^5.0.1"
     "@types/glob": "npm:^8.1.0"
@@ -4427,10 +4427,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@transmute/security-context@npm:0.7.0-unstable.80":
-  version: 0.7.0-unstable.80
-  resolution: "@transmute/security-context@npm:0.7.0-unstable.80"
-  checksum: 10c0/fa48b25755cc8494c3720cba92291029ea90b1e76c1acb8a57818a57dc7d09752031cc82501bb74ac808f45c572c1ae561ad1bda99857776518b08592ea19f5f
+"@transmute/security-context@npm:0.7.0-unstable.82, @transmute/security-context@npm:^0.7.0-unstable.80, @transmute/security-context@npm:^0.7.0-unstable.82":
+  version: 0.7.0-unstable.82
+  resolution: "@transmute/security-context@npm:0.7.0-unstable.82"
+  checksum: 10c0/d466b53fd8b60c2a352f9aad0b2a76ee888dad8a3142f45d4786d5145f2ce431e767e667e0f19d050f9af93dc44a6910b1058d49fdbdc059d011e964dca5cafd
   languageName: node
   linkType: hard
 
@@ -4438,13 +4438,6 @@ __metadata:
   version: 0.6.1-unstable.37
   resolution: "@transmute/security-context@npm:0.6.1-unstable.37"
   checksum: 10c0/9436dacb8e81fd197c23e571fee2587a57e3264d7e4abc22f9c2a4217bbc51b4abd83dc3c49ff0adae5d52c6f6eaad74904605e34c2dd3f0a3edf86cea524a9c
-  languageName: node
-  linkType: hard
-
-"@transmute/security-context@npm:^0.7.0-unstable.80, @transmute/security-context@npm:^0.7.0-unstable.82":
-  version: 0.7.0-unstable.82
-  resolution: "@transmute/security-context@npm:0.7.0-unstable.82"
-  checksum: 10c0/d466b53fd8b60c2a352f9aad0b2a76ee888dad8a3142f45d4786d5145f2ce431e767e667e0f19d050f9af93dc44a6910b1058d49fdbdc059d011e964dca5cafd
   languageName: node
   linkType: hard
 
@@ -13177,7 +13170,7 @@ __metadata:
     "@transmute/credentials-context": "npm:0.7.0-unstable.80"
     "@transmute/did-context": "npm:0.7.0-unstable.80"
     "@transmute/ed25519-signature-2018": "npm:0.7.0-unstable.80"
-    "@transmute/security-context": "npm:0.7.0-unstable.80"
+    "@transmute/security-context": "npm:0.7.0-unstable.82"
     "@transmute/vc.js": "npm:0.7.0-unstable.80"
     "@types/express": "npm:^5.0.1"
     "@types/glob": "npm:^8.1.0"
