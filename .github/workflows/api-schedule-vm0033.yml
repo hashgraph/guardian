@@ -92,16 +92,19 @@ jobs:
         uses: oduwsdl/setup-ipfs@678755ac20f92d2dfca7e16138e40ae75f7a0f6f # v0.8.0
         with:
           ipfs_version: 0.42.0
-          run_daemon: false
-      
+
       - name: Start IPFS offline
         shell: bash
         run: |
-          ipfs config profile apply test    # Routing.Type=none, no bootstrap, mDNS off, localhost-only
+          # setup-ipfs always starts an online daemon (run_daemon is a no-op); stop it before our offline node.
+          ipfs shutdown || true
+          until ! curl -s -X POST http://127.0.0.1:5001/api/v0/id >/dev/null 2>&1; do sleep 0.5; done
+          ipfs config profile apply test    # Routing.Type=none, no bootstrap, mDNS off
           ipfs bootstrap rm --all
+          ipfs config Addresses.API /ip4/127.0.0.1/tcp/5001   # test profile randomizes ports; pin RPC for the app and probe
           ipfs config --json Discovery.MDNS.Enabled false
           ipfs daemon --offline &
-          until ipfs id >/dev/null 2>&1; do sleep 0.5; done
+          until curl -s -X POST http://127.0.0.1:5001/api/v0/id >/dev/null 2>&1; do sleep 0.5; done
 
       - name: Start MongoDB
         uses: step-security/mongodb-github-action@ca72004b9c8ad6d9ed996c3174edbe62f9f7424a
