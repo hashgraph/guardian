@@ -4,7 +4,7 @@
         "@aws-sdk/client-secrets-manager": "^3.812.0",
         "@azure/identity": "^4.10.0",
         "@azure/keyvault-secrets": "^4.9.0",
-        "@formulajs/formulajs": "4.5.4",
+        "@formulajs/formulajs": "4.6.0",
         "@google-cloud/secret-manager": "^4.2.2",
         "@guardian/interfaces": "workspace:*",
         "@hiero-ledger/sdk": "2.84.0",
