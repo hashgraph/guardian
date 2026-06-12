@@ -11,7 +11,7 @@
 html,
 body {
     height: 100%;
-    background-color: #F9FAFC;
+    background-color: var(--color-background, #F9FAFC);
 }
 
 .p-dialog-mask {
@@ -848,5 +848,29 @@ svg-icon.svg-icon-32 {
     &:hover::before {
         opacity: 1;
         color: white;
+    }
+}
+
+:root.guardian-theme-dark {
+    .CodeMirror {
+        background-color: var(--guardian-background);
+        color: var(--guardian-font-color);
+    }
+
+    .CodeMirror-gutters {
+        background-color: var(--guardian-grey-background);
+        border-right: 1px solid var(--guardian-border-color);
+    }
+
+    .CodeMirror-linenumber {
+        color: var(--guardian-grid-color);
+    }
+
+    .CodeMirror-cursor {
+        border-left-color: var(--guardian-font-color);
+    }
+
+    .CodeMirror-selected {
+        background: var(--guardian-grey-background);
     }
 }

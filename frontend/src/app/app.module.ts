@@ -158,10 +158,36 @@ const GuardianPreset = definePreset(Aura, {
             800: '{blue.800}', 900: '{blue.900}', 950: '{blue.950}'
         },
         colorScheme: {
-            light: { primary: { color: 'var(--primary-color)', contrastColor: '#ffffff',
-                hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' } },
-            dark:  { primary: { color: 'var(--primary-color)', contrastColor: '#ffffff',
-                hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' } }
+            light: {
+                primary: { color: 'var(--primary-color)', contrastColor: '#ffffff',
+                    hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' },
+                content: { background: 'var(--guardian-background)', hoverBackground: 'var(--guardian-hover)',
+                    borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)', hoverColor: 'var(--guardian-font-color)' },
+                formField: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)',
+                    color: 'var(--guardian-font-color)', placeholderColor: 'var(--guardian-grid-color)', iconColor: 'var(--guardian-grid-color)' },
+                text: { color: 'var(--guardian-font-color)', mutedColor: 'var(--guardian-grid-color)' },
+                overlay: {
+                    select: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' },
+                    popover: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' },
+                    modal: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' }
+                },
+                list: { option: { color: 'var(--guardian-font-color)', focusBackground: 'var(--guardian-hover)', focusColor: 'var(--guardian-font-color)' } }
+            },
+            dark: {
+                primary: { color: 'var(--primary-color)', contrastColor: '#ffffff',
+                    hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' },
+                content: { background: 'var(--guardian-background)', hoverBackground: 'var(--guardian-hover)',
+                    borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)', hoverColor: 'var(--guardian-font-color)' },
+                formField: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)',
+                    color: 'var(--guardian-font-color)', placeholderColor: 'var(--guardian-grid-color)', iconColor: 'var(--guardian-grid-color)' },
+                text: { color: 'var(--guardian-font-color)', mutedColor: 'var(--guardian-grid-color)' },
+                overlay: {
+                    select: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' },
+                    popover: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' },
+                    modal: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' }
+                },
+                list: { option: { color: 'var(--guardian-font-color)', focusBackground: 'var(--guardian-hover)', focusColor: 'var(--guardian-font-color)' } }
+            }
         }
     }
 });
