@@ -276,14 +276,33 @@ export class SchemaHelper {
         const buildFields = (node: any) =>
             SchemaHelper.parseFields(node, context, schemaCache, document.$defs || defs) as SchemaField[];
 
-        const predicatesFromProperties = (props: any): SchemaFieldPredicate[] => {
+        const predicatesFromProperties = (
+            props: any,
+            currentFields: SchemaField[] = fields,
+            pathSoFar: string[] = []
+        ): SchemaFieldPredicate[] => {
             const preds: SchemaFieldPredicate[] = [];
             for (const key of Object.keys(props || {})) {
                 const rule = props[key];
-                if (rule && Object.prototype.hasOwnProperty.call(rule, 'const')) {
-                    const f = fields.find(x => x.name === key);
+                if (!rule) { continue; }
+                if (Object.prototype.hasOwnProperty.call(rule, 'const')) {
+                    const f = currentFields.find(x => x.name === key);
                     if (f) {
-                        preds.push({ field: f, fieldValue: rule.const });
+                        const fullPath = [...pathSoFar, key];
+                        preds.push({
+                            field: f,
+                            fieldValue: rule.const,
+                            fieldPath: fullPath.length > 1 ? fullPath : undefined,
+                        });
+                    }
+                } else if (rule.properties) {
+                    const refField = currentFields.find(x => x.name === key && x.isRef);
+                    if (refField && (refField as any).fields?.length) {
+                        preds.push(...predicatesFromProperties(
+                            rule.properties,
+                            (refField as any).fields,
+                            [...pathSoFar, key]
+                        ));
                     }
                 }
             }
@@ -335,6 +354,102 @@ export class SchemaHelper {
             return null;
         };
 
+        const extractCrossFromLevel = (
+            node: any,
+            refFieldsAtLevel: SchemaField[],
+            pathPrefix: string[],
+        ): {
+            thenTargets: Array<{ field: SchemaField; fieldPath: string[] }>;
+            elseTargets: Array<{ field: SchemaField; fieldPath: string[] }>;
+            cleanProps: any;
+            hasCrossKeys: boolean;
+        } => {
+            const thenTargets: Array<{ field: SchemaField; fieldPath: string[] }> = [];
+            const elseTargets: Array<{ field: SchemaField; fieldPath: string[] }> = [];
+            const cleanProps: any = {};
+            let hasCrossKeys = false;
+
+            if (!node?.properties) {
+                return { thenTargets, elseTargets, cleanProps: node?.properties, hasCrossKeys };
+            }
+
+            for (const key of Object.keys(node.properties)) {
+                const val = node.properties[key];
+                const refField = refFieldsAtLevel.find(f => f.name === key && f.isRef);
+                const isCrossConstraint = refField && val && !val.$comment && !val.type && !val.$ref;
+                if (isCrossConstraint) {
+                    hasCrossKeys = true;
+                    const childPath = [...pathPrefix, key];
+                    const childFields: SchemaField[] = (refField as any).fields || [];
+                    // Direct required targets (leaf one level inside this ref)
+                    if (Array.isArray(val.required)) {
+                        for (const fieldName of val.required) {
+                            const childField = childFields.find(f => f.name === fieldName);
+                            if (childField) {
+                                thenTargets.push({ field: childField, fieldPath: [...childPath, fieldName] });
+                            }
+                        }
+                    }
+                    // Properties: either forbidden (=== false) or deeper nesting (recurse)
+                    if (val.properties) {
+                        for (const fieldName of Object.keys(val.properties)) {
+                            const subVal = val.properties[fieldName];
+                            if (subVal === false) {
+                                const childField = childFields.find(f => f.name === fieldName);
+                                if (childField) {
+                                    elseTargets.push({ field: childField, fieldPath: [...childPath, fieldName] });
+                                }
+                            } else {
+                                // Recurse if this is another ref field at the child level
+                                const subRefField = childFields.find(f => f.name === fieldName && f.isRef);
+                                if (subRefField) {
+                                    const subResult = extractCrossFromLevel(
+                                        { properties: { [fieldName]: subVal } },
+                                        childFields,
+                                        childPath,
+                                    );
+                                    thenTargets.push(...subResult.thenTargets);
+                                    elseTargets.push(...subResult.elseTargets);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    cleanProps[key] = val;
+                }
+            }
+            return { thenTargets, elseTargets, cleanProps, hasCrossKeys };
+        };
+
+        const extractCrossTargets = (node: any): {
+            thenTargets: Array<{ field: SchemaField; fieldPath: string[] }>;
+            elseTargets: Array<{ field: SchemaField; fieldPath: string[] }>;
+            cleanNode: any;
+        } => {
+            if (!node?.properties) {
+                return { thenTargets: [], elseTargets: [], cleanNode: node };
+            }
+            const result = extractCrossFromLevel(node, fields, []);
+            if (!result.hasCrossKeys) {
+                return { thenTargets: [], elseTargets: [], cleanNode: node };
+            }
+            const cleanNode: any = { ...node };
+            if (result.cleanProps && Object.keys(result.cleanProps).length) {
+                cleanNode.properties = result.cleanProps;
+                if (Array.isArray(node.required)) {
+                    cleanNode.required = node.required.filter((n: string) => n in result.cleanProps);
+                }
+            } else {
+                delete cleanNode.properties;
+                delete cleanNode.required;
+            }
+            return {
+                thenTargets: result.thenTargets,
+                elseTargets: result.elseTargets,
+                cleanNode: Object.keys(cleanNode).length ? cleanNode : null,
+            };
+        };
+
         const parseArray = (arr: any[]): SchemaCondition[] => {
             const out: SchemaCondition[] = [];
             for (const n of arr || []) {
@@ -342,9 +457,14 @@ export class SchemaHelper {
                     continue;
                 }
                 const ifCondition = toIfCondition(n.if);
-                const thenFields = buildFields(n.then);
-                const elseFields = buildFields(n.else);
-                out.push({ ifCondition, thenFields, elseFields });
+                const { thenTargets, elseTargets, cleanNode: cleanThen } = extractCrossTargets(n.then);
+                const { cleanNode: cleanElse } = extractCrossTargets(n.else);
+                const thenFields = buildFields(cleanThen);
+                const elseFields = buildFields(cleanElse);
+                const condition: any = { ifCondition, thenFields, elseFields };
+                if (thenTargets.length) { condition.thenTargets = thenTargets; }
+                if (elseTargets.length) { condition.elseTargets = elseTargets; }
+                out.push(condition as SchemaCondition);
             }
             return out;
         };
@@ -520,9 +640,18 @@ export class SchemaHelper {
             }
 
             const single = (p: SchemaFieldPredicate | { field: SchemaField; fieldValue: any }) => {
-                return {
-                    properties: { [p.field.name]: { const: p.fieldValue } }
+                const path = ('fieldPath' in p && p.fieldPath && p.fieldPath.length > 1)
+                    ? p.fieldPath
+                    : [p.field.name];
+                let node: any = { const: p.fieldValue };
+                for (let i = path.length - 1; i >= 0; i--) {
+                    const wrapper: any = { properties: { [path[i]]: node } };
+                    if (path.length > 1) {
+                        wrapper.required = [path[i]];
+                    }
+                    node = wrapper;
                 }
+                return node;
             };
 
             if ('field' in ic && 'fieldValue' in ic) {
@@ -556,6 +685,67 @@ export class SchemaHelper {
             return null;
         };
 
+        const deepMergeSchemaObj = (a: any, b: any): any => {
+            if (!a) { return b; }
+            if (!b) { return a; }
+            const result: any = { ...a };
+            for (const key of Object.keys(b)) {
+                if (key === 'properties') {
+                    result.properties = { ...(a.properties || {}) };
+                    for (const pk of Object.keys(b.properties)) {
+                        result.properties[pk] = (a.properties?.[pk] !== undefined)
+                            ? deepMergeSchemaObj(a.properties[pk], b.properties[pk])
+                            : b.properties[pk];
+                    }
+                } else if (key === 'required') {
+                    result.required = [...new Set([...(a.required || []), ...(b.required || [])])];
+                } else {
+                    result[key] = b[key];
+                }
+            }
+            return result;
+        };
+
+        // Build a nested JSON Schema object that requires the leaf field at each target's path.
+        const buildCrossRequired = (targets?: { fieldPath: string[] }[]): any | undefined => {
+            if (!targets?.length) { return undefined; }
+            const root: any = {};
+            for (const t of targets) {
+                const path = t.fieldPath;
+                if (!path || path.length < 2) { continue; }
+                let node = root;
+                for (let i = 0; i < path.length - 1; i++) {
+                    if (!node.properties) { node.properties = {}; }
+                    if (!node.properties[path[i]]) { node.properties[path[i]] = {}; }
+                    node = node.properties[path[i]];
+                }
+                const fieldName = path[path.length - 1];
+                if (!node.required) { node.required = []; }
+                if (!node.required.includes(fieldName)) { node.required.push(fieldName); }
+            }
+            return Object.keys(root).length ? root : undefined;
+        };
+
+        // Build a nested JSON Schema object that forbids the leaf field (property: false).
+        const buildCrossForbidden = (targets?: { fieldPath: string[] }[]): any | undefined => {
+            if (!targets?.length) { return undefined; }
+            const root: any = {};
+            for (const t of targets) {
+                const path = t.fieldPath;
+                if (!path || path.length < 2) { continue; }
+                let node = root;
+                for (let i = 0; i < path.length - 1; i++) {
+                    if (!node.properties) { node.properties = {}; }
+                    if (!node.properties[path[i]]) { node.properties[path[i]] = {}; }
+                    node = node.properties[path[i]];
+                }
+                const fieldName = path[path.length - 1];
+                if (!node.properties) { node.properties = {}; }
+                node.properties[fieldName] = false;
+            }
+            return Object.keys(root).length ? root : undefined;
+        };
+
         const serializeCondition = (cond: SchemaCondition) => {
             const ifNode = serializeIf(cond);
             if (!ifNode) {
@@ -569,8 +759,14 @@ export class SchemaHelper {
                 return Object.keys(props).length ? { properties: props, required: req } : undefined;
             };
 
-            const thenObj = buildSub(cond.thenFields);
-            const elseObj = buildSub(cond.elseFields);
+            const thenObj = deepMergeSchemaObj(
+                deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets)),
+                buildCrossForbidden(cond.elseTargets)
+            );
+            const elseObj = deepMergeSchemaObj(
+                deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets)),
+                buildCrossForbidden(cond.thenTargets)
+            );
 
             const obj: any = { if: ifNode };
             if (thenObj) {
@@ -593,6 +789,15 @@ export class SchemaHelper {
         }
 
         SchemaHelper.getFieldsFromObject(fields, document.required, document.properties, schema.contextURL);
+
+        const conditionFieldNames = new Set<string>();
+        for (const cond of (conditions || [])) {
+            for (const f of (cond.thenFields || [])) { conditionFieldNames.add(f.name); }
+            for (const f of (cond.elseFields || [])) { conditionFieldNames.add(f.name); }
+        }
+        if (conditionFieldNames.size && Array.isArray(document.required)) {
+            document.required = document.required.filter((name: string) => !conditionFieldNames.has(name));
+        }
 
         return document;
     }
@@ -857,7 +1062,7 @@ export class SchemaHelper {
      */
     public static findRefs(target: Schema, schemas: Schema[]) {
         const map = {};
-        const schemaMap = {
+        const schemaMap: Record<string, any> = {
             '#GeoJSON': geoJson,
             '#SentinelHUB': SentinelHubSchema
         };
@@ -869,25 +1074,69 @@ export class SchemaHelper {
                 map[field.type] = schemaMap[field.type];
             }
         }
-        return SchemaHelper.uniqueRefs(map, {});
+
+        const patchMap = SchemaHelper.buildCrossTargetPatchMap(target, schemaMap);
+        return SchemaHelper.uniqueRefs(map, {}, patchMap);
+    }
+
+    /**
+     * Build a map from sub-schema IRI → set of field names to strip from required,
+     * derived from cross-schema condition targets on the given schema.
+     */
+    private static buildCrossTargetPatchMap(
+        target: Schema,
+        schemaMap: Record<string, any>
+    ): Map<string, Set<string>> {
+        const patchMap = new Map<string, Set<string>>();
+        const fieldNameToIRI = new Map<string, string>();
+        for (const field of target.fields) {
+            if (field.isRef && field.type) {
+                fieldNameToIRI.set(field.name, field.type);
+            }
+        }
+        for (const condition of (target.conditions || [])) {
+            const allTargets = [
+                ...(condition.thenTargets || []),
+                ...(condition.elseTargets || []),
+            ];
+            for (const t of allTargets) {
+                const path = t.fieldPath;
+                if (!path || path.length < 2) { continue; }
+                // Walk the path to find the IRI of the schema that owns the leaf field.
+                let iri: string | undefined = fieldNameToIRI.get(path[0]);
+                for (let i = 1; i < path.length - 1 && iri; i++) {
+                    iri = schemaMap[iri]?.properties?.[path[i]]?.['$ref'];
+                }
+                if (!iri) { continue; }
+                const leaf = path[path.length - 1];
+                if (!patchMap.has(iri)) { patchMap.set(iri, new Set()); }
+                patchMap.get(iri)!.add(leaf);
+            }
+        }
+        return patchMap;
     }
 
     /**
      * Get unique refs
      * @param map
      * @param newMap
+     * @param patchMap fields to strip from required per schema IRI
      * @private
      */
-    private static uniqueRefs(map: any, newMap: any) {
+    private static uniqueRefs(map: any, newMap: any, patchMap?: Map<string, Set<string>>) {
         const keys = Object.keys(map);
         for (const iri of keys) {
             if (!newMap[iri]) {
                 const oldSchema = map[iri];
                 const newSchema = { ...oldSchema };
                 delete newSchema.$defs;
+                const toRemove = patchMap?.get(iri);
+                if (toRemove?.size && Array.isArray(newSchema.required)) {
+                    newSchema.required = newSchema.required.filter((r: string) => !toRemove.has(r));
+                }
                 newMap[iri] = newSchema;
                 if (oldSchema.$defs) {
-                    SchemaHelper.uniqueRefs(oldSchema.$defs, newMap);
+                    SchemaHelper.uniqueRefs(oldSchema.$defs, newMap, patchMap);
                 }
             }
         }
