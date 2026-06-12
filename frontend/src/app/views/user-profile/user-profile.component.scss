@@ -165,6 +165,12 @@ form {
             align-items: center;
             border-radius: 6px;
             border: 1px solid var(--color-secondary);
+            color: var(--color-primary);
+
+            i, ::ng-deep svg {
+                color: var(--color-primary);
+                fill: var(--color-primary);
+            }
 
             span {
                 width: min-content;
