@@ -14330,6 +14330,20 @@ paths:
                 - DISCONTINUED
                 - DEMO
                 - VIEW
+        - name: name
+          required: false
+          in: query
+          description: Filter by policy name.
+          schema:
+            example: Example Policy
+            type: string
+        - name: version
+          required: false
+          in: query
+          description: Filter by policy version.
+          schema:
+            example: 1.0.0
+            type: string
         - name: Api-Version
           in: header
           description: Use "2" for this endpoint (supports status filter).

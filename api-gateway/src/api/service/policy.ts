@@ -314,6 +314,20 @@ export class PolicyApi {
         required: false,
         example: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED]
     })
+    @ApiQuery({
+        name: 'name',
+        type: String,
+        description: 'Filter by policy name.',
+        required: false,
+        example: 'Example Policy'
+    })
+    @ApiQuery({
+        name: 'version',
+        type: String,
+        description: 'Filter by policy version.',
+        required: false,
+        example: '1.0.0'
+    })
     @ApiOkResponse({
         description:
             'Successful operation. Two examples: regular user (userGroups usually reflect roles on published policies) and Standard Registry (dry-run: last active role and its userGroups; Administrator has userGroups []). Other combinations are possible depending on policy state and assignments.',
@@ -345,15 +359,21 @@ export class PolicyApi {
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
         @Query('type') type?: string,
-        @Query('status') status?: string
+        @Query('status') status?: string,
+        @Query('name') name?: string,
+        @Query('version') version?: string,
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
             return res.header('X-Total-Count', 0).send([]);
         }
         try {
+            const filters: any = {};
+            if (status) { filters.status = { $in: status.split(',') }; }
+            if (name) { filters.name = { $regex: name, $options: 'i' }; }
+            if (version) { filters.version = version; }
             const options: any = {
                 fields: Object.values(POLICY_REQUIRED_PROPS),
-                filters: status ? { status: { $in: status.split(',') } } : {},
+                filters,
                 type,
                 pageIndex,
                 pageSize

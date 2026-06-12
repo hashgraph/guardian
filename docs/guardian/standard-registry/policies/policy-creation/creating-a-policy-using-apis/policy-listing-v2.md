@@ -30,6 +30,8 @@ Returns all policies. Version 2 adds support for filtering by `status` and inclu
 | `pageSize` | number | No | The number of items to return |
 | `type` | string | No | Policy type (e.g. `local`) |
 | `status` | string | No | Filter by policy status. Multiple values can be passed as a comma-separated list (e.g. `PUBLISH,DISCONTINUED`). Allowed values: `DRAFT`, `DRY_RUN`, `DEMO`, `PUBLISH`, `DISCONTINUED`, `FAILED` |
+| `name` | string | No | Filter by policy name (case-insensitive substring match, e.g. `iREC`) |
+| `version` | string | No | Filter by exact policy version (e.g. `1.0.0`) |
 
 ---
 
