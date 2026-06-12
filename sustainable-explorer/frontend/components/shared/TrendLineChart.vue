@@ -17,7 +17,6 @@ const padX = 10;
 const padTop = 10;
 const padBottom = 0;
 
-const TOOLTIP_W = 80;
 const TOOLTIP_H = 20;
 const TOOLTIP_PAD = 4; // min distance from viewBox top
 
@@ -69,14 +68,24 @@ const hoveredPoint = computed(() =>
     hoveredIndex.value !== null ? points.value[hoveredIndex.value] ?? null : null,
 );
 
+const tooltipText = computed(() => {
+    const pt = hoveredPoint.value;
+    if (!pt) return '';
+    return `${pt.label}: ${pt.value !== 0 ? `${pt.value}${unit.value}` : '0'}`;
+});
+
+// Estimate pixel width: font-size 10 bold ≈ 6.5px/char + 16px horizontal padding
+const tooltipWidth = computed(() => Math.max(60, tooltipText.value.length * 6.5 + 16));
+
 // Tooltip box — x clamped so it never overflows left/right,
 // y clamped so it never overflows the top of the viewBox.
 const tooltipBox = computed(() => {
     const pt = hoveredPoint.value;
     if (!pt) return null;
-    const x = Math.min(Math.max(pt.x - TOOLTIP_W / 2, padX), chartWidth - padX - TOOLTIP_W);
+    const w = tooltipWidth.value;
+    const x = Math.min(Math.max(pt.x - w / 2, padX), chartWidth - padX - w);
     const y = Math.max(pt.y - TOOLTIP_H - 12, TOOLTIP_PAD);
-    return { x, y, textX: x + TOOLTIP_W / 2, textY: y + TOOLTIP_H - 6 };
+    return { x, y, w, textX: x + w / 2, textY: y + TOOLTIP_H - 6 };
 });
 </script>
 
@@ -175,7 +184,7 @@ const tooltipBox = computed(() => {
                     <rect
                         :x="tooltipBox.x"
                         :y="tooltipBox.y"
-                        :width="TOOLTIP_W"
+                        :width="tooltipBox.w"
                         :height="TOOLTIP_H"
                         rx="4"
                         :style="{ fill: 'var(--color-foreground)', opacity: '0.9' }"
@@ -188,7 +197,7 @@ const tooltipBox = computed(() => {
                         font-size="10"
                         font-weight="600"
                     >
-                        {{ hoveredPoint.label }}: {{ hoveredPoint.value !== 0 ? `${hoveredPoint.value}${unit}` : '0' }}
+                        {{ tooltipText }}
                     </text>
                 </g>
             </svg>
