@@ -3,7 +3,8 @@
 
     &.p-select,
     .p-select {
-        background: #ffffff;
+        background: var(--guardian-background, #ffffff);
+        color: var(--guardian-font-color, #23252E);
         border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
         border-radius: 8px;
         outline: 0 none;
@@ -35,7 +36,7 @@
             font-size: 14px;
             font-weight: 400;
             padding: 0px 16px;
-            color: #000;
+            color: var(--guardian-font-color, #000);
             // display: flex;
             // justify-content: center;
             margin: auto 0;
@@ -100,9 +101,12 @@
 .guardian-dropdown-panel {
     border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
     border-radius: 8px;
+    background: var(--guardian-background, #ffffff);
+    color: var(--guardian-font-color, #23252E);
 
     .p-select-header {
         input {
+            background: var(--guardian-background, #ffffff);
             height: 40px;
             border-radius: 8px;
             outline: none;
@@ -110,7 +114,7 @@
             font-family: Inter;
             font-size: 14px;
             font-weight: 400;
-            color: #000;
+            color: var(--guardian-font-color, #000);
             padding: 8px 16px;
 
             &:enabled:hover {
@@ -278,7 +282,7 @@
 
 .DRAFT-dropdown .guardian-status-select.p-select,
 .status-DRAFT.guardian-status-select.p-select {
-    background: #ffffff !important;
+    background: var(--guardian-background, #ffffff) !important;
 }
 
 .DRY-RUN-dropdown .guardian-status-select.p-select,

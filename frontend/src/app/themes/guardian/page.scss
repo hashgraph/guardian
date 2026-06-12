@@ -5,6 +5,8 @@
     flex-direction: column;
     position: relative;
     padding: var(--guardian-page-padding);
+    background: var(--color-background);
+    color: var(--guardian-font-color);
 
     .guardian-user-not-registered {
         position: absolute;
