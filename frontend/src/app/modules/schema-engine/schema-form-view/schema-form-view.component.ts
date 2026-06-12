@@ -156,15 +156,15 @@ export class SchemaFormViewComponent implements OnInit {
         return ic && 'OR' in ic && Array.isArray(ic.OR);
     }
 
-    private getPredicates(ic: any): { field: any; fieldValue: any }[] {
+    private getPredicates(ic: any): { field: any; fieldValue: any; fieldPath?: string[] }[] {
         if (this.isSingleIF(ic)) {
-            return [{ field: ic.field, fieldValue: ic.fieldValue }];
+            return [{ field: ic.field, fieldValue: ic.fieldValue, fieldPath: (ic as any).fieldPath }];
         }
         if (this.isAND(ic)) {
-            return ic.AND.map(p => ({ field: (p as any).field, fieldValue: (p as any).fieldValue ?? (p as any).const }));
+            return ic.AND.map(p => ({ field: (p as any).field, fieldValue: (p as any).fieldValue ?? (p as any).const, fieldPath: (p as any).fieldPath }));
         }
         if (this.isOR(ic)) {
-            return ic.OR.map(p => ({ field: (p as any).field, fieldValue: (p as any).fieldValue ?? (p as any).const }));
+            return ic.OR.map(p => ({ field: (p as any).field, fieldValue: (p as any).fieldValue ?? (p as any).const, fieldPath: (p as any).fieldPath }));
         }
         return [];
     }
@@ -178,12 +178,21 @@ export class SchemaFormViewComponent implements OnInit {
             return false;
         }
 
-        const check = (pred: { field: any; fieldValue: any }) => {
-            const fieldName = pred.field?.name;
-            if (!fieldName) {
+        const check = (pred: { field: any; fieldValue: any; fieldPath?: string[] }) => {
+            // For nested sub-schema fields the predicate carries a full path; walk it from subValues.
+            const path = (pred.fieldPath && pred.fieldPath.length > 1)
+                ? pred.fieldPath
+                : [pred.field?.name];
+            if (!path[0]) {
                 return false;
             }
-            const current = subValues ? subValues[fieldName] : undefined;
+            let current = subValues;
+            for (const segment of path) {
+                if (current === null || current === undefined) {
+                    return false;
+                }
+                current = current[segment];
+            }
             return current === pred.fieldValue;
         };
 
@@ -503,7 +512,7 @@ export class SchemaFormViewComponent implements OnInit {
             }
         }
     }
-    
+
     public openAccordion(link?: string): void {
         let _rootLink: string | undefined = undefined;
         let _subLink: string | undefined = undefined;
@@ -575,9 +584,9 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     private findFieldRecursive(list: any[], targetFullPath: string): any | null {
-        if (!list || !list.length) 
+        if (!list || !list.length)
             return null;
-        
+
         for (const f of list) {
             if (f.fullPath === targetFullPath)
                 return f;
@@ -632,18 +641,18 @@ export class SchemaFormViewComponent implements OnInit {
         if (customTypes.includes(item.customType || '')) {
             return false;
         }
-        
+
         const visibleFields = item.fields?.filter(f => !f.hidden) || [];
         if (visibleFields.length === 0) {
             return false;
         }
-        
-        return !visibleFields.some(f => 
-            f.isArray || f.isRef || 
+
+        return !visibleFields.some(f =>
+            f.isArray || f.isRef ||
             customTypes.includes(f.customType || '')
         );
     }
-    
+
     public getTableHeaderFields(item: IFieldControl): any[] | undefined {
         if (this.hide) {
             return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
@@ -664,7 +673,7 @@ export class SchemaFormViewComponent implements OnInit {
 
             for (let j = 0; j < item.fields.length; j++) {
                 const field = item.fields[j];
-                if (this.hide && this.hide[field.name] || field.hidden || field.type === 'null') 
+                if (this.hide && this.hide[field.name] || field.hidden || field.type === 'null')
                     continue;
 
                 const tableField: IFieldControl = {
@@ -701,7 +710,7 @@ export class SchemaFormViewComponent implements OnInit {
 
      public onAccordionSelectEvent(isOpen: any, item: any, childrenAccordionId?: string) {
         let accordionId = item.fullPath;
-    
+
         if (childrenAccordionId) {
             accordionId = `${accordionId};${childrenAccordionId}`;
         }

@@ -14,6 +14,7 @@ import {
     Schema,
     SchemaCategory,
     SchemaCondition,
+    SchemaConditionTarget,
     SchemaEntity,
     SchemaField,
     UnitSystem,
@@ -21,7 +22,7 @@ import {
 import moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { ConditionControl, IfOperator } from '../condition-control';
+import { ConditionControl, ConditionFieldGroup, ConditionFieldOption, IfOperator } from '../condition-control';
 import { FieldControl } from '../field-control';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -246,6 +247,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     format: undefined,
                     pattern: undefined,
                     isRef: true,
+                    customType: schema.topicId === this._topicId ? 'subSchema' : undefined,
                 }
             }
         }
@@ -269,7 +271,7 @@ export class SchemaConfigurationComponent implements OnInit {
         this.fieldsForm = this.fb.group({});
         this.conditionsForm = new UntypedFormGroup({});
 
-        let props: any = {
+        const props: any = {
             name: ['', Validators.required],
             description: [''],
             fields: this.fieldsForm,
@@ -412,6 +414,25 @@ export class SchemaConfigurationComponent implements OnInit {
                 cc.addElseControl(fc);
             });
 
+            (condition.thenTargets || []).forEach(target => {
+                cc.addCrossThenTarget({
+                    key: target.fieldPath.join('.'),
+                    label: target.fieldPath.join(' > '),
+                    fieldPath: target.fieldPath,
+                    typeKey: this.getType(target.field),
+                    required: target.field.required,
+                });
+            });
+            (condition.elseTargets || []).forEach(target => {
+                cc.addCrossElseTarget({
+                    key: target.fieldPath.join('.'),
+                    label: target.fieldPath.join(' > '),
+                    fieldPath: target.fieldPath,
+                    typeKey: this.getType(target.field),
+                    required: target.field.required,
+                });
+            });
+
             this.conditions.push(cc);
             this.conditionsForm.addControl(cc.name, cc.createGroup());
         }
@@ -438,38 +459,54 @@ export class SchemaConfigurationComponent implements OnInit {
             }
             (ifGroup.get('operator') as UntypedFormControl).setValue(operator, { emitEvent: false });
 
-            const available = new Map<string, FieldControl>();
+            const availableByKey = new Map<string, FieldControl>();
             for (const f of this.fields) {
                 const key = f.controlKey?.value;
                 if (key && f.isCondition(this.schemaTypeMap)) {
-                    available.set(key, f);
+                    availableByKey.set(key, f);
                 }
             }
             this.conditions.forEach(other => {
                 if (other === cc) return;
-                for (const f of other.thenControls || []) {
+                for (const f of [...(other.thenControls || []), ...(other.elseControls || [])]) {
                     const key = f.controlKey?.value;
-                    if (key) {
-                        available.set(key, f);
-                    }
-                }
-                for (const f of other.elseControls || []) {
-                    const key = f.controlKey?.value;
-                    if (key) {
-                        available.set(key, f);
-                    }
+                    if (key) { availableByKey.set(key, f); }
                 }
             });
 
+            const buildOptionFromPredicate = (p: any): ConditionFieldOption | undefined => {
+                const fp: string[] | undefined = p.fieldPath;
+                if (fp != null && fp.length > 1) {
+                    const leafField: SchemaField = p.field;
+                    return {
+                        key: fp.join('.'),
+                        label: fp.join(' > '),
+                        fieldPath: fp,
+                        typeKey: this.getType(leafField),
+                        required: leafField.required,
+                    };
+                }
+                const fieldName = pickName(p.field);
+                const fc = fieldName ? availableByKey.get(fieldName) : undefined;
+                if (!fc) { return undefined; }
+                return {
+                    key: fc.controlKey.value,
+                    label: fc.controlTitle.value || fc.controlKey.value,
+                    fieldPath: [fc.controlKey.value],
+                    typeKey: fc.controlType.value,
+                    required: fc.controlRequired.value,
+                    fieldControl: fc,
+                };
+            };
+
             cc.clearConditions(false);
             pairs.forEach(p => {
-                const fieldName = pickName(p.field);
-                const fc = fieldName ? available.get(fieldName) : undefined;
-                cc.addCondition(fc, p.fieldValue);
+                const opt = buildOptionFromPredicate(p);
+                cc.addCondition(opt, p.fieldValue);
                 const row = cc.conditions.at(cc.conditions.length - 1) as UntypedFormGroup;
                 const valueCtrl = row.get('fieldValue') as UntypedFormControl;
-                if (fc) {
-                    this.ifFormatValueFor(valueCtrl, fc);
+                if (opt) {
+                    this.ifFormatValueForOption(valueCtrl, opt);
                 }
             });
         });
@@ -498,8 +535,9 @@ export class SchemaConfigurationComponent implements OnInit {
         const row = condition.conditions.at(idx) as UntypedFormGroup;
         const fieldCtrl = row.get('field') as UntypedFormControl;
         const valueCtrl = row.get('fieldValue') as UntypedFormControl;
-        fieldCtrl.setValue(event.value);
-        this.ifFormatValueFor(valueCtrl, event.value);
+        const opt: ConditionFieldOption = event.value;
+        fieldCtrl.setValue(opt);
+        this.ifFormatValueForOption(valueCtrl, opt);
     }
 
     private ifFormatValueFor(valueCtrl: UntypedFormControl, field: FieldControl) {
@@ -553,24 +591,33 @@ export class SchemaConfigurationComponent implements OnInit {
         return typeKey ? this.schemaTypeMap[typeKey] : null;
     }
 
-    public isFieldType1(fc: FieldControl | null): boolean {
-        const t = this.getTypeByField(fc);
+    private getTypeByOption(opt: ConditionFieldOption | null | undefined) {
+        if (!opt) { return null; }
+        return opt.typeKey ? this.schemaTypeMap[opt.typeKey] : null;
+    }
+
+    public getRowOption(row: UntypedFormGroup): ConditionFieldOption | null {
+        return (row.get('field') as UntypedFormControl)?.value || null;
+    }
+
+    public isFieldType1(opt: ConditionFieldOption | null): boolean {
+        const t = this.getTypeByOption(opt);
         return !!t && t.type !== 'boolean' && !['time', 'date-time', 'date'].includes(t.format);
     }
-    public isFieldType2(fc: FieldControl | null): boolean {
-        const t = this.getTypeByField(fc);
+    public isFieldType2(opt: ConditionFieldOption | null): boolean {
+        const t = this.getTypeByOption(opt);
         return !!t && t.type === 'string' && t.format === 'time';
     }
-    public isFieldType3(fc: FieldControl | null): boolean {
-        const t = this.getTypeByField(fc);
+    public isFieldType3(opt: ConditionFieldOption | null): boolean {
+        const t = this.getTypeByOption(opt);
         return !!t && t.type === 'string' && t.format === 'date-time';
     }
-    public isFieldType4(fc: FieldControl | null): boolean {
-        const t = this.getTypeByField(fc);
+    public isFieldType4(opt: ConditionFieldOption | null): boolean {
+        const t = this.getTypeByOption(opt);
         return !!t && t.type === 'string' && t.format === 'date';
     }
-    public isFieldType5(fc: FieldControl | null): boolean {
-        const t = this.getTypeByField(fc);
+    public isFieldType5(opt: ConditionFieldOption | null): boolean {
+        const t = this.getTypeByOption(opt);
         return !!t && t.type === 'boolean';
     }
     private checkDependencies(currentSchemaId: any, schema: Schema): boolean {
@@ -961,6 +1008,27 @@ export class SchemaConfigurationComponent implements OnInit {
                 (typeof r?.field === 'string' ? r.field : undefined);
         };
 
+        const resolveIfField = (opt: ConditionFieldOption | undefined): { field: SchemaField; fieldPath?: string[] } | null => {
+            if (!opt?.fieldPath?.length) { return null; }
+            if (opt.fieldPath.length === 1) {
+                const sf = fieldsBySchemaName.get(opt.fieldPath[0]);
+                return sf ? { field: sf } : null;
+            }
+            const containerField = fieldsBySchemaName.get(opt.fieldPath[0]);
+            if (!containerField) { return null; }
+            const leafField = containerField.fields?.find(f => f.name === opt.fieldPath[opt.fieldPath.length - 1]);
+            return leafField ? { field: leafField, fieldPath: opt.fieldPath } : null;
+        };
+
+        const buildCrossTargets = (targets: ConditionFieldOption[]): SchemaConditionTarget[] =>
+            targets.map(opt => {
+                const containerField = fieldsBySchemaName.get(opt.fieldPath[0]);
+                if (!containerField) { return null; }
+                const leafField = containerField.fields?.find(f => f.name === opt.fieldPath[opt.fieldPath.length - 1]);
+                if (!leafField) { return null; }
+                return { fieldPath: opt.fieldPath, field: leafField } as SchemaConditionTarget;
+            }).filter(Boolean) as SchemaConditionTarget[];
+
         const conditions: SchemaCondition[] = [];
         for (const element of this.conditions) {
             const conditionValue = value.conditions[element.name];
@@ -984,6 +1052,9 @@ export class SchemaConfigurationComponent implements OnInit {
                 }
             }
 
+            const thenTargets = buildCrossTargets(element.crossThenTargets || []);
+            const elseTargets = buildCrossTargets(element.crossElseTargets || []);
+
             const op: IfOperator = conditionValue.ifCondition?.operator || 'SINGLE';
             const rows = (conditionValue.ifCondition?.conditions as any[]) || [];
             if (!rows.length) {
@@ -992,31 +1063,31 @@ export class SchemaConfigurationComponent implements OnInit {
 
             if (op === 'SINGLE') {
                 const row = rows[0];
-                const name = getPickedName(row);
-                const sf = name ? fieldsBySchemaName.get(name) : undefined;
-                if (!sf) {
+                const resolved = resolveIfField(row?.field);
+                if (!resolved) {
                     continue;
                 }
-
                 conditions.push({
                     ifCondition: {
-                        field: sf,
-                        fieldValue: row.fieldValue
-                    },
+                        field: resolved.field,
+                        fieldValue: row.fieldValue,
+                        ...(resolved.fieldPath ? { fieldPath: resolved.fieldPath } : {})
+                    } as any,
                     thenFields,
-                    elseFields
+                    elseFields,
+                    thenTargets: thenTargets.length ? thenTargets : undefined,
+                    elseTargets: elseTargets.length ? elseTargets : undefined,
                 });
             } else {
                 const arr = rows
                     .map(r => {
-                        const name = getPickedName(r);
-                        const sf = name ? fieldsBySchemaName.get(name) : undefined;
-                        if (!sf) {
-                            return null;
-                        }
-                        return { field: sf, fieldValue: r.fieldValue };
+                        const resolved = resolveIfField(r?.field);
+                        if (!resolved) { return null; }
+                        const pred: any = { field: resolved.field, fieldValue: r.fieldValue };
+                        if (resolved.fieldPath) { pred.fieldPath = resolved.fieldPath; }
+                        return pred;
                     })
-                    .filter(Boolean) as { field: SchemaField; fieldValue: any }[];
+                    .filter(Boolean);
 
                 if (!arr.length) {
                     continue;
@@ -1025,7 +1096,9 @@ export class SchemaConfigurationComponent implements OnInit {
                 conditions.push({
                     ifCondition: op === 'AND' ? { AND: arr } : { OR: arr },
                     thenFields,
-                    elseFields
+                    elseFields,
+                    thenTargets: thenTargets.length ? thenTargets : undefined,
+                    elseTargets: elseTargets.length ? elseTargets : undefined,
                 });
             }
         }
@@ -1293,44 +1366,44 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     public isConditionType1(condition: ConditionControl): boolean {
-        const type = condition.fieldControl?.type;
+        const type = condition.fieldControl?.typeKey;
         return (
             !!type &&
-            'boolean' !== this.schemaTypeMap[type].type &&
-            !['time', 'date-time', 'date'].includes(this.schemaTypeMap[type].format)
+            'boolean' !== this.schemaTypeMap[type]?.type &&
+            !['time', 'date-time', 'date'].includes(this.schemaTypeMap[type]?.format)
         );
     }
 
     public isConditionType2(condition: ConditionControl): boolean {
-        const type = condition.fieldControl?.type;
+        const type = condition.fieldControl?.typeKey;
         return (
             !!type &&
-            this.schemaTypeMap[type].type === 'string' &&
-            this.schemaTypeMap[type].format === 'time'
+            this.schemaTypeMap[type]?.type === 'string' &&
+            this.schemaTypeMap[type]?.format === 'time'
         );
     }
 
     public isConditionType3(condition: ConditionControl): boolean {
-        const type = condition.fieldControl?.type;
+        const type = condition.fieldControl?.typeKey;
         return (
             !!type &&
-            this.schemaTypeMap[type].type === 'string' &&
-            this.schemaTypeMap[type].format === 'date-time'
+            this.schemaTypeMap[type]?.type === 'string' &&
+            this.schemaTypeMap[type]?.format === 'date-time'
         );
     }
 
     public isConditionType4(condition: ConditionControl): boolean {
-        const type = condition.fieldControl?.type;
+        const type = condition.fieldControl?.typeKey;
         return (
             !!type &&
-            this.schemaTypeMap[type].type === 'string' &&
-            this.schemaTypeMap[type].format === 'date'
+            this.schemaTypeMap[type]?.type === 'string' &&
+            this.schemaTypeMap[type]?.format === 'date'
         );
     }
 
     public isConditionType5(condition: ConditionControl): boolean {
-        const type = condition.fieldControl?.type;
-        return !!type && this.schemaTypeMap[type].type === 'boolean';
+        const type = condition.fieldControl?.typeKey;
+        return !!type && this.schemaTypeMap[type]?.type === 'boolean';
     }
 
     private fieldNameValidator(): ValidatorFn {
@@ -1376,6 +1449,177 @@ export class SchemaConfigurationComponent implements OnInit {
 
             return error;
         };
+    }
+
+    private ifFormatValueForOption(valueCtrl: UntypedFormControl, opt: ConditionFieldOption | null) {
+        if (!opt?.typeKey) { return; }
+        const type = this.schemaTypeMap[opt.typeKey];
+        if (!type) { return; }
+        const isNumber = ['number', 'integer'].includes(type.type) || type.format === 'duration';
+        const validators = [];
+        if (opt.required) { validators.push(Validators.required); }
+        if (isNumber) { validators.push(this.isNumberOrEmptyValidator()); }
+        valueCtrl.clearValidators();
+        valueCtrl.setValidators(validators);
+        if (['date', 'date-time'].includes(type.format)) {
+            this.subscribeFormatDateValue(valueCtrl, type.format);
+        }
+        if (isNumber) {
+            this.subscribeFormatNumberValue(valueCtrl, type.format || type.type);
+        }
+        valueCtrl.updateValueAndValidity();
+    }
+
+    private getAllRefControls(): FieldControl[] {
+        const seen = new Set<string>();
+        const result: FieldControl[] = [];
+        const add = (fc: FieldControl) => {
+            const typeKey = fc.controlType?.value;
+            if (!this.schemaTypeMap[typeKey]?.isRef) { return; }
+            const key = fc.controlKey?.value;
+            if (!key || seen.has(key)) { return; }
+            seen.add(key);
+            result.push(fc);
+        };
+        for (const fc of this.fields) { add(fc); }
+        for (const cond of this.conditions) {
+            for (const fc of [...(cond.thenControls || []), ...(cond.elseControls || [])]) {
+                add(fc);
+            }
+        }
+        return result;
+    }
+
+    private collectNestedFieldOptions(
+        fields: SchemaField[],
+        prefix: string[],
+        labelPrefix: string,
+        alreadySelected?: Set<string>,
+        maxDepth: number = 12,
+    ): ConditionFieldOption[] {
+        if (prefix.length > maxDepth) { return []; }
+        const result: ConditionFieldOption[] = [];
+        for (const f of fields) {
+            if (f.readOnly) { continue; }
+            if (f.isRef) {
+                const nestedSchema = this.subSchemas?.find(s => s.iri === f.type);
+                if (!nestedSchema?.fields?.length) { continue; }
+                result.push(...this.collectNestedFieldOptions(
+                    nestedSchema.fields,
+                    [...prefix, f.name],
+                    `${labelPrefix} > ${f.title || f.name}`,
+                    alreadySelected,
+                    maxDepth,
+                ));
+            } else {
+                const leafTypeKey = this.getType(f);
+                if (!leafTypeKey || !this.schemaTypeMap[leafTypeKey]) { continue; }
+                const path = [...prefix, f.name];
+                if (alreadySelected?.has(path.join('.'))) { continue; }
+                result.push({
+                    key: path.join('.'),
+                    label: `${labelPrefix} > ${f.title || f.name}`,
+                    shortLabel: f.title || f.name,
+                    fieldPath: path,
+                    typeKey: leafTypeKey,
+                    required: f.required,
+                });
+            }
+        }
+        return result;
+    }
+
+    public getFieldOptionGroupsForCondition(condition: ConditionControl): ConditionFieldGroup[] {
+        const groups: ConditionFieldGroup[] = [];
+
+        const topItems: ConditionFieldOption[] = [];
+        for (const fc of this.fields) {
+            if (!fc.isCondition(this.schemaTypeMap)) { continue; }
+            topItems.push({
+                key: fc.controlKey.value,
+                label: fc.controlTitle.value || fc.controlKey.value,
+                fieldPath: [fc.controlKey.value],
+                typeKey: fc.controlType.value,
+                required: fc.controlRequired.value,
+                fieldControl: fc,
+            });
+        }
+        for (const cond of this.conditions) {
+            if (cond === condition) { continue; }
+            for (const fc of [...(cond.thenControls || []), ...(cond.elseControls || [])]) {
+                if (!fc.isCondition(this.schemaTypeMap)) { continue; }
+                topItems.push({
+                    key: fc.controlKey.value,
+                    label: fc.controlTitle.value || fc.controlKey.value,
+                    fieldPath: [fc.controlKey.value],
+                    typeKey: fc.controlType.value,
+                    required: fc.controlRequired.value,
+                    fieldControl: fc,
+                });
+            }
+        }
+        if (topItems.length) { groups.push({ label: 'This Schema', items: topItems }); }
+
+        for (const fc of this.getAllRefControls()) {
+            const typeKey = fc.controlType?.value;
+            const type = this.schemaTypeMap[typeKey];
+            const subSchema = this.subSchemas?.find(s => s.iri === type.type);
+            if (!subSchema?.fields?.length) { continue; }
+            const groupLabel = fc.controlTitle.value || fc.controlKey.value;
+            const nestedItems = this.collectNestedFieldOptions(
+                subSchema.fields,
+                [fc.controlKey.value],
+                groupLabel,
+            );
+            if (nestedItems.length) {
+                groups.push({ label: groupLabel, items: nestedItems });
+            }
+        }
+
+        return groups;
+    }
+
+    public getCrossTargetGroupsForCondition(condition: ConditionControl, type: 'then' | 'else'): ConditionFieldGroup[] {
+        const alreadySelected = new Set<string>(
+            (type === 'then' ? condition.crossThenTargets : condition.crossElseTargets)
+                .map(t => t.fieldPath.join('.'))
+        );
+
+        const groups: ConditionFieldGroup[] = [];
+        for (const fc of this.getAllRefControls()) {
+            const typeKey = fc.controlType?.value;
+            const schemaType = this.schemaTypeMap[typeKey];
+            const subSchema = this.subSchemas?.find(s => s.iri === schemaType.type);
+            if (!subSchema?.fields?.length) { continue; }
+            const groupLabel = fc.controlTitle.value || fc.controlKey.value;
+            const items = this.collectNestedFieldOptions(
+                subSchema.fields,
+                [fc.controlKey.value],
+                groupLabel,
+                alreadySelected,
+            );
+            if (items.length) {
+                groups.push({ label: groupLabel, items });
+            }
+        }
+        return groups;
+    }
+
+    public onCrossTargetAdd(condition: ConditionControl, type: 'then' | 'else', event: any): void {
+        if (!event?.value) { return; }
+        if (type === 'then') {
+            condition.addCrossThenTarget(event.value);
+        } else {
+            condition.addCrossElseTarget(event.value);
+        }
+    }
+
+    public onCrossTargetRemove(condition: ConditionControl, type: 'then' | 'else', target: ConditionFieldOption): void {
+        if (type === 'then') {
+            condition.removeCrossThenTarget(target);
+        } else {
+            condition.removeCrossElseTarget(target);
+        }
     }
 
     public drop(event: CdkDragDrop<any[]>) {
