@@ -8,6 +8,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'approve-update-vc-document-dialog',
     templateUrl: './approve-update-vc-document-dialog.component.html',
     styleUrls: ['./approve-update-vc-document-dialog.component.scss'],
+    standalone: false
 })
 export class ApproveUpdateVcDocumentDialogComponent {
     public text: string;

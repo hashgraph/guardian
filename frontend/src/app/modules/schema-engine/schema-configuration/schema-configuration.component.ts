@@ -38,6 +38,7 @@ function NoBindingValidator(control: UntypedFormControl): ValidationErrors | nul
     selector: 'app-schema-configuration',
     templateUrl: './schema-configuration.component.html',
     styleUrls: ['./schema-configuration.component.scss'],
+    standalone: false
 })
 export class SchemaConfigurationComponent implements OnInit {
     @Input('type') type!: 'new' | 'edit' | 'version';
@@ -167,6 +168,22 @@ export class SchemaConfigurationComponent implements OnInit {
 
     get currentEntity(): any {
         return this.dataForm?.get('entity')?.value;
+    }
+
+    public trackBySchemaField(index: number, field: SchemaField): string | number {
+        return field?.name || index;
+    }
+
+    public trackByFieldControl(index: number, field: FieldControl): string | number {
+        return field?.name || index;
+    }
+
+    public trackByCondition(index: number, condition: ConditionControl): string | number {
+        return condition?.name || index;
+    }
+
+    public trackByIndex(index: number): number {
+        return index;
     }
 
     public ngOnInit(): void {

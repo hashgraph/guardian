@@ -9,7 +9,7 @@
         </span>
     </div>
     <div class="notification-position">
-        <p-overlayPanel
+        <p-popover
             #notificationMenu
             appendTo="body"
             (onShow)="menuOpened = true; menuOpenedChange.emit(true)"
@@ -99,7 +99,7 @@
                     View all notifications
                 </div>
             </div>
-        </p-overlayPanel>
+        </p-popover>
     </div>
 </div>
 

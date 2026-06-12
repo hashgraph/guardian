@@ -233,6 +233,15 @@ form {
     box-shadow: unset !important;
 }
 
+/* The demo popover renders at <body> (appendTo='body'), so a non-host selector is needed
+   to reach its buttons. Clear only PrimeNG 20's focus OUTLINE (the blue ring) on the demo
+   panel buttons — NOT box-shadow, which is the card's raised elevation. Other app buttons
+   keep their focus ring. */
+::ng-deep .p-popover-content .p-button:focus,
+::ng-deep .p-popover-content .p-button:focus-visible {
+    outline: none !important;
+}
+
 .demo-block {
     .user-content-button {
         align-items: center;
@@ -247,7 +256,7 @@ form {
     }
 }
 
-::ng-deep .p-overlaypanel-content {
+::ng-deep .p-popover-content {
     max-height: 347px;
     overflow-y: scroll;
 

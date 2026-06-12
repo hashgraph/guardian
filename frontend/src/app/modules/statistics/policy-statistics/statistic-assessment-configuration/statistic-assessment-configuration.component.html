@@ -58,7 +58,7 @@
                     </div>
                     <div class="guardian-step-separator"></div>
 
-                    <ng-container *ngIf="scores?.length">
+                    <ng-container *ngIf="scores.length">
                         <div class="guardian-step" [attr.action]="stepper[2]" [attr.highlighted]="stepper[2]">
                             <div class="guardian-step-marker">
                                 <svg-icon
@@ -103,7 +103,7 @@
                                         svgClass="icon-color-disabled">
                                     </svg-icon>
                                 </div>
-                                <p-overlayPanel #colMenu styleClass="guardian-menu">
+                                <p-popover #colMenu styleClass="guardian-menu">
                                     <div class="col-menu">
                                         <div *ngFor="let col of userColumns" class="col-item" (click)="changeCol(col)">
                                             <div class="col-item-checkbox">
@@ -115,7 +115,7 @@
                                             <div class="col-item-name">{{col.title}}</div>
                                         </div>
                                     </div>
-                                </p-overlayPanel>
+                                </p-popover>
                             </div>
                             <p-table 
                                 class="guardian-grid-table"

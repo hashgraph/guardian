@@ -1,23 +1,29 @@
 <div [attr.readonly]="readonly">
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
     </div>
-    <div class="toolbar">
-        <div class="toolbar-btn toolbar__save-btn" [attr.readonly]="readonly" (click)="onSave()">
-            <i class="pi pi-save"></i>
-            <span>Save</span>
+  }
+  <div class="toolbar">
+    <div class="toolbar-btn toolbar__save-btn" [attr.readonly]="readonly" (click)="onSave()">
+      <i class="pi pi-save"></i>
+      <span>Save</span>
+    </div>
+    <div class="toolbar-btn toolbar__close-btn" [attr.readonly]="readonly" (click)="onClose()">
+      <i class="pi pi-times"></i>
+      <span>Cancel</span>
+    </div>
+  </div>
+  @if (errors && errors.length) {
+    <div class="json-errors">
+      @for (item of errors; track item) {
+        <div class="errors-property">
+          <span></span>{{ item }}
         </div>
-        <div class="toolbar-btn toolbar__close-btn" [attr.readonly]="readonly" (click)="onClose()">
-            <i class="pi pi-times"></i>
-            <span>Cancel</span>
-        </div>
+      }
     </div>
-    <div *ngIf="errors && errors.length" class="json-errors">
-        <div *ngFor="let item of errors" class="errors-property">
-            <span></span>{{ item }}
-        </div>
-    </div>
-    <div class="textarea-code">
-        <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions"></ngx-codemirror>
-    </div>
+  }
+  <div class="textarea-code">
+    <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions"></ngx-codemirror>
+  </div>
 </div>

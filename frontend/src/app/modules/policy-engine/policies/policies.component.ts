@@ -48,7 +48,7 @@ import {
     ImportEntityType
 } from '../../common/import-entity-dialog/import-entity-dialog.component';
 import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
-import { OverlayPanel } from 'primeng/overlaypanel';
+import { Popover as OverlayPanel } from 'primeng/popover';
 import { takeUntil } from 'rxjs/operators';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
@@ -223,6 +223,7 @@ const columns = [{
     selector: 'app-policies',
     templateUrl: './policies.component.html',
     styleUrls: ['./policies.component.scss'],
+    standalone: false
 })
 export class PoliciesComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();
@@ -291,6 +292,7 @@ export class PoliciesComponent implements OnInit {
         },
     ];
     public tab: 'local' | 'remote' | 'disconnected' = 'local';
+    public tabIndex: number = 0;
 
     private filteredPolicies: any[] = [];
     public filtersForm = new UntypedFormGroup({
@@ -958,7 +960,8 @@ export class PoliciesComponent implements OnInit {
                 }]
             },
         });
-        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
+
+        dialogRef?.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
             this.loading = true;
             this.policyEngineService
                 .dryRun(element.id, {
@@ -1055,7 +1058,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policy: selectedPolicy
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
             if (options) {
                 this.publish(element, options);
@@ -1117,7 +1120,7 @@ export class PoliciesComponent implements OnInit {
                     ? 'Are you sure want to delete policy with related schemas?'
                     : 'Are you sure want to delete policy?',
             },
-        });
+        })!;
         dialogRef.onClose
             .pipe(takeUntil(this._destroy$))
             .subscribe((result) => {
@@ -1179,7 +1182,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 notificationText: 'Are you sure want to delete all schemas for this policy?'
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
             if (!result) {
                 return;
@@ -1306,7 +1309,7 @@ export class PoliciesComponent implements OnInit {
                 type: ImportEntityType.Policy,
                 timeStamp: messageId
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importPolicyDetails(result);
@@ -1327,7 +1330,7 @@ export class PoliciesComponent implements OnInit {
                 policy: policy,
                 policies: distinctPolicies,
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 if (result.messageId) {
@@ -1388,7 +1391,7 @@ export class PoliciesComponent implements OnInit {
                 title: 'Schemas for replace',
                 schemasCanBeReplaced,
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (resultWithSchemasForReplace) => {
             if (resultWithSchemasForReplace) {
                 this.pushImportByXlsx(data, policyId, resultWithSchemasForReplace.selectedSchemaIds)
@@ -1425,7 +1428,7 @@ export class PoliciesComponent implements OnInit {
                 title: 'Preview',
                 xlsx: xlsx,
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (res) => {
             if (res) {
                 this.schemaService.checkForDublicates({
@@ -1486,7 +1489,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 type: ImportEntityType.Xlsx,
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importExcelDetails(result, policy?.id, policy?.topicId);
@@ -1535,7 +1538,7 @@ export class PoliciesComponent implements OnInit {
             let dialogRef: DynamicDialogRef<DiscontinuePolicy> | undefined = this.dialogService.open(DiscontinuePolicy, {
                 header: 'Discontinue policy',
                 width: '90%',
-            });
+            })!;
             dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 if (!result) {
                     return;
@@ -1581,7 +1584,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policyId: element.id
             }
-        });
+        })!;
 
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
@@ -1601,7 +1604,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policy: item
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 const items = btoa(JSON.stringify({
@@ -1647,7 +1650,7 @@ export class PoliciesComponent implements OnInit {
                         policies: runnablePolicies,
                         contracts: contractsResponse.body
                     },
-                });
+                })!;
 
                 dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result?: MigrationActionResult) => {
                     if (!result?.action) {
@@ -1718,7 +1721,7 @@ export class PoliciesComponent implements OnInit {
             header: 'New Policy',
             width: '90%',
             styleClass: 'guardian-dialog',
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 this.loading = true;
@@ -1857,7 +1860,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policy: item
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 const items = btoa(JSON.stringify({
@@ -1880,7 +1883,7 @@ export class PoliciesComponent implements OnInit {
                 width: '90%',
                 showHeader: false,
                 styleClass: 'guardian-dialog',
-            })
+            })!
             .onClose.pipe(takeUntil(this._destroy$)).subscribe();
     }
 
@@ -1913,7 +1916,7 @@ export class PoliciesComponent implements OnInit {
                 multiple: true,
                 type: 'File'
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (files) => {
             if (files) {
                 this.loading = true;
@@ -1941,7 +1944,7 @@ export class PoliciesComponent implements OnInit {
                 policy: item,
                 test
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => { });
     }
 
@@ -1976,13 +1979,14 @@ export class PoliciesComponent implements OnInit {
         test.status = event.status;
     }
 
-    public onChangeTab(tab: any) {
+    public onChangeTab(index: string | number | undefined) {
         this.loading = true;
-        if (tab.index === 0) {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        if (tabIndex === 0) {
             this.tab = 'local';
-        } else if (tab.index === 1) {
+        } else if (tabIndex === 1) {
             this.tab = 'remote';
-        } else if (tab.index === 2) {
+        } else if (tabIndex === 2) {
             this.tab = 'disconnected';
         } else {
             this.tab = 'local';
@@ -2003,7 +2007,7 @@ export class PoliciesComponent implements OnInit {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: any | null) => {
             if (result) {
                 if (result.status !== 'NEW') {
@@ -2032,7 +2036,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policy
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => { });
     }
 
@@ -2101,7 +2105,7 @@ export class PoliciesComponent implements OnInit {
                     notificationText: 'Are you sure want to delete these policies?',
                     itemNames: this.selectedItems.map(item => item.name),
                 },
-            });
+            })!;
             dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 if (!result) {
                     return;
@@ -2179,7 +2183,7 @@ export class PoliciesComponent implements OnInit {
                         class: 'delete'
                     }]
                 },
-            });
+            })!;
             dialogRef.onClose.subscribe((result: string) => {
                 if (result === 'Disconnect') {
                     this.loading = true;
@@ -2222,7 +2226,7 @@ export class PoliciesComponent implements OnInit {
                         class: 'delete'
                     }]
                 },
-            });
+            })!;
             dialogRef.onClose.subscribe((result?: {
                 button: string,
                 option: boolean
@@ -2259,7 +2263,7 @@ export class PoliciesComponent implements OnInit {
                     class: 'primary'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Reconnect') {
                 this.loading = true;

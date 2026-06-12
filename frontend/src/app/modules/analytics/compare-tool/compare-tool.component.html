@@ -1,216 +1,265 @@
 <div class="content" [style.min-width.px]="minWidth">
-    <div *ngIf="headers.length && type==='tree'" class="item-headers" [style.grid-template-columns]="_gridStyle">
-        <div *ngFor="let item of headers" [style.grid-column-start]="item.column" class="item-header">
-            <span class="item-header-name">
-                {{ item.name }}
-            </span>
-            <span class="item-header-rate item-header-color-{{item.color}}">
-                {{ item.rate }}
-            </span>
+  @if (headers.length && type==='tree') {
+    <div class="item-headers" [style.grid-template-columns]="_gridStyle">
+      @for (item of headers; track item) {
+        <div [style.grid-column-start]="item.column" class="item-header">
+          <span class="item-header-name">
+            {{ item.name }}
+          </span>
+          <span class="item-header-rate item-header-color-{{item.color}}">
+            {{ item.rate }}
+          </span>
         </div>
+      }
     </div>
+  }
 
-    <div *ngIf="resultContext" class="list">
+  @if (resultContext) {
+    <div class="list">
     </div>
+  }
 
-    <p-accordion [multiple]="true">
-        <p-accordionTab header="Description" [selected]="true">
-            <div class="info-container" [style.grid-template-columns]="_gridStyle">
-                <ng-container *ngFor="let context of resultContext">
-                    <div class="middle-compare-result compare-result"
-                         *ngIf="context.right"
-                         [style.grid-column-start]="2 * context.index"
-                         [attr.open]="true">
-                    </div>
-                    <div [style.grid-column-start]="2 * context.index + 1"
-                         [attr.open]="true"
+  <p-accordion
+    class="compare-tool-accordion"
+    [multiple]="true"
+    [value]="['description', 'blocks']"
+    expandIcon="pi pi-chevron-down icon-start"
+    collapseIcon="pi pi-chevron-up icon-start"
+    >
+    <p-accordion-panel value="description">
+      <p-accordion-header>Description</p-accordion-header>
+      <p-accordion-content>
+        <div class="info-container" [style.grid-template-columns]="_gridStyle">
+          @for (context of resultContext; track context) {
+            @if (context.right) {
+              <div class="middle-compare-result compare-result"
+                [style.grid-column-start]="2 * context.index"
+                [attr.open]="true">
+              </div>
+            }
+            <div [style.grid-column-start]="2 * context.index + 1"
+              [attr.open]="true"
                          [ngClass]="{
                          'left-compare-result': context.left,
                          'right-compare-result': context.right,
                          'compare-result': true
                      }">
-                        <ng-container *ngTemplateOutlet="resultInfo; context: context"></ng-container>
-                    </div>
-                </ng-container>
+              <ng-container *ngTemplateOutlet="resultInfo; context: context"></ng-container>
             </div>
-        </p-accordionTab>
+          }
+        </div>
+      </p-accordion-content>
+    </p-accordion-panel>
 
-        <p-accordionTab header="Input Events" *ngIf="inputEvents?.length">
-            <div class="merge-tree" [attr.tree-size]="size">
-                <div *ngFor="let item of inputEvents" class="report-item report-item-small"
-                     [attr.type]="item.type"
-                     [attr.rate]="item.total_rate"
-                     [style.grid-template-columns]="_gridStyle">
-                    <ng-container *ngFor="let context of item.contexts">
-                        <div
-                            [style.grid-column-start]="2 * context.index + 1"
-                            [attr.open]="true"
+    @if (inputEvents?.length) {
+      <p-accordion-panel value="input-events">
+        <p-accordion-header>Input Events</p-accordion-header>
+        <p-accordion-content>
+          <div class="merge-tree" [attr.tree-size]="size">
+            @for (item of inputEvents; track item) {
+              <div class="report-item report-item-small"
+                [attr.type]="item.type"
+                [attr.rate]="item.total_rate"
+                [style.grid-template-columns]="_gridStyle">
+                @for (context of item.contexts; track context) {
+                  <div
+                    [style.grid-column-start]="2 * context.index + 1"
+                    [attr.open]="true"
                             [ngClass]="{
                                     'left-compare-result': context.left,
                                     'right-compare-result': context.right,
                                     'fantom-block': context.fantom,
                                     'compare-result': true
                                 }">
-                            <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
-                        </div>
-                        <div class="middle-compare-result compare-result"
-                             *ngIf="context.right"
-                             [style.grid-column-start]="2 * context.index"
-                             [attr.open]="true">
-                        </div>
-                    </ng-container>
-                </div>
-            </div>
-        </p-accordionTab>
+                    <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
+                  </div>
+                  @if (context.right) {
+                    <div class="middle-compare-result compare-result"
+                      [style.grid-column-start]="2 * context.index"
+                      [attr.open]="true">
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        </p-accordion-content>
+      </p-accordion-panel>
+    }
 
-        <p-accordionTab header="Output Events" *ngIf="outputEvents?.length">
-            <div class="merge-tree" [attr.tree-size]="size">
-                <div *ngFor="let item of outputEvents" class="report-item report-item-small"
-                     [attr.type]="item.type"
-                     [attr.rate]="item.total_rate"
-                     [style.grid-template-columns]="_gridStyle">
-                    <ng-container *ngFor="let context of item.contexts">
-                        <div
-                            [style.grid-column-start]="2 * context.index + 1"
-                            [attr.open]="true"
+    @if (outputEvents?.length) {
+      <p-accordion-panel value="output-events">
+        <p-accordion-header>Output Events</p-accordion-header>
+        <p-accordion-content>
+          <div class="merge-tree" [attr.tree-size]="size">
+            @for (item of outputEvents; track item) {
+              <div class="report-item report-item-small"
+                [attr.type]="item.type"
+                [attr.rate]="item.total_rate"
+                [style.grid-template-columns]="_gridStyle">
+                @for (context of item.contexts; track context) {
+                  <div
+                    [style.grid-column-start]="2 * context.index + 1"
+                    [attr.open]="true"
                             [ngClass]="{
                                     'left-compare-result': context.left,
                                     'right-compare-result': context.right,
                                     'fantom-block': context.fantom,
                                     'compare-result': true
                                 }">
-                            <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
-                        </div>
-                        <div class="middle-compare-result compare-result"
-                             *ngIf="context.right"
-                             [style.grid-column-start]="2 * context.index"
-                             [attr.open]="true">
-                        </div>
-                    </ng-container>
-                </div>
-            </div>
-        </p-accordionTab>
+                    <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
+                  </div>
+                  @if (context.right) {
+                    <div class="middle-compare-result compare-result"
+                      [style.grid-column-start]="2 * context.index"
+                      [attr.open]="true">
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        </p-accordion-content>
+      </p-accordion-panel>
+    }
 
-        <p-accordionTab header="Variables" *ngIf="variables?.length">
-            <div class="merge-tree" [attr.tree-size]="size">
-                <div *ngFor="let item of variables"
-                     class="report-item report-item-small"
-                     [attr.type]="item.type"
-                     [attr.rate]="item.total_rate"
-                     [style.grid-template-columns]="_gridStyle">
-                    <ng-container *ngFor="let context of item.contexts">
-                        <div
-                            [style.grid-column-start]="2 * context.index + 1"
-                            [attr.open]="true"
+    @if (variables?.length) {
+      <p-accordion-panel value="variables">
+        <p-accordion-header>Variables</p-accordion-header>
+        <p-accordion-content>
+          <div class="merge-tree" [attr.tree-size]="size">
+            @for (item of variables; track item) {
+              <div
+                class="report-item report-item-small"
+                [attr.type]="item.type"
+                [attr.rate]="item.total_rate"
+                [style.grid-template-columns]="_gridStyle">
+                @for (context of item.contexts; track context) {
+                  <div
+                    [style.grid-column-start]="2 * context.index + 1"
+                    [attr.open]="true"
                             [ngClass]="{
                                     'left-compare-result': context.left,
                                     'right-compare-result': context.right,
                                     'fantom-block': context.fantom,
                                     'compare-result': true
                                 }">
-                            <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
-                        </div>
-                        <div class="middle-compare-result compare-result"
-                             *ngIf="context.right"
-                             [style.grid-column-start]="2 * context.index"
-                             [attr.open]="true">
-                        </div>
-                    </ng-container>
+                    <ng-container *ngTemplateOutlet="propInfo; context: context"></ng-container>
+                  </div>
+                  @if (context.right) {
+                    <div class="middle-compare-result compare-result"
+                      [style.grid-column-start]="2 * context.index"
+                      [attr.open]="true">
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        </p-accordion-content>
+      </p-accordion-panel>
+    }
+
+    @if (blocks) {
+      <p-accordion-panel value="blocks">
+        <p-accordion-header>Tool Blocks</p-accordion-header>
+        <p-accordion-content>
+          <div class="merge-container">
+            <div class="legend"
+              [attr.type-1]="_type1"
+              [attr.type-2]="_type2"
+              [attr.type-3]="_type3"
+              [attr.type-4]="_type4">
+              <div class="legend-item" (click)="_type1=!_type1">
+                <div class="legend-icon legend-l1"></div>
+                <div class="legend-text">
+                  Blocks are equal, including their child blocks.
                 </div>
+              </div>
+              <div class="legend-item" (click)="_type2=!_type2">
+                <div class="legend-icon legend-l2"></div>
+                <div class="legend-text">
+                  blocks are equal, but their child blocks are different.
+                </div>
+              </div>
+              <div class="legend-item" (click)="_type3=!_type3">
+                <div class="legend-icon legend-l3"></div>
+                <div class="legend-text">
+                  blocks are of the same type and are partially equal.
+                </div>
+              </div>
+              <div class="legend-item" (click)="_type4=!_type4">
+                <div class="legend-icon legend-l4"></div>
+                <div class="legend-text">
+                  Blocks are absent in the other Tool.
+                </div>
+              </div>
             </div>
-        </p-accordionTab>
-
-        <p-accordionTab header="Tool Blocks" *ngIf="blocks" [selected]="true">
-            <div class="merge-container">
-                <div class="legend"
-                     [attr.type-1]="_type1"
-                     [attr.type-2]="_type2"
-                     [attr.type-3]="_type3"
-                     [attr.type-4]="_type4">
-                    <div class="legend-item" (click)="_type1=!_type1">
-                        <div class="legend-icon legend-l1"></div>
-                        <div class="legend-text">
-                            Blocks are equal, including their child blocks.
-                        </div>
+            @if (type==='tree') {
+              <div class="merge-tree"
+                [attr.tree-size]="size"
+                [attr.open]="_panelOpenState"
+                [attr.type-1]="_type1"
+                [attr.type-2]="_type2"
+                [attr.type-3]="_type3"
+                [attr.type-4]="_type4">
+                @for (row of blocks; track row) {
+                  <div class="report-item report-item-number"
+                    [attr.hidden]="row.hidden"
+                    [style.grid-template-columns]="_gridStyle">
+                    <div class="report-number">{{ row.number }}</div>
+                    <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">
+                      @if (row.collapse === 1) {
+                        <i class="pi pi-minus icon open-icon"></i>
+                      }
+                      @if (row.collapse === 2) {
+                        <i class="pi pi-plus icon collapse-icon"></i>
+                      }
                     </div>
-                    <div class="legend-item" (click)="_type2=!_type2">
-                        <div class="legend-icon legend-l2"></div>
-                        <div class="legend-text">
-                            blocks are equal, but their child blocks are different.
-                        </div>
-                    </div>
-                    <div class="legend-item" (click)="_type3=!_type3">
-                        <div class="legend-icon legend-l3"></div>
-                        <div class="legend-text">
-                            blocks are of the same type and are partially equal.
-                        </div>
-                    </div>
-                    <div class="legend-item" (click)="_type4=!_type4">
-                        <div class="legend-icon legend-l4"></div>
-                        <div class="legend-text">
-                            Blocks are absent in the other Tool.
-                        </div>
-                    </div>
-                </div>
-
-                <div *ngIf="type==='tree'" class="merge-tree"
-                     [attr.tree-size]="size"
-                     [attr.open]="_panelOpenState"
-                     [attr.type-1]="_type1"
-                     [attr.type-2]="_type2"
-                     [attr.type-3]="_type3"
-                     [attr.type-4]="_type4">
-
-                    <div *ngFor="let row of blocks" class="report-item report-item-number"
-                         [attr.hidden]="row.hidden"
-                         [style.grid-template-columns]="_gridStyle">
-
-                        <div class="report-number">{{ row.number }}</div>
-                        <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">
-                            <i class="pi pi-minus icon open-icon" *ngIf="row.collapse === 1"></i>
-                            <i class="pi pi-plus icon collapse-icon" *ngIf="row.collapse === 2"></i>
-                        </div>
-
-                        <ng-container *ngFor="let treeItemContext of row.contexts">
-                            <div
-                                [attr.offset]="row.lvl"
-                                [attr.rate]="treeItemContext.rate"
-                                [attr.type]="treeItemContext.type"
-                                [style.padding-left.px]="row.offset"
-                                [style.grid-column-start]="2 * treeItemContext.index + 1"
+                    @for (treeItemContext of row.contexts; track treeItemContext) {
+                      <div
+                        [attr.offset]="row.lvl"
+                        [attr.rate]="treeItemContext.rate"
+                        [attr.type]="treeItemContext.type"
+                        [style.padding-left.px]="row.offset"
+                        [style.grid-column-start]="2 * treeItemContext.index + 1"
                                 [ngClass]="{
                                         'left-tree': treeItemContext.left,
                                         'right-tree': treeItemContext.right,
                                         'hidden-item': true,
                                         'fantom-tree': treeItemContext.fantom
                                     }">
-                                <div class="block-tree" (click)="row.open = !row.open">
-                                    <div class="block-index"
-                                         [attr.index-rate]="treeItemContext.data.indexRate">
-                                        {{ treeItemContext.data.blockIndex }}
-                                    </div>
-                                    <div class="block-icon">
-                                        <i [ngClass]="'pi pi-' + treeItemContext.data.blockIcon"></i>
-                                    </div>
-                                    <div class="block-type">{{ treeItemContext.data.blockName }}</div>
-                                </div>
-                            </div>
-
-                            <div *ngIf="treeItemContext.right" class="middle-tree"
-                                 [style.grid-column-start]="2 * treeItemContext.index">
-                                <div class="compare-btn" (click)="row.open = !row.open">
-                                    <i *ngIf="!row.open"
-                                       class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
-                                    <i *ngIf="row.open" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
-                                </div>
-                            </div>
-                        </ng-container>
-
-                        <ng-container *ngIf="row.open">
-                            <ng-container *ngFor="let treeDetailContext of row.detailContexts">
-                                <div [attr.open]="row.open"
-                                     [style.padding-left.px]="row.offset"
-                                     [style.grid-column-start]="2 * treeDetailContext.index + 1"
+                        <div class="block-tree" (click)="row.open = !row.open">
+                          <div class="block-index"
+                            [attr.index-rate]="treeItemContext.data.indexRate">
+                            {{ treeItemContext.data.blockIndex }}
+                          </div>
+                          <div class="block-icon">
+                            <i [ngClass]="'pi pi-' + treeItemContext.data.blockIcon"></i>
+                          </div>
+                          <div class="block-type">{{ treeItemContext.data.blockName }}</div>
+                        </div>
+                      </div>
+                      @if (treeItemContext.right) {
+                        <div class="middle-tree"
+                          [style.grid-column-start]="2 * treeItemContext.index">
+                          <div class="compare-btn" (click)="row.open = !row.open">
+                            @if (!row.open) {
+                              <i
+                              class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
+                            }
+                            @if (row.open) {
+                              <i class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
+                            }
+                          </div>
+                        </div>
+                      }
+                    }
+                    @if (row.open) {
+                      @for (treeDetailContext of row.detailContexts; track treeDetailContext) {
+                        <div [attr.open]="row.open"
+                          [style.padding-left.px]="row.offset"
+                          [style.grid-column-start]="2 * treeDetailContext.index + 1"
                                      [ngClass]="{
                                             'left-compare-result': treeDetailContext.left,
                                             'right-compare-result': treeDetailContext.right,
@@ -218,328 +267,361 @@
                                             'hidden-item': true,
                                             'compare-result': true
                                         }">
-                                    <ng-container
-                                        *ngTemplateOutlet="resultDetails; context: treeDetailContext"></ng-container>
-                                </div>
-                                <div class="middle-compare-result compare-result"
-                                     *ngIf="treeDetailContext.right"
-                                     [style.grid-column-start]="2 * treeDetailContext.index"
-                                     [attr.open]="row.open"></div>
-                            </ng-container>
-                        </ng-container>
-                    </div>
-                </div>
-
-                <div *ngIf="type === 'table'" class="merge-table" [attr.open]="_panelOpenState">
-                    <div class="merge-table-content">
-                        <p-table *ngIf="blocks" [value]="blocks" class="table mat-table">
-                            <ng-template pTemplate="header">
-                                <tr class="mat-header-row">
-                                    <ng-container *ngFor="let column of columns">
-                                        <th *ngIf="displayedColumns.includes(column.name)" class="mat-header-cell">
-                                            {{ column.label }}
-                                        </th>
-                                    </ng-container>
-                                </tr>
-                            </ng-template>
-
-                            <ng-template pTemplate="body" let-row>
-                                <tr class="mat-row" [attr.type]="row.data.type" [attr.rate]="row.data.total_rate">
-                                    <ng-container *ngFor="let column of columns">
-                                        <td *ngIf="displayedColumns.includes(column.name)" class="mat-cell">
-                                            <ng-container *ngIf="!isObject(row.data[column.name])">
-                                <span class="table-value"
-                                      [title]="row.data[column.name]"
-                                      [attr.value]="row.data[column.name]"
-                                      [attr.display-type]="column.display">
+                          <ng-container
+                          *ngTemplateOutlet="resultDetails; context: treeDetailContext"></ng-container>
+                        </div>
+                        @if (treeDetailContext.right) {
+                          <div class="middle-compare-result compare-result"
+                            [style.grid-column-start]="2 * treeDetailContext.index"
+                          [attr.open]="row.open"></div>
+                        }
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            }
+            @if (type === 'table') {
+              <div class="merge-table" [attr.open]="_panelOpenState">
+                <div class="merge-table-content">
+                  @if (blocks) {
+                    <p-table [value]="blocks" class="table mat-table">
+                      <ng-template pTemplate="header">
+                        <tr class="mat-header-row">
+                          @for (column of columns; track column) {
+                            @if (displayedColumns.includes(column.name)) {
+                              <th class="mat-header-cell">
+                                {{ column.label }}
+                              </th>
+                            }
+                          }
+                        </tr>
+                      </ng-template>
+                      <ng-template pTemplate="body" let-row>
+                        <tr class="mat-row" [attr.type]="row.data.type" [attr.rate]="row.data.total_rate">
+                          @for (column of columns; track column) {
+                            @if (displayedColumns.includes(column.name)) {
+                              <td class="mat-cell">
+                                @if (!isObject(row.data[column.name])) {
+                                  <span class="table-value"
+                                    [title]="row.data[column.name]"
+                                    [attr.value]="row.data[column.name]"
+                                    [attr.display-type]="column.display">
                                     {{ row.data[column.name] }}
-                                </span>
-                                            </ng-container>
-                                        </td>
-                                    </ng-container>
-                                </tr>
-                            </ng-template>
-                        </p-table>
-                    </div>
+                                  </span>
+                                }
+                              </td>
+                            }
+                          }
+                        </tr>
+                      </ng-template>
+                    </p-table>
+                  }
                 </div>
-
-            </div>
-        </p-accordionTab>
-    </p-accordion>
+              </div>
+            }
+          </div>
+        </p-accordion-content>
+      </p-accordion-panel>
+    }
+  </p-accordion>
 
 </div>
 
 <ng-template #resultInfo let-data="data">
-    <div *ngIf="_toInfoContext(data); let data" class="result-info">
+  @if (_toInfoContext(data); as data) {
+    <div class="result-info">
+      <div class="result-info-field">
+        <div class="result-info-field-name">ID</div>
+        <div class="result-info-field-value">{{ data.id }}</div>
+      </div>
+      <div class="result-info-field">
+        <div class="result-info-field-name">Name</div>
+        <div class="result-info-field-value">{{ data.name }}</div>
+      </div>
+      <div class="result-info-field">
+        <div class="result-info-field-name">Description</div>
+        <div class="result-info-field-value">{{ data.description }}</div>
+      </div>
+      @if (data.hash) {
         <div class="result-info-field">
-            <div class="result-info-field-name">ID</div>
-            <div class="result-info-field-value">{{ data.id }}</div>
+          <div class="result-info-field-name">Hash</div>
+          <div class="result-info-field-value">{{ data.hash }}</div>
         </div>
+      }
+      @if (data.messageId) {
         <div class="result-info-field">
-            <div class="result-info-field-name">Name</div>
-            <div class="result-info-field-value">{{ data.name }}</div>
+          <div class="result-info-field-name">Message</div>
+          <div class="result-info-field-value">{{ data.messageId }}</div>
         </div>
-        <div class="result-info-field">
-            <div class="result-info-field-name">Description</div>
-            <div class="result-info-field-value">{{ data.description }}</div>
-        </div>
-        <div *ngIf="data.hash" class="result-info-field">
-            <div class="result-info-field-name">Hash</div>
-            <div class="result-info-field-value">{{ data.hash }}</div>
-        </div>
-        <div *ngIf="data.messageId" class="result-info-field">
-            <div class="result-info-field-name">Message</div>
-            <div class="result-info-field-value">{{ data.messageId }}</div>
-        </div>
+      }
     </div>
+  }
 </ng-template>
 
 <ng-template #resultDetails let-data="data">
-    <div *ngIf="_toBlockDetailsContext(data); let data" class="prop-container">
-        <div class="prop">
-            <div class="prop-name">Permission Rate:</div>
-            <div class="prop-value" [attr.rate]="data.permissionRate">{{ data.permissionRate }}</div>
+  @if (_toBlockDetailsContext(data); as data) {
+    <div class="prop-container">
+      <div class="prop">
+        <div class="prop-name">Permission Rate:</div>
+        <div class="prop-value" [attr.rate]="data.permissionRate">{{ data.permissionRate }}</div>
+      </div>
+      <div class="prop">
+        <div class="prop-name">Properties Rate:</div>
+        <div class="prop-value" [attr.rate]="data.propRate">{{ data.propRate }}</div>
+      </div>
+      <div class="prop">
+        <div class="prop-name">Events Rate:</div>
+        <div class="prop-value" [attr.rate]="data.eventRate">{{ data.eventRate }}</div>
+      </div>
+      <div class="prop">
+        <div class="prop-name">Artifacts Rate:</div>
+        <div class="prop-value" [attr.rate]="data.artifactsRate">{{ data.artifactsRate }}</div>
+      </div>
+      <div class="prop">
+        <div class="prop-name">Total Rate:</div>
+        <div class="prop-value" [attr.rate]="data.totalRate">{{ data.totalRate }}</div>
+      </div>
+      <div class="prop-delimiter"></div>
+      <div class="prop">
+        <div class="prop-name">Block Type:</div>
+        <div class="prop-value">{{ data.blockType }}</div>
+      </div>
+      <div class="prop-delimiter"></div>
+      <div class="prop-table">
+        <div class="prop-table-header">Permissions:</div>
+        <div class="prop-table-body">
+          @for (perm of data.permissions; track perm) {
+            <div
+              class="prop-table-row"
+              [attr.fantom]="perm.fantom"
+              [attr.type]="perm.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="10">
+                {{ perm.name }}:
+              </div>
+              <div class="prop-table-value">
+                @if (perm.value) {
+                  <span>
+                    {{ perm.value }}
+                  </span>
+                }
+              </div>
+            </div>
+          }
         </div>
-        <div class="prop">
-            <div class="prop-name">Properties Rate:</div>
-            <div class="prop-value" [attr.rate]="data.propRate">{{ data.propRate }}</div>
-        </div>
-        <div class="prop">
-            <div class="prop-name">Events Rate:</div>
-            <div class="prop-value" [attr.rate]="data.eventRate">{{ data.eventRate }}</div>
-        </div>
-        <div class="prop">
-            <div class="prop-name">Artifacts Rate:</div>
-            <div class="prop-value" [attr.rate]="data.artifactsRate">{{ data.artifactsRate }}</div>
-        </div>
-        <div class="prop">
-            <div class="prop-name">Total Rate:</div>
-            <div class="prop-value" [attr.rate]="data.totalRate">{{ data.totalRate }}</div>
-        </div>
-
-        <div class="prop-delimiter"></div>
-
-        <div class="prop">
-            <div class="prop-name">Block Type:</div>
-            <div class="prop-value">{{ data.blockType }}</div>
-        </div>
-
-        <div class="prop-delimiter"></div>
-
-        <div class="prop-table">
-            <div class="prop-table-header">Permissions:</div>
-            <div class="prop-table-body">
-                <div *ngFor="let perm of data.permissions"
-                     class="prop-table-row"
-                     [attr.fantom]="perm.fantom"
-                     [attr.type]="perm.type"
-                     [attr.index]="data.index">
-                    <div class="prop-table-name" [style.padding-left.px]="10">
-                        {{ perm.name }}:
-                    </div>
-                    <div class="prop-table-value">
-                        <span *ngIf="perm.value">
-                            {{ perm.value }}
-                        </span>
-                    </div>
+      </div>
+      <div class="prop-delimiter"></div>
+      <div class="prop-table">
+        <div class="prop-table-header">Properties:</div>
+        <div class="prop-table-body">
+          @for (prop of data.properties; track prop) {
+            <div
+              class="prop-table-row"
+              [attr.fantom]="prop.fantom"
+              [attr.type]="prop.type"
+              [attr.offset]="prop.lvl"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="prop.offset">
+                {{ prop.name }}:
+              </div>
+              <div class="prop-table-value" [attr.prop-type]="prop.propType">
+                <div class="compare-btn" (click)="compareSchema(prop)">
+                  <i class="pi pi-search"></i>
                 </div>
+                @if (prop.propType) {
+                  <span [title]="prop.value">
+                    {{ prop.value }}
+                  </span>
+                }
+              </div>
             </div>
+          }
         </div>
-
-        <div class="prop-delimiter"></div>
-
-        <div class="prop-table">
-            <div class="prop-table-header">Properties:</div>
-            <div class="prop-table-body">
-                <div *ngFor="let prop of data.properties"
-                     class="prop-table-row"
-                     [attr.fantom]="prop.fantom"
-                     [attr.type]="prop.type"
-                     [attr.offset]="prop.lvl"
-                     [attr.index]="data.index">
-                    <div class="prop-table-name" [style.padding-left.px]="prop.offset">
-                        {{ prop.name }}:
-                    </div>
-                    <div class="prop-table-value" [attr.prop-type]="prop.propType">
-                        <div class="compare-btn" (click)="compareSchema(prop)">
-                            <i class="pi pi-search"></i>
-                        </div>
-                        <span *ngIf="prop.propType" [title]="prop.value">
-                            {{ prop.value }}
-                        </span>
-                    </div>
-                </div>
+      </div>
+      <div class="prop-delimiter"></div>
+      <div class="prop-table">
+        <div class="prop-table-header">Events:</div>
+        <div class="prop-table-body">
+          @for (event of data.events; track event) {
+            <div class="prop-table-row"
+              [attr.fantom]="event.fantom"
+              [attr.type]="event.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="10">Event:</div>
+              <div class="prop-table-value"><span></span></div>
             </div>
-        </div>
-
-        <div class="prop-delimiter"></div>
-
-        <div class="prop-table">
-            <div class="prop-table-header">Events:</div>
-            <div class="prop-table-body">
-                <ng-container *ngFor="let event of data.events">
-
-                    <div class="prop-table-row"
-                         [attr.fantom]="event.fantom"
-                         [attr.type]="event.type"
-                         [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="10">Event:</div>
-                        <div class="prop-table-value"><span></span></div>
-                    </div>
-
-                    <div class="prop-table-row"
-                         [attr.fantom]="event.fantom"
-                         [attr.type]="event.type"
-                         [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">source:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="event.value">
-                                {{ event.source }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="prop-table-row"
-                         [attr.fantom]="event.fantom"
-                         [attr.type]="event.type"
-                         [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">output:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="event.value">
-                                {{ event.output }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="prop-table-row"
-                         [attr.fantom]="event.fantom"
-                         [attr.type]="event.type"
-                         [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">target:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="event.value">
-                                {{ event.target }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="prop-table-row"
-                         [attr.fantom]="event.fantom"
-                         [attr.type]="event.type"
-                         [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">input:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="event.value">
-                                {{ event.input }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="prop-table-row"
-                         [attr.fantom]="event.fantom"
-                         [attr.type]="event.type"
-                         [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">actor:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="event.value">
-                                {{ event.actor }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="prop-table-row"
-                         [attr.fantom]="event.fantom"
-                         [attr.type]="event.type"
-                         [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">disabled:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="event.value">
-                                {{ event.disabled }}
-                            </span>
-                        </div>
-                    </div>
-
-                </ng-container>
+            <div class="prop-table-row"
+              [attr.fantom]="event.fantom"
+              [attr.type]="event.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="20">source:</div>
+              <div class="prop-table-value">
+                @if (event.value) {
+                  <span>
+                    {{ event.source }}
+                  </span>
+                }
+              </div>
             </div>
-        </div>
-
-        <div class="prop-delimiter"></div>
-
-        <div class="prop-table">
-            <div class="prop-table-header">Artifacts:</div>
-            <div class="prop-table-body">
-                <ng-container *ngFor="let artifact of data.artifacts">
-                    <div class="prop-table-row"
-                         [attr.fantom]="artifact.fantom"
-                         [attr.type]="artifact.type"
-                         [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="10">Artifact:</div>
-                        <div class="prop-table-value"><span></span></div>
-                    </div>
-                    <div class="prop-table-row"
-                         [attr.fantom]="artifact.fantom"
-                         [attr.type]="artifact.type"
-                         [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">name:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="artifact.value">{{ artifact.fileName }}</span>
-                        </div>
-                    </div>
-                    <div class="prop-table-row"
-                         [attr.fantom]="artifact.fantom"
-                         [attr.type]="artifact.type"
-                         [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">extension:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="artifact.value">{{ artifact.fileExtension }}</span>
-                        </div>
-                    </div>
-                    <div class="prop-table-row"
-                         [attr.fantom]="artifact.fantom"
-                         [attr.type]="artifact.type"
-                         [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">type:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="artifact.value">{{ artifact.fileType }}</span>
-                        </div>
-                    </div>
-                    <div class="prop-table-row"
-                         [attr.fantom]="artifact.fantom"
-                         [attr.type]="artifact.type"
-                         [attr.index]="data.index">
-                        <div class="prop-table-name" [style.padding-left.px]="20">hash:</div>
-                        <div class="prop-table-value">
-                            <span *ngIf="artifact.value">{{ artifact.fileHash }}</span>
-                        </div>
-                    </div>
-                </ng-container>
+            <div class="prop-table-row"
+              [attr.fantom]="event.fantom"
+              [attr.type]="event.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="20">output:</div>
+              <div class="prop-table-value">
+                @if (event.value) {
+                  <span>
+                    {{ event.output }}
+                  </span>
+                }
+              </div>
             </div>
+            <div class="prop-table-row"
+              [attr.fantom]="event.fantom"
+              [attr.type]="event.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="20">target:</div>
+              <div class="prop-table-value">
+                @if (event.value) {
+                  <span>
+                    {{ event.target }}
+                  </span>
+                }
+              </div>
+            </div>
+            <div class="prop-table-row"
+              [attr.fantom]="event.fantom"
+              [attr.type]="event.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="20">input:</div>
+              <div class="prop-table-value">
+                @if (event.value) {
+                  <span>
+                    {{ event.input }}
+                  </span>
+                }
+              </div>
+            </div>
+            <div class="prop-table-row"
+              [attr.fantom]="event.fantom"
+              [attr.type]="event.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="20">actor:</div>
+              <div class="prop-table-value">
+                @if (event.value) {
+                  <span>
+                    {{ event.actor }}
+                  </span>
+                }
+              </div>
+            </div>
+            <div class="prop-table-row"
+              [attr.fantom]="event.fantom"
+              [attr.type]="event.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="20">disabled:</div>
+              <div class="prop-table-value">
+                @if (event.value) {
+                  <span>
+                    {{ event.disabled }}
+                  </span>
+                }
+              </div>
+            </div>
+          }
         </div>
-
-        <div class="prop-delimiter"></div>
+      </div>
+      <div class="prop-delimiter"></div>
+      <div class="prop-table">
+        <div class="prop-table-header">Artifacts:</div>
+        <div class="prop-table-body">
+          @for (artifact of data.artifacts; track artifact) {
+            <div class="prop-table-row"
+              [attr.fantom]="artifact.fantom"
+              [attr.type]="artifact.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="10">Artifact:</div>
+              <div class="prop-table-value"><span></span></div>
+            </div>
+            <div class="prop-table-row"
+              [attr.fantom]="artifact.fantom"
+              [attr.type]="artifact.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="20">name:</div>
+              <div class="prop-table-value">
+                @if (artifact.value) {
+                  <span>{{ artifact.fileName }}</span>
+                }
+              </div>
+            </div>
+            <div class="prop-table-row"
+              [attr.fantom]="artifact.fantom"
+              [attr.type]="artifact.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="20">extension:</div>
+              <div class="prop-table-value">
+                @if (artifact.value) {
+                  <span>{{ artifact.fileExtension }}</span>
+                }
+              </div>
+            </div>
+            <div class="prop-table-row"
+              [attr.fantom]="artifact.fantom"
+              [attr.type]="artifact.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="20">type:</div>
+              <div class="prop-table-value">
+                @if (artifact.value) {
+                  <span>{{ artifact.fileType }}</span>
+                }
+              </div>
+            </div>
+            <div class="prop-table-row"
+              [attr.fantom]="artifact.fantom"
+              [attr.type]="artifact.type"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="20">hash:</div>
+              <div class="prop-table-value">
+                @if (artifact.value) {
+                  <span>{{ artifact.fileHash }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="prop-delimiter"></div>
     </div>
+  }
 </ng-template>
 
 <ng-template #propInfo let-data="data">
-    <div *ngIf="_toPropInfoContext(data); let data" class="prop-container">
-        <div class="prop-table">
-            <div class="prop-table-body">
-                <div *ngFor="let prop of data.properties"
-                     class="prop-table-row"
-                     [attr.fantom]="prop.fantom"
-                     [attr.type]="prop.type"
-                     [attr.offset]="prop.lvl"
-                     [attr.index]="data.index">
-                    <div class="prop-table-name" [style.padding-left.px]="prop.offset">
-                        {{ prop.name }}:
-                    </div>
-                    <div class="prop-table-value" [attr.prop-type]="prop.propType">
-                        <span *ngIf="prop.propType" [title]="prop.value">
-                            {{ prop.value }}
-                        </span>
-                    </div>
-                </div>
+  @if (_toPropInfoContext(data); as data) {
+    <div class="prop-container">
+      <div class="prop-table">
+        <div class="prop-table-body">
+          @for (prop of data.properties; track prop) {
+            <div
+              class="prop-table-row"
+              [attr.fantom]="prop.fantom"
+              [attr.type]="prop.type"
+              [attr.offset]="prop.lvl"
+              [attr.index]="data.index">
+              <div class="prop-table-name" [style.padding-left.px]="prop.offset">
+                {{ prop.name }}:
+              </div>
+              <div class="prop-table-value" [attr.prop-type]="prop.propType">
+                @if (prop.propType) {
+                  <span [title]="prop.value">
+                    {{ prop.value }}
+                  </span>
+                }
+              </div>
             </div>
+          }
         </div>
+      </div>
     </div>
+  }
 </ng-template>

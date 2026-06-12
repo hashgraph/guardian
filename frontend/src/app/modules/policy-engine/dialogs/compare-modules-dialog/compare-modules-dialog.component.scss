@@ -33,7 +33,7 @@
     border-radius: 8px;
   }
 
-  .p-dropdown {
+  .p-select {
     width: 100%;
   }
 
@@ -89,7 +89,7 @@
 }
 
 :host ::ng-deep {
-  .p-dropdown, .p-multiselect {
+  .p-select, .p-multiselect {
     width: 100%;
     border-radius: 8px !important;
     border: 1px solid var(--color-grey-3, #E1E7EF);
@@ -110,7 +110,7 @@
     line-height: 16px;
   }
 
-  .p-dropdown-items {
+  .p-select-list {
     width: 100%;
   }
 }

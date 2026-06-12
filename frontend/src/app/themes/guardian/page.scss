@@ -4,7 +4,7 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    padding: 56px 48px 48px 48px;
+    padding: var(--guardian-page-padding);
 
     .guardian-user-not-registered {
         position: absolute;
@@ -68,20 +68,26 @@
     }
 
     .guardian-user-page-header {
-        font-size: 32px;
-        font-weight: 600;
+        font-family: var(--guardian-page-header-font-family);
+        font-size: var(--guardian-page-header-font-size);
+        font-weight: var(--guardian-page-header-font-weight);
         color: var(--guardian-header-color, #000);
-        height: 72px;
-        padding: 32px 0px 18px 0px;
+        height: var(--guardian-page-header-height);
+        padding: var(--guardian-page-header-padding);
         position: relative;
+        margin-bottom: var(--guardian-page-header-gap);
+    }
+
+    .tabs-nav {
+        margin: 0 0 var(--guardian-page-tabs-gap);
     }
 
     .guardian-user-page-toolbar {
-        height: 56px;
+        height: var(--guardian-page-toolbar-height);
         width: 100%;
         display: flex;
         flex-direction: row;
-        padding: 0px 0px 16px 0px;
+        padding: 0px 0px var(--guardian-page-toolbar-gap) 0px;
         justify-content: flex-end;
 
         button {
@@ -112,6 +118,7 @@
         height: 100%;
         width: 100%;
         position: relative;
+        padding: var(--guardian-page-content-padding);
     }
 }
 

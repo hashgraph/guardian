@@ -7,9 +7,11 @@ import { ArtifactImportDialog } from './artifact-import-dialog/artifact-import-d
 import { ArtifactPropertiesComponent } from './artifact-properties/artifact-properties.component';
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { CommonComponentsModule } from '../common/common-components.module';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
@@ -24,9 +26,11 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         MaterialModule,
         CommonComponentsModule,
         AppRoutingModule,
-        DropdownModule,
+        SelectModule,
         ButtonModule,
         DialogModule,
+        TableModule,
+        TooltipModule,
         AngularSvgIconModule.forRoot()
     ],
     exports: [

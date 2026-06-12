@@ -1,8 +1,34 @@
-.guardian-page {
-    padding: 32px 48px 48px 48px !important;
+.actions-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
 }
 
-.guardian-user-page-header {
+.module-actions-buttons-container {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+}
+
+.toolbar-btn-primary ::ng-deep .p-button {
+    background: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    height: 40px;
+    padding: 8px 16px 8px 8px;
+    color: var(--color-grey-white, #FFF);
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 30px;
+}
+
+.module-actions-buttons-container svg {
+    margin-right: 8px;
+}
+
+.guardian-user-page-header:has(.token-id) {
     height: 86px !important;
     position: relative;
 
@@ -52,15 +78,16 @@
     height: 80%;
 }
 
-:host ::ng-deep .p-dropdown {
-    width: 400px;
+:host ::ng-deep .dropdown-block .p-select {
+    height: 40px;
+    min-width: 300px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #FFF;
 }
 
-:host ::ng-deep .p-dropdown-panel,
-.p-dropdown-items-wrapper {
+:host ::ng-deep .p-select-overlay,
+.p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #FFF;
@@ -170,7 +197,7 @@
 }
 
 :host ::ng-deep .table-paginator {
-    .p-dropdown {
+    .p-select {
         width: 125px;
         height: 40px;
         border-radius: 8px;
@@ -351,8 +378,8 @@
     }
 }
 
-.grid-table-container {
-    ::ng-deep .grid-table {
+.guardian-grid-container {
+    ::ng-deep .guardian-grid-table {
         .p-datatable-wrapper {
             max-height: calc(-320px + 100vh);
         }

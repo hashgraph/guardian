@@ -16,6 +16,7 @@ import { Subscription } from 'rxjs';
     selector: 'app-new-header',
     templateUrl: './new-header.component.html',
     styleUrls: ['./new-header.component.scss'],
+    standalone: false
 })
 export class NewHeaderComponent implements OnInit, AfterViewChecked {
     public isLogin: boolean = false;

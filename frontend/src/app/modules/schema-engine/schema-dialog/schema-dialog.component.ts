@@ -14,6 +14,7 @@ import { SchemaType } from '../../policy-engine/structures/types/schema-type.typ
     selector: 'schema-dialog',
     templateUrl: './schema-dialog.component.html',
     styleUrls: ['./schema-dialog.component.scss'],
+    standalone: false
 })
 export class SchemaDialog {
     public header: string;
@@ -202,8 +203,8 @@ export class SchemaDialog {
     }
 
 
-    public onChangeTab($event: any, order: number): void {
-        $event.stopPropagation();
+    public onTabChange(order: string | number | undefined): void {
+        if (typeof order !== 'number') { return; }
         this.error = null;
         if (this.tab === order) {
             return;

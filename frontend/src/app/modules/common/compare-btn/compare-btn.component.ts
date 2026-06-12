@@ -4,7 +4,8 @@ import { CompareStorage } from '../../../services/compare-storage.service';
 @Component({
     selector: 'app-compare-btn',
     templateUrl: './compare-btn.component.html',
-    styleUrls: ['./compare-btn.component.scss']
+    styleUrls: ['./compare-btn.component.scss'],
+    standalone: false
 })
 export class CompareBtnComponent implements OnInit {
     @Input('type') type!: string;

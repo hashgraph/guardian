@@ -8,7 +8,8 @@ import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../stru
     selector: 'external-data-config',
     templateUrl: './external-data-config.component.html',
     styleUrls: ['./external-data-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class ExternalDataConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

@@ -46,7 +46,8 @@ interface IFieldContext {
 @Component({
     selector: 'app-compare-record',
     templateUrl: './compare-record.component.html',
-    styleUrls: ['./compare-record.component.scss']
+    styleUrls: ['./compare-record.component.scss'],
+    standalone: false
 })
 export class CompareRecordComponent implements OnInit {
     @Input('value') value!: any;

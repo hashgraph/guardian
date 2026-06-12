@@ -9,6 +9,7 @@ import { IBlockAbout, PolicyFolder, PolicyItem } from '../../structures';
     selector: 'app-policy-api-config-dialog',
     templateUrl: './policy-api-config-dialog.component.html',
     styleUrls: ['./policy-api-config-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyApiConfigDialogComponent {
     public entries: IPolicyDocumentationEntry[] = [];

@@ -468,7 +468,7 @@ body {
     z-index: 9999 !important;
 }
 
-::ng-deep p-dropdownitem li {
+::ng-deep p-selectitem li {
     min-height: 38px !important;
 }
 
@@ -494,11 +494,12 @@ body {
     stroke: var(--button-primary-color) !important;
 }
 
-::ng-deep p-dropdown .p-dropdown-label-empty {
+::ng-deep p-select .p-select-label-empty {
     min-height: 36px;
 }
 
-::ng-deep .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+::ng-deep .p-tabs .p-tab.p-tab-active,
+::ng-deep .p-tabs .p-tab[data-p-active='true'] {
     color: var(--color-primary);
     border-color: var(--color-primary);
 }

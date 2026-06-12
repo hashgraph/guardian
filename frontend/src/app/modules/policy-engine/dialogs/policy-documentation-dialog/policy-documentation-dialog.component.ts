@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
     selector: 'app-policy-documentation-dialog',
     templateUrl: './policy-documentation-dialog.component.html',
     styleUrls: ['./policy-documentation-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyDocumentationDialogComponent implements OnInit {
     public loading = true;

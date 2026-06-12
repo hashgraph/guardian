@@ -46,6 +46,7 @@ interface IColumn {
     selector: 'app-root-profile',
     templateUrl: './root-profile.component.html',
     styleUrls: ['./root-profile.component.scss'],
+    standalone: false
 })
 export class RootProfileComponent implements OnInit, OnDestroy {
     @ViewChild('actionMenu') actionMenu: any;
@@ -689,7 +690,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 viewDocument: true,
                 getByUser: true
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -706,7 +707,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 title,
                 type: 'JSON',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -718,14 +719,14 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             data: {
                 login: profile?.username,
             }
-        }).onClose.subscribe((data) => {
+        })!.onClose.subscribe((data) => {
             this.loadProfile();
         });
     }
 
-    public onChangeTab(tab: any) {
-        this.tabIndex = tab.index;
-        this.tab = this.tabs[tab.index] || 'general';
+    public onChangeTab(index: string | number | undefined) {
+        this.tabIndex = typeof index === 'number' ? index : 0;
+        this.tab = this.tabs[this.tabIndex] || 'general';
         this.router.navigate([], {
             queryParams: { tab: this.tab }
         });
@@ -786,7 +787,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             data: {
                 title: 'Add Relayer Account'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.subLoading = true;
@@ -809,7 +810,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             data: {
                 relayerAccount: item
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -855,7 +856,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 width: '50vw',
                 closable: false,
                 data: { config: config }
-            }).onClose.subscribe((codes) => {
+            })!.onClose.subscribe((codes) => {
                 this.refreshOtpStatus();
                 if (codes && codes.length) {
                     this.dialogService.open(OtpCodesDialogComponent, {
@@ -873,7 +874,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             width: '50vw',
             closable: false,
 
-        }).onClose.subscribe(result => {
+        })!.onClose.subscribe(result => {
             if (result == true) {
                 this.auth.deactivateOtp().subscribe(() => {
                     this.refreshOtpStatus();

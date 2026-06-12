@@ -25,7 +25,8 @@ interface IAdditionalDocument {
 @Component({
     selector: 'app-report-block',
     templateUrl: './report-block.component.html',
-    styleUrls: ['./report-block.component.scss']
+    styleUrls: ['./report-block.component.scss'],
+    standalone: false
 })
 export class ReportBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -264,7 +265,7 @@ export class ReportBlockComponent implements OnInit {
                 title: title,
                 type: 'VC',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -285,7 +286,7 @@ export class ReportBlockComponent implements OnInit {
                 title: title,
                 type: 'VP',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -302,7 +303,7 @@ export class ReportBlockComponent implements OnInit {
                 title: title,
                 type: 'JSON',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -627,7 +628,7 @@ export class ReportBlockComponent implements OnInit {
                 title: title,
                 type: 'VC',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 }

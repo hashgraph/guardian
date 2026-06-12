@@ -10,7 +10,8 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 @Component({
     selector: 'app-test-results',
     templateUrl: './test-results.component.html',
-    styleUrls: ['./test-results.component.scss']
+    styleUrls: ['./test-results.component.scss'],
+    standalone: false
 })
 export class TestResultsComponent implements OnInit {
     public loading: boolean = true;

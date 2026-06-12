@@ -11,7 +11,8 @@ import { ProfileService } from 'src/app/services/profile.service';
 @Component({
     selector: 'user-policy-dialog',
     templateUrl: './user-policy-dialog.component.html',
-    styleUrls: ['./user-policy-dialog.component.scss']
+    styleUrls: ['./user-policy-dialog.component.scss'],
+    standalone: false
 })
 export class UserPolicyDialog {
     public loading = false;

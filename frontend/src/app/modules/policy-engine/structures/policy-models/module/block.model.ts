@@ -57,7 +57,7 @@ export class PolicyModule extends PolicyBlock {
         return this;
     }
 
-    public get policyId(): string | undefined {
+    public override get policyId(): string | undefined {
         return this._module?.policyId;
     }
 
@@ -69,7 +69,7 @@ export class PolicyModule extends PolicyBlock {
         super(config, parent);
     }
 
-    public init(config: IModuleConfig, parent: PolicyBlock | null) {
+    public override init(config: IModuleConfig, parent: PolicyBlock | null) {
         super.init(config, parent);
         this._name = config.name || '';
         this._description = config.description || '';
@@ -147,26 +147,26 @@ export class PolicyModule extends PolicyBlock {
         }
     }
 
-    public get isModule(): boolean {
+    public override get isModule(): boolean {
         return true;
     }
 
-    public get isTool(): boolean {
+    public override get isTool(): boolean {
         return false;
     }
 
-    public get isPolicy(): boolean {
+    public override get isPolicy(): boolean {
         return false;
     }
 
-    public get isTest(): boolean {
+    public override get isTest(): boolean {
         if (this._module) {
             return this._module.isTest;
         }
         return false;
     }
 
-    public get rootParent(): PolicyBlock {
+    public override get rootParent(): PolicyBlock {
         if (this._parent) {
             return this._parent.rootParent;
         } else {
@@ -174,19 +174,19 @@ export class PolicyModule extends PolicyBlock {
         }
     }
 
-    public get canAddBlocks(): boolean {
+    public override get canAddBlocks(): boolean {
         return true;
     }
 
-    public get canAddModules(): boolean {
+    public override get canAddModules(): boolean {
         return false;
     }
 
-    public get canAddTools(): boolean {
+    public override get canAddTools(): boolean {
         return true;
     }
 
-    public get expandable(): boolean {
+    public override get expandable(): boolean {
         return false;
     }
 
@@ -232,7 +232,7 @@ export class PolicyModule extends PolicyBlock {
         return this.tag + ':';
     }
 
-    public removeEvent(event: any) {
+    public override removeEvent(event: any) {
         this._allEvents = this._allEvents.filter(e => e.id !== event?.id);
         this._innerEvents = this._innerEvents.filter(e => e.id !== event?.id);
         this._events = this._events.filter(e => e.id !== event?.id);
@@ -422,11 +422,11 @@ export class PolicyModule extends PolicyBlock {
         this.updateVariables();
     }
 
-    public get blockVariables(): IModuleVariables | null {
+    public override get blockVariables(): IModuleVariables | null {
         return this._lastVariables;
     }
 
-    public get moduleVariables(): IModuleVariables | null {
+    public override get moduleVariables(): IModuleVariables | null {
         if (this._module) {
             return this._module.blockVariables;
         }
@@ -540,7 +540,7 @@ export class PolicyModule extends PolicyBlock {
         this.refresh();
     }
 
-    public refreshData() {
+    public override refreshData() {
         this._tagMap = {};
         this._idMap = {};
         this._allBlocks = [];
@@ -599,7 +599,7 @@ export class PolicyModule extends PolicyBlock {
         }
     }
 
-    public getActiveEvents(): PolicyEvent[] {
+    public override getActiveEvents(): PolicyEvent[] {
         const events = super.getActiveEvents();
         for (const event of this.innerEvents) {
             if (!event.disabled) {
@@ -647,7 +647,7 @@ export class PolicyModule extends PolicyBlock {
         }
     }
 
-    public rebuild(object?: any) {
+    public override rebuild(object?: any) {
         this.init(object, this.parent);
         if (object.children) {
             for (const child of object.children) {

@@ -22,6 +22,7 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'user-contract-config',
     templateUrl: './user-contract-config.component.html',
     styleUrls: ['./user-contract-config.component.css'],
+    standalone: false
 })
 export class UserContractConfigComponent implements OnInit {
     contractRequests: any[] = [];
@@ -127,7 +128,7 @@ export class UserContractConfigComponent implements OnInit {
             styleClass: 'g-dialog pools-dialog',
             modal: true,
             closable: false,
-        });
+        })!;
         dialogRef.onClose.subscribe((result) => {
             if (!result) {
                 return;
@@ -170,7 +171,7 @@ export class UserContractConfigComponent implements OnInit {
                 document: document.document,
                 type: 'VC',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

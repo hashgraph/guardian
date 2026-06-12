@@ -1,5 +1,5 @@
-<p-dropdown
-    *ngIf="!multiple"
+@if (!multiple) {
+  <p-select
     dataKey="id"
     [(ngModel)]="selectedOption"
     optionValue="value"
@@ -11,37 +11,42 @@
     appendTo="body"
     class="guardian-dropdown"
     panelStyleClass="guardian-dropdown-panel"
->
+    >
     <ng-template pTemplate="selectedItem" let-item>
-        <span class="custom">{{ item ? item.name : 'Select...' }}</span>
+      <span class="custom">{{ item ? item.name : 'Select...' }}</span>
     </ng-template>
     <ng-template pTemplate="header">
-        <div class="components-search">
-            <input
-                type="text"
-                placeholder="Search"
-                [(ngModel)]="search"
-                (input)="onSearch($event)"
-                style="height: 32px;"
-            />
-            <i class="pi pi-search components-search-icon"></i>
-        </div>
+      <div class="components-search">
+        <input
+          type="text"
+          placeholder="Search"
+          [(ngModel)]="search"
+          (input)="onSearch($event)"
+          style="height: 32px;"
+          />
+        <i class="pi pi-search components-search-icon"></i>
+      </div>
     </ng-template>
     <ng-template let-item pTemplate="item">
-        <div class="block-name" [ngClass]="{'empty-option': !item.value}" [attr.root]="item.root">
-            <div *ngIf="item.svg && item.name" class="block-icon">
-                <i [ngClass]="'pi pi-' + item.icon" class="svg-icon"></i>
-            </div>
-            <div *ngIf="!item.svg && item.icon && item.name" class="block-icon">
-                <i [ngClass]="'pi pi-' + item.icon"></i>
-            </div>
-            {{ item.name || '' }}
-        </div>
+      <div class="block-name" [ngClass]="{'empty-option': !item.value}" [attr.root]="item.root">
+        @if (item.svg && item.name) {
+          <div class="block-icon">
+            <i [ngClass]="'pi pi-' + item.icon" class="svg-icon"></i>
+          </div>
+        }
+        @if (!item.svg && item.icon && item.name) {
+          <div class="block-icon">
+            <i [ngClass]="'pi pi-' + item.icon"></i>
+          </div>
+        }
+        {{ item.name || '' }}
+      </div>
     </ng-template>
-</p-dropdown>
+  </p-select>
+}
 
-<p-multiSelect
-    *ngIf="multiple"
+@if (multiple) {
+  <p-multiSelect
     dataKey="id"
     [(ngModel)]="selectedOption"
     optionValue="value"
@@ -53,30 +58,35 @@
     appendTo="body"
     class="guardian-multiselect"
     panelStyleClass="guardian-multiselect-panel policy-select-block"
->
+    >
     <ng-template pTemplate="header">
-        <div class="components-search">
-            <input
-                type="text"
-                placeholder="Search"
-                [(ngModel)]="search"
-                (input)="onSearch($event)"
-            />
-            <i class="pi pi-search components-search-icon"></i>
-        </div>
+      <div class="components-search">
+        <input
+          type="text"
+          placeholder="Search"
+          [(ngModel)]="search"
+          (input)="onSearch($event)"
+          />
+        <i class="pi pi-search components-search-icon"></i>
+      </div>
     </ng-template>
     <ng-template let-item pTemplate="item">
-        <div class="block-name" [attr.root]="item.root">
-            <div *ngIf="item.svg" class="block-icon">
-                <i [ngClass]="'pi pi-' + item.icon" class="svg-icon"></i>
-            </div>
-            <div *ngIf="!item.svg" class="block-icon">
-                <i [ngClass]="'pi pi-' + item.icon"></i>
-            </div>
-            {{ item.name }}
-        </div>
+      <div class="block-name" [attr.root]="item.root">
+        @if (item.svg) {
+          <div class="block-icon">
+            <i [ngClass]="'pi pi-' + item.icon" class="svg-icon"></i>
+          </div>
+        }
+        @if (!item.svg) {
+          <div class="block-icon">
+            <i [ngClass]="'pi pi-' + item.icon"></i>
+          </div>
+        }
+        {{ item.name }}
+      </div>
     </ng-template>
     <ng-template pTemplate="selectedItems">
-        <span class="custom">{{ text }}</span>
+      <span class="custom">{{ text }}</span>
     </ng-template>
-</p-multiSelect>
+  </p-multiSelect>
+}

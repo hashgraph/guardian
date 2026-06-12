@@ -9,6 +9,7 @@ export type AddSavepointResult =
     selector: 'app-add-savepoint-dialog',
     templateUrl: './add-savepoint-dialog.component.html',
     styleUrls: ['./add-savepoint-dialog.component.scss'],
+    standalone: false
 })
 export class AddSavepointDialog {
     public name = '';

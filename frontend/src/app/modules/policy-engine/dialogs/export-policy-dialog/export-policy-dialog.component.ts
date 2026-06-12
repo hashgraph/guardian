@@ -10,6 +10,7 @@ import { ToolsService } from 'src/app/services/tools.service';
     selector: 'export-policy-dialog',
     templateUrl: './export-policy-dialog.component.html',
     styleUrls: ['./export-policy-dialog.component.scss'],
+    standalone: false
 })
 export class ExportPolicyDialog {
     public loading = true;

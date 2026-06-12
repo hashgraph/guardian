@@ -11,7 +11,8 @@ import moment from 'moment';
 @Component({
     selector: 'filters-addon-block',
     templateUrl: './filters-addon-block.component.html',
-    styleUrls: ['./filters-addon-block.component.scss']
+    styleUrls: ['./filters-addon-block.component.scss'],
+    standalone: false
 })
 export class FiltersAddonBlockComponent implements OnInit {
     @Input('id') id!: string;

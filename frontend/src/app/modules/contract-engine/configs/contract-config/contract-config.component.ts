@@ -21,6 +21,7 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'contract-config',
     templateUrl: './contract-config.component.html',
     styleUrls: ['./contract-config.component.css'],
+    standalone: false
 })
 export class ContractConfigComponent implements OnInit, OnDestroy {
     public user: UserPermissions = new UserPermissions();
@@ -337,7 +338,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 ],
                 title: 'Import Contract',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.loading = true;
@@ -373,7 +374,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 ],
                 title: 'Create Contract',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
                 return;
@@ -410,7 +411,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 ],
                 title: 'Enter Hedera Identifier',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
                 return;
@@ -447,7 +448,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 ],
                 title: 'Enter Hedera and Token identifiers',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
                 return;
@@ -648,7 +649,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                     closable: false,
                     showHeader: false,
                     height: '450px'
-                });
+                })!;
                 dialogRef.onClose.subscribe(async (result) => {
                     if (result) {
                         result.tokens = result.tokens.map((item: any) => {

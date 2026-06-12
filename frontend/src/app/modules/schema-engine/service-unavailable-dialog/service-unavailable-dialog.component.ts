@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
     selector: 'service-unavailable-dialog',
     templateUrl: './service-unavailable-dialog.component.html',
     styleUrls: ['./service-unavailable-dialog.component.css'],
+    standalone: false
 })
 export class ServiceUnavailableDialog {
 

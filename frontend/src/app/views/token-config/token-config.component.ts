@@ -10,6 +10,7 @@ import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { DialogService } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { UntypedFormGroup } from '@angular/forms';
 import { ContractService } from 'src/app/services/contract.service';
 import { TokenDialogComponent } from 'src/app/components/token-dialog/token-dialog.component';
@@ -38,7 +39,8 @@ interface IColumn {
     selector: 'app-token-config',
     templateUrl: './token-config.component.html',
     styleUrls: ['./token-config.component.scss'],
-    providers: [DialogService]
+    providers: [{ provide: DialogService, useClass: GuardianDialogService }],
+    standalone: false
 })
 export class TokenConfigComponent implements OnInit {
     public isConfirmed: boolean = false;
@@ -365,7 +367,7 @@ export class TokenConfigComponent implements OnInit {
                 readonly: this.readonlyForm,
                 currentTokenId: this.currentTokenId,
             }
-        }).onClose.subscribe((dataForm: UntypedFormGroup) => {
+        })!.onClose.subscribe((dataForm: UntypedFormGroup) => {
             if (!dataForm) {
                 return;
             }
@@ -518,7 +520,7 @@ export class TokenConfigComponent implements OnInit {
             data: {
                 notificationText: 'Are you sure want to delete this token?'
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
             if (!result) {
                 return;
@@ -593,7 +595,7 @@ export class TokenConfigComponent implements OnInit {
                 currentTokenId: this.currentTokenId,
                 policyId: this.currentPolicy
             }
-        }).onClose.subscribe((dataForm: UntypedFormGroup) => {
+        })!.onClose.subscribe((dataForm: UntypedFormGroup) => {
             if (!dataForm) {
                 return;
             }
@@ -713,7 +715,7 @@ export class TokenConfigComponent implements OnInit {
                     notificationText: 'Are you sure want to delete these tokens?',
                     itemNames: this.selectedItems.map(item => item.tokenName + ' (' + item.tokenId + ')'),
                 },
-            });
+            })!;
             dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 if (!result) {
                     return;

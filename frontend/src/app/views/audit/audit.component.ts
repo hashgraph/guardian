@@ -14,7 +14,8 @@ import {DialogService} from 'primeng/dynamicdialog';
 @Component({
     selector: 'app-audit',
     templateUrl: './audit.component.html',
-    styleUrls: ['./audit.component.css']
+    styleUrls: ['./audit.component.css'],
+    standalone: false
 })
 export class AuditComponent implements OnInit {
     loading: boolean = true;
@@ -151,7 +152,7 @@ export class AuditComponent implements OnInit {
                 type: 'VP',
                 viewDocument: true
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

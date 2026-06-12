@@ -17,28 +17,28 @@
             </div>
 
             <div class="tabs-nav">
-                <p-tabView [(activeIndex)]="tabIndex" (onChange)="onChangeTab($event)" class="guardian-header-tabs">
-                    <p-tabPanel [selected]="tab === 'general'">
-                        <ng-template pTemplate="header">
-                            <div class="tabview-label">General</div>
-                        </ng-template>
-                    </p-tabPanel>
-                    <p-tabPanel [selected]="tab === 'relayerAccounts'">
-                        <ng-template pTemplate="header">
-                            <div class="tabview-label">Relayer Accounts</div>
-                        </ng-template>
-                    </p-tabPanel>
-                    <p-tabPanel [selected]="tab === 'keys'">
-                        <ng-template pTemplate="header">
-                            <div class="tabview-label">Decentralized Access Key</div>
-                        </ng-template>
-                    </p-tabPanel>
-                    <p-tabPanel [selected]="tab === 'credentials'">
-                        <ng-template pTemplate="header">
-                            <div class="tabview-label">Credentials</div>
-                        </ng-template>
-                    </p-tabPanel>
-                </p-tabView>
+                <p-tabs [(value)]="tabIndex" (valueChange)="onChangeTab($event)" class="guardian-header-tabs">
+                    <p-tablist>
+                        <p-tab [value]="0"><div class="tabview-label">General</div></p-tab>
+                        <p-tab [value]="1"><div class="tabview-label">Relayer Accounts</div></p-tab>
+                        <p-tab [value]="2"><div class="tabview-label">Decentralized Access Key</div></p-tab>
+                        <p-tab [value]="3"><div class="tabview-label">Credentials</div></p-tab>
+                    </p-tablist>
+                    <p-tabpanels>
+                        <p-tabpanel [value]="0">
+                        
+                                            </p-tabpanel>
+                        <p-tabpanel [value]="1">
+                        
+                                            </p-tabpanel>
+                        <p-tabpanel [value]="2">
+                        
+                                            </p-tabpanel>
+                        <p-tabpanel [value]="3">
+                        
+                                            </p-tabpanel>
+                    </p-tabpanels>
+                </p-tabs>
             </div>
 
             <ng-container *ngIf="tab === 'general'">
@@ -422,7 +422,7 @@
 
                 <div class="forms-container">
                     <form class="hedera-form">
-                        <ng-container *ngIf="currentStep?.id === 'select_sr'">
+                        <ng-container *ngIf="currentStep.id === 'select_sr'">
                             <div class="user-onboarding-wizard__header">
                                 <form
                                     *ngIf="hasRegistries"
@@ -495,7 +495,7 @@
                                 </ng-template>
                             </div>
                         </ng-container>
-                        <ng-container *ngIf="currentStep?.id === 'hedera_credentials'">
+                        <ng-container *ngIf="currentStep.id === 'hedera_credentials'">
                             <div class="step-container">
                                 <div class="hedera-credentials-title">
                                     Setup User
@@ -568,8 +568,8 @@
                                                     [binary]="true"
                                                     formControlName="useFireblocksSigning"
                                                     inputId="useFireblocksSigning"
-                                                    label="Use fireblocks signing"
                                                 ></p-checkbox>
+                                                <label class="p-checkbox-label" for="useFireblocksSigning">Use fireblocks signing</label>
                                             </div>
                                             <ng-container *ngIf="hederaCredentialsForm.get('useFireblocksSigning')?.value">
                                                 <div class="input-field-container">
@@ -717,7 +717,7 @@
                                 </div>
                             </div>
                         </ng-container>
-                        <ng-container *ngIf="currentStep?.id === 'did_document'">
+                        <ng-container *ngIf="currentStep.id === 'did_document'">
                             <div class="step-container">
                                 <div class="hedera-credentials-title">
                                     Setup User
@@ -772,7 +772,7 @@
                                 </form>
                             </div>
                         </ng-container>
-                        <ng-container *ngIf="currentStep?.id === 'did_document_keys'">
+                        <ng-container *ngIf="currentStep.id === 'did_document_keys'">
                             <div class="step-container">
                                 <div class="hedera-credentials-title">
                                     DID Document signing keys
@@ -785,7 +785,7 @@
                                         </div>
                                         <div class="hedera-form-item example-full-width">
                                             <label [htmlFor]="'methodDropdown'" class="form-label">* Method:</label>
-                                            <p-dropdown
+                                            <p-select
                                                 [options]="item.keyNames"
                                                 [formControl]="item.keyNameControl"
                                                 optionLabel="name"
@@ -794,7 +794,7 @@
                                                 placeholder="Select a method"
                                                 inputId="methodDropdown"
                                                 class="full-width">
-                                            </p-dropdown>
+                                            </p-select>
                                         </div>
                                         <div class="hedera-form-item example-full-width">
                                             <label for="keyInput" class="form-label">* Key:</label>
@@ -812,7 +812,7 @@
                                 </form>
                             </div>
                         </ng-container>
-                        <ng-container *ngIf="currentStep?.id === 'vc_document'">
+                        <ng-container *ngIf="currentStep.id === 'vc_document'">
                             <div class="hedera-credentials-title">
                                 VC Document
                             </div>

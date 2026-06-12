@@ -6,6 +6,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'app-schema-delete-dialog.',
     templateUrl: './schema-delete-dialog.component.html',
     styleUrls: ['./schema-delete-dialog.component.scss'],
+    standalone: false
 })
 export class SchemaDeleteDialogComponent implements OnInit {
     public loading = true;

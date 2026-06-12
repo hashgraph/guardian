@@ -18,7 +18,8 @@ import {HttpErrorResponse} from '@angular/common/http';
 @Component({
     selector: 'external-topic-block',
     templateUrl: './external-topic-block.component.html',
-    styleUrls: ['./external-topic-block.component.scss']
+    styleUrls: ['./external-topic-block.component.scss'],
+    standalone: false
 })
 export class ExternalTopicBlockComponent implements OnInit {
     @Input('id') id!: string;

@@ -9,6 +9,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'enum-editor-dialog',
     templateUrl: './enum-editor-dialog.component.html',
     styleUrls: ['./enum-editor-dialog.component.scss'],
+    standalone: false
 })
 export class EnumEditorDialog implements AfterContentInit {
     public header: string;

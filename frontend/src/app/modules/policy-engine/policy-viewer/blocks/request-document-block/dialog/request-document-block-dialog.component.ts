@@ -24,6 +24,7 @@ import { PolicyTestAutomationService } from '../../../policy-test-automation/pol
     selector: 'request-document-block-dialog',
     templateUrl: './request-document-block-dialog.component.html',
     styleUrls: ['./request-document-block-dialog.component.scss'],
+    standalone: false
 })
 export class RequestDocumentBlockDialog {
     public loading: boolean = true;
@@ -369,7 +370,7 @@ export class RequestDocumentBlockDialog {
                         class: 'primary'
                     }]
                 },
-            });
+            })!;
 
             dialogOptionRef.onClose.subscribe((result: string) => {
                 if (result == 'Confirm') {

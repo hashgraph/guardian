@@ -6,7 +6,8 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
  */
 @Component({
     templateUrl: './confirm-dialog.component.html',
-    styleUrls: ['./confirm-dialog.component.css']
+    styleUrls: ['./confirm-dialog.component.css'],
+    standalone: false
 })
 export class ConfirmDialog {
     public title: string = '';

@@ -43,16 +43,17 @@ interface IRequestDocumentAddonData {
     selector: 'request-document-block-addon',
     templateUrl: './request-document-block-addon.component.html',
     styleUrls: ['./request-document-block-addon.component.scss'],
+    standalone: false
 })
 export class RequestDocumentBlockAddonComponent
     extends AbstractUIBlockComponent<IRequestDocumentAddonData>
     implements OnInit {
 
-    @Input('id') id!: string;
-    @Input('policyId') policyId!: string;
-    @Input('static') static!: any;
+    @Input('id') override id!: string;
+    @Input('policyId') override policyId!: string;
+    @Input('static') override static!: any;
     @Input('dryRun') dryRun!: any;
-    @Input('savepointIds') savepointIds?: string[] | null = null;
+    @Input('savepointIds') override savepointIds?: string[] | null = null;
     @Input('policyStatus') policyStatus!: string;
 
     public isExist = false;
@@ -269,7 +270,7 @@ export class RequestDocumentBlockAddonComponent
             width: '90%',
             styleClass: 'guardian-dialog',
             data: this
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             //
         });

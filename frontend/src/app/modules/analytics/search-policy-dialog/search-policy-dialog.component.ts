@@ -13,7 +13,8 @@ import { ToolsService } from 'src/app/services/tools.service';
 @Component({
     selector: 'search-policy-dialog',
     templateUrl: './search-policy-dialog.component.html',
-    styleUrls: ['./search-policy-dialog.component.scss']
+    styleUrls: ['./search-policy-dialog.component.scss'],
+    standalone: false
 })
 export class SearchPolicyDialog {
     public loading = false;

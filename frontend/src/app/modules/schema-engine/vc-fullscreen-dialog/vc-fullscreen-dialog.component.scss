@@ -275,7 +275,7 @@
 
 :host ::ng-deep {
     .version-dropdown {
-        .p-dropdown {
+        .p-select {
             border: 1px solid var(--guardian-primary-color);
             border-radius: 6px;
             color: var(--guardian-primary-color);
@@ -289,15 +289,15 @@
             }
         }
 
-        .p-dropdown-label {
+        .p-select-label {
             color: var(--guardian-primary-color);
         }
 
-        .p-dropdown-trigger {
+        .p-select-dropdown {
             color: var(--guardian-primary-color);
         }
 
-        .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+        .p-select-overlay .p-select-list .p-select-option {
             color: var(--guardian-primary-color);
         }
     }
