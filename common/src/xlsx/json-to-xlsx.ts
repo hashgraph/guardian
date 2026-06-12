@@ -276,7 +276,9 @@ export class JsonToXlsx {
                 schemaCache,
                 enumsCache,
                 row,
-                subSchemaNames
+                subSchemaNames,
+                fieldCache,
+                [field.name]
             );
         }
 
@@ -481,7 +483,9 @@ export class JsonToXlsx {
         schemaCache: Map<string, string>,
         enumsCache: Map<string, XlsxEnum>,
         row: number,
-        subSchemaNames: Map<string, string> = new Map()
+        subSchemaNames: Map<string, string> = new Map(),
+        rootFieldCache?: Map<string, IRowField>,
+        pathPrefix?: string[]
     ): number {
         if (!parent || !parent.isRef || !Array.isArray(parent.fields) || parent.fields.length === 0) {
             return row;
@@ -512,6 +516,13 @@ export class JsonToXlsx {
                 subSchemaNames,
                 parent
             );
+            if (rootFieldCache && pathPrefix) {
+                const dotPath = [...pathPrefix, field.name].join('.');
+                const rowField = fieldCache.get(field.name);
+                if (rowField) {
+                    rootFieldCache.set(dotPath, rowField);
+                }
+            }
             worksheet
                 .getRow(row)
                 .setOutline(lvl);
@@ -522,16 +533,29 @@ export class JsonToXlsx {
                 schemaCache,
                 enumsCache,
                 row,
-                subSchemaNames
+                subSchemaNames,
+                rootFieldCache,
+                pathPrefix ? [...pathPrefix, field.name] : undefined
             );
         }
 
+        // Extend local cache with relative dot-paths from rootFieldCache so nested fieldPath refs resolve.
+        let condCache = fieldCache;
+        if (rootFieldCache && pathPrefix) {
+            const prefix = pathPrefix.join('.') + '.';
+            condCache = new Map(fieldCache);
+            for (const [k, v] of rootFieldCache) {
+                if (k.startsWith(prefix)) {
+                    condCache.set(k.slice(prefix.length), v);
+                }
+            }
+        }
         for (const condition of parent.conditions) {
             JsonToXlsx.writeCondition(
                 worksheet,
                 table,
                 condition,
-                fieldCache
+                condCache
             );
         }
 
@@ -620,7 +644,10 @@ export class JsonToXlsx {
         fieldCache: Map<string, IRowField>
     ): string {
         const toExact = (sub: any): string => {
-            const f = fieldCache.get(sub.field.name);
+            const key = (sub.fieldPath?.length > 1)
+                ? (sub.fieldPath as string[]).join('.')
+                : sub.field.name;
+            const f = fieldCache.get(key) ?? fieldCache.get(sub.field.name);
             if (!f) {
                 throw new Error(`Condition refers to unknown field "${sub.field?.name}".`);
             }

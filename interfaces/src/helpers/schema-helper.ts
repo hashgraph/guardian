@@ -381,7 +381,6 @@ export class SchemaHelper {
                     hasCrossKeys = true;
                     const childPath = [...pathPrefix, key];
                     const childFields: SchemaField[] = (refField as any).fields || [];
-                    // Direct required targets (leaf one level inside this ref)
                     if (Array.isArray(val.required)) {
                         for (const fieldName of val.required) {
                             const childField = childFields.find(f => f.name === fieldName);
@@ -390,7 +389,6 @@ export class SchemaHelper {
                             }
                         }
                     }
-                    // Properties: either forbidden (=== false) or deeper nesting (recurse)
                     if (val.properties) {
                         for (const fieldName of Object.keys(val.properties)) {
                             const subVal = val.properties[fieldName];
@@ -400,7 +398,6 @@ export class SchemaHelper {
                                     elseTargets.push({ field: childField, fieldPath: [...childPath, fieldName] });
                                 }
                             } else {
-                                // Recurse if this is another ref field at the child level
                                 const subRefField = childFields.find(f => f.name === fieldName && f.isRef);
                                 if (subRefField) {
                                     const subResult = extractCrossFromLevel(
@@ -550,7 +547,6 @@ export class SchemaHelper {
                     });
                 }
                 const subSchema = schemaCache.get(field.type);
-                // Clone schema field array to avoid path mutations
                 field.fields = SchemaHelper.cloneFields(subSchema.fields);
                 field.conditions = subSchema.conditions;
             }
@@ -706,7 +702,6 @@ export class SchemaHelper {
             return result;
         };
 
-        // Build a nested JSON Schema object that requires the leaf field at each target's path.
         const buildCrossRequired = (targets?: { fieldPath: string[] }[]): any | undefined => {
             if (!targets?.length) { return undefined; }
             const root: any = {};
@@ -726,7 +721,6 @@ export class SchemaHelper {
             return Object.keys(root).length ? root : undefined;
         };
 
-        // Build a nested JSON Schema object that forbids the leaf field (property: false).
         const buildCrossForbidden = (targets?: { fieldPath: string[] }[]): any | undefined => {
             if (!targets?.length) { return undefined; }
             const root: any = {};
@@ -1102,7 +1096,6 @@ export class SchemaHelper {
             for (const t of allTargets) {
                 const path = t.fieldPath;
                 if (!path || path.length < 2) { continue; }
-                // Walk the path to find the IRI of the schema that owns the leaf field.
                 let iri: string | undefined = fieldNameToIRI.get(path[0]);
                 for (let i = 1; i < path.length - 1 && iri; i++) {
                     iri = schemaMap[iri]?.properties?.[path[i]]?.['$ref'];

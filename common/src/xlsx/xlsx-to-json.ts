@@ -407,6 +407,7 @@ export class XlsxToJson {
             row = table.end.r + 1;
             const fields: SchemaField[] = [];
             const allFields = new Map<string, SchemaField>();
+            const fieldPaths = new Map<string, string[]>();
 
             let parents: SchemaField[] = [];
             for (; row < range.e.r; row++) {
@@ -421,6 +422,7 @@ export class XlsxToJson {
                     allFields.set(field.title, field);
                     parents = parents.slice(0, groupIndex);
                     parents[groupIndex] = field;
+                    fieldPaths.set(field.title, parents.slice(0, groupIndex + 1).map(p => p.name));
                     if (groupIndex === 0) {
                         XlsxToJson.addFieldByName(worksheet, table, row, xlsxResult, fields, field);
                     } else {
@@ -475,6 +477,8 @@ export class XlsxToJson {
                     worksheet,
                     table,
                     fields,
+                    allFields,
+                    fieldPaths,
                     conditionCache,
                     row,
                     xlsxResult
@@ -865,6 +869,8 @@ export class XlsxToJson {
         worksheet: Worksheet,
         table: Table,
         fields: SchemaField[],
+        allFields: Map<string, SchemaField>,
+        fieldPaths: Map<string, string[]>,
         conditionCache: XlsxSchemaConditions[],
         row: number,
         xlsxResult: XlsxResult
@@ -922,11 +928,11 @@ export class XlsxToJson {
 
             if (result.op && Array.isArray(result.items)) {
                 const resolved = result.items.map(it => {
-                    const target = fields.find(f => f.title === it.fieldPath);
+                    const target = allFields.get(it.fieldPath) || fields.find(f => f.title === it.fieldPath);
                     if (!target) {
                         throw new Error(`Invalid target in ${result.op} condition: ${it.fieldPath}`);
                     }
-                    return { field: target, value: it.compareValue };
+                    return { field: target, value: it.compareValue, fieldPath: fieldPaths.get(it.fieldPath) };
                 });
 
                 const conditionKey = { op: result.op, items: resolved };
@@ -939,16 +945,17 @@ export class XlsxToJson {
                 }
                 return null;
             } else {
-                const target = fields.find((f) => f.title === result.fieldPath);
+                const target = allFields.get(result.fieldPath) || fields.find((f) => f.title === result.fieldPath);
                 if (!target) {
                     throw new Error('Invalid target');
                 }
+                const fieldPath = fieldPaths.get(result.fieldPath);
                 const condition = conditionCache.find(c => c.equal(target, result.compareValue));
                 if (condition) {
                     condition.addField(field, result.invert);
                     return null;
                 } else {
-                    const newCondition = new XlsxSchemaConditions(target, result.compareValue);
+                    const newCondition = new XlsxSchemaConditions(target, result.compareValue, fieldPath);
                     newCondition.addField(field, result.invert);
                     return newCondition;
                 }

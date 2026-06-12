@@ -1,38 +1,48 @@
 import { SchemaCondition, SchemaField } from '@guardian/interfaces';
 
-type SingleIf = { field: SchemaField; fieldValue: any };
+type SingleIf = { field: SchemaField; fieldValue: any; fieldPath?: string[] };
 type GroupIf = { OR: SingleIf[] } | { AND: SingleIf[] };
+
+function normalizePath(fieldPath?: string[]): string[] | undefined {
+    return Array.isArray(fieldPath) && fieldPath.length > 1 ? fieldPath : undefined;
+}
 
 function sameValue(a: any, b: any): boolean {
     return JSON.stringify(a) === JSON.stringify(b);
 }
 
 export class XlsxSchemaConditions {
-    private readonly single?: { field: SchemaField; value: any };
-    private readonly group?: { op: 'OR' | 'AND'; items: { field: SchemaField; value: any }[] };
+    private readonly single?: { field: SchemaField; value: any; fieldPath?: string[] };
+    private readonly group?: { op: 'OR' | 'AND'; items: { field: SchemaField; value: any; fieldPath?: string[] }[] };
 
     public readonly condition: SchemaCondition;
 
-    constructor(field: SchemaField, value: any);
-    constructor(group: { op: 'OR' | 'AND'; items: { field: SchemaField; value: any }[] });
-    constructor(arg1: any, value?: any) {
+    constructor(field: SchemaField, value: any, fieldPath?: string[]);
+    constructor(group: { op: 'OR' | 'AND'; items: { field: SchemaField; value: any; fieldPath?: string[] }[] });
+    constructor(arg1: any, value?: any, fieldPath?: string[]) {
         if (typeof arg1 === 'object' && value === undefined && arg1?.op && Array.isArray(arg1.items)) {
             this.group = { op: arg1.op, items: arg1.items };
+            const toPredicate = (i: any) => ({
+                field: i.field,
+                fieldValue: i.value,
+                fieldPath: normalizePath(i.fieldPath)
+            });
             const payload: GroupIf =
                 arg1.op === 'OR'
-                    ? { OR: arg1.items.map((i: any) => ({ field: i.field, fieldValue: i.value })) }
-                    : { AND: arg1.items.map((i: any) => ({ field: i.field, fieldValue: i.value })) };
+                    ? { OR: arg1.items.map(toPredicate) }
+                    : { AND: arg1.items.map(toPredicate) };
             this.condition = {
                 ifCondition: payload as any,
                 thenFields: [],
                 elseFields: []
             };
         } else {
-            this.single = { field: arg1 as SchemaField, value };
+            this.single = { field: arg1 as SchemaField, value, fieldPath: normalizePath(fieldPath) };
             this.condition = {
                 ifCondition: {
                     field: arg1 as SchemaField,
-                    fieldValue: value
+                    fieldValue: value,
+                    fieldPath: normalizePath(fieldPath)
                 } as any,
                 thenFields: [],
                 elseFields: []
