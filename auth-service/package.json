@@ -27,7 +27,7 @@
         "express": "5.2.1",
         "jsonwebtoken": "^8.5.1",
         "moment": "^2.29.4",
-        "moment-timezone": "^0.5.45",
+        "moment-timezone": "^0.6.2",
         "node-quickbooks": "^2.0.43",
         "node-vault": "^0.12.0",
         "pako": "^2.1.0",
