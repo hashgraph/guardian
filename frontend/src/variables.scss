@@ -2,19 +2,8 @@
     --font-family-poppins: 'Poppins', sans-serif;
     --font-family-inter: 'Inter', sans-serif;
 
-    --color-background: #F9FAFC;
     --color-primary: #4169E2;
     --color-secondary: #CDDDFD;
-
-    --color-grey-black-1: #181818;
-    --color-grey-black-2: #23252E;
-    --color-grey-1: #F9FAFC;
-    --color-grey-2: #EFF3F7;
-    --color-grey-3: #E1E7EF;
-    --color-grey-4: #B0B5BA;
-    --color-grey-5: #848FA9;
-    --color-grey-6: #495057;
-    --color-grey-white: #FFFFFF;
 
     --color-accent-red-1: #FF432A;
     --color-accent-red-2: #F5D7D7;
@@ -36,7 +25,6 @@
 
     --app-font-family: 'Lato', sans-serif;
     --primary-color: #4169E2;
-    --text-color: #000;
 
     /* PrimeNG styled-mode bridge: old flat palette names removed in the v18 migration,
        mapped to the new --p-* tokens so existing screens keep their colors. */
@@ -64,6 +52,80 @@
     --input-icon-color: #6c757d;
 
     --vh: 1vh;
+}
+
+:root, :root.guardian-theme-light {
+    --color-background: #F9FAFC;
+    --color-grey-black-1: #181818;
+    --color-grey-black-2: #23252E;
+    --color-grey-1: #F9FAFC;
+    --color-grey-2: #EFF3F7;
+    --color-grey-3: #E1E7EF;
+    --color-grey-4: #B0B5BA;
+    --color-grey-5: #848FA9;
+    --color-grey-6: #495057;
+    --color-grey-white: #FFFFFF;
+    --text-color: #000;
+
+    --guardian-header-color: #000;
+    --guardian-font-color: #23252E;
+    --guardian-background: #FFFFFF;
+    --guardian-hover: #F0F3FC;
+    --guardian-primary-background: #e1e7fa;
+    --guardian-secondary-background: #FFFFFF;
+    --guardian-success-background: #CAFDD9;
+    --guardian-failure-background: #FFEAEA;
+    --guardian-disabled-background: #EFF3F7;
+    --guardian-disabled-icon: #C4D0E1;
+    --guardian-dry-run-background: #f5f7fd;
+    --guardian-grey-background: #F9FAFC;
+    --guardian-grey-color-2: #E1E7EF;
+    --guardian-grey-color-3: #AAB7C4;
+    --guardian-grey-color-4: #6C7791;
+    --guardian-delete-background: #FFEAEA;
+    --guardian-border-color: #E1E7EF;
+    --guardian-shadow: #00000014;
+    --guardian-warning-background: #FFF6E3;
+    --formula-constant-background: #e1e7fa;
+    --formula-variable-background: #FFF6E3;
+    --formula-function-background: #fbd9ef;
+}
+
+:root.guardian-theme-dark {
+    --color-background: #1a1a1a;
+    --color-grey-black-1: #ffffff;
+    --color-grey-black-2: #e0e0e0;
+    --color-grey-1: #1a1a1a;
+    --color-grey-2: #2d2d2d;
+    --color-grey-3: #3d3d3d;
+    --color-grey-4: #5a5a5a;
+    --color-grey-5: #7a7a7a;
+    --color-grey-6: #a0a0a0;
+    --color-grey-white: #0d0d0d;
+    --text-color: #ffffff;
+
+    --guardian-header-color: #ffffff;
+    --guardian-font-color: #e0e0e0;
+    --guardian-background: #1a1a1a;
+    --guardian-hover: #2d2d2d;
+    --guardian-primary-background: #1e2a52;
+    --guardian-secondary-background: #0d0d0d;
+    --guardian-success-background: #1a3d2a;
+    --guardian-failure-background: #3d1a1a;
+    --guardian-disabled-background: #2d2d2d;
+    --guardian-disabled-icon: #4a4a4a;
+    --guardian-dry-run-background: #1a1f3d;
+    --guardian-grey-background: #252525;
+    --guardian-grey-color-2: #3d3d3d;
+    --guardian-grey-color-3: #5a5a5a;
+    --guardian-grey-color-4: #7a7a7a;
+    --guardian-delete-background: #3d1a1a;
+    --guardian-border-color: #3d3d3d;
+    --guardian-shadow: #00000066;
+    --guardian-warning-background: #3d2d1a;
+    --formula-constant-background: #1e2a52;
+    --formula-variable-background: #3d2d1a;
+    --formula-function-background: #3d1a3d;
 }
 
 @media (max-width: 810px) {

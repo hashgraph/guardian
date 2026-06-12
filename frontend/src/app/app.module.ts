@@ -87,6 +87,7 @@ import { CommonComponentsModule } from './modules/common/common-components.modul
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
+import { AppThemeService } from './services/app-theme.service';
 import { RecordService } from './services/record.service';
 import { StatisticsModule } from './modules/statistics/statistics.module';
 import { FormulasModule } from './modules/formulas/formulas.module';
@@ -331,7 +332,8 @@ const GuardianPreset = definePreset(Aura, {
                     cssLayer: {
                         name: 'primeng',
                         order: 'app-styles, primeng'
-                    }
+                    },
+                    darkModeSelector: '.guardian-theme-dark'
                 }
             }
         }),
@@ -339,4 +341,7 @@ const GuardianPreset = definePreset(Aura, {
     ]
 })
 export class AppModule {
+    constructor(appThemeService: AppThemeService) {
+        appThemeService.getCurrentTheme();
+    }
 }
