@@ -1,9 +1,10 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { ld as vcjs } from '@transmute/vc.js';
-import { Ed25519Signature2018, Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
+import * as vcjs from '@digitalbazaar/vc';
+import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
+import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { PrivateKey } from '@hiero-ledger/sdk';
-import { CheckResult } from '@transmute/jsonld-schema';
+import { CheckResult } from '../../helpers/jsonld-schema/schemas-to-context-impl.js';
 import { GenerateUUIDv4, ICredentialSubject, IVC, Schema, SignatureType } from '@guardian/interfaces';
 import { VcDocument } from './vc-document.js';
 import { VpDocument } from './vp-document.js';
@@ -195,7 +196,7 @@ export class VCJS {
     public async verify(json: any, documentLoader: DocumentLoaderFunction): Promise<boolean> {
         let result;
         if (json.proof.type === SignatureType.Ed25519Signature2018) {
-            result = await vcjs.verifyVerifiableCredential({
+            result = await vcjs.verifyCredential({
                 credential: json,
                 suite: [new Ed25519Signature2018()],
                 documentLoader,
@@ -467,7 +468,7 @@ export class VCJS {
     ): Promise<VcDocument> {
         const vc: any = vcDocument.getDocument();
         ContextHelper.clearContext(vc);
-        const verifiableCredential = await vcjs.createVerifiableCredential({
+        const verifiableCredential = await vcjs.issue({
             credential: vc,
             suite,
             documentLoader,
@@ -497,7 +498,7 @@ export class VCJS {
         documentLoader: DocumentLoaderFunction
     ): Promise<VpDocument> {
         const vp = vpDocument.toJsonTree();
-        const verifiablePresentation = await vcjs.createVerifiablePresentation({
+        const verifiablePresentation = await vcjs.signPresentation({
             presentation: vp,
             challenge: '123',
             suite,

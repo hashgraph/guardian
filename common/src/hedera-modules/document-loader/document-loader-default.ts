@@ -1,6 +1,7 @@
-import didContexts from '@transmute/did-context';
-import credentialsContexts from '@transmute/credentials-context';
-import securityContexts from '@transmute/security-context';
+import didContexts from 'did-context';
+import { contexts as credentialsContexts } from '@digitalbazaar/credentials-context';
+import securityContexts from '@digitalbazaar/security-context';
+import { BBS_V1_URL, BLS12381_2020_V1_CONTEXT, BLS12381_2020_V1_URL } from './contexts/bls12381-2020-v1.js';
 import { IDocumentFormat } from './document-format.js';
 import { DocumentLoader } from './document-loader.js';
 
@@ -17,13 +18,13 @@ export class DefaultDocumentLoader extends DocumentLoader {
         if ((didContexts.contexts as Map<string, object>).has(iri)) {
             return true;
         }
-        if ((credentialsContexts.contexts as Map<string, object>).has(iri)) {
+        if ((credentialsContexts as Map<string, object>).has(iri)) {
             return true;
         }
         if ((securityContexts.contexts as Map<string, object>).has(iri)) {
             return true;
         }
-        if (iri === 'https://w3id.org/security/bbs/v1') {
+        if (iri === BBS_V1_URL || iri === BLS12381_2020_V1_URL) {
             return true;
         }
         return false;
@@ -40,10 +41,10 @@ export class DefaultDocumentLoader extends DocumentLoader {
                 document: didContexts.contexts.get(iri),
             };
         }
-        if ((credentialsContexts.contexts as Map<string, object>).has(iri)) {
+        if ((credentialsContexts as Map<string, object>).has(iri)) {
             return {
                 documentUrl: iri,
-                document: credentialsContexts.contexts.get(iri),
+                document: credentialsContexts.get(iri),
             };
         }
         if ((securityContexts.contexts as Map<string, object>).has(iri)) {
@@ -52,10 +53,10 @@ export class DefaultDocumentLoader extends DocumentLoader {
                 document: securityContexts.contexts.get(iri),
             };
         }
-        if (iri === 'https://w3id.org/security/bbs/v1') {
+        if (iri === BBS_V1_URL || iri === BLS12381_2020_V1_URL) {
             return {
                 documentUrl: iri,
-                document: securityContexts.contexts.get(securityContexts.constants.BLS12381_2020_V1_URL)
+                document: BLS12381_2020_V1_CONTEXT,
             };
         }
         throw new Error('IRI not found: ' + iri);

@@ -1,18 +1,7 @@
 /**
  * Unit tests for inline sub-schema and enum handling in JsonToXlsx / XlsxResult.
  */
-import { createRequire } from 'module';
 import { assert } from 'chai';
-
-const require = createRequire(import.meta.url);
-require.cache[require.resolve('@transmute/jsonld')] = {
-    id: require.resolve('@transmute/jsonld'),
-    filename: require.resolve('@transmute/jsonld'),
-    loaded: true,
-    exports: {},
-};
-
-// Dynamic imports must come after the stub above.
 const { JsonToXlsx } = await import('../../../dist/xlsx/json-to-xlsx.js');
 const { XlsxToJson } = await import('../../../dist/xlsx/xlsx-to-json.js');
 const { XlsxResult } = await import('../../../dist/xlsx/models/xlsx-result.js');
