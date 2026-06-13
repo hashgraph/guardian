@@ -20,7 +20,7 @@
     height: calc(100vh - var(--header-height));
     overflow: auto;
     transition: left 0.125s ease-in-out, max-height 0.25s ease-in-out;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
 }
 
 body {
@@ -349,7 +349,7 @@ body {
             }
 
             .p-frozen-column {
-                background: #f9fafc;
+                background: var(--guardian-grey-background, #f9fafc);
             }
         }
 
@@ -442,7 +442,7 @@ body {
     border-radius: 0px !important;
     border-bottom-left-radius: 8px !important;
     border-bottom-right-radius: 8px !important;
-    background: #fff;
+    background: var(--guardian-background);
     position: relative;
 }
 

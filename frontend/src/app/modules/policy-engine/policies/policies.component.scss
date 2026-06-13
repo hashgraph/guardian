@@ -23,7 +23,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--color-background, #fff);
     position: fixed;
     z-index: 99;
     top: var(--header-height);
@@ -196,7 +196,7 @@
 
     height: 64px !important;
     border-radius: 8px !important;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
 }
 
@@ -463,7 +463,7 @@
 
 .toolbar-btn-secondary {
     ::ng-deep .p-button {
-        background: #fff;
+        background: var(--guardian-background, #fff);
         border: 1px solid var(--guardian-primary-color) !important;
         font-family: Inter, sans-serif;
         font-size: 1px;
@@ -514,7 +514,9 @@
 .search-policy-input {
     width: 250px;
     height: 40px;
-    border: 1px solid #e1e7ef;
+    border: 1px solid var(--guardian-border-color, #e1e7ef);
+    background: var(--guardian-background, #fff);
+    color: var(--guardian-font-color, #23252E);
     border-radius: 6px;
     padding-left: 16px;
 }
@@ -524,11 +526,11 @@
 }
 
 .policy-grid-paginator {
-    background: #f9fafc;
+    background: var(--guardian-grey-background);
 }
 
 .policy-grid-header-row {
-    background: #f9fafc;
+    background: var(--guardian-grey-background);
     box-shadow: none !important;
 }
 
@@ -637,7 +639,7 @@
     }
 
     .p-inputtext {
-        color: #848fa9;
+        color: var(--guardian-grid-color, #848fa9);
         font-family: Inter, sans-serif;
         font-size: 14px;
         font-style: normal;
@@ -678,7 +680,7 @@
         font-style: normal;
         font-weight: 500;
         margin-left: 10px;
-        background-color: #ffffff;
+        background-color: var(--guardian-background, #ffffff);
         height: 40px;
         border: 1px solid var(--color-secondary);
         border-radius: 6px;
@@ -693,7 +695,7 @@
         font-style: normal;
         font-weight: 500;
         margin-left: 10px;
-        background-color: #ffffff;
+        background-color: var(--guardian-background, #ffffff);
         border: 1px solid #cdddfd;
     }
 }
@@ -720,7 +722,7 @@
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
-    background-color: #ffffff;
+    background-color: var(--guardian-background, #ffffff);
     height: 40px;
     border: none !important;
     border-radius: 6px;
@@ -874,7 +876,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--color-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -939,7 +941,7 @@
 }
 
 .grid-table-container {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
     overflow: hidden;
@@ -951,7 +953,8 @@
         .p-datatable-scrollable-body,
         .p-datatable-wrapper {
             max-height: calc(-380px + 100vh);
-            background: #fff;
+            background: var(--guardian-background, #fff);
+            color: var(--guardian-font-color, #23252E);
         }
 
         .p-datatable-table,
@@ -960,11 +963,20 @@
         .p-datatable-thead > tr > th,
         .p-datatable-tbody > tr,
         .p-datatable-tbody > tr > td {
-            background: #fff;
+            background: var(--guardian-background, #fff);
+            color: var(--guardian-font-color, #23252E);
+        }
+
+        .p-datatable-thead > tr > th {
+            color: var(--guardian-grid-color, #848FA9);
+        }
+
+        .p-datatable-tbody > tr > td {
+            border-bottom-color: var(--guardian-border-color, #e9ecef);
         }
 
         .p-datatable-frozen-column {
-            background: #fff;
+            background: var(--guardian-background, #fff);
             z-index: 3 !important;
         }
 
@@ -1150,7 +1162,7 @@
     right: 0;
     width: 100%;
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 
     .selected-info-block {
         display: flex;
