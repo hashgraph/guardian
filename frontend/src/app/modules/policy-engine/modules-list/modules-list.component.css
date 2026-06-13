@@ -295,7 +295,7 @@ button[disabled] {
     margin-left: 6px;
     height: 40px;
     padding: 8px 16px 8px 8px;
-    color: var(--color-grey-white, #FFF);
+    color: var(--guardian-on-primary-color, #FFF);
     border-radius: 8px;
 }
 

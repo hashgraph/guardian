@@ -126,11 +126,11 @@
         background: var(--color-primary);
 
         .tag-icon {
-            fill: var(--color-grey-white, #ffffff) !important;
+            fill: var(--guardian-on-primary-color, #ffffff) !important;
         }
 
         .name, .count {
-            color: var(--color-grey-white, #ffffff) !important;
+            color: var(--guardian-on-primary-color, #ffffff) !important;
         }
     }
 }

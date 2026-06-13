@@ -767,7 +767,7 @@ a {
                 font-style: normal;
                 font-weight: 500;
                 line-height: 30px;
-                color: var(--color-grey-white, #FFF);
+                color: var(--guardian-on-primary-color, #FFF);
             }
 
             &:disabled {
@@ -831,7 +831,7 @@ a {
 
         .grey-row {
             height: 24px;
-            background-color: var(--color-grey-white, #FFF);
+            background-color: var(--color-grey-white);
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
 
@@ -846,7 +846,7 @@ a {
         }
 
         .guardian-grid-row {
-            background-color: var(--color-grey-white, #FFF);
+            background-color: var(--color-grey-white);
         }
 
         .parent-row-cell {

@@ -27,7 +27,7 @@
 
     background-color: #fff;
     border-radius: 50%;
-    fill: var(--color-grey-white, #fff);
+    fill: var(--guardian-on-primary-color, #fff);
     filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.08));
     position: fixed;
 
@@ -157,8 +157,8 @@
 }
 
 .icon-color-grey:hover {
-    fill: var(--color-grey-white);
-    color: var(--color-grey-white);
+    fill: var(--guardian-on-primary-color);
+    color: var(--guardian-on-primary-color);
 }
 
 .cursor-pointer {

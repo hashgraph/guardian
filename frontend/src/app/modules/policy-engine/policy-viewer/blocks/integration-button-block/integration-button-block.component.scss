@@ -22,7 +22,7 @@
 
 .btn-approve {
     background: var(--color-accent-green-1) !important;
-    color: var(--color-grey-white) !important;
+    color: var(--guardian-on-primary-color) !important;
     border: none !important;
     border-radius: 6px;
     display: inline-block;
@@ -34,7 +34,7 @@
 .btn-reject {
     background: var(--color-accent-red-1) !important;
     border-radius: 6px;
-    color: var(--color-grey-white) !important;
+    color: var(--guardian-on-primary-color) !important;
     border: none !important;
     display: inline-block;
     padding: 2px 8px;

@@ -535,7 +535,7 @@
         margin-left: 6px;
         height: 40px;
         padding: 8px 16px 8px 8px;
-        color: var(--color-grey-white, #FFF);
+        color: var(--guardian-on-primary-color, #FFF);
         font-family: Inter;
         font-size: 14px;
         font-style: normal;
@@ -756,7 +756,7 @@
     font-weight: 500;
     line-height: 16px;
     background: var(--color-primary, #0031ff) !important;
-    color: var(--color-grey-white, #fff) !important;
+    color: var(--guardian-on-primary-color, #fff) !important;
 }
 
 .btn-create-multipolicy {

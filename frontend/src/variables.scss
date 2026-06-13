@@ -54,7 +54,27 @@
 
     --vh: 1vh;
 
+    /* App theme tokens — single source of truth for every theme-dependent color.
+       These MUST stay in this global stylesheet (not in a component-scoped file), so
+       the :root.guardian-theme-<name> selectors actually match the <html> element.
+       Add a new theme (e.g. grey) by appending one more :root.guardian-theme-<name>
+       block with the same token names; no component changes are needed. Light is also
+       applied to bare :root so colors are valid before the theme class is set. */
+
     /* Guardian theme-dependent tokens - light mode */
+    --color-background: #F9FAFC;
+    --color-grey-black-1: #181818;
+    --color-grey-black-2: #23252E;
+    --color-grey-1: #F9FAFC;
+    --color-grey-2: #EFF3F7;
+    --color-grey-3: #E1E7EF;
+    --color-grey-4: #B0B5BA;
+    --color-grey-5: #848FA9;
+    --color-grey-6: #495057;
+    --color-grey-white: #FFFFFF;
+    --guardian-on-primary-color: #FFFFFF;
+    --text-color: #000;
+
     --guardian-header-color: #000;
     --guardian-font-color: #23252E;
     --guardian-background: #FFFFFF;
@@ -85,21 +105,21 @@
 }
 
 :root.guardian-theme-dark {
-    --color-background: #1E1E1E;
-    --color-grey-black-1: #E8E8E8;
-    --color-grey-black-2: #D4D4D4;
-    --color-grey-1: #1E1E1E;
-    --color-grey-2: #2D2D2D;
-    --color-grey-3: #3A3A3A;
-    --color-grey-4: #4A4A4A;
-    --color-grey-5: #6A6A6A;
-    --color-grey-6: #808080;
-    --color-grey-white: #1A1A1A;
-
-    --text-color: #E8E8E8;
+    --color-background: #10131A;
+    --color-grey-black-1: #F5F7FB;
+    --color-grey-black-2: #E9EDF5;
+    --color-grey-1: #10131A;
+    --color-grey-2: #171B24;
+    --color-grey-3: #303746;
+    --color-grey-4: #778299;
+    --color-grey-5: #AAB4C5;
+    --color-grey-6: #C3CAD8;
+    --color-grey-white: #171B24;
+    --guardian-on-primary-color: #FFFFFF;
+    --text-color: #F5F7FB;
 
     --header-color-primary: #CCCCCC;
-    --header-preloader-color: #1E1E1E;
+    --header-preloader-color: #10131A;
     --header-color-primary-dark: rgba(255, 255, 255, 0.9);
 
     --button-primary-color: #4169E2;
@@ -108,33 +128,33 @@
     --input-icon-color: #9A9A9A;
 
     /* Guardian theme-dependent tokens - dark mode */
-    --guardian-header-color: #E8E8E8;
-    --guardian-font-color: #E8E8E8;
-    --guardian-background: #252525;
-    --guardian-hover: #323232;
-    --guardian-primary-background: #2E3A5F;
-    --guardian-secondary-color: #2A2A2A;
-    --guardian-secondary-background: #2A2A2A;
-    --guardian-success-background: #1E4620;
-    --guardian-failure-background: #4A1F1F;
-    --guardian-disabled-color: #707070;
-    --guardian-disabled-background: #2D2D2D;
-    --guardian-disabled-icon: #5A5A5A;
-    --guardian-dry-run-background: #2E3A5F;
-    --guardian-grey-color: #2D2D2D;
-    --guardian-grey-background: #1E1E1E;
-    --guardian-grey-color-2: #3A3A3A;
-    --guardian-grey-color-3: #4A4A4A;
-    --guardian-grey-color-4: #6A6A6A;
-    --guardian-delete-background: #4A1F1F;
-    --guardian-grid-color: #707070;
-    --guardian-border-color: #3A3A3A;
-    --guardian-shadow: #00000050;
-    --guardian-warning-background: #4A3A1F;
-    --formula-constant-background: #2E3A5F;
-    --formula-variable-background: #4A3A1F;
-    --formula-function-background: #4A1F4A;
-    --formula-text-background: #1F4A1F;
+    --guardian-header-color: #F5F7FB;
+    --guardian-font-color: #F5F7FB;
+    --guardian-background: #171B24;
+    --guardian-hover: #202735;
+    --guardian-primary-background: #1C2742;
+    --guardian-secondary-color: #F5F7FB;
+    --guardian-secondary-background: #171B24;
+    --guardian-success-background: #12351F;
+    --guardian-failure-background: #3A1717;
+    --guardian-disabled-color: #778299;
+    --guardian-disabled-background: #202735;
+    --guardian-disabled-icon: #566174;
+    --guardian-dry-run-background: #1C2742;
+    --guardian-grey-color: #303746;
+    --guardian-grey-background: #10131A;
+    --guardian-grey-color-2: #303746;
+    --guardian-grey-color-3: #566174;
+    --guardian-grey-color-4: #AAB4C5;
+    --guardian-delete-background: #3A1717;
+    --guardian-grid-color: #AAB4C5;
+    --guardian-border-color: #303746;
+    --guardian-shadow: #00000040;
+    --guardian-warning-background: #3A2E12;
+    --formula-constant-background: #1C2742;
+    --formula-variable-background: #3A2E12;
+    --formula-function-background: #3A1730;
+    --formula-text-background: #12351F;
 }
 
 @media (max-width: 810px) {

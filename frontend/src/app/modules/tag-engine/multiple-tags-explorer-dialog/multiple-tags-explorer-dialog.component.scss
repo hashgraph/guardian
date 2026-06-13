@@ -120,7 +120,7 @@
             border-radius: 50%;
             width: 16px;
             height: 16px;
-            color: var(--color-grey-white);
+            color: var(--guardian-on-primary-color);
             font-family: Inter, sans-serif;
             font-size: 12px;
             font-style: normal;
@@ -132,11 +132,11 @@
         background: var(--color-primary);
 
         .tag-icon {
-            fill: var(--color-grey-white, #ffffff) !important;
+            fill: var(--guardian-on-primary-color, #ffffff) !important;
         }
 
         .name {
-            color: var(--color-grey-white, #ffffff) !important;
+            color: var(--guardian-on-primary-color, #ffffff) !important;
         }
     }
 }

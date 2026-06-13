@@ -22,11 +22,11 @@
 
         &[selected="true"] {
             background: var(--color-primary) !important;
-            color: var(--color-grey-white) !important;
+            color: var(--guardian-on-primary-color) !important;
         }
 
         &:hover {
-            background: #E1E7EF;
+            background: var(--guardian-grey-background, #E1E7EF);
         }
     }
 }

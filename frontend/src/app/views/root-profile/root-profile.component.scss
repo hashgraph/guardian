@@ -199,7 +199,7 @@
             height: 40px;
             border-radius: 8px;
             background: var(--primary-color);
-            color: var(--color-grey-white);
+            color: var(--guardian-on-primary-color);
             font-family: Inter, sans-serif;
             font-size: 14px;
             font-style: normal;
@@ -451,6 +451,7 @@ button[disabled] {
 
         .view-document-button {
             cursor: pointer;
+            color: var(--color-primary);
             display: flex;
             column-gap: 8px;
             height: 28px;
@@ -458,6 +459,12 @@ button[disabled] {
             align-items: center;
             border-radius: 6px;
             border: 1px solid var(--color-secondary);
+
+            i,
+            ::ng-deep svg {
+                color: var(--color-primary);
+                fill: var(--color-primary);
+            }
 
             span {
                 width: min-content;
