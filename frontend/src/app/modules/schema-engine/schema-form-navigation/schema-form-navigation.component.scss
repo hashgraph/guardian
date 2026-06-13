@@ -2,7 +2,7 @@
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 6px;
     padding: 8px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: relative;
     width: 100%;
     overflow-y: auto;

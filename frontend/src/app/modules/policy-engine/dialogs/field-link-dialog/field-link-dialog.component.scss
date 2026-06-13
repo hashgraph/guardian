@@ -11,7 +11,7 @@
         font-size: 24px;
         font-weight: 600;
         line-height: 32px;
-        color: #181818;
+        color: var(--guardian-font-color, #181818);
         margin-bottom: 24px;
     }
 
@@ -82,7 +82,7 @@
     flex-direction: row;
     margin-bottom: 20px;
     border: 1px solid #C4D0E1;
-    background: #F9FAFC;
+    background: var(--guardian-grey-background, #F9FAFC);
     width: 250px;
     height: 42px;
     min-height: 42px;

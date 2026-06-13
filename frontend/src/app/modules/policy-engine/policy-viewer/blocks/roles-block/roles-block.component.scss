@@ -5,7 +5,7 @@
     bottom: 0;
     top: 0;
     display: block;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .loading {
@@ -40,7 +40,7 @@ h2 {
 }
 
 .title {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     display: block;
     margin-top: 20px;
     text-align: center;
@@ -50,7 +50,7 @@ h2 {
 }
 
 .description {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     display: block;
     text-align: center;
     font-size: 20px;
@@ -126,7 +126,7 @@ form {
     bottom: 0;
     width: 100%;
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
     padding-left: calc(var(--header-width-expand) + 48px);
     transition: padding-left 0.125s ease-in-out;
     z-index: 999;

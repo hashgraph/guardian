@@ -42,7 +42,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: fixed;
     z-index: 101;
     top: var(--header-height);
@@ -57,7 +57,7 @@
 }
 
 .record-loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -172,7 +172,7 @@ a.go-back-link svg {
 .policy-header {
     display: flex;
     flex-direction: column;
-    background: #ffffff;
+    background: var(--guardian-background, #ffffff);
     padding: 25px 40px 0 48px;
     font-size: 20px;
 }
@@ -228,7 +228,7 @@ a.go-back-link svg {
     //flex-direction: column;
     gap: 24px;
     padding: 24px 20px 24px 48px;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
     overflow: auto;
 }
 
@@ -239,7 +239,7 @@ a.go-back-link svg {
     right: 25px;
     bottom: 0;
     // overflow: auto;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
 }
 
 .policy-container[hidden-container="true"] {
@@ -247,7 +247,7 @@ a.go-back-link svg {
     opacity: 0;
     z-index: -1;
     pointer-events: none;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
 }
 
 .second-policy-container {
@@ -255,7 +255,7 @@ a.go-back-link svg {
     flex-direction: column;
     //gap: 24px;
     padding: 20px 48px;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
 }
 
 .second-policy-container[policy-status="DEMO"],
@@ -265,7 +265,7 @@ a.go-back-link svg {
     right: 25px;
     bottom: 0;
     // overflow: auto;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
 }
 
 .second-policy-container[hidden-container="true"] {
@@ -273,7 +273,7 @@ a.go-back-link svg {
     opacity: 0;
     z-index: -1;
     pointer-events: none;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
 }
 
 .policy-header span {
@@ -383,7 +383,7 @@ a.go-back-link svg {
     box-sizing: border-box;
     z-index: 150;
     font-size: 20px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     border-bottom: 1px solid #000000;
     box-shadow: 0px 0px 1px 1px rgb(179 179 179);
     padding: 3px 10px 0px 10px;
@@ -758,7 +758,7 @@ a.go-back-link svg {
 
     .policy-status {
         padding: 6px 12px;
-        background: #E1E7EF;
+        background: var(--guardian-grey-background, #E1E7EF);
         margin: 4px 16px;
         border-radius: 6px;
         color: #6f7279;
@@ -786,13 +786,13 @@ a.go-back-link svg {
 :host {
     ::ng-deep {
         .p-button-outlined {
-            background-color: #ffffff !important;
+            background-color: var(--guardian-background, #ffffff) !important;
         }
     }
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -859,7 +859,7 @@ a.go-back-link svg {
     right: 0;
     width: 100%;
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 
     ::ng-deep {
         .p-button {
@@ -1049,7 +1049,7 @@ a.go-back-link svg {
         position: relative;
         width: 50px;
         height: 26px;
-        background-color: #E1E7EF;
+        background-color: var(--guardian-grey-background, #E1E7EF);
         border-radius: 20px;
         cursor: pointer;
         transition-duration: .2s;
@@ -1063,7 +1063,7 @@ a.go-back-link svg {
         height: 10px;
         width: 10px;
         left: 5px;
-        background-color: #fff;
+        background-color: var(--guardian-background, #fff);
         border-radius: 50%;
         transition-duration: .2s;
         box-shadow: 5px 2px 7px rgba(8, 8, 8, 0.26);
@@ -1073,7 +1073,7 @@ a.go-back-link svg {
     input:checked+.toggleSwitch::after {
         transform: translateX(100%);
         transition-duration: .2s;
-        background-color: white;
+        background-color: var(--guardian-background, white);
     }
 
     input:checked+.toggleSwitch {
@@ -1102,7 +1102,7 @@ a.go-back-link svg {
 }
 
 .dialog-grid-body {
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .grid-row-header {

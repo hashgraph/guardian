@@ -1,5 +1,5 @@
 .demo-menu {
-    background: white  !important;
+    background: var(--guardian-background, white)  !important;
     max-height: 345px;
     height: auto;
     width: 470px;
@@ -211,7 +211,7 @@ a[hidden="true"] {
 
 .user-balance {
     display: inline-block;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     border-radius: 20px;
     padding: 0px 14px;
     box-sizing: border-box;
@@ -284,7 +284,7 @@ a[hidden="true"] {
     bottom: 0px;
     right: 2px;
     height: 2px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .only-active {
@@ -351,7 +351,7 @@ a[hidden="true"] {
 .mobile-menu-button .bar {
     height: 3px;
     width: 100%;
-    background-color: white;
+    background-color: var(--guardian-background, white);
     border-radius: 10px;
 }
 
@@ -449,7 +449,7 @@ a[hidden="true"] {
         z-index: 1001;
         top: 0;
         left: 0;
-        background-color: white;
+        background-color: var(--guardian-background, white);
         overflow-x: hidden;
         transition: 0.2s;
     }
@@ -587,7 +587,7 @@ a[hidden="true"] {
         padding: 0 8px;
         margin-bottom: 10px;
         margin-left: -8px;
-        background-color: white;
+        background-color: var(--guardian-background, white);
         font-size: 20px;
         transition: 0.8s;
     }

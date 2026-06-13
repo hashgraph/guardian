@@ -33,7 +33,7 @@
             padding: 16px;
             border-radius: 8px;
             border: 1px solid #C4D0E1;
-            background: #F9FAFC;
+            background: var(--guardian-grey-background, #F9FAFC);
 
             .filter-row {
                 margin-bottom: 16px;
@@ -224,7 +224,7 @@
                 }
 
                 &:hover {
-                    background: #f1f1f1;
+                    background: var(--guardian-grey-background, #f1f1f1);
                 }
             }
         }

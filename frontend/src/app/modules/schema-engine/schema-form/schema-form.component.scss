@@ -54,7 +54,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
+            background: var(--guardian-grey-background, #F9FAFC);
             border: 1px solid #E1E7EF;
             padding: 16px;
             border-radius: 8px;
@@ -64,7 +64,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
+            background: var(--guardian-grey-background, #F9FAFC);
             border: 1px solid #E1E7EF;
             padding: 16px;
             border-radius: 8px;
@@ -77,7 +77,7 @@ form {
         }
 
         .accordion-container {
-            background: #f9fafc;
+            background: var(--guardian-grey-background, #f9fafc);
         }
 
         .sub-schema-geo,
@@ -85,7 +85,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
+            background: var(--guardian-grey-background, #F9FAFC);
             border: 1px solid #E1E7EF;
             padding: 16px;
             border-radius: 8px;

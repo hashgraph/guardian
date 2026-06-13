@@ -18,7 +18,7 @@
     --pc-del-color: #eb0303;
     --pc-required-color: #eb0303;
     --pc-readonly-text-color: rgba(0, 0, 0, .45);
-    --pc-background-color: #fff;
+    --pc-background-color: var(--guardian-background, #fff);
     --pc-warning-border-light: #ff6b6b;
     --pc-warning-bg-light: #ffe9ea;
     --pc-warning-shadow: #ff6b6bcc;

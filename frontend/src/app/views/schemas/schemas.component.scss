@@ -23,7 +23,7 @@
 
 .tabview-label {
     padding: 10px 25px 10px 25px;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
     text-align: center;
     font-family: Inter, sans-serif;
     font-size: 14px;
@@ -78,13 +78,13 @@
         font-style: normal;
         font-weight: 500;
         margin-left: 10px;
-        background-color: #ffffff !important;
+        background-color: var(--guardian-background, #ffffff) !important;
         border: 1px solid #cdddfd;
     }
 }
 
 .loading {
-    background: #f9fafc70;
+    background: color-mix(in srgb, var(--guardian-grey-background) 44%, transparent);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -511,7 +511,7 @@ a {
 
 .toolbar-btn-secondary {
     ::ng-deep .p-button {
-        background: #fff;
+        background: var(--guardian-background, #fff);
         border: 1px solid var(--color-primary) !important;
         font-family: Inter, sans-serif;
         font-size: 1px;
@@ -552,7 +552,7 @@ a {
         font-size: 14px;
         font-style: normal;
         font-weight: 500;
-        background-color: #ffffff;
+        background-color: var(--guardian-background, #ffffff);
         height: 48px;
         border: none !important;
         border-radius: 8px;
@@ -730,7 +730,7 @@ a {
     right: 0;
     width: 100%;
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 
     .selected-info-block {
         display: flex;
@@ -886,7 +886,7 @@ a {
 
             .btn-configure {
                 padding: 4px 12px;
-                background: #fff;
+                background: var(--guardian-background, #fff);
                 border: 1px solid var(--color-secondary);
                 border-radius: 4px;
                 color: var(--color-primary);

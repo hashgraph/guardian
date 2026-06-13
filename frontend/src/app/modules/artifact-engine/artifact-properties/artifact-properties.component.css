@@ -1,7 +1,7 @@
 .artifact-list {
     border: solid 1px #ccc;
     min-height: 60px;
-    background: white;
+    background: var(--guardian-background, white);
     border-radius: 4px;
     display: block;
     width: 97%;
@@ -19,7 +19,7 @@
     gap: 10px;
     box-sizing: border-box;
     cursor: move;
-    background: white;
+    background: var(--guardian-background, white);
     font-size: 14px;
     position: relative;
 }

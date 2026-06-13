@@ -34,7 +34,7 @@
             font-size: 32px;
             line-height: 40px;
             vertical-align: middle;
-            color: #23252e;
+            color: var(--guardian-font-color, #23252e);
             margin-top: 16px;
             margin-bottom: 16px;
         }
@@ -95,7 +95,7 @@
             height: 100%;
 
             .document-content {
-                background: #f9fafc;
+                background: var(--guardian-grey-background, #f9fafc);
                 padding: 24px 48px;
                 position: absolute;
                 left: 0px;
@@ -161,7 +161,7 @@
                     width: 100%;
                     overflow: auto;
                     padding: 24px;
-                    background: #fff;
+                    background: var(--guardian-background, #fff);
 
                     .json {
                         word-break: keep-all;

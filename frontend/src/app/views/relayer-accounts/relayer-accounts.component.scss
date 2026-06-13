@@ -35,7 +35,7 @@
     height: 40px;
     padding: 8px 16px 8px 8px;
     border-radius: 8px;
-    background-color: #ffffff !important;
+    background-color: var(--guardian-background, #ffffff) !important;
 }
 
 .module-actions-buttons-container svg {

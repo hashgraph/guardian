@@ -47,7 +47,7 @@
 }
 
 .synchronization-time .synchronization-time-update:hover {
-    background: #f1f1f1;
+    background: var(--guardian-grey-background, #f1f1f1);
 }
 
 ::ng-deep {
@@ -365,7 +365,7 @@
 }
 
 .tab-item:hover {
-    background: #f1f1f1;
+    background: var(--guardian-grey-background, #f1f1f1);
 }
 
 .tab-item[selected="true"] {

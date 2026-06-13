@@ -3,7 +3,7 @@
     display: flex;
     border-radius: 8px;
     border: 1px solid #e1e7ef;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.08);
     margin-bottom: 32px;
     overflow-x: hidden;
@@ -28,7 +28,7 @@
     flex-direction: column;
     border-radius: 8px;
     border: 1px solid #e1e7ef;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.08);
     margin-bottom: 32px;
     padding: 16px;
@@ -49,7 +49,7 @@
 }
 
 .form-label {
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
     font-size: 12px;
     font-style: normal;
@@ -59,7 +59,7 @@
 .checkbox-label {
     margin-left: 12px;
     margin-right: 12px;
-    color: #23252e;
+    color: var(--guardian-font-color, #23252e);
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -325,7 +325,7 @@
     right: 0;
     bottom: 0;
     z-index: 1;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     justify-content: center;
     align-items: center;
 }
@@ -470,7 +470,7 @@
 }
 
 .mat-checkbox-inner-container {
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .sub-schema-component {
@@ -485,7 +485,7 @@
 
 .sub-schema-version {
     font-size: 12px;
-    background: #e0e0e0;
+    background: var(--guardian-grey-background, #e0e0e0);
     padding: 2px 9px;
     border-radius: 10px;
     position: relative;
@@ -536,12 +536,12 @@
 
 .edit-button {
     border-radius: 6px;
-    background-color: white !important;
+    background-color: var(--guardian-background, white) !important;
 
     &.danger {
         color: red !important;
         border-color: red !important;
-        background-color: white !important;
+        background-color: var(--guardian-background, white) !important;
     }
 }
 
@@ -591,7 +591,7 @@
         padding: 4px 8px;
         border-radius: 6px;
         border: 1px solid var(--color-grey-3);
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;

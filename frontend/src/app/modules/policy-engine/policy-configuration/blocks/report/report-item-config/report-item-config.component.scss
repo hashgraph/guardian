@@ -12,7 +12,7 @@
 .file-action-button {
     //height: 100%;
     width: 23px;
-    background: white;
+    background: var(--guardian-background, white);
     border: none;
     margin-top: 12px;
 

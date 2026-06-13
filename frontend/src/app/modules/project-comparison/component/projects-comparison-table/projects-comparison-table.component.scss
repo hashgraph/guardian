@@ -1,6 +1,6 @@
 ::ng-deep {
     .menu {
-        background: white !important;
+        background: var(--guardian-background, white) !important;
         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.08) !important;
     }
 
@@ -285,7 +285,7 @@ tr {
 
 .document-title {
     min-width: 350px !important;
-    background: #fff !important;
+    background: var(--guardian-background, #fff) !important;
     font-size: 18px !important;
     height: 55px !important;
     padding: 16px 16px !important;

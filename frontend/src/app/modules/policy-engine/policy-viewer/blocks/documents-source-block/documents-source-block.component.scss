@@ -1,7 +1,7 @@
 .content {
     position: relative;
     display: block;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     width: 100%;
 }
 
@@ -28,7 +28,7 @@
 .grid-filters {
     display: flex;
     gap: 16px;
-    background-color: #f9fafc;
+    background-color: var(--guardian-grey-background, #f9fafc);
     flex-wrap: wrap;
     height: 40px;
 }
@@ -283,7 +283,7 @@ tr.detailed-row {
     border-radius: 10px;
     content: "";
     border: 2px solid rgba(0, 0, 0, 0.3);
-    background: white;
+    background: var(--guardian-background, white);
 }
 
 .timeline-item:last-child {

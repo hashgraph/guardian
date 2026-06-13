@@ -23,7 +23,7 @@
   right: 0;
   width: 100%;
   border-top: 1px solid var(--color-grey-3, #E1E7EF);
-  background: #FFF;
+  background: var(--guardian-background, #FFF);
 
   ::ng-deep {
     .p-button {

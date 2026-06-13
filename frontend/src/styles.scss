@@ -11,7 +11,7 @@
 html,
 body {
     height: 100%;
-    background-color: #F9FAFC;
+    background-color: var(--color-background, #F9FAFC);
 }
 
 .p-dialog-mask {
@@ -848,5 +848,34 @@ svg-icon.svg-icon-32 {
     &:hover::before {
         opacity: 1;
         color: white;
+    }
+}
+
+/* CodeMirror is a global library import with a hard-coded light surface; theme it for dark mode. */
+:root.guardian-theme-dark {
+    .CodeMirror {
+        background: var(--guardian-background);
+        color: var(--guardian-font-color);
+    }
+
+    .CodeMirror-gutters {
+        background: var(--guardian-grey-background);
+        border-right-color: var(--guardian-border-color);
+    }
+
+    .CodeMirror-linenumber {
+        color: var(--guardian-grid-color);
+    }
+
+    .CodeMirror-cursor {
+        border-left-color: var(--guardian-font-color);
+    }
+
+    .CodeMirror-selected {
+        background: var(--guardian-hover);
+    }
+
+    .CodeMirror-activeline-background {
+        background: var(--guardian-hover);
     }
 }

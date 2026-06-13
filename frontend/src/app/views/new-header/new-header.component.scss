@@ -416,7 +416,7 @@
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: #fff;
+        background: var(--guardian-background, #fff);
         transition: transform 0.2s ease-in-out;
         display: flex;
         align-items: center;

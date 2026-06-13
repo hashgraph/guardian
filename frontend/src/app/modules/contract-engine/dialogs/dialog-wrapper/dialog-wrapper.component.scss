@@ -14,7 +14,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     display: flex;
     align-items: center;
     justify-items: center;

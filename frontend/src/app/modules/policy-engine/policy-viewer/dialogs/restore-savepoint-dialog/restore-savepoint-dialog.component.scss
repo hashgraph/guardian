@@ -48,7 +48,7 @@
     height: 32px;
     border-radius: 8px;
     border: none;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     color: var(--color-primary, #0031ff);
     cursor: pointer;
 
@@ -59,7 +59,7 @@
     &.danger {
         color: #E11D48;
         border-color: #fff;
-        background: #fff;
+        background: var(--guardian-background, #fff);
     }
 }
 
@@ -84,7 +84,7 @@
 }
 
 .list {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     border: 1px solid var(--color-grey-3, #E1E7EF);
     border-radius: 12px;
     overflow: hidden;
@@ -159,7 +159,7 @@
         left: calc(-1 * var(--dlg-pad-x));
         right: calc(-1 * var(--dlg-pad-x));
         height: 1px;
-        background: #E1E7EF;
+        background: var(--guardian-grey-background, #E1E7EF);
     }
 }
 

@@ -1,5 +1,5 @@
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: fixed;
     z-index: 99;
     top: var(--header-height);
@@ -380,7 +380,7 @@
 }
 
 .btn-menu:hover {
-    background: #f0f0f0;
+    background: var(--guardian-grey-background, #f0f0f0);
 }
 
 .btn-menu i,
@@ -399,7 +399,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -508,7 +508,7 @@
         font-style: normal;
         font-weight: 500;
         margin-left: 10px;
-        background-color: #ffffff;
+        background-color: var(--guardian-background, #ffffff);
         height: 40px;
         border: 1px solid var(--color-secondary);
         border-radius: 8px;
@@ -523,7 +523,7 @@
         font-style: normal;
         font-weight: 500;
         margin-left: 10px;
-        background-color: #ffffff;
+        background-color: var(--guardian-background, #ffffff);
         border: 1px solid #cdddfd;
     }
 }
@@ -597,7 +597,7 @@
 }
 
 .policy-grid-header-row {
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
     box-shadow: none !important;
 }
 

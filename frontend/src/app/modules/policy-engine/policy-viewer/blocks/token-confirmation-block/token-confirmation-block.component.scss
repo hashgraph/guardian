@@ -41,7 +41,7 @@
 }
 
 .description {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     display: block;
     margin-bottom: 0;
     padding: 15px 35px 20px 35px;
@@ -64,7 +64,7 @@
     border: 1px solid #d5d5d5;
     border-radius: 24px;
     box-shadow: 2px 2px 6px 0px rgb(0 0 0 / 20%);
-    background: #fff;
+    background: var(--guardian-background, #fff);
     min-height: 100px;
     position: absolute;
     left: 50%;
@@ -73,7 +73,7 @@
 }
 
 .form {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     color: #404040;
     margin-bottom: 30px;
     padding: 10px 35px;

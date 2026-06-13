@@ -1,6 +1,6 @@
 .loading {
     border-radius: 16px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     left: 0;
@@ -23,7 +23,7 @@ form {
 }
 
 .form-label {
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
     font-size: 12px;
     font-style: normal;

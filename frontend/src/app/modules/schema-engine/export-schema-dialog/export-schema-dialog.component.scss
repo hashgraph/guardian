@@ -1,5 +1,5 @@
 .field-value {
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -12,7 +12,7 @@
 }
 
 .field-name {
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
     font-size: 12px;
     font-style: normal;
@@ -29,7 +29,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     left: 0;
@@ -57,7 +57,7 @@
 }
 
 .form-label {
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
     font-size: 12px;
     font-style: normal;

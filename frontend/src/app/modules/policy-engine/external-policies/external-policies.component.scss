@@ -72,7 +72,7 @@
 
     &.NEW-status {
         color: #848FA9;
-        background: #E1E7EF;
+        background: var(--guardian-grey-background, #E1E7EF);
     }
 
     &.APPROVED-status {

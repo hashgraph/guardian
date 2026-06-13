@@ -20,7 +20,7 @@
 
 .content {
     flex-wrap: nowrap;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
     display: inline-flex;
 }
 
@@ -78,7 +78,7 @@ p-datepicker {
 }
 
 .common-prefix-dropdown {
-    background-color: white;
+    background-color: var(--guardian-background, white);
     display: block;
     height: 40px;
     border: 1px solid #ced4da;
@@ -111,7 +111,7 @@ p-datepicker {
 
     .p-select-label {
         font-size: 14px;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         height: 36px;
     }
 }
@@ -122,7 +122,7 @@ p-datepicker {
 
     .p-multiselect-label {
         font-size: 14px;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         height: 36px;
     }
 }
@@ -140,14 +140,14 @@ p-datepicker {
     right: 8px;
     transform: translateY(-50%);
     pointer-events: none;
-    background-color: white;
+    background-color: var(--guardian-background, white);
     color: gray;
     border: none;
     padding: 0;
 }
 
 .input-filter {
-    background-color: white;
+    background-color: var(--guardian-background, white);
     display: block;
     height: 38px;
     border: 1px solid #ced4da;

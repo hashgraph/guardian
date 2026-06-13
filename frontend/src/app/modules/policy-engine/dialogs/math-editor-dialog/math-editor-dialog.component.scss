@@ -90,7 +90,7 @@
         font-size: 24px;
         line-height: 32px;
         vertical-align: middle;
-        color: #181818;
+        color: var(--guardian-font-color, #181818);
         position: absolute;
         left: 0;
         top: 0;
@@ -126,7 +126,7 @@
 
 .rows-container {
     border: 1px solid #E1E7EF;
-    background: #F9FAFC;
+    background: var(--guardian-grey-background, #F9FAFC);
     padding: 16px;
     padding-left: 48px;
     padding-right: 54px;
@@ -249,7 +249,7 @@
             font-family: Inter, sans-serif;
             font-size: 13px;
             outline: none;
-            color: #181818;
+            color: var(--guardian-font-color, #181818);
 
             &:focus, &.var-picker-active {
                 border-color: var(--guardian-primary-color, #4169E2);
@@ -267,7 +267,7 @@
             z-index: 200;
             min-width: 200px;
             max-width: 360px;
-            background: #fff;
+            background: var(--guardian-background, #fff);
             border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
             border-radius: 8px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
@@ -285,7 +285,7 @@
                     font-weight: 500;
                     cursor: pointer;
                     user-select: none;
-                    color: #181818;
+                    color: var(--guardian-font-color, #181818);
 
                     &:hover {
                         background: var(--guardian-primary-color, #4169E2);
@@ -320,14 +320,14 @@
 
 .formula-link {
     min-height: 44px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     border-radius: 8px;
     outline: none;
     border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
     font-family: Inter;
     font-size: 14px;
     font-weight: 400;
-    color: #000;
+    color: var(--guardian-font-color, #000);
     padding: 14px 34px 14px 16px;
     position: relative;
     cursor: pointer;
@@ -373,7 +373,7 @@
 
 .form-label {
     height: 14px;
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
 
 }
 
@@ -381,10 +381,10 @@
     border-radius: 8px;
     outline: none;
     border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
-    color: #000;
+    color: var(--guardian-font-color, #000);
     padding: 3px 2px;
     position: relative;
-    background: #F9FAFC;
+    background: var(--guardian-grey-background, #F9FAFC);
     font-family: Inter;
     font-size: 14px;
     font-weight: 400;
@@ -450,7 +450,7 @@ math-live {
     outline: none;
     border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
     max-width: 100%;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 
     &::ng-deep {
         math-field {
@@ -639,7 +639,7 @@ math-live {
     font-size: 16px;
     line-height: 20px;
     vertical-align: middle;
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     margin-bottom: 16px;
 }
 
@@ -748,7 +748,7 @@ math-live {
             font-size: 16px;
             line-height: 20px;
             vertical-align: middle;
-            color: #181818;
+            color: var(--guardian-font-color, #181818);
             margin-bottom: 16px;
         }
 

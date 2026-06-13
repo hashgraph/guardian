@@ -1,5 +1,5 @@
 .loading {
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
     position: fixed;
     z-index: 99;
     top: 0;
@@ -90,14 +90,14 @@
     min-width: 200px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 }
 
 .guardian-page ::ng-deep .p-select-overlay,
 .p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
     margin-top: 4px;
     box-shadow: 0 0 1px 0 #000;
 }

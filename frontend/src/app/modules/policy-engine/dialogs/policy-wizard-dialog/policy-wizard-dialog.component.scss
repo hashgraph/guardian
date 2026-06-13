@@ -124,7 +124,7 @@ form {
     min-height: 60px;
     display: inline-flex;
     flex-direction: row;
-    background: white;
+    background: var(--guardian-background, white);
     border-radius: 4px;
     overflow: visible;
     box-sizing: border-box;
@@ -141,7 +141,7 @@ form {
     justify-content: space-between;
     box-sizing: border-box;
     cursor: move;
-    background: white;
+    background: var(--guardian-background, white);
     font-size: 14px;
     flex-grow: 1;
     flex-basis: 0;

@@ -5,7 +5,7 @@
     bottom: 0;
     top: 0;
     display: block;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     margin: 10px 5px 5px 5px;
     box-shadow:
         0px 2px 4px -1px rgb(0 0 0 / 20%),

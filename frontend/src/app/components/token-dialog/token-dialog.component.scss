@@ -25,7 +25,7 @@
 }
 
 .modal-header {
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-family: Poppins, sans-serif;
     font-size: 24px;
     font-style: normal;
