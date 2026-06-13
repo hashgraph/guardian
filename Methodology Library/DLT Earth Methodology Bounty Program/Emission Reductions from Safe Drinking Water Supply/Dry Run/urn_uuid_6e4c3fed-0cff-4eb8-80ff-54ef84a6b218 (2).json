@@ -1,0 +1,49 @@
+{
+  "id": "urn:uuid:6e4c3fed-0cff-4eb8-80ff-54ef84a6b218",
+  "type": [
+    "VerifiableCredential"
+  ],
+  "issuer": "did:hedera:testnet:Gz1HphLNBKe4G6VCn84UUSViPsm2WwGPEVkPEZHenKvk_0.0.9222530",
+  "issuanceDate": "2026-06-13T12:26:49.640Z",
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "schema:e14401c7-58be-4652-8660-9564a7b42b32"
+  ],
+  "credentialSubject": [
+    {
+      "field0": "MR-VCS3599-MINT10-TEST",
+      "field1": "vcs3599",
+      "field2": "2025-01-01 to 2025-01-07",
+      "field4": 0,
+      "field5": 0,
+      "field6": 1,
+      "field7": "2026-06-13",
+      "field8": "bik",
+      "field9": "\tMinimal mint test — target 10 VCU. QPW_y scaled to produce ER≈10 tCO2e. LE set to 0 to isolate BE→ER path.",
+      "field10": 95,
+      "field11": 100,
+      "field12": 44000,
+      "field13": 0.95,
+      "field14": 1,
+      "field15": 0.1,
+      "field16": 81.6,
+      "field17": 0.82,
+      "field18": 1,
+      "policyId": "6a2d2cb5426a35901046a104",
+      "guardianVersion": "3.6.0",
+      "ref": "urn:uuid:eda4a060-dd8f-454f-a0c0-69fdff60e305",
+      "@context": [
+        "schema:e14401c7-58be-4652-8660-9564a7b42b32"
+      ],
+      "id": "urn:uuid:c178b6ae-1893-49b5-a2ba-ef3472ddbc8b",
+      "type": "e14401c7-58be-4652-8660-9564a7b42b32"
+    }
+  ],
+  "proof": {
+    "type": "Ed25519Signature2018",
+    "created": "2026-06-13T12:26:49Z",
+    "verificationMethod": "did:hedera:testnet:Gz1HphLNBKe4G6VCn84UUSViPsm2WwGPEVkPEZHenKvk_0.0.9222530#did-root-key",
+    "proofPurpose": "assertionMethod",
+    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..Qd-EfgkSwA_8L5WcKVt_3FP_xrGoySJDVdyILOwwt0Yj6fHCzHWqTvC4tHFrH8LCNLczXak7zZVviWcbSdvhAw"
+  }
+}
